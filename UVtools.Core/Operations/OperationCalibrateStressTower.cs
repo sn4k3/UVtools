@@ -49,8 +49,6 @@ public sealed class OperationCalibrateStressTower : Operation
 
     public override bool CanROI => false;
 
-    public override bool CanCancel => false;
-
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override string IconClass => "fa-solid fa-chess-rook";
     public override string Title => "Stress tower";
@@ -291,88 +289,6 @@ public sealed class OperationCalibrateStressTower : Operation
     #endregion
 
     #region Methods
-    public Mat[] GetLayers()
-    {
-        var layers = new Mat[LayerCount];
-            
-        Slicer.Slicer slicer = new(SlicerFile.Resolution, new SizeF((float) DisplayWidth, (float) DisplayHeight));
-        Point center = new(SlicerFile.Resolution.Width / 2, SlicerFile.Resolution.Height / 2);
-        uint baseRadius = slicer.PixelsFromMillimeters(_baseDiameter) / 2;
-        uint baseLayers = (ushort)(_baseHeight / _layerHeight);
-        uint bodyLayers = (ushort)(_bodyHeight / _layerHeight);
-        uint spiralLayers = (uint)(_spiralDiameter / _layerHeight);
-        uint ceilLayers = (ushort)(_ceilHeight / _layerHeight);
-        uint currrentlayer = baseLayers;
-
-        decimal spiralOffsetAngle = 360m / _spirals;
-        uint spiralRadius = slicer.PixelsFromMillimeters(_spiralDiameter) / 2;
-
-        /*const FontFace fontFace = FontFace.HersheyDuplex;
-        const double fontScale = 1;
-        const byte fontThickness = 2;
-        LineType lineType = _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
-
-        var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), EmguExtensions.AnchorCenter);*/
-        Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndex =>
-        {
-            layers[layerIndex] = EmguExtensions.InitMat(SlicerFile.Resolution);
-        });
-            
-        Parallel.For(0, baseLayers, CoreSettings.ParallelOptions, layerIndex =>
-        {
-            int chamferOffset = (int) Math.Max(0, _chamferLayers - layerIndex);
-            CvInvoke.Circle(layers[layerIndex], center, (int) baseRadius - chamferOffset, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-        });
-
-
-        Parallel.For(0, baseLayers+bodyLayers, CoreSettings.ParallelOptions, layerIndex =>
-        {
-            decimal angle = (layerIndex * _spiralAngleStepPerLayer) % 360m;
-            for (byte spiral = 0; spiral < _spirals; spiral++)
-            {
-                decimal spiralAngle = (spiralOffsetAngle * spiral + angle) % 360;
-                if (_spiralDirection == SpiralDirections.Alternate && spiral % 2 == 0)
-                {
-                    spiralAngle = -spiralAngle;
-                }
-                Point location = center with {X = (int) (center.X - baseRadius + spiralRadius)};
-                var locationCW = location.Rotate((double) spiralAngle, center);
-                var locationCCW = location.Rotate((double) -spiralAngle, center);
-
-                uint maxLayer = (uint) Math.Min(layerIndex + spiralLayers, baseLayers + bodyLayers);
-
-                for (uint spiralLayerIndex = (uint) layerIndex; spiralLayerIndex < maxLayer; spiralLayerIndex++)
-                {
-                    CvInvoke.Circle(layers[spiralLayerIndex], locationCW, (int)spiralRadius, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                    if (_spiralDirection == SpiralDirections.Both)
-                    {
-                        spiralAngle = -spiralAngle;
-                        CvInvoke.Circle(layers[spiralLayerIndex], locationCCW, (int)spiralRadius, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                    }
-                }
-            }
-        });
-
-        currrentlayer += bodyLayers;
-
-        Parallel.For(0, ceilLayers, CoreSettings.ParallelOptions, i =>
-        {
-            uint layerIndex = (uint)(currrentlayer + i);
-            CvInvoke.Circle(layers[layerIndex], center, (int)baseRadius, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-        });
-
-
-
-        if (_mirrorOutput)
-        {
-            var flip = SlicerFile.DisplayMirror;
-            if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
-            Parallel.ForEach(layers, CoreSettings.ParallelOptions, mat => CvInvoke.Flip(mat, mat, (FlipType)flip));
-        }
-
-        return layers;
-    }
-
     public Mat GetThumbnail()
     {
         Mat thumbnail = EmguExtensions.InitMat(new Size(400, 200), 3);
@@ -394,18 +310,80 @@ public sealed class OperationCalibrateStressTower : Operation
     protected override bool ExecuteInternally(OperationProgress progress)
     {
         progress.ItemCount = LayerCount;
-        var newLayers = new Layer[LayerCount];
 
-        var layers = GetLayers();
+        Slicer.Slicer slicer = new(SlicerFile.Resolution, new SizeF((float)DisplayWidth, (float)DisplayHeight));
+        Point center = new(SlicerFile.Resolution.Width / 2, SlicerFile.Resolution.Height / 2);
+        uint baseRadius = slicer.PixelsFromMillimeters(_baseDiameter) / 2;
+        uint baseLayers = (ushort)(_baseHeight / _layerHeight);
+        uint bodyLayers = (ushort)(_bodyHeight / _layerHeight);
+        uint spiralLayers = (uint)(_spiralDiameter / _layerHeight);
+        uint ceilLayers = (ushort)(_ceilHeight / _layerHeight);
 
-        Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
+        uint basePlusBodyLayers = baseLayers + bodyLayers;
+
+        decimal spiralOffsetAngle = 360m / _spirals;
+        uint spiralRadius = slicer.PixelsFromMillimeters(_spiralDiameter) / 2;
+
+        var flip = SlicerFile.DisplayMirror;
+        if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
+
+        /*const FontFace fontFace = FontFace.HersheyDuplex;
+        const double fontScale = 1;
+        const byte fontThickness = 2;
+        LineType lineType = _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
+
+        var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), EmguExtensions.AnchorCenter);*/
+        SlicerFile.Init(LayerCount);
+
+        Parallel.For(0, LayerCount, CoreSettings.GetParallelDebugOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
-            newLayers[layerIndex] = new Layer((uint)layerIndex, layers[layerIndex], SlicerFile) {IsModified = true};
-            layers[layerIndex].Dispose();
+            using var mat = SlicerFile.CreateMat();
+
+            if (layerIndex < baseLayers)
+            {
+                int chamferOffset = (int)Math.Max(0, _chamferLayers - layerIndex);
+                CvInvoke.Circle(mat, center, (int)baseRadius - chamferOffset, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+            }
+            else if (layerIndex < basePlusBodyLayers)
+            {
+                decimal angle = (layerIndex * _spiralAngleStepPerLayer) % 360m;
+
+                for (byte spiral = 0; spiral < _spirals; spiral++)
+                {
+                    decimal spiralAngle = (spiralOffsetAngle * spiral + angle) % 360;
+                    if (_spiralDirection == SpiralDirections.Alternate && spiral % 2 == 0)
+                    {
+                        spiralAngle = -spiralAngle;
+                    }
+                    Point location = center with { X = (int)(center.X - baseRadius + spiralRadius) };
+                    var locationCW = location.Rotate((double)spiralAngle, center);
+                    var locationCCW = location.Rotate((double)-spiralAngle, center);
+
+                    uint maxLayer = (uint)Math.Min(layerIndex + spiralLayers, baseLayers + bodyLayers);
+
+                    //for (uint spiralLayerIndex = (uint)layerIndex; spiralLayerIndex < maxLayer; spiralLayerIndex++)
+                    //{
+
+                    CvInvoke.Circle(mat, locationCW, (int)spiralRadius, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    if (_spiralDirection == SpiralDirections.Both)
+                    {
+                        spiralAngle = -spiralAngle;
+                        CvInvoke.Circle(mat, locationCCW, (int)spiralRadius, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    }
+                    //}
+                }
+            }
+            else
+            {
+                CvInvoke.Circle(mat, center, (int)baseRadius, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+            }
+
+            if (_mirrorOutput) CvInvoke.Flip(mat, mat, (FlipType)flip);
+
+            SlicerFile[layerIndex] = new Layer((uint)layerIndex, mat, SlicerFile);
             progress.LockAndIncrement();
         });
-
 
         if (SlicerFile.ThumbnailsCount > 0)
         {
@@ -419,7 +397,6 @@ public sealed class OperationCalibrateStressTower : Operation
             SlicerFile.BottomExposureTime = (float)BottomExposure;
             SlicerFile.ExposureTime = (float)NormalExposure;
             SlicerFile.BottomLayerCount = BottomLayers;
-            SlicerFile.Layers = newLayers;
         }, true);
             
         return !progress.Token.IsCancellationRequested;

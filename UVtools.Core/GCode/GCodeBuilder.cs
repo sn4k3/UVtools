@@ -1031,8 +1031,8 @@ public class GCodeBuilder : BindableBase
             AppendLineIfCanComment(BeginLayerComments, layerIndex, layer.PositionZ);
             if (!OnBeforeWriteLayerGCode(layerIndex))
             {
-                AppendPrintProgressM73((float)Math.Round(layerIndex * 100.0 / slicerFile.LayerCount, 2, MidpointRounding.AwayFromZero), 
-                    (float)Math.Round(slicerFile.Skip((int)layerIndex).Sum(l => l.PrintTime) / 60, 2, MidpointRounding.AwayFromZero));
+                AppendPrintProgressM73(MathF.Round(layerIndex * 100.0f / slicerFile.LayerCount, 2, MidpointRounding.AwayFromZero), 
+                    MathF.Round(slicerFile.Skip((int)layerIndex).Sum(l => l.PrintTime) / 60, 2, MidpointRounding.AwayFromZero));
 
                 AppendLayerPause(layer);
                 AppendLayerChangeResinM600(layer);
@@ -1432,7 +1432,7 @@ public class GCodeBuilder : BindableBase
                     {
                         if (lineSplit[i].StartsWith("S"))
                         {
-                            if(!float.TryParse(lineSplit[i][1..], out var pwmValue)) continue;
+                            if(!float.TryParse(lineSplit[i][1..], CultureInfo.InvariantCulture, out var pwmValue)) continue;
                             pwm = _maxLedPower == byte.MaxValue
                                 ? (byte)pwmValue
                                 : (byte)(pwmValue * byte.MaxValue / _maxLedPower);
@@ -1531,8 +1531,8 @@ public class GCodeBuilder : BindableBase
         return _gCodeSpeedUnit switch
         {
             GCodeSpeedUnits.MillimetersPerMinute => mmMin,
-            GCodeSpeedUnits.MillimetersPerSecond => (float) Math.Round(mmMin / 60, 2),
-            GCodeSpeedUnits.CentimetersPerMinute => (float) Math.Round(mmMin / 10, 2),
+            GCodeSpeedUnits.MillimetersPerSecond => MathF.Round(mmMin / 60, 2),
+            GCodeSpeedUnits.CentimetersPerMinute => MathF.Round(mmMin / 10, 2),
             _ => throw new InvalidExpressionException($"Unhandled speed unit for {_gCodeSpeedUnit}")
         };
     }
@@ -1562,8 +1562,8 @@ public class GCodeBuilder : BindableBase
         return _gCodeSpeedUnit switch
         {
             GCodeSpeedUnits.MillimetersPerMinute => speed,
-            GCodeSpeedUnits.MillimetersPerSecond => (float)Math.Round(speed * 60, 2),
-            GCodeSpeedUnits.CentimetersPerMinute => (float)Math.Round(speed * 10, 2),
+            GCodeSpeedUnits.MillimetersPerSecond => MathF.Round(speed * 60, 2),
+            GCodeSpeedUnits.CentimetersPerMinute => MathF.Round(speed * 10, 2),
             _ => throw new InvalidExpressionException($"Unhandled speed unit for {_gCodeSpeedUnit}")
         };
     }

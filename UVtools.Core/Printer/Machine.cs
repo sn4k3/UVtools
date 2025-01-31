@@ -151,12 +151,12 @@ namespace UVtools.Core.Printer
         /// <summary>
         /// Gets the pixel width in millimeters
         /// </summary>
-        public float PixelWidth => DisplayWidth > 0 && ResolutionX > 0 ? (float)Math.Round(DisplayWidth / ResolutionX, 3) : 0;
+        public float PixelWidth => DisplayWidth > 0 && ResolutionX > 0 ? MathF.Round(DisplayWidth / ResolutionX, 3) : 0;
 
         /// <summary>
         /// Gets the pixel height in millimeters
         /// </summary>
-        public float PixelHeight => DisplayHeight > 0 && ResolutionY > 0 ? (float)Math.Round(DisplayHeight / ResolutionY, 3) : 0;
+        public float PixelHeight => DisplayHeight > 0 && ResolutionY > 0 ? MathF.Round(DisplayHeight / ResolutionY, 3) : 0;
 
         /// <summary>
         /// Gets the pixel size in millimeters
@@ -176,12 +176,12 @@ namespace UVtools.Core.Printer
         /// <summary>
         /// Gets the pixel width in microns
         /// </summary>
-        public float PixelWidthMicrons => DisplayWidth > 0 ? (float)Math.Round(DisplayWidth / ResolutionX * 1000, 3) : 0;
+        public float PixelWidthMicrons => DisplayWidth > 0 ? MathF.Round(DisplayWidth / ResolutionX * 1000, 3) : 0;
 
         /// <summary>
         /// Gets the pixel height in microns
         /// </summary>
-        public float PixelHeightMicrons => DisplayHeight > 0 ? (float)Math.Round(DisplayHeight / ResolutionY * 1000, 3) : 0;
+        public float PixelHeightMicrons => DisplayHeight > 0 ? MathF.Round(DisplayHeight / ResolutionY * 1000, 3) : 0;
 
         /// <summary>
         /// Gets the pixel size in microns

@@ -202,7 +202,7 @@ public sealed class VDAFile : FileFormat
 
             if (ushort.TryParse(umStr, out var um) && um > 0)
             {
-                ManifestFile.Machines.XLength = (float) Math.Round(ResolutionX * um / 1000f, 2);
+                ManifestFile.Machines.XLength = MathF.Round(ResolutionX * um / 1000f, 2);
             }
 
             return ManifestFile.Machines.XLength;
@@ -224,7 +224,7 @@ public sealed class VDAFile : FileFormat
 
             if (ushort.TryParse(umStr, out var um) && um > 0)
             {
-                ManifestFile.Machines.YWidth = (float)Math.Round(ResolutionY * um / 1000f, 2);
+                ManifestFile.Machines.YWidth = MathF.Round(ResolutionY * um / 1000f, 2);
             }
 
             return ManifestFile.Machines.YWidth;

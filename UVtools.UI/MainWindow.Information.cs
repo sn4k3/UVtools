@@ -68,7 +68,7 @@ public partial class MainWindow
         {
             if (e.EditAction == DataGridEditAction.Cancel) return;
             if (!(e.Row.DataContext is StringTag stringTag)) return;
-            if (float.TryParse(stringTag.TagString, out var result)) return;
+            if (float.TryParse(stringTag.TagString, CultureInfo.InvariantCulture, out var result)) return;
             e.Cancel = true;
         };
         CurrentLayerGrid.RowEditEnded += (sender, e) =>

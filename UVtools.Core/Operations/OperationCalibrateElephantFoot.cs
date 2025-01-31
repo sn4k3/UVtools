@@ -325,7 +325,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
         }
     }
 
-    public float DimmingStartBrightnessPercent => (float) Math.Round(_dimmingStartBrightness * 100 / 255M, 2);
+    public float DimmingStartBrightnessPercent => MathF.Round(_dimmingStartBrightness * 100 / 255.0f, 2);
 
     public byte DimmingEndBrightness
     {
@@ -339,7 +339,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
         }
     }
 
-    public float DimmingEndBrightnessPercent => (float)Math.Round(_dimmingEndBrightness * 100 / 255M, 2);
+    public float DimmingEndBrightnessPercent => MathF.Round(_dimmingEndBrightness * 100 / 255.0f, 2);
 
     public byte DimmingBrightnessSteps
     {

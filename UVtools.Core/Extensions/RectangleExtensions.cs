@@ -29,10 +29,10 @@ public static class RectangleExtensions
 
     public static int Perimeter(this Rectangle src) => src.Width * 2 + src.Height * 2;
     public static float Perimeter(this RectangleF src) => src.Width * 2 + src.Height * 2;
-    public static float Perimeter(this RectangleF src, int round) => (float)Math.Round(src.Perimeter(), round);
+    public static float Perimeter(this RectangleF src, int round) => MathF.Round(src.Perimeter(), round);
     public static int Area(this Rectangle src) => src.Width * src.Height;
     public static float Area(this RectangleF src) => src.Width * src.Height;
-    public static float Area(this RectangleF src, int round) => (float)Math.Round(src.Area(), round);
+    public static float Area(this RectangleF src, int round) => MathF.Round(src.Area(), round);
 
     /// <summary>
     /// Gets the smallest rectangle among all rectangles

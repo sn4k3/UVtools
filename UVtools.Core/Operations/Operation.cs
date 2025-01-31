@@ -8,6 +8,7 @@
 
 using Emgu.CV;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -119,7 +120,7 @@ public abstract class Operation : BindableBase, IDisposable
         get => _layerRangeSelection;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _layerRangeSelection, value)) return;
+            if (!RaiseAndSetIfChanged(ref _layerRangeSelection, value)) return;
             if(SlicerFile is not null) SelectLayers(_layerRangeSelection);
         }
     }

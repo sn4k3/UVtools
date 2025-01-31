@@ -230,7 +230,7 @@ public sealed class OperationCalibrateGrayscale : Operation
         }
     }
 
-    public float StartBrightnessPercent => (float)Math.Round(_startBrightness * 100 / 255M, 2);
+    public float StartBrightnessPercent => MathF.Round(_startBrightness * 100 / 255.0f, 2);
 
     public byte EndBrightness
     {
@@ -244,7 +244,7 @@ public sealed class OperationCalibrateGrayscale : Operation
         }
     }
 
-    public float EndBrightnessPercent => (float)Math.Round(_endBrightness * 100 / 255M, 2);
+    public float EndBrightnessPercent => MathF.Round(_endBrightness * 100 / 255.0f, 2);
 
     public byte BrightnessSteps
     {
@@ -306,7 +306,7 @@ public sealed class OperationCalibrateGrayscale : Operation
         }
     }
         
-    public float LineDivisionBrightnessPercent => (float)Math.Round(_lineDivisionBrightness * 100 / 255M, 2);
+    public float LineDivisionBrightnessPercent => MathF.Round(_lineDivisionBrightness * 100 / 255.0f, 2);
 
     public short TextXOffset
     {

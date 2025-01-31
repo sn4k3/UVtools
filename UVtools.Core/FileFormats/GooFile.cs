@@ -674,7 +674,7 @@ public sealed class GooFile : FileFormat
     public override float MachineZ
     {
         get => Header.MachineZ > 0 ? Header.MachineZ : base.MachineZ;
-        set => base.MachineZ = Header.MachineZ = (float)Math.Round(value, 2);
+        set => base.MachineZ = Header.MachineZ = MathF.Round(value, 2);
     }
 
     public override FlipDirection DisplayMirror
@@ -746,7 +746,7 @@ public sealed class GooFile : FileFormat
         get => Header.LightOffDelay;
         set
         {
-            base.LightOffDelay = Header.LightOffDelay = (float)Math.Round(value, 2);
+            base.LightOffDelay = Header.LightOffDelay = MathF.Round(value, 2);
             if (value > 0)
             {
                 Header.DelayMode = DelayModes.LightOff;
@@ -770,7 +770,7 @@ public sealed class GooFile : FileFormat
         get => Header.WaitTimeBeforeCure;
         set
         {
-            base.WaitTimeBeforeCure = Header.WaitTimeBeforeCure = Header.WaitTimeBeforeCure = (float)Math.Round(value, 2);
+            base.WaitTimeBeforeCure = Header.WaitTimeBeforeCure = Header.WaitTimeBeforeCure = MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -783,7 +783,7 @@ public sealed class GooFile : FileFormat
     public override float BottomExposureTime
     {
         get => Header.BottomExposureTime;
-        set => base.BottomExposureTime = Header.BottomExposureTime = (float)Math.Round(value, 2);
+        set => base.BottomExposureTime = Header.BottomExposureTime = MathF.Round(value, 2);
     }
 
     public override float BottomWaitTimeAfterCure
@@ -801,7 +801,7 @@ public sealed class GooFile : FileFormat
         get => Header.WaitTimeAfterCure;
         set
         {
-            base.WaitTimeAfterCure = Header.WaitTimeAfterCure = (float)Math.Round(value, 2);
+            base.WaitTimeAfterCure = Header.WaitTimeAfterCure = MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -814,55 +814,55 @@ public sealed class GooFile : FileFormat
     public override float ExposureTime
     {
         get => Header.ExposureTime;
-        set => base.ExposureTime = Header.ExposureTime = (float)Math.Round(value, 2);
+        set => base.ExposureTime = Header.ExposureTime = MathF.Round(value, 2);
     }
 
     public override float BottomLiftHeight
     {
         get => Header.BottomLiftHeight;
-        set => base.BottomLiftHeight = Header.BottomLiftHeight = (float)Math.Round(value, 2);
+        set => base.BottomLiftHeight = Header.BottomLiftHeight = MathF.Round(value, 2);
     }
 
     public override float BottomLiftSpeed
     {
         get => Header.BottomLiftSpeed;
-        set => base.BottomLiftSpeed = Header.BottomLiftSpeed = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed = Header.BottomLiftSpeed = MathF.Round(value, 2);
     }
 
     public override float LiftHeight
     {
         get => Header.LiftHeight;
-        set => base.LiftHeight = Header.LiftHeight = (float)Math.Round(value, 2);
+        set => base.LiftHeight = Header.LiftHeight = MathF.Round(value, 2);
     }
         
     public override float LiftSpeed
     {
         get => Header.LiftSpeed;
-        set => base.LiftSpeed = Header.LiftSpeed = (float)Math.Round(value, 2);
+        set => base.LiftSpeed = Header.LiftSpeed = MathF.Round(value, 2);
     }
 
     public override float BottomLiftHeight2
     {
         get => Header.BottomLiftHeight2;
-        set => base.BottomLiftHeight2 = Header.BottomLiftHeight2 = (float)Math.Round(value, 2);
+        set => base.BottomLiftHeight2 = Header.BottomLiftHeight2 = MathF.Round(value, 2);
     }
 
     public override float BottomLiftSpeed2
     {
         get => Header.BottomLiftSpeed2;
-        set => base.BottomLiftSpeed2 = Header.BottomLiftSpeed2 = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed2 = Header.BottomLiftSpeed2 = MathF.Round(value, 2);
     }
 
     public override float LiftHeight2
     {
         get => Header.LiftHeight2;
-        set => base.LiftHeight2 = Header.LiftHeight2 = (float)Math.Round(value, 2);
+        set => base.LiftHeight2 = Header.LiftHeight2 = MathF.Round(value, 2);
     }
 
     public override float LiftSpeed2
     {
         get => Header.LiftSpeed2;
-        set => base.LiftSpeed2 = Header.LiftSpeed2 = (float)Math.Round(value, 2);
+        set => base.LiftSpeed2 = Header.LiftSpeed2 = MathF.Round(value, 2);
     }
 
     public override float BottomWaitTimeAfterLift
@@ -880,7 +880,7 @@ public sealed class GooFile : FileFormat
         get => Header.WaitTimeAfterLift;
         set
         {
-            base.WaitTimeAfterLift = Header.WaitTimeAfterLift = Header.WaitTimeAfterLift = (float)Math.Round(value, 2);
+            base.WaitTimeAfterLift = Header.WaitTimeAfterLift = Header.WaitTimeAfterLift = MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -893,13 +893,13 @@ public sealed class GooFile : FileFormat
     public override float BottomRetractSpeed
     {
         get => Header.BottomRetractSpeed;
-        set => base.BottomRetractSpeed = Header.BottomRetractSpeed = (float)Math.Round(value, 2);
+        set => base.BottomRetractSpeed = Header.BottomRetractSpeed = MathF.Round(value, 2);
     }
 
     public override float RetractSpeed
     {
         get => Header.RetractSpeed;
-        set => base.RetractSpeed = Header.RetractSpeed = (float)Math.Round(value, 2);
+        set => base.RetractSpeed = Header.RetractSpeed = MathF.Round(value, 2);
     }
 
     public override float BottomRetractHeight2
@@ -907,7 +907,7 @@ public sealed class GooFile : FileFormat
         get => Header.BottomRetractHeight2;
         set
         {
-            value = Math.Clamp((float)Math.Round(value, 2), 0, BottomRetractHeightTotal);
+            value = Math.Clamp(MathF.Round(value, 2), 0, BottomRetractHeightTotal);
             base.BottomRetractHeight2 = Header.BottomRetractHeight2 = value;
             Header.BottomRetractHeight = BottomRetractHeight;
         }
@@ -916,7 +916,7 @@ public sealed class GooFile : FileFormat
     public override float BottomRetractSpeed2
     {
         get => Header.BottomRetractSpeed2;
-        set => base.BottomRetractSpeed2 = Header.BottomRetractSpeed2 = (float)Math.Round(value, 2);
+        set => base.BottomRetractSpeed2 = Header.BottomRetractSpeed2 = MathF.Round(value, 2);
     }
 
     public override float RetractHeight2
@@ -924,7 +924,7 @@ public sealed class GooFile : FileFormat
         get => Header.RetractHeight2;
         set
         {
-            value = Math.Clamp((float)Math.Round(value, 2), 0, RetractHeightTotal);
+            value = Math.Clamp(MathF.Round(value, 2), 0, RetractHeightTotal);
             base.RetractHeight2 = Header.RetractHeight2 = value;
             Header.RetractHeight = RetractHeight;
         }
@@ -933,7 +933,7 @@ public sealed class GooFile : FileFormat
     public override float RetractSpeed2
     {
         get => Header.RetractSpeed2;
-        set => base.RetractSpeed2 = Header.RetractSpeed2 = (float)Math.Round(value, 2);
+        set => base.RetractSpeed2 = Header.RetractSpeed2 = MathF.Round(value, 2);
     }
 
     public override byte BottomLightPWM
@@ -967,13 +967,13 @@ public sealed class GooFile : FileFormat
     public override float MaterialGrams
     {
         get => Header.MaterialGrams;
-        set => base.MaterialGrams = Header.MaterialGrams = (float)Math.Round(value, 3);
+        set => base.MaterialGrams = Header.MaterialGrams = MathF.Round(value, 3);
     }
 
     public override float MaterialCost
     {
-        get => (float)Math.Round(Header.MaterialCost, 3);
-        set => base.MaterialCost = Header.MaterialCost = (float)Math.Round(value, 3);
+        get => MathF.Round(Header.MaterialCost, 3);
+        set => base.MaterialCost = Header.MaterialCost = MathF.Round(value, 3);
     }
 
     public override object[] Configs => new object[] { Header, Footer };

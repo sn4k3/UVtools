@@ -52,19 +52,19 @@ public class GCodeLayer
     public float? WaitTimeBeforeCure
     {
         get => _waitTimeBeforeCure;
-        set => _waitTimeBeforeCure = value is null ? null : (float)Math.Round(value.Value, 2);
+        set => _waitTimeBeforeCure = value is null ? null : MathF.Round(value.Value, 2);
     }
 
     public float? ExposureTime
     {
         get => _exposureTime;
-        set => _exposureTime = value is null ? null : (float)Math.Round(value.Value, 2);
+        set => _exposureTime = value is null ? null : MathF.Round(value.Value, 2);
     }
 
     public float? WaitTimeAfterCure
     {
         get => _waitTimeAfterCure;
-        set => _waitTimeAfterCure = value is null ? null : (float)Math.Round(value.Value, 2);
+        set => _waitTimeAfterCure = value is null ? null : MathF.Round(value.Value, 2);
     }
 
     public float? LiftHeight
@@ -76,13 +76,13 @@ public class GCodeLayer
     public float? LiftSpeed
     {
         get => _liftSpeed;
-        set => _liftSpeed = value is null ? null : (float)Math.Round(value.Value, 2);
+        set => _liftSpeed = value is null ? null : MathF.Round(value.Value, 2);
     }
 
     public float LiftAcceleration
     {
         get => _liftAcceleration;
-        set => _liftAcceleration = (float)Math.Round(Math.Max(value, 0), 2);
+        set => _liftAcceleration = MathF.Round(Math.Max(value, 0), 2);
     }
 
     public float LiftHeightTotal => Layer.RoundHeight((LiftHeight ?? 0) + (LiftHeight2 ?? 0));
@@ -96,30 +96,30 @@ public class GCodeLayer
     public float? LiftSpeed2
     {
         get => _liftSpeed2;
-        set => _liftSpeed2 = value is null ? null : (float)Math.Round(value.Value, 2);
+        set => _liftSpeed2 = value is null ? null : MathF.Round(value.Value, 2);
     }
 
     public float LiftAcceleration2
     {
         get => _liftAcceleration2;
-        set => _liftAcceleration2 = (float)Math.Round(Math.Max(value, 0), 2);
+        set => _liftAcceleration2 = MathF.Round(Math.Max(value, 0), 2);
     }
 
     public float? WaitTimeAfterLift
     {
         get => _waitTimeAfterLift;
-        set => _waitTimeAfterLift = value is null ? null : (float)Math.Round(value.Value, 2);
+        set => _waitTimeAfterLift = value is null ? null : MathF.Round(value.Value, 2);
     }
 
     public float? RetractSpeed
     {
         get => _retractSpeed;
-        set => _retractSpeed = value is null ? null : (float)Math.Round(value.Value, 2);
+        set => _retractSpeed = value is null ? null : MathF.Round(value.Value, 2);
     }
     public float RetractAcceleration
     {
         get => _retractAcceleration;
-        set => _retractAcceleration = (float)Math.Round(Math.Max(value, 0), 2);
+        set => _retractAcceleration = MathF.Round(Math.Max(value, 0), 2);
     }
 
     public float? RetractHeight2
@@ -131,13 +131,13 @@ public class GCodeLayer
     public float? RetractSpeed2
     {
         get => _retractSpeed2;
-        set => _retractSpeed2 = value is null ? null : (float)Math.Round(value.Value, 2);
+        set => _retractSpeed2 = value is null ? null : MathF.Round(value.Value, 2);
     }
 
     public float RetractAcceleration2
     {
         get => _retractAcceleration2;
-        set => _retractAcceleration2 = (float)Math.Round(Math.Max(value, 0), 2);
+        set => _retractAcceleration2 = MathF.Round(Math.Max(value, 0), 2);
     }
 
     public byte? LightPWM { get; set; }
@@ -351,7 +351,7 @@ public class GCodeLayer
             var syncTime = OperationCalculator.LightOffDelayC.CalculateSeconds(layer, 1.5f);
             if (syncTime < layer.WaitTimeBeforeCure)
             {
-                layer.WaitTimeBeforeCure = (float) Math.Round(layer.WaitTimeBeforeCure - syncTime, 2);
+                layer.WaitTimeBeforeCure = MathF.Round(layer.WaitTimeBeforeCure - syncTime, 2);
             }
         }
 

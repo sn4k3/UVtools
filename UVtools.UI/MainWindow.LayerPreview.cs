@@ -694,10 +694,10 @@ public partial class MainWindow
             var pixelSize = SlicerFile!.PixelSize;
             if(roi.IsEmpty || pixelSize.IsEmpty) return RectangleF.Empty;
             return new RectangleF(
-                (float)Math.Round(roi.X * pixelSize.Width, 2),
-                (float)Math.Round(roi.Y * pixelSize.Height, 2),
-                (float)Math.Round(roi.Width * pixelSize.Width, 2),
-                (float)Math.Round(roi.Height * pixelSize.Height, 2));
+                MathF.Round(roi.X * pixelSize.Width, 2),
+                MathF.Round(roi.Y * pixelSize.Height, 2),
+                MathF.Round(roi.Width * pixelSize.Width, 2),
+                MathF.Round(roi.Height * pixelSize.Height, 2));
         }
     }
 

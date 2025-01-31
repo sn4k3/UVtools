@@ -93,8 +93,8 @@ public class ScriptTimelapseSample : ScriptGlobals
         Script.Version = new Version(0, 1);
         Script.MinimumVersionToRun = new Version(3, 0, 0);
 
-        InputPositionZ.Value = (float)Math.Round(SlicerFile.PrintHeight + 1, 2);
-        InputPositionZ.Minimum = (float) Math.Round(SlicerFile.PrintHeight + 0.1, 2);
+        InputPositionZ.Value = MathF.Round(SlicerFile.PrintHeight + 1, 2);
+        InputPositionZ.Minimum = MathF.Round(SlicerFile.PrintHeight + 0.1f, 2);
         Script.UserInputs.Add(InputPositionZ);
         Script.UserInputs.Add(InputRaiseEveryLayerN);
         Script.UserInputs.Add(InputWaitTime);

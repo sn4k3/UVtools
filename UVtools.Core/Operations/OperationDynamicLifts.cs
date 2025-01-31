@@ -137,49 +137,49 @@ public sealed class OperationDynamicLifts : Operation
     public float SmallestBottomLiftHeight
     {
         get => _smallestBottomLiftHeight;
-        set => RaiseAndSetIfChanged(ref _smallestBottomLiftHeight, (float)Math.Round(value, 2));
+        set => RaiseAndSetIfChanged(ref _smallestBottomLiftHeight, MathF.Round(value, 2));
     }
 
     public float LargestBottomLiftHeight
     {
         get => _largestBottomLiftHeight;
-        set => RaiseAndSetIfChanged(ref _largestBottomLiftHeight, (float)Math.Round(value, 2));
+        set => RaiseAndSetIfChanged(ref _largestBottomLiftHeight, MathF.Round(value, 2));
     }
 
     public float SmallestLiftHeight
     {
         get => _smallestLiftHeight;
-        set => RaiseAndSetIfChanged(ref _smallestLiftHeight, (float)Math.Round(value, 2));
+        set => RaiseAndSetIfChanged(ref _smallestLiftHeight, MathF.Round(value, 2));
     }
 
     public float LargestLiftHeight
     {
         get => _largestLiftHeight;
-        set => RaiseAndSetIfChanged(ref _largestLiftHeight, (float)Math.Round(value, 2));
+        set => RaiseAndSetIfChanged(ref _largestLiftHeight, MathF.Round(value, 2));
     }
 
     public float SlowestBottomLiftSpeed
     {
         get => _slowestBottomLiftSpeed;
-        set => RaiseAndSetIfChanged(ref _slowestBottomLiftSpeed, (float)Math.Round(value, 2));
+        set => RaiseAndSetIfChanged(ref _slowestBottomLiftSpeed, MathF.Round(value, 2));
     }
 
     public float FastestBottomLiftSpeed
     {
         get => _fastestBottomLiftSpeed;
-        set => RaiseAndSetIfChanged(ref _fastestBottomLiftSpeed, (float)Math.Round(value, 2));
+        set => RaiseAndSetIfChanged(ref _fastestBottomLiftSpeed, MathF.Round(value, 2));
     }
 
     public float SlowestLiftSpeed
     {
         get => _slowestLiftSpeed;
-        set => RaiseAndSetIfChanged(ref _slowestLiftSpeed, (float)Math.Round(value, 2));
+        set => RaiseAndSetIfChanged(ref _slowestLiftSpeed, MathF.Round(value, 2));
     }
 
     public float FastestLiftSpeed
     {
         get => _fastestLiftSpeed;
-        set => RaiseAndSetIfChanged(ref _fastestLiftSpeed, (float)Math.Round(value, 2));
+        set => RaiseAndSetIfChanged(ref _fastestLiftSpeed, MathF.Round(value, 2));
     }
 
     //public uint MinBottomLayerPixels => SlicerFile.Where(layer => layer.IsBottomLayer && !layer.IsEmpty && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd).Max(layer => layer.NonZeroPixelCount);
@@ -341,8 +341,8 @@ public sealed class OperationDynamicLifts : Operation
             if (!float.IsNaN(liftHeight))
             {
                 setLayer.RetractHeight2 = 0;
-                setLayer.LiftHeightTotal = (float) Math.Round(liftHeight, 1);
-                if (!float.IsNaN(liftSpeed)) setLayer.LiftSpeed = (float)Math.Round(liftSpeed, 1);
+                setLayer.LiftHeightTotal = MathF.Round(liftHeight, 1);
+                if (!float.IsNaN(liftSpeed)) setLayer.LiftSpeed = MathF.Round(liftSpeed, 1);
             }
             
 

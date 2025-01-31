@@ -645,10 +645,10 @@ public sealed class AnycubicFile : FileFormat
         {
             var rect = slicerFile.BoundingRectangleMillimeters;
             rect.Offset(slicerFile.DisplayWidth / -2f, slicerFile.DisplayHeight / -2f);
-            MinX = (float)Math.Round(rect.X, 4);
-            MinY = (float)Math.Round(rect.Y, 4);
-            MaxX = (float)Math.Round(rect.Right, 4);
-            MaxY = (float)Math.Round(rect.Bottom, 4);
+            MinX = MathF.Round(rect.X, 4, MidpointRounding.AwayFromZero);
+            MinY = MathF.Round(rect.Y, 4, MidpointRounding.AwayFromZero);
+            MaxX = MathF.Round(rect.Right, 4, MidpointRounding.AwayFromZero);
+            MaxY = MathF.Round(rect.Bottom, 4, MidpointRounding.AwayFromZero);
 
             MinZ = 0;
             MaxZ = slicerFile.PrintHeight;
@@ -1307,7 +1307,7 @@ public sealed class AnycubicFile : FileFormat
                 _ => 0
             };
         }
-        set => base.MachineZ = MachineSettings.MachineZ = (float)Math.Round(value, 2);
+        set => base.MachineZ = MachineSettings.MachineZ = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
     }
 
     public override FlipDirection DisplayMirror
@@ -1361,13 +1361,13 @@ public sealed class AnycubicFile : FileFormat
     public override float WaitTimeBeforeCure
     {
         get => HeaderSettings.WaitTimeBeforeCure;
-        set => base.WaitTimeBeforeCure = HeaderSettings.WaitTimeBeforeCure = (float)Math.Round(value, 2);
+        set => base.WaitTimeBeforeCure = HeaderSettings.WaitTimeBeforeCure = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
     }
 
     public override float BottomExposureTime
     {
         get => HeaderSettings.BottomExposureTime;
-        set => base.BottomExposureTime = HeaderSettings.BottomExposureTime = (float) Math.Round(value, 2);
+        set => base.BottomExposureTime = HeaderSettings.BottomExposureTime = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
     }
 
     public override float ExposureTime
@@ -1376,7 +1376,7 @@ public sealed class AnycubicFile : FileFormat
         set
         {
             HeaderSettings.IntelligentMode = false;
-            base.ExposureTime = HeaderSettings.ExposureTime = (float)Math.Round(value, 2);
+            base.ExposureTime = HeaderSettings.ExposureTime = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
         }
     }
 
@@ -1387,11 +1387,11 @@ public sealed class AnycubicFile : FileFormat
             : base.BottomLiftHeight;
         set
         {
-            value = (float)Math.Round(value, 2);
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
             ExtraSettings.BottomLiftHeight1 = value;
             if (FileMarkSettings.Version >= VERSION_516)
             {
-                base.BottomLiftHeight = (float)Math.Round(value + ExtraSettings.BottomLiftHeight2, 2);
+                base.BottomLiftHeight = MathF.Round(value + ExtraSettings.BottomLiftHeight2, 2, MidpointRounding.AwayFromZero);
                 foreach (var layer in this) // Fix layer value
                 {
                     if (!layer.IsBottomLayer) continue;
@@ -1409,7 +1409,7 @@ public sealed class AnycubicFile : FileFormat
             : base.BottomLiftSpeed;
         set
         {
-            value = (float)Math.Round(value, 2);
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
             ExtraSettings.BottomLiftSpeed1 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
             base.BottomLiftSpeed = value;
         }
@@ -1422,11 +1422,11 @@ public sealed class AnycubicFile : FileFormat
             : HeaderSettings.LiftHeight;
         set
         {
-            value = (float)Math.Round(value, 2);
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
             ExtraSettings.LiftHeight1 = value;
             if (FileMarkSettings.Version >= VERSION_516)
             {
-                base.LiftHeight = HeaderSettings.LiftHeight = (float)Math.Round(value + ExtraSettings.LiftHeight2, 2);
+                base.LiftHeight = HeaderSettings.LiftHeight = MathF.Round(value + ExtraSettings.LiftHeight2, 2, MidpointRounding.AwayFromZero);
                 foreach (var layer in this) // Fix layer value
                 {
                     if(!layer.IsNormalLayer) continue;
@@ -1444,7 +1444,7 @@ public sealed class AnycubicFile : FileFormat
             : HeaderSettings.LiftSpeed, FormatSpeedUnit, CoreSpeedUnit);
         set
         {
-            value = (float)Math.Round(value, 2);
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
             HeaderSettings.LiftSpeed = ExtraSettings.LiftSpeed1 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
             base.LiftSpeed = value;
         }
@@ -1459,7 +1459,7 @@ public sealed class AnycubicFile : FileFormat
         {
             if (FileMarkSettings.Version < VERSION_516) return;
             var bottomLiftHeight = BottomLiftHeight;
-            ExtraSettings.BottomLiftHeight2 = (float)Math.Round(value, 2);
+            ExtraSettings.BottomLiftHeight2 = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
             BottomLiftHeight = bottomLiftHeight;
             base.BottomLiftHeight2 = ExtraSettings.BottomLiftHeight2;
             HeaderSettings.AdvancedMode = System.Convert.ToUInt32(IsUsingTSMC);
@@ -1475,7 +1475,7 @@ public sealed class AnycubicFile : FileFormat
         set
         {
             if (FileMarkSettings.Version < VERSION_516) return;
-            value = (float)Math.Round(value, 2);
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
             ExtraSettings.BottomLiftSpeed2 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
             base.BottomLiftSpeed2 = value;
         }
@@ -1490,7 +1490,7 @@ public sealed class AnycubicFile : FileFormat
         {
             if (FileMarkSettings.Version < VERSION_516) return;
             var liftHeight = LiftHeight;
-            ExtraSettings.LiftHeight2 = (float)Math.Round(value, 2);
+            ExtraSettings.LiftHeight2 = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
             LiftHeight = liftHeight;
             base.LiftHeight2 = ExtraSettings.LiftHeight2;
             HeaderSettings.AdvancedMode = System.Convert.ToUInt32(IsUsingTSMC);
@@ -1506,7 +1506,7 @@ public sealed class AnycubicFile : FileFormat
         set
         {
             if (FileMarkSettings.Version < VERSION_516) return;
-            value = (float)Math.Round(value, 2);
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
             ExtraSettings.LiftSpeed2 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
             base.LiftSpeed2 = value;
         }
@@ -1520,7 +1520,7 @@ public sealed class AnycubicFile : FileFormat
         set
         {
             if (FileMarkSettings.Version < VERSION_516) return;
-            value = (float)Math.Round(value, 2);
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
             ExtraSettings.BottomRetractSpeed1 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
             base.BottomRetractSpeed = value;
         }
@@ -1533,7 +1533,7 @@ public sealed class AnycubicFile : FileFormat
             : HeaderSettings.RetractSpeed, FormatSpeedUnit, CoreSpeedUnit);
         set
         {
-            value = (float)Math.Round(value, 2);
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
             ExtraSettings.RetractSpeed1 = HeaderSettings.RetractSpeed = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
             base.RetractSpeed = value;
         }
@@ -1547,7 +1547,7 @@ public sealed class AnycubicFile : FileFormat
         set
         {
             if (FileMarkSettings.Version < VERSION_516) return;
-            value = (float)Math.Round(value, 2);
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
             ExtraSettings.BottomRetractSpeed2 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
             base.BottomRetractSpeed2 = value;
         }
@@ -1561,7 +1561,7 @@ public sealed class AnycubicFile : FileFormat
         set
         {
             if (FileMarkSettings.Version < VERSION_516) return;
-            value = (float)Math.Round(value, 2);
+            value = MathF.Round(value, 2);
             ExtraSettings.RetractSpeed2 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
             base.RetractSpeed2 = value;
         }
@@ -1589,14 +1589,14 @@ public sealed class AnycubicFile : FileFormat
 
     public override float MaterialGrams
     {
-        get => (float) Math.Round(HeaderSettings.WeightG, 3);
-        set => base.MaterialGrams = HeaderSettings.WeightG = (float) Math.Round(value, 3);
+        get => MathF.Round(HeaderSettings.WeightG, 3, MidpointRounding.AwayFromZero);
+        set => base.MaterialGrams = HeaderSettings.WeightG = MathF.Round(value, 3, MidpointRounding.AwayFromZero);
     }
 
     public override float MaterialCost
     {
-        get => (float) Math.Round(HeaderSettings.Price, 3);
-        set => base.MaterialCost = HeaderSettings.Price = (float)Math.Round(value, 3);
+        get => MathF.Round(HeaderSettings.Price, 3, MidpointRounding.AwayFromZero);
+        set => base.MaterialCost = HeaderSettings.Price = MathF.Round(value, 3, MidpointRounding.AwayFromZero);
     }
 
     public override string MachineName

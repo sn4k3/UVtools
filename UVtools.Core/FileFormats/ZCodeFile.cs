@@ -249,13 +249,13 @@ public sealed class ZCodeFile : FileFormat
 
     public override float DisplayWidth
     {
-        get => (float) Math.Round(ManifestFile.Device.ResolutionX * ManifestFile.Device.PixelSize / 1000, 2);
+        get => MathF.Round(ManifestFile.Device.ResolutionX * ManifestFile.Device.PixelSize / 1000, 2);
         set => RaisePropertyChanged();
     }
 
     public override float DisplayHeight
     {
-        get => (float)Math.Round(ManifestFile.Device.ResolutionY * ManifestFile.Device.PixelSize / 1000, 2);
+        get => MathF.Round(ManifestFile.Device.ResolutionY * ManifestFile.Device.PixelSize / 1000, 2);
         set => RaisePropertyChanged();
     }
 
@@ -350,25 +350,25 @@ public sealed class ZCodeFile : FileFormat
     public override float BottomLiftHeight
     {
         get => ManifestFile.Profile.Slice.BottomLiftHeight;
-        set => base.BottomLiftHeight = ManifestFile.Profile.Slice.BottomLiftHeight = (float)Math.Round(value, 2);
+        set => base.BottomLiftHeight = ManifestFile.Profile.Slice.BottomLiftHeight = MathF.Round(value, 2);
     }
 
     public override float LiftHeight
     {
         get => ManifestFile.Profile.Slice.LiftHeight;
-        set => base.LiftHeight = ManifestFile.Profile.Slice.LiftHeight = (float)Math.Round(value, 2);
+        set => base.LiftHeight = ManifestFile.Profile.Slice.LiftHeight = MathF.Round(value, 2);
     }
 
     public override float BottomLiftSpeed
     {
         get => ManifestFile.Profile.Slice.BottomLiftSpeed;
-        set => base.BottomLiftSpeed = ManifestFile.Profile.Slice.BottomLiftSpeed = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed = ManifestFile.Profile.Slice.BottomLiftSpeed = MathF.Round(value, 2);
     }
 
     public override float LiftSpeed
     {
         get => ManifestFile.Profile.Slice.LiftSpeed;
-        set => base.LiftSpeed = ManifestFile.Profile.Slice.LiftSpeed = (float)Math.Round(value, 2);
+        set => base.LiftSpeed = ManifestFile.Profile.Slice.LiftSpeed = MathF.Round(value, 2);
     }
 
     public override byte LightPWM
@@ -405,13 +405,13 @@ public sealed class ZCodeFile : FileFormat
     public override float MaterialGrams
     {
         get => ManifestFile.Job.WeightG;
-        set => base.MaterialGrams = ManifestFile.Job.WeightG = (float)Math.Round(value, 3);
+        set => base.MaterialGrams = ManifestFile.Job.WeightG = MathF.Round(value, 3);
     }
 
     public override float MaterialCost
     {
         get => ManifestFile.Job.Price;
-        set => base.MaterialCost = ManifestFile.Job.Price = (float)Math.Round(value, 3);
+        set => base.MaterialCost = ManifestFile.Job.Price = MathF.Round(value, 3);
     }
 
     /*public override string MaterialName

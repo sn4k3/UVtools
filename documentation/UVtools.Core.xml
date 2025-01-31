@@ -951,7 +951,7 @@
             <summary>
             <para>The Excellon drill format is a subset of RS274D and is used by the drilling and routing machines made by the Excellon corporation.
             Because of Excellon's long history and dominance of the PCB drilling business for many years their format is a defacto industry standard.</para>
-            <para>Almost every PCB layout software can produce this format.However we have noticed that many PCB layout tools do not take
+            <para>Almost every PCB layout software can produce this format. However we have noticed that many PCB layout tools do not take
             full advantage of the header information which makes reading the drill file more difficult than it should be.</para>
             <para>https://www.artwork.com/gerber/drl2laser/excellon/index.htm</para>
             <para>https://gist.github.com/katyo/5692b935abc085b1037e</para>

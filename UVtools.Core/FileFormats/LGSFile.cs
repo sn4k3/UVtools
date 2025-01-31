@@ -314,7 +314,7 @@ public sealed class LGSFile : FileFormat
 
     public override float DisplayWidth
     {
-        get => (float) Math.Round(ResolutionX / HeaderSettings.PixelPerMmX, 3);
+        get => MathF.Round(ResolutionX / HeaderSettings.PixelPerMmX, 3);
         set
         {
             base.DisplayWidth = value;
@@ -324,7 +324,7 @@ public sealed class LGSFile : FileFormat
 
     public override float DisplayHeight
     {
-        get => (float)Math.Round(ResolutionY / HeaderSettings.PixelPerMmY, 3);
+        get => MathF.Round(ResolutionY / HeaderSettings.PixelPerMmY, 3);
         set
         {
             base.DisplayHeight = value;
@@ -335,7 +335,7 @@ public sealed class LGSFile : FileFormat
     public override float MachineZ
     {
         get => HeaderSettings.MachineZ > 0 ? HeaderSettings.MachineZ : base.MachineZ;
-        set => base.MachineZ = HeaderSettings.MachineZ = (float)Math.Round(value, 2);
+        set => base.MachineZ = HeaderSettings.MachineZ = MathF.Round(value, 2);
     }
 
     public override FlipDirection DisplayMirror

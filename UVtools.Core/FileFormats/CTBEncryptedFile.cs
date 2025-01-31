@@ -746,7 +746,7 @@ public sealed class CTBEncryptedFile : FileFormat
     public override float MachineZ
     {
         get => Settings.MachineZ > 0 ? Settings.MachineZ : base.MachineZ;
-        set => base.MachineZ = Settings.MachineZ = (float)Math.Round(value, 2);
+        set => base.MachineZ = Settings.MachineZ = MathF.Round(value, 2);
     }
 
     public override FlipDirection DisplayMirror
@@ -794,7 +794,7 @@ public sealed class CTBEncryptedFile : FileFormat
         get => Settings.BottomLightOffDelay;
         set
         {
-            base.BottomLightOffDelay = Settings.BottomLightOffDelay = (float)Math.Round(value, 2);
+            base.BottomLightOffDelay = Settings.BottomLightOffDelay = MathF.Round(value, 2);
             if (value > 0)
             {
                 WaitTimeBeforeCure = 0;
@@ -809,7 +809,7 @@ public sealed class CTBEncryptedFile : FileFormat
         get => Settings.LightOffDelay;
         set
         {
-            base.LightOffDelay = Settings.LightOffDelay = (float)Math.Round(value, 2);
+            base.LightOffDelay = Settings.LightOffDelay = MathF.Round(value, 2);
             if (value > 0)
             {
                 WaitTimeBeforeCure = 0;
@@ -824,7 +824,7 @@ public sealed class CTBEncryptedFile : FileFormat
         get => Settings.RestTimeAfterRetract;
         set
         {
-            base.WaitTimeBeforeCure = Settings.RestTimeAfterRetract = Settings.RestTimeAfterRetract2 = (float)Math.Round(value, 2);
+            base.WaitTimeBeforeCure = Settings.RestTimeAfterRetract = Settings.RestTimeAfterRetract2 = MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -836,7 +836,7 @@ public sealed class CTBEncryptedFile : FileFormat
     public override float BottomExposureTime
     {
         get => Settings.BottomExposureTime;
-        set => base.BottomExposureTime = Settings.BottomExposureTime = (float)Math.Round(value, 2);
+        set => base.BottomExposureTime = Settings.BottomExposureTime = MathF.Round(value, 2);
     }
 
     public override float WaitTimeAfterCure
@@ -844,7 +844,7 @@ public sealed class CTBEncryptedFile : FileFormat
         get => Settings.RestTimeBeforeLift;
         set
         {
-            base.WaitTimeAfterCure = Settings.RestTimeBeforeLift = (float)Math.Round(value, 2);
+            base.WaitTimeAfterCure = Settings.RestTimeBeforeLift = MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -856,7 +856,7 @@ public sealed class CTBEncryptedFile : FileFormat
     public override float ExposureTime
     {
         get => Settings.ExposureTime;
-        set => base.ExposureTime = Settings.ExposureTime = (float)Math.Round(value, 2);
+        set => base.ExposureTime = Settings.ExposureTime = MathF.Round(value, 2);
     }
 
     public override float BottomLiftHeight
@@ -864,8 +864,8 @@ public sealed class CTBEncryptedFile : FileFormat
         get => Math.Max(0,Settings.BottomLiftHeight - Settings.BottomLiftHeight2);
         set
         {
-            value = (float)Math.Round(value, 2);
-            Settings.BottomLiftHeight = (float)Math.Round(value + Settings.BottomLiftHeight2, 2);
+            value = MathF.Round(value, 2);
+            Settings.BottomLiftHeight = MathF.Round(value + Settings.BottomLiftHeight2, 2);
             base.BottomLiftHeight = value;
         }
     }
@@ -873,7 +873,7 @@ public sealed class CTBEncryptedFile : FileFormat
     public override float BottomLiftSpeed
     {
         get => Settings.BottomLiftSpeed;
-        set => base.BottomLiftSpeed = Settings.BottomLiftSpeed = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed = Settings.BottomLiftSpeed = MathF.Round(value, 2);
     }
 
     public override float LiftHeight
@@ -881,8 +881,8 @@ public sealed class CTBEncryptedFile : FileFormat
         get => Math.Max(0,Settings.LiftHeight - Settings.LiftHeight2);
         set
         {
-            value = (float)Math.Round(value, 2);
-            Settings.LiftHeight = (float)Math.Round(value + Settings.LiftHeight2, 2);
+            value = MathF.Round(value, 2);
+            Settings.LiftHeight = MathF.Round(value + Settings.LiftHeight2, 2);
             base.LiftHeight = value;
         }
     }
@@ -890,7 +890,7 @@ public sealed class CTBEncryptedFile : FileFormat
     public override float LiftSpeed
     {
         get => Settings.LiftSpeed;
-        set => base.LiftSpeed = Settings.LiftSpeed = (float)Math.Round(value, 2);
+        set => base.LiftSpeed = Settings.LiftSpeed = MathF.Round(value, 2);
     }
 
     public override float BottomLiftHeight2
@@ -899,7 +899,7 @@ public sealed class CTBEncryptedFile : FileFormat
         set
         {
             var bottomLiftHeight = BottomLiftHeight;
-            Settings.BottomLiftHeight2 = (float)Math.Round(value, 2);
+            Settings.BottomLiftHeight2 = MathF.Round(value, 2);
             BottomLiftHeight = bottomLiftHeight;
             base.BottomLiftHeight2 = Settings.BottomLiftHeight2; 
         }
@@ -908,7 +908,7 @@ public sealed class CTBEncryptedFile : FileFormat
     public override float BottomLiftSpeed2
     {
         get => Settings.BottomLiftSpeed2;
-        set => base.BottomLiftSpeed2 = Settings.BottomLiftSpeed2 = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed2 = Settings.BottomLiftSpeed2 = MathF.Round(value, 2);
     }
 
     public override float LiftHeight2
@@ -917,7 +917,7 @@ public sealed class CTBEncryptedFile : FileFormat
         set
         {
             var liftHeight = LiftHeight;
-            Settings.LiftHeight2 = (float)Math.Round(value, 2);
+            Settings.LiftHeight2 = MathF.Round(value, 2);
             LiftHeight = liftHeight;
             base.LiftHeight2 = Settings.LiftHeight2;
         }
@@ -926,7 +926,7 @@ public sealed class CTBEncryptedFile : FileFormat
     public override float LiftSpeed2
     {
         get => Settings.LiftSpeed2;
-        set => base.LiftSpeed2 = Settings.LiftSpeed2 = (float)Math.Round(value, 2);
+        set => base.LiftSpeed2 = Settings.LiftSpeed2 = MathF.Round(value, 2);
     }
 
     public override float WaitTimeAfterLift
@@ -934,7 +934,7 @@ public sealed class CTBEncryptedFile : FileFormat
         get => Settings.RestTimeAfterLift;
         set
         {
-            base.WaitTimeAfterLift = Settings.RestTimeAfterLift = Settings.RestTimeAfterLift2 = Settings.RestTimeAfterLift3 = (float)Math.Round(value, 2);
+            base.WaitTimeAfterLift = Settings.RestTimeAfterLift = Settings.RestTimeAfterLift2 = Settings.RestTimeAfterLift3 = MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -946,13 +946,13 @@ public sealed class CTBEncryptedFile : FileFormat
     public override float BottomRetractSpeed
     {
         get => Settings.BottomRetractSpeed;
-        set => base.BottomRetractSpeed = Settings.BottomRetractSpeed = (float)Math.Round(value, 2);
+        set => base.BottomRetractSpeed = Settings.BottomRetractSpeed = MathF.Round(value, 2);
     }
 
     public override float RetractSpeed
     {
         get => Settings.RetractSpeed;
-        set => base.RetractSpeed = Settings.RetractSpeed = (float)Math.Round(value, 2);
+        set => base.RetractSpeed = Settings.RetractSpeed = MathF.Round(value, 2);
     }
 
     public override float BottomRetractHeight2
@@ -960,7 +960,7 @@ public sealed class CTBEncryptedFile : FileFormat
         get => Settings.BottomRetractHeight2;
         set
         {
-            value = Math.Clamp((float)Math.Round(value, 2), 0, BottomRetractHeightTotal);
+            value = Math.Clamp(MathF.Round(value, 2), 0, BottomRetractHeightTotal);
             base.BottomRetractHeight2 = Settings.BottomRetractHeight2 = value;
         }
     }
@@ -968,7 +968,7 @@ public sealed class CTBEncryptedFile : FileFormat
     public override float BottomRetractSpeed2
     {
         get => Settings.BottomRetractSpeed2;
-        set => base.BottomRetractSpeed2 = Settings.BottomRetractSpeed2 = (float)Math.Round(value, 2);
+        set => base.BottomRetractSpeed2 = Settings.BottomRetractSpeed2 = MathF.Round(value, 2);
     }
 
     public override float RetractHeight2
@@ -976,7 +976,7 @@ public sealed class CTBEncryptedFile : FileFormat
         get => Settings.RetractHeight2;
         set
         {
-            value = Math.Clamp((float)Math.Round(value, 2), 0, RetractHeightTotal);
+            value = Math.Clamp(MathF.Round(value, 2), 0, RetractHeightTotal);
             base.RetractHeight2 = Settings.RetractHeight2 = value;
         }
     }
@@ -984,7 +984,7 @@ public sealed class CTBEncryptedFile : FileFormat
     public override float RetractSpeed2
     {
         get => Settings.RetractSpeed2;
-        set => base.RetractSpeed2 = Settings.RetractSpeed2 = (float)Math.Round(value, 2);
+        set => base.RetractSpeed2 = Settings.RetractSpeed2 = MathF.Round(value, 2);
     }
 
     public override byte BottomLightPWM
@@ -1034,13 +1034,13 @@ public sealed class CTBEncryptedFile : FileFormat
     public override float MaterialGrams
     {
         get => Settings.MaterialGrams;
-        set => base.MaterialGrams = Settings.MaterialGrams = (float)Math.Round(value, 3);
+        set => base.MaterialGrams = Settings.MaterialGrams = MathF.Round(value, 3);
     }
 
     public override float MaterialCost
     {
-        get => (float)Math.Round(Settings.MaterialCost, 3);
-        set => base.MaterialCost = Settings.MaterialCost = (float)Math.Round(value, 3);
+        get => MathF.Round(Settings.MaterialCost, 3);
+        set => base.MaterialCost = Settings.MaterialCost = MathF.Round(value, 3);
     }
 
     public override object[] Configs

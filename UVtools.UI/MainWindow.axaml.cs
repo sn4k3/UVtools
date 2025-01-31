@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -1386,14 +1387,13 @@ public partial class MainWindow : WindowEx
         Title = _titleStringBuilder.ToString();
     }
 
-    public async void ProcessFiles(string[] files, bool openNewWindow = false, FileFormat.FileDecodeType fileDecodeType = FileFormat.FileDecodeType.Full)
+    public async Task ProcessFiles(string[] files, bool openNewWindow = false, FileFormat.FileDecodeType fileDecodeType = FileFormat.FileDecodeType.Full)
     {
         if (files.Length == 0) return;
 
-        if (files.All(s => OperationPCBExposure.ValidExtensions.Any(extension => s.EndsWith($".{extension}", StringComparison.OrdinalIgnoreCase))))
+        if (IsFileLoaded && files.All(s => OperationPCBExposure.ValidExtensions.Any(extension => s.EndsWith($".{extension}", StringComparison.OrdinalIgnoreCase))))
         {
-            if (!IsFileLoaded) return;
-            var operation = new OperationPCBExposure();
+            var operation = new OperationPCBExposure(SlicerFile!);
             operation.AddFiles(files);
             if (operation.Count == 0) return;
             if ((_globalModifiers & KeyModifiers.Shift) != 0) await RunOperation(operation);

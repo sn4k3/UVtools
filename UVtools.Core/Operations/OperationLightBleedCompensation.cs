@@ -142,7 +142,7 @@ public class OperationLightBleedCompensation : Operation
     }
 
     public int MinimumBrightness => 255 - MaximumSubtraction;
-    public float MinimumBrightnessPercentage => (float)Math.Round(MinimumBrightness * 100.0 / 255.0, 2);
+    public float MinimumBrightnessPercentage => MathF.Round(MinimumBrightness * 100 / 255.0f, 2);
     public int MaximumSubtraction => DimByArray.Aggregate(0, (current, dim) => current + dim);
 
     public byte[] DimByArray

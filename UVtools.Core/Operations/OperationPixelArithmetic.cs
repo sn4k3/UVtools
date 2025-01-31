@@ -391,7 +391,7 @@ public class OperationPixelArithmetic : Operation
 
     // 255  - 100
     //value -  x
-    public float ValuePercent => (float) Math.Round(_value * 100f / byte.MaxValue, 2);
+    public float ValuePercent => MathF.Round(_value * 100f / byte.MaxValue, 2);
 
     public bool ValueEnabled => _operator
         is not PixelArithmeticOperators.BitwiseNot

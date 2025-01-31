@@ -437,7 +437,7 @@ public sealed class SL1File : FileFormat
     public override float MachineZ
     {
         get => PrinterSettings.MaxPrintHeight;
-        set => base.MachineZ = PrinterSettings.MaxPrintHeight = (float)Math.Round(value, 2);
+        set => base.MachineZ = PrinterSettings.MaxPrintHeight = MathF.Round(value, 2);
     }
 
     public override FlipDirection DisplayMirror
@@ -488,13 +488,13 @@ public sealed class SL1File : FileFormat
     public override float BottomExposureTime
     {
         get => OutputConfigSettings.ExpTimeFirst;
-        set => base.BottomExposureTime = OutputConfigSettings.ExpTimeFirst = (float)Math.Round(value, 2);
+        set => base.BottomExposureTime = OutputConfigSettings.ExpTimeFirst = MathF.Round(value, 2);
     }
 
     public override float ExposureTime
     {
         get => OutputConfigSettings.ExpTime;
-        set => base.ExposureTime = OutputConfigSettings.ExpTime = (float)Math.Round(value, 2);
+        set => base.ExposureTime = OutputConfigSettings.ExpTime = MathF.Round(value, 2);
     }
 
     public override float PrintTime
@@ -517,11 +517,11 @@ public sealed class SL1File : FileFormat
         }
     }
 
-    public override float MaterialGrams => (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity, 3);
+    public override float MaterialGrams => MathF.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity, 3);
 
     public override float MaterialCost =>
         MaterialSettings.BottleVolume > 0
-            ? (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.BottleCost / MaterialSettings.BottleVolume, 3)
+            ? MathF.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.BottleCost / MaterialSettings.BottleVolume, 3)
             : base.MaterialCost;
 
     public override string? MaterialName

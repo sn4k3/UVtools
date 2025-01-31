@@ -157,10 +157,10 @@ public sealed class OperationChangeResolution : Operation
     public SizeF NewPixelSizeMicrons =>
         new (_newResolutionX <= 0 || SlicerFile.Display.Width <= 0 || _newDisplayWidth <= 0
                 ? SlicerFile.PixelWidthMicrons
-                : (float) Math.Round((float) _newDisplayWidth / _newResolutionX * 1000, 3),
+                : MathF.Round((float) _newDisplayWidth / _newResolutionX * 1000, 3),
             _newResolutionY <= 0 || SlicerFile.Display.Height <= 0 || _newDisplayHeight <= 0
                 ? SlicerFile.PixelHeightMicrons
-                : (float) Math.Round((float) _newDisplayHeight / _newResolutionY * 1000, 3));
+                : MathF.Round((float) _newDisplayHeight / _newResolutionY * 1000, 3));
 
     public double NewFixedRatioX
     {

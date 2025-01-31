@@ -31,21 +31,21 @@ public static class SpeedConverter
             SpeedUnit.MillimetersPerSecond => to switch
             {
                 SpeedUnit.MillimetersPerSecond => value,
-                SpeedUnit.MillimetersPerMinute => (float) Math.Round(value * 60, rounding, MidpointRounding.AwayFromZero),
-                SpeedUnit.CentimetersPerMinute => (float) Math.Round(value * 6, rounding, MidpointRounding.AwayFromZero),
+                SpeedUnit.MillimetersPerMinute => MathF.Round(value * 60, rounding, MidpointRounding.AwayFromZero),
+                SpeedUnit.CentimetersPerMinute => MathF.Round(value * 6, rounding, MidpointRounding.AwayFromZero),
                 _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
             },
             SpeedUnit.MillimetersPerMinute => to switch
             {
-                SpeedUnit.MillimetersPerSecond => (float) Math.Round(value / 60, rounding, MidpointRounding.AwayFromZero),
+                SpeedUnit.MillimetersPerSecond => MathF.Round(value / 60, rounding, MidpointRounding.AwayFromZero),
                 SpeedUnit.MillimetersPerMinute => value,
-                SpeedUnit.CentimetersPerMinute => (float) Math.Round(value / 10, rounding, MidpointRounding.AwayFromZero),
+                SpeedUnit.CentimetersPerMinute => MathF.Round(value / 10, rounding, MidpointRounding.AwayFromZero),
                 _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
             },
             SpeedUnit.CentimetersPerMinute => to switch
             {
-                SpeedUnit.MillimetersPerSecond => (float) Math.Round(value * (1.0/6.0), rounding, MidpointRounding.AwayFromZero),
-                SpeedUnit.MillimetersPerMinute => (float)Math.Round(value * 10, rounding, MidpointRounding.AwayFromZero),
+                SpeedUnit.MillimetersPerSecond => MathF.Round(value * (1.0f/6.0f), rounding, MidpointRounding.AwayFromZero),
+                SpeedUnit.MillimetersPerMinute => MathF.Round(value * 10, rounding, MidpointRounding.AwayFromZero),
                 SpeedUnit.CentimetersPerMinute => value,
                 _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
             },

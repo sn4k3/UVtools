@@ -46,5 +46,5 @@ public static class Helpers
         (var1, var2) = (var2, var1);
     }
 
-    public static float BrightnessToPercent(byte brightness, byte roundPlates = 2) => (float)Math.Round(brightness * 100 / 255.0, roundPlates);
+    public static float BrightnessToPercent(byte brightness, byte roundPlates = 2) => MathF.Round(brightness * 100 / 255.0f, roundPlates);
 }

@@ -25,7 +25,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Timers;
 using CommunityToolkit.Diagnostics;
-using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
 using UVtools.Core.Layers;
@@ -34,7 +33,6 @@ using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
 using UVtools.Core.Exceptions;
-using UVtools.Core.Converters;
 
 namespace UVtools.Core.FileFormats;
 
@@ -737,7 +735,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public static Task<FileFormat?> OpenAsync(string fileFullPath, OperationProgress? progress = null) =>
         OpenAsync(fileFullPath, FileDecodeType.Full, progress);
 
-    public static float RoundDisplaySize(float value) => (float)Math.Round(value, DisplayFloatPrecision);
+    public static float RoundDisplaySize(float value) => MathF.Round(value, DisplayFloatPrecision);
     public static double RoundDisplaySize(double value) => Math.Round(value, DisplayFloatPrecision);
     public static decimal RoundDisplaySize(decimal value) => Math.Round(value, DisplayFloatPrecision);
 
@@ -1316,7 +1314,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     protected ImageFormat _layerImageFormat = ImageFormat.Custom;
 
-    protected Layer[] _layers = Array.Empty<Layer>();
+    protected Layer[] _layers = [];
 
     private bool _haveModifiedLayers;
     private uint _version;
@@ -1978,10 +1976,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             var pixelSize = PixelSize;
             var boundingRectangle = BoundingRectangle;
             return new RectangleF(
-                (float)Math.Round(boundingRectangle.X * pixelSize.Width, 2),
-                (float)Math.Round(boundingRectangle.Y * pixelSize.Height, 2),
-                (float)Math.Round(boundingRectangle.Width * pixelSize.Width, 2),
-                (float)Math.Round(boundingRectangle.Height * pixelSize.Height, 2));
+                MathF.Round(boundingRectangle.X * pixelSize.Width, 2),
+                MathF.Round(boundingRectangle.Y * pixelSize.Height, 2),
+                MathF.Round(boundingRectangle.Width * pixelSize.Width, 2),
+                MathF.Round(boundingRectangle.Height * pixelSize.Height, 2));
         }
     }
 
@@ -2123,12 +2121,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the display diagonal in millimeters
     /// </summary>
-    public float DisplayDiagonal => (float)Math.Round(Math.Sqrt(Math.Pow(DisplayWidth, 2) + Math.Pow(DisplayHeight, 2)), 2);
+    public float DisplayDiagonal => MathF.Round(MathF.Sqrt(MathF.Pow(DisplayWidth, 2) + MathF.Pow(DisplayHeight, 2)), 2, MidpointRounding.AwayFromZero);
 
     /// <summary>
     /// Gets the display diagonal in inch's
     /// </summary>
-    public float DisplayDiagonalInches => (float)Math.Round(Math.Sqrt(Math.Pow(DisplayWidth, 2) + Math.Pow(DisplayHeight, 2)) * UnitExtensions.MillimeterToInch, 2);
+    public float DisplayDiagonalInches => MathF.Round(MathF.Sqrt(MathF.Pow(DisplayWidth, 2) + MathF.Pow(DisplayHeight, 2)) * (float)UnitExtensions.MillimeterToInch, 2, MidpointRounding.AwayFromZero);
 
     /// <summary>
     /// Gets the display ratio
@@ -2198,12 +2196,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the pixel width in millimeters
     /// </summary>
-    public float PixelWidth => DisplayWidth > 0 && ResolutionX > 0 ? (float) Math.Round(DisplayWidth / ResolutionX, 4) : 0;
+    public float PixelWidth => DisplayWidth > 0 && ResolutionX > 0 ? MathF.Round(DisplayWidth / ResolutionX, 4) : 0;
 
     /// <summary>
     /// Gets the pixel height in millimeters
     /// </summary>
-    public float PixelHeight => DisplayHeight > 0 && ResolutionY > 0 ? (float) Math.Round(DisplayHeight / ResolutionY, 4) : 0;
+    public float PixelHeight => DisplayHeight > 0 && ResolutionY > 0 ? MathF.Round(DisplayHeight / ResolutionY, 4) : 0;
 
     /// <summary>
     /// Gets the pixel size in millimeters
@@ -2223,12 +2221,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the pixel width in microns
     /// </summary>
-    public float PixelWidthMicrons => DisplayWidth > 0 && ResolutionX > 0 ? (float)Math.Round(DisplayWidth / ResolutionX * 1000, 3) : 0;
+    public float PixelWidthMicrons => DisplayWidth > 0 && ResolutionX > 0 ? MathF.Round(DisplayWidth / ResolutionX * 1000, 3) : 0;
 
     /// <summary>
     /// Gets the pixel height in microns
     /// </summary>
-    public float PixelHeightMicrons => DisplayHeight > 0 && ResolutionY > 0 ? (float)Math.Round(DisplayHeight / ResolutionY * 1000, 3) : 0;
+    public float PixelHeightMicrons => DisplayHeight > 0 && ResolutionY > 0 ? MathF.Round(DisplayHeight / ResolutionY * 1000, 3) : 0;
 
     /// <summary>
     /// Gets the pixel size in microns
@@ -2337,7 +2335,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the file volume (XYZ) in mm^3
     /// </summary>
-    public float Volume => (float)Math.Round(this.Sum(layer => layer.GetVolume()), 3);
+    public float Volume => MathF.Round(this.Sum(layer => layer.GetVolume()), 3);
 
     /// <summary>
     /// Gets if the printer have a tilting vat
@@ -2520,7 +2518,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomLightOffDelay;
         set
         {
-            RaiseAndSet(ref _bottomLightOffDelay, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _bottomLightOffDelay, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(LightOffDelayRepresentation));
         }
     }
@@ -2533,7 +2531,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _lightOffDelay;
         set
         {
-            RaiseAndSet(ref _lightOffDelay, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _lightOffDelay, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(LightOffDelayRepresentation));
         }
     }
@@ -2546,7 +2544,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomWaitTimeBeforeCure;
         set
         {
-            RaiseAndSet(ref _bottomWaitTimeBeforeCure, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _bottomWaitTimeBeforeCure, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(WaitTimeRepresentation));
         }
     }
@@ -2560,7 +2558,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _waitTimeBeforeCure;
         set
         {
-            RaiseAndSet(ref _waitTimeBeforeCure, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _waitTimeBeforeCure, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(WaitTimeRepresentation));
         }
     }
@@ -2573,7 +2571,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomExposureTime;
         set
         {
-            RaiseAndSet(ref _bottomExposureTime, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _bottomExposureTime, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(ExposureRepresentation));
             RaisePropertyChanged(nameof(TransitionLayersRepresentation));
         }
@@ -2587,7 +2585,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _exposureTime;
         set
         {
-            RaiseAndSet(ref _exposureTime, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _exposureTime, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(ExposureRepresentation));
             RaisePropertyChanged(nameof(TransitionLayersRepresentation));
         }
@@ -2601,7 +2599,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomWaitTimeAfterCure;
         set
         {
-            RaiseAndSet(ref _bottomWaitTimeAfterCure, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _bottomWaitTimeAfterCure, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(WaitTimeRepresentation));
         }
     }
@@ -2614,7 +2612,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _waitTimeAfterCure;
         set
         {
-            RaiseAndSet(ref _waitTimeAfterCure, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _waitTimeAfterCure, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(WaitTimeRepresentation));
         }
     }
@@ -2625,10 +2623,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     public float BottomLiftHeightTotal
     {
-        get => (float)Math.Round(BottomLiftHeight + BottomLiftHeight2, 2);
+        get => MathF.Round(BottomLiftHeight + BottomLiftHeight2, 2);
         set
         {
-            BottomLiftHeight = (float)Math.Round(Math.Max(0, value), 2);
+            BottomLiftHeight = MathF.Round(Math.Max(0, value), 2);
             BottomLiftHeight2 = 0;
         }
     }
@@ -2639,10 +2637,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     public float LiftHeightTotal
     {
-        get => (float)Math.Round(LiftHeight + LiftHeight2, 2);
+        get => MathF.Round(LiftHeight + LiftHeight2, 2);
         set
         {
-            LiftHeight = (float)Math.Round(Math.Max(0, value), 2);
+            LiftHeight = MathF.Round(Math.Max(0, value), 2);
             LiftHeight2 = 0;
         }
     }
@@ -2655,7 +2653,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomLiftHeight;
         set
         {
-            RaiseAndSet(ref _bottomLiftHeight, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _bottomLiftHeight, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(BottomLiftHeightTotal));
             RaisePropertyChanged(nameof(LiftRepresentation));
             BottomRetractHeight2 = BottomRetractHeight2; // Sanitize
@@ -2670,7 +2668,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomLiftSpeed;
         set
         {
-            RaiseAndSet(ref _bottomLiftSpeed, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _bottomLiftSpeed, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(LiftRepresentation));
         }
     }
@@ -2683,7 +2681,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomLiftAcceleration;
         set
         {
-            RaiseAndSet(ref _bottomLiftAcceleration, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _bottomLiftAcceleration, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(LiftRepresentation));
         }
     }
@@ -2696,7 +2694,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _liftHeight;
         set
         {
-            RaiseAndSet(ref _liftHeight, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _liftHeight, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(LiftHeightTotal));
             RaisePropertyChanged(nameof(LiftRepresentation));
             RetractHeight2 = RetractHeight2; // Sanitize
@@ -2711,7 +2709,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _liftSpeed;
         set
         {
-            RaiseAndSet(ref _liftSpeed, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _liftSpeed, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(LiftRepresentation));
         }
     }
@@ -2724,7 +2722,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _liftAcceleration;
         set
         {
-            RaiseAndSet(ref _liftAcceleration, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _liftAcceleration, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(LiftRepresentation));
         }
     }
@@ -2737,7 +2735,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomLiftHeight2;
         set
         {
-            RaiseAndSet(ref _bottomLiftHeight2, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _bottomLiftHeight2, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(BottomLiftHeightTotal));
             RaisePropertyChanged(nameof(LiftRepresentation));
             BottomRetractHeight2 = BottomRetractHeight2; // Sanitize
@@ -2752,7 +2750,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomLiftSpeed2;
         set
         {
-            RaiseAndSet(ref _bottomLiftSpeed2, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _bottomLiftSpeed2, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(LiftRepresentation));
         }
     }
@@ -2765,7 +2763,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomLiftAcceleration2;
         set
         {
-            RaiseAndSet(ref _bottomLiftAcceleration2, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _bottomLiftAcceleration2, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(LiftRepresentation));
         }
     }
@@ -2778,7 +2776,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _liftHeight2;
         set
         {
-            RaiseAndSet(ref _liftHeight2, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _liftHeight2, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(LiftHeightTotal));
             RaisePropertyChanged(nameof(LiftRepresentation));
             RetractHeight2 = RetractHeight2; // Sanitize
@@ -2794,7 +2792,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _liftSpeed2;
         set
         {
-            RaiseAndSet(ref _liftSpeed2, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _liftSpeed2, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(LiftRepresentation));
         }
     }
@@ -2807,7 +2805,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _liftAcceleration2;
         set
         {
-            RaiseAndSet(ref _liftAcceleration2, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _liftAcceleration2, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(LiftRepresentation));
         }
     }
@@ -2820,7 +2818,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomWaitTimeAfterLift;
         set
         {
-            RaiseAndSet(ref _bottomWaitTimeAfterLift, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _bottomWaitTimeAfterLift, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(WaitTimeRepresentation));
         }
     }
@@ -2833,7 +2831,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _waitTimeAfterLift;
         set
         {
-            RaiseAndSet(ref _waitTimeAfterLift, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _waitTimeAfterLift, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(WaitTimeRepresentation));
         }
     }
@@ -2851,7 +2849,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the bottom retract height in mm
     /// </summary>
-    public float BottomRetractHeight => (float)Math.Round(BottomLiftHeightTotal - BottomRetractHeight2, 2);
+    public float BottomRetractHeight => MathF.Round(BottomLiftHeightTotal - BottomRetractHeight2, 2);
 
     /// <summary>
     /// Gets or sets the speed in mm/min for the bottom retracts
@@ -2861,7 +2859,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomRetractSpeed;
         set
         {
-            RaiseAndSet(ref _bottomRetractSpeed, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _bottomRetractSpeed, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(RetractRepresentation));
         }
     }
@@ -2874,7 +2872,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomRetractAcceleration;
         set
         {
-            RaiseAndSet(ref _bottomRetractAcceleration, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _bottomRetractAcceleration, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(RetractRepresentation));
         }
     }
@@ -2882,7 +2880,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the retract height in mm
     /// </summary>
-    public float RetractHeight => (float)Math.Round(LiftHeightTotal - RetractHeight2, 2);
+    public float RetractHeight => MathF.Round(LiftHeightTotal - RetractHeight2, 2);
         
     /// <summary>
     /// Gets the speed in mm/min for the retracts
@@ -2892,7 +2890,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _retractSpeed;
         set
         {
-            RaiseAndSet(ref _retractSpeed, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _retractSpeed, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(RetractRepresentation));
         }
     }
@@ -2905,7 +2903,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _retractAcceleration;
         set
         {
-            RaiseAndSet(ref _retractAcceleration, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _retractAcceleration, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(RetractRepresentation));
         }
     }
@@ -2918,7 +2916,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomRetractHeight2;
         set
         {
-            value = Math.Clamp((float)Math.Round(value, 2), 0, BottomRetractHeightTotal);
+            value = Math.Clamp(MathF.Round(value, 2), 0, BottomRetractHeightTotal);
             RaiseAndSet(ref _bottomRetractHeight2, value);
             RaisePropertyChanged(nameof(BottomRetractHeight));
             RaisePropertyChanged(nameof(BottomRetractHeightTotal));
@@ -2934,7 +2932,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomRetractSpeed2;
         set
         {
-            RaiseAndSet(ref _bottomRetractSpeed2, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _bottomRetractSpeed2, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(RetractRepresentation));
         }
     }
@@ -2947,7 +2945,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomRetractAcceleration2;
         set
         {
-            RaiseAndSet(ref _bottomRetractAcceleration2, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _bottomRetractAcceleration2, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(RetractRepresentation));
         }
     }
@@ -2960,7 +2958,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _retractHeight2;
         set
         {
-            value = Math.Clamp((float)Math.Round(value, 2), 0, RetractHeightTotal);
+            value = Math.Clamp(MathF.Round(value, 2), 0, RetractHeightTotal);
             RaiseAndSet(ref _retractHeight2, value);
             RaisePropertyChanged(nameof(RetractHeight));
             RaisePropertyChanged(nameof(RetractHeightTotal));
@@ -2976,7 +2974,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _retractSpeed2;
         set
         {
-            RaiseAndSet(ref _retractSpeed2, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _retractSpeed2, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(RetractRepresentation));
         }
     }
@@ -2989,7 +2987,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _retractAcceleration2;
         set
         {
-            RaiseAndSet(ref _retractAcceleration2, (float)Math.Round(Math.Max(0, value), 2));
+            RaiseAndSet(ref _retractAcceleration2, MathF.Round(Math.Max(0, value), 2));
             RaisePropertyChanged(nameof(RetractRepresentation));
         }
     }
@@ -3561,14 +3559,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 }
             }
 
-            return (float) Math.Round(time, 2);
+            return MathF.Round(time, 2);
         }
     }
 
     /// <summary>
     /// Gets the estimate print time in hours
     /// </summary>
-    public float PrintTimeHours => (float) Math.Round(PrintTime / 3600, 2);
+    public float PrintTimeHours => MathF.Round(PrintTime / 3600, 2);
 
     /// <summary>
     /// Gets the estimate print time in hours and minutes formatted
@@ -3585,7 +3583,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the total time in seconds the display will remain on exposing the layers during the print
     /// </summary>
-    public float DisplayTotalOnTime => (float)Math.Round(this.Where(layer => layer is not null).Sum(layer => layer.ExposureTime), 2);
+    public float DisplayTotalOnTime => MathF.Round(this.Where(layer => layer is not null).Sum(layer => layer.ExposureTime), 2);
 
     /// <summary>
     /// Gets the total time formatted in hours, minutes and seconds the display will remain on exposing the layers during the print
@@ -3602,7 +3600,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             var printTime = PrintTime;
             if (float.IsPositiveInfinity(printTime) || float.IsNaN(printTime)) return float.NaN;
-            var value = (float) Math.Round(PrintTime - DisplayTotalOnTime, 2);
+            var value = MathF.Round(PrintTime - DisplayTotalOnTime, 2);
             return value <= 0 ? float.NaN : value;
         }
     }
@@ -3634,11 +3632,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             if (value <= 0) // Recalculate
             {
-                value = (float)Math.Round(this.Where(layer => layer is not null).Sum(layer => layer.MaterialMilliliters), 3);
+                value = MathF.Round(this.Where(layer => layer is not null).Sum(layer => layer.MaterialMilliliters), 3);
             }
             else // Set from value
             {
-                value = (float)Math.Round(value, 3);
+                value = MathF.Round(value, 3);
             }
 
             if(!RaiseAndSetIfChanged(ref _materialMilliliters, value)) return;
@@ -3666,7 +3664,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual float MaterialGrams
     {
         get => _materialGrams;
-        set => RaiseAndSetIfChanged(ref _materialGrams, (float)Math.Round(value, 3));
+        set => RaiseAndSetIfChanged(ref _materialGrams, MathF.Round(value, 3));
     }
 
     /// <summary>
@@ -3680,7 +3678,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual float MaterialCost
     {
         get => _materialCost;
-        set => RaiseAndSetIfChanged(ref _materialCost, (float)Math.Round(value, 3));
+        set => RaiseAndSetIfChanged(ref _materialCost, MathF.Round(value, 3));
     }
 
     /// <summary>
@@ -3688,7 +3686,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     public float MaterialMilliliterCost => StartingMaterialMilliliters > 0 ? StartingMaterialCost / StartingMaterialMilliliters : 0;
 
-    public float GetMaterialCostPer(float milliliters, byte roundDigits = 3) => (float)Math.Round(MaterialMilliliterCost * milliliters, roundDigits);
+    public float GetMaterialCostPer(float milliliters, byte roundDigits = 3) => MathF.Round(MaterialMilliliterCost * milliliters, roundDigits);
 
     /// <summary>
     /// Gets the material name
@@ -5241,7 +5239,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         var transitionLayerCount = ParseTransitionLayerCountFromLayers();
         return transitionLayerCount == 0
             ? 0
-            : (float)Math.Round(this[BottomLayerCount].ExposureTime - this[BottomLayerCount + 1].ExposureTime, 2, MidpointRounding.AwayFromZero);
+            : MathF.Round(this[BottomLayerCount].ExposureTime - this[BottomLayerCount + 1].ExposureTime, 2, MidpointRounding.AwayFromZero);
     }
 
     /// <summary>
@@ -5255,7 +5253,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         return transitionLayerCount == 0 || longExposureTime == shortExposureTime
             ? 0 
-            : (float)Math.Round((longExposureTime - shortExposureTime) / (transitionLayerCount + 1), 2, MidpointRounding.AwayFromZero);
+            : MathF.Round((longExposureTime - shortExposureTime) / (transitionLayerCount + 1), 2, MidpointRounding.AwayFromZero);
     }
 
     /// <summary>
@@ -6090,7 +6088,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     public float CalculateLightOffDelay(LayerGroup layerGroup, float extraTime = 0)
     {
-        extraTime = (float)Math.Round(extraTime, 2);
+        extraTime = MathF.Round(extraTime, 2);
         if (SupportGCode) return extraTime;
         return CalculateMotorMovementTime(layerGroup, extraTime);
     }
@@ -6809,7 +6807,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="x">X position in pixels</param>
     /// <param name="precision">Decimal precision</param>
     /// <returns>Display position in millimeters</returns>
-    public float PixelToDisplayPositionX(int x, byte precision = DisplayFloatPrecision) => (float)Math.Round(PixelWidth * x, precision);
+    public float PixelToDisplayPositionX(int x, byte precision = DisplayFloatPrecision) => MathF.Round(PixelWidth * x, precision);
 
     /// <summary>
     /// From a pixel position get the equivalent position on the display
@@ -6817,7 +6815,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="y">Y position in pixels</param>
     /// <param name="precision">Decimal precision</param>
     /// <returns>Display position in millimeters</returns>
-    public float PixelToDisplayPositionY(int y, byte precision = DisplayFloatPrecision) => (float)Math.Round(PixelHeight * y, precision);
+    public float PixelToDisplayPositionY(int y, byte precision = DisplayFloatPrecision) => MathF.Round(PixelHeight * y, precision);
 
     /// <summary>
     /// From a pixel position get the equivalent position on the display
@@ -7798,13 +7796,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 var drawnDrainHoleLayers = 0;
                 for (int operationLayer = (int)layerOperationGroup.Key - 1; operationLayer >= 0 && toProcess.Count > 0; operationLayer--)
                 {
-                    progress.PauseOrCancelIfRequested();
                     var layer = this[operationLayer];
                     var mat = matCache.Get1((uint) operationLayer);
                     var isMatModified = false;
 
                     for (var i = toProcess.Count-1; i >= 0; i--)
                     {
+                        progress.PauseOrCancelIfRequested();
                         var operation = toProcess[i];
                         if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
                         {

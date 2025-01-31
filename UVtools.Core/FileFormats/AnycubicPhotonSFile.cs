@@ -356,16 +356,16 @@ public sealed class AnycubicPhotonSFile : FileFormat
 
     public override float LiftSpeed
     {
-        get => (float) Math.Round(HeaderSettings.LiftSpeed * 60.0, 2);
-        set => base.LiftSpeed = (float) (HeaderSettings.LiftSpeed = Math.Round(value / 60.0, 2));
+        get => MathF.Round((float)HeaderSettings.LiftSpeed * 60.0f, 2, MidpointRounding.AwayFromZero);
+        set => base.LiftSpeed = (float) (HeaderSettings.LiftSpeed = Math.Round(value / 60.0, 2, MidpointRounding.AwayFromZero));
     }
 
     public override float BottomRetractSpeed => RetractSpeed;
 
     public override float RetractSpeed
     {
-        get => (float)Math.Round(HeaderSettings.RetractSpeed * 60.0, 2);
-        set => base.RetractSpeed = (float) (HeaderSettings.RetractSpeed = (float) Math.Round(value / 60.0, 2));
+        get => MathF.Round((float)HeaderSettings.RetractSpeed * 60.0f, 2, MidpointRounding.AwayFromZero);
+        set => base.RetractSpeed = (float) (HeaderSettings.RetractSpeed = Math.Round(value / 60.0, 2, MidpointRounding.AwayFromZero));
     }
 
         
@@ -379,7 +379,7 @@ public sealed class AnycubicPhotonSFile : FileFormat
         }
     }
 
-    public override object[] Configs => new object[] { HeaderSettings };
+    public override object[] Configs => [HeaderSettings];
 
     #endregion
 

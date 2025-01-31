@@ -208,7 +208,7 @@ public sealed class KlipperFile : FileFormat
     public override float MachineZ
     {
         get => HeaderSettings.MachineZ > 0 ? HeaderSettings.MachineZ : base.MachineZ;
-        set => base.MachineZ = HeaderSettings.MachineZ = (float)Math.Round(value, 2);
+        set => base.MachineZ = HeaderSettings.MachineZ = MathF.Round(value, 2);
     }
 
     public override FlipDirection DisplayMirror
@@ -275,181 +275,181 @@ public sealed class KlipperFile : FileFormat
     public override float BottomWaitTimeBeforeCure
     {
         get => HeaderSettings.BottomWaitTimeBeforeCure;
-        set => base.BottomWaitTimeBeforeCure = HeaderSettings.BottomWaitTimeBeforeCure = (float)Math.Round(value, 2);
+        set => base.BottomWaitTimeBeforeCure = HeaderSettings.BottomWaitTimeBeforeCure = MathF.Round(value, 2);
     }
 
     public override float WaitTimeBeforeCure
     {
         get => HeaderSettings.WaitTimeBeforeCure;
-        set => base.WaitTimeBeforeCure = HeaderSettings.WaitTimeBeforeCure = (float)Math.Round(value, 2);
+        set => base.WaitTimeBeforeCure = HeaderSettings.WaitTimeBeforeCure = MathF.Round(value, 2);
     }
 
     public override float BottomExposureTime
     {
         get => HeaderSettings.BottomExposureTime;
-        set => base.BottomExposureTime = HeaderSettings.BottomExposureTime = (float)Math.Round(value, 2);
+        set => base.BottomExposureTime = HeaderSettings.BottomExposureTime = MathF.Round(value, 2);
     }
 
     public override float ExposureTime
     {
         get => HeaderSettings.ExposureTime;
-        set => base.ExposureTime = HeaderSettings.ExposureTime = (float)Math.Round(value, 2);
+        set => base.ExposureTime = HeaderSettings.ExposureTime = MathF.Round(value, 2);
     }
 
     public override float BottomWaitTimeAfterCure
     {
         get => HeaderSettings.BottomWaitTimeAfterCure;
-        set => base.BottomWaitTimeAfterCure = HeaderSettings.BottomWaitTimeAfterCure = (float)Math.Round(value, 2);
+        set => base.BottomWaitTimeAfterCure = HeaderSettings.BottomWaitTimeAfterCure = MathF.Round(value, 2);
     }
 
     public override float WaitTimeAfterCure
     {
         get => HeaderSettings.WaitTimeAfterCure;
-        set => base.WaitTimeAfterCure = HeaderSettings.WaitTimeAfterCure = (float)Math.Round(value, 2);
+        set => base.WaitTimeAfterCure = HeaderSettings.WaitTimeAfterCure = MathF.Round(value, 2);
     }
 
     public override float BottomLiftHeight
     {
         get => HeaderSettings.BottomLiftHeight;
-        set => base.BottomLiftHeight = HeaderSettings.BottomLiftHeight = (float)Math.Round(value, 2);
+        set => base.BottomLiftHeight = HeaderSettings.BottomLiftHeight = MathF.Round(value, 2);
     }
 
     public override float BottomLiftSpeed
     {
         get => HeaderSettings.BottomLiftSpeed;
-        set => base.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed = MathF.Round(value, 2);
     }
 
     public override float BottomLiftAcceleration
     {
         get => HeaderSettings.BottomLiftAcceleration;
-        set => base.BottomLiftAcceleration = HeaderSettings.BottomLiftAcceleration = (float)Math.Round(Math.Max(0, value), 2);
+        set => base.BottomLiftAcceleration = HeaderSettings.BottomLiftAcceleration = MathF.Round(Math.Max(0, value), 2);
     }
 
     public override float BottomLiftHeight2
     {
         get => HeaderSettings.BottomLiftHeight2;
-        set => base.BottomLiftHeight2 = HeaderSettings.BottomLiftHeight2 = (float)Math.Round(value, 2);
+        set => base.BottomLiftHeight2 = HeaderSettings.BottomLiftHeight2 = MathF.Round(value, 2);
     }
 
     public override float BottomLiftSpeed2
     {
         get => HeaderSettings.BottomLiftSpeed2;
-        set => base.BottomLiftSpeed2 = HeaderSettings.BottomLiftSpeed2 = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed2 = HeaderSettings.BottomLiftSpeed2 = MathF.Round(value, 2);
     }
 
     public override float BottomLiftAcceleration2
     {
         get => HeaderSettings.BottomLiftAcceleration2;
-        set => base.BottomLiftAcceleration2 = HeaderSettings.BottomLiftAcceleration2 = (float)Math.Round(Math.Max(0, value), 2);
+        set => base.BottomLiftAcceleration2 = HeaderSettings.BottomLiftAcceleration2 = MathF.Round(Math.Max(0, value), 2);
     }
 
     public override float LiftHeight
     {
         get => HeaderSettings.LiftHeight;
-        set => base.LiftHeight = HeaderSettings.LiftHeight = (float)Math.Round(value, 2);
+        set => base.LiftHeight = HeaderSettings.LiftHeight = MathF.Round(value, 2);
     }
 
     public override float LiftSpeed
     {
         get => HeaderSettings.LiftSpeed;
-        set => base.LiftSpeed = HeaderSettings.LiftSpeed = (float)Math.Round(value, 2);
+        set => base.LiftSpeed = HeaderSettings.LiftSpeed = MathF.Round(value, 2);
     }
 
     public override float LiftAcceleration
     {
         get => HeaderSettings.LiftAcceleration;
-        set => base.LiftAcceleration = HeaderSettings.LiftAcceleration = (float)Math.Round(Math.Max(0, value), 2);
+        set => base.LiftAcceleration = HeaderSettings.LiftAcceleration = MathF.Round(Math.Max(0, value), 2);
     }
 
     public override float LiftHeight2
     {
         get => HeaderSettings.LiftHeight2;
-        set => base.LiftHeight2 = HeaderSettings.LiftHeight2 = (float)Math.Round(value, 2);
+        set => base.LiftHeight2 = HeaderSettings.LiftHeight2 = MathF.Round(value, 2);
     }
 
     public override float LiftSpeed2
     {
         get => HeaderSettings.LiftSpeed2;
-        set => base.LiftSpeed2 = HeaderSettings.LiftSpeed2 = (float)Math.Round(value, 2);
+        set => base.LiftSpeed2 = HeaderSettings.LiftSpeed2 = MathF.Round(value, 2);
     }
 
     public override float LiftAcceleration2
     {
         get => HeaderSettings.LiftAcceleration2;
-        set => base.LiftAcceleration2 = HeaderSettings.LiftAcceleration2 = (float)Math.Round(Math.Max(0, value), 2);
+        set => base.LiftAcceleration2 = HeaderSettings.LiftAcceleration2 = MathF.Round(Math.Max(0, value), 2);
     }
 
     public override float BottomWaitTimeAfterLift
     {
         get => HeaderSettings.BottomWaitTimeAfterLift;
-        set => base.BottomWaitTimeAfterLift = HeaderSettings.BottomWaitTimeAfterLift = (float)Math.Round(value, 2);
+        set => base.BottomWaitTimeAfterLift = HeaderSettings.BottomWaitTimeAfterLift = MathF.Round(value, 2);
     }
 
     public override float WaitTimeAfterLift
     {
         get => HeaderSettings.WaitTimeAfterLift;
-        set => base.WaitTimeAfterLift = HeaderSettings.WaitTimeAfterLift = (float)Math.Round(value, 2);
+        set => base.WaitTimeAfterLift = HeaderSettings.WaitTimeAfterLift = MathF.Round(value, 2);
     }
 
     public override float BottomRetractSpeed
     {
         get => HeaderSettings.BottomRetractSpeed;
-        set => base.BottomRetractSpeed = HeaderSettings.BottomRetractSpeed = (float)Math.Round(value, 2);
+        set => base.BottomRetractSpeed = HeaderSettings.BottomRetractSpeed = MathF.Round(value, 2);
     }
 
     public override float BottomRetractAcceleration
     {
         get => HeaderSettings.BottomRetractAcceleration;
-        set => base.BottomRetractAcceleration = HeaderSettings.BottomRetractAcceleration = (float)Math.Round(Math.Max(0, value), 2);
+        set => base.BottomRetractAcceleration = HeaderSettings.BottomRetractAcceleration = MathF.Round(Math.Max(0, value), 2);
     }
 
     public override float BottomRetractHeight2
     {
         get => HeaderSettings.BottomRetractHeight2;
-        set => base.BottomRetractHeight2 = HeaderSettings.BottomRetractHeight2 = (float)Math.Round(value, 2);
+        set => base.BottomRetractHeight2 = HeaderSettings.BottomRetractHeight2 = MathF.Round(value, 2);
     }
 
     public override float BottomRetractSpeed2
     {
         get => HeaderSettings.BottomRetractSpeed2;
-        set => base.BottomRetractSpeed2 = HeaderSettings.BottomRetractSpeed2 = (float)Math.Round(value, 2);
+        set => base.BottomRetractSpeed2 = HeaderSettings.BottomRetractSpeed2 = MathF.Round(value, 2);
     }
 
     public override float BottomRetractAcceleration2
     {
         get => HeaderSettings.BottomRetractAcceleration2;
-        set => base.BottomRetractAcceleration2 = HeaderSettings.BottomRetractAcceleration2 = (float)Math.Round(Math.Max(0, value), 2);
+        set => base.BottomRetractAcceleration2 = HeaderSettings.BottomRetractAcceleration2 = MathF.Round(Math.Max(0, value), 2);
     }
 
     public override float RetractSpeed
     {
         get => HeaderSettings.RetractSpeed;
-        set => base.RetractSpeed = HeaderSettings.RetractSpeed = (float)Math.Round(value, 2);
+        set => base.RetractSpeed = HeaderSettings.RetractSpeed = MathF.Round(value, 2);
     }
 
     public override float RetractAcceleration
     {
         get => HeaderSettings.RetractAcceleration;
-        set => base.RetractAcceleration = HeaderSettings.RetractAcceleration = (float)Math.Round(Math.Max(0, value), 2);
+        set => base.RetractAcceleration = HeaderSettings.RetractAcceleration = MathF.Round(Math.Max(0, value), 2);
     }
 
     public override float RetractHeight2
     {
         get => HeaderSettings.RetractHeight2;
-        set => base.RetractHeight2 = HeaderSettings.RetractHeight2 = (float)Math.Round(value, 2);
+        set => base.RetractHeight2 = HeaderSettings.RetractHeight2 = MathF.Round(value, 2);
     }
 
     public override float RetractSpeed2
     {
         get => HeaderSettings.RetractSpeed2;
-        set => base.RetractSpeed2 = HeaderSettings.RetractSpeed2 = (float)Math.Round(value, 2);
+        set => base.RetractSpeed2 = HeaderSettings.RetractSpeed2 = MathF.Round(value, 2);
     }
 
     public override float RetractAcceleration2
     {
         get => HeaderSettings.RetractAcceleration2;
-        set => base.RetractAcceleration2 = HeaderSettings.RetractAcceleration2 = (float)Math.Round(Math.Max(0, value), 2);
+        set => base.RetractAcceleration2 = HeaderSettings.RetractAcceleration2 = MathF.Round(Math.Max(0, value), 2);
     }
 
     public override byte BottomLightPWM
@@ -476,14 +476,14 @@ public sealed class KlipperFile : FileFormat
 
     public override float MaterialGrams
     {
-        get => (float) Math.Round(HeaderSettings.MaterialGrams, 3);
-        set => base.MaterialGrams = HeaderSettings.MaterialGrams = (float)Math.Round(value, 3);
+        get => MathF.Round(HeaderSettings.MaterialGrams, 3);
+        set => base.MaterialGrams = HeaderSettings.MaterialGrams = MathF.Round(value, 3);
     }
 
     public override float MaterialCost
     {
-        get => (float) Math.Round(HeaderSettings.Price, 3);
-        set => base.MaterialCost = HeaderSettings.Price = (float)Math.Round(value, 3);
+        get => MathF.Round(HeaderSettings.Price, 3);
+        set => base.MaterialCost = HeaderSettings.Price = MathF.Round(value, 3);
     }
 
     public override string? MaterialName

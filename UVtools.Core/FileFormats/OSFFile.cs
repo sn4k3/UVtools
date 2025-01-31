@@ -463,70 +463,70 @@ public sealed class OSFFile : FileFormat
 
     public override float BottomWaitTimeBeforeCure
     {
-        get => (float)Math.Round(Settings.BottomWaitTimeBeforeCureMagnified100Times / 100f, 2);
+        get => MathF.Round(Settings.BottomWaitTimeBeforeCureMagnified100Times / 100f, 2);
         set
         {
             Settings.BottomWaitTimeBeforeCureMagnified100Times = (ushort) (value * 100);
-            base.BottomWaitTimeBeforeCure = (float)Math.Round(value, 2);
+            base.BottomWaitTimeBeforeCure = MathF.Round(value, 2);
         }
     }
 
     public override float WaitTimeBeforeCure
     {
-        get => (float)Math.Round(Settings.WaitTimeBeforeCureMagnified100Times.Value / 100f, 2);
+        get => MathF.Round(Settings.WaitTimeBeforeCureMagnified100Times.Value / 100f, 2);
         set
         {
             Settings.WaitTimeBeforeCureMagnified100Times.Value = (uint)(value * 100);
-            base.WaitTimeBeforeCure = (float)Math.Round(value, 2);
+            base.WaitTimeBeforeCure = MathF.Round(value, 2);
         }
     }
 
     public override float BottomExposureTime
     {
-        get => (float)Math.Round(Settings.BottomExposureTimeMagnified100Times.Value / 100f, 2);
+        get => MathF.Round(Settings.BottomExposureTimeMagnified100Times.Value / 100f, 2);
         set
         {
             Settings.BottomExposureTimeMagnified100Times.Value = (uint)(value * 100);
-            base.BottomExposureTime = (float)Math.Round(value, 2);
+            base.BottomExposureTime = MathF.Round(value, 2);
         }
     }
 
     public override float ExposureTime
     {
-        get => (float)Math.Round(Settings.ExposureTimeMagnified100Times.Value / 100f, 2);
+        get => MathF.Round(Settings.ExposureTimeMagnified100Times.Value / 100f, 2);
         set
         {
             Settings.ExposureTimeMagnified100Times.Value = (uint)(value * 100);
-            base.ExposureTime = (float)Math.Round(value, 2);
+            base.ExposureTime = MathF.Round(value, 2);
         }
     }
 
     public override float BottomWaitTimeAfterCure
     {
-        get => (float)Math.Round(Settings.BottomWaitTimeAfterCureMagnified100Times / 100f, 2);
+        get => MathF.Round(Settings.BottomWaitTimeAfterCureMagnified100Times / 100f, 2);
         set
         {
             Settings.BottomWaitTimeAfterCureMagnified100Times = (ushort)(value * 100);
-            base.BottomWaitTimeAfterCure = (float)Math.Round(value, 2);
+            base.BottomWaitTimeAfterCure = MathF.Round(value, 2);
         }
     }
 
     public override float WaitTimeAfterCure
     {
-        get => (float)Math.Round(Settings.WaitTimeAfterCureMagnified100Times.Value / 100f, 2);
+        get => MathF.Round(Settings.WaitTimeAfterCureMagnified100Times.Value / 100f, 2);
         set
         {
             Settings.WaitTimeAfterCureMagnified100Times.Value = (uint)(value * 100);
-            base.WaitTimeAfterCure = (float)Math.Round(value, 2);
+            base.WaitTimeAfterCure = MathF.Round(value, 2);
         }
     }
 
     public override float BottomLiftHeight
     {
-        get => (float)Math.Round(Settings.BottomLiftHeightSlowMagnified1000Times.Value / 1000f, 2);
+        get => MathF.Round(Settings.BottomLiftHeightSlowMagnified1000Times.Value / 1000f, 2);
         set
         {
-            value = (float)Math.Round(value, 2);
+            value = MathF.Round(value, 2);
             Settings.BottomLiftHeightTotalMagnified1000Times.Value -= Settings.BottomLiftHeightSlowMagnified1000Times.Value;
             Settings.BottomLiftHeightSlowMagnified1000Times.Value = (uint)(value * 1000);
             Settings.BottomLiftHeightTotalMagnified1000Times.Value += Settings.BottomLiftHeightSlowMagnified1000Times.Value;
@@ -536,10 +536,10 @@ public sealed class OSFFile : FileFormat
 
     public override float LiftHeight
     {
-        get => (float)Math.Round(Settings.LiftHeightSlowMagnified1000Times.Value / 1000f, 2);
+        get => MathF.Round(Settings.LiftHeightSlowMagnified1000Times.Value / 1000f, 2);
         set
         {
-            value = (float)Math.Round(value, 2);
+            value = MathF.Round(value, 2);
             Settings.LiftHeightTotalMagnified1000Times.Value -= Settings.LiftHeightSlowMagnified1000Times.Value;
             Settings.LiftHeightSlowMagnified1000Times.Value = (uint)(value * 1000);
             Settings.LiftHeightTotalMagnified1000Times.Value += Settings.LiftHeightSlowMagnified1000Times.Value;
@@ -564,7 +564,7 @@ public sealed class OSFFile : FileFormat
         get => (float)Math.Max(0, Math.Round((Settings.BottomLiftHeightTotalMagnified1000Times - Settings.BottomLiftHeightSlowMagnified1000Times) / 1000f, 2));
         set
         {
-            value = (float)Math.Round(value, 2);
+            value = MathF.Round(value, 2);
             Settings.BottomLiftHeightTotalMagnified1000Times.Value = Settings.BottomLiftHeightSlowMagnified1000Times.Value + (uint)(value * 1000);
             base.BottomLiftHeight2 = value;
         }
@@ -581,7 +581,7 @@ public sealed class OSFFile : FileFormat
         get => (float)Math.Max(0, Math.Round((Settings.LiftHeightTotalMagnified1000Times - Settings.LiftHeightSlowMagnified1000Times) / 1000f, 2));
         set
         {
-            value = (float)Math.Round(value, 2);
+            value = MathF.Round(value, 2);
             Settings.LiftHeightTotalMagnified1000Times.Value = Settings.LiftHeightSlowMagnified1000Times.Value + (uint)(value * 1000);
             base.LiftHeight2 = value;
         }
@@ -594,21 +594,21 @@ public sealed class OSFFile : FileFormat
     }
 
     public override float BottomWaitTimeAfterLift {
-        get => (float)Math.Round(Settings.BottomWaitTimeAfterLiftMagnified100Times / 100f, 2); 
+        get => MathF.Round(Settings.BottomWaitTimeAfterLiftMagnified100Times / 100f, 2); 
         set
         {
             Settings.BottomWaitTimeAfterLiftMagnified100Times = (ushort)(value * 100);
-            base.BottomWaitTimeAfterLift = (float)Math.Round(value, 2);
+            base.BottomWaitTimeAfterLift = MathF.Round(value, 2);
         }
     }
 
     public override float WaitTimeAfterLift
     {
-        get => (float)Math.Round(Settings.WaitTimeAfterLiftMagnified100Times.Value / 100f, 2);
+        get => MathF.Round(Settings.WaitTimeAfterLiftMagnified100Times.Value / 100f, 2);
         set
         {
             Settings.WaitTimeAfterLiftMagnified100Times.Value = (uint)(value * 100);
-            base.WaitTimeAfterLift = (float)Math.Round(value, 2);
+            base.WaitTimeAfterLift = MathF.Round(value, 2);
         }
     }
 
@@ -626,10 +626,10 @@ public sealed class OSFFile : FileFormat
 
     public override float BottomRetractHeight2
     {
-        get => (float)Math.Round(Settings.BottomRetractHeightSlowMagnified1000Times.Value / 1000f, 2);
+        get => MathF.Round(Settings.BottomRetractHeightSlowMagnified1000Times.Value / 1000f, 2);
         set
         {
-            value = Math.Clamp((float)Math.Round(value, 2), 0, BottomRetractHeightTotal);
+            value = Math.Clamp(MathF.Round(value, 2), 0, BottomRetractHeightTotal);
             Settings.BottomRetractHeightSlowMagnified1000Times.Value = (uint)(value * 1000);
             Settings.BottomRetractHeightTotalMagnified1000Times.Value = (uint)(BottomRetractHeightTotal * 1000);
             base.BottomRetractHeight2 = value;
@@ -644,10 +644,10 @@ public sealed class OSFFile : FileFormat
 
     public override float RetractHeight2
     {
-        get => (float)Math.Round(Settings.RetractHeightSlowMagnified1000Times.Value / 1000f, 2);
+        get => MathF.Round(Settings.RetractHeightSlowMagnified1000Times.Value / 1000f, 2);
         set
         {
-            value = Math.Clamp((float)Math.Round(value, 2), 0, RetractHeightTotal);
+            value = Math.Clamp(MathF.Round(value, 2), 0, RetractHeightTotal);
             Settings.RetractHeightSlowMagnified1000Times.Value = (uint)(value * 1000);
             Settings.RetractHeightTotalMagnified1000Times.Value = (uint)(RetractHeightTotal * 1000);
             base.RetractHeight2 = value;

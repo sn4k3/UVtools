@@ -453,10 +453,10 @@ public sealed class CrealityCXDLPFile : FileFormat
 
     public override float DisplayWidth
     {
-        get => (float)Math.Round(float.Parse(SlicerInfoSettings.DisplayWidth, CultureInfo.InvariantCulture), 2);
+        get => MathF.Round(float.Parse(SlicerInfoSettings.DisplayWidth, CultureInfo.InvariantCulture), 2);
         set
         {
-            value = (float)Math.Round(value, 2);
+            value = MathF.Round(value, 2);
             SlicerInfoSettings.DisplayWidth = value.ToString(CultureInfo.InvariantCulture);
             base.DisplayWidth = value;
         }
@@ -464,10 +464,10 @@ public sealed class CrealityCXDLPFile : FileFormat
 
     public override float DisplayHeight
     {
-        get => (float)Math.Round(float.Parse(SlicerInfoSettings.DisplayHeight, CultureInfo.InvariantCulture), 3);
+        get => MathF.Round(float.Parse(SlicerInfoSettings.DisplayHeight, CultureInfo.InvariantCulture), 3);
         set
         {
-            value = (float)Math.Round(value, 2);
+            value = MathF.Round(value, 2);
             SlicerInfoSettings.DisplayHeight = value.ToString(CultureInfo.InvariantCulture);
             base.DisplayHeight = value;
         }
@@ -519,10 +519,10 @@ public sealed class CrealityCXDLPFile : FileFormat
 
     public override float ExposureTime
     {
-        get => (float)Math.Round(SlicerInfoSettings.ExposureTime / 10.0f, 1);
+        get => MathF.Round(SlicerInfoSettings.ExposureTime / 10.0f, 1);
         set
         {
-            value = (float)Math.Round(value, 1);
+            value = MathF.Round(value, 1);
             SlicerInfoSettings.ExposureTime = (ushort) (value * 10);
             base.ExposureTime = value;
         }

@@ -617,7 +617,7 @@ public sealed class PHZFile : FileFormat
     public override float MachineZ
     {
         get => HeaderSettings.BedSizeZ > 0 ? HeaderSettings.BedSizeZ : base.MachineZ;
-        set => base.MachineZ = HeaderSettings.BedSizeZ = (float)Math.Round(value, 2);
+        set => base.MachineZ = HeaderSettings.BedSizeZ = MathF.Round(value, 2);
     }
 
     public override FlipDirection DisplayMirror
@@ -663,19 +663,19 @@ public sealed class PHZFile : FileFormat
     public override float BottomLightOffDelay
     {
         get => HeaderSettings.BottomLightOffDelay;
-        set => base.BottomLightOffDelay = HeaderSettings.BottomLightOffDelay = (float)Math.Round(value, 2);
+        set => base.BottomLightOffDelay = HeaderSettings.BottomLightOffDelay = MathF.Round(value, 2);
     }
 
     public override float LightOffDelay
     {
         get => HeaderSettings.LightOffDelay;
-        set => base.LightOffDelay = HeaderSettings.LightOffDelay = (float)Math.Round(value, 2);
+        set => base.LightOffDelay = HeaderSettings.LightOffDelay = MathF.Round(value, 2);
     }
 
     public override float BottomExposureTime
     {
         get => HeaderSettings.BottomExposureSeconds;
-        set => base.BottomExposureTime = HeaderSettings.BottomExposureSeconds = (float)Math.Round(value, 2);
+        set => base.BottomExposureTime = HeaderSettings.BottomExposureSeconds = MathF.Round(value, 2);
     }
 
     public override float BottomWaitTimeBeforeCure
@@ -701,31 +701,31 @@ public sealed class PHZFile : FileFormat
     public override float ExposureTime
     {
         get => HeaderSettings.LayerExposureSeconds;
-        set => base.ExposureTime = HeaderSettings.LayerExposureSeconds = (float)Math.Round(value, 2);
+        set => base.ExposureTime = HeaderSettings.LayerExposureSeconds = MathF.Round(value, 2);
     }
 
     public override float BottomLiftHeight
     {
         get => HeaderSettings.BottomLiftHeight;
-        set => base.BottomLiftHeight = HeaderSettings.BottomLiftHeight = (float)Math.Round(value, 2);
+        set => base.BottomLiftHeight = HeaderSettings.BottomLiftHeight = MathF.Round(value, 2);
     }
 
     public override float LiftHeight
     {
         get => HeaderSettings.LiftHeight;
-        set => base.LiftHeight = HeaderSettings.LiftHeight = (float)Math.Round(value, 2);
+        set => base.LiftHeight = HeaderSettings.LiftHeight = MathF.Round(value, 2);
     }
 
     public override float BottomLiftSpeed
     {
         get => HeaderSettings.BottomLiftSpeed;
-        set => base.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed = MathF.Round(value, 2);
     }
 
     public override float LiftSpeed
     {
         get => HeaderSettings.LiftSpeed;
-        set => base.LiftSpeed = HeaderSettings.LiftSpeed = (float)Math.Round(value, 2);
+        set => base.LiftSpeed = HeaderSettings.LiftSpeed = MathF.Round(value, 2);
     }
 
     public override float BottomRetractSpeed => RetractSpeed;
@@ -733,7 +733,7 @@ public sealed class PHZFile : FileFormat
     public override float RetractSpeed
     {
         get => HeaderSettings.RetractSpeed;
-        set => base.RetractSpeed = HeaderSettings.RetractSpeed = (float)Math.Round(value, 2);
+        set => base.RetractSpeed = HeaderSettings.RetractSpeed = MathF.Round(value, 2);
     }
 
     public override byte BottomLightPWM
@@ -770,14 +770,14 @@ public sealed class PHZFile : FileFormat
 
     public override float MaterialGrams
     {
-        get => (float) Math.Round(HeaderSettings.WeightG, 3);
-        set => base.MaterialGrams = HeaderSettings.WeightG = (float) Math.Round(value, 3);
+        get => MathF.Round(HeaderSettings.WeightG, 3);
+        set => base.MaterialGrams = HeaderSettings.WeightG = MathF.Round(value, 3);
     }
 
     public override float MaterialCost
     {
-        get => (float) Math.Round(HeaderSettings.CostDollars, 3);
-        set => base.MaterialCost = HeaderSettings.CostDollars = (float)Math.Round(value, 3);
+        get => MathF.Round(HeaderSettings.CostDollars, 3);
+        set => base.MaterialCost = HeaderSettings.CostDollars = MathF.Round(value, 3);
     }
 
     public override string MachineName

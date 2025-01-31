@@ -315,7 +315,7 @@ public sealed class VDTFile : FileFormat
     public override float MachineZ
     {
         get => ManifestFile.Machine.ZHeight > 0 ? ManifestFile.Machine.ZHeight : base.MachineZ;
-        set => base.MachineZ = ManifestFile.Machine.ZHeight = (float)Math.Round(value, 2);
+        set => base.MachineZ = ManifestFile.Machine.ZHeight = MathF.Round(value, 2);
     }
 
     public override FlipDirection DisplayMirror
@@ -370,118 +370,118 @@ public sealed class VDTFile : FileFormat
     public override float BottomLightOffDelay
     {
         get => ManifestFile.Print.BottomLightOffDelay;
-        set => base.BottomLightOffDelay = ManifestFile.Print.BottomLightOffDelay = (float)Math.Round(value, 2);
+        set => base.BottomLightOffDelay = ManifestFile.Print.BottomLightOffDelay = MathF.Round(value, 2);
     }
 
     public override float LightOffDelay
     {
         get => ManifestFile.Print.LightOffDelay;
-        set => base.LightOffDelay = ManifestFile.Print.LightOffDelay = (float)Math.Round(value, 2);
+        set => base.LightOffDelay = ManifestFile.Print.LightOffDelay = MathF.Round(value, 2);
     }
 
     public override float BottomWaitTimeBeforeCure
     {
         get => ManifestFile.Print.BottomWaitTimeBeforeCure;
-        set => base.BottomWaitTimeBeforeCure = ManifestFile.Print.BottomWaitTimeBeforeCure = (float)Math.Round(value, 2);
+        set => base.BottomWaitTimeBeforeCure = ManifestFile.Print.BottomWaitTimeBeforeCure = MathF.Round(value, 2);
     }
     public override float WaitTimeBeforeCure
     {
         get => ManifestFile.Print.WaitTimeBeforeCure;
-        set => base.WaitTimeBeforeCure = ManifestFile.Print.WaitTimeBeforeCure = (float)Math.Round(value, 2);
+        set => base.WaitTimeBeforeCure = ManifestFile.Print.WaitTimeBeforeCure = MathF.Round(value, 2);
     }
 
     public override float BottomExposureTime
     {
         get => ManifestFile.Print.BottomExposureTime;
-        set => base.BottomExposureTime = ManifestFile.Print.BottomExposureTime = (float)Math.Round(value, 2);
+        set => base.BottomExposureTime = ManifestFile.Print.BottomExposureTime = MathF.Round(value, 2);
     }
 
     public override float ExposureTime
     {
         get => ManifestFile.Print.ExposureTime;
-        set => base.ExposureTime = ManifestFile.Print.ExposureTime = (float)Math.Round(value, 2);
+        set => base.ExposureTime = ManifestFile.Print.ExposureTime = MathF.Round(value, 2);
     }
 
     public override float BottomWaitTimeAfterCure
     {
         get => ManifestFile.Print.BottomWaitTimeAfterCure;
-        set => base.BottomWaitTimeAfterCure = ManifestFile.Print.BottomWaitTimeAfterCure = (float)Math.Round(value, 2);
+        set => base.BottomWaitTimeAfterCure = ManifestFile.Print.BottomWaitTimeAfterCure = MathF.Round(value, 2);
     }
     public override float WaitTimeAfterCure
     {
         get => ManifestFile.Print.WaitTimeAfterCure;
-        set => base.WaitTimeAfterCure = ManifestFile.Print.WaitTimeAfterCure = (float)Math.Round(value, 2);
+        set => base.WaitTimeAfterCure = ManifestFile.Print.WaitTimeAfterCure = MathF.Round(value, 2);
     }
 
     public override float BottomLiftHeight
     {
         get => ManifestFile.Print.BottomLiftHeight;
-        set => base.BottomLiftHeight = ManifestFile.Print.BottomLiftHeight = (float)Math.Round(value, 2);
+        set => base.BottomLiftHeight = ManifestFile.Print.BottomLiftHeight = MathF.Round(value, 2);
     }
 
     public override float BottomLiftSpeed
     {
         get => ManifestFile.Print.BottomLiftSpeed;
-        set => base.BottomLiftSpeed = ManifestFile.Print.BottomLiftSpeed = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed = ManifestFile.Print.BottomLiftSpeed = MathF.Round(value, 2);
     }
 
     public override float LiftHeight
     {
         get => ManifestFile.Print.LiftHeight;
-        set => base.LiftHeight = ManifestFile.Print.LiftHeight = (float)Math.Round(value, 2);
+        set => base.LiftHeight = ManifestFile.Print.LiftHeight = MathF.Round(value, 2);
     }
         
     public override float LiftSpeed
     {
         get => ManifestFile.Print.LiftSpeed;
-        set => base.LiftSpeed = ManifestFile.Print.LiftSpeed = (float)Math.Round(value, 2);
+        set => base.LiftSpeed = ManifestFile.Print.LiftSpeed = MathF.Round(value, 2);
     }
 
     public override float BottomLiftHeight2
     {
         get => ManifestFile.Print.BottomLiftHeight2;
-        set => base.BottomLiftHeight2 = ManifestFile.Print.BottomLiftHeight2 = (float)Math.Round(value, 2);
+        set => base.BottomLiftHeight2 = ManifestFile.Print.BottomLiftHeight2 = MathF.Round(value, 2);
     }
 
     public override float BottomLiftSpeed2
     {
         get => ManifestFile.Print.BottomLiftSpeed2;
-        set => base.BottomLiftSpeed2 = ManifestFile.Print.BottomLiftSpeed2 = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed2 = ManifestFile.Print.BottomLiftSpeed2 = MathF.Round(value, 2);
     }
 
     public override float LiftHeight2
     {
         get => ManifestFile.Print.LiftHeight2;
-        set => base.LiftHeight2 = ManifestFile.Print.LiftHeight2 = (float)Math.Round(value, 2);
+        set => base.LiftHeight2 = ManifestFile.Print.LiftHeight2 = MathF.Round(value, 2);
     }
         
     public override float LiftSpeed2
     {
         get => ManifestFile.Print.LiftSpeed2;
-        set => base.LiftSpeed2 = ManifestFile.Print.LiftSpeed2 = (float)Math.Round(value, 2);
+        set => base.LiftSpeed2 = ManifestFile.Print.LiftSpeed2 = MathF.Round(value, 2);
     }
 
     public override float BottomWaitTimeAfterLift
     {
         get => ManifestFile.Print.BottomWaitTimeAfterLift;
-        set => base.BottomWaitTimeAfterLift = ManifestFile.Print.BottomWaitTimeAfterLift = (float)Math.Round(value, 2);
+        set => base.BottomWaitTimeAfterLift = ManifestFile.Print.BottomWaitTimeAfterLift = MathF.Round(value, 2);
     }
     public override float WaitTimeAfterLift
     {
         get => ManifestFile.Print.WaitTimeAfterLift;
-        set => base.WaitTimeAfterLift = ManifestFile.Print.WaitTimeAfterLift = (float)Math.Round(value, 2);
+        set => base.WaitTimeAfterLift = ManifestFile.Print.WaitTimeAfterLift = MathF.Round(value, 2);
     }
 
     public override float BottomRetractSpeed
     {
         get => ManifestFile.Print.BottomRetractSpeed;
-        set => base.BottomRetractSpeed = ManifestFile.Print.BottomRetractSpeed = (float)Math.Round(value, 2);
+        set => base.BottomRetractSpeed = ManifestFile.Print.BottomRetractSpeed = MathF.Round(value, 2);
     }
 
     public override float RetractSpeed
     {
         get => ManifestFile.Print.RetractSpeed;
-        set => base.RetractSpeed = ManifestFile.Print.RetractSpeed = (float)Math.Round(value, 2);
+        set => base.RetractSpeed = ManifestFile.Print.RetractSpeed = MathF.Round(value, 2);
     }
 
     public override float BottomRetractHeight2
@@ -489,7 +489,7 @@ public sealed class VDTFile : FileFormat
         get => ManifestFile.Print.BottomRetractHeight2;
         set
         {
-            value = Math.Clamp((float)Math.Round(value, 2), 0, BottomRetractHeightTotal);
+            value = Math.Clamp(MathF.Round(value, 2), 0, BottomRetractHeightTotal);
             base.BottomRetractHeight2 = ManifestFile.Print.BottomRetractHeight2 = value;
         }
     }
@@ -497,7 +497,7 @@ public sealed class VDTFile : FileFormat
     public override float BottomRetractSpeed2
     {
         get => ManifestFile.Print.BottomRetractSpeed2;
-        set => base.BottomRetractSpeed2 = ManifestFile.Print.BottomRetractSpeed2 = (float)Math.Round(value, 2);
+        set => base.BottomRetractSpeed2 = ManifestFile.Print.BottomRetractSpeed2 = MathF.Round(value, 2);
     }
 
     public override float RetractHeight2
@@ -505,7 +505,7 @@ public sealed class VDTFile : FileFormat
         get => ManifestFile.Print.RetractHeight2;
         set
         {
-            value = Math.Clamp((float)Math.Round(value, 2), 0, RetractHeightTotal);
+            value = Math.Clamp(MathF.Round(value, 2), 0, RetractHeightTotal);
             base.RetractHeight2 = ManifestFile.Print.RetractHeight2 = value;
         }
     }
@@ -513,7 +513,7 @@ public sealed class VDTFile : FileFormat
     public override float RetractSpeed2
     {
         get => ManifestFile.Print.RetractSpeed2;
-        set => base.RetractSpeed2 = ManifestFile.Print.RetractSpeed2 = (float)Math.Round(value, 2);
+        set => base.RetractSpeed2 = ManifestFile.Print.RetractSpeed2 = MathF.Round(value, 2);
     }
 
     public override byte BottomLightPWM
@@ -550,8 +550,8 @@ public sealed class VDTFile : FileFormat
 
     public override float MaterialGrams
     {
-        get => (float)Math.Round(ManifestFile.PrintStatistics.Weight, 3);
-        set => base.MaterialGrams = ManifestFile.PrintStatistics.Weight = (float)Math.Round(value, 3);
+        get => MathF.Round(ManifestFile.PrintStatistics.Weight, 3);
+        set => base.MaterialGrams = ManifestFile.PrintStatistics.Weight = MathF.Round(value, 3);
     }
 
     public override string? MaterialName
@@ -562,8 +562,8 @@ public sealed class VDTFile : FileFormat
 
     public override float MaterialCost
     {
-        get => (float)Math.Round(ManifestFile.Resin.Cost, 3);
-        set => base.MaterialCost = ManifestFile.Resin.Cost = (float)Math.Round(value, 3);
+        get => MathF.Round(ManifestFile.Resin.Cost, 3);
+        set => base.MaterialCost = ManifestFile.Resin.Cost = MathF.Round(value, 3);
     }
 
     public override string MachineName

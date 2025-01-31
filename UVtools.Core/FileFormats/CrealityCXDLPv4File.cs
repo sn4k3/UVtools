@@ -776,7 +776,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
     public override float MachineZ
     {
         get => HeaderSettings.BedSizeZ > 0 ? HeaderSettings.BedSizeZ : base.MachineZ;
-        set => base.MachineZ = HeaderSettings.BedSizeZ = (float)Math.Round(value, 2);
+        set => base.MachineZ = HeaderSettings.BedSizeZ = MathF.Round(value, 2);
     }
 
     public override FlipDirection DisplayMirror
@@ -830,7 +830,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         get => PrintParametersSettings.BottomLightOffDelay;
         set
         {
-            base.BottomLightOffDelay = PrintParametersSettings.BottomLightOffDelay = (float) Math.Round(value, 2);
+            base.BottomLightOffDelay = PrintParametersSettings.BottomLightOffDelay = MathF.Round(value, 2);
             if (value > 0)
             {
                 WaitTimeBeforeCure = 0;
@@ -845,7 +845,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         get => PrintParametersSettings.LightOffDelay;
         set
         {
-            base.LightOffDelay = PrintParametersSettings.LightOffDelay = PrintParametersSettings.LightOffDelay = (float) Math.Round(value, 2);
+            base.LightOffDelay = PrintParametersSettings.LightOffDelay = PrintParametersSettings.LightOffDelay = MathF.Round(value, 2);
             if (value > 0)
             {
                 WaitTimeBeforeCure = 0;
@@ -860,7 +860,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         get => SlicerInfoSettings.RestTimeAfterRetract;
         set
         {
-            base.WaitTimeBeforeCure = SlicerInfoSettings.RestTimeAfterRetract = (float)Math.Round(value, 2);
+            base.WaitTimeBeforeCure = SlicerInfoSettings.RestTimeAfterRetract = MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -872,7 +872,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
     public override float BottomExposureTime
     {
         get => PrintParametersSettings.BottomExposureTime;
-        set => base.BottomExposureTime = PrintParametersSettings.BottomExposureTime = SlicerInfoSettings.BottomExposureTime = (float) Math.Round(value, 2);
+        set => base.BottomExposureTime = PrintParametersSettings.BottomExposureTime = SlicerInfoSettings.BottomExposureTime = MathF.Round(value, 2);
     }
 
     public override float WaitTimeAfterCure
@@ -880,7 +880,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         get => SlicerInfoSettings.RestTimeBeforeLift;
         set
         {
-            base.WaitTimeAfterCure = SlicerInfoSettings.RestTimeBeforeLift = (float) Math.Round(value, 2);
+            base.WaitTimeAfterCure = SlicerInfoSettings.RestTimeBeforeLift = MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -892,16 +892,16 @@ public sealed class CrealityCXDLPv4File : FileFormat
     public override float ExposureTime
     {
         get => PrintParametersSettings.ExposureTime;
-        set => base.ExposureTime = PrintParametersSettings.ExposureTime = SlicerInfoSettings.ExposureTime = (float)Math.Round(value, 2);
+        set => base.ExposureTime = PrintParametersSettings.ExposureTime = SlicerInfoSettings.ExposureTime = MathF.Round(value, 2);
     }
 
     public override float BottomLiftHeight
     {
-        get => (float)Math.Round(Math.Max(0, PrintParametersSettings.BottomLiftHeight - SlicerInfoSettings.BottomLiftHeight2), 2);
+        get => MathF.Round(Math.Max(0, PrintParametersSettings.BottomLiftHeight - SlicerInfoSettings.BottomLiftHeight2), 2);
         set
         {
-            value = (float)Math.Round(value, 2);
-            PrintParametersSettings.BottomLiftHeight = (float)Math.Round(value + SlicerInfoSettings.BottomLiftHeight2, 2);
+            value = MathF.Round(value, 2);
+            PrintParametersSettings.BottomLiftHeight = MathF.Round(value + SlicerInfoSettings.BottomLiftHeight2, 2);
             base.BottomLiftHeight = value;
         }
     }
@@ -909,7 +909,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
     public override float BottomLiftSpeed
     {
         get => PrintParametersSettings.BottomLiftSpeed;
-        set => base.BottomLiftSpeed = PrintParametersSettings.BottomLiftSpeed = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed = PrintParametersSettings.BottomLiftSpeed = MathF.Round(value, 2);
     }
 
     public override float LiftHeight
@@ -917,8 +917,8 @@ public sealed class CrealityCXDLPv4File : FileFormat
         get => Math.Max(0, PrintParametersSettings.LiftHeight - SlicerInfoSettings.LiftHeight2);
         set
         {
-            value = (float)Math.Round(value, 2);
-            PrintParametersSettings.LiftHeight = (float)Math.Round(value + SlicerInfoSettings.LiftHeight2, 2);
+            value = MathF.Round(value, 2);
+            PrintParametersSettings.LiftHeight = MathF.Round(value + SlicerInfoSettings.LiftHeight2, 2);
             base.LiftHeight = value;
         }
     }
@@ -926,7 +926,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
     public override float LiftSpeed
     {
         get => PrintParametersSettings.LiftSpeed;
-        set => base.LiftSpeed = PrintParametersSettings.LiftSpeed = (float)Math.Round(value, 2);
+        set => base.LiftSpeed = PrintParametersSettings.LiftSpeed = MathF.Round(value, 2);
     }
 
     public override float BottomLiftHeight2
@@ -935,7 +935,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         set
         {
             var bottomLiftHeight = BottomLiftHeight;
-            SlicerInfoSettings.BottomLiftHeight2 = (float)Math.Round(value, 2);
+            SlicerInfoSettings.BottomLiftHeight2 = MathF.Round(value, 2);
             BottomLiftHeight = bottomLiftHeight;
             base.BottomLiftHeight2 = SlicerInfoSettings.BottomLiftHeight2;
         }
@@ -944,7 +944,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
     public override float BottomLiftSpeed2
     {
         get => SlicerInfoSettings.BottomLiftSpeed2;
-        set => base.BottomLiftSpeed2 = SlicerInfoSettings.BottomLiftSpeed2 = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed2 = SlicerInfoSettings.BottomLiftSpeed2 = MathF.Round(value, 2);
     }
 
     public override float LiftHeight2
@@ -953,7 +953,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         set
         {
             var liftHeight = LiftHeight;
-            SlicerInfoSettings.LiftHeight2 = (float)Math.Round(value, 2);
+            SlicerInfoSettings.LiftHeight2 = MathF.Round(value, 2);
             LiftHeight = liftHeight;
             base.LiftHeight2 = SlicerInfoSettings.LiftHeight2;
         }
@@ -962,7 +962,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
     public override float LiftSpeed2
     {
         get => SlicerInfoSettings.LiftSpeed2;
-        set => base.LiftSpeed2 = SlicerInfoSettings.LiftSpeed2 = (float)Math.Round(value, 2);
+        set => base.LiftSpeed2 = SlicerInfoSettings.LiftSpeed2 = MathF.Round(value, 2);
     }
 
     public override float WaitTimeAfterLift
@@ -970,7 +970,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         get => SlicerInfoSettings.RestTimeAfterLift;
         set
         {
-            base.WaitTimeAfterLift = SlicerInfoSettings.RestTimeAfterLift = SlicerInfoSettings.RestTimeAfterLift2 = (float)Math.Round(value, 2);
+            base.WaitTimeAfterLift = SlicerInfoSettings.RestTimeAfterLift = SlicerInfoSettings.RestTimeAfterLift2 = MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -982,7 +982,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
     public override float RetractSpeed
     {
         get => PrintParametersSettings.RetractSpeed;
-        set => base.RetractSpeed = PrintParametersSettings.RetractSpeed = (float)Math.Round(value, 2);
+        set => base.RetractSpeed = PrintParametersSettings.RetractSpeed = MathF.Round(value, 2);
     }
 
     public override float RetractHeight2
@@ -990,7 +990,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         get => SlicerInfoSettings.RetractHeight2;
         set
         {
-            value = Math.Clamp((float)Math.Round(value, 2), 0, RetractHeightTotal);
+            value = Math.Clamp(MathF.Round(value, 2), 0, RetractHeightTotal);
             base.RetractHeight2 = SlicerInfoSettings.RetractHeight2 = value;
         } 
     }
@@ -998,7 +998,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
     public override float RetractSpeed2
     {
         get => SlicerInfoSettings.RetractSpeed2;
-        set => base.RetractSpeed2 = SlicerInfoSettings.RetractSpeed2 = (float)Math.Round(value, 2);
+        set => base.RetractSpeed2 = SlicerInfoSettings.RetractSpeed2 = MathF.Round(value, 2);
     }
 
     public override byte BottomLightPWM
@@ -1036,13 +1036,13 @@ public sealed class CrealityCXDLPv4File : FileFormat
     public override float MaterialGrams
     {
         get => PrintParametersSettings.WeightG;
-        set => base.MaterialGrams = PrintParametersSettings.WeightG = (float)Math.Round(value, 3);
+        set => base.MaterialGrams = PrintParametersSettings.WeightG = MathF.Round(value, 3);
     }
 
     public override float MaterialCost
     {
-        get => (float) Math.Round(PrintParametersSettings.CostDollars, 3);
-        set => base.MaterialCost = PrintParametersSettings.CostDollars = (float) Math.Round(value, 3);
+        get => MathF.Round(PrintParametersSettings.CostDollars, 3);
+        set => base.MaterialCost = PrintParametersSettings.CostDollars = MathF.Round(value, 3);
     }
 
     public override string MachineName

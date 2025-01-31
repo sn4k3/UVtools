@@ -389,7 +389,7 @@ public sealed class CWSFile : FileFormat
     public override float MachineZ
     {
         get => OutputSettings.PlatformZSize > 0 ? OutputSettings.PlatformZSize : base.MachineZ;
-        set => base.MachineZ = OutputSettings.PlatformZSize = (float)Math.Round(value, 2);
+        set => base.MachineZ = OutputSettings.PlatformZSize = MathF.Round(value, 2);
     }
 
     public override FlipDirection DisplayMirror
@@ -490,13 +490,13 @@ public sealed class CWSFile : FileFormat
     public override float LiftHeight
     {
         get => OutputSettings.LiftDistance;
-        set => base.LiftHeight = OutputSettings.LiftDistance = SliceSettings.LiftDistance = (float)Math.Round(value, 2);
+        set => base.LiftHeight = OutputSettings.LiftDistance = SliceSettings.LiftDistance = MathF.Round(value, 2);
     }
 
     public override float BottomLiftSpeed
     {
         get => OutputSettings.ZBottomLiftFeedRate;
-        set => base.BottomLiftSpeed = OutputSettings.ZBottomLiftFeedRate = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed = OutputSettings.ZBottomLiftFeedRate = MathF.Round(value, 2);
     }
         
 
@@ -506,13 +506,13 @@ public sealed class CWSFile : FileFormat
         set =>
             base.LiftSpeed = 
                 OutputSettings.ZLiftFeedRate =
-                    SliceSettings.LiftUpSpeed = (float)Math.Round(value, 2);
+                    SliceSettings.LiftUpSpeed = MathF.Round(value, 2);
     }
 
     public override float RetractSpeed
     {
         get => OutputSettings.ZLiftRetractRate;
-        set => base.RetractSpeed = OutputSettings.ZLiftRetractRate = SliceSettings.LiftDownSpeed = (float)Math.Round(value, 2);
+        set => base.RetractSpeed = OutputSettings.ZLiftRetractRate = SliceSettings.LiftDownSpeed = MathF.Round(value, 2);
     }
 
     public override byte BottomLightPWM

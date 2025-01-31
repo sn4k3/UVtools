@@ -196,9 +196,7 @@ else # Linux
        -DBUILD_opencv_videoio:BOOL=FALSE \\\\\\
        -DBUILD_opencv_gapi:BOOL=FALSE \\\\\\
        -DWITH_PROTOBUF:BOOL=FALSE \\\\\\
-       -DBUILD_PROTOBUF:BOOL=FALSE \\\\\\
-       -DWITH_TBB:BOOL=TRUE \\\\\\
-       -DBUILD_TBB:BOOL=TRUE/g" "$directory/platforms/ubuntu/24.04/cmake_configure" 2>/dev/null
+       -DBUILD_PROTOBUF:BOOL=FALSE /g" "$directory/platforms/ubuntu/24.04/cmake_configure" 2>/dev/null
     fi
     "$directory/platforms/ubuntu/24.04/cmake_configure" $build_package
 fi

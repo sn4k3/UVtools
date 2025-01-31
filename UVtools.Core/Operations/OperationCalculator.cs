@@ -312,7 +312,7 @@ public class OperationCalculator : Operation
                 time += remainingRetractHeight / (retractSpeed / 60f);
             }
 
-            return (float)Math.Round(time, 2);
+            return MathF.Round(time, 2);
 
         }
 
@@ -331,8 +331,8 @@ public class OperationCalculator : Operation
         public static float CalculateSecondsLiftOnly(float liftHeight, float liftSpeed, float liftHeight2 = 0, float liftSpeed2 = 0, float extraWaitTime = 0)
         {
             var time = extraWaitTime;
-            if (liftHeight > 0 && liftSpeed > 0) time += (float)Math.Round(liftHeight / (liftSpeed / 60f) + extraWaitTime, 2);
-            if (liftHeight2 > 0 && liftSpeed2 > 0) time += (float)Math.Round(liftHeight2 / (liftSpeed2 / 60f) + extraWaitTime, 2);
+            if (liftHeight > 0 && liftSpeed > 0) time += MathF.Round(liftHeight / (liftSpeed / 60f) + extraWaitTime, 2);
+            if (liftHeight2 > 0 && liftSpeed2 > 0) time += MathF.Round(liftHeight2 / (liftSpeed2 / 60f) + extraWaitTime, 2);
             return time;
         }
 

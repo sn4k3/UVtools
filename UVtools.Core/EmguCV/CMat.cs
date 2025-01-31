@@ -142,7 +142,7 @@ public class CMat : IEquatable<CMat>
             var uncompressedLength = UncompressedLength;
             if (uncompressedLength == 0 || Length == uncompressedLength) return 1;
             if (Length == 0) return uncompressedLength;
-            return (float)Math.Round((float)uncompressedLength / Length, 2, MidpointRounding.AwayFromZero);
+            return MathF.Round((float)uncompressedLength / Length, 2, MidpointRounding.AwayFromZero);
         }
     }
 
@@ -156,7 +156,7 @@ public class CMat : IEquatable<CMat>
             var uncompressedLength = UncompressedLength;
             if (uncompressedLength == 0 || Length == uncompressedLength) return 0;
             if (Length == 0) return 100f;
-            return (float)Math.Round(100 - (Length * 100f / uncompressedLength), 2, MidpointRounding.AwayFromZero);
+            return MathF.Round(100 - (Length * 100f / uncompressedLength), 2, MidpointRounding.AwayFromZero);
         }
     }
 
@@ -170,7 +170,7 @@ public class CMat : IEquatable<CMat>
             var uncompressedLength = UncompressedLength;
             if (uncompressedLength == 0) return 0;
             if (Length == 0) return uncompressedLength;
-            return (float)Math.Round(uncompressedLength * 100f / Length, 2, MidpointRounding.AwayFromZero);
+            return MathF.Round(uncompressedLength * 100f / Length, 2, MidpointRounding.AwayFromZero);
         }
     }
 

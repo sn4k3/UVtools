@@ -853,13 +853,13 @@ public sealed class AnycubicZipFile : FileFormat
                 SceneSettings.LayersDef[layerIndex] = new SceneLayerDef
                 {
                     Height = this[layerIndex].PositionZ,
-                    Area = (float)Math.Round(layer.Contours.TotalSolidArea * pixelArea, 4),
-                    XStartBoundingRectangleOffsetFromCenter = (float)Math.Round(rect.X, 4),
-                    YStartBoundingRectangleOffsetFromCenter = (float)Math.Round(rect.Y, 4),
-                    XEndBoundingRectangleOffsetFromCenter = (float)Math.Round(rect.Right, 4),
-                    YEndBoundingRectangleOffsetFromCenter = (float)Math.Round(rect.Bottom, 4),
+                    Area = MathF.Round((float)layer.Contours.TotalSolidArea * pixelArea, 4, MidpointRounding.AwayFromZero),
+                    XStartBoundingRectangleOffsetFromCenter = MathF.Round(rect.X, 4, MidpointRounding.AwayFromZero),
+                    YStartBoundingRectangleOffsetFromCenter = MathF.Round(rect.Y, 4, MidpointRounding.AwayFromZero),
+                    XEndBoundingRectangleOffsetFromCenter = MathF.Round(rect.Right, 4, MidpointRounding.AwayFromZero),
+                    YEndBoundingRectangleOffsetFromCenter = MathF.Round(rect.Bottom, 4, MidpointRounding.AwayFromZero),
                     ObjectCount = (uint)layer.Contours.ExternalContoursCount,
-                    MaxContourArea = (float)Math.Round(layer.Contours.MaxSolidArea * pixelArea, 4)
+                    MaxContourArea = MathF.Round((float)layer.Contours.MaxSolidArea * pixelArea, 4, MidpointRounding.AwayFromZero)
                 };
 
                 encodedRle[layerIndex] = EncodeLayerRle(encodeWith, (uint)layerIndex);
@@ -981,8 +981,8 @@ public sealed class AnycubicZipFile : FileFormat
             {
                 Index = layerIndex,
                 PositionZ = Layer.RoundHeight(positionZ),
-                ExposureTime = (float)Math.Round(LayersSettings.Layers[layerIndex].ExposureTime, 2, MidpointRounding.AwayFromZero),
-                LiftHeight = (float)Math.Round(LayersSettings.Layers[layerIndex].LiftHeight, 2, MidpointRounding.AwayFromZero),
+                ExposureTime = MathF.Round(LayersSettings.Layers[layerIndex].ExposureTime, 2, MidpointRounding.AwayFromZero),
+                LiftHeight = MathF.Round(LayersSettings.Layers[layerIndex].LiftHeight, 2, MidpointRounding.AwayFromZero),
                 LiftSpeed = SpeedConverter.Convert(LayersSettings.Layers[layerIndex].LiftSpeed, FormatSpeedUnit, CoreSpeedUnit)
             };
         }

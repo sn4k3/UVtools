@@ -417,7 +417,7 @@ public partial class ToolScriptingControl : ToolControl
                     valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
                     {
                         if(!value.HasValue) return;
-                        numFLOAT.Value = (float)Math.Round((float)value, numFLOAT.DecimalPlates);
+                        numFLOAT.Value = MathF.Round((float)value, numFLOAT.DecimalPlates);
                         control.Value = (decimal)numFLOAT.Value;
                     }));
 

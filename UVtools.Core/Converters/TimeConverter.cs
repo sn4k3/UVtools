@@ -19,7 +19,7 @@ public static class TimeConverter
     /// <param name="value"></param>
     /// <param name="rounding"></param>
     /// <returns></returns>
-    public static float SecondsToMilliseconds(float value, byte rounding = 2) => (float)Math.Round(value * 1000f, rounding);
+    public static float SecondsToMilliseconds(float value, byte rounding = 2) => MathF.Round(value * 1000f, rounding);
 
     /// <summary>
     /// Converts seconds to milliseconds
@@ -34,5 +34,5 @@ public static class TimeConverter
     /// <param name="value"></param>
     /// <param name="rounding"></param>
     /// <returns></returns>
-    public static float MillisecondsToSeconds(float value, byte rounding = 2) => (float)Math.Round(value / 1000f, rounding);
+    public static float MillisecondsToSeconds(float value, byte rounding = 2) => MathF.Round(value / 1000f, rounding);
 }

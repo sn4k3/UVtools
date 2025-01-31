@@ -311,7 +311,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
     public override float MachineZ 
     {
         get => SVGDocument.PrintParameters.MachineZ > 0 ? SVGDocument.PrintParameters.MachineZ : base.MachineZ;
-        set => base.MachineZ = SVGDocument.PrintParameters.MachineZ = (float)Math.Round(value, 2);
+        set => base.MachineZ = SVGDocument.PrintParameters.MachineZ = MathF.Round(value, 2);
     }
 
     public override float LayerHeight
@@ -341,38 +341,38 @@ public sealed class FlashForgeSVGXFile : FileFormat
     public override float BottomExposureTime
     {
         get => SVGDocument.PrintParameters.ProjectionTime.BottomExposureTime;
-        set => base.BottomExposureTime = SVGDocument.PrintParameters.ProjectionTime.BottomExposureTime = (float)Math.Round(value, 2);
+        set => base.BottomExposureTime = SVGDocument.PrintParameters.ProjectionTime.BottomExposureTime = MathF.Round(value, 2);
     }
 
 
     public override float ExposureTime
     {
         get => SVGDocument.PrintParameters.ProjectionTime.ExposureTime;
-        set => base.ExposureTime = SVGDocument.PrintParameters.ProjectionTime.ExposureTime = (float)Math.Round(value, 2);
+        set => base.ExposureTime = SVGDocument.PrintParameters.ProjectionTime.ExposureTime = MathF.Round(value, 2);
     }
 
     /*public override float BottomLiftHeight
     {
         get => HeaderSettings.BottomLiftHeight;
-        set => base.BottomLiftHeight = HeaderSettings.BottomLiftHeight = (float)Math.Round(value, 2);
+        set => base.BottomLiftHeight = HeaderSettings.BottomLiftHeight = MathF.Round(value, 2);
     }
 
     public override float LiftHeight
     {
         get => HeaderSettings.LiftHeight;
-        set => base.LiftHeight = HeaderSettings.LiftHeight = (float)Math.Round(value, 2);
+        set => base.LiftHeight = HeaderSettings.LiftHeight = MathF.Round(value, 2);
     }
 
     public override float BottomLiftSpeed
     {
         get => HeaderSettings.BottomLiftSpeed;
-        set => base.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed = MathF.Round(value, 2);
     }
 
     public override float LiftSpeed
     {
         get => HeaderSettings.LiftSpeed;
-        set => base.LiftSpeed = HeaderSettings.LiftSpeed = (float)Math.Round(value, 2);
+        set => base.LiftSpeed = HeaderSettings.LiftSpeed = MathF.Round(value, 2);
     }
 
     public override float BottomRetractSpeed => RetractSpeed;
@@ -380,7 +380,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
     public override float RetractSpeed
     {
         get => HeaderSettings.RetractSpeed;
-        set => base.RetractSpeed = HeaderSettings.RetractSpeed = (float)Math.Round(value, 2);
+        set => base.RetractSpeed = HeaderSettings.RetractSpeed = MathF.Round(value, 2);
     }
 
     public override byte BottomLightPWM
@@ -519,8 +519,8 @@ public sealed class FlashForgeSVGXFile : FileFormat
                     path.Append(' ');
                 }
 
-                var mmX = (float)Math.Round(contours[i][0].X / ppmm.Width - halfDisplay.Width, 3);
-                var mmY = (float)Math.Round(contours[i][0].Y / ppmm.Height - halfDisplay.Height, 3);
+                var mmX = MathF.Round(contours[i][0].X / ppmm.Width - halfDisplay.Width, 3);
+                var mmY = MathF.Round(contours[i][0].Y / ppmm.Height - halfDisplay.Height, 3);
 
                 minx = Math.Min(minx, mmX);
                 miny = Math.Min(miny, mmY);
@@ -530,8 +530,8 @@ public sealed class FlashForgeSVGXFile : FileFormat
                 path.Append($"M {mmX} {mmY} L");
                 for (int x = 1; x < contours[i].Size; x++)
                 {
-                    mmX = (float)Math.Round(contours[i][x].X / ppmm.Width - halfDisplay.Width, 3);
-                    mmY = (float)Math.Round(contours[i][x].Y / ppmm.Height - halfDisplay.Height, 3);
+                    mmX = MathF.Round(contours[i][x].X / ppmm.Width - halfDisplay.Width, 3);
+                    mmY = MathF.Round(contours[i][x].Y / ppmm.Height - halfDisplay.Height, 3);
                     path.Append($" {mmX} {mmY}");
 
                     minx = Math.Min(minx, mmX);

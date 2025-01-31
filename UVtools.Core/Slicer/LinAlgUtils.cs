@@ -84,7 +84,7 @@ public static class LinAlgUtils
         var slope = (p1.Y - p2.Y) / (p1.X - p2.X);
         var intercept = p1.Y - (slope * p1.X);
         var rawVal = slope * z + intercept;
-        return (float)Math.Round(rawVal, precision);
+        return MathF.Round(rawVal, precision);
         // using floats we end up with some infinitesimal rounding errors, 
         // so we need to set the precision to something reasonable. Default is 1/100th of a micron
         // I'm sure there's a better way than converting it to a string and then back to a float,

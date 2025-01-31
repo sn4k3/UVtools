@@ -305,14 +305,14 @@ public class OperationPCBExposure : Operation
 
     public void Sort() => _files.Sort();
 
-    public Mat GetMat(PCBExposureFile file)
+    public Mat GetMat(PCBExposureFile file, bool canMirror = true)
     {
         var mat = SlicerFile.CreateMat();
-        DrawMat(file, mat);
+        DrawMat(file, mat, canMirror);
         return mat;
     }
 
-    public void DrawMat(PCBExposureFile file, Mat mat)
+    public void DrawMat(PCBExposureFile file, Mat mat, bool canMirror = true)
     {
         if (!file.Exists) return;
 
@@ -331,7 +331,7 @@ public class OperationPCBExposure : Operation
         var cropped = mat.CropByBounds();
 
         if (_invertColor) CvInvoke.BitwiseNot(cropped, cropped);
-        if (_mirror)
+        if (_mirror && canMirror)
         {
             var flip = SlicerFile.DisplayMirror;
             if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
@@ -353,36 +353,13 @@ public class OperationPCBExposure : Operation
 
         for (var i = 0; i < orderFiles.Length; i++)
         {
-            /*using var mat = GetMat(file);
-
-            if (mergeMat is null)
-            {
-                mergeMat = mat.Clone();
-            }
-            else
-            {
-                CvInvoke.Max(mergeMat, mat, mergeMat);
-            }*/
-
-            DrawMat(orderFiles[i], mergeMat);
-
+            DrawMat(orderFiles[i], mergeMat, false);
             if (!_mergeFiles)
             {
-                if (i == 0)
+                using var mat = GetMat(orderFiles[i]);
+                if (CvInvoke.HasNonZero(mat))
                 {
-                    if (CvInvoke.HasNonZero(mergeMat))
-                    {
-                        layers.Add(new Layer(mergeMat, SlicerFile));
-                    }
-                }
-                else
-                {
-                    using var mat = SlicerFile.CreateMat();
-                    DrawMat(orderFiles[i], mat);
-                    if (CvInvoke.HasNonZero(mat))
-                    {
-                        layers.Add(new Layer(mat, SlicerFile));
-                    }
+                    layers.Add(new Layer(mat, SlicerFile));
                 }
             }
 
@@ -393,6 +370,12 @@ public class OperationPCBExposure : Operation
         {
             if (CvInvoke.HasNonZero(mergeMat))
             {
+                if (_mirror)
+                {
+                    var flip = SlicerFile.DisplayMirror;
+                    if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
+                    CvInvoke.Flip(mergeMat, mergeMat, (FlipType)flip);
+                }
                 layers.Add(new Layer(mergeMat, SlicerFile));
             }
         }
@@ -443,12 +426,6 @@ public class OperationPCBExposure : Operation
         }
 
         using var croppedMat = mergeMat.CropByBounds(20);
-        /*if (_mirror)
-        {
-            var flip = SlicerFile.DisplayMirror;
-            if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
-            CvInvoke.Flip(croppedMat, croppedMat, (FlipType)flip);
-        }*/
         using var bgrMat = new Mat();
         CvInvoke.CvtColor(croppedMat, bgrMat, ColorConversion.Gray2Bgr);
         SlicerFile.SetThumbnails(bgrMat);

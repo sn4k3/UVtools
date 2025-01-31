@@ -241,25 +241,25 @@ public sealed class JXSFile : FileFormat
     public override float BottomLiftHeight
     {
         get => ConfigFile.LiftHeight1;
-        set => base.BottomLiftHeight = (float)Math.Round(value, 2);
+        set => base.BottomLiftHeight = MathF.Round(value, 2);
     }
 
     public override float LiftHeight
     {
         get => ConfigFile.LiftHeight1;
-        set => base.LiftHeight = ConfigFile.LiftHeight1 = (float)Math.Round(value, 2);
+        set => base.LiftHeight = ConfigFile.LiftHeight1 = MathF.Round(value, 2);
     }
 
     public override float BottomLiftSpeed
     {
         get => ConfigFile.BottomLiftSpeed;
-        set => base.BottomLiftSpeed = ConfigFile.BottomLiftSpeed = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed = ConfigFile.BottomLiftSpeed = MathF.Round(value, 2);
     }
 
     public override float LiftSpeed
     {
         get => ConfigFile.LiftSpeed1;
-        set => base.LiftSpeed = ConfigFile.LiftSpeed1 = (float)Math.Round(value, 2);
+        set => base.LiftSpeed = ConfigFile.LiftSpeed1 = MathF.Round(value, 2);
     }
 
     public override float PrintTime

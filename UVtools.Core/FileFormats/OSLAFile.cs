@@ -345,7 +345,7 @@ public sealed class OSLAFile : FileFormat
         get => HeaderSettings.MachineZ > 0 ? HeaderSettings.MachineZ : base.MachineZ;
         set
         {
-            HeaderSettings.MachineZ = (float)Math.Round(value, 2);
+            HeaderSettings.MachineZ = MathF.Round(value, 2);
             RaisePropertyChanged();
         }
     }
@@ -400,8 +400,8 @@ public sealed class OSLAFile : FileFormat
 
     public override float MaterialCost
     {
-        get => (float) Math.Round(HeaderSettings.MaterialCost, 3);
-        set => base.MaterialCost = HeaderSettings.MaterialCost = (float)Math.Round(value, 3);
+        get => MathF.Round(HeaderSettings.MaterialCost, 3);
+        set => base.MaterialCost = HeaderSettings.MaterialCost = MathF.Round(value, 3);
     }
 
     public override string? MaterialName

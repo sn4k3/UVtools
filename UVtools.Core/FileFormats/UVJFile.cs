@@ -311,7 +311,7 @@ public sealed class UVJFile : FileFormat
         get => JsonSettings.Properties.Bottom.LightOffTime;
         set
         {
-            base.BottomLightOffDelay = JsonSettings.Properties.Bottom.LightOffTime = (float)Math.Round(value, 2);
+            base.BottomLightOffDelay = JsonSettings.Properties.Bottom.LightOffTime = MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomWaitTimeBeforeCure = 0;
@@ -326,7 +326,7 @@ public sealed class UVJFile : FileFormat
         get => JsonSettings.Properties.Exposure.LightOffTime;
         set
         {
-            base.LightOffDelay = JsonSettings.Properties.Exposure.LightOffTime = (float)Math.Round(value, 2);
+            base.LightOffDelay = JsonSettings.Properties.Exposure.LightOffTime = MathF.Round(value, 2);
             if (value > 0)
             {
                 WaitTimeBeforeCure = 0;
@@ -341,7 +341,7 @@ public sealed class UVJFile : FileFormat
         get => base.BottomWaitTimeBeforeCure;
         set
         {
-            base.BottomWaitTimeBeforeCure = JsonSettings.Properties.Bottom.WaitTimeBeforeCure = (float)Math.Round(value, 2);
+            base.BottomWaitTimeBeforeCure = JsonSettings.Properties.Bottom.WaitTimeBeforeCure = MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -355,7 +355,7 @@ public sealed class UVJFile : FileFormat
         get => base.WaitTimeBeforeCure;
         set
         {
-            base.WaitTimeBeforeCure = JsonSettings.Properties.Exposure.WaitTimeBeforeCure = (float)Math.Round(value, 2);
+            base.WaitTimeBeforeCure = JsonSettings.Properties.Exposure.WaitTimeBeforeCure = MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -367,13 +367,13 @@ public sealed class UVJFile : FileFormat
     public override float BottomExposureTime
     {
         get => JsonSettings.Properties.Bottom.LightOnTime;
-        set => base.BottomExposureTime = JsonSettings.Properties.Bottom.LightOnTime = (float)Math.Round(value, 2);
+        set => base.BottomExposureTime = JsonSettings.Properties.Bottom.LightOnTime = MathF.Round(value, 2);
     }
 
     public override float ExposureTime
     {
         get => JsonSettings.Properties.Exposure.LightOnTime;
-        set => base.ExposureTime = JsonSettings.Properties.Exposure.LightOnTime = (float)Math.Round(value, 2);
+        set => base.ExposureTime = JsonSettings.Properties.Exposure.LightOnTime = MathF.Round(value, 2);
     }
 
     public override float BottomWaitTimeAfterCure
@@ -381,7 +381,7 @@ public sealed class UVJFile : FileFormat
         get => base.BottomWaitTimeAfterCure;
         set
         {
-            base.BottomWaitTimeAfterCure = JsonSettings.Properties.Bottom.WaitTimeAfterCure = (float)Math.Round(value, 2);
+            base.BottomWaitTimeAfterCure = JsonSettings.Properties.Bottom.WaitTimeAfterCure = MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -395,7 +395,7 @@ public sealed class UVJFile : FileFormat
         get => base.WaitTimeAfterCure;
         set
         {
-            base.WaitTimeAfterCure = JsonSettings.Properties.Exposure.WaitTimeAfterCure = (float)Math.Round(value, 2);
+            base.WaitTimeAfterCure = JsonSettings.Properties.Exposure.WaitTimeAfterCure = MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -407,37 +407,37 @@ public sealed class UVJFile : FileFormat
     public override float BottomLiftHeight
     {
         get => JsonSettings.Properties.Bottom.LiftHeight;
-        set => base.BottomLiftHeight = JsonSettings.Properties.Bottom.LiftHeight = (float)Math.Round(value, 2);
+        set => base.BottomLiftHeight = JsonSettings.Properties.Bottom.LiftHeight = MathF.Round(value, 2);
     }
 
     public override float BottomLiftSpeed
     {
         get => JsonSettings.Properties.Bottom.LiftSpeed;
-        set => base.BottomLiftSpeed = JsonSettings.Properties.Bottom.LiftSpeed = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed = JsonSettings.Properties.Bottom.LiftSpeed = MathF.Round(value, 2);
     }
 
     public override float LiftHeight
     {
         get => JsonSettings.Properties.Exposure.LiftHeight;
-        set => base.LiftHeight = JsonSettings.Properties.Exposure.LiftHeight = (float)Math.Round(value, 2);
+        set => base.LiftHeight = JsonSettings.Properties.Exposure.LiftHeight = MathF.Round(value, 2);
     }
 
     public override float LiftSpeed
     {
         get => JsonSettings.Properties.Exposure.LiftSpeed;
-        set => base.LiftSpeed = JsonSettings.Properties.Exposure.LiftSpeed = (float)Math.Round(value, 2);
+        set => base.LiftSpeed = JsonSettings.Properties.Exposure.LiftSpeed = MathF.Round(value, 2);
     }
 
     public override float BottomLiftHeight2
     {
         get => JsonSettings.Properties.Bottom.LiftHeight2;
-        set => base.BottomLiftHeight2 = JsonSettings.Properties.Bottom.LiftHeight2 = (float)Math.Round(value, 2);
+        set => base.BottomLiftHeight2 = JsonSettings.Properties.Bottom.LiftHeight2 = MathF.Round(value, 2);
     }
 
     public override float BottomLiftSpeed2
     {
         get => JsonSettings.Properties.Bottom.LiftSpeed2;
-        set => base.BottomLiftSpeed2 = JsonSettings.Properties.Bottom.LiftSpeed2 = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed2 = JsonSettings.Properties.Bottom.LiftSpeed2 = MathF.Round(value, 2);
     }
 
     public override float BottomWaitTimeAfterLift
@@ -445,7 +445,7 @@ public sealed class UVJFile : FileFormat
         get => base.BottomWaitTimeAfterLift;
         set
         {
-            base.BottomWaitTimeAfterLift = JsonSettings.Properties.Bottom.WaitTimeAfterLift = (float)Math.Round(value, 2);
+            base.BottomWaitTimeAfterLift = JsonSettings.Properties.Bottom.WaitTimeAfterLift = MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -459,7 +459,7 @@ public sealed class UVJFile : FileFormat
         get => base.WaitTimeAfterLift;
         set
         {
-            base.WaitTimeAfterLift = JsonSettings.Properties.Exposure.WaitTimeAfterLift = (float)Math.Round(value, 2);
+            base.WaitTimeAfterLift = JsonSettings.Properties.Exposure.WaitTimeAfterLift = MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -471,49 +471,49 @@ public sealed class UVJFile : FileFormat
     public override float LiftHeight2
     {
         get => JsonSettings.Properties.Exposure.LiftHeight2;
-        set => base.LiftHeight2 = JsonSettings.Properties.Exposure.LiftHeight2 = (float)Math.Round(value, 2);
+        set => base.LiftHeight2 = JsonSettings.Properties.Exposure.LiftHeight2 = MathF.Round(value, 2);
     }
 
     public override float LiftSpeed2
     {
         get => JsonSettings.Properties.Exposure.LiftSpeed2;
-        set => base.LiftSpeed2 = JsonSettings.Properties.Exposure.LiftSpeed2 = (float)Math.Round(value, 2);
+        set => base.LiftSpeed2 = JsonSettings.Properties.Exposure.LiftSpeed2 = MathF.Round(value, 2);
     }
 
     public override float BottomRetractSpeed
     {
         get => JsonSettings.Properties.Bottom.RetractSpeed;
-        set => base.BottomRetractSpeed = JsonSettings.Properties.Bottom.RetractSpeed = (float)Math.Round(value, 2);
+        set => base.BottomRetractSpeed = JsonSettings.Properties.Bottom.RetractSpeed = MathF.Round(value, 2);
     }
 
     public override float RetractSpeed
     {
         get => JsonSettings.Properties.Exposure.RetractSpeed;
-        set => base.RetractSpeed = JsonSettings.Properties.Exposure.RetractSpeed = (float)Math.Round(value, 2);
+        set => base.RetractSpeed = JsonSettings.Properties.Exposure.RetractSpeed = MathF.Round(value, 2);
     }
 
     public override float BottomRetractHeight2
     {
         get => JsonSettings.Properties.Bottom.RetractHeight2;
-        set => base.BottomRetractHeight2 = JsonSettings.Properties.Bottom.RetractHeight2 = (float)Math.Round(value, 2);
+        set => base.BottomRetractHeight2 = JsonSettings.Properties.Bottom.RetractHeight2 = MathF.Round(value, 2);
     }
 
     public override float BottomRetractSpeed2
     {
         get => JsonSettings.Properties.Bottom.RetractSpeed2;
-        set => base.BottomRetractSpeed2 = JsonSettings.Properties.Bottom.RetractSpeed2 = (float)Math.Round(value, 2);
+        set => base.BottomRetractSpeed2 = JsonSettings.Properties.Bottom.RetractSpeed2 = MathF.Round(value, 2);
     }
 
     public override float RetractHeight2
     {
         get => JsonSettings.Properties.Exposure.RetractHeight2;
-        set => base.RetractHeight2 = JsonSettings.Properties.Exposure.RetractHeight2 = (float)Math.Round(value, 2);
+        set => base.RetractHeight2 = JsonSettings.Properties.Exposure.RetractHeight2 = MathF.Round(value, 2);
     }
 
     public override float RetractSpeed2
     {
         get => JsonSettings.Properties.Exposure.RetractSpeed2;
-        set => base.RetractSpeed2 = JsonSettings.Properties.Exposure.RetractSpeed2 = (float)Math.Round(value, 2);
+        set => base.RetractSpeed2 = JsonSettings.Properties.Exposure.RetractSpeed2 = MathF.Round(value, 2);
     }
 
 

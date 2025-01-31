@@ -154,8 +154,8 @@ public static class ReflectionExtensions
             var match = Regex.Match(value, string.Format("X={0},\\s?Y={0}", "([+-]?([0-9]*[.])?[0-9]+)"));
             if (match is { Success: true, Groups.Count: >= 3 })
             {
-                if (float.TryParse(match.Groups[1].Value, out var x)
-                    && float.TryParse(match.Groups[2].Value, out var y)
+                if (float.TryParse(match.Groups[1].Value, CultureInfo.InvariantCulture, out var x)
+                    && float.TryParse(match.Groups[2].Value, CultureInfo.InvariantCulture, out var y)
                    )
                 {
                     attribute.SetValue(obj, new PointF(x, y));
@@ -171,8 +171,8 @@ public static class ReflectionExtensions
             var match = Regex.Match(value, string.Format("Width={0},\\s?Height={0}", @"(\d+)"));
             if (match is { Success: true, Groups.Count: >= 3 })
             {
-                if (int.TryParse(match.Groups[1].Value, out var width)
-                    && int.TryParse(match.Groups[2].Value, out var height)
+                if (int.TryParse(match.Groups[1].Value, CultureInfo.InvariantCulture, out var width)
+                    && int.TryParse(match.Groups[2].Value, CultureInfo.InvariantCulture, out var height)
                    )
                 {
                     attribute.SetValue(obj, new Size(width, height));
@@ -188,8 +188,8 @@ public static class ReflectionExtensions
             var match = Regex.Match(value, string.Format("Width={0},\\s?Height={0}", "([+-]?([0-9]*[.])?[0-9]+)"));
             if (match is { Success: true, Groups.Count: >= 3 })
             {
-                if (float.TryParse(match.Groups[1].Value, out var width)
-                    && float.TryParse(match.Groups[2].Value, out var height)
+                if (float.TryParse(match.Groups[1].Value, CultureInfo.InvariantCulture, out var width)
+                    && float.TryParse(match.Groups[2].Value, CultureInfo.InvariantCulture, out var height)
                    )
                 {
                     attribute.SetValue(obj, new SizeF(width, height));
@@ -224,10 +224,10 @@ public static class ReflectionExtensions
             var match = Regex.Match(value, string.Format("X={0},\\s?Y={0},\\s?Width={0},\\s?Height={0}", "([+-]?([0-9]*[.])?[0-9]+)"));
             if (match is { Success: true, Groups.Count: >= 5 })
             {
-                if (float.TryParse(match.Groups[1].Value, out var x)
-                    && float.TryParse(match.Groups[2].Value, out var y)
-                    && float.TryParse(match.Groups[3].Value, out var width)
-                    && float.TryParse(match.Groups[4].Value, out var height)
+                if (float.TryParse(match.Groups[1].Value, CultureInfo.InvariantCulture, out var x)
+                    && float.TryParse(match.Groups[2].Value, CultureInfo.InvariantCulture, out var y)
+                    && float.TryParse(match.Groups[3].Value, CultureInfo.InvariantCulture, out var width)
+                    && float.TryParse(match.Groups[4].Value, CultureInfo.InvariantCulture, out var height)
                    )
                 {
                     attribute.SetValue(obj, new RectangleF(x, y, width, height));

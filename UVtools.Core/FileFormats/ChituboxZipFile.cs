@@ -169,7 +169,7 @@ public sealed class ChituboxZipFile : FileFormat
     public override float MachineZ
     {
         get => HeaderSettings.MachineZ > 0 ? HeaderSettings.MachineZ : base.MachineZ;
-        set => base.MachineZ = HeaderSettings.MachineZ = (float)Math.Round(value, 2);
+        set => base.MachineZ = HeaderSettings.MachineZ = MathF.Round(value, 2);
     }
 
     public override FlipDirection DisplayMirror
@@ -222,55 +222,55 @@ public sealed class ChituboxZipFile : FileFormat
     public override float BottomWaitTimeBeforeCure
     {
         get => HeaderSettings.BottomLightOffDelay;
-        set => base.BottomWaitTimeBeforeCure = HeaderSettings.BottomLightOffDelay = (float)Math.Round(value, 2);
+        set => base.BottomWaitTimeBeforeCure = HeaderSettings.BottomLightOffDelay = MathF.Round(value, 2);
     }
 
     public override float WaitTimeBeforeCure
     {
         get => HeaderSettings.LightOffDelay;
-        set => base.WaitTimeBeforeCure = HeaderSettings.LightOffDelay = (float)Math.Round(value, 2);
+        set => base.WaitTimeBeforeCure = HeaderSettings.LightOffDelay = MathF.Round(value, 2);
     }
 
     public override float BottomExposureTime
     {
         get => HeaderSettings.BottomExposureTime;
-        set => base.BottomExposureTime = HeaderSettings.BottomExposureTime = HeaderSettings.BottomLayExposureTime = (float)Math.Round(value, 2);
+        set => base.BottomExposureTime = HeaderSettings.BottomExposureTime = HeaderSettings.BottomLayExposureTime = MathF.Round(value, 2);
     }
 
     public override float ExposureTime
     {
         get => HeaderSettings.ExposureTime;
-        set => base.ExposureTime = HeaderSettings.ExposureTime = (float)Math.Round(value, 2);
+        set => base.ExposureTime = HeaderSettings.ExposureTime = MathF.Round(value, 2);
     }
 
     public override float BottomLiftHeight
     {
         get => HeaderSettings.BottomLiftHeight;
-        set => base.BottomLiftHeight = HeaderSettings.BottomLiftHeight = (float)Math.Round(value, 2);
+        set => base.BottomLiftHeight = HeaderSettings.BottomLiftHeight = MathF.Round(value, 2);
     }
 
     public override float LiftHeight
     {
         get => HeaderSettings.LiftHeight;
-        set => base.LiftHeight = HeaderSettings.LiftHeight = (float)Math.Round(value, 2);
+        set => base.LiftHeight = HeaderSettings.LiftHeight = MathF.Round(value, 2);
     }
 
     public override float BottomLiftSpeed
     {
         get => HeaderSettings.BottomLiftSpeed;
-        set => base.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed = (float)Math.Round(value, 2);
+        set => base.BottomLiftSpeed = HeaderSettings.BottomLiftSpeed = MathF.Round(value, 2);
     }
 
     public override float LiftSpeed
     {
         get => HeaderSettings.LiftSpeed;
-        set => base.LiftSpeed = HeaderSettings.LiftSpeed = (float)Math.Round(value, 2);
+        set => base.LiftSpeed = HeaderSettings.LiftSpeed = MathF.Round(value, 2);
     }
 
     public override float RetractSpeed
     {
         get => HeaderSettings.RetractSpeed;
-        set => base.RetractSpeed = HeaderSettings.RetractSpeed = (float)Math.Round(value, 2);
+        set => base.RetractSpeed = HeaderSettings.RetractSpeed = MathF.Round(value, 2);
     }
 
     public override byte BottomLightPWM
@@ -307,20 +307,20 @@ public sealed class ChituboxZipFile : FileFormat
 
     public override float MaterialGrams
     {
-        get => (float) Math.Round(HeaderSettings.WeightG, 3);
+        get => MathF.Round(HeaderSettings.WeightG, 3);
         set
         {
-            HeaderSettings.WeightG = (float)Math.Round(value, 3);
+            HeaderSettings.WeightG = MathF.Round(value, 3);
             RaisePropertyChanged();
         }
     }
 
     public override float MaterialCost
     {
-        get => (float) Math.Round(HeaderSettings.Price, 3);
+        get => MathF.Round(HeaderSettings.Price, 3);
         set
         {
-            HeaderSettings.Price = (float)Math.Round(value, 3);
+            HeaderSettings.Price = MathF.Round(value, 3);
             RaisePropertyChanged();
         }
     }

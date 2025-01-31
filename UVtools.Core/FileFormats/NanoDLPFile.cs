@@ -535,7 +535,7 @@ public sealed class NanoDLPFile : FileFormat
         set
         {
             base.DisplayWidth = RoundDisplaySize(value);
-            SlicerManifest.XPixelSize = value > 0 && ResolutionX > 0 ? (float)Math.Round(value / ResolutionX, 4) : 0;
+            SlicerManifest.XPixelSize = value > 0 && ResolutionX > 0 ? MathF.Round(value / ResolutionX, 4) : 0;
         }
     }
 
@@ -545,7 +545,7 @@ public sealed class NanoDLPFile : FileFormat
         set
         {
             base.DisplayHeight = RoundDisplaySize(value);
-            SlicerManifest.YPixelSize = value > 0 && ResolutionY > 0 ? (float)Math.Round(value / ResolutionY, 4) : 0;
+            SlicerManifest.YPixelSize = value > 0 && ResolutionY > 0 ? MathF.Round(value / ResolutionY, 4) : 0;
         }
     }
 
@@ -640,11 +640,11 @@ public sealed class NanoDLPFile : FileFormat
         {
             if (OverrideManifest is not null)
             {
-                base.BottomWaitTimeBeforeCure = OverrideManifest.SupportWaitBeforePrint = (float)Math.Round(value, 2);
+                base.BottomWaitTimeBeforeCure = OverrideManifest.SupportWaitBeforePrint = MathF.Round(value, 2);
             }
             else
             {
-                base.BottomWaitTimeBeforeCure = ProfileManifest.SupportWaitBeforePrint = (float)Math.Round(value, 2);
+                base.BottomWaitTimeBeforeCure = ProfileManifest.SupportWaitBeforePrint = MathF.Round(value, 2);
             }
         }
     }
@@ -656,11 +656,11 @@ public sealed class NanoDLPFile : FileFormat
         {
             if (OverrideManifest is not null)
             {
-                base.WaitTimeBeforeCure = OverrideManifest.WaitBeforePrint = (float)Math.Round(value, 2);
+                base.WaitTimeBeforeCure = OverrideManifest.WaitBeforePrint = MathF.Round(value, 2);
             }
             else
             {
-                base.WaitTimeBeforeCure = ProfileManifest.WaitBeforePrint = (float)Math.Round(value, 2);
+                base.WaitTimeBeforeCure = ProfileManifest.WaitBeforePrint = MathF.Round(value, 2);
             }
         }
     }
@@ -672,11 +672,11 @@ public sealed class NanoDLPFile : FileFormat
         {
             if (OverrideManifest is not null)
             {
-                base.BottomExposureTime = OverrideManifest.SupportCureTime = (float)Math.Round(value, 2);
+                base.BottomExposureTime = OverrideManifest.SupportCureTime = MathF.Round(value, 2);
             }
             else
             {
-                base.BottomExposureTime = ProfileManifest.SupportCureTime = (float)Math.Round(value, 2);
+                base.BottomExposureTime = ProfileManifest.SupportCureTime = MathF.Round(value, 2);
             }
         }
     }
@@ -688,11 +688,11 @@ public sealed class NanoDLPFile : FileFormat
         {
             if (OverrideManifest is not null)
             {
-                base.BottomWaitTimeAfterCure = OverrideManifest.SupportWaitAfterPrint = (float)Math.Round(value, 2);
+                base.BottomWaitTimeAfterCure = OverrideManifest.SupportWaitAfterPrint = MathF.Round(value, 2);
             }
             else
             {
-                base.BottomWaitTimeAfterCure = ProfileManifest.SupportWaitAfterPrint = (float)Math.Round(value, 2);
+                base.BottomWaitTimeAfterCure = ProfileManifest.SupportWaitAfterPrint = MathF.Round(value, 2);
             }
         }
     }
@@ -704,11 +704,11 @@ public sealed class NanoDLPFile : FileFormat
         {
             if (OverrideManifest is not null)
             {
-                base.WaitTimeAfterCure = OverrideManifest.WaitAfterPrint = (float)Math.Round(value, 2);
+                base.WaitTimeAfterCure = OverrideManifest.WaitAfterPrint = MathF.Round(value, 2);
             }
             else
             {
-                base.WaitTimeAfterCure = ProfileManifest.WaitAfterPrint = (float)Math.Round(value, 2);
+                base.WaitTimeAfterCure = ProfileManifest.WaitAfterPrint = MathF.Round(value, 2);
             }
         }
     }
@@ -720,11 +720,11 @@ public sealed class NanoDLPFile : FileFormat
         {
             if (OverrideManifest is not null)
             {
-                base.ExposureTime = OverrideManifest.CureTime = (float)Math.Round(value, 2);
+                base.ExposureTime = OverrideManifest.CureTime = MathF.Round(value, 2);
             }
             else
             {
-                base.ExposureTime = ProfileManifest.CureTime = (float)Math.Round(value, 2);
+                base.ExposureTime = ProfileManifest.CureTime = MathF.Round(value, 2);
             }
         }
     }
@@ -736,11 +736,11 @@ public sealed class NanoDLPFile : FileFormat
         {
             if (OverrideManifest is not null)
             {
-                base.BottomLiftHeight = OverrideManifest.SupportWaitHeight = (float)Math.Round(value, 2);
+                base.BottomLiftHeight = OverrideManifest.SupportWaitHeight = MathF.Round(value, 2);
             }
             else
             {
-                base.BottomLiftHeight = ProfileManifest.SupportWaitHeight = (float)Math.Round(value, 2);
+                base.BottomLiftHeight = ProfileManifest.SupportWaitHeight = MathF.Round(value, 2);
             }
         }
     }
@@ -752,11 +752,11 @@ public sealed class NanoDLPFile : FileFormat
         {
             if (OverrideManifest is not null)
             {
-                base.LiftHeight = OverrideManifest.WaitHeight = (float)Math.Round(value, 2);
+                base.LiftHeight = OverrideManifest.WaitHeight = MathF.Round(value, 2);
             }
             else
             {
-                base.LiftHeight = ProfileManifest.WaitHeight = (float)Math.Round(value, 2);
+                base.LiftHeight = ProfileManifest.WaitHeight = MathF.Round(value, 2);
             }
         }
     }
@@ -768,11 +768,11 @@ public sealed class NanoDLPFile : FileFormat
         {
             if (OverrideManifest is not null)
             {
-                base.BottomWaitTimeAfterLift = OverrideManifest.SupportTopWait = (float)Math.Round(value, 2);
+                base.BottomWaitTimeAfterLift = OverrideManifest.SupportTopWait = MathF.Round(value, 2);
             }
             else
             {
-                base.BottomWaitTimeAfterLift = ProfileManifest.SupportTopWait = (float)Math.Round(value, 2);
+                base.BottomWaitTimeAfterLift = ProfileManifest.SupportTopWait = MathF.Round(value, 2);
             }
         }
     }
@@ -784,11 +784,11 @@ public sealed class NanoDLPFile : FileFormat
         {
             if (OverrideManifest is not null)
             {
-                base.WaitTimeAfterLift = OverrideManifest.TopWait = (float)Math.Round(value, 2);
+                base.WaitTimeAfterLift = OverrideManifest.TopWait = MathF.Round(value, 2);
             }
             else
             {
-                base.WaitTimeAfterLift = ProfileManifest.TopWait = (float)Math.Round(value, 2);
+                base.WaitTimeAfterLift = ProfileManifest.TopWait = MathF.Round(value, 2);
             }
         }
     }
@@ -807,8 +807,8 @@ public sealed class NanoDLPFile : FileFormat
     {
         get
         {
-            if (OverrideManifest is not null && ProfileManifest.CustomValues.TryGetValue("UvPwmValue", out var pwmValueStr) && float.TryParse(pwmValueStr, out var pwmValue)) return (byte)Math.Round(pwmValue * byte.MaxValue, MidpointRounding.AwayFromZero);
-            if (ProfileManifest.CustomValues.TryGetValue("UvPwmValue", out var pwmValueStr2) && float.TryParse(pwmValueStr2, out var pwmValue2)) return (byte)Math.Round(pwmValue2 * byte.MaxValue, MidpointRounding.AwayFromZero);
+            if (OverrideManifest is not null && ProfileManifest.CustomValues.TryGetValue("UvPwmValue", out var pwmValueStr) && float.TryParse(pwmValueStr, CultureInfo.InvariantCulture, out var pwmValue)) return (byte)Math.Round(pwmValue * byte.MaxValue, MidpointRounding.AwayFromZero);
+            if (ProfileManifest.CustomValues.TryGetValue("UvPwmValue", out var pwmValueStr2) && float.TryParse(pwmValueStr2, CultureInfo.InvariantCulture, out var pwmValue2)) return (byte)Math.Round(pwmValue2 * byte.MaxValue, MidpointRounding.AwayFromZero);
             return base.LightPWM;
         }
         set
@@ -898,10 +898,10 @@ public sealed class NanoDLPFile : FileFormat
             var rect = BoundingRectangleMillimeters;
             rect.Offset(DisplayWidth / -2f, DisplayHeight / -2f);
 
-            SlicerManifest.Boundary.XMin = PlateManifest.XMin = (float)Math.Round(rect.X, 4);
-            SlicerManifest.Boundary.XMax = PlateManifest.XMax = (float)Math.Round(rect.Right, 4);
-            SlicerManifest.Boundary.YMin = PlateManifest.YMin = (float)Math.Round(rect.Y, 4);
-            SlicerManifest.Boundary.YMax = PlateManifest.YMax = (float)Math.Round(rect.Bottom, 4);
+            SlicerManifest.Boundary.XMin = PlateManifest.XMin = MathF.Round(rect.X, 4);
+            SlicerManifest.Boundary.XMax = PlateManifest.XMax = MathF.Round(rect.Right, 4);
+            SlicerManifest.Boundary.YMin = PlateManifest.YMin = MathF.Round(rect.Y, 4);
+            SlicerManifest.Boundary.YMax = PlateManifest.YMax = MathF.Round(rect.Bottom, 4);
         }
 
         var thumbnail = GetLargestThumbnail();
@@ -952,9 +952,9 @@ public sealed class NanoDLPFile : FileFormat
             if (pixelArea > 0)
             {
                 var contours = layer.Contours;
-                item.TotalSolidArea =  (float)Math.Round(contours.TotalSolidArea * pixelArea, 4);
-                item.SmallestArea = (float)Math.Round(contours.MinSolidArea * pixelArea, 4);
-                item.LargestArea = (float)Math.Round(contours.MaxSolidArea * pixelArea, 4);
+                item.TotalSolidArea =  MathF.Round((float)contours.TotalSolidArea * pixelArea, 4, MidpointRounding.AwayFromZero);
+                item.SmallestArea = MathF.Round((float)contours.MinSolidArea * pixelArea, 4, MidpointRounding.AwayFromZero);
+                item.LargestArea = MathF.Round((float)contours.MaxSolidArea * pixelArea, 4, MidpointRounding.AwayFromZero);
                 item.AreaCount = (uint)contours.ExternalContoursCount;
             }
 

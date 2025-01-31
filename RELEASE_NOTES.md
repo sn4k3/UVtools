@@ -1,5 +1,11 @@
-- (Add) PrusaSlicer printer: Elegoo Saturn 4 Ultra 16K
-- (Improvement) Goo: Implement and support the tilting vat printers
-- (Improvement) All shapes in pixel editor will now respect the non-equal pixel pitch and compensate the lower side to print a regular shape, this also affects the polygons on PCB exposure tool and other tools as well
-- (Fix) PCB Exposure: Use raw polygons instead of angle aligned polygons to respect the gerber implementation (#976)
+- **PCB Exposure:**
+  - (Fix) When importing gerber files via drag and drop to the main window the file was created with 0mm layer height and no exposure set
+  - (Fix) Merging multiple gerber files with mirror active was mirroring the image in each draw causing the wrong output (#980)
+  - (Fix) Excellon drill format does not load tools when they have spindle parameters [F/C] (#980)
+  - (Fix) Excellon drill format to respect the integer and decimal digit count when specifying them (#980)
+- **Stress Tower:**
+  - (Improvement) Allow to pause and cancel the operation
+  - (Improvement) Process layers in a more efficient way to reduce allocations and be able to produce the test without RAM hogging
+- (Upgrade) .NET from 9.0.0 to 9.0.1
+- (Upgrade) OpenCV from 4.9.0 to 4.10.0
 

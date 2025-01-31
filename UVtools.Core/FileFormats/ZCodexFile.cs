@@ -265,7 +265,7 @@ public sealed class ZCodexFile : FileFormat
     public override float LiftHeight
     {
         get => UserSettings.ZLiftDistance;
-        set => base.LiftHeight = UserSettings.ZLiftDistance = (float)Math.Round(value, 2);
+        set => base.LiftHeight = UserSettings.ZLiftDistance = MathF.Round(value, 2);
     }
 
     public override float BottomLiftSpeed => LiftSpeed;
@@ -273,13 +273,13 @@ public sealed class ZCodexFile : FileFormat
     public override float LiftSpeed
     {
         get => UserSettings.ZLiftFeedRate;
-        set => base.LiftSpeed = UserSettings.ZLiftFeedRate = (float)Math.Round(value, 2);
+        set => base.LiftSpeed = UserSettings.ZLiftFeedRate = MathF.Round(value, 2);
     }
 
     public override float RetractSpeed
     {
         get => UserSettings.ZLiftRetractRate;
-        set => base.RetractSpeed = UserSettings.ZLiftRetractRate = (float)Math.Round(value, 2);
+        set => base.RetractSpeed = UserSettings.ZLiftRetractRate = MathF.Round(value, 2);
     }
 
         
@@ -307,8 +307,8 @@ public sealed class ZCodexFile : FileFormat
 
     public override float MaterialGrams
     {
-        get => (float) Math.Round(ResinMetadataSettings.TotalMaterialWeightUsed, 3);
-        set => base.MaterialGrams = ResinMetadataSettings.TotalMaterialWeightUsed = (float) Math.Round(value, 3);
+        get => MathF.Round(ResinMetadataSettings.TotalMaterialWeightUsed, 3);
+        set => base.MaterialGrams = ResinMetadataSettings.TotalMaterialWeightUsed = MathF.Round(value, 3);
     }
 
     public override string? MaterialName

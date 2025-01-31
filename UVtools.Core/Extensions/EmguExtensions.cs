@@ -22,9 +22,6 @@ using System.Threading;
 using CommunityToolkit.Diagnostics;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Objects;
-using Emgu.CV.Reg;
-using static UVtools.Core.FileFormats.UVJFile;
-using System.Reflection.Metadata;
 using Size = System.Drawing.Size;
 
 namespace UVtools.Core.Extensions;
@@ -1908,7 +1905,7 @@ public static class EmguExtensions
     {
         if (sides == 1)
         {
-            var point1 = center with { X = (float)Math.Round(center.X - diameter.Width / 2, midpointRounding) };
+            var point1 = center with { X = MathF.Round(center.X - diameter.Width / 2, midpointRounding) };
             var point2 = point1 with { X = point1.X + diameter.Width - 1 };
             point1 = point1.Rotate(startingAngle, center);
             point2 = point2.Rotate(startingAngle, center);

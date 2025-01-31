@@ -161,7 +161,7 @@ public sealed class OperationLayerExportGif : Operation
     public uint TotalLayers => (uint)(LayerRangeCount / (float) (_skip + 1));
 
     public uint GifDurationMilliseconds => (uint)(TotalLayers * FPSToMilliseconds);
-    public float GifDurationSeconds => (float)Math.Round(GifDurationMilliseconds / 1000.0, 2);
+    public float GifDurationSeconds => MathF.Round(GifDurationMilliseconds / 1000.0f, 2);
 
     public decimal Scale
     {
