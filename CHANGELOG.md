@@ -2,14 +2,15 @@
 
 ## 15/02/2025 - v5.0.7
 
-- **Layer previewer:**
+- **Layer previewer: (#990)**
   - (Add) Shortcuts: Ctrl/⌘ + to zoom in and Ctrl/⌘ - to zoom out in the layer previewer
   - (Add) Allow to horizontal scroll the image with the mouse dispacement buttons and/or wheel (Only for mouse with such buttons)
   - (Add) Hold Ctrl key while use the mouse wheel to vertical scroll the image instead of zoom
   - (Add) Zoom behavior: Zoom with pre-defined levels or native incremental zoom (Configurable in settings, default: Levels)
   - (Add) Zoom debounce time to prevent the zoom to be triggered multiple times when using a trackpad (Configurable in settings, default: 20ms)
 - (Improvement) Linux: Show app icon on AppImage after integration with the desktop environment
-- (Fix) Unable to find PrusaSlicer >= 2.9.0 on Linux (Flatpak folder change)
+- (Fix) Unable to find PrusaSlicer >= 2.9.0 on Linux (Flatpak folder change) (#1000)
+- (Fix) PrusaSlicer: Anycubic Photon Mono M7 Max incorrect extension (#995)
 - (Upgrade) .NET from 9.0.1 to 9.0.2
 - (Upgrade) AvaloniaUI from 11.2.3 to 11.2.4
 
