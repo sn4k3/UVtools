@@ -32,9 +32,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'csharp' ]
-        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
-        # Learn more about CodeQL language support at https://git.io/codeql-language-support
+       include:
+         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
+         # Learn more about CodeQL language support at https://git.io/codeql-language-support
+         # Analyzes C# code by automatically detecting a build
+         - language: csharp
+           build-mode: manual #autobuild #none
+
 
     steps:
     - name: Checkout repository
@@ -52,8 +56,8 @@ jobs:
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
+    #- name: Autobuild
+    #  uses: github/codeql-action/autobuild@v3
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
@@ -62,9 +66,8 @@ jobs:
     #    and modify them (or add more) to build your code if your project
     #    uses a compiled language
 
-    #- run: |
-    #   make bootstrap
-    #   make release
+    - run: |
+       dotnet build
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
