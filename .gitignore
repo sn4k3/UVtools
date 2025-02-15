@@ -478,3 +478,4 @@ $RECYCLE.BIN/
 publish/
 manifests/
 
+.*-build-tasks/
