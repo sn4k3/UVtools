@@ -26,7 +26,8 @@
 
 		<Setter Property="Template">
 			<ControlTemplate>
-				<Grid RowDefinitions="*,Auto" ColumnDefinitions="*,Auto">
+				<Grid Name="PART_MainGrid"
+                      RowDefinitions="*,Auto" ColumnDefinitions="*,Auto">
 
 					<ScrollContentPresenter Grid.Row="0" Grid.Column="0"
 									  Name="PART_ContentPresenter"

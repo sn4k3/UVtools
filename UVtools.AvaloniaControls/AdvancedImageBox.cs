@@ -32,7 +32,8 @@ using Size = Avalonia.Size;
 
 namespace UVtools.AvaloniaControls;
 
-[TemplatePart("PART_ContentPresenter", typeof(ScrollContentPresenter))]
+[TemplatePart("PART_MainGrid", typeof(Grid))]
+[TemplatePart("PART_ContentPresenter", typeof(ScrollContentPresenter))] // ViewPort
 [TemplatePart("PART_HorizontalScrollBar", typeof(ScrollBar))]
 [TemplatePart("PART_VerticalScrollBar", typeof(ScrollBar))]
 [TemplatePart("PART_ScrollBarsSeparator", typeof(Panel))]
@@ -361,7 +362,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <summary>
     /// Determines the sizing mode of an image hosted in an <see cref="AdvancedImageBox" /> control.
     /// </summary>
-    public enum SizeModes : byte
+    public enum SizeModes
     {
         /// <summary>
         /// The image is displayed according to current zoom and scroll properties.
@@ -380,7 +381,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     }
 
     [Flags]
-    public enum MouseButtons : byte
+    public enum MouseButtons
     {
         None = 0,
         LeftButton = 1,
@@ -388,11 +389,39 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         RightButton = 4
     }
 
+    public enum MouseWheelZoomBehaviours
+    {
+        /// <summary>
+        /// No action is performed when using the mouse wheel.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// Zoom in and out in a native way using the mouse wheel delta.
+        /// </summary>
+        ZoomNative,
+
+        /// <summary>
+        /// Zoom in and out in a native way using the mouse wheel delta, but change to tick levels when holding ALT key.
+        /// </summary>
+        ZoomNativeAltLevels,
+
+        /// <summary>
+        /// Zoom in and out using tick levels defined in the <see cref="AdvancedImageBox.ZoomLevels"/> collection.
+        /// </summary>
+        ZoomLevels,
+
+        /// <summary>
+        /// Zoom in and out using tick levels defined in the <see cref="AdvancedImageBox.ZoomLevels"/> collection, but change to native when holding ALT key.
+        /// </summary>
+        ZoomLevelsAltNative,
+    }
+
     /// <summary>
     /// Describes the zoom action occurring
     /// </summary>
     [Flags]
-    public enum ZoomActions : byte
+    public enum ZoomActions
     {
         /// <summary>
         /// No action.
@@ -477,7 +506,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     }
 
     /// <inheritdoc />
-    public Size Viewport => ViewPort?.Bounds.Size ?? default;
+    public Size Viewport => ViewPort?.Bounds.Size ?? Bounds.Size;
     #endregion
 
     #region Private Members
@@ -617,12 +646,12 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         get => GetValue(TrackerImageAutoZoomProperty);
         set => SetValue(TrackerImageAutoZoomProperty, value);
     }
-        
+
     public bool IsHorizontalBarVisible
     {
         get
         {
-            if (Image is null) return false;
+            if (!IsImageLoaded) return false;
             if (SizeMode != SizeModes.Normal) return false;
             return ScaledImageWidth > Viewport.Width;
         }
@@ -767,7 +796,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         set => SetValue(PanWithArrowsProperty, value);
     }
 
-    
+
     public static readonly StyledProperty<Key?> PanLeftKeyProperty =
         AvaloniaProperty.Register<AdvancedImageBox, Key?>(nameof(PanLeftKey));
 
@@ -888,17 +917,124 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         }
     }
 
-    public static readonly StyledProperty<bool> ZoomWithMouseWheelProperty =
-        AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(ZoomWithMouseWheel), true);
+    public static readonly StyledProperty<int> HorizontalScrollWithMouseFactorProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, int>(nameof(HorizontalScrollWithMouseFactor), 100);
 
     /// <summary>
-    /// Gets or sets if zoom can be performed with the mouse wheel
+    /// Gets or sets the factor over the delta to scroll horizontally with the mouse (Left and right button on supported mice).
     /// </summary>
-    public bool ZoomWithMouseWheel
+    /// <remarks>Set to 0 to disable horizontal scroll with mouse buttons.</remarks>
+    public int HorizontalScrollWithMouseFactor
     {
-        get => GetValue(ZoomWithMouseWheelProperty);
-        set => SetValue(ZoomWithMouseWheelProperty, value);
+        get => GetValue(HorizontalScrollWithMouseFactorProperty);
+        set => SetValue(HorizontalScrollWithMouseFactorProperty, value);
     }
+
+    public static readonly StyledProperty<int> HorizontalScrollWithMouseAlternativeFactorProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, int>(nameof(HorizontalScrollWithMouseAlternativeFactor), 50);
+
+    /// <summary>
+    /// Gets or sets the alternative (ALT modifier) factor over the delta to scroll horizontally with the mouse (Left and right button on supported mice).
+    /// </summary>
+    /// <remarks>Set to 0 to disable the alternative horizontal scroll with mouse buttons.</remarks>
+    public int HorizontalScrollWithMouseAlternativeFactor
+    {
+        get => GetValue(HorizontalScrollWithMouseAlternativeFactorProperty);
+        set => SetValue(HorizontalScrollWithMouseAlternativeFactorProperty, value);
+    }
+
+
+    public static readonly StyledProperty<int> VerticalScrollWithMouseFactorProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, int>(nameof(VerticalScrollWithMouseFactor), 100);
+
+    public static readonly StyledProperty<KeyModifiers?> VerticalScrollWithMouseWheelKeyModifierProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, KeyModifiers?>(nameof(VerticalScrollWithMouseWheelKeyModifier), KeyModifiers.Control);
+
+    /// <summary>
+    /// Gets or sets the required <see cref="KeyModifiers"/> to enable the vertical scroll with the mouse wheel.
+    /// </summary>
+    /// <remarks>Set <c>null</c> to disable vertical scroll with the mouse wheel.</remarks>
+    public KeyModifiers? VerticalScrollWithMouseWheelKeyModifier
+    {
+        get => GetValue(VerticalScrollWithMouseWheelKeyModifierProperty);
+        set => SetValue(VerticalScrollWithMouseWheelKeyModifierProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the factor over the delta to scroll vertically with the mouse wheel.
+    /// </summary>
+    /// <remarks>Set to 0 to disable horizontal scroll with mouse buttons.</remarks>
+    public int VerticalScrollWithMouseFactor
+    {
+        get => GetValue(VerticalScrollWithMouseFactorProperty);
+        set => SetValue(VerticalScrollWithMouseFactorProperty, value);
+    }
+
+    public static readonly StyledProperty<int> VerticalScrollWithMouseAlternativeFactorProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, int>(nameof(VerticalScrollWithMouseAlternativeFactor), 50);
+
+    /// <summary>
+    /// Gets or sets the alternative (ALT modifier) factor over the delta to scroll vertically with the mouse wheel.
+    /// </summary>
+    /// <remarks>Set to 0 to disable the alternative horizontal scroll with mouse buttons.</remarks>
+    public int VerticalScrollWithMouseAlternativeFactor
+    {
+        get => GetValue(VerticalScrollWithMouseAlternativeFactorProperty);
+        set => SetValue(VerticalScrollWithMouseAlternativeFactorProperty, value);
+    }
+
+    public static readonly StyledProperty<MouseWheelZoomBehaviours> ZoomWithMouseWheelBehaviourProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, MouseWheelZoomBehaviours>(nameof(ZoomWithMouseWheelBehaviour), MouseWheelZoomBehaviours.ZoomNativeAltLevels);
+
+    /// <summary>
+    /// Gets or sets the mouse wheel behaviour.
+    /// </summary>
+    public MouseWheelZoomBehaviours ZoomWithMouseWheelBehaviour
+    {
+        get => GetValue(ZoomWithMouseWheelBehaviourProperty);
+        set => SetValue(ZoomWithMouseWheelBehaviourProperty, value);
+    }
+
+    public static readonly StyledProperty<KeyModifiers> ZoomWithMouseWheelKeyModifierProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, KeyModifiers>(nameof(ZoomWithMouseWheelKeyModifier));
+
+    /// <summary>
+    /// Gets or sets the required <see cref="KeyModifiers"/> to work with any of <see cref="ZoomWithMouseWheelBehaviour"/> zoom behaviours.
+    /// </summary>
+    /// <remarks>Set <para>null</para> to ignore modifiers.</remarks>
+    public KeyModifiers ZoomWithMouseWheelKeyModifier
+    {
+        get => GetValue(ZoomWithMouseWheelKeyModifierProperty);
+        set => SetValue(ZoomWithMouseWheelKeyModifierProperty, value);
+    }
+
+    public static readonly StyledProperty<bool> ZoomWithMouseWheelStrictKeyModifierProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(ZoomWithMouseWheelStrictKeyModifier));
+
+    /// <summary>
+    /// Gets or sets to use strict key modifier to work with <see cref="ZoomWithMouseWheelKeyModifier"/>.
+    /// When true it will check if modifiers exactly match the required modifier,
+    /// otherwise it will perform a bitwise inclusion check.
+    /// </summary>
+    public bool ZoomWithMouseWheelStrictKeyModifier
+    {
+        get => GetValue(ZoomWithMouseWheelStrictKeyModifierProperty);
+        set => SetValue(ZoomWithMouseWheelStrictKeyModifierProperty, value);
+    }
+
+    public static readonly StyledProperty<int> ZoomWithMouseWheelDebounceMillisecondsProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, int>(nameof(ZoomWithMouseWheelDebounceMilliseconds), 20);
+
+    /// <summary>
+    /// Gets or sets the debounce milliseconds to perform zoom with mouse wheel
+    /// </summary>
+    public int ZoomWithMouseWheelDebounceMilliseconds
+    {
+        get => GetValue(ZoomWithMouseWheelDebounceMillisecondsProperty);
+        set => SetValue(ZoomWithMouseWheelDebounceMillisecondsProperty, value);
+    }
+
+    private ulong _lastZoomWithMouseWheelTimestamp;
 
     public static readonly DirectProperty<AdvancedImageBox, ZoomLevelCollection> ZoomLevelsProperty =
         AvaloniaProperty.RegisterDirect<AdvancedImageBox, ZoomLevelCollection>(
@@ -1014,29 +1150,31 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         {
             var image = Image;
             if (image is null) return 100;
-            
+
             double zoom;
             double aspectRatio;
+            var viewportWidth = Bounds.Size.Width;
+            var viewportHeight = Bounds.Size.Height;
 
             if (image.Size.Width > image.Size.Height)
             {
-                aspectRatio = Viewport.Width / image.Size.Width;
+                aspectRatio = viewportWidth / image.Size.Width;
                 zoom = aspectRatio * 100.0;
 
-                if (Viewport.Height < image.Size.Height * zoom / 100.0)
+                if (viewportHeight < image.Size.Height * zoom / 100.0)
                 {
-                    aspectRatio = Viewport.Height / image.Size.Height;
+                    aspectRatio = viewportHeight / image.Size.Height;
                     zoom = aspectRatio * 100.0;
                 }
             }
             else
             {
-                aspectRatio = Viewport.Height / image.Size.Height;
+                aspectRatio = viewportHeight / image.Size.Height;
                 zoom = aspectRatio * 100.0;
 
-                if (Viewport.Width < image.Size.Width * zoom / 100.0)
+                if (viewportWidth < image.Size.Width * zoom / 100.0)
                 {
-                    aspectRatio = Viewport.Width / image.Size.Width;
+                    aspectRatio = viewportWidth / image.Size.Width;
                     zoom = aspectRatio * 100.0;
                 }
             }
@@ -1060,7 +1198,11 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
 
     public static readonly StyledProperty<KeyGesture[]?> ZoomInKeyGesturesProperty =
-        AvaloniaProperty.Register<AdvancedImageBox, KeyGesture[]?>(nameof(ZoomInKeyGestures));
+        AvaloniaProperty.Register<AdvancedImageBox, KeyGesture[]?>(nameof(ZoomInKeyGestures),
+            OperatingSystem.IsMacOS()
+                ? [new KeyGesture(Key.Add, KeyModifiers.Meta), new KeyGesture(Key.OemPlus, KeyModifiers.Meta)]
+                : [new KeyGesture(Key.Add, KeyModifiers.Control), new KeyGesture(Key.OemPlus, KeyModifiers.Control)]
+            );
 
     /// <summary>
     /// Gets or sets the hot key to zoom in
@@ -1072,7 +1214,11 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     }
 
     public static readonly StyledProperty<KeyGesture[]?> ZoomOutKeyGesturesProperty =
-        AvaloniaProperty.Register<AdvancedImageBox, KeyGesture[]?>(nameof(ZoomOutKeyGestures));
+        AvaloniaProperty.Register<AdvancedImageBox, KeyGesture[]?>(nameof(ZoomOutKeyGestures),
+            OperatingSystem.IsMacOS()
+                ? [new KeyGesture(Key.Subtract, KeyModifiers.Meta), new KeyGesture(Key.OemMinus, KeyModifiers.Meta)]
+                : [new KeyGesture(Key.Subtract, KeyModifiers.Control), new KeyGesture(Key.OemMinus, KeyModifiers.Control)]
+            );
 
     /// <summary>
     /// Gets or sets the hot key to zoom out
@@ -1084,7 +1230,11 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     }
 
     public static readonly StyledProperty<KeyGesture[]?> ZoomTo100KeyGesturesProperty =
-        AvaloniaProperty.Register<AdvancedImageBox, KeyGesture[]?>(nameof(ZoomTo100KeyGestures));
+        AvaloniaProperty.Register<AdvancedImageBox, KeyGesture[]?>(nameof(ZoomTo100KeyGestures),
+            OperatingSystem.IsMacOS()
+                ? [new KeyGesture(Key.D0, KeyModifiers.Meta), new KeyGesture(Key.NumPad0, KeyModifiers.Meta)]
+                : [new KeyGesture(Key.D0, KeyModifiers.Control), new KeyGesture(Key.NumPad0, KeyModifiers.Control)]
+            );
 
     /// <summary>
     /// Gets or sets the hot key to zoom to 100%
@@ -1096,7 +1246,11 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     }
 
     public static readonly StyledProperty<KeyGesture[]?> ZoomToFitKeyGesturesProperty =
-        AvaloniaProperty.Register<AdvancedImageBox, KeyGesture[]?>(nameof(ZoomToFitKeyGestures));
+        AvaloniaProperty.Register<AdvancedImageBox, KeyGesture[]?>(nameof(ZoomToFitKeyGestures),
+            OperatingSystem.IsMacOS()
+                ? [new KeyGesture(Key.D0, KeyModifiers.Meta | KeyModifiers.Alt), new KeyGesture(Key.NumPad0, KeyModifiers.Meta | KeyModifiers.Alt)]
+                : [new KeyGesture(Key.D0, KeyModifiers.Control | KeyModifiers.Alt), new KeyGesture(Key.NumPad0, KeyModifiers.Control | KeyModifiers.Alt)]
+        );
 
     /// <summary>
     /// Gets or sets the hot key to zoom to fit
@@ -1238,7 +1392,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        
+
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (ViewPort is not null)
         {
@@ -1278,7 +1432,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        
+
         UpdateViewPort();
         if (IsImageLoaded)
         {
@@ -1332,9 +1486,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                     }
                 }
             }
-            
+
             TriggerRender();
-            
+
             RaisePropertyChanged(nameof(ImageAsWriteableBitmap));
             RaisePropertyChanged(nameof(IsImageLoaded));
             RaisePropertyChanged(nameof(ScaledImageWidth));
@@ -1417,7 +1571,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         var image = Image;
         if (image is null) return;
         var imageViewPort = GetImageViewPort();
-        
+
         // Draw image
         context.DrawImage(image,
             GetSourceImageRegion(),
@@ -1425,7 +1579,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         );
 
         var zoomFactor = ZoomFactor;
-        
+
         if (HaveTrackerImage && _pointerPosition is {X: >= 0, Y: >= 0})
         {
             var destSize = TrackerImageAutoZoom
@@ -1544,15 +1698,100 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
     private void ViewPortOnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
+        if (!IsImageLoaded || SizeMode != SizeModes.Normal) return;
+
+        // Process horizontal scroll
+        if (e.Delta.X != 0 && IsHorizontalBarVisible)
+        {
+            var factor = (e.KeyModifiers & KeyModifiers.Alt) != 0 ? HorizontalScrollWithMouseAlternativeFactor : HorizontalScrollWithMouseFactor;
+            if (factor != 0)
+            {
+                Offset = Offset.WithX(Offset.X - e.Delta.X * factor);
+                e.Handled = true;
+            }
+        }
+
+        // Process vertical scroll
+        if (e.Delta.Y == 0) return;
+
+        var verticalScrollWithMouseWheelKeyModifier = VerticalScrollWithMouseWheelKeyModifier;
+        if (verticalScrollWithMouseWheelKeyModifier.HasValue && (e.KeyModifiers & verticalScrollWithMouseWheelKeyModifier) == verticalScrollWithMouseWheelKeyModifier)
+        {
+            if (!IsVerticalBarVisible) return;
+            var factor = (e.KeyModifiers & KeyModifiers.Alt) != 0 ? VerticalScrollWithMouseAlternativeFactor : VerticalScrollWithMouseFactor;
+            if (factor != 0)
+            {
+                Offset = Offset.WithY(Offset.Y - e.Delta.Y * factor);
+            }
+
+            e.Handled = true;
+            return;
+        }
+
+
+        var mouseWheelBehaviour = ZoomWithMouseWheelBehaviour;
+        if (mouseWheelBehaviour == MouseWheelZoomBehaviours.None) return;
+
+        /*
+#if DEBUG
+        //File.AppendAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "UVtoolsScroll.txt")
+        //, $"WheelEvent {{Timestamp: {e.Timestamp}, Handled: {e.Handled}, Delta: {e.Delta}}}{Environment.NewLine}");
+#endif
+        */
+
+        var zoomWithMouseWheelKeyModifier = ZoomWithMouseWheelKeyModifier;
+        var canZoom = ZoomWithMouseWheelStrictKeyModifier switch
+        {
+            false => (e.KeyModifiers & zoomWithMouseWheelKeyModifier) == zoomWithMouseWheelKeyModifier,
+            true => e.KeyModifiers == zoomWithMouseWheelKeyModifier
+        };
+
+        if (!canZoom) return;
         e.Handled = true;
-        if (!IsImageLoaded || SizeMode != SizeModes.Normal || !ZoomWithMouseWheel) return;
+
+        // Debounce for sensitive touchpads
+        var zoomWithMouseWheelDebounceMilliseconds = ZoomWithMouseWheelDebounceMilliseconds;
+        if (zoomWithMouseWheelDebounceMilliseconds > 0 && e.Timestamp - _lastZoomWithMouseWheelTimestamp < (ulong)zoomWithMouseWheelDebounceMilliseconds) return;
+
         // The MouseWheel event can contain multiple "spins" of the wheel so we need to adjust accordingly
         //double spins = Math.Abs(e.Delta.Y);
         //Debug.WriteLine(e.GetPosition(this));
         // TODO: Really should update the source method to handle multiple increments rather than calling it multiple times
         /*for (int i = 0; i < spins; i++)
         {*/
-        ProcessMouseZoom(e.Delta.Y > 0, e.GetPosition(ViewPort));
+
+
+        switch (mouseWheelBehaviour)
+        {
+            case MouseWheelZoomBehaviours.ZoomNative:
+                SetZoom(Zoom + (int)(e.Delta.Y * 100), e.GetPosition(ViewPort));
+                break;
+            case MouseWheelZoomBehaviours.ZoomNativeAltLevels:
+                if ((e.KeyModifiers & KeyModifiers.Alt) == 0)
+                {
+                    SetZoom(Zoom + (int)(e.Delta.Y * 100), e.GetPosition(ViewPort));
+                }
+                else
+                {
+                    PerformZoom(e.Delta.Y > 0 ? ZoomActions.ZoomIn : ZoomActions.ZoomOut, e.GetPosition(ViewPort));
+                }
+                break;
+            case MouseWheelZoomBehaviours.ZoomLevels:
+                PerformZoom(e.Delta.Y > 0 ? ZoomActions.ZoomIn : ZoomActions.ZoomOut, e.GetPosition(ViewPort));
+                break;
+            case MouseWheelZoomBehaviours.ZoomLevelsAltNative:
+                if ((e.KeyModifiers & KeyModifiers.Alt) == 0)
+                {
+                    PerformZoom(e.Delta.Y > 0 ? ZoomActions.ZoomIn : ZoomActions.ZoomOut, e.GetPosition(ViewPort));
+                }
+                else
+                {
+                    SetZoom(Zoom + (int)(e.Delta.Y * 100), e.GetPosition(ViewPort));
+                }
+                break;
+        }
+
+        _lastZoomWithMouseWheelTimestamp = e.Timestamp;
         //}
     }
 
@@ -1600,7 +1839,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /*protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
-        
+
         if (e.Handled
             || _isPanning
             || _isSelecting
@@ -1677,7 +1916,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
         var pointer = e.GetCurrentPoint(viewPort);
         PointerPosition = pointer.Position;
-        
+
         if (!_isPanning && !_isSelecting)
         {
             TriggerRender(true);
@@ -1707,7 +1946,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             var viewPortPoint = new Point(
                 Math.Min(_pointerPosition.X, viewPort.Bounds.Right),
                 Math.Min(_pointerPosition.Y, viewPort.Bounds.Bottom));
-            
+
             double x;
             double y;
             double w;
@@ -1760,7 +1999,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         base.OnKeyDown(e);
 
         if (!IsImageLoaded || SizeMode != SizeModes.Normal) return;
-        
+
         var zoomInKeyGestures = ZoomInKeyGestures;
         if (zoomInKeyGestures is not null)
         {
@@ -1774,7 +2013,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                 }
             }
         }
-        
+
         var zoomOutKeyGestures = ZoomOutKeyGestures;
         if (zoomOutKeyGestures is not null)
         {
@@ -1795,7 +2034,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         var panUp = false;
         var panRight = false;
         var panDown = false;
-        
+
         if (PanWithArrows)
         {
             switch (e.Key)
@@ -1980,27 +2219,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     #endregion
 
     #region Zoom and Size modes
-    private void ProcessMouseZoom(bool isZoomIn, Point cursorPosition)
-        => PerformZoom(isZoomIn ? ZoomActions.ZoomIn : ZoomActions.ZoomOut, true, cursorPosition);
-
-    /// <summary>
-    /// Returns an appropriate zoom level based on the specified action, relative to the current zoom level.
-    /// </summary>
-    /// <param name="action">The action to determine the zoom level.</param>
-    /// <exception cref="System.ArgumentOutOfRangeException">Thrown if an unsupported action is specified.</exception>
-    private int GetZoomLevel(ZoomActions action)
-    {
-        var result = action switch
-        {
-            ZoomActions.None => Zoom,
-            ZoomActions.ZoomIn => _zoomLevels.NextZoom(Zoom),
-            ZoomActions.ZoomOut => _zoomLevels.PreviousZoom(Zoom),
-            ZoomActions.ActualSize => 100,
-            _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),
-        };
-        return result;
-    }
-
     /// <summary>
     /// Resets the <see cref="SizeModes"/> property whilsts retaining the original <see cref="Zoom"/>.
     /// </summary>
@@ -2014,24 +2232,73 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         }
     }
 
-    private void PerformZoom(ZoomActions action, bool preservePosition)
-        => PerformZoom(action, preservePosition, CenterPoint);
-
-    private void PerformZoom(ZoomActions action, bool preservePosition, Point relativePoint)
+    /// <summary>
+    /// Returns an appropriate zoom level based on the specified action, relative to the current zoom level.
+    /// </summary>
+    /// <param name="action">The action to determine the zoom level.</param>
+    /// <exception cref="System.ArgumentOutOfRangeException">Thrown if an unsupported action is specified.</exception>
+    public int GetZoomLevel(ZoomActions action)
     {
-        Point currentPixel = PointToImage(relativePoint);
-        int currentZoom = Zoom;
-        int newZoom = GetZoomLevel(action);
+        var result = action switch
+        {
+            ZoomActions.None => Zoom,
+            ZoomActions.ZoomIn => _zoomLevels.NextZoom(Zoom),
+            ZoomActions.ZoomOut => _zoomLevels.PreviousZoom(Zoom),
+            ZoomActions.ActualSize => 100,
+            _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),
+        };
+        return result;
+    }
 
-        /*if (preservePosition && Zoom != currentZoom)
-            CanRender = false;*/
+    /// <summary>
+    ///  Performs the specified zoom action.
+    /// </summary>
+    /// <param name="action"></param>
+    /// <param name="relativePoint">Preserve position at given relative point. If null, <see cref="CenterPoint"/>> will be used.</param>
+    public void PerformZoom(ZoomActions action, Point? relativePoint)
+    {
+        SetZoom(GetZoomLevel(action), true, relativePoint);
+    }
+
+    /// <summary>
+    /// Performs the specified zoom action.
+    /// </summary>
+    /// <param name="action"></param>
+    /// <param name="preservePosition"><c>true</c> if the current scrolling position should be preserved relative to the new zoom level, <c>false</c> to reset.</param>
+    /// <param name="relativePoint">Preserve position at given relative point. If null, <see cref="CenterPoint"/>> will be used.</param>
+    public void PerformZoom(ZoomActions action, bool preservePosition = true, Point? relativePoint = null)
+    {
+        SetZoom(GetZoomLevel(action), preservePosition, relativePoint);
+    }
+
+    /// <summary>
+    /// Sets the zoom level to the specified value.
+    /// </summary>
+    /// <param name="zoom"></param>
+    /// <param name="relativePoint">Preserve position at given relative point. If null, <see cref="CenterPoint"/>> will be used.</param>
+    public void SetZoom(int zoom, Point? relativePoint)
+    {
+        SetZoom(zoom, true, relativePoint);
+    }
+
+    /// <summary>
+    /// Sets the zoom level to the specified value.
+    /// </summary>
+    /// <param name="zoom"></param>
+    /// <param name="preservePosition"><c>true</c> if the current scrolling position should be preserved relative to the new zoom level, <c>false</c> to reset.</param>
+    /// <param name="relativePoint">Preserve position at given relative point. If null, <see cref="CenterPoint"/>> will be used.</param>
+    public void SetZoom(int zoom, bool preservePosition = true, Point? relativePoint = null)
+    {
+        relativePoint ??= CenterPoint;
+        int currentZoom = Zoom;
+        Point currentPixel = PointToImage(relativePoint.Value);
 
         RestoreSizeMode();
-        Zoom = newZoom;
+        Zoom = zoom;
 
         if (preservePosition && Zoom != currentZoom)
         {
-            ScrollTo(currentPixel, relativePoint);
+            ScrollTo(currentPixel, relativePoint.Value);
         }
     }
 
@@ -2039,7 +2306,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     ///   Zooms into the image
     /// </summary>
     public void ZoomIn()
-        => ZoomIn(true);
+    {
+        ZoomIn(true);
+    }
 
     /// <summary>
     ///   Zooms into the image
@@ -2054,7 +2323,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     ///   Zooms out of the image
     /// </summary>
     public void ZoomOut()
-        => ZoomOut(true);
+    {
+        ZoomOut(true);
+    }
 
     /// <summary>
     ///   Zooms out of the image
@@ -2070,7 +2341,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </summary>
     public void ZoomToFit()
     {
-        if (!IsImageLoaded) return;
         Zoom = ZoomLevelToFit;
     }
 
@@ -2105,8 +2375,10 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </summary>
     /// <param name="rectangle">The rectangle to fit the view port to.</param>
     /// <param name="margin">Give a margin to rectangle by a value to zoom-out that pixel value</param>
-    public void ZoomToRegion(Rectangle rectangle, double margin = 0) =>
+    public void ZoomToRegion(Rectangle rectangle, double margin = 0)
+    {
         ZoomToRegion(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height, margin);
+    }
 
     /// <summary>
     ///   Adjusts the view port to fit the given region
@@ -2115,6 +2387,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <param name="margin">Give a margin to rectangle by a value to zoom-out that pixel value</param>
     public void ZoomToRegion(Rect rectangle, double margin = 0)
     {
+        if (!IsImageLoaded) return;
         if (margin > 0) rectangle = rectangle.Inflate(margin);
         var ratioX = Viewport.Width / rectangle.Width;
         var ratioY = Viewport.Height / rectangle.Height;
@@ -2124,7 +2397,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
         CanRender = false;
         Zoom = (int)(zoomFactor * 100); // This function sets the zoom so viewport will change
-        CenterAt(new Point(cx, cy)); // If i call this here, it will move to the wrong position due wrong viewport
+
+        //Dispatcher.UIThread.Post(() => CenterAt(new Point(cx, cy)));
+        CenterAt(new Point(cx, cy)); // If I call this here, it will move to the wrong position due wrong viewport, dispatcher would solve but slower?
     }
 
     /// <summary>
@@ -2156,7 +2431,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     ///   <c>true</c> if the specified point is located within the image view port; otherwise, <c>false</c>.
     /// </returns>
     public bool IsPointInImage(Point point)
-        => GetImageViewPort().Contains(point);
+    {
+        return GetImageViewPort().Contains(point);
+    }
 
     /// <summary>
     ///   Determines whether the specified point is located within the image view port
@@ -2167,7 +2444,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     ///   <c>true</c> if the specified point is located within the image view port; otherwise, <c>false</c>.
     /// </returns>
     public bool IsPointInImage(int x, int y)
-        => IsPointInImage(new Point(x, y));
+    {
+        return IsPointInImage(new Point(x, y));
+    }
 
     /// <summary>
     ///   Determines whether the specified point is located within the image view port
@@ -2178,7 +2457,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     ///   <c>true</c> if the specified point is located within the image view port; otherwise, <c>false</c>.
     /// </returns>
     public bool IsPointInImage(double x, double y)
-        => IsPointInImage(new Point(x, y));
+    {
+        return IsPointInImage(new Point(x, y));
+    }
 
     /// <summary>
     ///   Converts the given client size point to represent a coordinate on the source image.
@@ -2190,7 +2471,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </param>
     /// <returns><c>Point.Empty</c> if the point could not be matched to the source image, otherwise the new translated point</returns>
     public Point PointToImage(double x, double y, bool fitToBounds = true)
-        => PointToImage(new Point(x, y), fitToBounds);
+    {
+        return PointToImage(new Point(x, y), fitToBounds);
+    }
 
     /// <summary>
     ///   Converts the given client size point to represent a coordinate on the source image.
@@ -2302,7 +2585,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         var scaled = GetScaledRectangle(source);
         var offsetX = viewport.Left - Offset.X;
         var offsetY = viewport.Top - Offset.Y;
-        
+
         return new(new Point(scaled.Left + offsetX, scaled.Top + offsetY), scaled.Size);
     }
 
@@ -2437,7 +2720,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <param name="relativeX">The X co-ordinate relative to the <c>x</c> parameter.</param>
     /// <param name="relativeY">The Y co-ordinate relative to the <c>y</c> parameter.</param>
     public void ScrollTo(double x, double y, double relativeX, double relativeY)
-        => ScrollTo(new Point(x, y), new Point(relativeX, relativeY));
+    {
+        ScrollTo(new Point(x, y), new Point(relativeX, relativeY));
+    }
 
     /// <summary>
     ///   Scrolls the control to the given point in the image, offset at the specified display point
@@ -2447,7 +2732,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <param name="relativeX">The X co-ordinate relative to the <c>x</c> parameter.</param>
     /// <param name="relativeY">The Y co-ordinate relative to the <c>y</c> parameter.</param>
     public void ScrollTo(int x, int y, int relativeX, int relativeY)
-        => ScrollTo(new Point(x, y), new Point(relativeX, relativeY));
+    {
+        ScrollTo(new Point(x, y), new Point(relativeX, relativeY));
+    }
 
     /// <summary>
     ///   Scrolls the control to the given point in the image, offset at the specified display point
@@ -2481,14 +2768,18 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </summary>
     /// <param name="imageLocation">The point of the image to attempt to center.</param>
     public void CenterAt(System.Drawing.Point imageLocation)
-        => ScrollTo(new Point(imageLocation.X, imageLocation.Y), new Point(Viewport.Width / 2, Viewport.Height / 2));
+    {
+        ScrollTo(new Point(imageLocation.X, imageLocation.Y), new Point(Viewport.Width / 2, Viewport.Height / 2));
+    }
 
     /// <summary>
     ///   Centers the given point in the image in the center of the control
     /// </summary>
     /// <param name="imageLocation">The point of the image to attempt to center.</param>
     public void CenterAt(Point imageLocation)
-        => ScrollTo(imageLocation, new Point(Viewport.Width / 2, Viewport.Height / 2));
+    {
+        ScrollTo(imageLocation, new Point(Viewport.Width / 2, Viewport.Height / 2));
+    }
 
     /// <summary>
     ///   Centers the given point in the image in the center of the control
@@ -2496,7 +2787,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <param name="x">The X co-ordinate of the point to center.</param>
     /// <param name="y">The Y co-ordinate of the point to center.</param>
     public void CenterAt(int x, int y)
-        => CenterAt(new Point(x, y));
+    {
+        CenterAt(new Point(x, y));
+    }
 
     /// <summary>
     ///   Centers the given point in the image in the center of the control
@@ -2504,7 +2797,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <param name="x">The X co-ordinate of the point to center.</param>
     /// <param name="y">The Y co-ordinate of the point to center.</param>
     public void CenterAt(double x, double y)
-        => CenterAt(new Point(x, y));
+    {
+        CenterAt(new Point(x, y));
+    }
 
     /// <summary>
     /// Resets the viewport to show the center of the image.
@@ -2695,7 +2990,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     }
 
     #endregion
-        
+
     #region Viewport and image region methods
     /// <summary>
     ///   Gets the source image region.
@@ -2735,7 +3030,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
         var viewPortSize = Viewport;
         if (viewPortSize is {Width: 0, Height: 0}) return default;
-        
+
         double xOffset = 0.0;
         double yOffset = 0.0;
         double width = 0.0;
@@ -2751,7 +3046,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                     xOffset = (!IsHorizontalBarVisible ? (viewPortSize.Width - ScaledImageWidth) / 2.0 : 0.0);
                     yOffset = (!IsVerticalBarVisible ? (viewPortSize.Height - ScaledImageHeight) / 2.0 : 0.0);
                 }
-                
+
                 width = Math.Min(ScaledImageWidth - Math.Abs(Offset.X), viewPortSize.Width);
                 height = Math.Min(ScaledImageHeight - Math.Abs(Offset.Y), viewPortSize.Height);
                 break;
@@ -2768,7 +3063,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                 double scaleFactor = Math.Min((viewPortSize.Width - padding.Left - padding.Right) / image.Size.Width, (viewPortSize.Height - padding.Top - padding.Bottom) / image.Size.Height);
 
                 if (scaleFactor <= 0) return new Rect();
-                    
+
                 width = Math.Floor(image.Size.Width * scaleFactor);
                 height = Math.Floor(image.Size.Height * scaleFactor);
 
@@ -2806,7 +3101,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     {
         var image = ImageAsWriteableBitmap;
         if (image is null || !HaveSelection) return null;
-            
+
         var selection = SelectionRegionPixel;
 
         using var srcBuffer = image.Lock();

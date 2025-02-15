@@ -8,9 +8,6 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-using UVtools.Core.SystemOS;
 using UVtools.UI.Structures;
 
 namespace UVtools.UI;

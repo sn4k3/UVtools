@@ -91,7 +91,7 @@ public class App : Application
         _fluentTheme.DensityStyle = UserSettings.Instance.General.ThemeDensity;
 
         bool isFluentTheme = theme is ApplicationTheme.FluentSystem or ApplicationTheme.FluentLight or ApplicationTheme.FluentDark;
-        //bool isLightTheme = theme is ApplicationTheme.FluentLight //or ApplicationTheme.SimpleLight 
+        //bool isLightTheme = theme is ApplicationTheme.FluentLight //or ApplicationTheme.SimpleLight
         //                    || (theme == ApplicationTheme.FluentSystem && app.ActualThemeVariant == ThemeVariant.Light);
         //                    //|| (theme == ApplicationTheme.SimpleSystem && app.ActualThemeVariant == ThemeVariant.Light);
 
@@ -191,7 +191,7 @@ public class App : Application
                 {
                     // ignored
                 }
-                
+
                 using var reader = new StringReader(bugDescription);
                 MessageWindow window = null!;
                 window = new MessageWindow($"{About.SoftwareWithVersion} - Crash report",
@@ -262,8 +262,8 @@ public class App : Application
                     MessageBoxManager.Standard = UiMessageBoxStandard.Instance;
                 }
             }
-            
-            
+
+
             //desktop.Exit += (sender, e) => ThemeSelector.SaveSelectedTheme(Path.Combine(UserSettings.SettingsFolder, "selected.theme"));
         }
 
@@ -353,8 +353,8 @@ public class App : Application
     {
         var uri =
             // Allow for assembly overrides
-            url.StartsWith("avares://") 
-            ? new Uri(url) 
+            url.StartsWith("avares://")
+            ? new Uri(url)
             : new Uri($"avares://{AssemblyName}{url}");
 
         return uri;
@@ -367,7 +367,7 @@ public class App : Application
 
     public static Bitmap GetBitmapFromAsset(string url) => new(GetAsset(url));
 
-        
+
     public static string? GetPrusaSlicerDirectory(bool isSuperSlicer = false, bool isAlpha = false)
     {
         var slicerFolder = isSuperSlicer ? "SuperSlicer" : "PrusaSlicer";
@@ -381,13 +381,23 @@ public class App : Application
 
         if (OperatingSystem.IsLinux())
         {
-            var folder1 = Path.Combine(
+            // 2.9.0 flatpak
+            var flatpak = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                ".config",
+                ".var",
+                "app",
+                $"com.prusa3d.{slicerFolder}",
+                "config",
+                slicerFolder);
+            if (Directory.Exists(flatpak)) return flatpak;
+
+            // AppImage
+            var folder1 = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), // home/user/.config
                 slicerFolder);
             if (Directory.Exists(folder1)) return folder1;
             return Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), // home/user
                 $".{slicerFolder}");
         }
 

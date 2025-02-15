@@ -690,7 +690,7 @@
                     <TabItem.Header>
                         <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                             <i:Icon Value="fa-solid fa-code"/>
-                            <!--<TextBlock 
+                            <!--<TextBlock
               IsVisible="{Binding $parent[TabItem].IsSelected}"
               VerticalAlignment="Center"
               Margin="5,0,0,0">Gcode</TextBlock>!-->
@@ -766,7 +766,7 @@
 
                 </TabItem>
 
-                <!-- 
+                <!--
        Issues Tab
       -->
                 <TabItem
@@ -947,7 +947,7 @@
 
                 </TabItem>
 
-                <!-- 
+                <!--
        Suggestions Tab
       -->
                 <TabItem
@@ -1187,7 +1187,7 @@
                                             <NumericUpDown Grid.Row="12" Grid.Column="2"
                                                            Minimum="1"
                                                            Maximum="255"
-                          
+
                                                            HorizontalAlignment="Stretch"
                                                            Value="{Binding DrawingPixelDrawing.PixelBrightness}"/>
                                             <TextBlock Grid.Row="12" Grid.Column="4"
@@ -1278,7 +1278,7 @@
 										      Minimum="0.1"
 										      Maximum="255"
 										      Increment="0.1"
-                        
+
 										      Value="{Binding DrawingPixelText.FontScale}"/>
 
 
@@ -1349,7 +1349,7 @@
 											    Grid.Column="2"
 											    Minimum="0"
 											    Maximum="255"
-                          
+
 											    Value="{Binding DrawingPixelText.RemovePixelBrightness}"/>
                                             <TextBlock
 											    Grid.Row="16"
@@ -1367,7 +1367,7 @@
 											    Grid.Column="2"
 											    Minimum="1"
 											    Maximum="255"
-                          
+
 											    Value="{Binding DrawingPixelText.PixelBrightness}"/>
                                             <TextBlock
 											    Grid.Row="18"
@@ -1532,7 +1532,7 @@
 													       Classes="ValueLabel ValueLabel_sun"
 													       Minimum="0"
 													       Maximum="255"
-                          
+
 													       Value="{Binding DrawingPixelSupport.PixelBrightness}"/>
                                             <TextBlock
 											    Grid.Row="6"
@@ -2124,6 +2124,8 @@
 						ShowGrid="{Binding Settings.LayerPreview.ShowBackgroudGrid}"
 						GridCellSize="15"
                         ConstrainZoomOutToFitLevel="True"
+                        ZoomTo100KeyGestures="{x:Null}"
+                        ZoomToFitKeyGestures="{x:Null}"
 						Name="LayerImageBox"/>
                 </Border>
 
@@ -2248,7 +2250,7 @@
                     MinWidth="450"
 					Name="ProgressBorder"
                     Classes="ProgressLoading"
-                
+
                 BorderThickness="5"
                 CornerRadius="5">
                 <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"

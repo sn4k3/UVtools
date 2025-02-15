@@ -15,7 +15,6 @@
         CanResize="False"
         x:Class="UVtools.UI.Windows.BenchmarkWindow"
         x:DataType="windows:BenchmarkWindow">
-
   <Grid RowDefinitions="Auto,10,
     Auto,10,
     Auto,20,
@@ -26,7 +25,7 @@
           BorderThickness="1">
 
       <SelectableTextBlock Text="{Binding Description}"/>
-    
+
   </Border>
 
     <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*"
@@ -148,7 +147,7 @@
               IsDefault="True"
               Content="{Binding StartStopButtonText}"
               Command="{Binding StartStop}"/>
-      
+
     </Grid>
   </Grid>
 </controls:WindowEx>

@@ -1,11 +1,11 @@
-- **PCB Exposure:**
-  - (Fix) When importing gerber files via drag and drop to the main window the file was created with 0mm layer height and no exposure set
-  - (Fix) Merging multiple gerber files with mirror active was mirroring the image in each draw causing the wrong output (#980)
-  - (Fix) Excellon drill format does not load tools when they have spindle parameters [F/C] (#980)
-  - (Fix) Excellon drill format to respect the integer and decimal digit count when specifying them (#980)
-- **Stress Tower:**
-  - (Improvement) Allow to pause and cancel the operation
-  - (Improvement) Process layers in a more efficient way to reduce allocations and be able to produce the test without RAM hogging
-- (Upgrade) .NET from 9.0.0 to 9.0.1
-- (Upgrade) OpenCV from 4.9.0 to 4.10.0
+- **Layer previewer:**
+  - (Add) Shortcuts: Ctrl/⌘ + to zoom in and Ctrl/⌘ - to zoom out in the layer previewer
+  - (Add) Allow to horizontal scroll the image with the mouse dispacement buttons and/or wheel (Only for mouse with such buttons)
+  - (Add) Hold Ctrl key while use the mouse wheel to vertical scroll the image instead of zoom
+  - (Add) Zoom behavior: Zoom with pre-defined levels or native incremental zoom (Configurable in settings, default: Levels)
+  - (Add) Zoom debounce time to prevent the zoom to be triggered multiple times when using a trackpad (Configurable in settings, default: 20ms)
+- (Improvement) Linux: Show app icon on AppImage after integration with the desktop environment
+- (Fix) Unable to find PrusaSlicer >= 2.9.0 on Linux (Flatpak folder change)
+- (Upgrade) .NET from 9.0.1 to 9.0.2
+- (Upgrade) AvaloniaUI from 11.2.3 to 11.2.4
 

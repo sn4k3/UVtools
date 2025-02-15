@@ -135,15 +135,15 @@
                                         <DropDownButton.Flyout>
 											<MenuFlyout>
 												<MenuItem Header="Auto-optimal number (Optimal/Recommended)"
-                                                          Command="{Binding SetMaxDegreeOfParallelism}" 
+                                                          Command="{Binding SetMaxDegreeOfParallelism}"
                                                           CommandParameter="-2"
                                                           ToolTip.Tip="Will utilize an optimal number in order to relief some load and therefore preventing the computer from lags and freezes, mostly this is the processor core count less a few. The more cores the CPU haves the larger is the margin up to a limit. (Optimal/Recommended)"/>
                                                 <MenuItem Header="Framework scheduler (Fastest/Performance)"
                                                           Command="{Binding SetMaxDegreeOfParallelism}"
                                                           CommandParameter="-1"
                                                           ToolTip.Tip="Will utilize however many threads the underlying scheduler provides, mostly this is the processor core count. (Fast/Performance)"/>
-                                                <MenuItem Header="Processor core count (Fastest/Performance)" 
-                                                          Command="{Binding SetMaxDegreeOfParallelism}" 
+                                                <MenuItem Header="Processor core count (Fastest/Performance)"
+                                                          Command="{Binding SetMaxDegreeOfParallelism}"
                                                           CommandParameter="0"
                                                           ToolTip.Tip="Will utilize the processor core count. (Fast/Performance)"/>
                                             </MenuFlyout>
@@ -458,7 +458,7 @@
                                     <TextBlock Grid.Row="0" Grid.Column="0"
 											   VerticalAlignment="Center"
                                                Text="Beep frequency:"/>
-                                    <NumericUpDown Grid.Row="0" Grid.Column="2" 
+                                    <NumericUpDown Grid.Row="0" Grid.Column="2"
                                                    Classes="ValueLabel ValueLabel_hz"
                                                    VerticalAlignment="Center"
                                                    Minimum="20"
@@ -697,7 +697,7 @@
 									<NumericUpDown Grid.Row="4" Grid.Column="2"
 												   Margin="10,0,0,0"
 												   VerticalAlignment="Center"
-                                 
+
 												   Minimum="1"
 												   Maximum="50"
 												   Value="{Binding Settings.LayerPreview.LayerBoundsOutlineThickness}"/>
@@ -1012,12 +1012,37 @@
                                          Header="Zoom">
 
 							<StackPanel Orientation="Vertical" Spacing="10">
-								<Grid RowDefinitions="Auto" ColumnDefinitions="Auto,250,*,100">
-									<TextBlock Grid.Row="0" Grid.Column="0"
-											   VerticalAlignment="Center"
-											   Text="Zoom out to fit:"/>
+								<Grid RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,Auto,*,180">
+                                    <TextBlock Grid.Row="0" Grid.Column="0"
+                                               VerticalAlignment="Center"
+											   ToolTip.Tip="The default zoom behaviour when using the mouse wheel.
+&#x0a;Hold Alt key to invert this option while zooming."
+                                               Text="Zoom behaviour:"/>
 
-									<ComboBox Grid.Row="0" Grid.Column="1"
+                                    <ToggleSwitch Grid.Row="0" Grid.Column="1"
+                                                  Margin="10,0,0,0"
+                                                  VerticalAlignment="Center"
+                                                  OnContent="Use native incremental zoom"
+                                                  OffContent="Use pre-defined zoom levels"
+                                                  IsChecked="{Binding Settings.LayerPreview.ZoomPreferNative}"/>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="2"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Right"
+											   ToolTip.Tip="Debounce time required between zoom events to perform zoom."
+                                               Text="Zoom debounce:"/>
+									<NumericUpDown Grid.Row="0" Grid.Column="3"
+												   Minimum="0"
+												   Maximum="1000"
+												   Margin="10,0,0,0"
+												   Classes="ValueLabel ValueLabel_ms"
+                                                   Value="{Binding Settings.LayerPreview.ZoomDebounceMilliseconds}"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0"
+                                               VerticalAlignment="Center"
+                                               Text="Zoom out to fit:"/>
+
+									<ComboBox Grid.Row="2" Grid.Column="1"
 											  Margin="10,0,0,0"
 											  VerticalAlignment="Center"
 											  SelectedIndex="{Binding Settings.LayerPreview.ZoomToFitPrintVolumeBounds}"
@@ -1028,13 +1053,12 @@
 										</ComboBox.Items>
 									</ComboBox>
 
-									<TextBlock Grid.Row="0" Grid.Column="2"
-											   Margin="10,0,0,0"
+									<TextBlock Grid.Row="2" Grid.Column="2"
 											   VerticalAlignment="Center"
 											   HorizontalAlignment="Right"
 											   Text="Zoom in factor:"/>
 
-									<ComboBox Grid.Row="0" Grid.Column="3"
+									<ComboBox Grid.Row="2" Grid.Column="3"
 											  Margin="10,0,0,0"
 											  VerticalAlignment="Center"
 											  ItemsSource="{Binding ZoomRanges}"
@@ -1500,7 +1524,7 @@
 													   Minimum="1"
 													   Maximum="255"
 													   Margin="0,0,0,5"
-                    
+
 													   Value="{Binding Settings.Issues.TouchingBoundMarginTop}" />
 
 										<TextBlock Grid.Column="4"
@@ -1528,7 +1552,7 @@
 													   Minimum="1"
 													   Maximum="255"
 													   Margin="0,5,0,0"
-                    
+
 													   Value="{Binding Settings.Issues.TouchingBoundMarginBottom}" />
 
 										<CheckBox Grid.Row="2"
@@ -1840,7 +1864,7 @@
 											   VerticalAlignment="Center"
                                                ToolTip.Tip="Trigger every time after a file has been loaded."
 											   Text="After file load:"/>
-                                    <TextBox Grid.Row="0" Grid.Column="2" 
+                                    <TextBox Grid.Row="0" Grid.Column="2"
                                              IsReadOnly="True"
                                              Text="{Binding Settings.Automations.EventAfterFileLoadScriptFile}"/>
                                     <Button Grid.Row="0" Grid.Column="3"

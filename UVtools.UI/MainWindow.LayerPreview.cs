@@ -110,9 +110,13 @@ public partial class MainWindow
         _showLayerOutlineEnclosingCircles = Settings.LayerPreview.EnclosingCirclesOutline;
         _showLayerOutlineHollowAreas = Settings.LayerPreview.HollowOutline;
         _showLayerOutlineCentroids = Settings.LayerPreview.CentroidOutline;
-            
+
         LayerImageBox.ZoomLevels = new AdvancedImageBox.ZoomLevelCollection(AppSettings.ZoomLevels);
-            
+        LayerImageBox.ZoomWithMouseWheelBehaviour = Settings.LayerPreview.ZoomPreferNative
+            ? AdvancedImageBox.MouseWheelZoomBehaviours.ZoomNativeAltLevels
+            : AdvancedImageBox.MouseWheelZoomBehaviours.ZoomLevelsAltNative;
+        LayerImageBox.ZoomWithMouseWheelDebounceMilliseconds = Settings.LayerPreview.ZoomDebounceMilliseconds;
+
         LayerImageBox.GetObservable(AdvancedImageBox.ZoomProperty).Subscribe(new AnonymousObserver<int>(zoom =>
         {
             if (!IsFileLoaded) return;
@@ -198,7 +202,7 @@ public partial class MainWindow
             }
 
             if (!RaiseAndSetIfChanged(ref _showLayerImageRotated, value) || !IsFileLoaded) return;
-                
+
             if (rect != default)
             {
                 LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
@@ -526,8 +530,8 @@ public partial class MainWindow
 
             return text;
         }
-    } 
-                                                                          
+    }
+
     public string LayerROIStr
     {
         get
@@ -620,7 +624,7 @@ public partial class MainWindow
             if (DataContext is null) return;
             if (!RaiseAndSetIfChanged(ref _actualLayer, value)) return;
 
-                
+
             if (!_layerNavigationSliderDebounceTimer.Enabled) // Doesn't come from ActualLayerSlider timer
             {
                 ActualLayerSlider = _actualLayer; // sync when required
@@ -713,7 +717,7 @@ public partial class MainWindow
         ROI = LayerCache.Layer!.BoundingRectangle;
     }
 
-       
+
     public List<Point[]> MaskPoints => _maskPoints;
 
     /*private set
@@ -750,9 +754,9 @@ public partial class MainWindow
                     _maskPoints.Add(points);
                 }
             }
-                
+
         }
-            
+
         ShowLayer();
         RaisePropertyChanged(nameof(LayerROIStr));
     }
@@ -864,7 +868,7 @@ public partial class MainWindow
     {
         if (!IsFileLoaded) return;
 
-        
+
         if (SlicerFile!.SanitizeLayerIndex(ref _actualLayer))
         {
             InvalidateLayerNavigation();
@@ -933,7 +937,7 @@ public partial class MainWindow
                 Debug.WriteLine(string.Empty);
             }*/
 
-            
+
             var imageSpan = LayerCache.ImageSpan;
             var imageBgrSpan = LayerCache.ImageBgraSpan;
 
@@ -1081,8 +1085,8 @@ public partial class MainWindow
             {
                 //var count = 0;
                 foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer)
-                             .Where(issue => issue.Parent!.Type 
-                                 is not MainIssue.IssueType.PrintHeight 
+                             .Where(issue => issue.Parent!.Type
+                                 is not MainIssue.IssueType.PrintHeight
                                  and not MainIssue.IssueType.EmptyLayer))
                 {
                     //count++;
@@ -1168,7 +1172,7 @@ public partial class MainWindow
                             break;
                         }
                     }
-                        
+
                 }
             }
 
@@ -1216,7 +1220,7 @@ public partial class MainWindow
             {
                 for (int i = 0; i < LayerCache.Layer.Contours.Count; i++)
                 {
-                    LayerCache.Layer.Contours[i].FitCircle(LayerCache.ImageBgra, 
+                    LayerCache.Layer.Contours[i].FitCircle(LayerCache.ImageBgra,
                         Settings.LayerPreview.EnclosingCirclesOutlineColor.ToMCvScalar(),
                         Settings.LayerPreview.EnclosingCirclesOutlineThickness, LineType.AntiAlias);
                 }
@@ -1235,7 +1239,7 @@ public partial class MainWindow
                 using var vec = EmguContours.GetNegativeContours(LayerCache.Layer.Contours.Vector, LayerCache.Layer.Contours.Hierarchy);
                 if (vec.Size > 0)
                 {
-                    CvInvoke.DrawContours(LayerCache.ImageBgra, vec, -1, 
+                    CvInvoke.DrawContours(LayerCache.ImageBgra, vec, -1,
                         Settings.LayerPreview.HollowOutlineColor.ToMCvScalar(),
                         Settings.LayerPreview.HollowOutlineLineThickness);
                 }
@@ -1322,7 +1326,7 @@ public partial class MainWindow
                 {
                     CvInvoke.PutText(LayerCache.ImageBgra, $"Triangles: {triangleCount:N0}", new Point(10, 80), FontFace.HersheyDuplex, 3, dotColor, 3);
                 }
-                
+
             }
 
             if (_maskPoints is not null && _maskPoints.Count > 0)
@@ -1404,7 +1408,7 @@ public partial class MainWindow
                         ? Settings.PixelEditor.SupportsHighlightColor
                         : Settings.PixelEditor.SupportsColor;
 
-                    LayerCache.ImageBgra.DrawCircle(operation.Location, 
+                    LayerCache.ImageBgra.DrawCircle(operation.Location,
                         SlicerFile.PixelsToNormalizedPitch(operationSupport.TipDiameter / 2),
                         color.ToMCvScalar(), -1);
                 }
@@ -1431,12 +1435,12 @@ public partial class MainWindow
             {
 
 
-                // Don't render crosshairs for selected issue that are not on the current layer, or for 
+                // Don't render crosshairs for selected issue that are not on the current layer, or for
                 // issue types that don't have a specific location or bounds.
                 foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer)
-                             .Where(issue => issue.Parent!.Type 
-                                 is not MainIssue.IssueType.TouchingBound 
-                                 and not MainIssue.IssueType.PrintHeight 
+                             .Where(issue => issue.Parent!.Type
+                                 is not MainIssue.IssueType.TouchingBound
+                                 and not MainIssue.IssueType.PrintHeight
                                  and not MainIssue.IssueType.EmptyLayer))
                 {
                     DrawCrosshair(issue.BoundingRectangle);
@@ -1463,7 +1467,7 @@ public partial class MainWindow
             }
 
             LayerImageBox.Image = LayerCache.Bitmap = LayerCache.ImageBgra.ToBitmap();
-                
+
             RefreshCurrentLayerData();
 
             watch.Stop();
@@ -1804,7 +1808,7 @@ public partial class MainWindow
         if (!IsFileLoaded) return;
 
         const byte margin = 10;
-        // If ALT key is pressed when ZoomToFit is performed, the configured option for 
+        // If ALT key is pressed when ZoomToFit is performed, the configured option for
         // zoom to plate vs. zoom to print bounds will be inverted.
 
         switch (fitType)
@@ -1843,7 +1847,7 @@ public partial class MainWindow
             default:
                 throw new ArgumentOutOfRangeException(nameof(fitType), fitType, null);
         }
-            
+
     }
 
     /// <summary>
@@ -1896,9 +1900,9 @@ public partial class MainWindow
                     SelectObjectMask(location);
                     return;
                 }
-                    
+
                 SelectObjectRoi(location);
-                    
+
                 return;
             }
 
@@ -1942,7 +1946,7 @@ public partial class MainWindow
         if (pointer.Properties.IsRightButtonPressed)
         {
             ZoomToFit();
-            return; 
+            return;
         }
         e.Handled = true;
     }
@@ -1950,7 +1954,7 @@ public partial class MainWindow
     private void LayerImageBoxOnDoubleTapped(object? sender, RoutedEventArgs e)
     {
         if ((_globalModifiers & KeyModifiers.Alt) != 0 || (_globalModifiers & KeyModifiers.Shift) != 0) return;
-            
+
         e.Handled = true;
     }
 
@@ -2034,7 +2038,7 @@ public partial class MainWindow
                     operation.SelectCurrentLayer(ActualLayer);
                     layerRange = $"in the current {ActualLayer} layer";
                 }
-                
+
                 if (await this.MessageBoxQuestion($"Are you sure you want to keep only the selected region/mask(s) {layerRange}?",
                         "Keep only selected region/mask(s)?") != MessageButtonResult.Yes) return;
                 await RunOperation(operation);
@@ -2187,7 +2191,7 @@ public partial class MainWindow
     {
         if (!LayerCache.IsCached) return;
         var pointer = e.GetCurrentPoint(LayerImageBox);
-            
+
         if (!LayerImageBox.IsPointInImage(pointer.Position)) return;
         var location = LayerImageBox.PointToImage(pointer.Position).ToDotNet();
 
@@ -2264,7 +2268,7 @@ public partial class MainWindow
             var rectangle = rectangles[i];
             roiRectangle = Rectangle.Union(roiRectangle, rectangle);
         }
-        
+
         ROI = roiRectangle;
 
         return (uint)rectangles.Count;
@@ -2312,14 +2316,14 @@ public partial class MainWindow
     {
         Mat? cursor = null;
         var pixelEditorCursorColor = new MCvScalar(
-            Settings.PixelEditor.CursorColor.B, 
+            Settings.PixelEditor.CursorColor.B,
             Settings.PixelEditor.CursorColor.G,
             Settings.PixelEditor.CursorColor.R,
             Settings.PixelEditor.CursorColor.A);
         switch ((PixelOperation.PixelOperationType)SelectedPixelOperationTabIndex)
         {
             case PixelOperation.PixelOperationType.Drawing:
-                    
+
                 if (DrawingPixelDrawing.BrushSize > 1)
                 {
                     if ((byte)DrawingPixelDrawing.BrushShape >= 1)
@@ -2337,15 +2341,15 @@ public partial class MainWindow
 
                         /*FlipType? flip = null;
                         if (_showLayerImageFlipped)
-                        { 
+                        {
                             if (_showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically) flip = FlipType.Both;
                             else if (_showLayerImageFlippedHorizontally) flip = FlipType.Horizontal;
                             else if (_showLayerImageFlippedVertically) flip = FlipType.Vertical;
                         }*/
-                        
-                        cursor.DrawAlignedPolygon((byte) DrawingPixelDrawing.BrushShape, 
-                            SlicerFile!.PixelsToNormalizedPitchF(DrawingPixelDrawing.BrushSize), 
-                            new PointF(cursor.Width / 2.0f, cursor.Height / 2.0f), 
+
+                        cursor.DrawAlignedPolygon((byte) DrawingPixelDrawing.BrushShape,
+                            SlicerFile!.PixelsToNormalizedPitchF(DrawingPixelDrawing.BrushSize),
+                            new PointF(cursor.Width / 2.0f, cursor.Height / 2.0f),
                             pixelEditorCursorColor, DrawingPixelDrawing.RotationAngle, DrawingPixelDrawing.Thickness, DrawingPixelDrawing.LineType);
 
                         if (DrawingPixelDrawing.BrushShape != PixelDrawing.BrushShapeType.Circle)
@@ -2445,7 +2449,7 @@ public partial class MainWindow
             CvInvoke.CvtColor(cursor, cursorGrey, ColorConversion.Bgra2Gray);
             var bounds = CvInvoke.BoundingRectangle(cursorGrey);
             using var cursorRoi = new Mat(cursor, bounds);*/
-            
+
             LayerImageBox.TrackerImage = cursor.ToBitmap();
             //cursorRoi.Save("D:\\Cursor.png");
             //LayerImageBox.Cursor = new Cursor(cursor.ToBitmap(), new PixelPoint(cursor.Width / 2, cursor.Height / 2));

@@ -96,3 +96,4 @@
 - Ryan Skow
 - Cainam
 - Cory Lytle
+- Samuel Comeau

@@ -186,9 +186,10 @@ else
         mkdir -p "$linuxAppDir"
         chmod -fv $chmodPermissions "$linuxAppDir"
         cp -arf "$platformsDir/linux/AppImage/." "$linuxAppDir"
-        cp -af "$rootDir/UVtools.CAD/UVtools.png" "$linuxAppDir/"
+        cp -af "$rootDir/UVtools.CAD/UVtools.svg" "$linuxAppDir/usr/share/icons/hicolor/scalable/apps/"
+        cp -af "$rootDir/UVtools.CAD/UVtools.svg" "$linuxAppDir/"
         mkdir -p "$linuxAppDir/usr/bin"
-        cp -a "$publishRuntimeDir/." "$linuxAppDir/usr/bin"   
+        cp -a "$publishRuntimeDir/." "$linuxAppDir/usr/bin"
 
         # Download the AppImage creation tool and make it executable
         tempDir="$(mktemp -d /tmp/uvtoolspublish.XXXXXX)" # Allow parallel publishes
@@ -239,7 +240,7 @@ fi
 #while true; do
 #    read -p "6. Would you like to Zip the package? [Y/N] " yn
 #    case $yn in
-#        [Yy]* ) 
+#        [Yy]* )
 #        [Nn]* ) echo "Skipping Zip"; break;;
 #        * ) echo "Please answer yes or no.";;
 #    esac

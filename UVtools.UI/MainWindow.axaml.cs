@@ -246,8 +246,8 @@ public partial class MainWindow : WindowEx
     {
         get => _menuFileSendToItems;
         set => RaiseAndSetIfChanged(ref _menuFileSendToItems, value);
-    }       
-        
+    }
+
     public IEnumerable<MenuItem> MenuFileConvertItems
     {
         get => _menuFileConvertItems;
@@ -296,7 +296,7 @@ public partial class MainWindow : WindowEx
         InitSuggestions();
 
         RefreshRecentFiles(true);
-            
+
         foreach (var menuItem in new[] { MenuTools, MenuCalibration, LayerActionsMenu })
         {
             foreach (var menuTool in menuItem)
@@ -307,7 +307,7 @@ public partial class MainWindow : WindowEx
                 menuTool.Click += async (sender, args) => await ShowRunOperation(operation.GetType());
             }
         }
-            
+
         /*LayerSlider.PropertyChanged += (sender, args) =>
         {
             Debug.WriteLine(args.Property.Name);
@@ -326,7 +326,7 @@ public partial class MainWindow : WindowEx
         MainMenuFile.SubmenuOpened += (sender, e) =>
         {
             if (!IsFileLoaded) return;
-                
+
             var menuItems = new List<MenuItem>();
 
             var drives = DriveInfo.GetDrives();
@@ -603,7 +603,7 @@ public partial class MainWindow : WindowEx
                             "Yes: Send file and print it.\n" +
                             "No: Cancel file sending and print.", "Send and print the file?") != MessageButtonResult.Yes) return;
                 }
-                
+
             }
 
             ShowProgressWindow($"Sending: {SlicerFile!.Filename} to {path}");
@@ -626,7 +626,7 @@ public partial class MainWindow : WindowEx
                     await this.MessageBoxError(ex.Message, "Send to printer");
                 }
             }
-                
+
 
             if (startPrint && (!remotePrinter.RequestUploadFile.IsValid || (response is not null && response.IsSuccessStatusCode)))
             {
@@ -666,7 +666,7 @@ public partial class MainWindow : WindowEx
             {
                 await this.MessageBoxError(ex.Message, $"Unable to start the process {process.Name}");
             }
-                
+
         }
         else
         {
@@ -696,7 +696,7 @@ public partial class MainWindow : WindowEx
                 {
                     Debug.WriteLine(ex);
                 }
-                    
+
             }
             catch (Exception exception)
             {
@@ -739,7 +739,7 @@ public partial class MainWindow : WindowEx
             }
         }
 
-            
+
         IsGUIEnabled = true;
     }
 
@@ -792,7 +792,7 @@ public partial class MainWindow : WindowEx
         {
             ProcessFile(Path.Combine(App.ApplicationPath, About.DemoFile));
         }
-        
+
         DispatcherTimer.Run(() =>
         {
             UpdateTitle();
@@ -810,7 +810,7 @@ public partial class MainWindow : WindowEx
     {
         base.OnClosed(e);
 
-        if (!Settings.General.StartMaximized && 
+        if (!Settings.General.StartMaximized &&
             (Settings.General.RestoreWindowLastPosition ||
             Settings.General.RestoreWindowLastSize))
         {
@@ -868,7 +868,7 @@ public partial class MainWindow : WindowEx
 
         var imageBoxMousePosition = _globalPointerEventArgs?.GetPosition(LayerImageBox) ?? new Point(-1, -1);
         if (imageBoxMousePosition.X < 0 || imageBoxMousePosition.Y < 0) return;
-        
+
         // Pixel Edit is active, Shift is down, and the cursor is over the image region.
         if (e.KeyModifiers == KeyModifiers.Shift)
         {
@@ -924,7 +924,7 @@ public partial class MainWindow : WindowEx
             return;
         }
 
-        if (e.Key is Key.LeftShift or Key.RightShift 
+        if (e.Key is Key.LeftShift or Key.RightShift
             || (e.KeyModifiers & KeyModifiers.Shift) == 0 || (e.KeyModifiers & KeyModifiers.Control) == 0)
         {
             LayerImageBox.TrackerImage = null;
@@ -938,14 +938,14 @@ public partial class MainWindow : WindowEx
 
         base.OnKeyUp(e);
     }
-    
+
     #endregion
 
     #region Events
 
     public async void ShowBirthdayMessage()
     {
-        await this.MessageBoxGeneric(About.BirthdayMessage, About.BirthdayTitle, About.BirthdayTitle, MessageButtons.Ok, "mdi party-popper"); 
+        await this.MessageBoxGeneric(About.BirthdayMessage, About.BirthdayTitle, About.BirthdayTitle, MessageButtons.Ok, "mdi party-popper");
         Settings.LastBirthdayYearsOld = About.YearsOld;
         UserSettings.Save();
     }
@@ -1188,6 +1188,11 @@ public partial class MainWindow : WindowEx
             }
 
             _layerNavigationSliderDebounceTimer.Interval = Settings.LayerPreview.LayerSliderDebounce == 0 ? 1 : Settings.LayerPreview.LayerSliderDebounce;
+            LayerImageBox.ZoomLevels = new AdvancedImageBox.ZoomLevelCollection(AppSettings.ZoomLevels);
+            LayerImageBox.ZoomWithMouseWheelBehaviour = Settings.LayerPreview.ZoomPreferNative
+                ? AdvancedImageBox.MouseWheelZoomBehaviours.ZoomNativeAltLevels
+                : AdvancedImageBox.MouseWheelZoomBehaviours.ZoomLevelsAltNative;
+            LayerImageBox.ZoomWithMouseWheelDebounceMilliseconds = Settings.LayerPreview.ZoomDebounceMilliseconds;
             RaisePropertyChanged(nameof(IssuesGridItems));
         }
     }
@@ -1235,7 +1240,7 @@ public partial class MainWindow : WindowEx
 
         SystemAware.OpenBrowser($"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title=%5BBug%5D+&system={HttpUtility.UrlEncode(system)}");
     }
-    
+
     public async void MenuHelpMaterialManagerClicked()
     {
         await new MaterialManagerWindow().ShowDialog(this);
@@ -1254,14 +1259,14 @@ public partial class MainWindow : WindowEx
                         $"Was looking on: {PSFolder} and {SSFolder}\n\n" +
                         "Click 'Yes' to open the PrusaSlicer webpage for download\n" +
                         "Click 'No' to dismiss",
-                        "Unable to detect PrusaSlicer") == MessageButtonResult.Yes) 
+                        "Unable to detect PrusaSlicer") == MessageButtonResult.Yes)
                     SystemAware.OpenBrowser("https://www.prusa3d.com/prusaslicer/");
                 return;
             }
         }
         await new PrusaSlicerManagerWindow().ShowDialog(this);
     }
-    
+
     public void MenuHelpDebugOpenExecutableDirectoryClicked()
     {
         SystemAware.StartProcess(App.ApplicationPath);
@@ -1320,7 +1325,7 @@ public partial class MainWindow : WindowEx
         {
             SystemAware.OpenBrowser(VersionChecker.UrlLatestRelease);
         }
-    } 
+    }
 
     #endregion
 
@@ -1338,14 +1343,14 @@ public partial class MainWindow : WindowEx
             _loadedFileSize = 0;
             _loadedFileSizeRepresentation = "N/A";
         }
-        
+
     }
 
     private void UpdateTitle()
     {
         _titleStringBuilder.Clear();
         _titleStringBuilder.Append($"{About.Software} {About.VersionArch}   ");
-        
+
         if (IsFileLoaded)
         {
             _titleStringBuilder.Append($"File: {SlicerFile!.Filename} ({_loadedFileSizeRepresentation})");
@@ -1419,7 +1424,7 @@ public partial class MainWindow : WindowEx
                 {
                     Debug.WriteLine(e);
                 }
-                    
+
                 continue;
             }
 
@@ -1431,7 +1436,7 @@ public partial class MainWindow : WindowEx
                     var operation = new OperationScripting(SlicerFile!);
                     //operation.FilePath = files[i];
                     await Task.Run(() => operation.ReloadScriptFromFile(files[i]));
-                    
+
                     if (operation.CanExecute)
                     {
                         if ((_globalModifiers & KeyModifiers.Shift) != 0) await RunOperation(operation);
@@ -1474,7 +1479,7 @@ public partial class MainWindow : WindowEx
         var fileNameOnly = Path.GetFileName(fileName);
         SlicerFile = FileFormat.FindByExtensionOrFilePath(fileName, true);
         if (SlicerFile is null) return;
-        
+
         IsGUIEnabled = false;
         ShowProgressWindow($"Opening: {fileNameOnly}");
 
@@ -1609,15 +1614,15 @@ public partial class MainWindow : WindowEx
                         fileExtension = FileFormat.FindExtension(convertFileExtension);
                         convertToFormat = fileExtension?.GetFileFormat();
                     }
-                    
+
                 }
                 else if (!string.IsNullOrWhiteSpace(convertFileExtension))
                 {
                     fileExtension = FileFormat.FindExtension(convertFileExtension);
                     convertToFormat = fileExtension?.GetFileFormat();
                 }
-                
-                
+
+
                 if (fileExtension is not null && convertToFormat is not null)
                 {
                     var directory = SlicerFile.DirectoryPath!;
@@ -1766,7 +1771,7 @@ public partial class MainWindow : WindowEx
                     }
                 }
 
-                
+
                 foreach (var fileExtension in fileFormat.FileExtensions)
                 {
                     if(!fileExtension.IsVisibleOnConvertMenu) continue;
@@ -1883,7 +1888,7 @@ public partial class MainWindow : WindowEx
                 }
             }
         }
-        
+
         var display = SlicerFile.Display;
         if (!display.HaveZero() &&
             //SlicerFile is not LGSFile &&
@@ -2082,7 +2087,7 @@ public partial class MainWindow : WindowEx
                 ProgressShow(title, canCancel);
                 /*try
                 {
-                    
+
                     //ProgressWindow.SetTitle(title);
                     //await ProgressWindow.ShowDialog(this);
                 }
@@ -2090,7 +2095,7 @@ public partial class MainWindow : WindowEx
                 {
                     Debug.WriteLine(e);
                 }*/
-                    
+
             });
         }
     }
@@ -2153,12 +2158,12 @@ public partial class MainWindow : WindowEx
                 Dispatcher.UIThread.InvokeAsync(async () =>
                     await this.MessageBoxError($"{extraMessage}{ex}", "Conversion unsuccessful"));
             }
-                
+
             return false;
         }, Progress.Token);
 
         IsGUIEnabled = true;
-        
+
         if (task)
         {
             var question = await this.MessageBoxQuestion(
@@ -2281,7 +2286,7 @@ public partial class MainWindow : WindowEx
 
             return false;
         }, Progress.Token);
-        
+
         if (task)
         {
             SavesCount++;
@@ -2303,7 +2308,7 @@ public partial class MainWindow : WindowEx
                 {
                     Debug.WriteLine(e);
                 }
-                
+
             }
 
             if (oldFile != SlicerFile.FileFullPath) AddRecentFile(SlicerFile!.FileFullPath!);
@@ -2463,7 +2468,7 @@ public partial class MainWindow : WindowEx
                 HandleException(ex, "Error while try extracting the file");
             }
         });
- 
+
 
         IsGUIEnabled = true;
 
@@ -2535,7 +2540,7 @@ public partial class MainWindow : WindowEx
             control.IsVisible = false;
         }
 
-            
+
         if (loadOperation is not null)
         {
             control.BaseOperation = loadOperation;
@@ -2672,7 +2677,7 @@ public partial class MainWindow : WindowEx
 
             item.Click += MenuFileOpenRecentItemOnClick;
         }
-        
+
         MenuFileOpenRecentItems = items;
     }
 
