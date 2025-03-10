@@ -703,6 +703,7 @@ public sealed class CTBEncryptedFile : FileFormat
         get
         {
             if (MachineName.Contains("Saturn 4 Ultra", StringComparison.OrdinalIgnoreCase)) return true;
+            if (MachineName.Contains("Mars 5 Ultra", StringComparison.OrdinalIgnoreCase)) return true;
             return LayerHeight == LiftHeight && LiftHeight < 0.5 && LiftSpeed < 0.5;
         }
     }
