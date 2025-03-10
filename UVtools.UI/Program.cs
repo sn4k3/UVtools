@@ -1,6 +1,4 @@
 ﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Threading;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.FontAwesome;
 using Projektanker.Icons.Avalonia.MaterialDesign;
@@ -8,7 +6,6 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
-using Avalonia.Dialogs;
 using UVtools.Core;
 using UVtools.Core.SystemOS;
 
@@ -18,8 +15,8 @@ public static class Program
 {
     private static bool _isDebug;
 
-    public static string[] Args = Array.Empty<string>();
-    
+    public static string[] Args = [];
+
     public static bool IsDebug
     {
         get
@@ -85,7 +82,7 @@ public static class Program
         {
             points.Add(new Vertex(contours[i][x].X, contours[i][x].Y));
         }
-        
+
         //var mesh = triangulator.Triangulate(points, new Configuration());
         //var triangles = mesh.Triangles.ToArray();
 
@@ -102,7 +99,7 @@ public static class Program
             {
                 var list = new List<Vertex>();
 
-                
+
                 for (int x = 0; x < contours[i].Size; x++)
                 {
                     //list.Add(contours[i][x]);
@@ -153,7 +150,7 @@ public static class Program
 
         /*Slicer slicer = new(Size.Empty, SizeF.Empty, "D:\\Cube100x100x100.stl");
         var slices = slicer.SliceModel(0.05f);
-    
+
         foreach (var slice in slices)
         {
             using var mat = EmguExtensions.InitMat(new Size(1000, 1000));
@@ -172,7 +169,7 @@ public static class Program
         TaskScheduler.UnobservedTaskException += (sender, e) => HandleUnhandledException("Task", e.Exception);
         //Dispatcher.UIThread.UnhandledException += (sender, e) => HandleUnhandledException("Dispatcher", e.Exception);
         //AppDomain.CurrentDomain.FirstChanceException += CurrentDomainOnFirstChanceException;
-        
+
         try
         {
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
@@ -181,7 +178,7 @@ public static class Program
         {
             HandleUnhandledException("Application", e);
         }
-        
+
 
         // Closing
     }
@@ -189,6 +186,11 @@ public static class Program
     private static void HandleUnhandledException(string category, Exception ex)
     {
         ErrorLog.AppendLine($"Fatal {category} Error", ex.ToString());
+
+        if (category == "Task")
+        {
+            if (ex.Message.Contains("org.freedesktop.DBus.Error.ServiceUnknown")) return;
+        }
 
         if (!IsCrashReport)
         {

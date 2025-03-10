@@ -2818,7 +2818,7 @@
         </member>
         <member name="P:UVtools.Core.FileFormats.ChituboxFile.Header.SlicerOffset">
             <summary>
-            Gets the slicer tablet offset 
+            Gets the slicer tablet offset
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.ChituboxFile.Header.SlicerSize">
@@ -2933,12 +2933,12 @@
         </member>
         <member name="P:UVtools.Core.FileFormats.ChituboxFile.Preview.ResolutionX">
             <summary>
-            Gets the X dimension of the preview image, in pixels. 
+            Gets the X dimension of the preview image, in pixels.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.ChituboxFile.Preview.ResolutionY">
             <summary>
-            Gets the Y dimension of the preview image, in pixels. 
+            Gets the Y dimension of the preview image, in pixels.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.ChituboxFile.Preview.ImageOffset">
@@ -4283,7 +4283,7 @@
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.PpmmMax">
             <summary>
-            Gets the maximum (Width or Height) pixels per mm 
+            Gets the maximum (Width or Height) pixels per mm
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.PixelWidth">
@@ -4863,7 +4863,7 @@
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.Clear">
             <summary>
-            Clears all definitions and properties, it also dispose valid candidates 
+            Clears all definitions and properties, it also dispose valid candidates
             </summary>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.CanProcess(System.String)">
