@@ -289,7 +289,7 @@ public static class SystemAware
             }
             else
             {
-                // throw 
+                // throw
             }
         }
         catch (Exception e)

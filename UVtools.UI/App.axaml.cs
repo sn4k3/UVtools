@@ -23,7 +23,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Avalonia.Data.Core.Plugins;
 using Avalonia.Media;
 using UVtools.Core;
 using UVtools.Core.FileFormats;

@@ -563,19 +563,23 @@ public partial class MainWindow
     {
         get
         {
-            var pixelSize = SlicerFile?.PixelSizeMicronsMax;
             var text = $"Zoom: [ {LayerImageBox.Zoom / 100m}x{(AppSettings.LockedZoomLevel == LayerImageBox.Zoom ? " 🔒 ]" : " ]")}";
-            if (pixelSize > 0)
+            if (IsFileLoaded)
             {
-                if (Math.Abs(SlicerFile!.PixelWidthMicrons - SlicerFile.PixelHeightMicrons) < 0.01)
+                var pixelSizeMax = SlicerFile!.PixelSizeMicronsMax;
+                if (pixelSizeMax > 0)
                 {
-                    text += $"\nPixel: {SlicerFile.PixelSizeMicronsMax}µm";
-                }
-                else
-                {
-                    text += $"\nPixel: {SlicerFile.PixelWidthMicrons}x{SlicerFile.PixelHeightMicrons}µm";
+                    if (SlicerFile.UsingSquarePixels)
+                    {
+                        text += $"\nPixel: {pixelSizeMax}µm²";
+                    }
+                    else
+                    {
+                        text += $"\nPixel: {SlicerFile.PixelWidthMicrons}x{SlicerFile.PixelHeightMicrons}µm";
+                    }
                 }
             }
+
             return text;
         }
     }

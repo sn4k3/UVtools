@@ -273,7 +273,7 @@ public sealed class GooFile : FileFormat
                     /* When byte0[7:6] is [1:0], the meaning of byte0[5:4] follow below definition:
                      * 0 0 byte0[3:0] is the positive diff value. that's mean
                            current value subtract previous value is bigger
-                           than 0. The range is from 0 to 15. 0x0 map to 0. 
+                           than 0. The range is from 0 to 15. 0x0 map to 0.
                            0xf map to 15.
                      * 0 1 byte0[3:0] is the positive diff value. And this
                            value's run-length represent by byte1[7:0]
@@ -388,7 +388,7 @@ public sealed class GooFile : FileFormat
                         rle[firstByteIndex] |= 0x1 << 4;
                         rle.Add((byte)stride);
                     }
-                    
+
                     if (currentColor < previousColor)
                     {
                         rle[firstByteIndex] |= 0x1 << 5;
@@ -638,7 +638,7 @@ public sealed class GooFile : FileFormat
         {
             if (MachineName.Contains("Saturn 4 Ultra", StringComparison.OrdinalIgnoreCase)) return true;
             if (MachineName.Contains("Mars 5 Ultra", StringComparison.OrdinalIgnoreCase)) return true;
-            return LayerHeight == LiftHeight && LiftHeight < 0.5 && LiftSpeed < 0.5;
+            return LiftHeight == 0;
         }
     }
 
@@ -835,7 +835,7 @@ public sealed class GooFile : FileFormat
         get => Header.LiftHeight;
         set => base.LiftHeight = Header.LiftHeight = MathF.Round(value, 2);
     }
-        
+
     public override float LiftSpeed
     {
         get => Header.LiftSpeed;
@@ -1041,7 +1041,7 @@ public sealed class GooFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    
+
                     using (var mat = LayersDefinition[layerIndex].DecodeImage((uint)layerIndex))
                     {
                         _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
@@ -1079,17 +1079,15 @@ public sealed class GooFile : FileFormat
         Header.Volume = Volume;
         Header.MaterialGrams = MaterialMilliliters;
 
+
         if (HaveTiltingVat)
         {
-            BottomLiftHeightTotal = LayerHeight;
-            LiftHeightTotal = LayerHeight;
-            if (BottomLiftSpeed > 0.5 || LiftSpeed > 0.5 || BottomRetractSpeed > 0.5 || RetractSpeed > 0.5)
-            {
-                BottomLiftSpeed = 0.05f;
-                LiftSpeed = 0.05f;
-                BottomRetractSpeed = 0.05f;
-                RetractSpeed = 0.05f;
-            }
+            BottomLiftHeightTotal = 0;
+            LiftHeightTotal = 0;
+            BottomLiftSpeed = 0;
+            LiftSpeed = 0;
+            BottomRetractSpeed = 0;
+            RetractSpeed = 0;
         }
     }
 

@@ -4336,6 +4336,11 @@
             Gets the pixel area in millimeters
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.UsingSquarePixels">
+            <summary>
+            Gets if the pixels are square, otherwise false.
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.PixelScaleNormalizeXRelativeToY">
             <summary>
             Gets the pixel scale normalized with X relative to Y

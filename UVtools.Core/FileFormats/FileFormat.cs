@@ -2244,6 +2244,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public float PixelAreaMicrons => PixelSizeMicrons.Area();
 
     /// <summary>
+    /// Gets if the pixels are square, otherwise false.
+    /// </summary>
+    public bool UsingSquarePixels => Math.Abs(PixelWidthMicrons - PixelHeightMicrons) < 0.01;
+
+    /// <summary>
     /// Gets the pixel scale normalized with X relative to Y
     /// </summary>
     public float PixelScaleNormalizeXRelativeToY

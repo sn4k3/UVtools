@@ -28,7 +28,7 @@
     </controls:WindowEx.KeyBindings>
 
     <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
-    
+
     <!-- Description -->
     <Border Grid.Row="0"
       Padding="5"
@@ -44,7 +44,7 @@
                                  TextWrapping="Wrap"
                                  FontSize="16"
                                  Text="{Binding Description}"/>
-            
+
         </Expander>
     </Border>
 
@@ -206,7 +206,7 @@
 
 
     </uvtava:ScrollGroupBox>
-    
+
     <!-- Profiles -->
     <uvtava:ScrollGroupBox Grid.Row="3"
                      Margin="5"
@@ -234,14 +234,14 @@
 		<Grid RowDefinitions="Auto,Auto"
           ColumnDefinitions="*,5,Auto,5,Auto,5,Auto">
 
-          <ComboBox Grid.Row="0" Grid.Column="0" 
+          <ComboBox Grid.Row="0" Grid.Column="0"
                     Name="ProfileComboBox"
                     Margin="0,0,0,10"
                     IsEnabled="{Binding Profiles.Count}"
                     IsVisible="{Binding Profiles.Count}"
                     SelectedItem="{Binding SelectedProfileItem}"
                     HorizontalAlignment="Stretch"
-                    ItemsSource="{Binding Profiles}" 
+                    ItemsSource="{Binding Profiles}"
                     Width="{Binding ProfileBoxMaxWidth}"/>
 
           <Button Grid.Row="0" Grid.Column="2"
@@ -272,7 +272,7 @@
                   IsVisible="{Binding Profiles.Count}"
                   Command="{Binding RemoveSelectedProfile}"
                   i:Attached.Icon="fa-solid fa-trash-alt"/>
-           
+
 
           <TextBox Name="ProfileNameTextBox"
                    Grid.Row="1"
@@ -288,11 +288,11 @@
                     IsEnabled="{Binding ButtonOkEnabled}"
                     Command="{Binding AddProfile}"
                     i:Attached.Icon="fa-solid fa-plus"/>
-          
+
         </Grid>
     </uvtava:ScrollGroupBox>
 
-    <!-- Errors 
+    <!-- Errors
     <uvtava:ScrollGroupBox Grid.Row="4"
                            Header="Errors"
                            Margin="5">
@@ -340,7 +340,7 @@
                                 i:MenuItem.Icon="fa-solid fa-file-import"/>
 
 
-                        <MenuItem 
+                        <MenuItem
                                   Command="{Binding ExportSettings}"
                                   Header="Export settings"
                                   i:MenuItem.Icon="fa-solid fa-file-export"/>
@@ -367,8 +367,8 @@
                     Content="{Binding CheckBox1Text}"/>
         </StackPanel>
 
-        <StackPanel Spacing="10" 
-                    HorizontalAlignment="Right" 
+        <StackPanel Spacing="10"
+                    HorizontalAlignment="Right"
                     Orientation="Horizontal">
 
             <controls:ButtonWithIcon Padding="10"
@@ -382,11 +382,11 @@
 
 			<controls:ButtonWithIcon Padding="10"
                     IsCancel="True"
-                    Icon="fa-solid fa-sign-out-alt" 
+                    Icon="fa-solid fa-sign-out-alt"
                     Text="Cancel"
                     Command="{Binding Close}"/>
         </StackPanel>
-        
+
       </Grid>
     </Border>
 
