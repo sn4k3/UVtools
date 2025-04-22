@@ -91,7 +91,7 @@ public sealed class GR1File : FileFormat
     public sealed class LayerDef
     {
         [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public uint LineCount { get; set; }
-        [FieldOrder(1)] [FieldCount(nameof(LineCount))] public LayerLine[] Lines { get; set; } = Array.Empty<LayerLine>();
+        [FieldOrder(1)] [FieldCount(nameof(LineCount))] public LayerLine[] Lines { get; set; } = [];
         [FieldOrder(2)] public PageBreak PageBreak { get; set; } = new();
 
         public LayerDef() { }
@@ -133,7 +133,7 @@ public sealed class GR1File : FileFormat
 
     public sealed class PageBreak
     {
-        public static byte[] Bytes => new byte[] {0x0D, 0x0A};
+        public static byte[] Bytes => [0x0D, 0x0A];
         [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public byte Line { get; set; } = 0x0D;
         [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public byte Break { get; set; } = 0x0A;
     }
@@ -148,12 +148,13 @@ public sealed class GR1File : FileFormat
     public SlicerInfo SlicerInfoSettings { get; private set; } = new();
     public override FileFormatType FileType => FileFormatType.Binary;
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new (typeof(GR1File), "gr1", "GR1 Workshop")
-    };
+    ];
 
     public override PrintParameterModifier[] PrintParameterModifiers { get; } =
-    {
+    [
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.LightOffDelay,
         PrintParameterModifier.BottomExposureTime,
@@ -166,14 +167,14 @@ public sealed class GR1File : FileFormat
         PrintParameterModifier.RetractSpeed,
 
         PrintParameterModifier.BottomLightPWM,
-        PrintParameterModifier.LightPWM,
-    };
+        PrintParameterModifier.LightPWM
+    ];
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    {
+    [
         new (116, 116),
         new (290, 290)
-    };
+    ];
 
     public override bool SupportAntiAliasing => false;
 
@@ -319,7 +320,7 @@ public sealed class GR1File : FileFormat
         set => base.LightPWM = (byte)(SlicerInfoSettings.LightPWM = value);
     }
 
-    public override object[] Configs => new[] { (object)HeaderSettings, SlicerInfoSettings };
+    public override object[] Configs => [(object)HeaderSettings, SlicerInfoSettings];
 
     #endregion
 
@@ -372,7 +373,7 @@ public sealed class GR1File : FileFormat
                 {
                     var span = mat.GetDataByteReadOnlySpan();
 
-                    layerBytes[layerIndex] = new();
+                    layerBytes[layerIndex] = [];
 
                     uint lineCount = 0;
 

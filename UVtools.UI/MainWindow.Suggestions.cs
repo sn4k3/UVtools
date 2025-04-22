@@ -31,8 +31,8 @@ public partial class MainWindow
         set => SuggestionManager.Instance.Suggestions = value;
     }
 
-    public RangeObservableCollection<Suggestion> SuggestionsAvailable { get; } = new();
-    public RangeObservableCollection<Suggestion> SuggestionsApplied { get; } = new();
+    public RangeObservableCollection<Suggestion> SuggestionsAvailable { get; } = [];
+    public RangeObservableCollection<Suggestion> SuggestionsApplied { get; } = [];
 
     #endregion
 
@@ -73,7 +73,7 @@ public partial class MainWindow
         }
     }
 
-    public async void ApplySuggestionsClicked()
+    public async Task ApplySuggestionsClicked()
     {
         if (!IsFileLoaded || SuggestionsAvailableListBox!.SelectedItems!.Count == 0) return;
         var suggestions = SuggestionsAvailableListBox.SelectedItems.Cast<Suggestion>().Where(suggestion => !suggestion.IsInformativeOnly).ToArray();
@@ -134,7 +134,7 @@ public partial class MainWindow
         PopulateSuggestions(false);
     }
 
-    public async void ApplySuggestionClicked(object suggestionObject)
+    public async Task ApplySuggestionClicked(object suggestionObject)
     {
         if (!IsFileLoaded || suggestionObject is not Suggestion suggestion || suggestion.IsInformativeOnly) return;
 
@@ -179,7 +179,7 @@ public partial class MainWindow
         PopulateSuggestions(false);
     }
 
-    public async void ConfigureSuggestionsClicked()
+    public async Task ConfigureSuggestionsClicked()
     {
         if (!IsFileLoaded || Suggestions.Length == 0) return;
         var window = new SuggestionSettingsWindow();
@@ -187,7 +187,7 @@ public partial class MainWindow
         PopulateSuggestions(false);
     }
 
-    public async void ConfigureSuggestionClicked(object suggestion)
+    public async Task ConfigureSuggestionClicked(object suggestion)
     {
         if (!IsFileLoaded || Suggestions.Length == 0) return;
         var window = new SuggestionSettingsWindow((Suggestion)suggestion);

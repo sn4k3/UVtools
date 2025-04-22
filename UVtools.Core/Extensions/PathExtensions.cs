@@ -21,7 +21,7 @@ public static class PathExtensions
         return splitPath.Length == 0 ? string.Empty : splitPath[0];
     }
 
-    public static string GetFileNameStripExtensions(string path, List<string> extensions, out string strippedExtension)
+    public static string GetFileNameStripExtensions(string path, IEnumerable<string> extensions, out string strippedExtension)
     {
         strippedExtension = string.Empty;
         path = Path.GetFileName(path);
@@ -31,7 +31,7 @@ public static class PathExtensions
             var dotExtension = $".{extension}";
             if (!path.EndsWith(dotExtension, StringComparison.OrdinalIgnoreCase)) continue;
             strippedExtension = extension;
-            return path.Remove(path.Length - dotExtension.Length);
+            return path[..^dotExtension.Length];
         }
 
         return path;

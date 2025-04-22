@@ -290,13 +290,15 @@ public sealed class CWSFile : FileFormat
 
     public override string ConvertMenuGroup => "CWS";
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new (typeof(CWSFile), "cws", "NovaMaker CWS"),
         new (typeof(CWSFile), "rgb.cws", "NovaMaker Bene4|5 Mono / Elfin2 Mono SE / Whale1|2 (RGB.CWS)"),
-        new (typeof(CWSFile), "xml.cws", "Creation Workshop X (XML.CWS)"),
-    };
+        new (typeof(CWSFile), "xml.cws", "Creation Workshop X (XML.CWS)")
+    ];
 
-    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
+    [
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -331,10 +333,11 @@ public sealed class CWSFile : FileFormat
         PrintParameterModifier.RetractSpeed2,
 
         PrintParameterModifier.BottomLightPWM,
-        PrintParameterModifier.LightPWM,
-    };
+        PrintParameterModifier.LightPWM
+    ];
 
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } =
+    [
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.WaitTimeBeforeCure,
         PrintParameterModifier.ExposureTime,
@@ -347,8 +350,8 @@ public sealed class CWSFile : FileFormat
         PrintParameterModifier.RetractSpeed,
         PrintParameterModifier.RetractHeight2,
         PrintParameterModifier.RetractSpeed2,
-        PrintParameterModifier.LightPWM,
-    };
+        PrintParameterModifier.LightPWM
+    ];
 
     public override uint ResolutionX
     {
@@ -528,7 +531,10 @@ public sealed class CWSFile : FileFormat
     }
 
 
-    public override object[] Configs => LayerImageFormat == ImageFormat.Png32 ? new object[] { SliceBuildConfig, OutputSettings } : new object[] { SliceSettings, OutputSettings};
+    public override object[] Configs => LayerImageFormat == ImageFormat.Png32 ? [SliceBuildConfig, OutputSettings] :
+    [
+        SliceSettings, OutputSettings
+    ];
     #endregion
 
     #region Constructor

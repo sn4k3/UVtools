@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -60,7 +61,7 @@ public partial class ToolLithophaneControl : ToolControl
         PreviewImage = mat?.ToBitmap();
     }
 
-    public async void SelectFile()
+    public async Task SelectFile()
     {
         var files = await App.MainWindow.OpenFilePickerAsync(AvaloniaStatic.ImagesFileFilter);
         if (files.Count == 0 || files[0].TryGetLocalPath() is not {} filePath) return;

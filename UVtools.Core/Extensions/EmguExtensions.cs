@@ -662,7 +662,7 @@ public static class EmguExtensions
     /// <param name="mat"></param>
     /// <param name="pixel"></param>
     /// <param name="value"></param>
-    public static void SetByte(this Mat mat, int pixel, byte value) => SetByte(mat, pixel, new[] { value });
+    public static void SetByte(this Mat mat, int pixel, byte value) => SetByte(mat, pixel, [value]);
 
     /// <summary>
     /// Sets a byte pixel at a position
@@ -679,7 +679,7 @@ public static class EmguExtensions
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <param name="value"></param>
-    public static void SetByte(this Mat mat, int x, int y, byte value) => SetByte(mat, x, y, new[] { value });
+    public static void SetByte(this Mat mat, int x, int y, byte value) => SetByte(mat, x, y, [value]);
 
     /// <summary>
     /// Sets a byte pixel at a position
@@ -687,7 +687,7 @@ public static class EmguExtensions
     /// <param name="mat"></param>
     /// <param name="pos"></param>
     /// <param name="value"></param>
-    public static void SetByte(this Mat mat, Point pos, byte value) => SetByte(mat, pos.X, pos.Y, new[] { value });
+    public static void SetByte(this Mat mat, Point pos, byte value) => SetByte(mat, pos.X, pos.Y, [value]);
 
     /// <summary>
     /// Sets a byte pixel at a position

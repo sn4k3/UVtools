@@ -75,7 +75,7 @@ public sealed class ReflectionPropertyValue
     public static bool ParseFromString(string line, out ReflectionPropertyValue? property)
     {
         property = null;
-        var split = line.Split(new[] { '=', ':' }, 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var split = line.Split(['=', ':'], 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (split.Length < 2) return false;
         property = new(split[0], split[1]);
         return true;

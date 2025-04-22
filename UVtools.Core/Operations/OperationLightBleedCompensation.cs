@@ -149,7 +149,7 @@ public class OperationLightBleedCompensation : Operation
     {
         get
         {
-            List<byte> levels = new();
+            List<byte> levels = [];
             var split = _dimBy.Split(',', StringSplitOptions.TrimEntries);
             foreach (var str in split)
             {
@@ -166,7 +166,7 @@ public class OperationLightBleedCompensation : Operation
     {
         get
         {
-            List<MCvScalar> levels = new();
+            List<MCvScalar> levels = [];
             var split = _dimBy.Split(',', StringSplitOptions.TrimEntries);
             foreach (var str in split)
             {
@@ -217,7 +217,7 @@ public class OperationLightBleedCompensation : Operation
     public Mat[] GetDimMats()
     {
         var dimLevels = DimByMCvScalar;
-        if (dimLevels.Length == 0) return Array.Empty<Mat>();
+        if (dimLevels.Length == 0) return [];
         var mats = new Mat[dimLevels.Length];
         var matSize = GetRoiSizeOrDefault();
         for (var i = 0; i < mats.Length; i++)

@@ -76,7 +76,7 @@ public sealed class JXSFile : FileFormat
 
         [JsonPropertyName("used_material")] public float MaterialMl { get; set; }
 
-        [JsonPropertyName("action_list")] public List<object[]> Actions { get; set; } = new();
+        [JsonPropertyName("action_list")] public List<object[]> Actions { get; set; } = [];
     }
     #endregion
 
@@ -86,11 +86,13 @@ public sealed class JXSFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Archive;
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new(typeof(JXSFile), "jxs", "Uniformation GKone (JXS)")
-    };
+    ];
 
-    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
+    [
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -125,10 +127,11 @@ public sealed class JXSFile : FileFormat
         PrintParameterModifier.RetractSpeed2,
 
         PrintParameterModifier.BottomLightPWM,
-        PrintParameterModifier.LightPWM,
-    };
+        PrintParameterModifier.LightPWM
+    ];
 
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } =
+    [
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.WaitTimeBeforeCure,
         PrintParameterModifier.ExposureTime,
@@ -141,8 +144,8 @@ public sealed class JXSFile : FileFormat
         PrintParameterModifier.RetractSpeed,
         PrintParameterModifier.RetractHeight2,
         PrintParameterModifier.RetractSpeed2,
-        PrintParameterModifier.LightPWM,
-    };
+        PrintParameterModifier.LightPWM
+    ];
 
     //public override Size[]? ThumbnailsOriginalSize { get; } = {new(640, 480)};
 
@@ -282,7 +285,7 @@ public sealed class JXSFile : FileFormat
         }
     }
 
-    public override object[] Configs => new object[] { ConfigFile };
+    public override object[] Configs => [ConfigFile];
 
     #endregion
 
@@ -332,10 +335,9 @@ public sealed class JXSFile : FileFormat
 
             if (line.StartsWith(GCode!.CommandClearImage.Command))
             {
-                ControlFile.Actions.Add(new object[]
-                {
+                ControlFile.Actions.Add([
                     "slice", "<BLANK>"
-                });
+                ]);
                 continue;
             }
 
@@ -365,14 +367,12 @@ public sealed class JXSFile : FileFormat
                 }
                 layerNumber++;
 
-                ControlFile.Actions.Add(new object[]
-                {
-                    "layerno", layerNumber,
-                });
-                ControlFile.Actions.Add(new object[]
-                {
+                ControlFile.Actions.Add([
+                    "layerno", layerNumber
+                ]);
+                ControlFile.Actions.Add([
                     "slice", $"{{PWD}}/{layerIndex}.png"
-                });
+                ]);
                 continue;
             }
 
@@ -393,10 +393,9 @@ public sealed class JXSFile : FileFormat
 
                 if(delay <= 0) continue;
 
-                ControlFile.Actions.Add(new object[]
-                {
+                ControlFile.Actions.Add([
                     "delay", delay
-                });
+                ]);
                 continue;
             }
 
@@ -405,10 +404,9 @@ public sealed class JXSFile : FileFormat
                 lastG0 = line;
             }
             
-            ControlFile.Actions.Add(new object[]
-            {
+            ControlFile.Actions.Add([
                 "gcode", line
-            });
+            ]);
         }
 
         ConfigFile.GcodeFooter = lastG0;
@@ -513,7 +511,7 @@ public sealed class JXSFile : FileFormat
                 case "slice":
                     if (value.StartsWith("{PWD}/"))
                     {
-                        GCode.AppendShowImageM6054(value.Remove(0, "{PWD}/".Length));
+                        GCode.AppendShowImageM6054(value["{PWD}/".Length..]);
                     }
                     else if (value == "<BLANK>")
                     {

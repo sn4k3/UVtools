@@ -97,7 +97,7 @@ public class RemotePrinterRequest : BindableBase
             if (!string.IsNullOrWhiteSpace(value))
             {
                 value = value.Trim();
-                if (value[0] == '/') value = value.Remove(0, 1);
+                if (value[0] == '/') value = value[1..];
                 if (value[^1] == '/') value = value[..^2];
                 value = value.Trim();
             }

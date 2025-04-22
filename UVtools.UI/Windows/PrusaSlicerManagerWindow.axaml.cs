@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using UVtools.Core.Dialogs;
 using UVtools.UI.Controls;
 using UVtools.UI.Extensions;
@@ -9,14 +10,16 @@ namespace UVtools.UI.Windows;
 
 public partial class PrusaSlicerManagerWindow : WindowEx
 {
-    public PSProfileFolder[] PrusaSlicerProfiles { get; } = {
+    public PSProfileFolder[] PrusaSlicerProfiles { get; } =
+    [
         new (PSProfileFolder.FolderType.Print),
-        new (PSProfileFolder.FolderType.Printer),
-    };
-    public PSProfileFolder[] SuperSlicerProfiles { get; } = {
+        new (PSProfileFolder.FolderType.Printer)
+    ];
+    public PSProfileFolder[] SuperSlicerProfiles { get; } =
+    [
         new (PSProfileFolder.FolderType.Print, true),
-        new (PSProfileFolder.FolderType.Printer, true),
-    };
+        new (PSProfileFolder.FolderType.Printer, true)
+    ];
 
     public bool HavePrusaSlicer
     {
@@ -57,7 +60,7 @@ public partial class PrusaSlicerManagerWindow : WindowEx
         }
     }
 
-    public async void InstallProfiles()
+    public async Task InstallProfiles()
     {
         bool isSuperSlicer = TabSlicerSelectedIndex == 1;
         var printProfiles = isSuperSlicer ? SuperSlicerProfiles[0].SelectedFiles : PrusaSlicerProfiles[0].SelectedFiles;

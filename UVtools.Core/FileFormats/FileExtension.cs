@@ -35,7 +35,7 @@ public sealed class FileExtension : IEquatable<FileExtension>, IEquatable<string
     /// <summary>
     /// Gets the extension description
     /// </summary>
-    public string Description { get; } 
+    public string Description { get; }
 
     /// <summary>
     /// Gets if the extension shows up on open file dialog filters
@@ -139,14 +139,14 @@ public sealed class FileExtension : IEquatable<FileExtension>, IEquatable<string
     public static FileExtension? Find(string extension)
     {
         if (string.IsNullOrWhiteSpace(extension)) return null;
-        if (extension.StartsWith('.')) extension = extension.Remove(1);
+        if (extension.StartsWith('.')) extension = extension[..1];
         return FileFormat.FindExtension(extension);
     }
 
     public static IEnumerable<FileExtension> FindAll(string extension)
     {
-        if (string.IsNullOrWhiteSpace(extension)) return Enumerable.Empty<FileExtension>();
-        if (extension.StartsWith('.')) extension = extension.Remove(1);
+        if (string.IsNullOrWhiteSpace(extension)) return [];
+        if (extension.StartsWith('.')) extension = extension[..1];
         return FileFormat.FindExtensions(extension);
     }
 

@@ -62,7 +62,7 @@ public sealed class ZCodexFile : FileFormat
         public uint TotalLayersCount { get; set; }
         public bool DisableSettingsChanges { get; set; }
 
-        public List<LayerData> Layers { get; set; } = new();
+        public List<LayerData> Layers { get; set; } = [];
     }
 
     public class UserSettingsdata
@@ -116,8 +116,8 @@ public sealed class ZCodexFile : FileFormat
         public uint PrinterModelEnumId { get; set; } = 40;
         public string PrinterName { get; set; } = "Inkspire";
 
-        public List<MaterialsData> Materials { get; set; } = new()
-        {
+        public List<MaterialsData> Materials { get; set; } =
+        [
             new MaterialsData
             {
                 Name = "",
@@ -126,7 +126,7 @@ public sealed class ZCodexFile : FileFormat
                 Usage = 0,
                 Temperature = 0
             }
-        };
+        ];
         public byte HeatbedTemperature { get; set; }
         public byte ChamberTemperature { get; set; }
         public uint CommandCount { get; set; }
@@ -154,15 +154,17 @@ public sealed class ZCodexFile : FileFormat
     public UserSettingsdata UserSettings { get; set; } = new();
     public ZCodeMetadata ZCodeMetadataSettings { get; set; } = new();
 
-    public List<LayerData> LayersSettings { get; } = new();
+    public List<LayerData> LayersSettings { get; } = [];
 
     public override FileFormatType FileType => FileFormatType.Archive;
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new(typeof(ZCodexFile), "zcodex", "Z-Suite ZCodex")
-    };
+    ];
 
-    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
+    [
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -174,18 +176,19 @@ public sealed class ZCodexFile : FileFormat
         PrintParameterModifier.LiftHeight,
         PrintParameterModifier.LiftSpeed,
         PrintParameterModifier.BottomRetractSpeed,
-        PrintParameterModifier.RetractSpeed,
-    };
+        PrintParameterModifier.RetractSpeed
+    ];
 
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } =
+    [
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.LiftHeight,
         PrintParameterModifier.LiftSpeed,
         PrintParameterModifier.RetractSpeed,
-        PrintParameterModifier.LightPWM,
-    };
+        PrintParameterModifier.LightPWM
+    ];
 
-    public override Size[] ThumbnailsOriginalSize { get; } = {new(320, 180)};
+    public override Size[] ThumbnailsOriginalSize { get; } = [new(320, 180)];
 
     public override FlipDirection DisplayMirror
     {
@@ -323,7 +326,7 @@ public sealed class ZCodexFile : FileFormat
         set => base.MachineName = ZCodeMetadataSettings.PrinterName = value;
     }
 
-    public override object[] Configs => new[] {(object) ResinMetadataSettings, UserSettings, ZCodeMetadataSettings};
+    public override object[] Configs => [(object) ResinMetadataSettings, UserSettings, ZCodeMetadataSettings];
     #endregion
 
     #region Constructor

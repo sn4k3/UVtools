@@ -1,298 +1,321 @@
-﻿<controls:WindowEx xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:controls="clr-namespace:UVtools.UI.Controls"
-        xmlns:i="https://github.com/projektanker/icons.avalonia"
-        xmlns:uvtava="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
-        xmlns:windows="clr-namespace:UVtools.UI.Windows"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="UVtools.UI.Windows.ToolWindow"
-        x:DataType="windows:ToolWindow"
-        SizeToContent="WidthAndHeight"
-        MinWidth="500"
-        MinHeight="400"
-        WindowStartupLocation="CenterOwner"
-        Title="Tool"
-        Icon="/Assets/Icons/UVtools.ico">
+﻿<controls:WindowEx x:Class="UVtools.UI.Windows.ToolWindow"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:controls="clr-namespace:UVtools.UI.Controls"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:i="https://github.com/projektanker/icons.avalonia"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:uvtava="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
+  xmlns:windows="clr-namespace:UVtools.UI.Windows"
+  Title="Tool"
+  MinWidth="500"
+  MinHeight="400"
+  d:DesignHeight="450"
+  d:DesignWidth="800"
+  x:DataType="windows:ToolWindow"
+  Icon="/Assets/Icons/UVtools.ico"
+  SizeToContent="WidthAndHeight"
+  WindowStartupLocation="CenterOwner"
+  mc:Ignorable="d">
 
     <controls:WindowEx.KeyBindings>
-        <KeyBinding Gesture="Ctrl+Shift+A" Command="{Binding SelectAllLayers}"/>
-        <KeyBinding Gesture="Ctrl+Shift+C" Command="{Binding SelectCurrentLayer}"/>
-        <KeyBinding Gesture="Ctrl+Alt+F" Command="{Binding SelectFirstToCurrentLayer}"/>
-        <KeyBinding Gesture="Ctrl+Alt+L" Command="{Binding SelectCurrentToLastLayer}"/>
-        <KeyBinding Gesture="Ctrl+Shift+B" Command="{Binding SelectBottomLayers}"/>
-        <KeyBinding Gesture="Ctrl+Shift+N" Command="{Binding SelectNormalLayers}"/>
-        <KeyBinding Gesture="Ctrl+Shift+F" Command="{Binding SelectFirstLayer}"/>
-        <KeyBinding Gesture="Ctrl+Shift+L" Command="{Binding SelectLastLayer}"/>
+        <KeyBinding Command="{Binding SelectAllLayers}"
+          Gesture="Ctrl+Shift+A" />
+        <KeyBinding Command="{Binding SelectCurrentLayer}"
+          Gesture="Ctrl+Shift+C" />
+        <KeyBinding Command="{Binding SelectFirstToCurrentLayer}"
+          Gesture="Ctrl+Alt+F" />
+        <KeyBinding Command="{Binding SelectCurrentToLastLayer}"
+          Gesture="Ctrl+Alt+L" />
+        <KeyBinding Command="{Binding SelectBottomLayers}"
+          Gesture="Ctrl+Shift+B" />
+        <KeyBinding Command="{Binding SelectNormalLayers}"
+          Gesture="Ctrl+Shift+N" />
+        <KeyBinding Command="{Binding SelectFirstLayer}"
+          Gesture="Ctrl+Shift+F" />
+        <KeyBinding Command="{Binding SelectLastLayer}"
+          Gesture="Ctrl+Shift+L" />
     </controls:WindowEx.KeyBindings>
 
     <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
 
-    <!-- Description -->
-    <Border Grid.Row="0"
-      Padding="5"
-      IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-        <Expander IsExpanded="{Binding Settings.Tools.ExpandDescriptions}"
-                  HorizontalAlignment="Stretch"
-                  HorizontalContentAlignment="Stretch"
-                  Padding="10"
-                  Header="Description (Click to toggle)">
+        <!--  Description  -->
+        <Border Grid.Row="0"
+          Padding="5"
+          IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+            <Expander Padding="10"
+              HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Stretch"
+              Header="Description (Click to toggle)"
+              IsExpanded="{Binding Settings.Tools.ExpandDescriptions}">
 
-            <SelectableTextBlock MaxWidth="{Binding DescriptionMaxWidth}"
-                                 HorizontalAlignment="Left"
-                                 TextWrapping="Wrap"
-                                 FontSize="16"
-                                 Text="{Binding Description}"/>
+                <SelectableTextBlock MaxWidth="{Binding DescriptionMaxWidth}"
+                  HorizontalAlignment="Left"
+                  FontSize="16"
+                  Text="{Binding Description}"
+                  TextWrapping="Wrap" />
 
-        </Expander>
-    </Border>
+            </Expander>
+        </Border>
 
-    <!-- Layer Range -->
-	<uvtava:ScrollGroupBox Grid.Row="1"
-                    Margin="5"
-                    IsVisible="{Binding LayerRangeVisible}">
+        <!--  Layer Range  -->
+        <uvtava:ScrollGroupBox Grid.Row="1"
+          Margin="5"
+          IsVisible="{Binding LayerRangeVisible}">
 
-       <uvtava:ScrollGroupBox.Header>
-           <Grid ColumnDefinitions="Auto,*">
-               <TextBlock Grid.Column="0"
-                   VerticalAlignment="Center"
-                   Text="Layer range selector"/>
-               <CheckBox Grid.Column="1"
-                         VerticalAlignment="Center"
-                         HorizontalAlignment="Right"
-                         IsChecked="{Binding LayerRangeSync}"
-                         IsVisible="{Binding LayerIndexEndEnabled}"
-                         ToolTip.Tip="Synchronize and lock the layer range for single layer navigation"
-                         Content="Synchronize"/>
-           </Grid>
-       </uvtava:ScrollGroupBox.Header>
-
-	   <Grid RowDefinitions="Auto,5,Auto"
-          ColumnDefinitions="Auto,180,Auto,180,Auto">
-		   <TextBlock Grid.Row="0" Grid.Column="0"
-					  VerticalAlignment="Center"
-					  Text="From:"
-					  Margin="0,0,10,0"/>
-
-		   <NumericUpDown Grid.Row="0" Grid.Column="1"
-						  Classes="ValueLabel ValueLabel_layers"
-						  VerticalAlignment="Center"
-						  Minimum="0"
-						  Maximum="{Binding MaximumLayerIndex}"
-						  Value="{Binding LayerIndexStart}"/>
-
-		   <TextBlock Grid.Row="0" Grid.Column="2"
+            <uvtava:ScrollGroupBox.Header>
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock Grid.Column="0"
                       VerticalAlignment="Center"
-                      Text="To:"
-                      IsEnabled="{Binding !LayerRangeSync}"
-                      Margin="20,0,10,0"/>
+                      Text="Layer range selector" />
+                    <CheckBox Grid.Column="1"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Center"
+                      Content="Synchronize"
+                      IsChecked="{Binding LayerRangeSync}"
+                      IsVisible="{Binding LayerIndexEndEnabled}"
+                      ToolTip.Tip="Synchronize and lock the layer range for single layer navigation" />
+                </Grid>
+            </uvtava:ScrollGroupBox.Header>
 
-		   <NumericUpDown Grid.Row="0" Grid.Column="3"
-						  Classes="ValueLabel ValueLabel_layers"
-						  VerticalAlignment="Center"
-						  Minimum="0"
-						  Maximum="{Binding MaximumLayerIndex}"
-						  Value="{Binding LayerIndexEnd}">
-			   <NumericUpDown.IsEnabled>
-				   <MultiBinding Converter="{x:Static BoolConverters.And}">
-					   <Binding Path="LayerIndexEndEnabled"/>
-					   <Binding Path="!LayerRangeSync"/>
-				   </MultiBinding>
-			   </NumericUpDown.IsEnabled>
-		   </NumericUpDown>
+            <Grid ColumnDefinitions="Auto,180,Auto,180,Auto"
+              RowDefinitions="Auto,5,Auto">
+                <TextBlock Grid.Row="0"
+                  Grid.Column="0"
+                  Margin="0,0,10,0"
+                  VerticalAlignment="Center"
+                  Text="From:" />
 
-		   <DropDownButton Grid.Row="0" Grid.Column="4"
-						   Content="Select"
-						   Margin="10,0,0,0"
-						   VerticalAlignment="Stretch"
-						   VerticalContentAlignment="Center"
-						   Padding="10,0,10,0">
-			   <DropDownButton.Flyout>
-				   <MenuFlyout Placement="Bottom">
-					   <MenuItem Header="_All layers"
-								 InputGesture="Ctrl + Shift + A"
-								 Command="{Binding SelectAllLayers}"/>
+                <NumericUpDown Grid.Row="0"
+                  Grid.Column="1"
+                  VerticalAlignment="Center"
+                  Classes="ValueLabel ValueLabel_layers"
+                  Maximum="{Binding MaximumLayerIndex}"
+                  Minimum="0"
+                  Value="{Binding LayerIndexStart}" />
 
-					   <MenuItem Header="_Current layer"
-								 InputGesture="Ctrl + Shift + C"
-								 Command="{Binding SelectCurrentLayer}"/>
+                <TextBlock Grid.Row="0"
+                  Grid.Column="2"
+                  Margin="20,0,10,0"
+                  VerticalAlignment="Center"
+                  IsEnabled="{Binding !LayerRangeSync}"
+                  Text="To:" />
 
-					   <Separator />
+                <NumericUpDown Grid.Row="0"
+                  Grid.Column="3"
+                  VerticalAlignment="Center"
+                  Classes="ValueLabel ValueLabel_layers"
+                  Maximum="{Binding MaximumLayerIndex}"
+                  Minimum="0"
+                  Value="{Binding LayerIndexEnd}">
+                    <NumericUpDown.IsEnabled>
+                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                            <Binding Path="LayerIndexEndEnabled" />
+                            <Binding Path="!LayerRangeSync" />
+                        </MultiBinding>
+                    </NumericUpDown.IsEnabled>
+                </NumericUpDown>
 
-					   <MenuItem Header="From first to current layer"
-								 InputGesture="Ctrl + Alt + F"
-								 Command="{Binding SelectFirstToCurrentLayer}"/>
+                <DropDownButton Grid.Row="0"
+                  Grid.Column="4"
+                  Margin="10,0,0,0"
+                  Padding="10,0,10,0"
+                  VerticalAlignment="Stretch"
+                  VerticalContentAlignment="Center"
+                  Content="Select">
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuItem Command="{Binding SelectAllLayers}"
+                              Header="_All layers"
+                              InputGesture="Ctrl + Shift + A" />
 
-					   <MenuItem Header="From current to last layer"
-								 InputGesture="Ctrl + Alt + L"
-								 Command="{Binding SelectCurrentToLastLayer}"/>
+                            <MenuItem Command="{Binding SelectCurrentLayer}"
+                              Header="_Current layer"
+                              InputGesture="Ctrl + Shift + C" />
 
-					   <Separator />
+                            <Separator />
 
-					   <MenuItem Header="_Bottom layers"
-								 InputGesture="Ctrl + Shift + B"
-								 Command="{Binding SelectBottomLayers}"/>
+                            <MenuItem Command="{Binding SelectFirstToCurrentLayer}"
+                              Header="From first to current layer"
+                              InputGesture="Ctrl + Alt + F" />
 
-					   <MenuItem Header="_Normal layers"
-								 InputGesture="Ctrl + Shift + N"
-								 Command="{Binding SelectNormalLayers}"/>
+                            <MenuItem Command="{Binding SelectCurrentToLastLayer}"
+                              Header="From current to last layer"
+                              InputGesture="Ctrl + Alt + L" />
 
-					   <Separator />
+                            <Separator />
 
-					   <MenuItem Header="_First layer"
-								 InputGesture="Ctrl + Shift + F"
-								 Command="{Binding SelectFirstLayer}"/>
+                            <MenuItem Command="{Binding SelectBottomLayers}"
+                              Header="_Bottom layers"
+                              InputGesture="Ctrl + Shift + B" />
 
-					   <MenuItem Header="_Last layer"
-								 InputGesture="Ctrl + Shift + L"
-								 Command="{Binding SelectLastLayer}"/>
-				   </MenuFlyout>
-			   </DropDownButton.Flyout>
-		   </DropDownButton>
+                            <MenuItem Command="{Binding SelectNormalLayers}"
+                              Header="_Normal layers"
+                              InputGesture="Ctrl + Shift + N" />
 
-		   <TextBlock Grid.Row="2" Grid.Column="1"
-                      HorizontalAlignment="Center"
-                      Text="{Binding LayerStartMM, StringFormat=({0:F3}mm)}" />
+                            <Separator />
 
-		   <TextBlock Grid.Row="2" Grid.Column="3"
-                      HorizontalAlignment="Center"
-                      Text="{Binding LayerEndMM, StringFormat=({0:F3}mm)}" />
+                            <MenuItem Command="{Binding SelectFirstLayer}"
+                              Header="_First layer"
+                              InputGesture="Ctrl + Shift + F" />
 
-		   <TextBlock Grid.Row="2" Grid.Column="4"
-                      Margin="10,0,0,0"
-                      HorizontalAlignment="Center"
-                      Text="{Binding LayerRangeCountStr}" />
+                            <MenuItem Command="{Binding SelectLastLayer}"
+                              Header="_Last layer"
+                              InputGesture="Ctrl + Shift + L" />
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                </DropDownButton>
 
-	   </Grid>
-   </uvtava:ScrollGroupBox>
+                <TextBlock Grid.Row="2"
+                  Grid.Column="1"
+                  HorizontalAlignment="Center"
+                  Text="{Binding LayerStartMM, StringFormat=({0:F3}mm)}" />
 
-    <!-- ROI -->
-      <uvtava:ScrollGroupBox Grid.Row="2"
-                       Margin="5"
-                       IsVisible="{Binding IsROIOrMasksVisible}">
+                <TextBlock Grid.Row="2"
+                  Grid.Column="3"
+                  HorizontalAlignment="Center"
+                  Text="{Binding LayerEndMM, StringFormat=({0:F3}mm)}" />
 
-		  <uvtava:ScrollGroupBox.Header>
-			  <Grid ColumnDefinitions="Auto,*">
-                  <TextBlock Grid.Column="0"
+                <TextBlock Grid.Row="2"
+                  Grid.Column="4"
+                  Margin="10,0,0,0"
+                  HorizontalAlignment="Center"
+                  Text="{Binding LayerRangeCountStr}" />
+
+            </Grid>
+        </uvtava:ScrollGroupBox>
+
+        <!--  ROI  -->
+        <uvtava:ScrollGroupBox Grid.Row="2"
+          Margin="5"
+          IsVisible="{Binding IsROIOrMasksVisible}">
+
+            <uvtava:ScrollGroupBox.Header>
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock Grid.Column="0"
                       VerticalAlignment="Center"
                       Text="Region of interest (ROI) and Masks" />
 
-                  <StackPanel Orientation="Horizontal"
-                              Grid.Column="1"
-                              HorizontalAlignment="Right"
-                              Spacing="1">
-                      <Button VerticalAlignment="Center"
-                              Content="Clear ROI"
-                              IsVisible="{Binding IsROIVisible}"
-                              Command="{Binding ClearROI}"/>
-                      <Button VerticalAlignment="Center"
-                              Content="{Binding Masks.Length, StringFormat=Clear {0} mask(s)}"
-                              IsVisible="{Binding IsMasksVisible}"
-                              Command="{Binding ClearMasks}"/>
+                    <StackPanel Grid.Column="1"
+                      HorizontalAlignment="Right"
+                      Orientation="Horizontal"
+                      Spacing="1">
+                        <Button VerticalAlignment="Center"
+                          Command="{Binding ClearROI}"
+                          Content="Clear ROI"
+                          IsVisible="{Binding IsROIVisible}" />
+                        <Button VerticalAlignment="Center"
+                          Command="{Binding ClearMasks}"
+                          Content="{Binding Masks.Length, StringFormat=Clear {0} mask(s)}"
+                          IsVisible="{Binding IsMasksVisible}" />
 
-                  </StackPanel>
-              </Grid>
-		  </uvtava:ScrollGroupBox.Header>
+                    </StackPanel>
+                </Grid>
+            </uvtava:ScrollGroupBox.Header>
 
-        <StackPanel Spacing="5">
-          <TextBlock IsVisible="{Binding IsROIVisible}"
-                     Text="{Binding ROI, StringFormat=Region: {0}}" />
+            <StackPanel Spacing="5">
+                <TextBlock IsVisible="{Binding IsROIVisible}"
+                  Text="{Binding ROI, StringFormat=Region: {0}}" />
 
-            <CheckBox Content="Clear ROI and Masks after perform the operation"
-                      IsChecked="{Binding ClearROIAndMaskAfterOperation}"/>
+                <CheckBox Content="Clear ROI and Masks after perform the operation"
+                  IsChecked="{Binding ClearROIAndMaskAfterOperation}" />
 
-          </StackPanel>
+            </StackPanel>
 
 
-    </uvtava:ScrollGroupBox>
+        </uvtava:ScrollGroupBox>
 
-    <!-- Profiles -->
-    <uvtava:ScrollGroupBox Grid.Row="3"
-                     Margin="5"
-                     IsVisible="{Binding IsProfilesVisible}">
+        <!--  Profiles  -->
+        <uvtava:ScrollGroupBox Grid.Row="3"
+          Margin="5"
+          IsVisible="{Binding IsProfilesVisible}">
 
-        <uvtava:ScrollGroupBox.Header>
-            <Grid ColumnDefinitions="Auto,*">
-                <TextBlock Grid.Row="0" Grid.Column="0"
-                           VerticalAlignment="Center"
-                           Text="{Binding Profiles.Count, StringFormat=Profiles: {0}}" />
+            <uvtava:ScrollGroupBox.Header>
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock Grid.Row="0"
+                      Grid.Column="0"
+                      VerticalAlignment="Center"
+                      Text="{Binding Profiles.Count, StringFormat=Profiles: {0}}" />
 
-                <Button Grid.Row="0" Grid.Column="1"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Right"
-                        ToolTip.Tip="Clear all profiles"
-                        IsEnabled="{Binding Profiles.Count}"
-                        Command="{Binding ClearProfiles}"
-                        i:Attached.Icon="fa-solid fa-xmark">
-                </Button>
+                    <Button Grid.Row="0"
+                      Grid.Column="1"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Center"
+                      i:Attached.Icon="fa-solid fa-xmark"
+                      Command="{Binding ClearProfiles}"
+                      IsEnabled="{Binding Profiles.Count}"
+                      ToolTip.Tip="Clear all profiles" />
 
+
+                </Grid>
+            </uvtava:ScrollGroupBox.Header>
+
+            <Grid ColumnDefinitions="*,5,Auto,5,Auto,5,Auto"
+              RowDefinitions="Auto,Auto">
+
+                <ComboBox Name="ProfileComboBox"
+                  Grid.Row="0"
+                  Grid.Column="0"
+                  Width="{Binding ProfileBoxMaxWidth}"
+                  Margin="0,0,0,10"
+                  HorizontalAlignment="Stretch"
+                  IsEnabled="{Binding Profiles.Count}"
+                  IsVisible="{Binding Profiles.Count}"
+                  ItemsSource="{Binding Profiles}"
+                  SelectedItem="{Binding SelectedProfileItem}" />
+
+                <Button Grid.Row="0"
+                  Grid.Column="2"
+                  Margin="0,0,0,10"
+                  VerticalAlignment="Stretch"
+                  i:Attached.Icon="fa-regular fa-square"
+                  Command="{Binding DeselectProfile}"
+                  IsEnabled="{Binding SelectedProfileItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                  IsVisible="{Binding Profiles.Count}"
+                  ToolTip.Tip="Deselect the current profile" />
+
+                <Button Grid.Row="0"
+                  Grid.Column="4"
+                  Margin="0,0,0,10"
+                  VerticalAlignment="Stretch"
+                  Command="{Binding SetDefaultProfile}"
+                  Content="D"
+                  FontWeight="Bold"
+                  IsEnabled="{Binding SelectedProfileItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                  IsVisible="{Binding Profiles.Count}"
+                  ToolTip.Tip="Set the selected profile as default to load in with this dialog. &#x0a;Shift + click to clear the default profile." />
+
+                <Button Grid.Row="0"
+                  Grid.Column="6"
+                  Margin="0,0,0,10"
+                  VerticalAlignment="Stretch"
+                  i:Attached.Icon="fa-solid fa-trash-alt"
+                  Command="{Binding RemoveSelectedProfile}"
+                  IsEnabled="{Binding SelectedProfileItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                  IsVisible="{Binding Profiles.Count}"
+                  ToolTip.Tip="Remove the selected profile" />
+
+
+                <TextBox Name="ProfileNameTextBox"
+                  Grid.Row="1"
+                  Grid.Column="0"
+                  Width="{Binding ProfileBoxMaxWidth}"
+                  IsEnabled="{Binding ButtonOkEnabled}"
+                  Text="{Binding ProfileText}"
+                  Watermark="Profile name or leave empty for auto name" />
+
+                <Button Grid.Row="1"
+                  Grid.Column="2"
+                  VerticalAlignment="Stretch"
+                  i:Attached.Icon="fa-solid fa-plus"
+                  Command="{Binding AddProfile}"
+                  IsEnabled="{Binding ButtonOkEnabled}"
+                  ToolTip.Tip="Add a new profile with the current set values" />
 
             </Grid>
-		</uvtava:ScrollGroupBox.Header>
+        </uvtava:ScrollGroupBox>
 
-		<Grid RowDefinitions="Auto,Auto"
-          ColumnDefinitions="*,5,Auto,5,Auto,5,Auto">
-
-          <ComboBox Grid.Row="0" Grid.Column="0"
-                    Name="ProfileComboBox"
-                    Margin="0,0,0,10"
-                    IsEnabled="{Binding Profiles.Count}"
-                    IsVisible="{Binding Profiles.Count}"
-                    SelectedItem="{Binding SelectedProfileItem}"
-                    HorizontalAlignment="Stretch"
-                    ItemsSource="{Binding Profiles}"
-                    Width="{Binding ProfileBoxMaxWidth}"/>
-
-          <Button Grid.Row="0" Grid.Column="2"
-                  Margin="0,0,0,10"
-                  VerticalAlignment="Stretch"
-                  ToolTip.Tip="Deselect the current profile"
-                  IsEnabled="{Binding SelectedProfileItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                  IsVisible="{Binding Profiles.Count}"
-                  Command="{Binding DeselectProfile}"
-                  i:Attached.Icon="fa-regular fa-square"/>
-
-          <Button Grid.Row="0" Grid.Column="4"
-                  Margin="0,0,0,10"
-                  VerticalAlignment="Stretch"
-                  FontWeight="Bold"
-                  ToolTip.Tip="Set the selected profile as default to load in with this dialog.
-&#x0a;Shift + click to clear the default profile."
-                  IsEnabled="{Binding SelectedProfileItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                  IsVisible="{Binding Profiles.Count}"
-                  Command="{Binding SetDefaultProfile}"
-                  Content="D"/>
-
-          <Button Grid.Row="0" Grid.Column="6"
-                  Margin="0,0,0,10"
-                  VerticalAlignment="Stretch"
-                  ToolTip.Tip="Remove the selected profile"
-                  IsEnabled="{Binding SelectedProfileItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                  IsVisible="{Binding Profiles.Count}"
-                  Command="{Binding RemoveSelectedProfile}"
-                  i:Attached.Icon="fa-solid fa-trash-alt"/>
-
-
-          <TextBox Name="ProfileNameTextBox"
-                   Grid.Row="1"
-                   Grid.Column="0"
-                   IsEnabled="{Binding ButtonOkEnabled}"
-                   Text="{Binding ProfileText}"
-                   Watermark="Profile name or leave empty for auto name"
-                   Width="{Binding ProfileBoxMaxWidth}"/>
-
-			<Button Grid.Row="1" Grid.Column="2"
-                    VerticalAlignment="Stretch"
-                    ToolTip.Tip="Add a new profile with the current set values"
-                    IsEnabled="{Binding ButtonOkEnabled}"
-                    Command="{Binding AddProfile}"
-                    i:Attached.Icon="fa-solid fa-plus"/>
-
-        </Grid>
-    </uvtava:ScrollGroupBox>
-
-    <!-- Errors
+        <!-- Errors
     <uvtava:ScrollGroupBox Grid.Row="4"
                            Header="Errors"
                            Margin="5">
@@ -306,90 +329,90 @@
         <SelectableTextBlock Text="{Binding ContentControl.LastValidationMessage}"/>
 
     </uvtava:ScrollGroupBox>
-    -->
+        -->
 
-    <!-- Content -->
-    <uvtava:ScrollGroupBox Grid.Row="4"
-      IsVisible="{Binding IsContentVisible}"
-      Header="{Binding Title}"
-      Content="{Binding ContentControl}"
-      Margin="5"/>
+        <!--  Content  -->
+        <uvtava:ScrollGroupBox Grid.Row="4"
+          Margin="5"
+          Content="{Binding ContentControl}"
+          Header="{Binding Title}"
+          IsVisible="{Binding IsContentVisible}" />
 
 
-    <!-- Actions -->
-    <Border Grid.Row="5" Classes="FooterActions">
-      <Grid RowDefinitions="Auto"
-          ColumnDefinitions="*">
-        <StackPanel Spacing="10" Orientation="Horizontal">
-            <Button Command="{Binding #OptionsContextMenu.Open}"
-                    IsVisible="{Binding CanHaveProfiles}"
-                    Padding="10"
-                    Content="☰">
-                <Button.ContextMenu>
-                    <ContextMenu Name="OptionsContextMenu" Placement="Top">
-                        <MenuItem IsVisible="{Binding CanROI}"
+        <!--  Actions  -->
+        <Border Grid.Row="5"
+          Classes="FooterActions">
+            <Grid ColumnDefinitions="*"
+              RowDefinitions="Auto">
+                <StackPanel Orientation="Horizontal"
+                  Spacing="10">
+                    <Button Padding="10"
+                      Command="{Binding #OptionsContextMenu.Open}"
+                      Content="☰"
+                      IsVisible="{Binding CanHaveProfiles}">
+                        <Button.ContextMenu>
+                            <ContextMenu Name="OptionsContextMenu"
+                              Placement="Top">
+                                <MenuItem i:MenuItem.Icon="fa-solid fa-expand"
                                   Command="{Binding SelectVolumeBoundingRectangle}"
                                   Header="Select print volume ROI"
-                                  i:MenuItem.Icon="fa-solid fa-expand"/>
+                                  IsVisible="{Binding CanROI}" />
 
-                        <Separator IsVisible="{Binding CanROI}"/>
+                                <Separator IsVisible="{Binding CanROI}" />
 
-                      <MenuItem IsVisible="{Binding CanHaveProfiles}"
-                                Command="{Binding ImportSettings}"
-                                Header="Import settings"
-                                i:MenuItem.Icon="fa-solid fa-file-import"/>
+                                <MenuItem i:MenuItem.Icon="fa-solid fa-file-import"
+                                  Command="{Binding ImportSettings}"
+                                  Header="Import settings"
+                                  IsVisible="{Binding CanHaveProfiles}" />
 
 
-                        <MenuItem
+                                <MenuItem i:MenuItem.Icon="fa-solid fa-file-export"
                                   Command="{Binding ExportSettings}"
-                                  Header="Export settings"
-                                  i:MenuItem.Icon="fa-solid fa-file-export"/>
+                                  Header="Export settings" />
 
-                        <Separator IsVisible="{Binding CanHaveProfiles}"/>
+                                <Separator IsVisible="{Binding CanHaveProfiles}" />
 
-						<MenuItem Command="{Binding ResetToDefaults}"
-                                  Header="Reset to defaults"
-                                  i:MenuItem.Icon="fa-solid fa-undo-alt"/>
-                    </ContextMenu>
-                </Button.ContextMenu>
-            </Button>
+                                <MenuItem i:MenuItem.Icon="fa-solid fa-undo-alt"
+                                  Command="{Binding ResetToDefaults}"
+                                  Header="Reset to defaults" />
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
 
-			<controls:ButtonWithIcon Padding="10"
-                                     IsDefault="True"
-                                     IsVisible="{Binding IsButton1Visible}"
-                                     Icon="fa-solid fa-undo-alt"
-                                     Text="{Binding Button1Text}"
-                                     Command="{Binding OnButton1Click}">
-          </controls:ButtonWithIcon>
+                    <controls:ButtonWithIcon Padding="10"
+                      Command="{Binding OnButton1Click}"
+                      Icon="fa-solid fa-undo-alt"
+                      IsDefault="True"
+                      IsVisible="{Binding IsButton1Visible}"
+                      Text="{Binding Button1Text}" />
 
-          <CheckBox IsChecked="{Binding IsCheckBox1Checked}"
-                    IsVisible="{Binding IsCheckBox1Visible}"
-                    Content="{Binding CheckBox1Text}"/>
-        </StackPanel>
+                    <CheckBox Content="{Binding CheckBox1Text}"
+                      IsChecked="{Binding IsCheckBox1Checked}"
+                      IsVisible="{Binding IsCheckBox1Visible}" />
+                </StackPanel>
 
-        <StackPanel Spacing="10"
-                    HorizontalAlignment="Right"
-                    Orientation="Horizontal">
+                <StackPanel HorizontalAlignment="Right"
+                  Orientation="Horizontal"
+                  Spacing="10">
 
-            <controls:ButtonWithIcon Padding="10"
-                                     IsDefault="True"
-                                     IsVisible="{Binding ButtonOkVisible}"
-                                     IsEnabled="{Binding ButtonOkEnabled}"
-                                     Icon="fa-solid fa-check"
-                                     Text="{Binding ButtonOkText}"
-                                     Command="{Binding Process}">
-			</controls:ButtonWithIcon>
+                    <controls:ButtonWithIcon Padding="10"
+                      Command="{Binding Process}"
+                      Icon="fa-solid fa-check"
+                      IsDefault="True"
+                      IsEnabled="{Binding ButtonOkEnabled}"
+                      IsVisible="{Binding ButtonOkVisible}"
+                      Text="{Binding ButtonOkText}" />
 
-			<controls:ButtonWithIcon Padding="10"
-                    IsCancel="True"
-                    Icon="fa-solid fa-sign-out-alt"
-                    Text="Cancel"
-                    Command="{Binding Close}"/>
-        </StackPanel>
+                    <controls:ButtonWithIcon Padding="10"
+                      Command="{Binding Close}"
+                      Icon="fa-solid fa-sign-out-alt"
+                      IsCancel="True"
+                      Text="Cancel" />
+                </StackPanel>
 
-      </Grid>
-    </Border>
+            </Grid>
+        </Border>
 
-  </Grid>
+    </Grid>
 
 </controls:WindowEx>

@@ -25,15 +25,15 @@ public abstract class MeshFile : IDisposable
     #region Static
 
     public static readonly FileExtension[] AvailableMeshFiles =
-    {
+    [
         STLMeshFile.FileExtension,
         Consortium3MFMeshFile.FileExtension,
         AMFMeshFile.FileExtension,
         WRLMeshFile.FileExtension,
         OBJMeshFile.FileExtension,
         PLYMeshFile.FileExtension,
-        OFFMeshFile.FileExtension,
-    };
+        OFFMeshFile.FileExtension
+    ];
 
     public static string HeaderComment => $"Exported from {About.SoftwareWithVersion} @ {DateTime.UtcNow:u}";
 

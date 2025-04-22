@@ -42,7 +42,7 @@ public abstract class Suggestion : BindableBase
 
     #region Properties
 
-    public string Id => GetType().Name.Remove(0, "Suggestion".Length);
+    public string Id => GetType().Name["Suggestion".Length..];
 
     /// <summary>
     /// Gets or sets the <see cref="FileFormat"/>
@@ -231,7 +231,7 @@ public abstract class Suggestion : BindableBase
         }
 
         var baseName = "Suggestion";
-        if (classNamePath.StartsWith(baseName)) classNamePath = classNamePath.Remove(0, baseName.Length);
+        if (classNamePath.StartsWith(baseName)) classNamePath = classNamePath[baseName.Length..];
         if (classNamePath == string.Empty) return null;
 
         var baseType = typeof(Suggestion).FullName;

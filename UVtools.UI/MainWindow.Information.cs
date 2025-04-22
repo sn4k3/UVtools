@@ -16,6 +16,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using UVtools.Core.Dialogs;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -31,11 +32,11 @@ namespace UVtools.UI;
 
 public partial class MainWindow
 {
-    public RangeObservableCollection<SlicerProperty> SlicerProperties { get; } = new();
+    public RangeObservableCollection<SlicerProperty> SlicerProperties { get; } = [];
 
     private int _visibleThumbnailIndex = -1;
     private Bitmap? _visibleThumbnailImage;
-    private RangeObservableCollection<ValueDescription> _currentLayerProperties = new();
+    private RangeObservableCollection<ValueDescription> _currentLayerProperties = [];
 
     public RangeObservableCollection<ValueDescription> CurrentLayerProperties
     {
@@ -123,7 +124,7 @@ public partial class MainWindow
             if (!RaiseAndSetIfChanged(ref _visibleThumbnailIndex, value)) return;
             if (value >= SlicerFile!.ThumbnailsCount) return;
             if (SlicerFile.Thumbnails[value].IsEmpty) return;
-            
+
             VisibleThumbnailImage = SlicerFile.Thumbnails[value].ToBitmap();
         }
     }
@@ -141,7 +142,7 @@ public partial class MainWindow
 
     public string VisibleThumbnailResolution => _visibleThumbnailImage is null ? string.Empty : $"{{Width: {_visibleThumbnailImage.Size.Width}, Height: {_visibleThumbnailImage.Size.Height}}}";
 
-    public async void OnClickThumbnailSave()
+    public async Task OnClickThumbnailSave()
     {
         if (!IsFileLoaded) return;
 
@@ -150,7 +151,7 @@ public partial class MainWindow
         SlicerFile.Thumbnails[_visibleThumbnailIndex].Save(filePath);
     }
 
-    public async void OnClickThumbnailImportFile(object replaceAllObj)
+    public async Task OnClickThumbnailImportFile(object replaceAllObj)
     {
         if (!IsFileLoaded) return;
         var replaceAll = Convert.ToBoolean(replaceAllObj);
@@ -245,7 +246,7 @@ public partial class MainWindow
         if (result) CanSave = true;
     }
 
-    public async void OnClickThumbnailImportHeatmap(object replaceAllObj)
+    public async Task OnClickThumbnailImportHeatmap(object replaceAllObj)
     {
         if (!IsFileLoaded) return;
         if (SlicerFile!.DecodeType == FileFormat.FileDecodeType.Partial) return;
@@ -306,7 +307,7 @@ public partial class MainWindow
 
     #region Slicer Properties
 
-    public async void OnClickPropertiesSaveFile()
+    public async Task OnClickPropertiesSaveFile()
     {
         if (SlicerFile?.Configs is null) return;
 
@@ -314,7 +315,7 @@ public partial class MainWindow
 
         if (file?.TryGetLocalPath() is not { } filePath) return;
 
-        
+
         try
         {
             await using TextWriter tw = new StreamWriter(filePath);
@@ -435,7 +436,7 @@ public partial class MainWindow
         if (SlicerFile.SupportPerLayerSettings)
         {
             if (SlicerFile.CanUseLayerLiftHeight)
-            { 
+            {
                 var value = $"{layer.LiftHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min";
                 if (SlicerFile.CanUseLayerLiftAcceleration) value += $" ({layer.LiftAcceleration.ToString(CultureInfo.InvariantCulture)}mm/s²)";
                 CurrentLayerProperties.Add(new ValueDescription(value, nameof(layer.LiftHeight)));

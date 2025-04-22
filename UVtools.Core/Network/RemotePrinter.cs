@@ -142,8 +142,8 @@ public class RemotePrinter : BindableBase
     }
 
 
-    public RemotePrinterRequest[] Requests => new []
-    {
+    public RemotePrinterRequest[] Requests =>
+    [
         _requestUploadFile, 
         _requestPrintFile,
         _requestDeleteFile,
@@ -152,8 +152,8 @@ public class RemotePrinter : BindableBase
         _requestStopPrint,
         _requestGetFiles,
         _requestPrintStatus,
-        _requestPrinterInfo,
-    };
+        _requestPrinterInfo
+    ];
 
     /*
     /// <summary>

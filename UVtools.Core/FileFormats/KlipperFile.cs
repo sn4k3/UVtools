@@ -29,7 +29,7 @@ public sealed class KlipperFile : FileFormat
 
     public const string KlipperFileIdentifier = ".klipper";
 
-    public static readonly string[] ThumbnailsEntryNames = { "preview.png", "preview_cropping.png" };
+    public static readonly string[] ThumbnailsEntryNames = ["preview.png", "preview_cropping.png"];
     #endregion
 
     #region Sub Classes
@@ -102,12 +102,14 @@ public sealed class KlipperFile : FileFormat
 
     public override string? ConvertMenuGroup => "Klipper";
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new(typeof(KlipperFile), "zip", "Klipper (Mono)"),
         new(typeof(KlipperFile), "rgb.zip", "Klipper (RGB)")
-    };
+    ];
 
-    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
+    [
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -150,10 +152,11 @@ public sealed class KlipperFile : FileFormat
         PrintParameterModifier.RetractAcceleration2,
 
         PrintParameterModifier.BottomLightPWM,
-        PrintParameterModifier.LightPWM,
-    };
+        PrintParameterModifier.LightPWM
+    ];
 
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } =
+    [
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.WaitTimeBeforeCure,
         PrintParameterModifier.ExposureTime,
@@ -172,14 +175,14 @@ public sealed class KlipperFile : FileFormat
         PrintParameterModifier.RetractAcceleration2,
         PrintParameterModifier.LightPWM,
         PrintParameterModifier.Pause,
-        PrintParameterModifier.ChangeResin,
-    };
+        PrintParameterModifier.ChangeResin
+    ];
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    {
+    [
         new(32, 32), 
         new(400, 300)
-    };
+    ];
 
     public override uint ResolutionX
     {
@@ -498,7 +501,7 @@ public sealed class KlipperFile : FileFormat
         set => base.MachineName = HeaderSettings.MachineName = value;
     }
 
-    public override object[] Configs => new object[] { HeaderSettings };
+    public override object[] Configs => [HeaderSettings];
 
     #endregion
 
@@ -750,7 +753,7 @@ public sealed class KlipperFile : FileFormat
     public override void RebuildGCode()
     {
         if (!SupportGCode || SuppressRebuildGCode) return;
-        GCode?.RebuildGCode(this, new object[]{ HeaderSettings });
+        GCode?.RebuildGCode(this, [HeaderSettings]);
         RaisePropertyChanged(nameof(GCodeStr));
     }
 

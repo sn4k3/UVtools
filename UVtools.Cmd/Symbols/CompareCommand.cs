@@ -20,8 +20,8 @@ internal static class CompareCommand
     {
         var fileAArgument = new Argument<FileInfo>("input-file-a", "Input file (A) to compare").ExistingOnly();
         var fileBArgument = new Argument<FileInfo>("input-file-b", "Input file (B) to compare").ExistingOnly();
-        var excludeLayersOption = new Option<bool>(new[] { "--without-layers" }, "Do not compare layers");
-        var propertiesOption = new Option<string[]>(new[] { "-p", "--property" }, "List of strict properties to show if different");
+        var excludeLayersOption = new Option<bool>(["--without-layers"], "Do not compare layers");
+        var propertiesOption = new Option<string[]>(["-p", "--property"], "List of strict properties to show if different");
 
         var command = new Command("compare", "Compare two files and output the differences")
         {

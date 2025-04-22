@@ -5,6 +5,8 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
+using System.Threading.Tasks;
 using UVtools.Core.Dialogs;
 using UVtools.UI.Controls;
 using UVtools.UI.Extensions;
@@ -59,7 +61,7 @@ public sealed partial class MissingInformationWindow : WindowEx
         DataContext = this;
     }
 
-    public async void Apply()
+    public async Task Apply()
     {
         if (await this.MessageBoxQuestion("Are you sure you want to submit and apply the information?", "Submit and apply the information?") != MessageButtonResult.Yes) return;
 

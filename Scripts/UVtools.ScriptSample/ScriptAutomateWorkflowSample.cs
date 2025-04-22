@@ -42,12 +42,11 @@ public class ScriptAutomateWorkflowSample : ScriptGlobals
         Script.Description = "A workflow automation sample";
         Script.Author = "Tiago Conceição";
         Script.Version = new Version(0, 1);
-        Script.UserInputs.AddRange(new []
-        {
+        Script.UserInputs.AddRange([
             InputErode, 
             InputReliefRaft,
             InputPixelDimming
-        });
+        ]);
     }
 
     /// <summary>
@@ -65,7 +64,7 @@ public class ScriptAutomateWorkflowSample : ScriptGlobals
     /// <returns>True if executes successfully to the end, otherwise false.</returns>
     public bool ScriptExecute()
     {
-        List<Operation> operations = new();
+        List<Operation> operations = [];
 
         // Morph bottom layers
         if (InputErode.Value)

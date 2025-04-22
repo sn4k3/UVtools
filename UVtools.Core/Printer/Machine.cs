@@ -210,8 +210,8 @@ namespace UVtools.Core.Printer
         /// Preset list of machines
         /// </summary>
         public static Machine[] Machines =>
-            new Machine[]{
-                // Creality
+        [
+            // Creality
                 /*new(PrinterBrand.Creality, "Halot One",      "CL-60",    1620, 2560, 81,      128,     160),
                 new(PrinterBrand.Creality, "Halot One Pro",  "CL-70",    2560, 2400, 130.56f, 122.4f,  160),
                 new(PrinterBrand.Creality, "Halot One Plus", "CL-79",    4320, 2560, 172.8f,  102.4f,  160),
@@ -391,8 +391,8 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Wanhao, "Wanhao D7", "D7", 2560, 1440, 120.96f, 68.5f, 180f, FlipDirection.Horizontally),
                 new(PrinterBrand.Wanhao, "Wanhao D8", "D8", 2560, 1600, 192f, 120f, 180f, FlipDirection.Horizontally),
 
-                new(PrinterBrand.Zortrax, "Zortrax Inkspire", "Inkspire", 1440, 2560, 74.67f, 132.88f, 175f, FlipDirection.Horizontally),
-            };
+                new(PrinterBrand.Zortrax, "Zortrax Inkspire", "Inkspire", 1440, 2560, 74.67f, 132.88f, 175f, FlipDirection.Horizontally)
+        ];
 
         /// <summary>
         /// Gets all machines from PrusaSlicer profiles

@@ -22,8 +22,8 @@ public partial class ToolPixelArithmeticControl : ToolControl
         Operation.PresetElephantFootCompensation();
     }
 
-    public async void LoadNormalPatternFromImage() => await LoadPatternFromImage(false);
-    public async void LoadAlternatePatternFromImage() => await LoadPatternFromImage(true);
+    public async Task LoadNormalPatternFromImage() => await LoadPatternFromImage(false);
+    public async Task LoadAlternatePatternFromImage() => await LoadPatternFromImage(true);
     public async Task<bool> LoadPatternFromImage(bool isAlternatePattern = false)
     {
         var files = await App.MainWindow.OpenFilePickerAsync(AvaloniaStatic.ImagesFileFilter);

@@ -11,12 +11,12 @@ public partial class ToolThresholdControl : ToolControl
     private bool _isTypeEnabled = true;
     public OperationThreshold Operation => (BaseOperation as OperationThreshold)!;
 
-    public string[] Presets => new[]
-    {
+    public string[] Presets =>
+    [
         "Free use",
         "Strip AntiAliasing",
         "Set pixel brightness"
-    };
+    ];
 
     public bool IsThresholdEnabled
     {

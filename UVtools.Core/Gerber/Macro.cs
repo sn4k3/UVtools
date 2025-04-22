@@ -25,7 +25,7 @@ public class Macro : IReadOnlyList<Primitive>
     /// </summary>
     public string Name { get; set; } = string.Empty;
 
-    public List<Primitive> Primitives { get; } = new();
+    public List<Primitive> Primitives { get; } = [];
     #endregion
 
     public Macro(GerberFormat document)

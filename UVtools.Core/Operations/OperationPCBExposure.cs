@@ -68,8 +68,8 @@ public class OperationPCBExposure : Operation
 
     #region Static
 
-    public static string[] ValidExtensions => new[]
-    {
+    public static string[] ValidExtensions =>
+    [
         "gbr", // Gerber
         "gko", // Board outline layer
         "gtl", // Top layer
@@ -81,11 +81,11 @@ public class OperationPCBExposure : Operation
         "gml", // Mechanical layer
         "drl", // Drill holes
         "xln"  // Eagle drill holes
-    };
+    ];
     #endregion
 
     #region Members
-    private RangeObservableCollection<PCBExposureFile> _files = new();
+    private RangeObservableCollection<PCBExposureFile> _files = [];
 
     private bool _mergeFiles;
     private decimal _layerHeight;

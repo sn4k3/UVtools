@@ -19,7 +19,7 @@ namespace UVtools.Core.FileFormats;
 public sealed class CTBEncryptedFile : FileFormat
 {
 
-    #region Constants 
+    #region Constants
     public const uint DEFAULT_VERSION = 5;
     public const uint MAGIC_CBT_ENCRYPTED = 0x12FD0107;
 
@@ -37,7 +37,7 @@ public sealed class CTBEncryptedFile : FileFormat
     private const string Secret0 = "HDgSAB0BEiE/AgpPAhwhM1QAAUwHPT8HTywEGiEjVAoBDwEsJgAKC0wVPDoRTwkDATg3AE9HQhAhNF1VZWYkMHYVHQpMEjI3HQEcGFM7OQBPHwkBOD8AGwoIUyAlER1PCBIhN1QKAQ8BLCYABgACX3U6GwwEH191NRsBHBgBND8aHENMATAlAB0GDwc8ORocQ0weOjgbHwAAGi83AAYAAlM0OBBPAQMdeCURARwJUyU5GAYMBRYmdgAHDhhTJSQRGQoCByZ2GxsHCQEmdhIdAAFTNiQRDhsJUzQ4EE8DCRIxexIAHRsSJzJUHAAABiE/GwEcTBInOQEBC0wHMDUcAQAAHDIvWmU8GQMlOQYbBgIUdSIcBhxMFTw6EU8JAwE4NwBPBh9TNHYHGwocXjc3FwRPChwndkcrTxgWNj4aAAMDFCx2FQELTBU6JFQbBwlTNjkZAhoCGiEvVAAZCQE0OhhBTz8HPDoYQ08NHTF2HQFPDhY9NxgJTwMVdSMHCh0fUyIzVA4DABwidgAATx4WNDJYTxwNBTB2FQELTB40OB0fGgASITNUGwcJUzM/GApPChwndgYKGQUWInpUHQoPHCMzBk8LDQc0dhUBC0wXMCIRDBtMAyc5FgMKAQB1IhtPAg0YMHYNABpMEDogER0KCFMzJBsCTwEaJiIVBAofUzQ4EE8KHgE6JAdBZTwfMDcHCkNMHjQ9EU8WAwYndgcHBgoHdTAGAAJMBz0/B08fHhwxIxcbHEwSOzJUBwoAA3UiHApPXzd1IhEMBwIcOTkTFk8LHHUwGx0YDQExdhUBC0wcJTMaTk8/BiUmGx0bTBwlMxpCHAMGJzURTxwDHyAiHQABH191IhwOG0wENC9UGApMEDQ4VAwdCRIhM1QNChgHMCRUHx0DFyA1ABxPChwndgAHCkwQOjgHGgIJASZ4";
     private const string Secret1 = "hQ36XB6yTk+zO02ysyiowt8yC1buK+nbLWyfY40EXoU=";
     private const string Secret2 = "Wld+ampndVJecmVjYH5cWQ==";
-        
+
 
     public static readonly string Preamble = CryptExtensions.XORCipherString(System.Convert.FromBase64String(Secret0), About.Software);
     private static readonly byte[] Bigfoot       = CryptExtensions.XORCipher(System.Convert.FromBase64String(Secret1), About.Software);
@@ -50,7 +50,7 @@ public sealed class CTBEncryptedFile : FileFormat
     public class FileHeader
     {
         public const byte TABLE_SIZE = 48;
-        
+
         [FieldOrder(0)] public uint Magic { get; set; } = MAGIC_CBT_ENCRYPTED;
         [FieldOrder(1)] public uint SettingsSize { get; set; } = SlicerSettings.TABLE_SIZE;
         [FieldOrder(2)] public uint SettingsOffset { get; set; } = TABLE_SIZE;
@@ -122,7 +122,7 @@ public sealed class CTBEncryptedFile : FileFormat
         [FieldOrder(39)] public float RestTimeAfterLift { get; set; }
         [FieldOrder(40)] public uint MachineNameOffset { get; set; }
         [FieldOrder(41)] public uint MachineNameSize { get; set; } = (uint)(string.IsNullOrEmpty(DefaultMachineName) ? 0 : DefaultMachineName.Length);
-        
+
         /// <summary>
         /// 7(0x7) [No AA] / 15(0x0F) [AA]
         /// </summary>
@@ -144,7 +144,7 @@ public sealed class CTBEncryptedFile : FileFormat
         [FieldOrder(51)] public float BottomRetractSpeed2 { get; set; }
         [FieldOrder(52)] public uint Padding1 { get; set; }
         [FieldOrder(53)] public float Four1 { get; set; } = 4; // Same as CTBv4.PrintParametersV4.Four1)
-        [FieldOrder(54)] public uint Padding2 { get; set; } 
+        [FieldOrder(54)] public uint Padding2 { get; set; }
         [FieldOrder(55)] public float Four2 { get; set; } = 4; // Same as CTBv4.PrintParametersV4.Four2)
         [FieldOrder(56)] public float RestTimeAfterRetract2 { get; set; }
         [FieldOrder(57)] public float RestTimeAfterLift3 { get; set; }
@@ -422,7 +422,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
         public unsafe byte[] EncodeImage(Mat image, uint layerIndex)
         {
-            List<byte> rawData = new();
+            List<byte> rawData = [];
             byte color = byte.MaxValue >> 1;
             uint stride = 0;
             var span = image.GetBytePointer();
@@ -496,8 +496,8 @@ public sealed class CTBEncryptedFile : FileFormat
 
             AddRep();
 
-            RLEData = Parent!.Settings.LayerXorKey > 0 
-                ? ChituboxFile.LayerRleCrypt(Parent.Settings.LayerXorKey, layerIndex, rawData) 
+            RLEData = Parent!.Settings.LayerXorKey > 0
+                ? ChituboxFile.LayerRleCrypt(Parent.Settings.LayerXorKey, layerIndex, rawData)
                 : rawData.ToArray();
 
             DataLength = (uint)RLEData.Length;
@@ -519,12 +519,12 @@ public sealed class CTBEncryptedFile : FileFormat
     public class Preview
     {
         /// <summary>
-        /// Gets the X dimension of the preview image, in pixels. 
+        /// Gets the X dimension of the preview image, in pixels.
         /// </summary>
         [FieldOrder(0)] public uint ResolutionX { get; set; }
 
         /// <summary>
-        /// Gets the Y dimension of the preview image, in pixels. 
+        /// Gets the Y dimension of the preview image, in pixels.
         /// </summary>
         [FieldOrder(1)] public uint ResolutionY { get; set; }
 
@@ -553,18 +553,19 @@ public sealed class CTBEncryptedFile : FileFormat
 
     public override string ConvertMenuGroup => "Chitubox";
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new(typeof(CTBEncryptedFile), "ctb",           "Chitubox CTB (Encrypted)"),
-        new(typeof(CTBEncryptedFile), "encrypted.ctb", "Chitubox CTB (Encrypted)", false, false),
-    };
+        new(typeof(CTBEncryptedFile), "encrypted.ctb", "Chitubox CTB (Encrypted)", false, false)
+    ];
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    {
+    [
         new(400, 300),
         new(200, 125)
-    };
+    ];
 
-    public override uint[] AvailableVersions { get; } = { 4, 5 };
+    public override uint[] AvailableVersions { get; } = [4, 5];
 
     public override uint DefaultVersion => DEFAULT_VERSION;
 
@@ -584,8 +585,8 @@ public sealed class CTBEncryptedFile : FileFormat
 
     public SlicerSettings Settings { get; private set; } = new();
     public ResinParameters ResinParametersSettings { get; private set; } = new();
-    public LayerPointer[] LayersPointer { get; private set; } = Array.Empty<LayerPointer>();
-    public LayerDef[] LayersDefinition { get; private set; } = Array.Empty<LayerDef>();
+    public LayerPointer[] LayersPointer { get; private set; } = [];
+    public LayerDef[] LayersDefinition { get; private set; } = [];
 
     public override PrintParameterModifier[] PrintParameterModifiers
     {
@@ -659,7 +660,7 @@ public sealed class CTBEncryptedFile : FileFormat
             ];
         }
     }
-        
+
     public override PrintParameterModifier[] PrintParameterPerLayerModifiers
     {
         get
@@ -819,7 +820,7 @@ public sealed class CTBEncryptedFile : FileFormat
             }
         }
     }
-    
+
     public override float WaitTimeBeforeCure
     {
         get => Settings.RestTimeAfterRetract;
@@ -887,7 +888,7 @@ public sealed class CTBEncryptedFile : FileFormat
             base.LiftHeight = value;
         }
     }
-        
+
     public override float LiftSpeed
     {
         get => Settings.LiftSpeed;
@@ -902,7 +903,7 @@ public sealed class CTBEncryptedFile : FileFormat
             var bottomLiftHeight = BottomLiftHeight;
             Settings.BottomLiftHeight2 = MathF.Round(value, 2);
             BottomLiftHeight = bottomLiftHeight;
-            base.BottomLiftHeight2 = Settings.BottomLiftHeight2; 
+            base.BottomLiftHeight2 = Settings.BottomLiftHeight2;
         }
     }
 
@@ -923,7 +924,7 @@ public sealed class CTBEncryptedFile : FileFormat
             base.LiftHeight2 = Settings.LiftHeight2;
         }
     }
-        
+
     public override float LiftSpeed2
     {
         get => Settings.LiftSpeed2;
@@ -1050,8 +1051,8 @@ public sealed class CTBEncryptedFile : FileFormat
         {
             return Header.Version switch
             {
-                <= 4 => new object[] { Header, Settings },
-                /*v5*/_ => new object[] { Header, Settings, ResinParametersSettings }
+                <= 4 => [Header, Settings],
+                /*v5*/_ => [Header, Settings, ResinParametersSettings]
             };
         }
     }
@@ -1109,8 +1110,8 @@ public sealed class CTBEncryptedFile : FileFormat
         }
 
         inputFile.Seek(Header.SettingsOffset, SeekOrigin.Begin);
-            
-        var encryptedBlock = inputFile.ReadBytes(Header.SettingsSize); 
+
+        var encryptedBlock = inputFile.ReadBytes(Header.SettingsSize);
         using (var ms = CryptExtensions.AesCryptMemoryStream(encryptedBlock, Bigfoot, CipherMode.CBC, PaddingMode.None, false, CookieMonster))
         {
             Settings = Helpers.Deserialize<SlicerSettings>(ms);
@@ -1274,16 +1275,16 @@ public sealed class CTBEncryptedFile : FileFormat
                 int direction = layerIndex == 0 ? 1 : -1;
 
                 /* clone from the next one that has a mat */
-                for (int layerIndexForClone = (int)(layerIndex + direction); 
+                for (int layerIndexForClone = (int)(layerIndex + direction);
                      layerIndexForClone >= 0 && layerIndexForClone < LayerCount;
                      layerIndexForClone += direction)
                 {
                     if (!this[layerIndexForClone].HaveImage) continue;
                     this[layerIndexForClone].CopyImageTo(this[layerIndex]);
                     correctedLayerCount++;
-                        
+
                     /* TODO: Report to the user that a layer was cloned to work around chitubox crypto bug */
-                        
+
                     break;
                 }
             }
@@ -1337,7 +1338,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
         progress.Reset(OperationProgress.StatusEncodePreviews, 2);
 
-        Mat?[] thumbnails = { GetLargestThumbnail(), GetSmallestThumbnail() };
+        Mat?[] thumbnails = [GetLargestThumbnail(), GetSmallestThumbnail()];
         for (byte i = 0; i < thumbnails.Length; i++)
         {
             var image = thumbnails[i];
@@ -1434,7 +1435,7 @@ public sealed class CTBEncryptedFile : FileFormat
             outputFile.WriteUIntLittleEndian(1109414650);
             outputFile.WriteUIntLittleEndian(0);
         }
-            
+
         /* write the final hash */
         var hash = CryptExtensions.ComputeSHA256Hash(BitExtensions.ToBytesLittleEndian(Settings.ChecksumValue));
         var encryptedHash = CryptExtensions.AesCryptBytes(hash, Bigfoot, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
@@ -1470,7 +1471,7 @@ public sealed class CTBEncryptedFile : FileFormat
     protected override void PartialSaveInternally(OperationProgress progress)
     {
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
-            
+
         outputFile.Seek(Header.SettingsOffset, SeekOrigin.Begin);
         var settingsBytes = Helpers.Serialize(Settings).ToArray();
         var encryptedSettings = CryptExtensions.AesCryptBytes(settingsBytes, Bigfoot, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
@@ -1625,7 +1626,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
 
                 /* update encrypted markers in the layer header */
-                cryptedFile.AsSpan((int)(layerDataOffset - 0x38), 8).Fill(0);
+                cryptedFile.AsSpan((int)(layerDataOffset - 0x38), 8).Clear();
             }
             else
             {

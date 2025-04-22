@@ -220,7 +220,8 @@ public sealed class OperationChangeResolution : Operation
     #region Methods
     public static Resolution[] GetResolutions()
     {
-        return new [] {
+        return
+        [
             //new Resolution(0, 0, string.Empty),
             new Resolution(854, 480, "FWVGA"),
             new Resolution(960, 1708),
@@ -239,8 +240,8 @@ public sealed class OperationChangeResolution : Operation
             new Resolution(4920, 2880, "5K UHD"),
             new Resolution(5448, 3064, "6K"),
             new Resolution(7680, 4320, "8K UHD"),
-            new Resolution(11520, 5120, "12K"),
-        };
+            new Resolution(11520, 5120, "12K")
+        ];
     }
 
     public static Resolution[] Presets => GetResolutions();

@@ -104,7 +104,7 @@ public class ExcellonDrillFormat
 
     #region Constants
 
-    public static readonly string[] Extensions = {"drl", "xln"};
+    public static readonly string[] Extensions = ["drl", "xln"];
 
     /// <summary>
     /// Indicates the start of the header. should always be the first line in the header
@@ -131,7 +131,7 @@ public class ExcellonDrillFormat
 
     public Dictionary<uint, Tool> Tools { get; init; } = new();
 
-    public List<Drill> Drills { get; init; } = new();
+    public List<Drill> Drills { get; init; } = [];
 
     private SizeF XYppmm { get; set; }
 
@@ -229,7 +229,7 @@ public class ExcellonDrillFormat
 
             if (integerDigits == 0 && line.StartsWith(";FILE_FORMAT="))
             {
-                line = line.Remove(0, 13);
+                line = line[13..];
                 var split = line.Split(':', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                 if (split.Length < 2) continue;
                 int.TryParse(split[0], out integerDigits);

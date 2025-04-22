@@ -54,9 +54,9 @@ public class OutlinePrimitive : Primitive
     /// The X and Y coordinates are not modal: both X and Y must be specified for all points.
     /// 2+n
     /// </summary>
-    public string[] CoordinatesExpression { get; set; } = Array.Empty<string>();
+    public string[] CoordinatesExpression { get; set; } = [];
 
-    public PointF[] Coordinates { get; set; } = Array.Empty<PointF>();
+    public PointF[] Coordinates { get; set; } = [];
 
     /// <summary>
     /// Rotation angle, in degrees counterclockwise, a decimal.

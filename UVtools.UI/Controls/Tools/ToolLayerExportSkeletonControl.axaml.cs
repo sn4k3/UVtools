@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using System.IO;
+using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using UVtools.Core.Operations;
 
@@ -15,7 +16,7 @@ public partial class ToolLayerExportSkeletonControl : ToolControl
         InitializeComponent();
     }
 
-    public async void ChooseFilePath()
+    public async Task ChooseFilePath()
     {
         using var file = await App.MainWindow.SaveFilePickerAsync(SlicerFile!.DirectoryPath, $"{SlicerFile.FilenameNoExt}_skeleton.png",
                 AvaloniaStatic.ImagesFullFileFilter);

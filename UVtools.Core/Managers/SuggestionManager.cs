@@ -40,15 +40,15 @@ public class SuggestionManager
     {
         get
         {
-            return new Suggestion[]
-            {
+            return
+            [
                 BottomLayerCount,
                 TransitionLayerCount,
                 WaitTimeBeforeCure,
                 WaitTimeAfterCure,
                 LayerHeight,
-                ModelPosition,
-            };
+                ModelPosition
+            ];
         }
         set
         {

@@ -22,7 +22,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 {
     public FileFormat SlicerFile { get; }
 
-    public List<MainIssue> IgnoredIssues { get; } = new();
+    public List<MainIssue> IgnoredIssues { get; } = [];
 
     public bool HaveIssues => Count > 0;
 
@@ -119,7 +119,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
     public List<MainIssue> DetectIssues(IssuesDetectionConfiguration? config = null, OperationProgress? progress = null)
     {
-        if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return new List<MainIssue>();
+        if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return [];
 
         config ??= new IssuesDetectionConfiguration();
         var (
@@ -269,7 +269,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                     if (touchBoundConfig.Enabled)
                     {
                         // TouchingBounds Checker
-                        List<Point> pixels = new();
+                        List<Point> pixels = [];
                         bool touchTop = layer.BoundingRectangle.Top <= touchBoundConfig.MarginTop;
                         bool touchBottom = layer.BoundingRectangle.Bottom >= image.SourceMat.Height - touchBoundConfig.MarginBottom;
                         bool touchLeft = layer.BoundingRectangle.Left <= touchBoundConfig.MarginLeft;
@@ -497,7 +497,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                         previousSpan = previousImage.RoiMat.GetDataByteReadOnlySpan2D();
                                     }
 
-                                    List<Point> points = new();
+                                    List<Point> points = [];
                                     uint pixelsSupportingIsland = 0;
                                     
                                     for (int y = rect.Y; y < rect.Bottom; y++)
@@ -708,8 +708,8 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                 if (hollows[layerIndex] is not null)
                 {
-                    resinTraps[layerIndex] = new();
-                    airContours[layerIndex] = new();
+                    resinTraps[layerIndex] = [];
+                    airContours[layerIndex] = [];
                     Parallel.For(0, hollows[layerIndex].Count, CoreSettings.ParallelOptions, i =>
                     {
                         progress.PauseIfRequested();
@@ -812,7 +812,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                 if (resinTraps[layerIndex] is not null)
                 {
-                    suctionCups[layerIndex] = new();
+                    suctionCups[layerIndex] = [];
                     /* here we don't worry about finding contours on the layer, the bottom to top pass did that already */
                     /* all we care about is contours the first pass thought were resin traps, since there was no access to air from the bottom */
                     Parallel.For(0, resinTraps[layerIndex].Count, CoreSettings.ParallelOptions, x =>
@@ -904,7 +904,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                 if (overlappingGroupIndexes.Count == 0)
                                 {
                                     // no overlaps, make a single issue 
-                                    resinTrapGroups.Add(new List<(VectorOfVectorOfPoint contour, uint layerIndex)> { (resinTraps[layerIndex][x], (uint)layerIndex) });
+                                    resinTrapGroups.Add([(resinTraps[layerIndex][x], (uint)layerIndex)]);
                                 }
                                 else if (overlappingGroupIndexes.Count == 1)
                                 {
@@ -1023,7 +1023,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                             if (overlappingGroupIndexes.Count == 0)
                             {
                                 /* no overlaps, make a single issue */
-                                resinTrapGroups.Add(new List<IssueOfContours> { trapIssue });
+                                resinTrapGroups.Add([trapIssue]);
                             }
                             else if (overlappingGroupIndexes.Count == 1)
                             {
@@ -1093,7 +1093,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                 if (overlappingGroupIndexes.Count == 0)
                                 {
                                     /* no overlaps, make a new group */
-                                    suctionGroups.Add(new List<IssueOfContours> { trapIssue });
+                                    suctionGroups.Add([trapIssue]);
                                 }
                                 else if (overlappingGroupIndexes.Count == 1)
                                 {

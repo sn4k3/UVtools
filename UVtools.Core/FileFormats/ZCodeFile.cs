@@ -175,11 +175,13 @@ public sealed class ZCodeFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Archive;
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new(typeof(ZCodeFile), "zcode", "UnizMaker IBEE (ZCode)")
-    };
+    ];
 
-    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
+    [
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -214,10 +216,11 @@ public sealed class ZCodeFile : FileFormat
         PrintParameterModifier.RetractSpeed2,
 
         PrintParameterModifier.BottomLightPWM,
-        PrintParameterModifier.LightPWM,
-    };
+        PrintParameterModifier.LightPWM
+    ];
 
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } =
+    [
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.WaitTimeBeforeCure,
         PrintParameterModifier.ExposureTime,
@@ -230,10 +233,10 @@ public sealed class ZCodeFile : FileFormat
         PrintParameterModifier.RetractSpeed,
         PrintParameterModifier.RetractHeight2,
         PrintParameterModifier.RetractSpeed2,
-        PrintParameterModifier.LightPWM,
-    };
+        PrintParameterModifier.LightPWM
+    ];
 
-    public override Size[] ThumbnailsOriginalSize { get; } = {new(640, 480)};
+    public override Size[] ThumbnailsOriginalSize { get; } = [new(640, 480)];
 
     public override uint ResolutionX
     {
@@ -430,7 +433,7 @@ public sealed class ZCodeFile : FileFormat
         set => base.MachineName = ManifestFile.Device.MachineModel = value;
     }
 
-    public override object[] Configs => new object[] { ManifestFile.Device, ManifestFile.Job, ManifestFile.Profile.Slice };
+    public override object[] Configs => [ManifestFile.Device, ManifestFile.Job, ManifestFile.Profile.Slice];
 
     #endregion
 

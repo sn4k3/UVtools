@@ -51,7 +51,8 @@ public sealed class AnetFile : FileFormat
     /// <summary>
     /// Printer uses incorrect BMP header for preview image so we need to use it as-is instead of generating.
     /// </summary>
-    private static readonly byte[] BmpHeader = { 66, 77, 162, 4, 0, 0, 0, 0, 0, 0, 66, 0, 0, 0, 40, 0, 0, 0, 4, 1, 0, 0, 140, 0, 0, 0, 1, 0, 16, 0, 3, 0, 0, 0, 96, 4, 0, 0, 18, 11, 0, 0, 18, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 248, 0, 0, 224, 7, 0, 0, 31, 0, 0, 0 };
+    private static readonly byte[] BmpHeader = [66, 77, 162, 4, 0, 0, 0, 0, 0, 0, 66, 0, 0, 0, 40, 0, 0, 0, 4, 1, 0, 0, 140, 0, 0, 0, 1, 0, 16, 0, 3, 0, 0, 0, 96, 4, 0, 0, 18, 11, 0, 0, 18, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 248, 0, 0, 224, 7, 0, 0, 31, 0, 0, 0
+    ];
 
     #endregion
 
@@ -90,7 +91,7 @@ public sealed class AnetFile : FileFormat
         [FieldOrder(15)][FieldEndianness(Endianness.Big)] public uint PreviewResolutionX { get; set; } = 260;
         [FieldOrder(16)][FieldEndianness(Endianness.Big)] public uint PreviewResolutionY { get; set; } = 140;
         [FieldOrder(17)][FieldEndianness(Endianness.Big)] public uint PreviewSize { get; set; } = 72866;
-        [FieldOrder(18)][FieldEndianness(Endianness.Big)][FieldLength(nameof(PreviewSize))] public byte[] PreviewContent { get; set; } = Array.Empty<byte>(); // BMP image, BGR565
+        [FieldOrder(18)][FieldEndianness(Endianness.Big)][FieldLength(nameof(PreviewSize))] public byte[] PreviewContent { get; set; } = []; // BMP image, BGR565
         [FieldOrder(19)][FieldEndianness(Endianness.Big)] public double VolumeMicroL { get; set; } // µl
         [FieldOrder(20)][FieldEndianness(Endianness.Big)] public uint EncodedPrintTime { get; set; } // s; for unknown reason always broken in original slicer
         [FieldOrder(21)][FieldEndianness(Endianness.Big)] public uint LayersCount { get; set; } // Not include BaseLayers
@@ -279,26 +280,27 @@ public sealed class AnetFile : FileFormat
 
     public override string ConvertMenuGroup => "Anet";
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new(typeof(AnetFile), "n4", "Anet N4"),
-        new(typeof(AnetFile), "n7", "Anet N7"),
-    };
+        new(typeof(AnetFile), "n7", "Anet N7")
+    ];
 
     public override SpeedUnit FormatSpeedUnit => SpeedUnit.MillimetersPerSecond;
 
     public override bool SupportAntiAliasing => false;
 
     public override PrintParameterModifier[] PrintParameterModifiers { get; } =
-    {
+    [
         PrintParameterModifier.ExposureTime,
         PrintParameterModifier.BottomExposureTime,
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.LiftSpeed,
-        PrintParameterModifier.LiftHeight,
-    };
+        PrintParameterModifier.LiftHeight
+    ];
 
-    public override Size[] ThumbnailsOriginalSize { get; } = { new(260, 140) };
-    public override uint[] AvailableVersions { get; } = { 3 };
+    public override Size[] ThumbnailsOriginalSize { get; } = [new(260, 140)];
+    public override uint[] AvailableVersions { get; } = [3];
 
     public override uint DefaultVersion => DEFAULT_VERSION;
 
@@ -396,7 +398,7 @@ public sealed class AnetFile : FileFormat
         }
     }
 
-    public override object[] Configs => new object[] { HeaderSettings };
+    public override object[] Configs => [HeaderSettings];
 
     public AnetPrinter PrinterModel
     {

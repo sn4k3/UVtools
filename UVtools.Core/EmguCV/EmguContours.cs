@@ -93,7 +93,7 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
         Hierarchy = hierarchy;
         _contours = new EmguContour[Vector.Size];
 
-        List<EmguContourFamily> families = new();
+        List<EmguContourFamily> families = [];
 
         for (int i = 0; i < Count; i++)
         {
@@ -112,7 +112,7 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
         Vector = mat.FindContours(out Hierarchy, mode, method, offset);
         _contours = new EmguContour[Vector.Size];
 
-        List<EmguContourFamily> families = new();
+        List<EmguContourFamily> families = [];
 
         for (int i = 0; i < Count; i++)
         {
@@ -328,7 +328,7 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
     /// <returns></returns>
     public static List<VectorOfVectorOfPoint>[] GetContoursInGroups(VectorOfVectorOfPoint contours, int[,] hierarchy)
     {
-        return new []{GetPositiveContoursInGroups(contours, hierarchy), GetNegativeContoursInGroups(contours, hierarchy)};
+        return [GetPositiveContoursInGroups(contours, hierarchy), GetNegativeContoursInGroups(contours, hierarchy)];
     }
 
     /// <summary>

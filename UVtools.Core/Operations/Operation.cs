@@ -105,7 +105,7 @@ public abstract class Operation : BindableBase, IDisposable
     /// <summary>
     /// Gets the ID name of this operation, this comes from class name with "Operation" removed
     /// </summary>
-    public string Id => GetType().Name.Remove(0, ClassNameLength);
+    public string Id => GetType().Name[ClassNameLength..];
 
     /// <summary>
     /// Gets the starting layer selection
@@ -886,7 +886,7 @@ public abstract class Operation : BindableBase, IDisposable
         }
 
         var baseName = "Operation";
-        if (classNamePath.StartsWith(baseName)) classNamePath = classNamePath.Remove(0, baseName.Length);
+        if (classNamePath.StartsWith(baseName)) classNamePath = classNamePath[baseName.Length..];
         if (classNamePath == string.Empty) return null;
 
         var baseType = typeof(Operation).FullName;

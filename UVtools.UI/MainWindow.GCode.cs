@@ -9,6 +9,7 @@ using Avalonia;
 using Avalonia.Controls;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using UVtools.Core.Dialogs;
 using UVtools.Core.SystemOS;
@@ -35,7 +36,7 @@ public partial class MainWindow
         CanSave = true;
     }
 
-    public async void OnClickGCodeSaveFile()
+    public async Task OnClickGCodeSaveFile()
     {
         if (!HaveGCode) return;
 

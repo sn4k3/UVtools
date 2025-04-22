@@ -1,47 +1,54 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:uac="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
-        xmlns:controls="clr-namespace:UVtools.UI.Controls">
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:controls="clr-namespace:UVtools.UI.Controls"
+  xmlns:uac="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls">
 
     <Design.PreviewWith>
-        <Border Padding="20"></Border>
+        <Border Padding="20" />
     </Design.PreviewWith>
 
     <Styles.Resources>
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="GroupBoxHeaderBackground" Color="LightBlue" />
-                    <SolidColorBrush x:Key="HeaderFooterBackground" Color="LightGray" />
-                    <SolidColorBrush x:Key="LightBackground" Color="WhiteSmoke" />
+                    <SolidColorBrush x:Key="GroupBoxHeaderBackground"
+                      Color="LightBlue" />
+                    <SolidColorBrush x:Key="HeaderFooterBackground"
+                      Color="LightGray" />
+                    <SolidColorBrush x:Key="LightBackground"
+                      Color="WhiteSmoke" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="GroupBoxHeaderBackground" Color="#4f5b62" />
-                    <SolidColorBrush x:Key="HeaderFooterBackground" Color="#1E1E1E" />
-                    <SolidColorBrush x:Key="LightBackground" Color="#1E1E1E" />
+                    <SolidColorBrush x:Key="GroupBoxHeaderBackground"
+                      Color="#4f5b62" />
+                    <SolidColorBrush x:Key="HeaderFooterBackground"
+                      Color="#1E1E1E" />
+                    <SolidColorBrush x:Key="LightBackground"
+                      Color="#1E1E1E" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
-        <SolidColorBrush x:Key="LogoColor" Color="#FF660066" />
+        <SolidColorBrush x:Key="LogoColor"
+          Color="#FF660066" />
     </Styles.Resources>
 
     <Style Selector="GridSplitter">
-        <Setter Property="Background" Value="{DynamicResource SystemListMediumColor}"/>
+        <Setter Property="Background" Value="{DynamicResource SystemListMediumColor}" />
     </Style>
 
     <Style Selector="Canvas.IssuesTrackerCanvas">
-        <Setter Property="Background" Value="{DynamicResource SystemListLowColor}"/>
+        <Setter Property="Background" Value="{DynamicResource SystemListLowColor}" />
     </Style>
 
     <Style Selector="Border.ProgressLoading">
-        <Setter Property="Background" Value="{DynamicResource SystemAltHighColor}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource SystemListMediumColor}"/>
+        <Setter Property="Background" Value="{DynamicResource SystemAltHighColor}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemListMediumColor}" />
     </Style>
 
     <Style Selector="Border.LayerNavigationToolTip">
-        <Setter Property="BorderThickness" Value="5"/>
-        <Setter Property="CornerRadius" Value="5"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource SystemListMediumColor}"/>
+        <Setter Property="BorderThickness" Value="5" />
+        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemListMediumColor}" />
     </Style>
 
     <Style Selector="Border.GroupBox">
@@ -155,7 +162,9 @@
     <Style Selector="NumericUpDown.ValueLabel_percent">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="%" ToolTip.Tip="Percent" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="%"
+                  ToolTip.Tip="Percent" />
             </Template>
         </Setter>
     </Style>
@@ -163,7 +172,9 @@
     <Style Selector="NumericUpDown.ValueLabel_deg">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="º" ToolTip.Tip="Degree(s)" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="º"
+                  ToolTip.Tip="Degree(s)" />
             </Template>
         </Setter>
     </Style>
@@ -171,7 +182,9 @@
     <Style Selector="NumericUpDown.ValueLabel_s">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="s" ToolTip.Tip="Second(s)" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="s"
+                  ToolTip.Tip="Second(s)" />
             </Template>
         </Setter>
     </Style>
@@ -179,7 +192,9 @@
     <Style Selector="NumericUpDown.ValueLabel_um">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="µm" ToolTip.Tip="Micron(s)" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="µm"
+                  ToolTip.Tip="Micron(s)" />
             </Template>
         </Setter>
     </Style>
@@ -187,7 +202,9 @@
     <Style Selector="NumericUpDown.ValueLabel_mm">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="mm" ToolTip.Tip="Millimeter(s)" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="mm"
+                  ToolTip.Tip="Millimeter(s)" />
             </Template>
         </Setter>
     </Style>
@@ -195,7 +212,9 @@
     <Style Selector="NumericUpDown.ValueLabel_mm2">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="mm²" ToolTip.Tip="Square Millimeter(s)" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="mm²"
+                  ToolTip.Tip="Square Millimeter(s)" />
             </Template>
         </Setter>
     </Style>
@@ -203,7 +222,9 @@
     <Style Selector="NumericUpDown.ValueLabel_mm3">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="mm³" ToolTip.Tip="Cubic Millimeter(s)" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="mm³"
+                  ToolTip.Tip="Cubic Millimeter(s)" />
             </Template>
         </Setter>
     </Style>
@@ -211,7 +232,9 @@
     <Style Selector="NumericUpDown.ValueLabel_diametermm">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="⌀mm" ToolTip.Tip="Diameter Millimeter(s)" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="⌀mm"
+                  ToolTip.Tip="Diameter Millimeter(s)" />
             </Template>
         </Setter>
     </Style>
@@ -219,7 +242,9 @@
     <Style Selector="NumericUpDown.ValueLabel_mmmin">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="mm/min" ToolTip.Tip="Millimeters per minute" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="mm/min"
+                  ToolTip.Tip="Millimeters per minute" />
             </Template>
         </Setter>
     </Style>
@@ -227,7 +252,9 @@
     <Style Selector="NumericUpDown.ValueLabel_px">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="px" ToolTip.Tip="Pixel(s)" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="px"
+                  ToolTip.Tip="Pixel(s)" />
             </Template>
         </Setter>
     </Style>
@@ -235,7 +262,9 @@
     <Style Selector="NumericUpDown.ValueLabel_px2">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="px²" ToolTip.Tip="Squared Pixel(s)" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="px²"
+                  ToolTip.Tip="Squared Pixel(s)" />
             </Template>
         </Setter>
     </Style>
@@ -243,7 +272,9 @@
     <Style Selector="NumericUpDown.ValueLabel_px3">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="px³" ToolTip.Tip="Cubic Pixel(s)" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="px³"
+                  ToolTip.Tip="Cubic Pixel(s)" />
             </Template>
         </Setter>
     </Style>
@@ -251,7 +282,9 @@
     <Style Selector="NumericUpDown.ValueLabel_diameterpx">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="⌀px" ToolTip.Tip="Diameter Pixel(s)" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="⌀px"
+                  ToolTip.Tip="Diameter Pixel(s)" />
             </Template>
         </Setter>
     </Style>
@@ -259,7 +292,9 @@
     <Style Selector="NumericUpDown.ValueLabel_sun">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="☀" ToolTip.Tip="Brightness" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="☀"
+                  ToolTip.Tip="Brightness" />
             </Template>
         </Setter>
     </Style>
@@ -267,7 +302,9 @@
     <Style Selector="NumericUpDown.ValueLabel_GB">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="GB" ToolTip.Tip="Gigabyte(s)" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="GB"
+                  ToolTip.Tip="Gigabyte(s)" />
             </Template>
         </Setter>
     </Style>
@@ -275,7 +312,9 @@
     <Style Selector="NumericUpDown.ValueLabel_g">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="g" ToolTip.Tip="Gram(s)" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="g"
+                  ToolTip.Tip="Gram(s)" />
             </Template>
         </Setter>
     </Style>
@@ -283,7 +322,9 @@
     <Style Selector="NumericUpDown.ValueLabel_gml">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="g/ml" ToolTip.Tip="Grams per milliliter" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="g/ml"
+                  ToolTip.Tip="Grams per milliliter" />
             </Template>
         </Setter>
     </Style>
@@ -291,7 +332,9 @@
     <Style Selector="NumericUpDown.ValueLabel_ml">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="ml" ToolTip.Tip="Milliliter(s)" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="ml"
+                  ToolTip.Tip="Milliliter(s)" />
             </Template>
         </Setter>
     </Style>
@@ -299,7 +342,9 @@
     <Style Selector="NumericUpDown.ValueLabel_times">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="×" ToolTip.Tip="Times" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="×"
+                  ToolTip.Tip="Times" />
             </Template>
         </Setter>
     </Style>
@@ -308,7 +353,9 @@
     <Style Selector="NumericUpDown.ValueLabel_layers">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="Ξ" ToolTip.Tip="Layer(s)" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="Ξ"
+                  ToolTip.Tip="Layer(s)" />
             </Template>
         </Setter>
     </Style>
@@ -316,7 +363,9 @@
     <Style Selector="NumericUpDown.ValueLabel_ms">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="ms" ToolTip.Tip="Milliseconds" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="ms"
+                  ToolTip.Tip="Milliseconds" />
             </Template>
         </Setter>
     </Style>
@@ -324,7 +373,9 @@
     <Style Selector="NumericUpDown.ValueLabel_euro">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="€" ToolTip.Tip="Euros" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="€"
+                  ToolTip.Tip="Euros" />
             </Template>
         </Setter>
     </Style>
@@ -332,7 +383,9 @@
     <Style Selector="NumericUpDown.ValueLabel_hz">
         <Setter Property="InnerRightContent">
             <Template>
-                <TextBox Classes="NumericUpDownValueLabel" Text="Hz" ToolTip.Tip="Hertz" />
+                <TextBox Classes="NumericUpDownValueLabel"
+                  Text="Hz"
+                  ToolTip.Tip="Hertz" />
             </Template>
         </Setter>
     </Style>
@@ -344,33 +397,33 @@
     -->
 
     <Style Selector="NumericUpDown, uac|ExtendedNumericUpDown">
-        <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="MinWidth" Value="130"/>
-        <Setter Property="Increment" Value="1"/>
-        <Setter Property="ClipValueToMinMax" Value="True"/>
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="MinWidth" Value="130" />
+        <Setter Property="Increment" Value="1" />
+        <Setter Property="ClipValueToMinMax" Value="True" />
     </Style>
 
     <Style Selector="NumericUpDown.ReadOnly, uac|ExtendedNumericUpDown.ReadOnly">
-        <Setter Property="IsReadOnly" Value="True"/>
-        <Setter Property="AllowSpin" Value="False"/>
-        <Setter Property="ShowButtonSpinner" Value="False"/>
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="AllowSpin" Value="False" />
+        <Setter Property="ShowButtonSpinner" Value="False" />
     </Style>
 
     <Style Selector="uac|ExtendedNumericUpDown.AutoResettable">
-        <Setter Property="ResetVisibility" Value="Auto"/>
+        <Setter Property="ResetVisibility" Value="Auto" />
     </Style>
 
     <Style Selector="uac|ExtendedNumericUpDown.AutoResettableWithInitialValue">
-        <Setter Property="IsInitialValueVisible" Value="True"/>
-        <Setter Property="ResetVisibility" Value="Auto"/>
+        <Setter Property="IsInitialValueVisible" Value="True" />
+        <Setter Property="ResetVisibility" Value="Auto" />
     </Style>
 
     <Style Selector="NumericUpDown.ValueLabel">
-        <Setter Property="MinWidth" Value="180"/>
+        <Setter Property="MinWidth" Value="180" />
     </Style>
 
     <Style Selector="TabControl">
-        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Padding" Value="0" />
     </Style>
 
     <Style Selector="Expander /template/ ToggleButton">

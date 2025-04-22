@@ -55,7 +55,7 @@ public class App : Application
         SimpleDark*/
     }
 
-    private static readonly Styles ThemeStylesContainer = new();
+    private static readonly Styles ThemeStylesContainer = [];
     public static FluentTheme _fluentTheme = null!;
     //public static SimpleTheme _simpleTheme = null!;
     private static IStyle _colorPickerFluent = null!, _colorPickerSimple = null!;
@@ -198,13 +198,12 @@ public class App : Application
                     $"{About.Software} crashed due an unexpected {category.ToLowerInvariant()} error.\nYou can report this error if you find necessary.\nFind more details below:\n",
                     bugDescription,
                     TextWrapping.Wrap,
-                    new[]
-                    {
+                    [
                         MessageWindow.CreateLinkButtonAction("Report", "fa-solid fa-bug", $"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title={HttpUtility.UrlEncode($"[Crash] {reader.ReadLine()}")}&system={HttpUtility.UrlEncode(system)}&bug_description={HttpUtility.UrlEncode($"```\n{bugDescription}\n```")}", () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
                         MessageWindow.CreateLinkButtonAction("Help", "fa-solid fa-question", "https://github.com/sn4k3/UVtools/discussions/categories/q-a", () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
                         MessageWindow.CreateButtonAction("Restart", "fa-solid fa-redo-alt", () => SystemAware.StartThisApplication()),
                         MessageWindow.CreateCloseButton("fa-solid fa-sign-out-alt")
-                    })
+                    ])
                 {
                     AboutButtonIsVisible = true
                 };
@@ -314,12 +313,11 @@ public class App : Application
             $"{About.SoftwareWithVersionArch} [{SystemAware.OperatingSystemName}]\nUnable to run due one or more missing dependencies.\nTriggered by: libcvextern  (OpenCV)",
             message,
             TextWrapping.Wrap,
-            new[]
-            {
+            [
                 MessageWindow.CreateLinkButton("Open manual", "fa-brands fa-edge", "https://github.com/sn4k3/UVtools#requirements"),
                 MessageWindow.CreateLinkButton("Ask for help", "fa-solid fa-question", "https://github.com/sn4k3/UVtools/discussions/categories/q-a"),
                 MessageWindow.CreateCloseButton("fa-solid fa-sign-out-alt")
-            })
+            ])
         {
             AboutButtonIsVisible = true
         };

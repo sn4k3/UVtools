@@ -107,7 +107,7 @@ public class MainIssue : IReadOnlyList<Issue>
     /// <summary>
     /// Gets all issues inside this main issue
     /// </summary>
-    public Issue[] Childs { get; init; } = Array.Empty<Issue>();
+    public Issue[] Childs { get; init; } = [];
 
     public MainIssue() { }
 
@@ -120,7 +120,7 @@ public class MainIssue : IReadOnlyList<Issue>
 
     public MainIssue(IssueType type, Issue issue) : this(type, issue.BoundingRectangle)
     {
-        Childs = new[] { issue };
+        Childs = [issue];
         issue.Parent = this;
         PixelCount = issue.PixelsCount;
         Area = issue switch

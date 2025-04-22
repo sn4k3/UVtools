@@ -460,8 +460,8 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
                     if (newCluster == null)
                     {
                         Debug.Assert(oldCluster == null);
-                        newCluster = new List<T> { @new };
-                        oldCluster = new List<T> { old };
+                        newCluster = [@new];
+                        oldCluster = [old];
                     }
                     else
                     {

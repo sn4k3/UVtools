@@ -14,7 +14,7 @@ namespace UVtools.UI;
 
 public partial class MainWindow
 {
-    public RangeObservableCollection<LogItem> Logs { get; } = new();
+    public RangeObservableCollection<LogItem> Logs { get; } = [];
     private bool _isVerbose;
 
     public bool IsVerbose

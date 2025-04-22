@@ -448,7 +448,7 @@ public sealed class PHZFile : FileFormat
 
         public void Encode(Mat image, uint layerIndex)
         {
-            List<byte> rawData = new();
+            List<byte> rawData = [];
                 
             //byte color = byte.MaxValue >> 1;
             byte color = byte.MaxValue;
@@ -539,12 +539,13 @@ public sealed class PHZFile : FileFormat
 
     public override string ConvertMenuGroup => "Chitubox";
 
-    public override FileExtension[] FileExtensions { get; } = {
-        new (typeof(PHZFile), "phz", "Chitubox PHZ"),
-    };
+    public override FileExtension[] FileExtensions { get; } =
+    [
+        new (typeof(PHZFile), "phz", "Chitubox PHZ")
+    ];
 
     public override PrintParameterModifier[] PrintParameterModifiers { get; } =
-    {
+    [
         PrintParameterModifier.BottomLayerCount,
 
         PrintParameterModifier.BottomLightOffDelay,
@@ -561,8 +562,8 @@ public sealed class PHZFile : FileFormat
             
 
         PrintParameterModifier.BottomLightPWM,
-        PrintParameterModifier.LightPWM,
-    };
+        PrintParameterModifier.LightPWM
+    ];
 
     /*public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
         PrintParameterModifier.ExposureSeconds,
@@ -570,12 +571,12 @@ public sealed class PHZFile : FileFormat
     };*/
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    {
+    [
         new(400, 300), 
         new(200, 125)
-    };
+    ];
 
-    public override uint[] AvailableVersions { get; } = { 2 };
+    public override uint[] AvailableVersions { get; } = [2];
 
     public override uint DefaultVersion => 2;
 
@@ -790,7 +791,7 @@ public sealed class PHZFile : FileFormat
         }
     }
 
-    public override object[] Configs => new object[] { HeaderSettings };
+    public override object[] Configs => [HeaderSettings];
 
     #endregion
 
@@ -826,7 +827,7 @@ public sealed class PHZFile : FileFormat
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
         outputFile.Seek(Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.Begin);
 
-        Mat?[] thumbnails = { GetSmallestThumbnail(), GetLargestThumbnail() };
+        Mat?[] thumbnails = [GetSmallestThumbnail(), GetLargestThumbnail()];
         for (byte i = 0; i < thumbnails.Length; i++)
         {
             var image = thumbnails[i];

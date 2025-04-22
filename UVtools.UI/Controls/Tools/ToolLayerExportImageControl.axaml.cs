@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using UVtools.Core.Operations;
 
@@ -13,7 +14,7 @@ public partial class ToolLayerExportImageControl : ToolControl
         InitializeComponent();
     }
 
-    public async void ChooseFolder()
+    public async Task ChooseFolder()
     {
         var folders = await App.MainWindow.OpenFolderPickerAsync(SlicerFile!);
         if (folders.Count == 0) return;

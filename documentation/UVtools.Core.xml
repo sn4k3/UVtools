@@ -3334,12 +3334,12 @@
         </member>
         <member name="P:UVtools.Core.FileFormats.CTBEncryptedFile.Preview.ResolutionX">
             <summary>
-            Gets the X dimension of the preview image, in pixels. 
+            Gets the X dimension of the preview image, in pixels.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.CTBEncryptedFile.Preview.ResolutionY">
             <summary>
-            Gets the Y dimension of the preview image, in pixels. 
+            Gets the Y dimension of the preview image, in pixels.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.CTBEncryptedFile.Preview.ImageOffset">
@@ -7181,7 +7181,7 @@
             Gets tree contours cache for this layer, however should call <see>
                 <cref>GetContours</cref>
             </see>
-            instead with <see cref="P:UVtools.Core.Layers.Layer.LayerMat"/> instance.  
+            instead with <see cref="P:UVtools.Core.Layers.Layer.LayerMat"/> instance.
             If not set it will calculate contours first
             </summary>
         </member>
@@ -8800,6 +8800,11 @@
             <summary>
             Gets or sets the scale to apply to each shape drawing size.
             Positions and vectors aren't affected by this.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationPixelArithmetic.ValueStep">
+            <summary>
+            Mutates the initial brightness with a step that is added/subtracted to the current value dependent on the processed layer count
             </summary>
         </member>
         <member name="P:UVtools.Core.Operations.OperationPixelDimming.AlternatePatternPerLayers">

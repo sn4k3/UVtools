@@ -25,7 +25,7 @@ public class GCodeCommand
     /// <summary>
     /// Gets ir sets the command alias
     /// </summary>
-    public string[] CommandAlias { get; set; } = Array.Empty<string>();
+    public string[] CommandAlias { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the arguments for this command

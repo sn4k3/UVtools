@@ -7,7 +7,7 @@ public record ComparisonItem(string PropertyName, object? ValueA, object? ValueB
 
 public class FileFormatComparison
 {
-	public List<ComparisonItem> Global { get; init; } = new();
+	public List<ComparisonItem> Global { get; init; } = [];
 	public Dictionary<uint, List<ComparisonItem>> Layers { get; init; } = new();
 
 	public void Clear()

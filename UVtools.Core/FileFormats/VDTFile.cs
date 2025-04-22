@@ -23,7 +23,8 @@ public sealed class VDTFile : FileFormat
     #region Constants
 
     private const string FileManifestName = "manifest.json";
-    private static readonly string[] FilePreviewNames = {
+    private static readonly string[] FilePreviewNames =
+    [
         "Preview_FLT.png",
         "Preview_FLT_48.png",
         "Preview_Top.png",
@@ -33,8 +34,8 @@ public sealed class VDTFile : FileFormat
         "Preview_Left.png",
         "Preview_Left_48.png",
         "Preview_Front.png",
-        "Preview_Front_48.png",
-    };
+        "Preview_Front_48.png"
+    ];
     #endregion
 
     #region Sub Classes
@@ -197,11 +198,13 @@ public sealed class VDTFile : FileFormat
 
     public override string ConvertMenuGroup => "Voxeldance";
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new(typeof(VDTFile), "vdt", "Voxeldance Tango (VDT)")
-    };
+    ];
 
-    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
+    [
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -238,10 +241,11 @@ public sealed class VDTFile : FileFormat
         PrintParameterModifier.RetractSpeed2,
 
         PrintParameterModifier.BottomLightPWM,
-        PrintParameterModifier.LightPWM,
-    };
+        PrintParameterModifier.LightPWM
+    ];
 
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } =
+    [
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.LightOffDelay,
         PrintParameterModifier.WaitTimeBeforeCure,
@@ -257,11 +261,11 @@ public sealed class VDTFile : FileFormat
         PrintParameterModifier.RetractSpeed2,
             
         PrintParameterModifier.BottomLightPWM,
-        PrintParameterModifier.LightPWM,
-    };
+        PrintParameterModifier.LightPWM
+    ];
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    {
+    [
         new(200, 200),
         new(48, 48),
         new(200, 200),
@@ -271,10 +275,10 @@ public sealed class VDTFile : FileFormat
         new(200, 200),
         new(48, 48),
         new(200, 200),
-        new(48, 48),
-    };
+        new(48, 48)
+    ];
 
-    public override uint[] AvailableVersions { get; } = { 1 };
+    public override uint[] AvailableVersions { get; } = [1];
 
     public override uint DefaultVersion => 1;
 
@@ -572,7 +576,8 @@ public sealed class VDTFile : FileFormat
         set => base.MachineName = ManifestFile.Machine.Name = value;
     }
 
-    public override object[] Configs => new[] {(object)ManifestFile, ManifestFile.Machine, ManifestFile.AdvancedParameters, ManifestFile.Resin, ManifestFile.Print, ManifestFile.PrintStatistics};
+    public override object[] Configs => [(object)ManifestFile, ManifestFile.Machine, ManifestFile.AdvancedParameters, ManifestFile.Resin, ManifestFile.Print, ManifestFile.PrintStatistics
+    ];
     #endregion
 
     #region Methods
@@ -674,13 +679,13 @@ public sealed class VDTFile : FileFormat
         {
             if (string.IsNullOrWhiteSpace(notes)) continue;
 
-            var lines = notes.Split(new[] { "\\r\\n", "\\r", "\\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var lines = notes.Split(["\\r\\n", "\\r", "\\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             foreach (var line in lines)
             {
                 if (!line.StartsWith(name, StringComparison.OrdinalIgnoreCase)) continue;
                 if (existsOnly || line == name) return "true".Convert<T>();
-                var value = line.Remove(0, name.Length);
+                var value = line[name.Length..];
                 foreach (var c in value)
                 {
                     if (typeof(T) == typeof(string))

@@ -21,12 +21,13 @@ public sealed class GooFile : FileFormat
 
     private const string FileVersion = "V3.0";
 
-    private static readonly byte[] FileMagic = {
+    private static readonly byte[] FileMagic =
+    [
         0x07, 0x00, 0x00, 0x00,
         0x44, 0x4C, 0x50, 0x00
-    };
+    ];
 
-    private static byte[] Delimiter => new byte[]{ 0x0D, 0x0A };
+    private static byte[] Delimiter => [0x0D, 0x0A];
 
     private static byte LayerMagic => 0x55;
 
@@ -62,9 +63,9 @@ public sealed class GooFile : FileFormat
         [FieldEndianness(Endianness.Big)] [FieldOrder(8)] public ushort AntiAliasingLevel { get; set; } = 8;
         [FieldEndianness(Endianness.Big)] [FieldOrder(9)] public ushort GreyLevel { get; set; } = 1;
         [FieldEndianness(Endianness.Big)] [FieldOrder(10)] public ushort BlurLevel { get; set; } = 0;
-        [FieldOrder(11)] [FieldCount(116 * 116 * 2)] public byte[] SmallPreview565 { get; set; } = Array.Empty<byte>();
+        [FieldOrder(11)] [FieldCount(116 * 116 * 2)] public byte[] SmallPreview565 { get; set; } = [];
         [FieldOrder(12)] [FieldCount(2)] public byte[] SmallPreviewDelimiter { get; set; } = Delimiter;
-        [FieldOrder(13)] [FieldCount(290 * 290 * 2)] public byte[] BigPreview565 { get; set; } = Array.Empty<byte>();
+        [FieldOrder(13)] [FieldCount(290 * 290 * 2)] public byte[] BigPreview565 { get; set; } = [];
         [FieldOrder(14)] [FieldCount(2)] public byte[] BigPreviewDelimiter { get; set; } = Delimiter;
         [FieldEndianness(Endianness.Big)] [FieldOrder(15)] public uint LayerCount { get; set; }
         [FieldEndianness(Endianness.Big)] [FieldOrder(16)] public ushort ResolutionX { get; set; }
@@ -166,7 +167,7 @@ public sealed class GooFile : FileFormat
 
         [Ignore] public GooFile? Parent { get; set; }
 
-        [Ignore] public byte[] EncodedRle { get; set; } = Array.Empty<byte>();
+        [Ignore] public byte[] EncodedRle { get; set; } = [];
 
         // DelimiterRLE
 
@@ -361,7 +362,7 @@ public sealed class GooFile : FileFormat
 
         public byte[] EncodeImage(Mat image, uint layerIndex, bool useColorDifferenceCompression = true)
         {
-            List<byte> rle = new(){ LayerMagic };
+            List<byte> rle = [LayerMagic];
             byte previousColor = 0;
             byte currentColor = 0;
             uint stride = 0;
@@ -504,16 +505,17 @@ public sealed class GooFile : FileFormat
     #region Properties
     public override FileFormatType FileType => FileFormatType.Binary;
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new(typeof(GooFile), "goo", "Elegoo GOO"),
-        new(typeof(GooFile), "prz", "Phrozen Sonic Mini 8K S (PRZ)"),
-    };
+        new(typeof(GooFile), "prz", "Phrozen Sonic Mini 8K S (PRZ)")
+    ];
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    {
+    [
         new(116, 116),
         new(290, 290)
-    };
+    ];
 
     public FileHeader Header { get; private set; } = new();
 
@@ -977,7 +979,7 @@ public sealed class GooFile : FileFormat
         set => base.MaterialCost = Header.MaterialCost = MathF.Round(value, 3);
     }
 
-    public override object[] Configs => new object[] { Header, Footer };
+    public override object[] Configs => [Header, Footer];
 
     #endregion
 
@@ -1097,7 +1099,7 @@ public sealed class GooFile : FileFormat
 
         progress.Reset(OperationProgress.StatusEncodePreviews, 2);
 
-        Mat?[] thumbnails = { GetLargestThumbnail(), GetSmallestThumbnail() };
+        Mat?[] thumbnails = [GetLargestThumbnail(), GetSmallestThumbnail()];
         Header.BigPreview565 = EncodeImage(DATATYPE_RGB565_BE, thumbnails[0]!);
         progress++;
         Header.SmallPreview565 = EncodeImage(DATATYPE_RGB565_BE, thumbnails[1]!);

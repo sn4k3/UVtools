@@ -67,7 +67,7 @@ public sealed class SL1File : FileFormat
     public const string Keyword_LightPWM            = "LightPWM";
     #endregion
 
-    #region Sub Classes 
+    #region Sub Classes
 
     #region Printer
     public class Printer
@@ -158,7 +158,7 @@ public sealed class SL1File : FileFormat
         public string MaterialType { get; set; } = string.Empty;
         public string SlaMaterialSettingsId { get; set; } = string.Empty;
         public string MaterialColour { get; set; } = "#29B2B2";
-        public float BottleCost { get; set; } 
+        public float BottleCost { get; set; }
         public float BottleVolume { get; set; }
         public float BottleWeight { get; set; }
         public float MaterialDensity { get; set; }
@@ -243,7 +243,7 @@ public sealed class SL1File : FileFormat
         public byte SupportsEnable { get; set; }
         public string SupportTreeType { get; set; } = "default";
         public bool SupportEnforcersOnly { get; set; }
-            
+
         public float SupportHeadFrontDiameter { get; set; }
         public float BranchingsupportHeadFrontDiameter { get; set; }
         public float SupportHeadPenetration { get; set; }
@@ -345,7 +345,7 @@ public sealed class SL1File : FileFormat
         public float ExpTimeFirst { get; set; }
         public float ExpUserProfile { get; set; }
         //public string FileCreationTimestamp { get; set; }
-        public string FileCreationTimestamp { 
+        public string FileCreationTimestamp {
             get
             {
                 //2021-01-23 at 04:07:36 UTC
@@ -394,21 +394,23 @@ public sealed class SL1File : FileFormat
 
     public override string ConvertMenuGroup => "Prusa";
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new(typeof(SL1File), "sl1", "PrusaSlicer SL1"),
         new(typeof(SL1File), "sl1s", "PrusaSlicer SL1S Speed")
-    };
-    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
+    ];
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
+    [
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.BottomExposureTime,
-        PrintParameterModifier.ExposureTime,
-    };
+        PrintParameterModifier.ExposureTime
+    ];
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    {
+    [
         new(400, 400),
         new(800, 480)
-    };
+    ];
 
     public override uint ResolutionX
     {
@@ -455,7 +457,7 @@ public sealed class SL1File : FileFormat
             PrinterSettings.DisplayMirrorY = (byte)(value is FlipDirection.Vertically or FlipDirection.Both ? 1 : 0);
             RaisePropertyChanged();
         }
-    }   
+    }
 
     public override byte AntiAliasing
     {
@@ -504,7 +506,7 @@ public sealed class SL1File : FileFormat
         {
             base.PrintTime = value;
             OutputConfigSettings.PrintTime = base.PrintTime;
-        } 
+        }
     }
 
     public override float MaterialMilliliters
@@ -536,7 +538,7 @@ public sealed class SL1File : FileFormat
         set => base.MachineName = PrinterSettings.PrinterSettingsId = value;
     }
 
-    public override object[] Configs => new object[] { PrinterSettings, MaterialSettings, PrintSettings, OutputConfigSettings };
+    public override object[] Configs => [PrinterSettings, MaterialSettings, PrintSettings, OutputConfigSettings];
     #endregion
 
     #region Overrides
@@ -570,13 +572,12 @@ public sealed class SL1File : FileFormat
         }
 
 
-        if (iniKey.EndsWith("_"))
-            iniKey.Remove(iniKey.Length - 1);
+        if (iniKey.EndsWith('_')) iniKey = iniKey[..^1];
 
         return iniKey;
     }
 
-        
+
     #endregion
 
     #region Methods
@@ -657,7 +658,7 @@ public sealed class SL1File : FileFormat
         Statistics.ExecutionTime.Restart();
 
         using var inputFile = ZipFile.OpenRead(FileFullPath!);
-        List<string> iniFiles = new();
+        List<string> iniFiles = [];
         foreach (var entity in inputFile.Entries)
         {
             if (!entity.Name.EndsWith(".ini")) continue;
@@ -671,7 +672,7 @@ public sealed class SL1File : FileFormat
                 var fieldName = IniKeyToMemberName(keyValue[0]);
                 bool foundMember = false;
 
-                            
+
                 foreach (var obj in Configs)
                 {
                     var attribute = obj.GetType().GetProperty(fieldName);
@@ -682,7 +683,7 @@ public sealed class SL1File : FileFormat
                     Statistics.ImplementedKeys.Add(keyValue[0]);
                     foundMember = true;
                 }
-                           
+
                 if (!foundMember)
                 {
                     Statistics.MissingKeys.Add(keyValue[0]);
@@ -836,13 +837,13 @@ public sealed class SL1File : FileFormat
         {
             if(string.IsNullOrWhiteSpace(notes)) continue;
 
-            var lines = notes.Split(new[] { "\\r\\n", "\\r", "\\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var lines = notes.Split(["\\r\\n", "\\r", "\\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             foreach (var line in lines)
             {
                 if (!line.StartsWith(name, StringComparison.OrdinalIgnoreCase)) continue;
                 if (existsOnly || line == name) return "true".Convert<T>();
-                var value = line.Remove(0, name.Length);
+                var value = line[name.Length..];
                 foreach (var c in value)
                 {
                     if (typeof(T) == typeof(string))

@@ -20,7 +20,7 @@ internal static class ConvertCommand
     internal static Command CreateCommand()
     {
         var targetTypeArgument = new Argument<string>("target-type/ext", "Target format type or extension. Use 'auto' for SL1 files with specified FILEFORMAT_xxx");
-        var versionOption = new Option<ushort>(new[] { "-v", "--version" }, "Sets the file format version");
+        var versionOption = new Option<ushort>(["-v", "--version"], "Sets the file format version");
         var noOverwriteOption = new Option<bool>("--no-overwrite", "If the output file exists do not overwrite");
 
         var command = new Command("convert", "Convert input file into a output file format by a known type or extension")

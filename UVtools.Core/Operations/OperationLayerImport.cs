@@ -59,7 +59,7 @@ public sealed class OperationLayerImport : Operation
     private bool _extendBeyondLayerCount = true;
     private bool _discardUnmodifiedLayers;
     private ushort _stackMargin = 50;
-    private RangeObservableCollection<GenericFileRepresentation> _files = new();
+    private RangeObservableCollection<GenericFileRepresentation> _files = [];
     #endregion
 
     #region Overrides
@@ -142,14 +142,14 @@ public sealed class OperationLayerImport : Operation
 
     #region Properties
 
-    public static string[] ValidImageExtensions => new[]
-    {
+    public static string[] ValidImageExtensions =>
+    [
         "png",
         "bmp",
         "jpeg",
         "jpg",
-        "gif",
-    };
+        "gif"
+    ];
 
     public ImportTypes ImportType
     {

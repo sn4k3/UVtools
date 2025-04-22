@@ -3,6 +3,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
@@ -154,7 +155,7 @@ public partial class ToolLayerImportControl : ToolControl
         Operation.StartLayerIndex = App.MainWindow.ActualLayer;
     }
 
-    public async void AddFiles()
+    public async Task AddFiles()
     {
         var filters = AvaloniaStatic.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
         var orderedFilters = new List<FilePickerFileType> { filters[UserSettings.Instance.General.DefaultOpenFileExtensionIndex] };

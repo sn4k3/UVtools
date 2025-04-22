@@ -14,6 +14,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Xml.Serialization;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
@@ -62,7 +63,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 
     #region Members
 
-    public object Mutex = new();
+    public Lock Mutex = new();
     private LayerCompressionCodec _compressionCodec;
     private CMat _compressedMat;
     private uint _nonZeroPixelCount;
@@ -318,7 +319,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Gets if this layer is also an transition layer
     /// </summary>
-    public bool IsTransitionLayer => SlicerFile.TransitionLayerCount > 0 && 
+    public bool IsTransitionLayer => SlicerFile.TransitionLayerCount > 0 &&
                                      Index >= SlicerFile.BottomLayerCount && Index < SlicerFile.BottomLayerCount + SlicerFile.TransitionLayerCount;
 
     /// <summary>
@@ -894,7 +895,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         _contours = null;
     }
 
-    private MatCompressor LayerCompressionCodecToMatCompressor(LayerCompressionCodec compressionCodec)
+    private static MatCompressor LayerCompressionCodecToMatCompressor(LayerCompressionCodec compressionCodec)
     {
         return compressionCodec switch
         {
@@ -963,7 +964,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// True if this layer have a valid initialized image, otherwise false
     /// </summary>
     public bool HaveImage => _compressedMat.IsInitialized;
-    
+
     /// <summary>
     /// Gets or sets a new image instance
     /// </summary>
@@ -1074,53 +1075,55 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         get
         {
             if (SlicerFile is null) return false; // Cant verify
+            const float toleranceLayerHeight = HeightPrecisionIncrementFloat;
+            const float tolerance = 0.01f;
             if (IsBottomLayer)
             {
                 if (
-                    (SlicerFile.CanUseLayerPositionZ && _positionZ != RoundHeight(SlicerFile.LayerHeight * Number)) ||
-                    (SlicerFile.CanUseLayerLightOffDelay && _lightOffDelay != SlicerFile.BottomLightOffDelay) ||
-                    (SlicerFile.CanUseLayerWaitTimeBeforeCure && _waitTimeBeforeCure != SlicerFile.BottomWaitTimeBeforeCure) ||
-                    (SlicerFile.CanUseLayerExposureTime && _exposureTime != SlicerFile.BottomExposureTime) ||
-                    (SlicerFile.CanUseLayerWaitTimeAfterCure && _waitTimeAfterCure != SlicerFile.BottomWaitTimeAfterCure) ||
-                    (SlicerFile.CanUseLayerLiftHeight && _liftHeight != SlicerFile.BottomLiftHeight) ||
-                    (SlicerFile.CanUseLayerLiftSpeed && _liftSpeed != SlicerFile.BottomLiftSpeed) ||
-                    (SlicerFile.CanUseLayerLiftAcceleration && _liftAcceleration != SlicerFile.BottomLiftAcceleration) ||
-                    (SlicerFile.CanUseLayerLiftHeight2 && _liftHeight2 != SlicerFile.BottomLiftHeight2) ||
-                    (SlicerFile.CanUseLayerLiftSpeed2 && _liftSpeed2 != SlicerFile.BottomLiftSpeed2) ||
-                    (SlicerFile.CanUseLayerLiftAcceleration2 && _liftAcceleration2 != SlicerFile.BottomLiftAcceleration2) ||
-                    (SlicerFile.CanUseLayerWaitTimeAfterLift && _waitTimeAfterLift != SlicerFile.BottomWaitTimeAfterLift) ||
-                    (SlicerFile.CanUseLayerRetractSpeed && _retractSpeed != SlicerFile.BottomRetractSpeed) ||
-                    (SlicerFile.CanUseLayerRetractAcceleration && _retractAcceleration != SlicerFile.BottomRetractAcceleration) ||
-                    (SlicerFile.CanUseLayerRetractHeight2 && _retractHeight2 != SlicerFile.BottomRetractHeight2) ||
-                    (SlicerFile.CanUseLayerRetractSpeed2 && _retractSpeed2 != SlicerFile.BottomRetractSpeed2) ||
-                    (SlicerFile.CanUseLayerRetractAcceleration2 && _retractAcceleration2 != SlicerFile.BottomRetractAcceleration2) ||
+                    (SlicerFile.CanUseLayerPositionZ && Math.Abs(RoundHeight(_positionZ - SlicerFile.LayerHeight * Number)) > toleranceLayerHeight) ||
+                    (SlicerFile.CanUseLayerLightOffDelay && Math.Abs(_lightOffDelay - SlicerFile.BottomLightOffDelay) > tolerance) ||
+                    (SlicerFile.CanUseLayerWaitTimeBeforeCure && Math.Abs(_waitTimeBeforeCure - SlicerFile.BottomWaitTimeBeforeCure) > tolerance) ||
+                    (SlicerFile.CanUseLayerExposureTime && Math.Abs(_exposureTime - SlicerFile.BottomExposureTime) > tolerance) ||
+                    (SlicerFile.CanUseLayerWaitTimeAfterCure && Math.Abs(_waitTimeAfterCure - SlicerFile.BottomWaitTimeAfterCure) > tolerance) ||
+                    (SlicerFile.CanUseLayerLiftHeight && Math.Abs(_liftHeight - SlicerFile.BottomLiftHeight) > tolerance && Math.Abs(_liftHeight - SlicerFile.BottomLiftHeightTotal) > tolerance) ||
+                    (SlicerFile.CanUseLayerLiftSpeed && Math.Abs(_liftSpeed - SlicerFile.BottomLiftSpeed) > tolerance) ||
+                    (SlicerFile.CanUseLayerLiftAcceleration && Math.Abs(_liftAcceleration - SlicerFile.BottomLiftAcceleration) > tolerance) ||
+                    (SlicerFile.CanUseLayerLiftHeight2 && Math.Abs(_liftHeight2 - SlicerFile.BottomLiftHeight2) > tolerance) ||
+                    (SlicerFile.CanUseLayerLiftSpeed2 && Math.Abs(_liftSpeed2 - SlicerFile.BottomLiftSpeed2) > tolerance) ||
+                    (SlicerFile.CanUseLayerLiftAcceleration2 && Math.Abs(_liftAcceleration2 - SlicerFile.BottomLiftAcceleration2) > tolerance) ||
+                    (SlicerFile.CanUseLayerWaitTimeAfterLift && Math.Abs(_waitTimeAfterLift - SlicerFile.BottomWaitTimeAfterLift) > tolerance) ||
+                    (SlicerFile.CanUseLayerRetractSpeed && Math.Abs(_retractSpeed - SlicerFile.BottomRetractSpeed) > tolerance) ||
+                    (SlicerFile.CanUseLayerRetractAcceleration && Math.Abs(_retractAcceleration - SlicerFile.BottomRetractAcceleration) > tolerance) ||
+                    (SlicerFile.CanUseLayerRetractHeight2 && Math.Abs(_retractHeight2 - SlicerFile.BottomRetractHeight2) > tolerance) ||
+                    (SlicerFile.CanUseLayerRetractSpeed2 && Math.Abs(_retractSpeed2 - SlicerFile.BottomRetractSpeed2) > tolerance) ||
+                    (SlicerFile.CanUseLayerRetractAcceleration2 && Math.Abs(_retractAcceleration2 - SlicerFile.BottomRetractAcceleration2) > tolerance) ||
                     (SlicerFile.CanUseLayerLightPWM && _lightPWM != SlicerFile.BottomLightPWM)
-                ) 
+                )
                     return false;
             }
             else
             {
                 if (
-                    (SlicerFile.CanUseLayerPositionZ && _positionZ != RoundHeight(SlicerFile.LayerHeight * Number)) ||
-                    (SlicerFile.CanUseLayerLightOffDelay && _lightOffDelay != SlicerFile.LightOffDelay) ||
-                    (SlicerFile.CanUseLayerWaitTimeBeforeCure && _waitTimeBeforeCure != SlicerFile.WaitTimeBeforeCure) ||
-                    (SlicerFile.CanUseLayerExposureTime && !IsTransitionLayer && _exposureTime != SlicerFile.ExposureTime) || // Fix for can't edit settings on menu https://github.com/sn4k3/UVtools/issues/507
+                    (SlicerFile.CanUseLayerPositionZ && Math.Abs(RoundHeight(_positionZ - SlicerFile.LayerHeight * Number)) > toleranceLayerHeight) ||
+                    (SlicerFile.CanUseLayerLightOffDelay && Math.Abs(_lightOffDelay - SlicerFile.LightOffDelay) > tolerance) ||
+                    (SlicerFile.CanUseLayerWaitTimeBeforeCure && Math.Abs(_waitTimeBeforeCure - SlicerFile.WaitTimeBeforeCure) > tolerance) ||
+                    (SlicerFile.CanUseLayerExposureTime && !IsTransitionLayer && Math.Abs(_exposureTime - SlicerFile.ExposureTime) > tolerance) || // Fix for can't edit settings on menu https://github.com/sn4k3/UVtools/issues/507
                     //(SlicerFile.CanUseLayerExposureTime && exposureTime != SlicerFile.ExposureTime) ||
-                    (SlicerFile.CanUseLayerWaitTimeAfterCure && _waitTimeAfterCure != SlicerFile.WaitTimeAfterCure) ||
-                    (SlicerFile.CanUseLayerLiftHeight && _liftHeight != SlicerFile.LiftHeight) ||
-                    (SlicerFile.CanUseLayerLiftSpeed && _liftSpeed != SlicerFile.LiftSpeed) ||
-                    (SlicerFile.CanUseLayerLiftAcceleration && _liftAcceleration != SlicerFile.LiftAcceleration) ||
-                    (SlicerFile.CanUseLayerLiftHeight2 && _liftHeight2 != SlicerFile.LiftHeight2) ||
-                    (SlicerFile.CanUseLayerLiftSpeed2 && _liftSpeed2 != SlicerFile.LiftSpeed2) ||
-                    (SlicerFile.CanUseLayerLiftAcceleration2 && _liftAcceleration2 != SlicerFile.LiftAcceleration2) ||
-                    (SlicerFile.CanUseLayerWaitTimeAfterLift && _waitTimeAfterLift != SlicerFile.WaitTimeAfterLift) ||
-                    (SlicerFile.CanUseLayerRetractSpeed && _retractSpeed != SlicerFile.RetractSpeed) ||
-                    (SlicerFile.CanUseLayerRetractAcceleration && _retractAcceleration != SlicerFile.RetractAcceleration) ||
-                    (SlicerFile.CanUseLayerRetractHeight2 && _retractHeight2 != SlicerFile.RetractHeight2) ||
-                    (SlicerFile.CanUseLayerRetractSpeed2 && _retractSpeed2 != SlicerFile.RetractSpeed2) ||
-                    (SlicerFile.CanUseLayerRetractAcceleration2 && _retractAcceleration2 != SlicerFile.RetractAcceleration2) ||
+                    (SlicerFile.CanUseLayerWaitTimeAfterCure && Math.Abs(_waitTimeAfterCure - SlicerFile.WaitTimeAfterCure) > tolerance) ||
+                    (SlicerFile.CanUseLayerLiftHeight && Math.Abs(_liftHeight - SlicerFile.LiftHeight) > tolerance && Math.Abs(_liftHeight - SlicerFile.LiftHeightTotal) > tolerance) ||
+                    (SlicerFile.CanUseLayerLiftSpeed && Math.Abs(_liftSpeed - SlicerFile.LiftSpeed) > tolerance) ||
+                    (SlicerFile.CanUseLayerLiftAcceleration && Math.Abs(_liftAcceleration - SlicerFile.LiftAcceleration) > tolerance) ||
+                    (SlicerFile.CanUseLayerLiftHeight2 && Math.Abs(_liftHeight2 - SlicerFile.LiftHeight2) > tolerance) ||
+                    (SlicerFile.CanUseLayerLiftSpeed2 && Math.Abs(_liftSpeed2 - SlicerFile.LiftSpeed2) > tolerance) ||
+                    (SlicerFile.CanUseLayerLiftAcceleration2 && Math.Abs(_liftAcceleration2 - SlicerFile.LiftAcceleration2) > tolerance) ||
+                    (SlicerFile.CanUseLayerWaitTimeAfterLift && Math.Abs(_waitTimeAfterLift - SlicerFile.WaitTimeAfterLift) > tolerance) ||
+                    (SlicerFile.CanUseLayerRetractSpeed && Math.Abs(_retractSpeed - SlicerFile.RetractSpeed) > tolerance) ||
+                    (SlicerFile.CanUseLayerRetractAcceleration && Math.Abs(_retractAcceleration - SlicerFile.RetractAcceleration) > tolerance) ||
+                    (SlicerFile.CanUseLayerRetractHeight2 && Math.Abs(_retractHeight2 - SlicerFile.RetractHeight2) > tolerance) ||
+                    (SlicerFile.CanUseLayerRetractSpeed2 && Math.Abs(_retractSpeed2 - SlicerFile.RetractSpeed2) > tolerance) ||
+                    (SlicerFile.CanUseLayerRetractAcceleration2 && Math.Abs(_retractAcceleration2 - SlicerFile.RetractAcceleration2) > tolerance) ||
                     (SlicerFile.CanUseLayerLightPWM && _lightPWM != SlicerFile.LightPWM)
-                ) 
+                )
                     return false;
             }
 
@@ -1137,7 +1140,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// Gets tree contours cache for this layer, however should call <see>
     ///     <cref>GetContours</cref>
     /// </see>
-    /// instead with <see cref="LayerMat"/> instance.  
+    /// instead with <see cref="LayerMat"/> instance.
     /// If not set it will calculate contours first
     /// </summary>
     public EmguContours Contours
@@ -1197,7 +1200,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         _isModified = false;
     }
 
-    public Layer(uint index, Stream stream, FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(index, stream.ToArray(), slicerFile, compressionMethod) 
+    public Layer(uint index, Stream stream, FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(index, stream.ToArray(), slicerFile, compressionMethod)
     { }
 
     public Layer(FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(0, slicerFile, compressionMethod)
@@ -1531,7 +1534,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 
     public string FormatFileName(byte padDigits, IndexStartNumber layerIndexStartNumber = default, string appendExt = ".png")
         => FormatFileName(string.Empty, padDigits, layerIndexStartNumber, appendExt);
-    
+
     public string FormatFileNameWithLayerDigits(string prepend = "", IndexStartNumber layerIndexStartNumber = default, string appendExt = ".png")
         => FormatFileName(prepend, SlicerFile.LayerDigits, layerIndexStartNumber, appendExt);
 

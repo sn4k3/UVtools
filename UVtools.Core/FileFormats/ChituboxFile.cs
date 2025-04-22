@@ -761,7 +761,7 @@ public sealed class ChituboxFile : FileFormat
 
         public unsafe byte[] EncodeCbddlpImage(Mat image, byte bit)
         {
-            List<byte> rawData = new();
+            List<byte> rawData = [];
             var span = image.GetBytePointer();
             var imageLength = image.GetLength();
 
@@ -824,7 +824,7 @@ public sealed class ChituboxFile : FileFormat
 
         private unsafe byte[] EncodeCtbImage(Mat image, uint layerIndex)
         {
-            List<byte> rawData = new();
+            List<byte> rawData = [];
             byte color = byte.MaxValue >> 1;
             uint stride = 0;
             var span = image.GetBytePointer();
@@ -1023,12 +1023,13 @@ public sealed class ChituboxFile : FileFormat
 
     public override string ConvertMenuGroup => "Chitubox";
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new(typeof(ChituboxFile), "photon", "Chitubox Photon"),
         new(typeof(ChituboxFile), "cbddlp", "Chitubox CBDDLP"),
         new(typeof(ChituboxFile), "ctb", "Chitubox CTB"),
-        new(typeof(ChituboxFile), "gktwo.ctb", "Chitubox CTB for UniFormation GKtwo", false),
-    };
+        new(typeof(ChituboxFile), "gktwo.ctb", "Chitubox CTB for UniFormation GKtwo", false)
+    ];
 
     public override PrintParameterModifier[] PrintParameterModifiers
     {
@@ -1036,8 +1037,8 @@ public sealed class ChituboxFile : FileFormat
         {
             if (HeaderSettings.Version >= 4)
             {
-                return new[]
-                {
+                return
+                [
 
                     PrintParameterModifier.BottomLayerCount,
                     PrintParameterModifier.TransitionLayerCount,
@@ -1074,14 +1075,14 @@ public sealed class ChituboxFile : FileFormat
                     PrintParameterModifier.RetractSpeed2,
 
                     PrintParameterModifier.BottomLightPWM,
-                    PrintParameterModifier.LightPWM,
-                };
+                    PrintParameterModifier.LightPWM
+                ];
             }
 
             if (HeaderSettings.Version == 3)
             {
-                return new[]
-                {
+                return
+                [
 
                     PrintParameterModifier.BottomLayerCount,
                     PrintParameterModifier.TransitionLayerCount,
@@ -1095,12 +1096,12 @@ public sealed class ChituboxFile : FileFormat
                     PrintParameterModifier.BottomLiftSpeed,
                     PrintParameterModifier.LiftHeight,
                     PrintParameterModifier.LiftSpeed,
-                    PrintParameterModifier.RetractSpeed,
-                };
+                    PrintParameterModifier.RetractSpeed
+                ];
             }
 
-            return new[]
-            {
+            return
+            [
 
                 PrintParameterModifier.BottomLayerCount,
 
@@ -1117,8 +1118,8 @@ public sealed class ChituboxFile : FileFormat
 
 
                 PrintParameterModifier.BottomLightPWM,
-                PrintParameterModifier.LightPWM,
-            };
+                PrintParameterModifier.LightPWM
+            ];
         }
     }
 
@@ -1127,7 +1128,7 @@ public sealed class ChituboxFile : FileFormat
     public override PrintParameterModifier[] PrintParameterPerLayerModifiers {
         get
         {
-            if (!IsCtbFile) return Array.Empty<PrintParameterModifier>(); // Only ctb files
+            if (!IsCtbFile) return []; // Only ctb files
             /* Disable for v2 beside the fields on format they are not used
              if (HeaderSettings.Version <= 2)
             {
@@ -1139,21 +1140,21 @@ public sealed class ChituboxFile : FileFormat
             }*/
             if (HeaderSettings.Version == 3)
             {
-                return new[]
-                {
+                return
+                [
                     PrintParameterModifier.PositionZ,
                     PrintParameterModifier.LightOffDelay,
                     PrintParameterModifier.ExposureTime,
                     PrintParameterModifier.LiftHeight,
                     PrintParameterModifier.LiftSpeed,
                     PrintParameterModifier.RetractSpeed,
-                    PrintParameterModifier.LightPWM,
-                };
+                    PrintParameterModifier.LightPWM
+                ];
             }
             if (HeaderSettings.Version >= 4)
             {
-                return new[]
-                {
+                return
+                [
                     PrintParameterModifier.PositionZ,
                     PrintParameterModifier.LightOffDelay,
                     PrintParameterModifier.WaitTimeBeforeCure,
@@ -1167,34 +1168,34 @@ public sealed class ChituboxFile : FileFormat
                     PrintParameterModifier.RetractSpeed,
                     PrintParameterModifier.RetractHeight2,
                     PrintParameterModifier.RetractSpeed2,
-                    PrintParameterModifier.LightPWM,
-                };
+                    PrintParameterModifier.LightPWM
+                ];
             }
 
 
 
-            return Array.Empty<PrintParameterModifier>();
+            return [];
         }
     }
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    {
+    [
         new(400, 300),
         new(200, 125)
-    };
+    ];
 
-    public override uint[] AvailableVersions { get; } = { 1, 2, 3, 4, 5 };
+    public override uint[] AvailableVersions { get; } = [1, 2, 3, 4, 5];
 
     public override uint[] GetAvailableVersionsForExtension(string? extension)
     {
         if (string.IsNullOrWhiteSpace(extension)) return AvailableVersions;
-        if (extension[0] == '.') extension = extension.Remove(0, 1).ToLower();
+        if (extension[0] == '.') extension = extension[1..].ToLower();
 
         switch (extension)
         {
             case "cbddlp":
             case "photon":
-                return new uint[] {1, 2};
+                return [1, 2];
             default:
                 return AvailableVersions;
         }
@@ -1802,7 +1803,7 @@ public sealed class ChituboxFile : FileFormat
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
         outputFile.Seek(Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.Begin);
 
-        Mat?[] thumbnails = { GetLargestThumbnail(), GetSmallestThumbnail() };
+        Mat?[] thumbnails = [GetLargestThumbnail(), GetSmallestThumbnail()];
         for (byte i = 0; i < thumbnails.Length; i++)
         {
             var image = thumbnails[i];

@@ -558,7 +558,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
         public unsafe byte[] Encode(CrealityCXDLPv4File parent, Mat image, uint layerIndex)
         {
-            List<byte> rawData = new();
+            List<byte> rawData = [];
             byte color = byte.MaxValue >> 1;
             uint stride = 0;
             var span = image.GetBytePointer();
@@ -657,22 +657,22 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
     public Preview[] Previews { get; }
 
-    public LayerDef[] LayerDefinitions { get; private set; } = Array.Empty<LayerDef>();
-    public LayerDefEx[] LayerDefinitionsEx { get; private set; } = Array.Empty<LayerDefEx>();
+    public LayerDef[] LayerDefinitions { get; private set; } = [];
+    public LayerDefEx[] LayerDefinitionsEx { get; private set; } = [];
 
     public override FileFormatType FileType => FileFormatType.Binary;
 
     public override string ConvertMenuGroup => "Creality CXDLP";
 
-    public override FileExtension[] FileExtensions { get; } = {
-        new(typeof(CrealityCXDLPv4File), "cxdlpv4", "Creality CXDLPv4"),
-    };
+    public override FileExtension[] FileExtensions { get; } =
+    [
+        new(typeof(CrealityCXDLPv4File), "cxdlpv4", "Creality CXDLPv4")
+    ];
 
     public override PrintParameterModifier[] PrintParameterModifiers =>
-        new[]
-        {
+    [
 
-            PrintParameterModifier.BottomLayerCount,
+        PrintParameterModifier.BottomLayerCount,
             PrintParameterModifier.TransitionLayerCount,
 
             PrintParameterModifier.BottomLightOffDelay,
@@ -707,14 +707,13 @@ public sealed class CrealityCXDLPv4File : FileFormat
             PrintParameterModifier.RetractSpeed2,
 
             PrintParameterModifier.BottomLightPWM,
-            PrintParameterModifier.LightPWM,
-        };
+            PrintParameterModifier.LightPWM
+    ];
 
 
     public override PrintParameterModifier[] PrintParameterPerLayerModifiers =>
-        new[]
-        {
-            PrintParameterModifier.PositionZ,
+    [
+        PrintParameterModifier.PositionZ,
             PrintParameterModifier.LightOffDelay,
             PrintParameterModifier.WaitTimeBeforeCure,
             PrintParameterModifier.ExposureTime,
@@ -727,14 +726,14 @@ public sealed class CrealityCXDLPv4File : FileFormat
             PrintParameterModifier.RetractSpeed,
             PrintParameterModifier.RetractHeight2,
             PrintParameterModifier.RetractSpeed2,
-            PrintParameterModifier.LightPWM,
-        };
+            PrintParameterModifier.LightPWM
+    ];
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    {
+    [
         new(120, 120),
         new(300, 300)
-    };
+    ];
 
 
     public override uint DefaultVersion => DEFAULT_VERSION;
@@ -1063,7 +1062,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         }
     }
 
-    public override object[] Configs => new object[] { HeaderSettings, PrintParametersSettings, SlicerInfoSettings };
+    public override object[] Configs => [HeaderSettings, PrintParametersSettings, SlicerInfoSettings];
 
     #endregion
 
@@ -1102,7 +1101,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.ReadWrite);
         outputFile.Seek(Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.Begin);
 
-        Mat?[] thumbnails = {GetSmallestThumbnail(), GetLargestThumbnail()};
+        Mat?[] thumbnails = [GetSmallestThumbnail(), GetLargestThumbnail()];
         for (byte i = 0; i < thumbnails.Length; i++)
         {
             var image = thumbnails[i];

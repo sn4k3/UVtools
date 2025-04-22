@@ -34,7 +34,7 @@ public sealed class OperationProgress : BindableBase, IDisposable
     public const string StatusResinTraps = "Layers processed (Resin traps)";
     public const string StatusRepairLayers = "Repaired Layers";
 
-    public readonly object Mutex = new();
+    public readonly Lock Mutex = new();
 
     public CancellationTokenSource TokenSource { get; private set; } = null!;
     public CancellationToken Token => TokenSource.Token;

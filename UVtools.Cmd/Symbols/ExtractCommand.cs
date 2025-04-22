@@ -31,9 +31,9 @@ internal static class ExtractCommand
     internal static Command CreateCommand()
     {
         var noOverwriteOption = new Option<bool>("--no-overwrite", "If the output folder exists do not overwrite");
-        var contentTypeOption = new Option<ExtractContentType>(new []{ "-c", "--content" }, () => ExtractContentType.File, "Set the type of content to extract");
-        var indexesOption = new Option<uint[] >(new []{ "-i", "--index" }, "Sets the thumbnail or layer index to extract");
-        var rangeOption = new Option<string>(new []{ "-r", "--range" }, "Sets the layer range to extract");
+        var contentTypeOption = new Option<ExtractContentType>(["-c", "--content"], () => ExtractContentType.File, "Set the type of content to extract");
+        var indexesOption = new Option<uint[] >(["-i", "--index"], "Sets the thumbnail or layer index to extract");
+        var rangeOption = new Option<string>(["-r", "--range"], "Sets the layer range to extract");
 
         var command = new Command("extract", "Extract file contents to a folder")
         {

@@ -17,15 +17,15 @@ internal static class PrintIssuesCommand
 {
     internal static Command CreateCommand()
     {
-        var islandsOption = new Option<bool>(new[] { "-i", "--islands" }, "Enable islands detection");
-        var overhangsOption = new Option<bool>(new[] { "-o", "--overhangs" }, "Enable overhangs detection");
-        var resinTrapOption = new Option<bool>(new[] { "-r", "--resin-traps" }, "Enable resin-traps detection");
-        var suctionCupOption = new Option<bool>(new[] { "-s", "--suction-cups" }, "Enable suction-cups detection");
-        var touchingBoundsOption = new Option<bool>(new[] { "-t", "--touching-bounds" }, "Enable touching bounds detection");
-        var printHeightOption = new Option<bool>(new[] { "-p", "--print-height" }, "Enable print height detection");
-        var emptyLayersOption = new Option<bool>(new[] { "-e", "--empty-layers" }, "Enable empty layer detection");
+        var islandsOption = new Option<bool>(["-i", "--islands"], "Enable islands detection");
+        var overhangsOption = new Option<bool>(["-o", "--overhangs"], "Enable overhangs detection");
+        var resinTrapOption = new Option<bool>(["-r", "--resin-traps"], "Enable resin-traps detection");
+        var suctionCupOption = new Option<bool>(["-s", "--suction-cups"], "Enable suction-cups detection");
+        var touchingBoundsOption = new Option<bool>(["-t", "--touching-bounds"], "Enable touching bounds detection");
+        var printHeightOption = new Option<bool>(["-p", "--print-height"], "Enable print height detection");
+        var emptyLayersOption = new Option<bool>(["-e", "--empty-layers"], "Enable empty layer detection");
 
-        var sortByAreaOption = new Option<bool>(new[] { "--sort-area" }, "Sort by area DESC");
+        var sortByAreaOption = new Option<bool>(["--sort-area"], "Sort by area DESC");
 
         var command = new Command("print-issues", "Detect and print issues")
         {

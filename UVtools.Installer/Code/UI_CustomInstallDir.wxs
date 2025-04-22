@@ -24,7 +24,6 @@ Patch dialog sequence:
     <?foreach WIXUIARCH in X86;X64;A64 ?>
     <Fragment>
         <UI Id="UI_CustomInstallDir_$(WIXUIARCH)">
-            <Publish Dialog="LicenseAgreementDlg" Control="Print" Event="DoAction" Value="WixUIPrintEula_$(WIXUIARCH)" />
             <Publish Dialog="BrowseDlg" Control="OK" Event="DoAction" Value="WixUIValidatePath_$(WIXUIARCH)" Order="3" Condition="NOT WIXUI_DONTVALIDATEPATH" />
             <Publish Dialog="UI_CustomInstallDirDlg" Control="Next" Event="DoAction" Value="WixUIValidatePath_$(WIXUIARCH)" Order="2" Condition="NOT WIXUI_DONTVALIDATEPATH" />
         </UI>

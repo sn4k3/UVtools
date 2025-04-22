@@ -606,20 +606,21 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
         int x = patternMask.Width / 2;
         int y = patternMask.Height / 2;
 
-        Point[] directions = {
+        Point[] directions =
+        [
             new(0, -_infillSpacing), // top
             new(_infillSpacing, 0), // right
             new(0, _infillSpacing), // bottom
-            new(-_infillSpacing, 0), // left
-        };
+            new(-_infillSpacing, 0) // left
+        ];
 
         bool[] hitLimits =
-        {
+        [
             false,
             false,
             false,
             false
-        };
+        ];
 
         var points = new List<Point> {new(x, y)};
 

@@ -182,7 +182,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
     private decimal _exposureGenManualLayerHeight;
     private decimal _exposureGenManualBottom;
     private decimal _exposureGenManualNormal;
-    private RangeObservableCollection<ExposureItem> _exposureTable = new();
+    private RangeObservableCollection<ExposureItem> _exposureTable = [];
 
     private bool _bullsEyeEnabled = true;
     private string _bullsEyeConfigurationPx = "26:5, 60:10, 116:15, 190:20";
@@ -569,10 +569,10 @@ public sealed class OperationCalibrateExposureFinder : Operation
         {
             if (!_holesEnabled)
             {
-                return Array.Empty<int>();
+                return [];
             }
 
-            List<int> holes = new();
+            List<int> holes = [];
 
             if (_unitOfMeasure == CalibrateExposureFinderMeasures.Millimeters)
             {
@@ -667,10 +667,10 @@ public sealed class OperationCalibrateExposureFinder : Operation
         {
             if (!_barsEnabled)
             {
-                return Array.Empty<int>();
+                return [];
             }
 
-            List<int> bars = new();
+            List<int> bars = [];
 
             if (_unitOfMeasure == CalibrateExposureFinderMeasures.Millimeters)
             {
@@ -826,7 +826,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
     {
         get
         {
-            List<byte> values = new();
+            List<byte> values = [];
             if (!string.IsNullOrWhiteSpace(_multipleBrightnessValues))
             {
                 var split = _multipleBrightnessValues.Split(',', StringSplitOptions.TrimEntries);
@@ -969,7 +969,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
     {
         get
         {
-            List<decimal> layerHeights = new();
+            List<decimal> layerHeights = [];
             var endLayerHeight = _multipleLayerHeight ? _multipleLayerHeightMaximum : _layerHeight;
             for (decimal layerHeight = _layerHeight; layerHeight <= endLayerHeight; layerHeight += _multipleLayerHeightStep)
             {
@@ -1046,10 +1046,10 @@ public sealed class OperationCalibrateExposureFinder : Operation
         {
             if (!_bullsEyeEnabled)
             {
-                return Array.Empty<BullsEyeCircle>();
+                return [];
             }
 
-            List<BullsEyeCircle> bulleyes = new();
+            List<BullsEyeCircle> bulleyes = [];
                 
             if (_unitOfMeasure == CalibrateExposureFinderMeasures.Millimeters)
             {
@@ -1254,7 +1254,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
     public void GenerateExposureTable()
     {
         var endLayerHeight = _multipleLayerHeight ? _multipleLayerHeightMaximum : _layerHeight;
-        List<ExposureItem> list = new();
+        List<ExposureItem> list = [];
         for (decimal layerHeight = _layerHeight;
              layerHeight <= endLayerHeight;
              layerHeight += _multipleLayerHeightStep)
@@ -1626,30 +1626,30 @@ public sealed class OperationCalibrateExposureFinder : Operation
 
                 var triangles = new Point[4][];
 
-                triangles[0] = new Point[]  // Left
-                {
+                triangles[0] =
+                [
                     new(xPos, yPos), // Top Left
                     new(xPos + triangleWidth, yHalfPos), // Middle
-                    new(xPos, yPosEnd), // Bottom Left
-                };
-                triangles[1] = new Point[] // Right
-                {
+                    new(xPos, yPosEnd) // Bottom Left
+                ];
+                triangles[1] =
+                [
                     new(xPos + triangleWidth * 2, yPos), // Top Right
                     new(xPos + triangleWidth, yHalfPos), // Middle
-                    new(xPos + triangleWidth * 2, yPosEnd), // Bottom Right
-                };
-                triangles[2] = new Point[] // Top
-                {
+                    new(xPos + triangleWidth * 2, yPosEnd) // Bottom Right
+                ];
+                triangles[2] =
+                [
                     new(xPos + triangleWidth - triangleWidthQuarter, yPos),  // Top Left
                     new(xPos + triangleWidth + triangleWidthQuarter, yPos),  // Top Right
-                    new(xPos + triangleWidth, yHalfPos - _counterTrianglesTipOffset), // Middle
-                };
-                triangles[3] = new Point[] // Bottom
-                {
+                    new(xPos + triangleWidth, yHalfPos - _counterTrianglesTipOffset) // Middle
+                ];
+                triangles[3] =
+                [
                     new(xPos + triangleWidth - triangleWidthQuarter, yPosEnd),  // Bottom Left
                     new(xPos + triangleWidth + triangleWidthQuarter, yPosEnd),  // Bottom Right
-                    new(xPos + triangleWidth, yHalfPos + _counterTrianglesTipOffset), // Middle
-                };
+                    new(xPos + triangleWidth, yHalfPos + _counterTrianglesTipOffset) // Middle
+                ];
 
                 foreach (var triangle in triangles)
                 {
@@ -1792,7 +1792,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
 
         if (_patternModel)
         {
-            ConcurrentBag<Layer> parallelLayers = new();
+            ConcurrentBag<Layer> parallelLayers = [];
             Dictionary<ExposureItem, Point> table = new();
             var boundingRectangle = SlicerFile.BoundingRectangle;
             int xHalf = boundingRectangle.Width / 2;
@@ -1804,8 +1804,9 @@ public sealed class OperationCalibrateExposureFinder : Operation
 
             var brightnesses = MultipleBrightnessValuesArray;
             var multipleExposures = _exposureTable.Where(item => item.IsValid && item.LayerHeight == (decimal) SlicerFile.LayerHeight).ToArray();
-            if (brightnesses.Length == 0 || !_multipleBrightness) brightnesses = new[] { byte.MaxValue };
-            if (multipleExposures.Length == 0 || !_multipleExposures) multipleExposures = new[] { new ExposureItem((decimal)SlicerFile.LayerHeight, _bottomExposure, _normalExposure) };
+            if (brightnesses.Length == 0 || !_multipleBrightness) brightnesses = [byte.MaxValue];
+            if (multipleExposures.Length == 0 || !_multipleExposures) multipleExposures = [new ExposureItem((decimal)SlicerFile.LayerHeight, _bottomExposure, _normalExposure)
+            ];
 
             int currentX = sideMarginPx;
             int currentY = topBottomMarginPx;
@@ -1959,7 +1960,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
                 //return false;
             }
 
-            List<Layer> newLayers = new();
+            List<Layer> newLayers = [];
 
             Dictionary<ExposureItem, Point> table = new();
             var endLayerHeight = _multipleLayerHeight ? _multipleLayerHeightMaximum : _layerHeight;
@@ -1976,7 +1977,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
             int staircaseWidth = layers[0].Width - holePanelWidth;
 
             var brightnesses = MultipleBrightnessValuesArray;
-            if (brightnesses.Length == 0 || !_multipleBrightness) brightnesses = new[] { byte.MaxValue };
+            if (brightnesses.Length == 0 || !_multipleBrightness) brightnesses = [byte.MaxValue];
 
             ExposureItem? lastExposureItem = null;
             decimal lastCurrentHeight = 0;

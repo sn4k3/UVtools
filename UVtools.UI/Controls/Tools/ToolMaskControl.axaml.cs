@@ -5,6 +5,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
 using System.Drawing;
+using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 using UVtools.UI.Extensions;
@@ -89,7 +90,7 @@ public partial class ToolMaskControl : ToolControl
         }
     }
 
-    public async void ImportImageMask()
+    public async Task ImportImageMask()
     {
         var files = await App.MainWindow.OpenFilePickerAsync(AvaloniaStatic.ImagesFileFilter);
         if (files.Count == 0 || files[0].TryGetLocalPath() is not { } filePath) return;

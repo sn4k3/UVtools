@@ -21,7 +21,7 @@ public class RecentFiles : IList<string>
     /// </summary>
     private static string FilePath => Path.Combine(UserSettings.SettingsFolder, "recentfiles.dat");
 
-    private readonly List<string> _files = new();
+    private readonly List<string> _files = [];
 
     public byte MaxEntries { get; set; } = 40;
 
@@ -30,7 +30,7 @@ public class RecentFiles : IList<string>
     #region Singleton
 
     private static readonly Lazy<RecentFiles> _instanceHolder =
-        new(() => new RecentFiles());
+        new(() => []);
 
     /// <summary>
     /// Instance of <see cref="UserSettings"/> (singleton)

@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using UVtools.Core.Operations;
 
@@ -13,7 +14,7 @@ namespace UVtools.UI.Controls.Tools
             InitializeComponent();
         }
 
-        public async void ChooseFilePath()
+        public async Task ChooseFilePath()
         {
             using var file = await App.MainWindow.SaveFilePickerAsync(SlicerFile!, AvaloniaStatic.HtmlFileFilter);
             if (file?.TryGetLocalPath() is not { } filePath) return;

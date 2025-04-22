@@ -39,7 +39,7 @@ public class FlashForgeSVGXSvg
 
     [XmlElement("printparams")] public FlashForgeSVGXSvgPrintParams PrintParameters { get; set; } = new();
 
-    [XmlElement("g")] public List<FlashForgeSVGXSvgGroup> Groups { get; set; } = new();
+    [XmlElement("g")] public List<FlashForgeSVGXSvgGroup> Groups { get; set; } = [];
 
     public override string ToString()
     {
@@ -138,7 +138,7 @@ public class FlashForgeSVGXSvgGroup
     [XmlAttribute("id")] public string Id { get; set; } = string.Empty;
     [XmlAttribute("area")] public float Area { get; set; }
     [XmlAttribute("perimeter")] public float Perimeter { get; set; }
-    [XmlElement("path")] public List<FlashForgeSVGXSvgPath> Paths { get; set; } = new();
+    [XmlElement("path")] public List<FlashForgeSVGXSvgPath> Paths { get; set; } = [];
 
     public FlashForgeSVGXSvgGroup() { }
 
@@ -258,23 +258,24 @@ public sealed class FlashForgeSVGXFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Binary;
 
-    public override FileExtension[] FileExtensions { get; } = {
-        new (typeof(FlashForgeSVGXFile), "svgx", "Flashforge SVGX"),
-    };
+    public override FileExtension[] FileExtensions { get; } =
+    [
+        new (typeof(FlashForgeSVGXFile), "svgx", "Flashforge SVGX")
+    ];
 
     public override PrintParameterModifier[] PrintParameterModifiers { get; } =
-    {
+    [
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.BottomExposureTime,
-        PrintParameterModifier.ExposureTime,
+        PrintParameterModifier.ExposureTime
         //PrintParameterModifier.LightPWM,
-    };
+    ];
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    {
+    [
         new(128, 128), 
         new(200, 240)
-    };
+    ];
 
     public override bool SupportAntiAliasing => false;
 
@@ -417,7 +418,8 @@ public sealed class FlashForgeSVGXFile : FileFormat
         set => base.MachineName = SVGDocument.PrintParameters.MachineName = value;
     }
 
-    public override object[] Configs => new object[] { HeaderSettings, SVGDocument.PrintParameters, SVGDocument.PrintParameters.ProjectionAdjust, SVGDocument.PrintParameters.PrintRange, SVGDocument.PrintParameters.ProjectionTime  };
+    public override object[] Configs => [HeaderSettings, SVGDocument.PrintParameters, SVGDocument.PrintParameters.ProjectionAdjust, SVGDocument.PrintParameters.PrintRange, SVGDocument.PrintParameters.ProjectionTime
+    ];
 
     #endregion
 
@@ -482,7 +484,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
         var pixelUm = PixelSizeMicronsMax;
 
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-        SVGDocument.Groups = new List<FlashForgeSVGXSvgGroup> { new("background") };
+        SVGDocument.Groups = [new("background")];
         var groups = new FlashForgeSVGXSvgGroup[LayerCount];
 
         Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>

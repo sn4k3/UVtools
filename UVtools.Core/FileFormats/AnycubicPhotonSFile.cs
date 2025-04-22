@@ -118,7 +118,7 @@ public sealed class AnycubicPhotonSFile : FileFormat
 
         public unsafe byte[] Encode(Mat mat)
         {
-            List<byte> rawData = new();
+            List<byte> rawData = [];
             var spanMat = mat.GetBytePointer();
             var imageLength = mat.GetLength();
 
@@ -249,12 +249,13 @@ public sealed class AnycubicPhotonSFile : FileFormat
 
     public override string ConvertMenuGroup => "Chitubox";
 
-    public override FileExtension[] FileExtensions { get; } = {
-        new(typeof(AnycubicPhotonSFile), "photons", "Chitubox PhotonS"),
-    };
+    public override FileExtension[] FileExtensions { get; } =
+    [
+        new(typeof(AnycubicPhotonSFile), "photons", "Chitubox PhotonS")
+    ];
 
     public override PrintParameterModifier[] PrintParameterModifiers { get; } =
-    {
+    [
         PrintParameterModifier.BottomLayerCount,
 
         PrintParameterModifier.LightOffDelay,
@@ -268,11 +269,11 @@ public sealed class AnycubicPhotonSFile : FileFormat
         //PrintParameterModifier.BottomLiftSpeed,
         PrintParameterModifier.LiftHeight,
         PrintParameterModifier.LiftSpeed,
-        PrintParameterModifier.RetractSpeed,
-    };
+        PrintParameterModifier.RetractSpeed
+    ];
 
 
-    public override Size[] ThumbnailsOriginalSize { get; } = {new(224, 168) };
+    public override Size[] ThumbnailsOriginalSize { get; } = [new(224, 168)];
 
     public override bool SupportAntiAliasing => false;
 

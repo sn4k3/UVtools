@@ -105,11 +105,10 @@ namespace UVtools.UI.Controls.Tools
 
         public void ResetExposures()
         {
-            Operation.PhasedExposures.ReplaceCollection(new []
-            {
+            Operation.PhasedExposures.ReplaceCollection([
                 new OperationPhasedExposure.PhasedExposure((decimal)SlicerFile!.BottomExposureTime, 10, (decimal)SlicerFile.ExposureTime, 4),
                 new OperationPhasedExposure.PhasedExposure((decimal)SlicerFile.ExposureTime, 0, (decimal)SlicerFile.ExposureTime, 0)
-            });
+            ]);
         }
     }
 }

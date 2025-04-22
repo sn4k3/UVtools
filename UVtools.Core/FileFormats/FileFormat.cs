@@ -22,8 +22,8 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 using CommunityToolkit.Diagnostics;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
@@ -33,6 +33,7 @@ using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
 using UVtools.Core.Exceptions;
+using Timer = System.Timers.Timer;
 
 namespace UVtools.Core.FileFormats;
 
@@ -63,8 +64,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public const float DefaultBottomExposureTime = 30;
     public const float DefaultExposureTime = 3;
 
-    public const float DefaultBottomLiftHeight = 5;
-    public const float DefaultLiftHeight = 5;
+    public const float DefaultBottomLiftHeight = 6;
+    public const float DefaultLiftHeight = 6;
     public const float DefaultBottomLiftSpeed = 100;
     public const float DefaultLiftSpeed = 100;
 
@@ -476,7 +477,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Gets the available formats to process
     /// </summary>
     public static FileFormat[] AvailableFormats { get; } =
-    {
+    [
         new SL1File(), // Prusa SL1
         new ChituboxZipFile(), // Zip
         new ChituboxFile(), // cbddlp, cbt, photon
@@ -509,11 +510,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         new OSFFile(), // OSF
         new UVJFile(), // UVJ
         new GenericZIPFile(), // Generic zip files
-        new ImageFile(), // images
-    };
+        new ImageFile() // images
+    ];
 
     public static string AllSlicerFiles => AvailableFormats.Aggregate("All slicer files|",
-        (current, fileFormat) => current.EndsWith("|")
+        (current, fileFormat) => current.EndsWith('|')
             ? $"{current}{fileFormat.FileFilterExtensionsOnly}"
             : $"{current}; {fileFormat.FileFilterExtensionsOnly}");
 
@@ -530,10 +531,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         get
         {
-            var result = new List<KeyValuePair<string, List<string>>>
-            {
-                new("All slicer files", new List<string>())
-            };
+            List<KeyValuePair<string, List<string>>> result = [new("All slicer files", [])];
 
             foreach (var format in AvailableFormats)
             {
@@ -541,10 +539,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 {
                     if (!fileExtension.IsVisibleOnFileFilters) continue;
                     result[0].Value.Add(fileExtension.Extension);
-                    result.Add(new KeyValuePair<string, List<string>>(fileExtension.Description, new List<string>
-                    {
-                        fileExtension.Extension
-                    }));
+                    result.Add(new KeyValuePair<string, List<string>>(fileExtension.Description,
+                        [fileExtension.Extension]));
                 }
             }
 
@@ -557,7 +553,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         get
         {
-            List<FileExtension> extensions = new();
+            List<FileExtension> extensions = [];
             foreach (var slicerFile in AvailableFormats)
             {
                 extensions.AddRange(slicerFile.FileExtensions);
@@ -567,9 +563,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         }
     }
 
-    public static List<string> AllFileExtensionsString => (from slicerFile in AvailableFormats
-        from extension in slicerFile.FileExtensions
-        select extension.Extension).ToList();
+    public static IEnumerable<string> AllFileExtensionsString => AvailableFormats.SelectMany(
+        slicerFile => slicerFile.FileExtensions, (slicerFile, extension) => extension.Extension);
 
 
     /// <summary>
@@ -707,14 +702,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         if (filepath is null) return null;
         //if (file.EndsWith(TemporaryFileAppend)) file = Path.GetFileNameWithoutExtension(file);
         return PathExtensions.GetFileNameStripExtensions(filepath,
-            AllFileExtensionsString.OrderByDescending(s => s.Length).ToList(), out _);
+            AllFileExtensionsString.OrderByDescending(s => s.Length), out _);
     }
 
     public static string GetFileNameStripExtensions(string filepath, out string strippedExtension)
     {
         //if (file.EndsWith(TemporaryFileAppend)) file = Path.GetFileNameWithoutExtension(file);
         return PathExtensions.GetFileNameStripExtensions(filepath,
-            AllFileExtensionsString.OrderByDescending(s => s.Length).ToList(), out strippedExtension);
+            AllFileExtensionsString.OrderByDescending(s => s.Length), out strippedExtension);
     }
 
     public static FileFormat? Open(string fileFullPath, FileDecodeType decodeType, OperationProgress? progress = null)
@@ -1014,7 +1009,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             var diff = span.Length - pixel;
             if (diff > 0) // Fill leftovers
             {
-                mat.GetDataByteSpan(diff, pixel).Fill(0);
+                mat.GetDataByteSpan(diff, pixel).Clear();
             }
 
             return mat;
@@ -1140,7 +1135,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         var diff = span.Length - pixel;
         if (diff > 0) // Fill leftovers
         {
-            mat.GetDataByteSpan(diff, pixel).Fill(0);
+            mat.GetDataByteSpan(diff, pixel).Clear();
         }
 
         return mat;
@@ -1201,21 +1196,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             var properties = ReflectionExtensions.GetProperties(a);
             foreach (var aProperty in properties)
             {
-                if (aProperty.GetMethod is null || !(aProperty.PropertyType.IsPrimitive ||
-                                                     aProperty.PropertyType == typeof(decimal) ||
-                                                     aProperty.PropertyType == typeof(string) ||
-                                                     aProperty.PropertyType == typeof(Point) ||
-                                                     aProperty.PropertyType == typeof(PointF) ||
-                                                     aProperty.PropertyType == typeof(Size) ||
-                                                     aProperty.PropertyType == typeof(SizeF) ||
-                                                     aProperty.PropertyType == typeof(Rectangle) ||
-                                                     aProperty.PropertyType == typeof(RectangleF) ||
-                                                     aProperty.PropertyType == typeof(DateTime) ||
-                                                     aProperty.PropertyType == typeof(TimeSpan) ||
-                                                     aProperty.PropertyType == typeof(TimeOnly)
-                        )) continue;
+                if (aProperty.GetMethod is null || !aProperty.PropertyType.IsPrimitive()) continue;
 
                 if (onlyProperties.Length > 0 && !onlyProperties.Contains(aProperty.Name)) continue;
+                if (aProperty.Name.Contains("File", StringComparison.OrdinalIgnoreCase)) continue;
+
 
                 var bProperty = b.GetType().GetProperty(aProperty.Name);
                 if (bProperty is null) continue;
@@ -1233,7 +1218,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 {
                     if (!comparison.Layers.TryGetValue(layerIndex.Value, out var list))
                     {
-                        list = new List<ComparisonItem>();
+                        list = [];
                         comparison.Layers.Add(layerIndex.Value, list);
                     }
 
@@ -1308,7 +1293,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     #region Members
 
-    public object Mutex = new();
+    public Lock Mutex = new();
 
     private string? _fileFullPath;
 
@@ -1435,12 +1420,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the available <see cref="PrintParameterModifier"/>
     /// </summary>
-    public virtual PrintParameterModifier[] PrintParameterModifiers => Array.Empty<PrintParameterModifier>();
+    public virtual PrintParameterModifier[] PrintParameterModifiers => [];
 
     /// <summary>
     /// Gets the available <see cref="PrintParameterModifier"/> per layer
     /// </summary>
-    public virtual PrintParameterModifier[] PrintParameterPerLayerModifiers => Array.Empty<PrintParameterModifier>();
+    public virtual PrintParameterModifier[] PrintParameterPerLayerModifiers => [];
 
     /// <summary>
     /// Checks if a <see cref="PrintParameterModifier"/> exists on print parameters
@@ -1484,10 +1469,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets all valid file extensions for Avalonia file dialog
     /// </summary>
-    public List<KeyValuePair<string, List<string>>> FileFilterAvalonia
+    public IEnumerable<KeyValuePair<string, List<string>>> FileFilterAvalonia
         => FileExtensions.Select(fileExt =>
-                new KeyValuePair<string, List<string>>(fileExt.Description, new List<string> { fileExt.Extension }))
-            .ToList();
+            new KeyValuePair<string, List<string>>(fileExt.Description, [fileExt.Extension]));
 
     /// <summary>
     /// Gets all valid file extensions in "*.extension1;*.extension2" format
@@ -1588,7 +1572,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the available versions to set in this file format
     /// </summary>
-    public virtual uint[] AvailableVersions => Array.Empty<uint>();
+    public virtual uint[] AvailableVersions => [];
 
     /// <summary>
     /// Gets the amount of available versions in this file format
@@ -1642,7 +1626,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the original thumbnail sizes
     /// </summary>
-    public virtual Size[] ThumbnailsOriginalSize => Array.Empty<Size>();
+    public virtual Size[] ThumbnailsOriginalSize => [];
 
     /// <summary>
     /// Gets the number of thumbnails the file should have
@@ -1667,7 +1651,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the thumbnails for this <see cref="FileFormat"/>
     /// </summary>
-    public List<Mat> Thumbnails { get; } = new();
+    public List<Mat> Thumbnails { get; } = [];
 
     public IssueManager IssueManager { get; }
 
@@ -3766,7 +3750,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Get all configuration objects with properties and values
     /// </summary>
-    public virtual object[] Configs => Array.Empty<object>();
+    public virtual object[] Configs => [];
 
     /// <summary>
     /// Gets if this file is valid to decode
@@ -3987,7 +3971,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual void Clear()
     {
         FileFullPath = null;
-        _layers = Array.Empty<Layer>();
+        _layers = [];
         GCode?.Clear();
         ClearThumbnails();
     }
@@ -4440,7 +4424,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public bool SetThumbnails(Mat image)
     {
         Guard.IsNotNull(image);
-        return SetThumbnails(new[] {image});
+        return SetThumbnails([image]);
     }
 
     /// <summary>
@@ -7360,7 +7344,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         if (string.IsNullOrWhiteSpace(value)) return false;
 
-        var split = value.Split(new[]{':', '|', '-'}, StringSplitOptions.TrimEntries);
+        var split = value.Split([':', '|', '-'], StringSplitOptions.TrimEntries);
 
         if (split[0] != string.Empty)
         {
@@ -7556,7 +7540,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                     layer.WaitTimeBeforeCure = GetBottomOrNormalValue(layer, BottomWaitTimeBeforeCure, WaitTimeBeforeCure);
                     layer.ExposureTime = GetBottomOrNormalValue(layer, BottomExposureTime, ExposureTime);
                     layer.WaitTimeAfterCure = GetBottomOrNormalValue(layer, BottomWaitTimeAfterCure, WaitTimeAfterCure);
-                    layer.LiftHeight = GetBottomOrNormalValue(layer, BottomLiftHeight, LiftHeight);
+                    if ((layer.IsBottomLayer && CanUseBottomLiftHeight2 && !CanUseLayerLiftHeight2) || (layer.IsNormalLayer && CanUseLiftHeight2 && !CanUseLayerLiftHeight2))
+                        layer.LiftHeight = GetBottomOrNormalValue(layer, BottomLiftHeightTotal, LiftHeightTotal);
+                    else
+                        layer.LiftHeight = GetBottomOrNormalValue(layer, BottomLiftHeight, LiftHeight);
                     layer.LiftSpeed = GetBottomOrNormalValue(layer, BottomLiftSpeed, LiftSpeed);
                     layer.LiftAcceleration = GetBottomOrNormalValue(layer, BottomLiftAcceleration, LiftAcceleration);
                     layer.LiftHeight2 = GetBottomOrNormalValue(layer, BottomLiftHeight2, LiftHeight2);
@@ -7578,7 +7565,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         else if (property == nameof(BottomWaitTimeBeforeCure)) layer.WaitTimeBeforeCure = BottomWaitTimeBeforeCure;
                         else if (property == nameof(BottomExposureTime)) layer.ExposureTime = BottomExposureTime;
                         else if (property == nameof(BottomWaitTimeAfterCure)) layer.WaitTimeAfterCure = BottomWaitTimeAfterCure;
-                        else if (property == nameof(BottomLiftHeight)) layer.LiftHeight = BottomLiftHeight;
+                        else if (property == nameof(BottomLiftHeight))
+                        {
+                            if (CanUseBottomLiftHeight2 && !CanUseLayerLiftHeight2)
+                                layer.LiftHeight = BottomLiftHeightTotal;
+                            else
+                                layer.LiftHeight = BottomLiftHeight;
+                        }
                         else if (property == nameof(BottomLiftSpeed)) layer.LiftSpeed = BottomLiftSpeed;
                         else if (property == nameof(BottomLiftAcceleration)) layer.LiftAcceleration = BottomLiftAcceleration;
                         else if (property == nameof(BottomLiftHeight2)) layer.LiftHeight2 = BottomLiftHeight2;
@@ -7597,7 +7590,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         else if (property == nameof(WaitTimeBeforeCure) && !CanUseBottomWaitTimeBeforeCure) layer.WaitTimeBeforeCure = WaitTimeBeforeCure;
                         else if (property == nameof(ExposureTime) && !CanUseBottomExposureTime) layer.ExposureTime = ExposureTime;
                         else if (property == nameof(WaitTimeAfterCure) && !CanUseBottomWaitTimeAfterCure) layer.WaitTimeAfterCure = WaitTimeAfterCure;
-                        else if (property == nameof(LiftHeight) && !CanUseBottomLiftHeight) layer.LiftHeight = LiftHeight;
+                        else if (property == nameof(LiftHeight) && !CanUseBottomLiftHeight)
+                        {
+                            if (CanUseLiftHeight2 && !CanUseLayerLiftHeight2)
+                                layer.LiftHeight = LiftHeightTotal;
+                            else
+                                layer.LiftHeight = LiftHeight;
+                        }
                         else if (property == nameof(LiftSpeed) && !CanUseBottomLiftSpeed) layer.LiftSpeed = LiftSpeed;
                         else if (property == nameof(LiftAcceleration) && !CanUseBottomLiftAcceleration) layer.LiftAcceleration = LiftAcceleration;
                         else if (property == nameof(LiftHeight2) && !CanUseBottomLiftHeight2) layer.LiftHeight2 = LiftHeight2;
@@ -7617,7 +7616,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         else if (property == nameof(WaitTimeBeforeCure)) layer.WaitTimeBeforeCure = WaitTimeBeforeCure;
                         else if (property == nameof(ExposureTime)) layer.ExposureTime = ExposureTime;
                         else if (property == nameof(WaitTimeAfterCure)) layer.WaitTimeAfterCure = WaitTimeAfterCure;
-                        else if (property == nameof(LiftHeight)) layer.LiftHeight = LiftHeight;
+                        else if (property == nameof(LiftHeight))
+                        {
+                            if (CanUseLiftHeight2 && !CanUseLayerLiftHeight2)
+                                layer.LiftHeight = LiftHeightTotal;
+                            else
+                                layer.LiftHeight = LiftHeight;
+                        }
                         else if (property == nameof(LiftSpeed)) layer.LiftSpeed = LiftSpeed;
                         else if (property == nameof(LiftAcceleration)) layer.LiftAcceleration = LiftAcceleration;
                         else if (property == nameof(LiftHeight2)) layer.LiftHeight2 = LiftHeight2;

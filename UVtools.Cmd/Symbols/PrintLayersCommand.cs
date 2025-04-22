@@ -21,15 +21,15 @@ internal static class PrintLayersCommand
 {
     internal static Command CreateCommand()
     {
-        var rangeOption = new Option<string>(new[] { "-r", "--range" }, "Prints only the matching layer(s) index(es) in a range")
+        var rangeOption = new Option<string>(["-r", "--range"], "Prints only the matching layer(s) index(es) in a range")
         {
             ArgumentHelpName = "startindex:endindex"
         };
-        var indexesOption = new Option<uint[]>(new[] { "-i", "--indexes" }, "Prints only the matching layer(s) index(es)")
+        var indexesOption = new Option<uint[]>(["-i", "--indexes"], "Prints only the matching layer(s) index(es)")
         {
             AllowMultipleArgumentsPerToken = true
         };
-        var matchNamesOption = new Option<string[]>(new[] { "-n", "--names" }, "Prints only the name matching properties")
+        var matchNamesOption = new Option<string[]>(["-n", "--names"], "Prints only the name matching properties")
         {
             AllowMultipleArgumentsPerToken = true
         };

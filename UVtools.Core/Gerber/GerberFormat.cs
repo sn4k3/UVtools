@@ -243,7 +243,7 @@ public class GerberFormat
 
             if (line.StartsWith("%AM"))
             {
-                accumulatedLine = line.Remove(0, 1);
+                accumulatedLine = line[1..];
                 while (!accumulatedLine.Contains('%') && (line = file.ReadLine()) is not null)
                 {
                     line = line.Trim();
@@ -252,7 +252,7 @@ public class GerberFormat
                 }
                 line = accumulatedLine[..^2];
 
-                var split = line.Split(new[]{'*', '%'}, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                var split = line.Split(['*', '%'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 
                 var macro = Macro.Parse(document, split[0]);
                 if (macro is null) continue;
@@ -382,7 +382,7 @@ public class GerberFormat
 
                                 // xOffset
                                 var matchValue = matchI.Groups[1].Value[0] == '-'
-                                    ? matchI.Groups[1].Value.Remove(0, 1)
+                                    ? matchI.Groups[1].Value[1..]
                                     : matchI.Groups[1].Value;
 
                                 var valueStr = document.ZerosSuppressionType switch
@@ -399,7 +399,7 @@ public class GerberFormat
 
                                 // yOffset
                                 matchValue = matchJ.Groups[1].Value[0] == '-'
-                                    ? matchJ.Groups[1].Value.Remove(0, 1)
+                                    ? matchJ.Groups[1].Value[1..]
                                     : matchJ.Groups[1].Value;
 
                                 valueStr = document.ZerosSuppressionType switch

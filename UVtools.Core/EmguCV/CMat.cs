@@ -31,7 +31,7 @@ public class CMat : IEquatable<CMat>
     /// <summary>
     /// Gets the compressed bytes that have been compressed with <see cref="Decompressor"/>.
     /// </summary>
-    private byte[] _compressedBytes = Array.Empty<byte>();
+    private byte[] _compressedBytes = [];
     private string? _hash;
 
     /// <summary>
@@ -297,7 +297,7 @@ public class CMat : IEquatable<CMat>
     public void SetEmptyCompressedBytes()
     {
         if (_compressedBytes.Length == 0) return; // Already empty
-        _compressedBytes = Array.Empty<byte>();
+        _compressedBytes = [];
         _hash = null;
         IsCompressed = false;
         Roi = Rectangle.Empty;
@@ -376,7 +376,7 @@ public class CMat : IEquatable<CMat>
 
         if (src.IsEmpty)
         {
-            CompressedBytes = Array.Empty<byte>();
+            CompressedBytes = [];
             return;
         }
 
@@ -424,7 +424,7 @@ public class CMat : IEquatable<CMat>
             Depth = src.SourceMat.Depth;
             Channels = src.SourceMat.NumberOfChannels;
             Roi = Rectangle.Empty;
-            CompressedBytes = Array.Empty<byte>();
+            CompressedBytes = [];
             return;
         }
 

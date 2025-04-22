@@ -22,15 +22,15 @@ public sealed class IssuesDetectionConfiguration
     public PrintHeightDetectionConfiguration PrintHeightConfig { get; set; } = new();
     public EmptyLayerDetectionConfiguration EmptyLayerConfig { get; set; } = new();
 
-    public DetectionConfiguration[] Configurations => new DetectionConfiguration[]
-    {
+    public DetectionConfiguration[] Configurations =>
+    [
         IslandConfig,
         OverhangConfig,
         ResinTrapConfig,
         TouchingBoundConfig,
         PrintHeightConfig,
         EmptyLayerConfig
-    };
+    ];
 
     public IssuesDetectionConfiguration() { }
 

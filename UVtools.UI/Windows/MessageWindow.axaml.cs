@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using System;
+using System.Threading.Tasks;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Markdown.Avalonia;
@@ -190,7 +191,7 @@ public partial class MessageWindow : WindowEx
     #endregion
 
     #region Methods
-    public async void OpenAboutWindow()
+    public async Task OpenAboutWindow()
     {
         await new AboutWindow().ShowDialog(this);
     }

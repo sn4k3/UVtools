@@ -12,7 +12,7 @@ namespace UVtools.UI.Structures;
 public class PSProfileFolder : BindableBase
 {
     public static string AssetsPrusaSlicer => Path.Combine(App.ApplicationPath, "Assets", "PrusaSlicer");
-    private RangeObservableCollection<CheckBox> _items = new ();
+    private RangeObservableCollection<CheckBox> _items = [];
     private ushort _installed;
     private ushort _updates;
 

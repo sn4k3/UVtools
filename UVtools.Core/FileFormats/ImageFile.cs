@@ -13,7 +13,7 @@ public sealed class ImageFile : FileFormat
     public override FileFormatType FileType => FileFormatType.Binary;
 
     public override FileExtension[] FileExtensions { get; } =
-    {
+    [
         new (typeof(ImageFile), "png", "PNG: Portable Network Graphics"),
         new (typeof(ImageFile), "jpg", "JPG: Joint Photographic Experts Group"),
         new (typeof(ImageFile), "jpeg", "JPEG: Joint Photographic Experts Group"),
@@ -26,8 +26,8 @@ public sealed class ImageFile : FileFormat
         new (typeof(ImageFile), "pgm", "PGM: Portable Greymap"),
         //new (typeof(ImageFile), "gif", "GIF"),
         new (typeof(ImageFile), "sr", "SR: Sun raster"),
-        new (typeof(ImageFile), "ras", "RAS: Sun raster"),
-    };
+        new (typeof(ImageFile), "ras", "RAS: Sun raster")
+    ];
     
     public override float DisplayWidth
     {

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using UVtools.Core.MeshFormats;
 using UVtools.Core.Operations;
@@ -15,7 +16,7 @@ public partial class ToolLayerExportMeshControl : ToolControl
         InitializeComponent();
     }
 
-    public async void ChooseFilePath()
+    public async Task ChooseFilePath()
     {
         using var file = await App.MainWindow.SaveFilePickerAsync(SlicerFile!, GetFilters());
         if (file?.TryGetLocalPath() is not { } filePath) return;

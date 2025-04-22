@@ -30,7 +30,7 @@ namespace UVtools.UI;
 
 public partial class MainWindow
 {
-    public RangeObservableCollection<PixelOperation> Drawings { get; } = new ();
+    public RangeObservableCollection<PixelOperation> Drawings { get; } = [];
     private int _selectedPixelOperationTabIndex;
 
     public PixelDrawing DrawingPixelDrawing { get; } = new();
@@ -39,11 +39,11 @@ public partial class MainWindow
     public PixelSupport DrawingPixelSupport { get; } = new();
     public PixelDrainHole DrawingPixelDrainHole { get; } = new();
 
-    public RangeObservableCollection<PixelOperation> DrawingPixelDrawingProfiles { get; } = new();
-    public RangeObservableCollection<PixelOperation> DrawingPixelTextProfiles { get; } = new();
-    public RangeObservableCollection<PixelOperation> DrawingPixelFillProfiles { get; } = new();
-    public RangeObservableCollection<PixelOperation> DrawingPixelSupportProfiles { get; } = new();
-    public RangeObservableCollection<PixelOperation> DrawingPixelDrainHoleProfiles { get; } = new();
+    public RangeObservableCollection<PixelOperation> DrawingPixelDrawingProfiles { get; } = [];
+    public RangeObservableCollection<PixelOperation> DrawingPixelTextProfiles { get; } = [];
+    public RangeObservableCollection<PixelOperation> DrawingPixelFillProfiles { get; } = [];
+    public RangeObservableCollection<PixelOperation> DrawingPixelSupportProfiles { get; } = [];
+    public RangeObservableCollection<PixelOperation> DrawingPixelDrainHoleProfiles { get; } = [];
 
     public int SelectedPixelOperationTabIndex
     {
@@ -98,7 +98,7 @@ public partial class MainWindow
     {
         if (e.PointerPressedEventArgs.ClickCount == 2) return;
         if (DrawingsGrid.SelectedItem is not MainIssue) return;
-        // Double clicking an issue will center and zoom into the 
+        // Double clicking an issue will center and zoom into the
         // selected issue. Left click on an issue will zoom to fit.
 
         var pointer = e.PointerPressedEventArgs.GetCurrentPoint(DrawingsGrid);
@@ -113,7 +113,7 @@ public partial class MainWindow
 
     private void DrawingsGrid_OnKeyUp(object? sender, KeyEventArgs e)
     {
-            
+
         switch (e.Key)
         {
             case Key.Escape:
@@ -143,7 +143,7 @@ public partial class MainWindow
         ShowLayer();
     }
 
-    public async void OnClickDrawingClear()
+    public async Task OnClickDrawingClear()
     {
         if (Drawings.Count == 0) return;
         if (await this.MessageBoxQuestion($"Are you sure you want to clear {Drawings.Count} operations?",
@@ -183,7 +183,7 @@ public partial class MainWindow
                 Drawings.RemoveMany(removeItems);
                 ShowLayer();
             }*/
-                
+
             return;
         }
 
@@ -418,7 +418,7 @@ public partial class MainWindow
             var drawings = new List<PixelOperation>();
             uint minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelText.LayersBelow);
             uint maxLayer = SlicerFile!.SanitizeLayerIndex(ActualLayer + DrawingPixelText.LayersAbove);
-            
+
             for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
             {
                 var operationText = new PixelText(layerIndex, realLocation, DrawingPixelText.LineType,
@@ -523,12 +523,12 @@ public partial class MainWindow
         Drawings.InsertRange(0, operations);
     }
 
-    public void DrawModificationsCommand()
+    public async Task DrawModificationsCommand()
     {
-        DrawModifications(false);
+        await DrawModifications(false);
     }
 
-    public async void DrawModifications(bool exitEditor)
+    public async Task DrawModifications(bool exitEditor)
     {
         if (Drawings.Count == 0)
         {
@@ -609,7 +609,7 @@ public partial class MainWindow
 
             if (Settings.PixelEditor.PartialUpdateIslandsOnEditing)
             {
-                List<uint> whiteListLayers = new();
+                List<uint> whiteListLayers = [];
                 foreach (var item in Drawings)
                 {
                     /*if (item.OperationType != PixelOperation.PixelOperationType.Drawing &&

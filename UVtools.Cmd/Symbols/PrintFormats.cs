@@ -20,15 +20,15 @@ public class AvailableFormat
 {
     public string ClassName { get; init; } = string.Empty;
     public uint DefaultVersion { get; init; }
-    public uint[] Versions { get; init; } = Array.Empty<uint>();
-    public FileExtension[] Extensions { get; init; } = Array.Empty<FileExtension>();
+    public uint[] Versions { get; init; } = [];
+    public FileExtension[] Extensions { get; init; } = [];
     
     public FileFormat.FileFormatType FileType { get; init; }
     public FileFormat.ImageFormat LayerImageFormat { get; init; }
-    public Size[] ThumbnailsOriginalSize { get; init; } = Array.Empty<Size>();
+    public Size[] ThumbnailsOriginalSize { get; init; } = [];
 
-    public string[] PrintParameterModifiers { get; init; } = Array.Empty<string>();
-    public string[] PrintParameterPerLayerModifiers { get; init; } = Array.Empty<string>();
+    public string[] PrintParameterModifiers { get; init; } = [];
+    public string[] PrintParameterPerLayerModifiers { get; init; } = [];
 
     public override string ToString()
     {

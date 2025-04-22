@@ -57,8 +57,8 @@ public class OperationLayerArithmetic : Operation
 
     public sealed class ArithmeticOperationGroup
     {
-        public List<uint> SetLayers { get; set; } = new();
-        public List<ArithmeticOperation> Operations { get; set; } = new();
+        public List<uint> SetLayers { get; set; } = [];
+        public List<ArithmeticOperation> Operations { get; set; } = [];
 
         public bool IsValid =>
             SetLayers.Count > 0 && Operations.Count > 0 &&
@@ -126,7 +126,7 @@ public class OperationLayerArithmetic : Operation
         set => RaiseAndSetIfChanged(ref _sentence, value);
     }
     [XmlIgnore]
-    public List<ArithmeticOperationGroup> Operations { get; } = new();
+    public List<ArithmeticOperationGroup> Operations { get; } = [];
 
     public bool IsValid => Operations.Count > 0;
     #endregion

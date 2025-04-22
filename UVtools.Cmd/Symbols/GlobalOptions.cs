@@ -13,11 +13,11 @@ namespace UVtools.Cmd.Symbols;
 
 internal static class GlobalOptions
 {
-    internal static Option<bool> DummyOption { get; } = new(new[] { "--dummy" }, "Do not save alterations to file");
-    internal static Option<bool> QuietOption { get; } = new(new[] { "-q", "--quiet" }, "Make output silent but exceptions error will still show");
-    internal static Option<bool> NoProgressOption { get; } = new(new[] { "--no-progress" }, "Show no progress");
-    internal static Option<FileInfo> OutputFile { get; } = new(new[] { "-o", "--output" }, "Output file to save");
+    internal static Option<bool> DummyOption { get; } = new(["--dummy"], "Do not save alterations to file");
+    internal static Option<bool> QuietOption { get; } = new(["-q", "--quiet"], "Make output silent but exceptions error will still show");
+    internal static Option<bool> NoProgressOption { get; } = new(["--no-progress"], "Show no progress");
+    internal static Option<FileInfo> OutputFile { get; } = new(["-o", "--output"], "Output file to save");
 
-    internal static Option<bool> OpenInPartialMode { get; } = new(new[] { "--partial-mode" }, "Fast load the file in partial mode");
-    internal static Option<bool> OpenInFullMode { get; } = new(new[] { "--full-mode" }, "Load the file in full/complete mode");
+    internal static Option<bool> OpenInPartialMode { get; } = new(["--partial-mode"], "Fast load the file in partial mode");
+    internal static Option<bool> OpenInFullMode { get; } = new(["--full-mode"], "Load the file in full/complete mode");
 }

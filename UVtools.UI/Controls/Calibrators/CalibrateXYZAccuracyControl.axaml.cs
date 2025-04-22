@@ -1,4 +1,5 @@
-﻿using Avalonia.Media.Imaging;
+﻿using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using System.Timers;
 using UVtools.Core.Dialogs;
@@ -26,7 +27,7 @@ public partial class CalibrateXYZAccuracyControl : ToolControl
 
     public bool IsProfileAddEnabled => Operation.ScaleXFactor != 100 || Operation.ScaleYFactor != 100;
 
-    
+
 
     public Bitmap? PreviewImage
     {
@@ -39,7 +40,7 @@ public partial class CalibrateXYZAccuracyControl : ToolControl
         BaseOperation = new OperationCalibrateXYZAccuracy(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
-            
+
         _timer = new Timer(20)
         {
             AutoReset = false
@@ -82,7 +83,7 @@ public partial class CalibrateXYZAccuracyControl : ToolControl
         }
     }
 
-    public async void AddProfile()
+    public async Task AddProfile()
     {
         OperationResize resize = new()
         {

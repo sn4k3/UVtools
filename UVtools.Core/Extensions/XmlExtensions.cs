@@ -23,7 +23,7 @@ public static class XmlExtensions
     public static void Serialize(object toSerialize, Stream stream, bool noNameSpace = false)
     {
         var xmlSerializer = new XmlSerializer(toSerialize.GetType());
-        XmlSerializerNamespaces? ns = noNameSpace ? new XmlSerializerNamespaces(new []{XmlQualifiedName.Empty}) : null;
+        XmlSerializerNamespaces? ns = noNameSpace ? new XmlSerializerNamespaces([XmlQualifiedName.Empty]) : null;
         xmlSerializer.Serialize(stream, toSerialize, ns);
     }
 
@@ -35,7 +35,7 @@ public static class XmlExtensions
         xw.WriteStartDocument(standalone); // that bool parameter is called "standalone"
 
         var s = new XmlSerializer(toSerialize.GetType());
-        XmlSerializerNamespaces? ns = noNameSpace ? new XmlSerializerNamespaces(new[] { XmlQualifiedName.Empty }) : null;
+        XmlSerializerNamespaces? ns = noNameSpace ? new XmlSerializerNamespaces([XmlQualifiedName.Empty]) : null;
         s.Serialize(xw, toSerialize, ns);
     }
 
@@ -56,7 +56,7 @@ public static class XmlExtensions
     public static void Serialize(object toSerialize, TextWriter stream, bool noNameSpace = false)
     {
         var xmlSerializer = new XmlSerializer(toSerialize.GetType());
-        XmlSerializerNamespaces? ns = noNameSpace ? new XmlSerializerNamespaces(new[] { XmlQualifiedName.Empty }) : null;
+        XmlSerializerNamespaces? ns = noNameSpace ? new XmlSerializerNamespaces([XmlQualifiedName.Empty]) : null;
         xmlSerializer.Serialize(stream, toSerialize, ns);
     }
 
@@ -68,7 +68,7 @@ public static class XmlExtensions
         xw.WriteStartDocument(standalone); // that bool parameter is called "standalone"
 
         var s = new XmlSerializer(toSerialize.GetType());
-        XmlSerializerNamespaces? ns = noNameSpace ? new XmlSerializerNamespaces(new[] { XmlQualifiedName.Empty }) : null;
+        XmlSerializerNamespaces? ns = noNameSpace ? new XmlSerializerNamespaces([XmlQualifiedName.Empty]) : null;
         s.Serialize(xw, toSerialize, ns);
     }
 

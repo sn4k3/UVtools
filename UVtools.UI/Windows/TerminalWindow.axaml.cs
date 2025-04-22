@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis.Scripting;
 using System;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using UVtools.Core;
 using UVtools.Core.Scripting;
@@ -124,7 +125,7 @@ public partial class TerminalWindow : WindowEx
         TerminalText = DefaultTerminalText;
     }
 
-    public async void SendCommand()
+    public async Task SendCommand()
     {
         if (string.IsNullOrWhiteSpace(_commandText))
         {

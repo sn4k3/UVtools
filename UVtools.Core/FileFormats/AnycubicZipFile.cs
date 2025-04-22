@@ -31,6 +31,15 @@ namespace UVtools.Core.FileFormats;
 
 public sealed class AnycubicZipFile : FileFormat
 {
+    #region Cosntants
+
+    public const string BottomLayersStage1Key = "bott_0";
+    public const string BottomLayersStage2Key = "bott_1";
+
+    public const string NormalLayersStage1Key = "normal_0";
+    public const string NormalLayersStage2Key = "normal_1";
+
+    #endregion
     #region Sub classes
 
     public sealed class SettingsManifest
@@ -122,26 +131,26 @@ public sealed class AnycubicZipFile : FileFormat
         [JsonPropertyName("max_file_version")]
         public uint MaxFileVersion { get; set; } = 518;
 
-        [JsonPropertyName("prev_back_color")]  
-        public float[] PreviewBackgroundColor { get; set; } = { 0.0f, 0.28f, 0.39f };
+        [JsonPropertyName("prev_back_color")]
+        public float[] PreviewBackgroundColor { get; set; } = [0.0f, 0.28f, 0.39f];
 
         [JsonPropertyName("prev_model_color")]
-        public float[] ModelBackgroundColor { get; set; } = { 0.80f, 0.80f, 0.80f };
+        public float[] ModelBackgroundColor { get; set; } = [0.80f, 0.80f, 0.80f];
 
         [JsonPropertyName("prev_supports_color")]
-        public float[] SupportsBackgroundColor { get; set; } = { 0.07f, 0.93f, 0.93f };
+        public float[] SupportsBackgroundColor { get; set; } = [0.07f, 0.93f, 0.93f];
 
         [JsonPropertyName("prev_image_size")]
-        public int[] PreviewImageSize { get; set; } = { 224, 168 };
+        public int[] PreviewImageSize { get; set; } = [224, 168];
 
         [JsonPropertyName("child_screen")]
-        public SettingsChildScreen[] Screens { get; set; } = Array.Empty<SettingsChildScreen>();
+        public SettingsChildScreen[] Screens { get; set; } = [new()];
 
         [JsonPropertyName("prev2_back_color")]
-        public float[] Preview2BackgroundColor { get; set; } = { 0.08f, 0.11f, 0.16f };
+        public float[] Preview2BackgroundColor { get; set; } = [0.08f, 0.11f, 0.16f];
 
         [JsonPropertyName("prev2_image_size")]
-        public int[] Preview2ImageSize { get; set; } = { 336, 252 };
+        public int[] Preview2ImageSize { get; set; } = [336, 252];
 
         [JsonPropertyName("raster_segments_capacity")]
         public uint RasterSegmentsCapacity { get; set; } = 100000;
@@ -150,15 +159,370 @@ public sealed class AnycubicZipFile : FileFormat
         public byte RasterAntialiasing { get; set; } = 8;
 
         [JsonPropertyName("cloudprev_back_color")]
-        public float[] CloudBackgroundColor { get; set; } = { 0.00f, 0.28f, 0.39f };
+        public float[] CloudBackgroundColor { get; set; } = [0.00f, 0.28f, 0.39f];
 
         [JsonPropertyName("cloudprev_imag_size")]
-        public int[] CloudImageSize { get; set; } = { 800, 600 };
+        public int[] CloudImageSize { get; set; } = [800, 600];
 
         public override string ToString()
         {
             return
                 $"{nameof(Version)}: {Version}, {nameof(Name)}: {Name}, {nameof(KeySuffix)}: {KeySuffix}, {nameof(KeyImageFormat)}: {KeyImageFormat}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(PixelWidthMicrons)}: {PixelWidthMicrons}, {nameof(PixelHeightMicrons)}: {PixelHeightMicrons}, {nameof(MaxSamples)}: {MaxSamples}, {nameof(Properties)}: {Properties}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(MaxFileVersion)}: {MaxFileVersion}, {nameof(PreviewBackgroundColor)}: {PreviewBackgroundColor}, {nameof(ModelBackgroundColor)}: {ModelBackgroundColor}, {nameof(SupportsBackgroundColor)}: {SupportsBackgroundColor}, {nameof(PreviewImageSize)}: {PreviewImageSize}, {nameof(Preview2BackgroundColor)}: {Preview2BackgroundColor}, {nameof(Preview2ImageSize)}: {Preview2ImageSize}, {nameof(RasterSegmentsCapacity)}: {RasterSegmentsCapacity}, {nameof(RasterAntialiasing)}: {RasterAntialiasing}, {nameof(CloudBackgroundColor)}: {CloudBackgroundColor}, {nameof(CloudImageSize)}: {CloudImageSize}";
+        }
+    }
+
+    public sealed class SettingsResinProperty
+    {
+        [JsonPropertyName("version")]
+        public string Version { get; set; } = "3";
+
+        [JsonPropertyName("code")]
+        public string Code { get; set; } = "10";
+
+        [JsonPropertyName("currency")]
+        public string Currency { get; set; } = "€";
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = "default_resin";
+
+        [JsonPropertyName("price")]
+        public float Price { get; set; } = 25;
+
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = "Standard resin";
+
+        [JsonPropertyName("volume")]
+        public float Volume { get; set; } = 1000;
+
+        [JsonPropertyName("subfunc_code")]
+        public int SubfuncCode { get; set; } = 0;
+
+        [JsonPropertyName("density")]
+        public float Density { get; set; } = 1.2f;
+
+        [JsonPropertyName("target_temperature")]
+        public float TargetTemperature { get; set; } = 25;
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(Version)}: {Version}, {nameof(Code)}: {Code}, {nameof(Currency)}: {Currency}, {nameof(Name)}: {Name}, {nameof(Price)}: {Price}, {nameof(Type)}: {Type}, {nameof(Volume)}: {Volume}, {nameof(SubfuncCode)}: {SubfuncCode}, {nameof(Density)}: {Density}, {nameof(TargetTemperature)}: {TargetTemperature}";
+        }
+    }
+
+    public sealed class SettingsResinTemperatureCoefficients
+    {
+        [JsonPropertyName("temperature")]
+        public float Temperature { get; set; }
+
+        [JsonPropertyName("x_coefficient")]
+        public float XCoefficient { get; set; }
+
+        [JsonPropertyName("y_compensation")]
+        public float YCompensation { get; set; }
+
+        public SettingsResinTemperatureCoefficients()
+        {
+        }
+
+        public SettingsResinTemperatureCoefficients(float temperature, float xCoefficient, float yCompensation)
+        {
+            Temperature = temperature;
+            XCoefficient = xCoefficient;
+            YCompensation = yCompensation;
+        }
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(Temperature)}: {Temperature}, {nameof(XCoefficient)}: {XCoefficient}, {nameof(YCompensation)}: {YCompensation}";
+        }
+    }
+
+    public sealed class SettingsResinDepthPenetrationCurve
+    {
+        [JsonPropertyName("zthick_min")]
+        public float ZThickMin { get; set; } = 0.01f;
+
+        [JsonPropertyName("zthick_max")]
+        public float ZThickMax { get; set; } = 0.2f;
+
+        [JsonPropertyName("light_intensity")]
+        public float LightIntensity { get; set; } = 9000;
+
+        [JsonPropertyName("safety_coefficient")]
+        public float SafetyCoefficient { get; set; } = 1.6f;
+
+        [JsonPropertyName("current_tempcurve_selector")]
+        public int CurrentTempcurveSelector { get; set; }
+
+        [JsonPropertyName("temperature_coefficients")]
+        public List<SettingsResinTemperatureCoefficients> TemperatureCoefficients { get; set; } =
+            [
+                new(10, 184.27f, 1675.80f),
+                new(25, 197.78f, 1803.20f),
+                new(35, 161.19f, 1417.30f),
+                new(45, 167.31f, 1480.90f),
+                new(55, 166.76f, 1474.10f),
+            ];
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(ZThickMin)}: {ZThickMin}, {nameof(ZThickMax)}: {ZThickMax}, {nameof(LightIntensity)}: {LightIntensity}, {nameof(SafetyCoefficient)}: {SafetyCoefficient}, {nameof(CurrentTempcurveSelector)}: {CurrentTempcurveSelector}, {nameof(TemperatureCoefficients)}: {TemperatureCoefficients}";
+        }
+    }
+
+    public sealed class SettingsResinMultiStateParas
+    {
+        [JsonPropertyName("height")]
+        public float LiftHeight { get; set; } = DefaultLiftHeight;
+
+        [JsonPropertyName("up_speed")]
+        public float LiftSpeed { get; set; } = 3;
+
+        [JsonPropertyName("down_speed")]
+        public float RetractSpeed { get; set; } = 3;
+
+        public SettingsResinMultiStateParas()
+        {
+        }
+
+        public SettingsResinMultiStateParas(float liftHeight, float liftSpeed, float retractSpeed)
+        {
+            LiftHeight = liftHeight;
+            LiftSpeed = liftSpeed;
+            RetractSpeed = retractSpeed;
+        }
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}";
+        }
+    }
+
+    public sealed class SettingsResinSliceExtPara
+    {
+        [JsonPropertyName("version")]
+        public string Version { get; set; } = "3";
+
+        [JsonPropertyName("multi_state_used")]
+        public byte MultiStateUsed { get; set; }
+
+        [JsonPropertyName("transition_layercount")]
+        public ushort TransitionLayerCount { get; set; }
+
+        [JsonPropertyName("transition_type")]
+        public byte TransitionType { get; set; }
+
+
+        [JsonPropertyName("multi_state_paras")]
+        public Dictionary<string, SettingsResinMultiStateParas> MultiStateParas { get; set; } = new()
+        {
+            { BottomLayersStage1Key, new SettingsResinMultiStateParas(5, 2, 3) },
+            { BottomLayersStage2Key, new SettingsResinMultiStateParas(4, 3, 3) },
+            { NormalLayersStage1Key, new SettingsResinMultiStateParas(3, 2, 2) },
+            { NormalLayersStage2Key, new SettingsResinMultiStateParas(5, 6, 6) },
+        };
+
+        [JsonPropertyName("exposure_compensate")]
+        public float ExposureCompensate { get; set; }
+
+        [JsonPropertyName("intelli_mode")]
+        public byte IntelligentMode { get; set; }
+
+        [JsonPropertyName("max_acceleration")]
+        public float MaxAcceleration { get; set; } = 2.0f;
+
+        [JsonPropertyName("separate_support_exposure_delayed")]
+        public float SeparateSupportExposureDelayed { get; set; }
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(Version)}: {Version}, {nameof(MultiStateUsed)}: {MultiStateUsed}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(TransitionType)}: {TransitionType}, {nameof(MultiStateParas)}: {MultiStateParas}, {nameof(ExposureCompensate)}: {ExposureCompensate}, {nameof(IntelligentMode)}: {IntelligentMode}, {nameof(MaxAcceleration)}: {MaxAcceleration}, {nameof(SeparateSupportExposureDelayed)}: {SeparateSupportExposureDelayed}";
+        }
+    }
+
+    public sealed class SettingsResinSlicePara
+    {
+        [JsonPropertyName("anti_count")]
+        public byte AntiCount { get; set; }
+
+        [JsonPropertyName("blur_level")]
+        public byte BlurLevel { get; set; }
+
+        [JsonPropertyName("bott_layers")]
+        public ushort BottomLayerCount { get; set; } = DefaultBottomLayerCount;
+
+        [JsonPropertyName("bott_time")]
+        public float BottomExposureTime { get; set; } = DefaultBottomExposureTime;
+
+        [JsonPropertyName("exposure_time")]
+        public float ExposureTime { get; set; } = DefaultExposureTime;
+
+        [JsonPropertyName("gray_level")]
+        public byte GrayLevel { get; set; }
+
+        [JsonPropertyName("off_time")]
+        public float WaitTimeBeforeCure { get; set; } = 0.5f;
+
+        [JsonPropertyName("use_indivi_layerpara")]
+        public float UseIndividualLayerPara { get; set; }
+
+        [JsonPropertyName("use_random_erode")]
+        public byte UseRandomErode { get; set; }
+
+        [JsonPropertyName("zthick")]
+        public float LayerHeight { get; set; } = DefaultLayerHeight;
+
+        [JsonPropertyName("zup_height")]
+        public float LiftHeight { get; set; } = DefaultLiftHeight;
+
+        [JsonPropertyName("zup_speed")]
+        public float LiftSpeed { get; set; } = 6;
+
+        [JsonPropertyName("zdown_speed")]
+        public float RetractSpeed { get; set; } = 6;
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(AntiCount)}: {AntiCount}, {nameof(BlurLevel)}: {BlurLevel}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(GrayLevel)}: {GrayLevel}, {nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, {nameof(UseIndividualLayerPara)}: {UseIndividualLayerPara}, {nameof(UseRandomErode)}: {UseRandomErode}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}";
+        }
+    }
+
+
+    public sealed class SettingsResin
+    {
+        [JsonPropertyName("version")]
+        public string Version { get; set; } = "2";
+
+        [JsonPropertyName("property")]
+        public SettingsResinProperty Property { get; set; } = new();
+
+        [JsonPropertyName("depth_penetration_curve")]
+        public SettingsResinDepthPenetrationCurve DepthPenetrationCurve { get; set; } = new();
+
+        [JsonPropertyName("slice_extpara")]
+        public SettingsResinSliceExtPara SliceExtPara { get; set; } = new();
+
+        [JsonPropertyName("slicepara")]
+        public SettingsResinSlicePara SlicePara { get; set; } = new();
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(Version)}: {Version}, {nameof(Property)}: {Property}, {nameof(DepthPenetrationCurve)}: {DepthPenetrationCurve}, {nameof(SliceExtPara)}: {SliceExtPara}, {nameof(SlicePara)}: {SlicePara}";
+        }
+    }
+
+    public sealed class SettingsFirmwareCalcPrintTimeParas
+    {
+        [JsonPropertyName("version")]
+        public string Version { get; set; } = "2";
+
+        [JsonPropertyName("MACHINE_AXIS_STEPS_PER_UNIT")]
+        public float[] MachineAxisStepsPerUnit { get; set; } = [100, 100, 3200, 94];
+
+        [JsonPropertyName("MACHINE_BLOCK_BUFFER_SIZE")]
+        public int MachineBlockBufferSize { get; set; } = 32;
+
+        [JsonPropertyName("MACHINE_DEFAULT_ACCELERATION")]
+        public float MachineDefaultAcceleration { get; set; } = 1000;
+
+        [JsonPropertyName("MACHINE_DEFAULT_MINSEGMENTTIME")]
+        public float MachineDefaultMinSegmentTime { get; set; } = 20000;
+
+        [JsonPropertyName("MACHINE_DEFAULT_XYJERK")]
+        public float MachineDefaultXYJerk { get; set; } = 20;
+
+        [JsonPropertyName("MACHINE_DEFAULT_ZJERK")]
+        public float MachineDefaultZJerk { get; set; } = 0.2f;
+
+        [JsonPropertyName("MACHINE_GENERATE_FRAME_TIME")]
+        public float MachineGenerateFrameTime { get; set; } = 450;
+
+        [JsonPropertyName("MACHINE_MAX_ACCELERATION")]
+        public float[] MachineMaxAcceleration { get; set; } = [1000, 1000, 160, 1000];
+
+        [JsonPropertyName("MACHINE_MAX_FEEDRATE")]
+        public float[] MachineMaxFeedRate { get; set; } = [200, 200, 20, 45];
+
+        [JsonPropertyName("MACHINE_MAX_STEP_FREQUENCY")]
+        public float MachineMaxStepFrequency { get; set; } = 256000;
+
+        [JsonPropertyName("MACHINE_MINIMUM_PLANNER_SPEED")]
+        public float MachineMinimumPlannerSpeed { get; set; } = 0.5f;
+
+        [JsonPropertyName("MACHINE_NOR_LAYER_DOWN_HEIGHT_DIV")]
+        public float MachineNormalLayerDownHeightDiv { get; set; } = 0.25f;
+
+        [JsonPropertyName("MACHINE_NOR_LAYER_DOWN_SPEED_DIV")]
+        public float MachineNormalLayerDownSpeedDiv { get; set; } = 0.5f;
+
+        [JsonPropertyName("MACHINE_NOR_LAYER_UP_HEIGHT_DIV")]
+        public float MachineNormalLayerUpHeightDiv { get; set; } = 0.25f;
+
+        [JsonPropertyName("MACHINE_NOR_LAYER_UP_SPEED_DIV")]
+        public float MachineNormalLayerUpSpeedDiv { get; set; } = 0.5f;
+
+        [JsonPropertyName("MACHINE_STEP_MUL")]
+        public float MachineStepMul { get; set; } = 1;
+
+        [JsonPropertyName("MACHINE_TIME_COMPENSATE")]
+        public float MachineTimeCompensate { get; set; }
+
+        [JsonPropertyName("MACHINE_TIM_PRES")]
+        public float MachineTimePres { get; set; } = 30;
+
+        [JsonPropertyName("MACHINE_TIM_RCC_CLK")]
+        public float MachineTimeRccClk { get; set; } = 60;
+
+        [JsonPropertyName("FUNCTION")]
+        public float Function { get; set; } = 1;
+
+        [JsonPropertyName("MACHINE_MODE_ACCELERATION")]
+        public float[] MachineModeAcceleration { get; set; } = [0, 0, 0, 0];
+
+        [JsonPropertyName("LAYER_COMPENSATE")]
+        public float[] LayerCompensate { get; set; } = [0, 0, 0, 0];
+
+        [JsonPropertyName("HEIGHT_COMPENSATE")]
+        public float[] HeightCompensate { get; set; } = [0, 0, 0, 0];
+
+        [JsonPropertyName("TIMES_COMPENSATE")]
+        public float[] TimesCompensate { get; set; } = [0, 0, 0, 0];
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(Version)}: {Version}, {nameof(MachineAxisStepsPerUnit)}: {MachineAxisStepsPerUnit}, {nameof(MachineBlockBufferSize)}: {MachineBlockBufferSize}, {nameof(MachineDefaultAcceleration)}: {MachineDefaultAcceleration}, {nameof(MachineDefaultMinSegmentTime)}: {MachineDefaultMinSegmentTime}, {nameof(MachineDefaultXYJerk)}: {MachineDefaultXYJerk}, {nameof(MachineDefaultZJerk)}: {MachineDefaultZJerk}, {nameof(MachineGenerateFrameTime)}: {MachineGenerateFrameTime}, {nameof(MachineMaxAcceleration)}: {MachineMaxAcceleration}, {nameof(MachineMaxFeedRate)}: {MachineMaxFeedRate}, {nameof(MachineMaxStepFrequency)}: {MachineMaxStepFrequency}, {nameof(MachineMinimumPlannerSpeed)}: {MachineMinimumPlannerSpeed}, {nameof(MachineNormalLayerDownHeightDiv)}: {MachineNormalLayerDownHeightDiv}, {nameof(MachineNormalLayerDownSpeedDiv)}: {MachineNormalLayerDownSpeedDiv}, {nameof(MachineNormalLayerUpHeightDiv)}: {MachineNormalLayerUpHeightDiv}, {nameof(MachineNormalLayerUpSpeedDiv)}: {MachineNormalLayerUpSpeedDiv}, {nameof(MachineStepMul)}: {MachineStepMul}, {nameof(MachineTimeCompensate)}: {MachineTimeCompensate}, {nameof(MachineTimePres)}: {MachineTimePres}, {nameof(MachineTimeRccClk)}: {MachineTimeRccClk}, {nameof(Function)}: {Function}, {nameof(MachineModeAcceleration)}: {MachineModeAcceleration}, {nameof(LayerCompensate)}: {LayerCompensate}, {nameof(HeightCompensate)}: {HeightCompensate}, {nameof(TimesCompensate)}: {TimesCompensate}";
+        }
+    }
+
+    public sealed class SettingsFirmwareCalcExpTimeParas
+    {
+        [JsonPropertyName("precision_range_branch")]
+        public float[] PrecisionRangeBranch { get; set; } = [0, 5, 25];
+
+        [JsonPropertyName("precision_per_volume")]
+        public float PrecisionPerVolume { get; set; } = 5;
+
+        [JsonPropertyName("precision_coeff_value")]
+        public float[] PrecisionCoeffValue { get; set; } = [0.024f, 0.010f, -0.200f];
+
+        [JsonPropertyName("energy_coeff")]
+        public float EnergyCoeff { get; set; } = 0;
+
+        [JsonPropertyName("machine_exposure_ton")]
+        public float MachineExposureTon { get; set; } = 0.40f;
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(PrecisionRangeBranch)}: {PrecisionRangeBranch}, {nameof(PrecisionPerVolume)}: {PrecisionPerVolume}, {nameof(PrecisionCoeffValue)}: {PrecisionCoeffValue}, {nameof(EnergyCoeff)}: {EnergyCoeff}, {nameof(MachineExposureTon)}: {MachineExposureTon}";
         }
     }
 
@@ -180,22 +544,22 @@ public sealed class AnycubicZipFile : FileFormat
         public string DeviceCnCode { get; set; } = string.Empty;
 
         [JsonPropertyName("factory_resins")]
-        public object[] FactoryResins { get; set; } = Array.Empty<object>();
+        public List<SettingsResin> FactoryResins { get; set; } = [new()];
 
         [JsonPropertyName("user_resins")]
-        public object[] UserResins { get; set; } = Array.Empty<object>();
+        public List<SettingsResin> UserResins { get; set; } = [new()];
 
         [JsonPropertyName("active_resins")]
-        public string[] ActiveResins { get; set; } = { "default_resin" };
+        public string[] ActiveResins { get; set; } = ["default_resin"];
 
         [JsonPropertyName("firmware_calc_print_time")]
         public byte FirmwareCalcPrintTime { get; set; } = 1;
 
         [JsonPropertyName("firmware_calc_print_time_paras")]
-        public object FirmwareCalcPrintParameters { get; set; } = new();
+        public SettingsFirmwareCalcPrintTimeParas FirmwareCalcPrintParameters { get; set; } = new();
 
         [JsonPropertyName("firmware_calc_exp_time_paras")]
-        public object FirmwareCalcExposureTimeParameters { get; set; } = new();
+        public SettingsFirmwareCalcExpTimeParas FirmwareCalcExposureTimeParameters { get; set; } = new();
 
         public override string ToString()
         {
@@ -237,9 +601,9 @@ public sealed class AnycubicZipFile : FileFormat
         public int Count => Layers.Length;
 
         [JsonPropertyName("paras")]
-        public LayerManifest[] Layers { get; set; } = Array.Empty<LayerManifest>();
+        public LayerManifest[] Layers { get; set; } = [];
     }
-    
+
     public sealed class PrintInfoManifest
     {
         [JsonPropertyName("cost")]
@@ -376,7 +740,7 @@ public sealed class AnycubicZipFile : FileFormat
 
         [FieldOrder(17)] public uint LayerDefCount { get; set; }
 
-        [FieldOrder(18)][FieldCount(nameof(LayerDefCount))] public SceneLayerDef[] LayersDef { get; set; } = Array.Empty<SceneLayerDef>();
+        [FieldOrder(18)][FieldCount(nameof(LayerDefCount))] public SceneLayerDef[] LayersDef { get; set; } = [];
 
         [FieldOrder(19)] [FieldLength(4)] public string EndMarker { get; set; } = "--->";
 
@@ -433,10 +797,12 @@ public sealed class AnycubicZipFile : FileFormat
     {
         get
         {
-            return new[]
-            {
+            return
+            [
                 PrintParameterModifier.BottomLayerCount,
                 PrintParameterModifier.TransitionLayerCount,
+
+                PrintParameterModifier.WaitTimeBeforeCure,
 
                 PrintParameterModifier.BottomExposureTime,
                 PrintParameterModifier.ExposureTime,
@@ -445,26 +811,37 @@ public sealed class AnycubicZipFile : FileFormat
                 PrintParameterModifier.BottomLiftSpeed,
                 PrintParameterModifier.LiftHeight,
                 PrintParameterModifier.LiftSpeed,
-            };
+                PrintParameterModifier.BottomLiftHeight2,
+                PrintParameterModifier.BottomLiftSpeed2,
+                PrintParameterModifier.LiftHeight2,
+                PrintParameterModifier.LiftSpeed2,
+
+                PrintParameterModifier.BottomRetractSpeed,
+                PrintParameterModifier.RetractSpeed,
+                PrintParameterModifier.BottomRetractSpeed2,
+                PrintParameterModifier.RetractSpeed2
+            ];
         }
     }
 
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } =
+    [
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.ExposureTime,
         PrintParameterModifier.LiftHeight,
-        PrintParameterModifier.LiftSpeed,
-    };
+        PrintParameterModifier.LiftSpeed
+    ];
 
     public override string ConvertMenuGroup => "Anycubic Photon Workshop";
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new(typeof(AnycubicZipFile), "pm4u", "Photon Mono 4 Ultra (PM4U)"),
         new(typeof(AnycubicZipFile), "pm7", "Photon Mono M7 (PM7)"),
         new(typeof(AnycubicZipFile), "pm7m", "Photon Mono M7 Max (PM7M)"),
-        new(typeof(AnycubicZipFile), "pwsz", "Photon Mono M7 Pro (PWSZ)"),
-        
-    };
+        new(typeof(AnycubicZipFile), "pwsz", "Photon Mono M7 Pro (PWSZ)")
+
+    ];
 
     /*public override uint[] AvailableVersions { get; } = { 1 };
 
@@ -483,13 +860,27 @@ public sealed class AnycubicZipFile : FileFormat
     public override uint ResolutionX
     {
         get => Settings.MachineType.ResolutionX;
-        set => base.ResolutionX = Settings.MachineType.ResolutionX = (ushort) value;
+        set
+        {
+            base.ResolutionX = Settings.MachineType.ResolutionX = (ushort)value;
+            if (Settings.MachineType.Screens.Length > 0)
+            {
+                Settings.MachineType.Screens[0].Width = base.ResolutionX;
+            }
+        }
     }
 
     public override uint ResolutionY
     {
         get => Settings.MachineType.ResolutionY;
-        set => base.ResolutionY = Settings.MachineType.ResolutionY = (ushort)value;
+        set
+        {
+            base.ResolutionY = Settings.MachineType.ResolutionY = (ushort)value;
+            if (Settings.MachineType.Screens.Length > 0)
+            {
+                Settings.MachineType.Screens[0].Height = base.ResolutionY;
+            }
+        }
     }
 
     public override float DisplayWidth
@@ -510,10 +901,412 @@ public sealed class AnycubicZipFile : FileFormat
         set => base.MachineZ = Settings.MachineType.MachineZ = value;
     }
 
+    public override float LayerHeight
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.LayerHeight
+                : resinSettings.SlicePara.LayerHeight;
+        }
+        set
+        {
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SlicePara.LayerHeight = Layer.RoundHeight(value);
+            }
+            base.LayerHeight = Layer.RoundHeight(value);
+        }
+    }
+
     public override uint LayerCount
     {
         get => base.LayerCount;
         set => base.LayerCount = SceneSettings.LayerCount = SceneSettings.LayerDefCount = base.LayerCount;
+    }
+
+    public override ushort BottomLayerCount
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.BottomLayerCount
+                : resinSettings.SlicePara.BottomLayerCount;
+        }
+        set
+        {
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SlicePara.BottomLayerCount = value;
+            }
+            base.BottomLayerCount = value;
+        }
+    }
+
+    public override ushort TransitionLayerCount
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.BottomLayerCount
+                : resinSettings.SliceExtPara.TransitionLayerCount;
+        }
+        set
+        {
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SliceExtPara.TransitionLayerCount = value;
+            }
+            base.TransitionLayerCount = value;
+        }
+    }
+
+    public override float BottomLightOffDelay => BottomWaitTimeBeforeCure;
+
+    public override float LightOffDelay => WaitTimeBeforeCure;
+
+    public override float BottomWaitTimeBeforeCure => WaitTimeBeforeCure;
+
+    public override float WaitTimeBeforeCure
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.WaitTimeBeforeCure
+                : resinSettings.SlicePara.WaitTimeBeforeCure;
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SlicePara.WaitTimeBeforeCure = value;
+            }
+
+            base.WaitTimeBeforeCure = value;
+        }
+    }
+
+    public override float BottomExposureTime
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.BottomExposureTime
+                : resinSettings.SlicePara.BottomExposureTime;
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SlicePara.BottomExposureTime = value;
+            }
+
+            base.BottomExposureTime = value;
+        }
+    }
+
+    public override float ExposureTime
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.ExposureTime
+                : resinSettings.SlicePara.ExposureTime;
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SliceExtPara.IntelligentMode = 0;
+                resinSettings.SlicePara.ExposureTime = value;
+            }
+
+            base.ExposureTime = value;
+        }
+    }
+
+    public override float BottomLiftHeight
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.BottomLiftHeight
+                : resinSettings.SliceExtPara.MultiStateParas[BottomLayersStage1Key].LiftHeight;
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SliceExtPara.MultiStateParas[BottomLayersStage1Key].LiftHeight = value;
+            }
+
+            base.BottomLiftHeight = value;
+        }
+    }
+
+    public override float BottomLiftSpeed
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.BottomLiftSpeed
+                : SpeedConverter.Convert(resinSettings.SliceExtPara.MultiStateParas[BottomLayersStage1Key].LiftSpeed, FormatSpeedUnit, CoreSpeedUnit);
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SliceExtPara.MultiStateParas[BottomLayersStage1Key].LiftSpeed = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
+            }
+
+            base.BottomLiftSpeed = value;
+        }
+    }
+
+    public override float BottomLiftHeight2
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.BottomLiftHeight2
+                : resinSettings.SliceExtPara.MultiStateParas[BottomLayersStage2Key].LiftHeight;
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SliceExtPara.MultiStateParas[BottomLayersStage2Key].LiftHeight = value;
+            }
+
+            base.BottomLiftHeight2 = value;
+        }
+    }
+
+    public override float BottomLiftSpeed2
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.BottomLiftSpeed2
+                : SpeedConverter.Convert(resinSettings.SliceExtPara.MultiStateParas[BottomLayersStage2Key].LiftSpeed, FormatSpeedUnit, CoreSpeedUnit);
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SliceExtPara.MultiStateParas[BottomLayersStage2Key].LiftSpeed = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
+            }
+
+            base.BottomLiftSpeed2 = value;
+        }
+    }
+
+    public override float BottomRetractSpeed
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.BottomRetractSpeed
+                : SpeedConverter.Convert(resinSettings.SliceExtPara.MultiStateParas[BottomLayersStage1Key].RetractSpeed, FormatSpeedUnit, CoreSpeedUnit);
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SliceExtPara.MultiStateParas[BottomLayersStage1Key].RetractSpeed = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
+            }
+
+            base.BottomRetractSpeed = value;
+        }
+    }
+
+    public override float BottomRetractSpeed2
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.BottomRetractSpeed2
+                : SpeedConverter.Convert(resinSettings.SliceExtPara.MultiStateParas[BottomLayersStage2Key].RetractSpeed, FormatSpeedUnit, CoreSpeedUnit);
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SliceExtPara.MultiStateParas[BottomLayersStage2Key].RetractSpeed = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
+            }
+
+            base.BottomRetractSpeed2 = value;
+        }
+    }
+
+    public override float LiftHeight
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.LiftHeight
+                : resinSettings.SliceExtPara.MultiStateParas[NormalLayersStage1Key].LiftHeight;
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SliceExtPara.MultiStateParas[NormalLayersStage1Key].LiftHeight = value;
+                resinSettings.SlicePara.LiftHeight = Layer.RoundHeight(resinSettings.SliceExtPara.MultiStateParas[NormalLayersStage1Key].LiftHeight
+                                                                       + resinSettings.SliceExtPara.MultiStateParas[NormalLayersStage2Key].LiftHeight);
+            }
+
+            base.LiftHeight = value;
+        }
+    }
+
+    public override float LiftSpeed
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.LiftSpeed
+                : SpeedConverter.Convert(resinSettings.SliceExtPara.MultiStateParas[NormalLayersStage1Key].LiftSpeed, FormatSpeedUnit, CoreSpeedUnit);
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SlicePara.LiftSpeed = resinSettings.SliceExtPara.MultiStateParas[NormalLayersStage1Key].LiftSpeed = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
+            }
+
+            base.LiftSpeed = value;
+        }
+    }
+
+    public override float LiftHeight2
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.LiftHeight2
+                : resinSettings.SliceExtPara.MultiStateParas[NormalLayersStage2Key].LiftHeight;
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SliceExtPara.MultiStateParas[NormalLayersStage2Key].LiftHeight = value;
+                resinSettings.SlicePara.LiftHeight = Layer.RoundHeight(resinSettings.SliceExtPara.MultiStateParas[NormalLayersStage1Key].LiftHeight
+                                                                       + resinSettings.SliceExtPara.MultiStateParas[NormalLayersStage2Key].LiftHeight);
+            }
+
+            base.LiftHeight2 = value;
+        }
+    }
+
+    public override float LiftSpeed2
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.LiftSpeed2
+                : SpeedConverter.Convert(resinSettings.SliceExtPara.MultiStateParas[NormalLayersStage2Key].LiftSpeed, FormatSpeedUnit, CoreSpeedUnit);
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SliceExtPara.MultiStateParas[NormalLayersStage2Key].LiftSpeed = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
+            }
+
+            base.LiftSpeed2 = value;
+        }
+    }
+
+    public override float RetractSpeed
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.RetractSpeed
+                : SpeedConverter.Convert(resinSettings.SliceExtPara.MultiStateParas[NormalLayersStage1Key].RetractSpeed, FormatSpeedUnit, CoreSpeedUnit);
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SlicePara.RetractSpeed = resinSettings.SliceExtPara.MultiStateParas[NormalLayersStage1Key].RetractSpeed = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
+            }
+
+            base.RetractSpeed = value;
+        }
+    }
+
+
+    public override float RetractSpeed2
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.RetractSpeed2
+                : SpeedConverter.Convert(resinSettings.SliceExtPara.MultiStateParas[NormalLayersStage2Key].RetractSpeed, FormatSpeedUnit, CoreSpeedUnit);
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SliceExtPara.MultiStateParas[NormalLayersStage2Key].RetractSpeed = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
+            }
+
+            base.RetractSpeed2 = value;
+        }
     }
 
     public override string MachineName
@@ -533,15 +1326,16 @@ public sealed class AnycubicZipFile : FileFormat
     }
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    {
+    [
         new(224, 168),
         new(336, 252)
-    };
+    ];
 
 
-    public override object[] Configs => new object[] { 
+    public override object[] Configs =>
+    [
         Settings, PrintInfoSettings, SoftwareInfoSettings, SceneSettings
-    };
+    ];
 
     #endregion
 
@@ -551,6 +1345,30 @@ public sealed class AnycubicZipFile : FileFormat
     #endregion
 
     #region Methods
+
+    private List<SettingsResin> GetResinSettings()
+    {
+        var resins = new List<SettingsResin>();
+        if (Settings.MachineExtern.ActiveResins.Length == 0) return resins;
+
+        var activeResin = Settings.MachineExtern.ActiveResins[0];
+
+        resins.AddRange(Settings.MachineExtern.UserResins.Where(resin => resin.Property.Name == activeResin));
+        resins.AddRange(Settings.MachineExtern.FactoryResins.Where(resin => resin.Property.Name == activeResin));
+
+        return resins;
+    }
+
+    private SettingsResin? GetResinSetting()
+    {
+        if (Settings.MachineExtern.ActiveResins.Length == 0) return null;
+        var activeResin = Settings.MachineExtern.ActiveResins[0];
+
+        var setting = Settings.MachineExtern.UserResins.FirstOrDefault(resin => resin.Property.Name == activeResin);
+        setting ??= Settings.MachineExtern.FactoryResins.FirstOrDefault(resin => resin.Property.Name == activeResin);
+
+        return setting;
+    }
 
     private Mat DecodeLayerRle(AnycubicZipRleFormat format, byte[] encodedRle)
     {
@@ -564,11 +1382,11 @@ public sealed class AnycubicZipFile : FileFormat
         if (format == AnycubicZipRleFormat.PWSZ)
         {
             if (encodedRle.Length < 56) throw new FileLoadException("Invalid RLE data is shorter than 56 bytes.");
-            
 
-            if (encodedRle[0] != '{' || encodedRle[1] != '=' || encodedRle[2] != '=' || encodedRle[3] != '\0') 
+
+            if (encodedRle[0] != '{' || encodedRle[1] != '=' || encodedRle[2] != '=' || encodedRle[3] != '\0')
                 throw new FileLoadException($"Invalid RLE file start marker, expecting: {{==\0 got: {System.Text.Encoding.Default.GetString(encodedRle, 0, 4)}.");
-            
+
 
             int index = 4;
             var area = BitExtensions.ToSingleLittleEndian(encodedRle, index); index += 4;
@@ -621,7 +1439,7 @@ public sealed class AnycubicZipFile : FileFormat
                             .Where(traverseFamily => traverseFamily.IsPositive) // Ignore all non-welcomers
                             .Select(traverseFamily => traverseFamily.Self.Vector).ToArray());
                     }
-                    
+
 
                     /*for (var i = 0; i < contours.Vector.Size; i++)
                     {
@@ -644,7 +1462,7 @@ public sealed class AnycubicZipFile : FileFormat
 
             if (encodedRle[index] != '-' || encodedRle[index + 1] != '-' || encodedRle[index + 2] != ']' || encodedRle[index + 3] != '\0')
                 throw new FileLoadException($"Invalid RLE coordinates end marker, expecting: --]\0 got: {System.Text.Encoding.Default.GetString(encodedRle, index, 4)}.");
-            
+
             index += 4;
 
             if (encodedRle[index] != '=' || encodedRle[index + 1] != '=' || encodedRle[index + 2] != '}' || encodedRle[index + 3] != '\0')
@@ -669,13 +1487,7 @@ public sealed class AnycubicZipFile : FileFormat
             var layer = this[layerIndex];
             var rle = new List<byte>();
 
-            rle.AddRange(new byte[]
-            {
-                (byte)'{', 
-                (byte)'=', 
-                (byte)'=', 
-                0
-            });
+            rle.AddRange("{==\0"u8.ToArray());
 
             var zeroUintArray = new byte[4];
 
@@ -687,13 +1499,7 @@ public sealed class AnycubicZipFile : FileFormat
             rle.AddRange(zeroUintArray);
             rle.AddRange(BitExtensions.ToBytesLittleEndian(SceneSettings.LayersDef[layerIndex].ObjectCount));
 
-            rle.AddRange(new byte[]
-            {
-                (byte)'[',
-                (byte)'-',
-                (byte)'-',
-                0
-            });
+            rle.AddRange("[--\0"u8.ToArray());
 
             rle.AddRange(zeroUintArray);
 
@@ -746,27 +1552,15 @@ public sealed class AnycubicZipFile : FileFormat
                     }
                 }
             }
-            
+
             rle.AddRange(BitExtensions.ToBytesLittleEndian(lines));
             rle.AddRange(BitExtensions.ToBytesLittleEndian(1u)); // Unknown
 
             rle.AddRange(linesRle);
 
-            rle.AddRange(new byte[]
-            {
-                (byte)'-',
-                (byte)'-',
-                (byte)']',
-                0
-            });
+            rle.AddRange("--]\0"u8.ToArray());
 
-            rle.AddRange(new byte[]
-            {
-                (byte)'=',
-                (byte)'=',
-                (byte)'}',
-                0
-            });
+            rle.AddRange("==}\0"u8.ToArray());
 
             return rle.ToArray();
         }
@@ -776,6 +1570,9 @@ public sealed class AnycubicZipFile : FileFormat
 
     protected override void OnBeforeEncode(bool isPartialEncode)
     {
+        Settings.MachineType.KeySuffix = FileExtension![1..];
+
+
         Settings.MachineType.PixelWidthMicrons = PixelWidthMicrons;
         Settings.MachineType.PixelHeightMicrons = PixelHeightMicrons;
         Settings.MachineType.PreviewImageSize = [ThumbnailsOriginalSize[0].Width, ThumbnailsOriginalSize[0].Height];
@@ -790,16 +1587,23 @@ public sealed class AnycubicZipFile : FileFormat
         }
         else
         {
-            Settings.MachineType.Screens = new[]
-            {
+            Settings.MachineType.Screens =
+            [
                 new SettingsChildScreen(0, 0, ResolutionX, ResolutionY)
-            };
+            ];
         }
-        
+
         PrintInfoSettings.Cost = MaterialCost;
         PrintInfoSettings.PrintTime = PrintTime;
         PrintInfoSettings.Volume = Volume;
         SoftwareInfoSettings.Update();
+
+        var resinSetting = GetResinSetting();
+        if (resinSetting is not null)
+        {
+            resinSetting.SliceExtPara.MultiStateUsed = System.Convert.ToByte(IsUsingTSMC);
+            resinSetting.SlicePara.UseIndividualLayerPara = System.Convert.ToByte(UsingPerLayerSettings);
+        }
 
         LayersSettings.Layers = new LayerManifest[LayerCount];
         float minHeight = 0;
@@ -828,7 +1632,7 @@ public sealed class AnycubicZipFile : FileFormat
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
 
         EncodeAllThumbnailsInZip(outputFile, "preview_images/preview_{0}.png", progress);
-        
+
         outputFile.CreateEntryFromSerializeJson(SettingsFileName, Settings, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);
         outputFile.CreateEntryFromSerializeJson(PrintInfoFileName, PrintInfoSettings, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);
         outputFile.CreateEntryFromSerializeJson(LayersFileName, LayersSettings, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);
@@ -1022,7 +1826,7 @@ public sealed class AnycubicZipFile : FileFormat
             });
         }
 
-        UpdateGlobalPropertiesFromLayers();
+        if (GetResinSetting() is null) UpdateGlobalPropertiesFromLayers();
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)

@@ -42,7 +42,7 @@ public partial class MainWindow
 
     private int _issueSelectedIndex = -1;
 
-    public IEnumerable? IssuesGridItems 
+    public IEnumerable? IssuesGridItems
     {
         get
         {
@@ -103,7 +103,7 @@ public partial class MainWindow
         return retValue;
     }*/
 
-    public async void RemoveRepairIssues(IEnumerable<MainIssue> issues, bool promptConfirmation = true, bool suctionCupDrill = true)
+    public async Task RemoveRepairIssues(IEnumerable<MainIssue> issues, bool promptConfirmation = true, bool suctionCupDrill = true)
     {
         if (!issues.Any()) return;
 
@@ -172,7 +172,7 @@ public partial class MainWindow
                         // Islands and resin traps
                         if (!processParallelIssues.TryGetValue(issue.LayerIndex, out var issueList))
                         {
-                            issueList = new List<Issue>();
+                            issueList = [];
                             processParallelIssues.Add(issue.LayerIndex, issueList);
                         }
 
@@ -188,7 +188,7 @@ public partial class MainWindow
                             // Islands and resin traps
                             if (!processParallelIssues.TryGetValue(issue.LayerIndex, out var issueList))
                             {
-                                issueList = new List<Issue>();
+                                issueList = [];
                                 processParallelIssues.Add(issue.LayerIndex, issueList);
                             }
 
@@ -294,7 +294,7 @@ public partial class MainWindow
         var whiteListLayers = new List<uint>();
 
         // Update GUI
-            
+
         foreach (MainIssue issue in issues)
         {
             if (issue.IsSuctionCup && !suctionCupDrill)
@@ -303,7 +303,7 @@ public partial class MainWindow
                 continue;
             }
 
-            if (issue.Type 
+            if (issue.Type
                 is not MainIssue.IssueType.Island
                 and not MainIssue.IssueType.ResinTrap
                 and not MainIssue.IssueType.EmptyLayer) continue;
@@ -319,7 +319,7 @@ public partial class MainWindow
                 if (whiteListLayers.Contains(nextLayer)) continue;
                 whiteListLayers.Add(nextLayer);
             }
-                
+
             //Issues.Remove(issue);
 
         }
@@ -327,7 +327,7 @@ public partial class MainWindow
         if (issueRemoveList.Count == 0) return;
 
         ClipboardManager.Clip($"Manually removed {issueRemoveList.Count} issues");
-            
+
         IssuesGrid.SelectedIndex = -1;
         SlicerFile!.IssueManager.RemoveRange(issueRemoveList);
 
@@ -345,42 +345,42 @@ public partial class MainWindow
         CanSave = true;
     }
 
-    public void OnClickIssueRemove()
+    public async Task OnClickIssueRemove()
     {
-        RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>(), true);
+        await RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>(), true);
     }
 
-    public void SelectedIssuesIslandRemove()
-    {
-        if (IssuesGrid.SelectedItem is null) return;
-        RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsIsland), false);
-    }
-
-    public void SelectedIssuesResinTrapSolidify()
+    public async Task SelectedIssuesIslandRemove()
     {
         if (IssuesGrid.SelectedItem is null) return;
-        RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsResinTrap), false);
+        await RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsIsland), false);
     }
 
-    public void SelectedIssuesSuctionCupDrill()
+    public async Task SelectedIssuesResinTrapSolidify()
     {
         if (IssuesGrid.SelectedItem is null) return;
-        RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsSuctionCup), false);
+        await RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsResinTrap), false);
     }
 
-    public void SelectedIssuesSuctionCupSolidify()
+    public async Task SelectedIssuesSuctionCupDrill()
     {
         if (IssuesGrid.SelectedItem is null) return;
-        RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsSuctionCup), false, false);
+        await RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsSuctionCup), false);
     }
 
-    public void SelectedIssuesEmptyLayerRemove()
+    public async Task SelectedIssuesSuctionCupSolidify()
     {
         if (IssuesGrid.SelectedItem is null) return;
-        RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsEmptyLayer), false);
+        await RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsSuctionCup), false, false);
     }
 
-    public async void OnClickIssueIgnore()
+    public async Task SelectedIssuesEmptyLayerRemove()
+    {
+        if (IssuesGrid.SelectedItem is null) return;
+        await RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsEmptyLayer), false);
+    }
+
+    public async Task OnClickIssueIgnore()
     {
         if (!IsFileLoaded) return;
         if ((_globalModifiers & KeyModifiers.Alt) != 0)
@@ -432,7 +432,7 @@ public partial class MainWindow
             issueList.RemoveAll(issue =>
                 issue.LayerIndex == layerIndex && (issue.Type == LayerIssue.IssueType.Island ||
                                                    issue.Type == LayerIssue.IssueType.Overhang));
-            
+
         }*/
 
         var resultIssues = await Task.Run(() =>
@@ -508,14 +508,14 @@ public partial class MainWindow
         ZoomToIssue(issue, true);
     }
 
-        
+
     private void IssuesGridOnCellPointerPressed(object? sender, DataGridCellPointerPressedEventArgs e)
     {
         if (e.PointerPressedEventArgs.ClickCount == 2) return;
         if (IssuesGrid.SelectedItem is not MainIssue) return;
-        // Double clicking an issue will center and zoom into the 
+        // Double clicking an issue will center and zoom into the
         // selected issue. Left click on an issue will zoom to fit.
-            
+
         var pointer = e.PointerPressedEventArgs.GetCurrentPoint(IssuesGrid);
 
         if (pointer.Properties.IsRightButtonPressed)
@@ -528,7 +528,7 @@ public partial class MainWindow
 
     }
 
-    private void IssuesGridOnKeyUp(object? sender, KeyEventArgs e)
+    private async void IssuesGridOnKeyUp(object? sender, KeyEventArgs e)
     {
         if (!IsFileLoaded) return;
         switch (e.Key)
@@ -544,33 +544,33 @@ public partial class MainWindow
                     if (!selectedItems.Contains(item))
                         IssuesGrid.SelectedItems.Add(item);
                 }
-                    
+
 
                 break;
             case Key.Delete:
-                OnClickIssueRemove();
+                await OnClickIssueRemove();
                 break;
         }
     }
 
-    public async void OnClickRepairIssues()
+    public async Task OnClickRepairIssues()
     {
         await ShowRunOperation(typeof(OperationRepairLayers));
     }
 
-    public async void OnClickExportIssues()
+    public async Task OnClickExportIssues()
     {
         if (!IsFileLoaded) return;
         if (!SlicerFile!.IssueManager.HaveIssues) return;
 
         using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath, SlicerFile.FilenameNoExt, AvaloniaStatic.IssuesFileFilter);
         if (file?.TryGetLocalPath() is not { } filePath) return;
-        
+
         IsGUIEnabled = false;
         try
         {
             var exportIssues = new SerializableIssuesDocument(SlicerFile);
-            exportIssues.SerializeAsync(filePath);
+            await exportIssues.SerializeAsync(filePath);
         }
         catch (Exception e)
         {
@@ -643,13 +643,13 @@ public partial class MainWindow
         }, Progress.Token);
 
         IsGUIEnabled = true;
-            
+
         if (resultIssues is null)
         {
             return;
         }
         SlicerFile.IssueManager.AddRange(resultIssues);
-            
+
         ShowLayer();
     }
 
@@ -739,7 +739,7 @@ public partial class MainWindow
             _issuesSliderCanvas.Children.Add(line);
             Canvas.SetBottom(line, yPos);
         }*/
-            
+
         /*var issuesCountPerLayer = GetIssuesCountPerLayer();
         if (issuesCountPerLayer is null)
         {

@@ -115,7 +115,7 @@ public class OperationEditParameters : Operation
     #region Propertiers
 
     [XmlIgnore]
-    public FileFormat.PrintParameterModifier[] Modifiers { get; set; } = Array.Empty<FileFormat.PrintParameterModifier>();
+    public FileFormat.PrintParameterModifier[] Modifiers { get; set; } = [];
 
     public bool PropagateModificationsToLayers
     {

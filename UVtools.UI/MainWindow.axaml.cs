@@ -65,7 +65,7 @@ public partial class MainWindow : WindowEx
     //public ProgressWindow ProgressWindow = new ();
 
     public static MenuItem[] MenuTools { get; } =
-    {
+    [
         new() { Tag = new OperationEditParameters()},
         new() { Tag = new OperationRepairLayers()},
         new() { Tag = new OperationMove()},
@@ -98,11 +98,11 @@ public partial class MainWindow : WindowEx
         new() { Tag = new OperationPCBExposure()},
         new() { Tag = new OperationStirResin()},
         new() { Tag = new OperationScripting()},
-        new() { Tag = new OperationCalculator()},
-    };
+        new() { Tag = new OperationCalculator()}
+    ];
 
     public static MenuItem[] MenuCalibration { get; } =
-    {
+    [
         new() { Tag = new OperationCalibrateExposureFinder()},
         new() { Tag = new OperationCalibrateElephantFoot()},
         new() { Tag = new OperationCalibrateXYZAccuracy()},
@@ -111,11 +111,11 @@ public partial class MainWindow : WindowEx
         new() { Tag = new OperationCalibrateTolerance()},
         new() { Tag = new OperationCalibrateGrayscale()},
         new() { Tag = new OperationCalibrateStressTower()},
-        new() { Tag = new OperationCalibrateExternalTests()},
-    };
+        new() { Tag = new OperationCalibrateExternalTests()}
+    ];
 
     public static MenuItem[] LayerActionsMenu { get; } =
-    {
+    [
         new() { Tag = new OperationLayerImport()},
         new() { Tag = new OperationLayerClone()},
         new() { Tag = new OperationLayerRemove()},
@@ -124,8 +124,8 @@ public partial class MainWindow : WindowEx
         new() { Tag = new OperationLayerExportHtml()},
         new() { Tag = new OperationLayerExportSkeleton()},
         new() { Tag = new OperationLayerExportHeatMap()},
-        new() { Tag = new OperationLayerExportMesh()},
-    };
+        new() { Tag = new OperationLayerExportMesh()}
+    ];
 
 
     #endregion
@@ -485,7 +485,7 @@ public partial class MainWindow : WindowEx
         var percentProcessMemory = Math.Round(processMemory * 100 / totalMemory, 2, MidpointRounding.AwayFromZero);
 
         _ramUsageTimer.Stop();
-        Dispatcher.UIThread.InvokeAsync(() =>
+        Dispatcher.UIThread.InvokeAsync(async () =>
         {
             if (Progress.CanCancel)
             {
@@ -503,7 +503,7 @@ public partial class MainWindow : WindowEx
                             Settings.General.AvailableRamOnHitLimitAction, null);
                 }
 
-                this.MessageBoxWaring(
+                await this.MessageBoxWaring(
                     $"Your system memory RAM hit the limit of {usedMemory}GB from a total of {totalMemory}GB.  Available: {availableMemory}GB.  {About.Software}: {processMemory}GB ({percentProcessMemory}%).\n" +
                     $"The running operation will {Settings.General.AvailableRamOnHitLimitAction.ToString().ToLowerInvariant()} as soon as possible to relief pressure and maintain the system stability.\n" +
                     $"If you continue the operation this check will not be performed again for the self operation.\n\n" +
@@ -743,7 +743,7 @@ public partial class MainWindow : WindowEx
         IsGUIEnabled = true;
     }
 
-    protected override void OnOpened(EventArgs e)
+    protected override async void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
 
@@ -762,35 +762,35 @@ public partial class MainWindow : WindowEx
             Settings.General._lastWindowBounds.Y = Math.Max(0, Position.Y);
         };
 
-        AddHandler(DragDrop.DropEvent, (sender, args) =>
+        AddHandler(DragDrop.DropEvent, async (sender, args) =>
         {
             if (!_isGUIEnabled) return;
             var files = args.Data.GetFiles();
             if (files is null) return;
-            ProcessFiles(files.Select(file => file.TryGetLocalPath()).ToArray()!);
+            await ProcessFiles(files.Select(file => file.TryGetLocalPath()).ToArray()!);
         });
 
         AddLog($"{About.Software} start", Program.ProgramStartupTime.Elapsed.TotalSeconds);
 
         if (Settings.General.CheckForUpdatesOnStartup)
         {
-            Task.Run(() => VersionChecker.Check());
+            _ = Task.Run(() => VersionChecker.Check());
         }
 
-        ProcessFiles(Program.Args);
+        await ProcessFiles(Program.Args);
 
         if (!IsFileLoaded && Settings.General.LoadLastRecentFileOnStartup)
         {
             RecentFiles.Load();
             if (RecentFiles.Instance.Count > 0)
             {
-                ProcessFile(Path.Combine(App.ApplicationPath, RecentFiles.Instance[0]));
+                await ProcessFile(Path.Combine(App.ApplicationPath, RecentFiles.Instance[0]));
             }
         }
 
         if (!IsFileLoaded && Settings.General.LoadDemoFileOnStartup)
         {
-            ProcessFile(Path.Combine(App.ApplicationPath, About.DemoFile));
+            await ProcessFile(Path.Combine(App.ApplicationPath, About.DemoFile));
         }
 
         DispatcherTimer.Run(() =>
@@ -802,7 +802,7 @@ public partial class MainWindow : WindowEx
 
         if (About.IsBirthdayWithin7Days && About.YearsOld != UserSettings.Instance.LastBirthdayYearsOld)
         {
-            ShowBirthdayMessage();
+            await ShowBirthdayMessage();
         }
     }
 
@@ -856,6 +856,7 @@ public partial class MainWindow : WindowEx
     {
         base.OnKeyDown(e);
         _globalModifiers = e.KeyModifiers;
+
         if (e.Handled
             || !IsFileLoaded
             || LayerImageBox.IsPanning
@@ -870,7 +871,7 @@ public partial class MainWindow : WindowEx
         if (imageBoxMousePosition.X < 0 || imageBoxMousePosition.Y < 0) return;
 
         // Pixel Edit is active, Shift is down, and the cursor is over the image region.
-        if (e.KeyModifiers == KeyModifiers.Shift)
+        if (e.KeyModifiers == KeyModifiers.Shift || e.Key is Key.LeftShift or Key.RightShift)
         {
             if (IsPixelEditorActive)
             {
@@ -899,7 +900,7 @@ public partial class MainWindow : WindowEx
             return;
         }
 
-        if (e.KeyModifiers == KeyModifiers.Control)
+        if (e.KeyModifiers == KeyModifiers.Control || e.Key is Key.LeftCtrl or Key.RightCtrl)
         {
             LayerImageBox.Cursor = StaticControls.HandCursor;
             LayerImageBox.AutoPan = false;
@@ -912,7 +913,7 @@ public partial class MainWindow : WindowEx
         }
     }
 
-    protected override void OnKeyUp(KeyEventArgs e)
+    protected override async void OnKeyUp(KeyEventArgs e)
     {
         _globalModifiers = e.KeyModifiers;
         if ((e.Key is Key.LeftShift or Key.RightShift || (e.KeyModifiers & KeyModifiers.Shift) != 0) &&
@@ -920,7 +921,7 @@ public partial class MainWindow : WindowEx
             e.Key == Key.Z)
         {
             e.Handled = true;
-            ClipboardUndoAndRerun(true);
+            await ClipboardUndoAndRerun(true);
             return;
         }
 
@@ -943,16 +944,16 @@ public partial class MainWindow : WindowEx
 
     #region Events
 
-    public async void ShowBirthdayMessage()
+    public async Task ShowBirthdayMessage()
     {
         await this.MessageBoxGeneric(About.BirthdayMessage, About.BirthdayTitle, About.BirthdayTitle, MessageButtons.Ok, "mdi party-popper");
         Settings.LastBirthdayYearsOld = About.YearsOld;
         UserSettings.Save();
     }
 
-    public void MenuFileOpenClicked() => OpenFile();
-    public void MenuFileOpenNewWindowClicked() => OpenFile(true);
-    public void MenuFileOpenInPartialModeClicked() => OpenFile(false, FileFormat.FileDecodeType.Partial);
+    public async void MenuFileOpenClicked() => await OpenFile();
+    public async void MenuFileOpenNewWindowClicked() => await OpenFile(true);
+    public async void MenuFileOpenInPartialModeClicked() => await OpenFile(false, FileFormat.FileDecodeType.Partial);
 
     public void MenuFileOpenContainingFolderClicked()
     {
@@ -960,7 +961,7 @@ public partial class MainWindow : WindowEx
         SystemAware.SelectFileOnExplorer(SlicerFile!.FileFullPath!);
     }
 
-    public async void MenuFileRenameClicked()
+    public async Task MenuFileRenameClicked()
     {
         await RenameCurrentFile();
     }
@@ -985,13 +986,13 @@ public partial class MainWindow : WindowEx
         return true;
     }
 
-    public async void MenuFileSaveClicked()
+    public async Task MenuFileSaveClicked()
     {
         if (!CanSave) return;
         await SaveFile();
     }
 
-    public async void MenuFileSaveAsClicked()
+    public async Task MenuFileSaveAsClicked()
     {
         //await this.MessageBoxInfo(Path.Combine(App.ApplicationPath, "Assets", "Themes"));
         if (!IsFileLoaded) return;
@@ -1069,7 +1070,7 @@ public partial class MainWindow : WindowEx
         await SaveFile(filePath);
     }
 
-    public async void OpenFile(bool newWindow = false, FileFormat.FileDecodeType fileDecodeType = FileFormat.FileDecodeType.Full)
+    public async Task OpenFile(bool newWindow = false, FileFormat.FileDecodeType fileDecodeType = FileFormat.FileDecodeType.Full)
     {
         var filters = AvaloniaStatic.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
         var orderedFilters = new List<FilePickerFileType> {filters[Settings.General.DefaultOpenFileExtensionIndex]};
@@ -1084,10 +1085,10 @@ public partial class MainWindow : WindowEx
 
         if (files.Count == 0) return;
 
-        ProcessFiles(files.Select(file => file.TryGetLocalPath()!).ToArray(), newWindow, fileDecodeType);
+        await ProcessFiles(files.Select(file => file.TryGetLocalPath()!).ToArray(), newWindow, fileDecodeType);
     }
 
-    public async void MenuFileCloseFileClicked()
+    public async Task MenuFileCloseFileClicked()
     {
         if (CanSave && await this.MessageBoxQuestion("There are unsaved changes. Do you want close this file without saving?") !=
             MessageButtonResult.Yes)
@@ -1147,7 +1148,7 @@ public partial class MainWindow : WindowEx
         WindowState = WindowState == WindowState.FullScreen ? WindowState.Maximized : WindowState.FullScreen;
     }
 
-    public async void MenuFileSettingsClicked()
+    public async Task MenuFileSettingsClicked()
     {
         var oldTheme = Settings.General.Theme;
         var oldLayerCompressionCodec = Settings.General.LayerCompressionCodec;
@@ -1197,12 +1198,12 @@ public partial class MainWindow : WindowEx
         }
     }
 
-    public async void MenuHelpAboutClicked()
+    public async Task MenuHelpAboutClicked()
     {
         await new AboutWindow().ShowDialog(this);
     }
 
-    public async void MenuHelpFreeUnusedRAMClicked()
+    public async Task MenuHelpFreeUnusedRAMClicked()
     {
         IsGUIEnabled = false;
         ShowProgressWindow("Garbage collector (GC)", "Collecting garbage from LOH", false);
@@ -1215,7 +1216,7 @@ public partial class MainWindow : WindowEx
         IsGUIEnabled = true;
     }
 
-    public async void MenuHelpBenchmarkClicked()
+    public async Task MenuHelpBenchmarkClicked()
     {
         await new BenchmarkWindow().ShowDialog(this);
     }
@@ -1241,12 +1242,12 @@ public partial class MainWindow : WindowEx
         SystemAware.OpenBrowser($"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title=%5BBug%5D+&system={HttpUtility.UrlEncode(system)}");
     }
 
-    public async void MenuHelpMaterialManagerClicked()
+    public async Task MenuHelpMaterialManagerClicked()
     {
         await new MaterialManagerWindow().ShowDialog(this);
     }
 
-    public async void MenuHelpInstallProfilesClicked()
+    public async Task MenuHelpInstallProfilesClicked()
     {
         var PSFolder = App.GetPrusaSlicerDirectory();
         if (string.IsNullOrEmpty(PSFolder) || !Directory.Exists(PSFolder))
@@ -1278,7 +1279,7 @@ public partial class MainWindow : WindowEx
         Debug.WriteLine(i);
     }
 
-    public async void MenuHelpDebugLongMessageBoxClicked()
+    public async Task MenuHelpDebugLongMessageBoxClicked()
     {
         await this.MessageBoxError(string.Concat(Enumerable.Repeat("Informative message:\n\nLorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.\n", 100)));
     }
@@ -1288,7 +1289,7 @@ public partial class MainWindow : WindowEx
         VersionChecker.Check(true);
     }
 
-    public async void MenuNewVersionClicked()
+    public async Task MenuNewVersionClicked()
     {
         var autoUpdateButton = MessageWindow.CreateButton("Auto update", MessageWindow.IconButtonDownload);
         var manualUpdateButton = MessageWindow.CreateButton("Manual update", MessageWindow.IconButtonOpenBrowser);
@@ -1299,17 +1300,16 @@ public partial class MainWindow : WindowEx
             "## Changelog:\n\n" +
             $"{VersionChecker.Changelog}",
             string.IsNullOrWhiteSpace(VersionChecker.DownloadLink) ?
-                new[]
-                {
+                [
                     manualUpdateButton,
                     MessageWindow.CreateCancelButton()
-                }
-                : new[]
-                {
+                ]
+                :
+                [
                     autoUpdateButton,
                     manualUpdateButton,
                     MessageWindow.CreateCancelButton()
-                },
+                ],
             true);
 
         var result = await messageBox.ShowDialog<ButtonWithIcon>(this);
@@ -1455,7 +1455,7 @@ public partial class MainWindow : WindowEx
 
             if (i == 0 && !openNewWindow && (_globalModifiers & KeyModifiers.Shift) == 0)
             {
-                ProcessFile(files[i], fileDecodeType);
+                await ProcessFile(files[i], fileDecodeType);
                 continue;
             }
 
@@ -1465,14 +1465,15 @@ public partial class MainWindow : WindowEx
 
     public void ReloadFile() => ReloadFile(_actualLayer);
 
-    public void ReloadFile(uint actualLayer)
+    public Task ReloadFile(uint actualLayer)
     {
-        if (!IsFileLoaded) return;
-        ProcessFile(SlicerFile!.FileFullPath!, SlicerFile.DecodeType, _actualLayer);
+        if (!IsFileLoaded) return Task.CompletedTask;
+        return ProcessFile(SlicerFile!.FileFullPath!, SlicerFile.DecodeType, _actualLayer);
     }
 
-    void ProcessFile(string fileName, uint actualLayer = 0) => ProcessFile(fileName, FileFormat.FileDecodeType.Full, actualLayer);
-    async void ProcessFile(string fileName, FileFormat.FileDecodeType fileDecodeType, uint actualLayer = 0)
+    private Task ProcessFile(string fileName, uint actualLayer = 0) => ProcessFile(fileName, FileFormat.FileDecodeType.Full, actualLayer);
+
+    private async Task ProcessFile(string fileName, FileFormat.FileDecodeType fileDecodeType, uint actualLayer = 0)
     {
         if (!File.Exists(fileName)) return;
         CloseFile();
@@ -1654,7 +1655,7 @@ public partial class MainWindow : WindowEx
                         else if (result == MessageButtonResult.No)
                         {
                             using var file = await SaveFilePickerAsync(directory, filenameNoExt,
-                                    AvaloniaStatic.CreateFilePickerFileTypes(fileExtension.Description, convertFileExtension));
+                                    AvaloniaStatic.CreateFilePickerFileTypes(fileExtension.Description, convertFileExtension!));
 
                             if (file?.TryGetLocalPath() is { } filePath)
                             {
@@ -1741,7 +1742,7 @@ public partial class MainWindow : WindowEx
 
         if (SlicerFile is not ImageFile && SlicerFile.DecodeType == FileFormat.FileDecodeType.Full)
         {
-            List<MenuItem> menuItems = new();
+            List<MenuItem> menuItems = [];
 
             var convertMenu = new Dictionary<string, List<MenuItem>>();
 
@@ -1758,7 +1759,7 @@ public partial class MainWindow : WindowEx
                 {
                     if (!convertMenu.TryGetValue(fileFormat.ConvertMenuGroup, out parentMenu))
                     {
-                        parentMenu = new List<MenuItem>();
+                        parentMenu = [];
 
                         var subMenuItem = new MenuItem
                         {
@@ -2040,7 +2041,7 @@ public partial class MainWindow : WindowEx
         }
     }
 
-    private async void ShowProgressWindow(string title, string subTitle, bool canCancel = true)
+    private void ShowProgressWindow(string title, string subTitle, bool canCancel = true)
     {
         if (Dispatcher.UIThread.CheckAccess())
         {
@@ -2052,7 +2053,7 @@ public partial class MainWindow : WindowEx
         }
         else
         {
-            await Dispatcher.UIThread.InvokeAsync(() =>
+            Dispatcher.UIThread.Post(() =>
             {
                 ProgressShow(title, canCancel);
                 Progress.ItemName = subTitle;
@@ -2071,7 +2072,7 @@ public partial class MainWindow : WindowEx
         }
     }
 
-    private async void ShowProgressWindow(string title, bool canCancel = true)
+    private void ShowProgressWindow(string title, bool canCancel = true)
     {
         if (Dispatcher.UIThread.CheckAccess())
         {
@@ -2082,7 +2083,7 @@ public partial class MainWindow : WindowEx
         }
         else
         {
-            await Dispatcher.UIThread.InvokeAsync(() =>
+            Dispatcher.UIThread.Post(() =>
             {
                 ProgressShow(title, canCancel);
                 /*try
@@ -2177,7 +2178,7 @@ public partial class MainWindow : WindowEx
             switch (question)
             {
                 case MessageButtonResult.No:
-                    ProcessFile(filePath, _actualLayer);
+                    await ProcessFile(filePath, _actualLayer);
                     break;
                 case MessageButtonResult.Yes:
                     App.NewInstance(filePath);
@@ -2357,7 +2358,7 @@ public partial class MainWindow : WindowEx
         return task;
     }
 
-    public async void ResetLayersProperties()
+    public async Task ResetLayersProperties()
     {
         if (!IsFileLoaded || !SlicerFile!.SupportPerLayerSettings) return;
         var currentModifiers = _globalModifiers;
@@ -2374,13 +2375,13 @@ public partial class MainWindow : WindowEx
         CanSave = true;
     }
 
-    public async void IPrintedThisFile()
+    public async Task IPrintedThisFile()
     {
         if (!IsFileLoaded) return;
         await ShowRunOperation(typeof(OperationIPrintedThisFile));
     }
 
-    public async void CopyParametersToFiles()
+    public async Task CopyParametersToFiles()
     {
         if (!IsFileLoaded) return;
         var filters = AvaloniaStatic.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
@@ -2441,7 +2442,7 @@ public partial class MainWindow : WindowEx
         }
     }
 
-    public async void ExtractFile()
+    public async Task ExtractFile()
     {
         if (!IsFileLoaded) return;
 
@@ -2505,8 +2506,8 @@ public partial class MainWindow : WindowEx
         var toolTypeBase = typeof(ToolControl);
         var calibrateTypeBase = typeof(CalibrateElephantFootControl);
         var classname = type.Name.StartsWith("OperationCalibrate") ?
-            $"{calibrateTypeBase.Namespace}.{type.Name.Remove(0, Operation.ClassNameLength)}Control" :
-            $"{toolTypeBase.Namespace}.Tool{type.Name.Remove(0, Operation.ClassNameLength)}Control";
+            $"{calibrateTypeBase.Namespace}.{type.Name[Operation.ClassNameLength..]}Control" :
+            $"{toolTypeBase.Namespace}.Tool{type.Name[Operation.ClassNameLength..]}Control";
         var controlType = Type.GetType(classname);
         ToolControl? control;
 
@@ -2762,7 +2763,7 @@ public partial class MainWindow : WindowEx
         }
 
         if (_globalModifiers == KeyModifiers.Shift) App.NewInstance(file);
-        else ProcessFile(file);
+        else await ProcessFile(file);
     }
 
     #endregion

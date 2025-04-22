@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using UVtools.Core.Objects;
 using UVtools.UI.Extensions;
@@ -28,7 +29,7 @@ public partial class KernelControl : UserControl
         DataContext = this;
     }
 
-    public async void GenerateKernel()
+    public async Task GenerateKernel()
     {
         if (_kernel is null) return;
         if (_kernel.MatrixWidth <= _kernel.AnchorX || _kernel.MatrixHeight <= _kernel.AnchorY)

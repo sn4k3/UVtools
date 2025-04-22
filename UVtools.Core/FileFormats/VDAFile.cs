@@ -138,7 +138,7 @@ public class VDARoot
     public VDAFileInfo FileInfo { get; set; } = new();
     public VDASlices Slices { get; set; } = new();
     public VDAMachines Machines { get; set; } = new();
-    public List<VDALayer> Layers { get; set; } = new();
+    public List<VDALayer> Layers { get; set; } = [];
 }
 #endregion
 
@@ -155,9 +155,10 @@ public sealed class VDAFile : FileFormat
 
     public override string ConvertMenuGroup => "Voxeldance";
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new(typeof(VDAFile), "zip", "Voxeldance Additive Zip")
-    };
+    ];
 
     public override uint ResolutionX
     {
@@ -265,11 +266,13 @@ public sealed class VDAFile : FileFormat
     }
 
         
-    public override object[] Configs => new object[] { 
+    public override object[] Configs =>
+    [
         ManifestFile.FileInfo.Version,
         ManifestFile.FileInfo.Written, 
         ManifestFile.Machines, 
-        ManifestFile.Slices };
+        ManifestFile.Slices
+    ];
 
     #endregion
 

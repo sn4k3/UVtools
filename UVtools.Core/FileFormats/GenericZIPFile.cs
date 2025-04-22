@@ -63,9 +63,10 @@ public sealed class GenericZIPFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Archive;
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new(typeof(GenericZIPFile), "zip", "Generic Zip / Phrozen Zip")
-    };
+    ];
 
     public override uint ResolutionX
     {
@@ -110,15 +111,16 @@ public sealed class GenericZIPFile : FileFormat
     }*/
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    {
+    [
         new(854, 480),
         new(472, 240)
-    };
+    ];
 
 
-    public override object[] Configs => new object[] { 
+    public override object[] Configs =>
+    [
         ManifestFile
-    };
+    ];
 
     #endregion
 

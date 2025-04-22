@@ -22,11 +22,11 @@ internal static class SetPropertiesCommand
         {
             Arity = ArgumentArity.OneOrMore
         };
-        var layerRangeOption = new Option<string>(new[] { "-r", "--range" }, "Sets properties to the matching layer(s) index(es) in a range")
+        var layerRangeOption = new Option<string>(["-r", "--range"], "Sets properties to the matching layer(s) index(es) in a range")
         {
             ArgumentHelpName = "startindex:endindex"
         };
-        var layerIndexesOption = new Option<uint[]>(new[] { "-i", "--indexes" }, "Sets properties to the matching layer(s) index(es)")
+        var layerIndexesOption = new Option<uint[]>(["-i", "--indexes"], "Sets properties to the matching layer(s) index(es)")
         {
             AllowMultipleArgumentsPerToken = true
         };

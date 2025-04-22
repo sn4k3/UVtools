@@ -65,7 +65,7 @@ public class OperationProfiles //: IList<Operation>
     [XmlElement(typeof(OperationCalibrateTolerance))]
     [XmlElement(typeof(OperationCalibrateGrayscale))]
     [XmlElement(typeof(OperationCalibrateStressTower))]
-    public List<Operation> Operations { get; internal set; } = new();
+    public List<Operation> Operations { get; internal set; } = [];
 
     [XmlIgnore]
     public static List<Operation> Profiles

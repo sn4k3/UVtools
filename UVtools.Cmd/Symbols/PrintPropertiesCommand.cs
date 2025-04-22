@@ -21,16 +21,16 @@ internal static class PrintPropertiesCommand
 {
     internal static Command CreateCommand()
     {
-        var matchNamesOption = new Option<string[]>(new[] { "-n", "--names" }, "Prints only the name matching properties")
+        var matchNamesOption = new Option<string[]>(["-n", "--names"], "Prints only the name matching properties")
         {
             AllowMultipleArgumentsPerToken = true
         };
-        var allPropertiesOption = new Option<bool>(new[] { "-a", "--all" }, "Also prints the sub properties of the file (No effect on layers)");
-        var layerRangeOption = new Option<string>(new[] { "-r", "--range" }, "Prints only the matching layer(s) index(es) in a range")
+        var allPropertiesOption = new Option<bool>(["-a", "--all"], "Also prints the sub properties of the file (No effect on layers)");
+        var layerRangeOption = new Option<string>(["-r", "--range"], "Prints only the matching layer(s) index(es) in a range")
         {
             ArgumentHelpName = "startindex:endindex"
         };
-        var layerIndexesOption = new Option<uint[]>(new[] { "-i", "--indexes" }, "Prints only the matching layer(s) index(es)")
+        var layerIndexesOption = new Option<uint[]>(["-i", "--indexes"], "Prints only the matching layer(s) index(es)")
         {
             AllowMultipleArgumentsPerToken = true
         };

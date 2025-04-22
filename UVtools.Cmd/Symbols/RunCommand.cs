@@ -20,7 +20,7 @@ internal static class RunCommand
     internal static Command CreateCommand()
     {
         var classesFilesArgument = new Argument<string[]>("classes/files", "Operations, suggestions and script class/files(.uvtop, .uvtsu .cs, .csx) to run");
-        var propertiesOption = new Option<string[]>(new[] { "-p", "--property" }, "Set a property with a new value (Compatible with operations only)")
+        var propertiesOption = new Option<string[]>(["-p", "--property"], "Set a property with a new value (Compatible with operations only)")
         {
             AllowMultipleArgumentsPerToken = true,
             ArgumentHelpName = "property=value"

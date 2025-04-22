@@ -61,6 +61,7 @@ public class OperationPixelArithmetic : Operation
     private PixelArithmeticIgnoreAreaOperator _ignoreAreaOperator = PixelArithmeticIgnoreAreaOperator.SmallerThan;
     private uint _ignoreAreaThreshold;
     private byte _value = byte.MaxValue;
+    private float _valueStep;
     private bool _usePattern;
     private ThresholdType _thresholdType = ThresholdType.Binary;
     private byte _thresholdMaxValue = 255;
@@ -149,14 +150,14 @@ public class OperationPixelArithmetic : Operation
 
     public override string ConfirmationText =>
         $"arithmetic {_operator}" +
-        (ValueEnabled && !_usePattern ? $"={_value}" : string.Empty) +
+        (ValueEnabled && !_usePattern ? $"={_value}{(_valueStep != 0 ? $" Step={_valueStep}" : string.Empty)}" : string.Empty) +
         (_usePattern && IsUsePatternVisible ? " with pattern" : string.Empty) +
         (_operator is PixelArithmeticOperators.Threshold ? $"/{_thresholdMaxValue}" : string.Empty)
         + $" layers from {LayerIndexStart} through {LayerIndexEnd}";
 
     public override string ProgressTitle =>
         $"Arithmetic {_operator}"+
-        (ValueEnabled && !_usePattern ? $"={_value}" : string.Empty) +
+        (ValueEnabled && !_usePattern ? $"={_value}{(_valueStep != 0 ? $" Step={_valueStep}" : string.Empty)}" : string.Empty) +
         (_usePattern && IsUsePatternVisible ? " with pattern" : string.Empty) +
         $" layers from {LayerIndexStart} through {LayerIndexEnd}";
 
@@ -173,14 +174,14 @@ public class OperationPixelArithmetic : Operation
         {
             sb.AppendLine("The 'Discard' operator requires selected ROI/masks.");
         }
-        else if (_operator 
-                     is PixelArithmeticOperators.Add 
+        else if (_operator
+                     is PixelArithmeticOperators.Add
                      or PixelArithmeticOperators.Subtract
                      or PixelArithmeticOperators.Maximum
                      or PixelArithmeticOperators.BitwiseOr
                      or PixelArithmeticOperators.BitwiseXor
                      or PixelArithmeticOperators.AbsDiff
-                 && _value == 0) 
+                 && (_value + _valueStep) == 0)
             /*||
                  (_operator is PixelArithmeticOperators.Exponential && _value == 1)
                  )*/
@@ -264,7 +265,7 @@ public class OperationPixelArithmetic : Operation
 
     public override string ToString()
     {
-        var result = $"[{_operator}: {_value}] [Apply: {_applyMethod}] " +
+        var result = $"[{_operator}: {_value} Step: {_valueStep}] [Apply: {_applyMethod}] " +
                      $"[Pattern: {_usePattern}]"
                      + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
@@ -301,9 +302,9 @@ public class OperationPixelArithmetic : Operation
         }
     }
 
-    public bool IsWallSettingVisible => _applyMethod 
+    public bool IsWallSettingVisible => _applyMethod
         is PixelArithmeticApplyMethod.ModelSurfaceAndInset
-        or PixelArithmeticApplyMethod.ModelInner 
+        or PixelArithmeticApplyMethod.ModelInner
         or PixelArithmeticApplyMethod.ModelWalls; //or PixelArithmeticApplyMethod.ModelWallsMinimum;
 
     public uint WallThickness
@@ -392,6 +393,15 @@ public class OperationPixelArithmetic : Operation
     // 255  - 100
     //value -  x
     public float ValuePercent => MathF.Round(_value * 100f / byte.MaxValue, 2);
+
+    /// <summary>
+    /// Mutates the initial brightness with a step that is added/subtracted to the current value dependent on the processed layer count
+    /// </summary>
+    public float ValueStep
+    {
+        get => _valueStep;
+        set => RaiseAndSetIfChanged(ref _valueStep, Math.Clamp(value, -byte.MaxValue, byte.MaxValue));
+    }
 
     public bool ValueEnabled => _operator
         is not PixelArithmeticOperators.BitwiseNot
@@ -584,9 +594,10 @@ public class OperationPixelArithmetic : Operation
         }
 
 
-        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
+        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelDebugOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
+
             var layer = SlicerFile[layerIndex];
             using (var mat = layer.LayerMat)
             {
@@ -599,13 +610,19 @@ public class OperationPixelArithmetic : Operation
                 {
                     tempMat = IsNormalPattern((uint)layerIndex) ? patternMatMask : patternAlternateMatMask;
                 }
-                else
+                else if(_valueStep == 0)
                 {
                     tempMat = patternMatMask;
                 }
+                else
+                {
+                    var layerStep = layerIndex - LayerIndexStart;
+                    var valueStepped = Math.Clamp(MathF.Round(_value + _valueStep * layerStep, MidpointRounding.AwayFromZero), 0, 255);
+                    tempMat = EmguExtensions.InitMat(GetMatSizeCropped(), new MCvScalar(valueStepped));
+                }
 
                 Mat? applyMask;
-                    
+
                 int wallThickness = FileFormat.MutateGetIterationChamfer(
                     (uint)layerIndex,
                     LayerIndexStart,
@@ -645,7 +662,7 @@ public class OperationPixelArithmetic : Operation
                             CvInvoke.Erode(target, erode, kernel, EmguExtensions.AnchorCenter, iterations, BorderType.Reflect101, default);
                             CvInvoke.Subtract(target, erode, erode);
                             CvInvoke.Add(applyMask, erode, applyMask);
-                                
+
 
                             // Inset from walls
                             if (_applyMethod == PixelArithmeticApplyMethod.ModelSurfaceAndInset && (wallThickness-1) > 0)
@@ -668,7 +685,7 @@ public class OperationPixelArithmetic : Operation
 
                         applyMask = new Mat();
                         int iterations = wallThickness;
-                        var kernel = Kernel.GetKernel(ref iterations); 
+                        var kernel = Kernel.GetKernel(ref iterations);
                         CvInvoke.Erode(target, applyMask, kernel, EmguExtensions.AnchorCenter, iterations, BorderType.Reflect101, default);
                         break;
                     }
@@ -838,7 +855,7 @@ public class OperationPixelArithmetic : Operation
                                 var pixelPos = mat.GetPixelPos(x, y1);
                                 for (var x1 = x; x1 < x + _noisePixelArea && x1 < bounds.Right; x1++)
                                 {
-                                        
+
                                     if (span[pixelPos] <= _noiseThreshold) continue;
                                     span[pixelPos++] = brightness;
                                 }
@@ -1329,6 +1346,6 @@ public class OperationPixelArithmetic : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationPixelArithmetic) obj);
     }
-    
+
     #endregion
 }

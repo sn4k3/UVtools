@@ -35,7 +35,7 @@ public partial class ToolScriptingControl : ToolControl
             case ToolWindow.Callbacks.AfterLoadProfile:
                 if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.CanExecute;
                 //ReloadGUI();
-                if(callback == ToolWindow.Callbacks.AfterLoadProfile) Dispatcher.UIThread.Post(ReloadScript, DispatcherPriority.Loaded);
+                if(callback == ToolWindow.Callbacks.AfterLoadProfile) Dispatcher.UIThread.InvokeAsync(ReloadScript, DispatcherPriority.Loaded);
                 Operation.PropertyChanged += (sender, e) =>
                 {
                     if (e.PropertyName == nameof(Operation.CanExecute))
@@ -44,7 +44,7 @@ public partial class ToolScriptingControl : ToolControl
                     }
                 };
                 Operation.OnScriptReload += OnScriptReload!;
-                
+
                 break;
         }
     }
@@ -58,7 +58,7 @@ public partial class ToolScriptingControl : ToolControl
         Dispatcher.UIThread.InvokeAsync(ReloadGUI);
     }
 
-    public async void LoadScript()
+    public async Task LoadScript()
     {
         var files = await App.MainWindow.OpenFilePickerAsync(
             await App.MainWindow.StorageProvider.TryGetFolderFromPathAsync(UserSettings.Instance.General.DefaultDirectoryScripts!),
@@ -67,10 +67,10 @@ public partial class ToolScriptingControl : ToolControl
         if (files.Count == 0 || files[0].TryGetLocalPath() is not { } filePath) return;
 
         Operation.FilePath = filePath;
-        ReloadScript();
+        await ReloadScript();
     }
 
-    public async void ReloadScript()
+    public async Task ReloadScript()
     {
         if (ParentWindow is null) return;
         try
@@ -94,7 +94,7 @@ public partial class ToolScriptingControl : ToolControl
         {
             ParentWindow.IsEnabled = true;
         }
-            
+
     }
 
     public void OpenScriptFolder()
@@ -144,7 +144,7 @@ public partial class ToolScriptingControl : ToolControl
             return;
         }
 
-            
+
         string rowDefinitions = string.Empty;
         for (var i = 0; i < Operation.ScriptGlobals.Script.UserInputs.Count; i++)
         {
@@ -390,7 +390,7 @@ public partial class ToolScriptingControl : ToolControl
                         numULONG.Value = (ulong)value;
                         control.Value = numULONG.Value;
                     }));
-                    
+
                     ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);

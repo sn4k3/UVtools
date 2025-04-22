@@ -93,7 +93,7 @@ public partial class MainWindow
 
     public LayerCache LayerCache = new ();
     private Point _lastPixelMouseLocation = Point.Empty;
-    private readonly List<Point[]> _maskPoints = new ();
+    private readonly List<Point[]> _maskPoints = [];
 
 
     public void InitLayerPreview()
@@ -473,7 +473,7 @@ public partial class MainWindow
             }
             else
             {
-                DrawModifications(true);
+                _ = DrawModifications(true);
             }
         }
     }
@@ -1357,7 +1357,8 @@ public partial class MainWindow
                             : Settings.PixelEditor.RemovePixelColor);
                     if (operationDrawing.BrushSize == 1)
                     {
-                        LayerCache.ImageBgra.SetByte(operation.Location.X, operation.Location.Y, new[] {color.B, color.G, color.R, color.A});
+                        LayerCache.ImageBgra.SetByte(operation.Location.X, operation.Location.Y, [color.B, color.G, color.R, color.A
+                        ]);
                         continue;
                     }
 
@@ -2256,7 +2257,7 @@ public partial class MainWindow
     public uint SelectObjectRoi(Rectangle roiRectangle)
     {
         if (roiRectangle.IsEmpty || !LayerCache.IsCached) return 0;
-        List<Rectangle> rectangles = new();
+        List<Rectangle> rectangles = [];
         for (int i = 0; i < LayerCache.Layer!.Contours.Count; i++)
         {
             var rectangle = LayerCache.Layer.Contours[i].BoundingRectangle;
@@ -2294,7 +2295,7 @@ public partial class MainWindow
         CenterLayerAt(GetTransposedPoint(LayerPixelPicker.Location, true), -1);
     }
 
-    public async void SaveCurrentLayerImage()
+    public async Task SaveCurrentLayerImage()
     {
         if (!IsFileLoaded) return;
 
@@ -2304,7 +2305,7 @@ public partial class MainWindow
         LayerCache.ImageBgra.Save(filePath);
     }
 
-    public async void SaveCurrentROIImage()
+    public async Task SaveCurrentROIImage()
     {
         if (!IsFileLoaded || !LayerImageBox.HaveSelection) return;
 

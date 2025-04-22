@@ -168,9 +168,9 @@ public sealed class NanoDLPFile : FileFormat
         public bool MultiMaterial { get; set; }
         public string AdaptExport { get; set; } = string.Empty;
         public string PreviewColor { get; set; } = string.Empty;
-        public int[]? FaultyLayers { get; set; } = Array.Empty<int>();
-        public int[]? OverhangLayers { get; set; } = Array.Empty<int>();
-        public int[]? LayerStatus { get; set; } = Array.Empty<int>();
+        public int[]? FaultyLayers { get; set; } = [];
+        public int[]? OverhangLayers { get; set; } = [];
+        public int[]? LayerStatus { get; set; } = [];
         public NanoDLPBoundary Boundary { get; set; } = new();
         public NanoDLPMCItem MC { get; set; } = new();
         public string? MultiThickness { get; set; } = string.Empty;
@@ -224,7 +224,7 @@ public sealed class NanoDLPFile : FileFormat
         public uint LayerID { get; set; }
         public uint LayerCount { get; set; }
         public string UUID { get; set; } = string.Empty;
-        public float[]? DynamicThickness { get; set; } = Array.Empty<float>();
+        public float[]? DynamicThickness { get; set; } = [];
 
         public NanoDLPColor FillColorRGB { get; set; } = new(byte.MaxValue, byte.MaxValue, byte.MaxValue, byte.MaxValue);
         public NanoDLPColor BlankColorRGB { get; set; } = new();
@@ -261,14 +261,14 @@ public sealed class NanoDLPFile : FileFormat
         public float ZRes { get; set; }
         public string? MultiCure { get; set; } = string.Empty;
         public string? MultiThickness { get; set; } = string.Empty;
-        public float[]? CureTimes { get; set; } = Array.Empty<float>();
-        public float[]? DynamicThickness { get; set; } = Array.Empty<float>();
+        public float[]? CureTimes { get; set; } = [];
+        public float[]? DynamicThickness { get; set; } = [];
         public float Offset { get; set; }
-        public int[]? OverHangs { get; set; } = Array.Empty<int>();
+        public int[]? OverHangs { get; set; } = [];
         public bool Risky { get; set; }
         public bool IsFaulty { get; set; }
         public bool Repaired { get; set; }
-        public int[]? FaultyLayers { get; set; } = Array.Empty<int>();
+        public int[]? FaultyLayers { get; set; } = [];
         public bool Corrupted { get; set; }
         public float TotalSolidArea { get; set; }
         public string? BlackoutData { get; set; }
@@ -445,24 +445,25 @@ public sealed class NanoDLPFile : FileFormat
     public NanoDLPProfileManifest ProfileManifest { get; set; } = new ();
     public NanoDLPProfileManifest? OverrideManifest { get; set; }
 
-    public NanoDLPInfoItem[] InfoManifest { get; set; } = Array.Empty<NanoDLPInfoItem>();
+    public NanoDLPInfoItem[] InfoManifest { get; set; } = [];
 
     public override FileFormatType FileType => FileFormatType.Archive;
 
     public override string ConvertMenuGroup => "NanoDLP";
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new(typeof(NanoDLPFile), "nanodlp", "NanoDLP (Mono)"),
         new(typeof(NanoDLPFile), "rgb.nanodlp", "NanoDLP (RGB)", false)
-    };
+    ];
 
     public override PrintParameterModifier[] PrintParameterModifiers
     {
         get
         {
             if (OverrideManifest is null) return base.PrintParameterModifiers;
-            return new[]
-            {
+            return
+            [
                 PrintParameterModifier.BottomLayerCount,
                 PrintParameterModifier.TransitionLayerCount,
 
@@ -483,17 +484,17 @@ public sealed class NanoDLPFile : FileFormat
 
                 PrintParameterModifier.BottomLightPWM,
                 PrintParameterModifier.LightPWM
-            };
+            ];
 
         }
     }
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    {
-        new(607, 487),
-    };
+    [
+        new(607, 487)
+    ];
 
-    public override uint[] AvailableVersions { get; } = { 1, 2 };
+    public override uint[] AvailableVersions { get; } = [1, 2];
 
     public override uint DefaultVersion => 2;
 
@@ -856,12 +857,13 @@ public sealed class NanoDLPFile : FileFormat
         set => base.MachineName = ProfileManifest.Title = value;
     }
 
-    public override object[] Configs => new object[] { 
+    public override object[] Configs =>
+    [
         MetaManifest,
         SlicerManifest,
         PlateManifest,
         ProfileManifest
-    };
+    ];
 
     #endregion
 

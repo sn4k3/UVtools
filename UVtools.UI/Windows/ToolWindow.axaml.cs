@@ -9,6 +9,7 @@ using Avalonia.Input;
 using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
+using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using UVtools.Core;
 using UVtools.Core.Dialogs;
@@ -52,7 +53,7 @@ public partial class ToolWindow : WindowEx
     private bool _clearRoiAndMaskAfterOperation;
 
     private bool _isProfilesVisible;
-    private RangeObservableCollection<Operation> _profiles = new();
+    private RangeObservableCollection<Operation> _profiles = [];
     private Operation? _selectedProfileItem;
     private string? _profileText;
 
@@ -176,11 +177,11 @@ public partial class ToolWindow : WindowEx
         get
         {
             uint layerCount = (uint) Math.Max(0, (int)LayerIndexEnd - LayerIndexStart + 1);
-            return SlicerFile is null 
-                ? $"({layerCount} layers" 
+            return SlicerFile is null
+                ? $"({layerCount} layers"
                 : $"({layerCount} layers / {Layer.ShowHeight(SlicerFile.LayerHeight * layerCount)}mm)";
         }
-            
+
     }
 
     public uint MaximumLayerIndex => App.MainWindow?.SliderMaximumValue ?? 0;
@@ -348,7 +349,7 @@ public partial class ToolWindow : WindowEx
         set => RaiseAndSetIfChanged(ref _clearRoiAndMaskAfterOperation, value);
     }
 
-    public async void ClearROI()
+    public async Task ClearROI()
     {
         if (await this.MessageBoxQuestion("Are you sure you want to clear the current ROI?\n" +
                                           "This action can not be reverted, to select another ROI you must quit this window and select it on layer preview.",
@@ -358,7 +359,7 @@ public partial class ToolWindow : WindowEx
         ToolControl?.Callback(Callbacks.ClearROI);
     }
 
-    public async void ClearMasks()
+    public async Task ClearMasks()
     {
         if (await this.MessageBoxQuestion("Are you sure you want to clear all masks?\n" +
                                           "This action can not be reverted, to select another mask(s) you must quit this window and select it on layer preview.",
@@ -370,7 +371,7 @@ public partial class ToolWindow : WindowEx
             ToolControl.BaseOperation.ClearMasks();
             ToolControl.Callback(Callbacks.ClearROI);
         }
-        
+
     }
 
     public void SelectVolumeBoundingRectangle()
@@ -431,7 +432,7 @@ public partial class ToolWindow : WindowEx
         set => RaiseAndSetIfChanged(ref _profileText, value);
     }
 
-    public async void AddProfile()
+    public async Task AddProfile()
     {
         if (ToolControl?.BaseOperation is null) return;
         var name = string.IsNullOrWhiteSpace(_profileText) ? null : _profileText.Trim();
@@ -445,7 +446,7 @@ public partial class ToolWindow : WindowEx
             OperationProfiles.Profiles[index] = ToolControl.BaseOperation;
             index = Profiles.IndexOf(operation);
             Profiles[index] = ToolControl.BaseOperation;*/
-                
+
             OperationProfiles.RemoveProfile(operation, false);
             Profiles.Remove(operation);
         }
@@ -459,10 +460,10 @@ public partial class ToolWindow : WindowEx
         ProfileText = null;
     }
 
-    public async void RemoveSelectedProfile()
+    public async Task RemoveSelectedProfile()
     {
         if (_selectedProfileItem is null) return;
-            
+
         if (await this.MessageBoxQuestion(
                 $"Are you sure you want to remove the selected profile?\n{_selectedProfileItem}",
                 "Remove selected profile?") != MessageButtonResult.Yes) return;
@@ -470,10 +471,10 @@ public partial class ToolWindow : WindowEx
         OperationProfiles.RemoveProfile(_selectedProfileItem);
         Profiles.Remove(_selectedProfileItem);
         SelectedProfileItem = null;
-            
+
     }
 
-    public async void ClearProfiles()
+    public async Task ClearProfiles()
     {
         if (Profiles.Count == 0) return;
         if (await this.MessageBoxQuestion(
@@ -489,7 +490,7 @@ public partial class ToolWindow : WindowEx
         SelectedProfileItem = null;
     }
 
-    public async void SetDefaultProfile()
+    public async Task SetDefaultProfile()
     {
         if (_selectedProfileItem is null) return;
 
@@ -517,9 +518,9 @@ public partial class ToolWindow : WindowEx
 
             _selectedProfileItem.ProfileIsDefault = true;
         }
-            
+
         OperationProfiles.Save();
-            
+
     }
 
     #endregion
@@ -596,7 +597,7 @@ public partial class ToolWindow : WindowEx
     #endregion
 
     #region Constructors
-    public ToolWindow() 
+    public ToolWindow()
     {
         CanResize = Settings.General.WindowsCanResize;
 
@@ -645,7 +646,7 @@ public partial class ToolWindow : WindowEx
         _buttonOkVisible = ButtonOkEnabled = toolControl.BaseOperation.HaveAction;
 
         bool loadedFromSession = false;
-        if (!toolControl.BaseOperation.HaveExecuted 
+        if (!toolControl.BaseOperation.HaveExecuted
             && toolControl.BaseOperation.ImportedFrom is Operation.OperationImportFrom.None
             && Settings.Tools.RestoreLastUsedSettings)
         {
@@ -657,7 +658,7 @@ public partial class ToolWindow : WindowEx
             }
         }
 
-        if (toolControl.BaseOperation.HaveExecuted 
+        if (toolControl.BaseOperation.HaveExecuted
             || toolControl.BaseOperation.ImportedFrom != Operation.OperationImportFrom.None) // Loaded from something
         {
             if (toolControl.BaseOperation.HaveROI)
@@ -685,7 +686,7 @@ public partial class ToolWindow : WindowEx
             SelectLayers(toolControl.BaseOperation.StartLayerRangeSelection);
         }
 
-            
+
         if (toolControl.BaseOperation.CanHaveProfiles)
         {
             _isProfilesVisible = true;
@@ -719,8 +720,8 @@ public partial class ToolWindow : WindowEx
     {
         base.OnOpened(e);
 
-        DescriptionMaxWidth = Math.Max(Bounds.Width, _contentControl.Bounds.Width) - 20;
-        ProfileBoxMaxWidth = ProfileNameTextBox.Bounds.Width;
+        DescriptionMaxWidth = Math.Max(DesiredSize.Width, _contentControl.DesiredSize.Width) - 20;
+        ProfileBoxMaxWidth = DescriptionMaxWidth - 64;
         //Height = MaxHeight;
 
         /*Dispatcher.UIThread.Post(() =>
@@ -730,7 +731,7 @@ public partial class ToolWindow : WindowEx
                 Height = 10;
                 SizeToContent = SizeToContent.WidthAndHeight;
             }
-                
+
             Position = new PixelPoint(
                 Math.Max(0, (int)(Math.Max(0, App.MainWindow.Position.X) + App.MainWindow.Width / 2 - Width / 2)),
                 Math.Max(0, App.MainWindow.Position.Y) + 20
@@ -765,12 +766,12 @@ public partial class ToolWindow : WindowEx
     /*protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
-        
+
         if (!(ToolControl is null))
         {
             DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl?.Bounds.Width ?? 0) - 40;
             Description = ToolControl.BaseOperation.Description;
-        }            
+        }
         DataContext = this;
     }*/
 
@@ -796,7 +797,7 @@ public partial class ToolWindow : WindowEx
 
     #endregion
 
-    public async void Process()
+    public async Task Process()
     {
         if(!await _contentControl.OnBeforeProcess()) return;
 
@@ -811,7 +812,7 @@ public partial class ToolWindow : WindowEx
             ToolControl.BaseOperation.LayerIndexStart = LayerIndexStart;
             ToolControl.BaseOperation.LayerIndexEnd = LayerIndexEnd;
             /*if (IsROIVisible && ToolControl.BaseOperation.ROI.IsEmpty)
-            {                   
+            {
             }*/
             ToolControl.BaseOperation.SetROIIfEmpty(ROI);
             ToolControl.BaseOperation.SetMasksIfEmpty(Masks);
@@ -841,10 +842,10 @@ public partial class ToolWindow : WindowEx
         {
             Close(DialogResult);
         }
-        
+
     }
 
-    public async void ExportSettings()
+    public async Task ExportSettings()
     {
         if (ToolControl?.BaseOperation is null) return;
 
@@ -862,7 +863,7 @@ public partial class ToolWindow : WindowEx
         }
     }
 
-    public async void ImportSettings()
+    public async Task ImportSettings()
     {
         if (ToolControl?.BaseOperation is null) return;
         var files = await OpenFilePickerAsync(AvaloniaStatic.OperationSettingFileFilter);
@@ -890,7 +891,7 @@ public partial class ToolWindow : WindowEx
                     break;
             }
 
-                
+
         }
         catch (Exception e)
         {

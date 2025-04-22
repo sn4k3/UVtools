@@ -15,12 +15,12 @@ namespace UVtools.UI.Controls;
 
 public static class AvaloniaStatic
 {
-    public static readonly List<FilePickerFileType> ImagesFileFilter = new()
-    {
+    public static readonly List<FilePickerFileType> ImagesFileFilter =
+    [
         new("All images")
         {
-            Patterns = new []
-            {
+            Patterns =
+            [
                 "*.png",
                 "*.bmp",
                 "*.jpeg",
@@ -29,10 +29,10 @@ public static class AvaloniaStatic
                 "*.tif",
                 "*.tiff",
                 "*.sr",
-                "*.ras",
-            },
-            AppleUniformTypeIdentifiers = new []
-            {
+                "*.ras"
+            ],
+            AppleUniformTypeIdentifiers =
+            [
                 "png",
                 "bmp",
                 "jpeg",
@@ -41,197 +41,194 @@ public static class AvaloniaStatic
                 "tif",
                 "tiff",
                 "sr",
-                "ras",
-            },
-            MimeTypes = new []
-            {
+                "ras"
+            ],
+            MimeTypes =
+            [
                 "image/png",
                 "image/bmp",
                 "image/jpeg",
                 "image/tiff",
-                "image/x-cmu-raster",
-            }
-        },
-    };
+                "image/x-cmu-raster"
+            ]
+        }
 
-    public static readonly List<FilePickerFileType> ImagesFullFileFilter = new()
-    {
+    ];
+
+    public static readonly List<FilePickerFileType> ImagesFullFileFilter =
+    [
         FilePickerFileTypes.ImagePng,
         FilePickerFileTypes.ImageJpg,
         new("BMP image")
         {
-            Patterns = new[] { "*.bmp" },
-            AppleUniformTypeIdentifiers = new[] { "com.microsoft.bmp" },
-            MimeTypes = new[] { "image/bmp" }
-        },
+            Patterns = ["*.bmp"],
+            AppleUniformTypeIdentifiers = ["com.microsoft.bmp"],
+            MimeTypes = ["image/bmp"]
+        }
         /*new("TIFF image")
         {
             Patterns = new[] { "*.tif", "*.tiff" },
             AppleUniformTypeIdentifiers = new[] { "public.tiff" },
             MimeTypes = new[] { "image/tiff" }
         }*/
-    };
 
-    public static readonly List<FilePickerFileType> PngFileFilter = new()
-    {
-        FilePickerFileTypes.ImagePng
-    };
+    ];
 
-    public static readonly List<FilePickerFileType> GifFileFilter = new()
-    {
+    public static readonly List<FilePickerFileType> PngFileFilter = [FilePickerFileTypes.ImagePng];
+
+    public static readonly List<FilePickerFileType> GifFileFilter =
+    [
         new("GIF image")
         {
-            Patterns = new[] { "*.gif" },
-            AppleUniformTypeIdentifiers = new[] { "com.compuserve.gif" },
-            MimeTypes = new[] { "image/gif" }
-        },
+            Patterns = ["*.gif"],
+            AppleUniformTypeIdentifiers = ["com.compuserve.gif"],
+            MimeTypes = ["image/gif"]
+        }
         /*new("TIFF image")
         {
             Patterns = new[] { "*.tif", "*.tiff" },
             AppleUniformTypeIdentifiers = new[] { "public.tiff" },
             MimeTypes = new[] { "image/tiff" }
         }*/
-    };
 
-    public static readonly List<FilePickerFileType> TxtFileFilter = new()
-    {
-        FilePickerFileTypes.TextPlain
-    };
+    ];
 
-    public static readonly List<FilePickerFileType> IniFileFilter = new()
-    {
+    public static readonly List<FilePickerFileType> TxtFileFilter = [FilePickerFileTypes.TextPlain];
+
+    public static readonly List<FilePickerFileType> IniFileFilter =
+    [
         new("Ini files")
         {
-            Patterns = new []
-            {
-                "*.ini",
-            },
-            AppleUniformTypeIdentifiers = new []
-            {
-                "ini",
-            },
-            MimeTypes = new []
-            {
+            Patterns =
+            [
+                "*.ini"
+            ],
+            AppleUniformTypeIdentifiers =
+            [
+                "ini"
+            ],
+            MimeTypes =
+            [
                 "text/plain"
-            }
+            ]
         }
-    };
+    ];
 
-    public static readonly List<FilePickerFileType> IssuesFileFilter = new()
-    {
+    public static readonly List<FilePickerFileType> IssuesFileFilter =
+    [
         new("UVtools issues")
         {
-            Patterns = new []
-            {
+            Patterns =
+            [
                 "*.uvtissues"
-            },
-            AppleUniformTypeIdentifiers = new []
-            {
+            ],
+            AppleUniformTypeIdentifiers =
+            [
                 "uvtissues"
-            },
-            MimeTypes = new []
-            {
+            ],
+            MimeTypes =
+            [
                 "application/xml"
-            }
+            ]
         }
-    };
+    ];
 
-    public static readonly List<FilePickerFileType> OperationSettingFileFilter = new()
-    {
+    public static readonly List<FilePickerFileType> OperationSettingFileFilter =
+    [
         new("UVtools operations")
         {
-            Patterns = new []
-            {
+            Patterns =
+            [
                 "*.uvtop"
-            },
-            AppleUniformTypeIdentifiers = new []
-            {
+            ],
+            AppleUniformTypeIdentifiers =
+            [
                 "uvtop"
-            },
-            MimeTypes = new []
-            {
+            ],
+            MimeTypes =
+            [
                 "application/xml"
-            }
+            ]
         }
-    };
+    ];
 
-    public static readonly List<FilePickerFileType> SuggestionSettingFileFilter = new()
-    {
+    public static readonly List<FilePickerFileType> SuggestionSettingFileFilter =
+    [
         new("UVtools suggestions")
         {
-            Patterns = new []
-            {
+            Patterns =
+            [
                 "*.uvtsu"
-            },
-            AppleUniformTypeIdentifiers = new []
-            {
+            ],
+            AppleUniformTypeIdentifiers =
+            [
                 "uvtsu"
-            },
-            MimeTypes = new []
-            {
+            ],
+            MimeTypes =
+            [
                 "application/xml"
-            }
+            ]
         }
-    };
+    ];
 
-    public static readonly List<FilePickerFileType> ScriptsFileFilter = new()
-    {
+    public static readonly List<FilePickerFileType> ScriptsFileFilter =
+    [
         new("C# Scripts")
         {
-            Patterns = new []
-            {
+            Patterns =
+            [
                 "*.cs",
-                "*.csx",
-            },
-            AppleUniformTypeIdentifiers = new []
-            {
+                "*.csx"
+            ],
+            AppleUniformTypeIdentifiers =
+            [
                 "cs",
-                "csx",
-            },
-            MimeTypes = new []
-            {
+                "csx"
+            ],
+            MimeTypes =
+            [
                 "text/plain"
-            }
+            ]
         }
-    };
+    ];
 
-    public static readonly List<FilePickerFileType> ZipFileFilter = new()
-    {
+    public static readonly List<FilePickerFileType> ZipFileFilter =
+    [
         new("Zip archives")
         {
-            Patterns = new []
-            {
+            Patterns =
+            [
                 "*.zip"
-            },
-            AppleUniformTypeIdentifiers = new []
-            {
+            ],
+            AppleUniformTypeIdentifiers =
+            [
                 "public.zip-archive"
-            },
-            MimeTypes = new []
-            {
+            ],
+            MimeTypes =
+            [
                 "application/zip"
-            }
+            ]
         }
-    };
+    ];
 
-    public static readonly List<FilePickerFileType> HtmlFileFilter = new()
-    {
+    public static readonly List<FilePickerFileType> HtmlFileFilter =
+    [
         new("HTML files")
         {
-            Patterns = new []
-            {
+            Patterns =
+            [
                 "*.html"
-            },
-            AppleUniformTypeIdentifiers = new []
-            {
+            ],
+            AppleUniformTypeIdentifiers =
+            [
                 "public.html"
-            },
-            MimeTypes = new []
-            {
+            ],
+            MimeTypes =
+            [
                 "text/html"
-            }
+            ]
         }
-    };
+    ];
 
     public static FilePickerFileType CreateFilePickerFileType(string name, params string[] extensions)
     {
@@ -255,7 +252,7 @@ public static class AvaloniaStatic
 
     public static List<FilePickerFileType> CreateFilePickerFileTypes(string name, params string[] extensions)
     {
-        return new List<FilePickerFileType> { CreateFilePickerFileType(name, extensions) };
+        return [CreateFilePickerFileType(name, extensions)];
     }
 
     public static List<FilePickerFileType> ToAvaloniaFileFilter(List<KeyValuePair<string, List<string>>> data)

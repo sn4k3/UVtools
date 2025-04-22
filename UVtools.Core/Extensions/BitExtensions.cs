@@ -173,13 +173,13 @@ public static class BitExtensions
 
     public static ushort ToUShortLittleEndian(byte byte1, byte byte2)
     {
-        return BinaryPrimitives.ReadUInt16LittleEndian(new ReadOnlySpan<byte>(new []{ byte1, byte2}));
+        return BinaryPrimitives.ReadUInt16LittleEndian(new ReadOnlySpan<byte>([byte1, byte2]));
         //return (ushort)(byte1 + (byte2 << 8));
     }
 
     public static ushort ToUShortBigEndian(byte byte1, byte byte2)
     {
-        return BinaryPrimitives.ReadUInt16BigEndian(new ReadOnlySpan<byte>(new[] { byte1, byte2 }));
+        return BinaryPrimitives.ReadUInt16BigEndian(new ReadOnlySpan<byte>([byte1, byte2]));
         //return (ushort)((byte1 << 8) + byte2);
     }
 
@@ -197,13 +197,13 @@ public static class BitExtensions
 
     public static uint ToUIntLittleEndian(byte byte1, byte byte2, byte byte3, byte byte4)
     {
-        return BinaryPrimitives.ReadUInt32LittleEndian(new ReadOnlySpan<byte>(new[] { byte1, byte2, byte3, byte4 }));
+        return BinaryPrimitives.ReadUInt32LittleEndian(new ReadOnlySpan<byte>([byte1, byte2, byte3, byte4]));
         //return (uint)(byte1 + (byte2 << 8) + (byte3 << 16) + (byte4 << 24));
     }
 
     public static uint ToUIntBigEndian(byte byte1, byte byte2, byte byte3, byte byte4)
     {
-        return BinaryPrimitives.ReadUInt32BigEndian(new ReadOnlySpan<byte>(new[] { byte1, byte2, byte3, byte4 }));
+        return BinaryPrimitives.ReadUInt32BigEndian(new ReadOnlySpan<byte>([byte1, byte2, byte3, byte4]));
         //return (uint)((byte1 << 24) + (byte2 << 16) + (byte3 << 8) + byte4);
     }
 

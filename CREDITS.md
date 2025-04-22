@@ -97,3 +97,14 @@
 - Cainam
 - Cory Lytle
 - Samuel Comeau
+- Collin Hunt
+- David Hope
+- Aris Dakanalis
+- Bohdan Heretskyi
+- Seth Cruz
+- Grzegorz Gajak
+- Cameron Bell
+- Robert McDougall
+- Jorge W. Quinones
+- Brian Dainty
+- Jason Simpson

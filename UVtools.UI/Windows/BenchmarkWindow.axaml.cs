@@ -58,11 +58,9 @@ public partial class BenchmarkWindow : WindowEx
     }
 
     public static BenchmarkMachine[] BenchmarkMachines =>
-        new[]
-        {
-            new BenchmarkMachine("Intel® Core™ i9-13900K @ 5.5 GHz", "G.Skill Trident Z5 64GB DDR5-6400MHz CL32", new []
-            {
-                /*CBBDLP 4K Encode*/    new BenchmarkTestResult(200.0f, 3355.70f),
+    [
+        new BenchmarkMachine("Intel® Core™ i9-13900K @ 5.5 GHz", "G.Skill Trident Z5 64GB DDR5-6400MHz CL32", [
+            /*CBBDLP 4K Encode*/    new BenchmarkTestResult(200.0f, 3355.70f),
                 /*CBBDLP 8K Encode*/    new BenchmarkTestResult(49.38f, 847.46f),
                 /*CBT 4K Encode*/       new BenchmarkTestResult(162.60f, 2463.05f),
                 /*CBT 8K Encode*/       new BenchmarkTestResult(39.45f, 617.28f),
@@ -82,11 +80,10 @@ public partial class BenchmarkWindow : WindowEx
                 /*GC Memory Copy 8K*/   new BenchmarkTestResult(266.67f, 758.73f),
                 /*Pooled Memory Copy 4K*/new BenchmarkTestResult(5000, 9433.96f),
                 /*Pooled Memory Copy 8K*/new BenchmarkTestResult(769.23f, 2074.69f),
-                /*Stress CPU test*/     new BenchmarkTestResult(0f, 0f),
-            }),
-            new BenchmarkMachine("Intel® Core™ i9-9900K @ 5.0 GHz", "G.Skill Trident Z 32GB DDR4-3200MHz CL14", new []
-            {
-                /*CBBDLP 4K Encode*/    new BenchmarkTestResult(108.70f, 912.41f),
+                /*Stress CPU test*/     new BenchmarkTestResult(0f, 0f)
+        ]),
+            new BenchmarkMachine("Intel® Core™ i9-9900K @ 5.0 GHz", "G.Skill Trident Z 32GB DDR4-3200MHz CL14", [
+            /*CBBDLP 4K Encode*/    new BenchmarkTestResult(108.70f, 912.41f),
                 /*CBBDLP 8K Encode*/    new BenchmarkTestResult(27.47f, 226.76f),
                 /*CBT 4K Encode*/       new BenchmarkTestResult(86.96f, 782.47f),
                 /*CBT 8K Encode*/       new BenchmarkTestResult(21.86f, 196.15f),
@@ -106,14 +103,13 @@ public partial class BenchmarkWindow : WindowEx
                 /*GC Memory Copy 8K*/   new BenchmarkTestResult(0, 0),
                 /*Pooled Memory Copy 4K*/new BenchmarkTestResult(0, 0),
                 /*Pooled Memory Copy 8K*/new BenchmarkTestResult(0, 0),
-                /*Stress CPU test*/     new BenchmarkTestResult(0f, 0f),
-            })
-        };
+                /*Stress CPU test*/     new BenchmarkTestResult(0f, 0f)
+            ])
+    ];
 
     public static BenchmarkTest[] Tests =>
-        new[]
-        {
-            new BenchmarkTest("CBBDLP 4K Encode", "TestCBBDLPEncode", BenchmarkResolution.Resolution4K),
+    [
+        new BenchmarkTest("CBBDLP 4K Encode", "TestCBBDLPEncode", BenchmarkResolution.Resolution4K),
             new BenchmarkTest("CBBDLP 8K Encode", "TestCBBDLPEncode", BenchmarkResolution.Resolution8K),
             new BenchmarkTest("CBT 4K Encode", "TestCBTEncode", BenchmarkResolution.Resolution4K),
             new BenchmarkTest("CBT 8K Encode", "TestCBTEncode", BenchmarkResolution.Resolution8K),
@@ -141,8 +137,8 @@ public partial class BenchmarkWindow : WindowEx
             new BenchmarkTest("Pooled Memory Copy 4K", "TestPooledMemoryCopy", BenchmarkResolution.Resolution4K),
             new BenchmarkTest("Pooled Memory Copy 8K", "TestPooledMemoryCopy", BenchmarkResolution.Resolution8K),
 
-            new BenchmarkTest(StressCPUTestName, "TestCBTEncode", BenchmarkResolution.Resolution4K),
-        };
+            new BenchmarkTest(StressCPUTestName, "TestCBTEncode", BenchmarkResolution.Resolution4K)
+    ];
 
     public string Description => "Benchmark your machine against pre-defined tests.\n" +
                                  "This will use all computation power available, CPU will be exhausted.\n" +
@@ -313,7 +309,7 @@ public partial class BenchmarkWindow : WindowEx
                         {
                             Parallel.For(0, MultiThreadTests, new ParallelOptions{ MaxDegreeOfParallelism = GetMaxDegreeOfParallelism(), CancellationToken = _tokenSource.Token }, i =>
                             {
-                                theMethod.Invoke(this, new object[]{benchmark.Resolution});
+                                theMethod.Invoke(this, [benchmark.Resolution]);
                             });
                         }
                     }
@@ -322,7 +318,7 @@ public partial class BenchmarkWindow : WindowEx
                     for (int i = 0; i < SingleThreadTests; i++)
                     {
                         if (_token.IsCancellationRequested) _token.ThrowIfCancellationRequested();
-                        theMethod.Invoke(this, new object[] { benchmark.Resolution });
+                        theMethod.Invoke(this, [benchmark.Resolution]);
                     }
 
                     sw.Stop();
@@ -334,7 +330,7 @@ public partial class BenchmarkWindow : WindowEx
                     sw.Restart();
                     Parallel.For(0, MultiThreadTests, new ParallelOptions { MaxDegreeOfParallelism = GetMaxDegreeOfParallelism(), CancellationToken = _tokenSource.Token }, i =>
                     {
-                        theMethod.Invoke(this, new object[] { benchmark.Resolution });
+                        theMethod.Invoke(this, [benchmark.Resolution]);
                     });
 
                     sw.Stop();
@@ -424,7 +420,7 @@ public partial class BenchmarkWindow : WindowEx
     #region Tests
     public byte[] EncodeCbddlpImage(Mat image, byte bit = 0)
     {
-        List<byte> rawData = new();
+        List<byte> rawData = [];
         var span = image.GetDataByteReadOnlySpan();
 
         bool obit = false;
@@ -484,7 +480,7 @@ public partial class BenchmarkWindow : WindowEx
 
     private byte[] EncodeCbtImage(Mat image)
     {
-        List<byte> rawData = new();
+        List<byte> rawData = [];
         byte color = byte.MaxValue >> 1;
         uint stride = 0;
         var span = image.GetDataByteReadOnlySpan();
@@ -564,7 +560,7 @@ public partial class BenchmarkWindow : WindowEx
 
     public byte[] EncodePW0Image(Mat image)
     {
-        List<byte> rawData = new();
+        List<byte> rawData = [];
         var span = image.GetDataByteReadOnlySpan();
 
         int lastColor = -1;

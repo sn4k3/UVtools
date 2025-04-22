@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -45,10 +46,10 @@ public sealed class SerializableIssuesDocument : IReadOnlyList<MainIssue>
         Issues = slicerFile.IssueManager.ToArray();
     }
 
-    public async void SerializeAsync(string path)
+    public async Task SerializeAsync(string path)
     {
         await using var stream = File.Create(path);
-        await JsonSerializer.SerializeAsync(stream, this, JsonExtensions.SettingsIndent);
+        await JsonSerializer.SerializeAsync(stream, this, JsonExtensions.SettingsIndent).ConfigureAwait(false);
     }
 
     public IEnumerator<MainIssue> GetEnumerator()

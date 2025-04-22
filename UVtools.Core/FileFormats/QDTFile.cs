@@ -77,9 +77,10 @@ public sealed class QDTFile : FileFormat
 
     public override PrinterManufacturingProcess ManufacturingProcess => PrinterManufacturingProcess.SLA;
 
-    public override FileExtension[] FileExtensions { get; } = {
-        new (typeof(QDTFile), "qdt", "Emake3D Galaxy 1 (QDT)"),
-    };
+    public override FileExtension[] FileExtensions { get; } =
+    [
+        new (typeof(QDTFile), "qdt", "Emake3D Galaxy 1 (QDT)")
+    ];
 
     /*public override Size[] ThumbnailsOriginalSize { get; } =
     {
@@ -130,7 +131,7 @@ public sealed class QDTFile : FileFormat
 
                 if (layer.IsEmpty)
                 {
-                    layersLines[layerIndex, 0] = new List<GreyLine>();
+                    layersLines[layerIndex, 0] = [];
                     layersLines[layerIndex, 1] = layersLines[layerIndex, 0];
                 }
                 else
@@ -408,7 +409,7 @@ public sealed class QDTFile : FileFormat
                     expecting = QDTFileLineExpect.FB;
                     if (currentLayerIndex == 0) throw new FileLoadException($"Error while decoding the line: Was expecting an positive layer number, got <{splitLine[0]}>.");
                     currentLayerIndex--;
-                    currentLayer = new List<ushort[]>();
+                    currentLayer = [];
 
                     if (layerCoords[currentLayerIndex] is not null) throw new FileLoadException($"Error while creating the layer {currentLayerIndex}: It already exists on the collection.");
                     layerCoords[currentLayerIndex] = currentLayer;
@@ -435,7 +436,7 @@ public sealed class QDTFile : FileFormat
                 if (!ushort.TryParse(splitLine[1], out var y)) throw new FileLoadException($"Error while decoding the line: Was expecting Y coordinate, got <{splitLine[1]}>.");
                 if (!byte.TryParse(splitLine[2], out var onFlag) || onFlag > 1) throw new FileLoadException($"Error while decoding the line: Was expecting <0/1> flag, got <{splitLine[2]}>.");
 
-                currentLayer.Add(new[] { x, y, onFlag });
+                currentLayer.Add([x, y, onFlag]);
 
                 continue;
             }

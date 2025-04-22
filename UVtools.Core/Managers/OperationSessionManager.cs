@@ -23,7 +23,7 @@ public class OperationSessionManager : IList<Operation>
     #region Singleton
 
     private static readonly Lazy<OperationSessionManager> _instanceHolder =
-        new(() => new OperationSessionManager());
+        new(() => []);
 
     public static OperationSessionManager Instance => _instanceHolder.Value;
 
@@ -31,7 +31,7 @@ public class OperationSessionManager : IList<Operation>
 
     #region Members
 
-    private readonly List<Operation> _operations = new();
+    private readonly List<Operation> _operations = [];
 
     #endregion
 

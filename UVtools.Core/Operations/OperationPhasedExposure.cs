@@ -91,7 +91,7 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
 
     #region Members
 
-    private RangeObservableCollection<PhasedExposure> _phasedExposures = new();
+    private RangeObservableCollection<PhasedExposure> _phasedExposures = [];
     private bool _exposureDifferenceOnly = true;
     private ushort _exposureDifferenceOnlyOverlapIterations = 10;
     private bool _differentSettingsForSequentialLayers;
@@ -276,11 +276,10 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
         base.InitWithSlicerFile();
         if (Count == 0)
         {
-            _phasedExposures.AddRange(new []
-            {
+            _phasedExposures.AddRange([
                 new PhasedExposure((decimal)SlicerFile.BottomExposureTime, 10, (decimal)SlicerFile.ExposureTime, 4),
-                new PhasedExposure((decimal)SlicerFile.ExposureTime, 0, (decimal)SlicerFile.ExposureTime, 0),
-            });
+                new PhasedExposure((decimal)SlicerFile.ExposureTime, 0, (decimal)SlicerFile.ExposureTime, 0)
+            ]);
         }
     }
 

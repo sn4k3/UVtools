@@ -110,7 +110,7 @@ rm -rf "$publishRuntimeDir" 2>/dev/null
 
 
 echo "2. Publishing UVtools v$version for: $runtime"
-dotnet publish $cmdProject -o "$publishRuntimeDir" -c $buildWith -r $runtime /p:PublishReadyToRun=true --self-contained
+#dotnet publish $cmdProject -o "$publishRuntimeDir" -c $buildWith -r $runtime /p:PublishReadyToRun=true --self-contained
 dotnet publish $buildProject -o "$publishRuntimeDir" -c $buildWith -r $runtime /p:PublishReadyToRun=true --self-contained
 
 echo "3. Copying dependencies"

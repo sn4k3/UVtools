@@ -37,7 +37,8 @@ public sealed class AnycubicFile : FileFormat
     public const ushort RLE4EncodingLimit = 0xfff; // 4095;
 
     // CRC-16-ANSI (aka CRC-16-IBM) Polynomial: x^16 + x^15 + x^2 + 1
-    public static readonly int[] CRC16Table = {
+    public static readonly int[] CRC16Table =
+    [
         0x0000, 0xc0c1, 0xc181, 0x0140, 0xc301, 0x03c0, 0x0280, 0xc241,
         0xc601, 0x06c0, 0x0780, 0xc741, 0x0500, 0xc5c1, 0xc481, 0x0440,
         0xcc01, 0x0cc0, 0x0d80, 0xcd41, 0x0f00, 0xcfc1, 0xce81, 0x0e40,
@@ -69,8 +70,8 @@ public sealed class AnycubicFile : FileFormat
         0x8801, 0x48c0, 0x4980, 0x8941, 0x4b00, 0x8bc1, 0x8a81, 0x4a40,
         0x4e00, 0x8ec1, 0x8f81, 0x4f40, 0x8d01, 0x4dc0, 0x4c80, 0x8c41,
         0x4400, 0x84c1, 0x8581, 0x4540, 0x8701, 0x47c0, 0x4680, 0x8641,
-        0x8201, 0x42c0, 0x4380, 0x8341, 0x4100, 0x81c1, 0x8081, 0x4040,
-    };
+        0x8201, 0x42c0, 0x4380, 0x8341, 0x4100, 0x81c1, 0x8081, 0x4040
+    ];
 
     #endregion
 
@@ -510,7 +511,8 @@ public sealed class AnycubicFile : FileFormat
     {
         [FieldOrder(0)] public uint UseFullGreyscale { get; set; }
         [FieldOrder(1)] public uint GreyMaxCount { get; set; } = 16;
-        [FieldOrder(2)] [FieldCount(nameof(GreyMaxCount))] public byte[] Grey { get; set; } = {
+        [FieldOrder(2)] [FieldCount(nameof(GreyMaxCount))] public byte[] Grey { get; set; } =
+        [
             // AA16: 255, 239, 223, 207, 191, 175, 159, 143, 127, 111, 95, 79, 63, 47, 31, 15
             15, 31, 47,    // 1,2,3
             63, 79, 95,    // 4,5,6
@@ -518,7 +520,7 @@ public sealed class AnycubicFile : FileFormat
             159, 175, 191, // 10,11,12
             207, 223, 239, // 13,14,15
             byte.MaxValue  // 16
-        };
+        ];
 
         [FieldOrder(3)] public uint Unknown { get; set; }
 
@@ -790,7 +792,7 @@ public sealed class AnycubicFile : FileFormat
 
         public unsafe byte[] EncodePWS(AnycubicFile slicerFile, Mat image)
         {
-            List<byte> rawData = new();
+            List<byte> rawData = [];
             var span = image.GetBytePointer();
             var imageLength = image.GetLength();
 
@@ -928,7 +930,7 @@ public sealed class AnycubicFile : FileFormat
 
         [FieldOrder(0)] public uint LayerCount { get; set; }
 
-        [FieldOrder(1)] [FieldCount(nameof(LayerCount))] public LayerDef[] Layers { get; set; } = Array.Empty<LayerDef>();
+        [FieldOrder(1)] [FieldCount(nameof(LayerCount))] public LayerDef[] Layers { get; set; } = [];
 
         public LayerDefinition()
         { }
@@ -972,7 +974,7 @@ public sealed class AnycubicFile : FileFormat
         [FieldOrder(0)] public uint LayerCount { get; set; }
         [FieldOrder(1)] public uint Index { get; set; } = 1;
 
-        [FieldOrder(2)] [FieldCount(nameof(LayerCount))] public SubLayerDef[] Layers { get; set; } = Array.Empty<SubLayerDef>();
+        [FieldOrder(2)] [FieldCount(nameof(LayerCount))] public SubLayerDef[] Layers { get; set; } = [];
 
         public SubLayerDefinition()
         { }
@@ -1039,7 +1041,8 @@ public sealed class AnycubicFile : FileFormat
 
     public override string ConvertMenuGroup => "Anycubic Photon Workshop";
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
 
         new(typeof(AnycubicFile), "pws", "Photon / Photon S (PWS)"),
         new(typeof(AnycubicFile), "pw0", "Photon Zero (PW0)"),
@@ -1062,9 +1065,9 @@ public sealed class AnycubicFile : FileFormat
         new(typeof(AnycubicFile), "pm5", "Photon Mono M5 (PM5)"),
         new(typeof(AnycubicFile), "pm5s", "Photon Mono M5s (PM5s)"),
         new(typeof(AnycubicFile), "m5sp", "Photon Mono M5s Pro (M5sp)"),
-        new(typeof(AnycubicFile), "pwc", "Anycubic Custom Machine (PWC)"),
+        new(typeof(AnycubicFile), "pwc", "Anycubic Custom Machine (PWC)")
         //new(typeof(PhotonWorkshopFile), "pwmb", "Photon M3 Plus (PWMB)"),
-    };
+    ];
 
     public override SpeedUnit FormatSpeedUnit => SpeedUnit.MillimetersPerSecond;
 
@@ -1074,8 +1077,8 @@ public sealed class AnycubicFile : FileFormat
         {
             if (FileMarkSettings.Version >= VERSION_516)
             {
-                return new[]
-                {
+                return
+                [
                     PrintParameterModifier.BottomLayerCount,
                     PrintParameterModifier.TransitionLayerCount,
 
@@ -1098,12 +1101,12 @@ public sealed class AnycubicFile : FileFormat
                     //PrintParameterModifier.BottomRetractHeight2,
                     PrintParameterModifier.BottomRetractSpeed2,
                     //PrintParameterModifier.RetractHeight2,
-                    PrintParameterModifier.RetractSpeed2,
-                };
+                    PrintParameterModifier.RetractSpeed2
+                ];
             }
 
-            return new[]
-            {
+            return
+            [
                 PrintParameterModifier.BottomLayerCount,
                 PrintParameterModifier.TransitionLayerCount,
 
@@ -1117,19 +1120,20 @@ public sealed class AnycubicFile : FileFormat
                 PrintParameterModifier.LiftHeight,
                 PrintParameterModifier.LiftSpeed,
 
-                PrintParameterModifier.RetractSpeed,
-            };
+                PrintParameterModifier.RetractSpeed
+            ];
         }
     }
 
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } =
+    [
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.ExposureTime,
         PrintParameterModifier.LiftHeight,
-        PrintParameterModifier.LiftSpeed,
-    };
+        PrintParameterModifier.LiftSpeed
+    ];
 
-    public override Size[] ThumbnailsOriginalSize => new Size[] { new(224, 168), new(330, 190) };
+    public override Size[] ThumbnailsOriginalSize => [new(224, 168), new(330, 190)];
     /*public override Size[]? ThumbnailsOriginalSize =>
         Version switch
         {
@@ -1137,41 +1141,41 @@ public sealed class AnycubicFile : FileFormat
             _ => new Size[] { new(224, 168) }
         };*/
 
-    public override uint[] AvailableVersions { get; } = { VERSION_1, VERSION_515, VERSION_516, VERSION_517, VERSION_518 };
+    public override uint[] AvailableVersions { get; } = [VERSION_1, VERSION_515, VERSION_516, VERSION_517, VERSION_518];
 
     public override uint[] GetAvailableVersionsForExtension(string? extension)
     {
         if (string.IsNullOrWhiteSpace(extension)) return AvailableVersions;
-        if (extension[0] == '.') extension = extension.Remove(0, 1).ToLower();
+        if (extension[0] == '.') extension = extension[1..].ToLower();
 
         switch (extension)
         {
             case "pws":
             case "pw0":
             case "pwx":
-                return new uint[] {VERSION_1};
+                return [VERSION_1];
             case "pwmx":
             case "pwmo":
             case "pwms":
             case "pmsq":
             case "dlp":
-                return new uint[] { VERSION_1, VERSION_515, VERSION_516 };
+                return [VERSION_1, VERSION_515, VERSION_516];
             case "pwma":
             case "pm3":
             case "pm3m":
-                return new uint[] { VERSION_515, VERSION_516 };
+                return [VERSION_515, VERSION_516];
             case "pwmb":
             case "dl2p":
             case "pmx2":
             case "pm3r":
-                return new uint[] { VERSION_515, VERSION_516, VERSION_517 };
+                return [VERSION_515, VERSION_516, VERSION_517];
             case "pm3n":
             case "pm5":
             case "px6s":
-                return new uint[] { VERSION_517 };
+                return [VERSION_517];
             case "pm5s":
             case "m5sp":
-                return new uint[] { VERSION_518 };
+                return [VERSION_518];
             default:
                 return AvailableVersions;
         }
@@ -1426,7 +1430,7 @@ public sealed class AnycubicFile : FileFormat
             ExtraSettings.LiftHeight1 = value;
             if (FileMarkSettings.Version >= VERSION_516)
             {
-                base.LiftHeight = HeaderSettings.LiftHeight = MathF.Round(value + ExtraSettings.LiftHeight2, 2, MidpointRounding.AwayFromZero);
+                base.LiftHeight = HeaderSettings.LiftHeight = Layer.RoundHeight(value + ExtraSettings.LiftHeight2);
                 foreach (var layer in this) // Fix layer value
                 {
                     if(!layer.IsNormalLayer) continue;
@@ -1641,30 +1645,30 @@ public sealed class AnycubicFile : FileFormat
             switch (Version)
             {
                 case VERSION_1:
-                    return new object[] { FileMarkSettings, HeaderSettings, PreviewSettings, LayersDefinition };
+                    return [FileMarkSettings, HeaderSettings, PreviewSettings, LayersDefinition];
                 case VERSION_515:
-                    return new object[]
-                    {
+                    return
+                    [
                         FileMarkSettings, HeaderSettings, PreviewSettings, LayerImageColorSettings, LayersDefinition
-                    };
+                    ];
                 case VERSION_516:
-                    return new object[]
-                    {
+                    return
+                    [
                         FileMarkSettings, HeaderSettings, PreviewSettings, LayerImageColorSettings, LayersDefinition,
                         ExtraSettings, MachineSettings
-                    };
+                    ];
                 case VERSION_517:
-                    return new object[]
-                    {
+                    return
+                    [
                         FileMarkSettings, HeaderSettings, PreviewSettings, LayerImageColorSettings, LayersDefinition,
                         ExtraSettings, MachineSettings, SoftwareSettings, ModelSettings
-                    };
+                    ];
                 default:
-                    return new object[]
-                    {
+                    return
+                    [
                         FileMarkSettings, HeaderSettings, PreviewSettings, LayerImageColorSettings, LayersDefinition,
                         ExtraSettings, MachineSettings, SoftwareSettings, ModelSettings, SubLayersDefinition, Preview2Settings
-                    };
+                    ];
             }
         }
     }
@@ -2330,7 +2334,7 @@ public sealed class AnycubicFile : FileFormat
 
     public static byte[] EncodePW0(Mat image)
     {
-        List<byte> rawData = new();
+        List<byte> rawData = [];
         var span = image.GetDataByteSpan();
 
         int lastColor = -1;

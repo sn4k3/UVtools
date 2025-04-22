@@ -128,7 +128,7 @@ public partial class SuggestionSettingsWindow : WindowEx
         }
     }
 
-    public async void ResetDefaults()
+    public async Task ResetDefaults()
     {
         if (await this.MessageBoxQuestion(
                 "Are you sure you want to reset all suggestions to the default settings?",
@@ -168,12 +168,12 @@ public partial class SuggestionSettingsWindow : WindowEx
         return true;
     }
 
-    public async void SaveSuggestionClicked()
+    public async Task SaveSuggestionClicked()
     {
         await SaveSuggestion();
     }
 
-    public async void DiscardSuggestionClicked()
+    public async Task DiscardSuggestionClicked()
     {
         if (_activeSuggestion is null) return;
 
@@ -184,7 +184,7 @@ public partial class SuggestionSettingsWindow : WindowEx
         ActiveSuggestion = SuggestionManager.GetSuggestion(_activeSuggestion.GetType())?.Clone();
     }
 
-    public async void ResetSuggestionClicked()
+    public async Task ResetSuggestionClicked()
     {
         if (_activeSuggestion is null) return;
 
@@ -199,7 +199,7 @@ public partial class SuggestionSettingsWindow : WindowEx
         SuggestionManager.SetSuggestion(suggestion.Clone(), true);
     }
 
-    public async void ImportSettingsClicked()
+    public async Task ImportSettingsClicked()
     {
         if (_activeSuggestion is null) return;
         var files = await OpenFilePickerAsync(AvaloniaStatic.SuggestionSettingFileFilter);
@@ -229,7 +229,7 @@ public partial class SuggestionSettingsWindow : WindowEx
         }
     }
 
-    public async void ExportSettingsClicked()
+    public async Task ExportSettingsClicked()
     {
         if (_activeSuggestion is null) return;
         using var file = await SaveFilePickerAsync(_activeSuggestion.Id, AvaloniaStatic.SuggestionSettingFileFilter);

@@ -175,7 +175,7 @@ public sealed class UVJFile : FileFormat
     public sealed class Settings
     {
         public Properties Properties { get; set; } = new();
-        public List<LayerDef>? Layers { get; set; } = new();
+        public List<LayerDef>? Layers { get; set; } = [];
 
         public override string ToString()
         {
@@ -190,11 +190,13 @@ public sealed class UVJFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Archive;
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new(typeof(UVJFile), "uvj", "Vendor-neutral format (UVJ)")
-    };
+    ];
 
-    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
+    [
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -231,9 +233,10 @@ public sealed class UVJFile : FileFormat
 
         PrintParameterModifier.BottomLightPWM,
         PrintParameterModifier.LightPWM
-    };
+    ];
 
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } =
+    [
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.LightOffDelay,
         PrintParameterModifier.WaitTimeBeforeCure,
@@ -248,13 +251,13 @@ public sealed class UVJFile : FileFormat
         PrintParameterModifier.RetractHeight2,
         PrintParameterModifier.RetractSpeed2,
         PrintParameterModifier.LightPWM
-    };
+    ];
 
     public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } =
-    {
+    [
         new(400, 400),
         new(800, 480)
-    };
+    ];
 
     public override uint ResolutionX
     {
@@ -529,7 +532,8 @@ public sealed class UVJFile : FileFormat
         set => base.LightPWM = JsonSettings.Properties.Exposure.LightPWM = value;
     }
 
-    public override object[] Configs => new[] {(object) JsonSettings.Properties.Size, JsonSettings.Properties.Size.Millimeter, JsonSettings.Properties.Bottom, JsonSettings.Properties.Exposure};
+    public override object[] Configs => [(object) JsonSettings.Properties.Size, JsonSettings.Properties.Size.Millimeter, JsonSettings.Properties.Bottom, JsonSettings.Properties.Exposure
+    ];
     #endregion
 
     #region Methods
@@ -545,7 +549,7 @@ public sealed class UVJFile : FileFormat
     public override void Clear()
     {
         base.Clear();
-        JsonSettings.Layers = new List<LayerDef>();
+        JsonSettings.Layers = [];
     }
 
     protected override void EncodeInternally(OperationProgress progress)
@@ -553,7 +557,7 @@ public sealed class UVJFile : FileFormat
         // Redo layer data
         if (JsonSettings.Layers is null)
         {
-            JsonSettings.Layers = new List<LayerDef>();
+            JsonSettings.Layers = [];
         }
         else
         {
@@ -601,7 +605,7 @@ public sealed class UVJFile : FileFormat
     {
         if (JsonSettings.Layers is null)
         {
-            JsonSettings.Layers = new List<LayerDef>();
+            JsonSettings.Layers = [];
         }
         else
         {

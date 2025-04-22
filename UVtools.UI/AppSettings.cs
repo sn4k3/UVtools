@@ -17,7 +17,7 @@ public static class AppSettings
     // These settings eliminate very small zoom factors from the ImageBox default values,
     // while ensuring that 4K/5K build plates can still easily fit on screen.  
     public static readonly int[] ZoomLevels =
-        {10, 20, 25, 30, 50, 75, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600, 3200, 6400};
+        [10, 20, 25, 30, 50, 75, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600, 3200, 6400];
 
     // Count of the bottom portion of the full zoom range which will be skipped for
     // assignable actions such as auto-zoom level, and crosshair fade level.  If values

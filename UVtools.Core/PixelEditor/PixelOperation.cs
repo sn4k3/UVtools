@@ -75,12 +75,12 @@ public abstract class PixelOperation : BindableBase, IEquatable<PixelOperation>
         set => RaiseAndSetIfChanged(ref _lineType, value);
     }
 
-    public LineType[] LineTypes => new[]
-    {
+    public LineType[] LineTypes =>
+    [
         LineType.FourConnected,
         LineType.EightConnected,
         LineType.AntiAlias
-    };
+    ];
 
     public byte PixelBrightness
     {

@@ -137,7 +137,7 @@ public sealed class MDLPFile : FileFormat
 
     public sealed class PageBreak
     {
-        public static byte[] Bytes => new byte[] {0x0D, 0x0A};
+        public static byte[] Bytes => [0x0D, 0x0A];
         [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public byte Line { get; set; } = 0x0D;
         [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public byte Break { get; set; } = 0x0A;
     }
@@ -152,16 +152,17 @@ public sealed class MDLPFile : FileFormat
     public SlicerInfo SlicerInfoSettings { get; private set; } = new();
     public override FileFormatType FileType => FileFormatType.Binary;
 
-    public override FileExtension[] FileExtensions { get; } = {
-        new (typeof(MDLPFile), "mdlp", "Makerbase MDLP v1"),
-    };
+    public override FileExtension[] FileExtensions { get; } =
+    [
+        new (typeof(MDLPFile), "mdlp", "Makerbase MDLP v1")
+    ];
 
     public override PrintParameterModifier[] PrintParameterModifiers { get; } =
-    {
+    [
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.LightOffDelay,
         PrintParameterModifier.BottomExposureTime,
-        PrintParameterModifier.ExposureTime,
+        PrintParameterModifier.ExposureTime
 
         //PrintParameterModifier.BottomLightOffDelay,
         /*PrintParameterModifier.BottomLiftHeight,
@@ -172,13 +173,13 @@ public sealed class MDLPFile : FileFormat
 
         PrintParameterModifier.BottomLightPWM,
         PrintParameterModifier.LightPWM,*/
-    };
+    ];
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    {
+    [
         new (116, 116),
         new (290, 290)
-    };
+    ];
 
     public override bool SupportAntiAliasing => false;
 
@@ -280,7 +281,7 @@ public sealed class MDLPFile : FileFormat
         set => base.ExposureTime = SlicerInfoSettings.ExposureTime = (ushort)value;
     }
 
-    public override object[] Configs => new[] { (object)HeaderSettings, SlicerInfoSettings };
+    public override object[] Configs => [(object)HeaderSettings, SlicerInfoSettings];
 
     #endregion
 
@@ -334,7 +335,7 @@ public sealed class MDLPFile : FileFormat
                 {
                     var span = mat.GetDataByteReadOnlySpan();
 
-                    layerBytes[layerIndex] = new();
+                    layerBytes[layerIndex] = [];
 
                     uint lineCount = 0;
 

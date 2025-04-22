@@ -21,6 +21,7 @@ public class ProgressBar : IDisposable
     private const string Animation = @"|/-\";
 
     private readonly Timer _timer;
+    private readonly Lock _mutex = new();
 
     private string _currentText = string.Empty;
     private bool _disposed;
@@ -44,7 +45,7 @@ public class ProgressBar : IDisposable
 
     private void TimerHandler(object? state)
     {
-        lock (_timer)
+        lock (_mutex)
         {
             if (_disposed) return;
 
@@ -115,7 +116,7 @@ public class ProgressBar : IDisposable
     public void Dispose()
     {
         TimerHandler(null);
-        lock (_timer)
+        lock (_mutex)
         {
             _disposed = true;
             UpdateText(string.Empty);

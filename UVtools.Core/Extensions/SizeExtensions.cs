@@ -13,7 +13,7 @@ namespace UVtools.Core.Extensions;
 public static class SizeExtensions
 {
     public static readonly string[] SizeSuffixes =
-        { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+        ["bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
 
     public static string SizeSuffix(long value, byte decimalPlaces = 2, bool suffixSpaced = true)
     {

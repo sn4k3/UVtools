@@ -36,7 +36,7 @@ public class GCodeLayer
     public bool IsValid => LayerIndex.HasValue;
 
     public FileFormat SlicerFile { get; }
-    public List<(float Pos, float Speed, float Acceleration)> Movements = new();
+    public List<(float Pos, float Speed, float Acceleration)> Movements = [];
     public uint? LayerIndex { get; set; }
 
     public float? PositionZ

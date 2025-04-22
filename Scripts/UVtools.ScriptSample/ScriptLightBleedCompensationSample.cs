@@ -36,7 +36,7 @@ public class ScriptLightBleedCompensationSample : ScriptGlobals
     {
         get
         {
-            List<byte> levels = new();
+            List<byte> levels = [];
             var split = BrightnessesInput.Value!.Split(',', StringSplitOptions.TrimEntries);
             foreach (var str in split)
             {

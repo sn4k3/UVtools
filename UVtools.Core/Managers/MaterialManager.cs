@@ -27,7 +27,7 @@ public class MaterialManager : BindableBase, IList<Material>
     #region Singleton
 
     private static Lazy<MaterialManager> _instanceHolder =
-        new(() => new MaterialManager());
+        new(() => []);
 
     /// <summary>
     /// Instance of <see cref="MaterialManager"/> (singleton)
@@ -39,7 +39,7 @@ public class MaterialManager : BindableBase, IList<Material>
 
     #region Members
 
-    private RangeObservableCollection<Material> _materials = new();
+    private RangeObservableCollection<Material> _materials = [];
 
     #endregion
 

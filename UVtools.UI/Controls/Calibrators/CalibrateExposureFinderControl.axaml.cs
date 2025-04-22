@@ -2,6 +2,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Timers;
 using UVtools.Core.Dialogs;
 using UVtools.Core.Objects;
@@ -25,14 +26,14 @@ public partial class CalibrateExposureFinderControl : ToolControl
         get => _previewImage;
         set => RaiseAndSetIfChanged(ref _previewImage, value);
     }
-    
+
     public CalibrateExposureFinderControl()
     {
         BaseOperation = new OperationCalibrateExposureFinder(SlicerFile!);
         if (!ValidateSpawn()) return;
 
         InitializeComponent();
-            
+
         _timer = new Timer(100)
         {
             AutoReset = false
@@ -85,7 +86,7 @@ public partial class CalibrateExposureFinderControl : ToolControl
         Operation.MultipleBrightnessValues = string.Join(", ", values);
     }
 
-    public async void GenerateExposureTable()
+    public async Task GenerateExposureTable()
     {
         if (Operation.ExposureTable.Count > 0)
         {
@@ -98,7 +99,7 @@ public partial class CalibrateExposureFinderControl : ToolControl
         Operation.GenerateExposureTable();
     }
 
-    public async void ExposureTableAddManual()
+    public async Task ExposureTableAddManual()
     {
         var exposure = Operation.ExposureManualEntry;
         if (!exposure.IsValid)
@@ -119,7 +120,7 @@ public partial class CalibrateExposureFinderControl : ToolControl
         Operation.SanitizeExposureTable();
     }
 
-    public async void ExposureTableClearEntries()
+    public async Task ExposureTableClearEntries()
     {
         if (Operation.ExposureTable.Count <= 0) return;
         if (await ParentWindow!.MessageBoxQuestion(
@@ -129,7 +130,7 @@ public partial class CalibrateExposureFinderControl : ToolControl
         Operation.ExposureTable.Clear();
     }
 
-    public async void ExposureTableRemoveSelectedEntries()
+    public async Task ExposureTableRemoveSelectedEntries()
     {
         if (ExposureTable.SelectedItems.Count <= 0) return;
         if (await ParentWindow!.MessageBoxQuestion(

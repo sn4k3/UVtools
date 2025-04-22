@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Xml.Serialization;
 using UVtools.Core.Extensions;
 using UVtools.Core.Managers;
@@ -31,7 +32,7 @@ public sealed class KernelConfiguration : BindableBase, IDisposable
     private int _anchorX = -1;
     private int _anchorY = -1;
     private Mat? _kernelMat;
-    private readonly object _mutex = new();
+    private readonly Lock _mutex = new();
     private ElementShape _dynamicKernelShape = ElementShape.Ellipse;
 
     #endregion
@@ -99,7 +100,7 @@ public sealed class KernelConfiguration : BindableBase, IDisposable
             {
                 if (_kernelMat is null)
                 {
-                    
+
                     if (!string.IsNullOrWhiteSpace(_matrixText))
                     {
                         GenerateKernelFromText();
@@ -165,7 +166,7 @@ public sealed class KernelConfiguration : BindableBase, IDisposable
                 line += $" {span[x]}";
             }
 
-            line = line.Remove(0, 1);
+            line = line[1..];
             text += line;
             if (y < kernel.Height - 1)
             {

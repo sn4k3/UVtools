@@ -34,5 +34,5 @@ public sealed class ScriptConfiguration
     /// <summary>
     /// List of user inputs to show on GUI for configuration of the script
     /// </summary>
-    public List<ScriptBaseInput> UserInputs { get; } = new();
+    public List<ScriptBaseInput> UserInputs { get; } = [];
 }

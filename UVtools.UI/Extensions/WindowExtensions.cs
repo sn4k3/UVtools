@@ -52,47 +52,47 @@ public static class WindowExtensions
         switch (buttons)
         {
             case MessageButtons.Ok:
-                msgButtons = new[]
-                {
+                msgButtons =
+                [
                     MessageWindow.CreateOkButton(isCancel: true)
-                };
+                ];
                 break;
             case MessageButtons.YesNo:
-                msgButtons = new[]
-                {
+                msgButtons =
+                [
                     MessageWindow.CreateYesButton(),
                     MessageWindow.CreateNoButton(isCancel: true)
-                };
+                ];
                 break;
             case MessageButtons.OkCancel:
-                msgButtons = new[]
-                {
+                msgButtons =
+                [
                     MessageWindow.CreateOkButton(),
                     MessageWindow.CreateCancelButton()
-                };
+                ];
                 break;
             case MessageButtons.OkAbort:
-                msgButtons = new[]
-                {
+                msgButtons =
+                [
                     MessageWindow.CreateOkButton(),
                     MessageWindow.CreateAbortButton()
-                };
+                ];
                 break;
             case MessageButtons.YesNoCancel:
-                msgButtons = new[]
-                {
+                msgButtons =
+                [
                     MessageWindow.CreateYesButton(),
                     MessageWindow.CreateNoButton(),
                     MessageWindow.CreateCancelButton()
-                };
+                ];
                 break;
             case MessageButtons.YesNoAbort:
-                msgButtons = new[]
-                {
+                msgButtons =
+                [
                     MessageWindow.CreateYesButton(),
                     MessageWindow.CreateNoButton(),
                     MessageWindow.CreateAbortButton()
-                };
+                ];
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(buttons), buttons, null);
@@ -165,7 +165,7 @@ public static class WindowExtensions
     public static Screen GetCurrentScreen(this Window window)
     {
         return //window.Screens.ScreenFromVisual(window) ??
-            window.Screens.ScreenFromVisual(App.MainWindow ?? window) ??
+            window.Screens.ScreenFromWindow(App.MainWindow ?? window) ??
             window.Screens.Primary ??
             window.Screens.All[0];
     }
@@ -173,10 +173,10 @@ public static class WindowExtensions
     public static System.Drawing.Size GetScreenWorkingArea(this Window window)
     {
         var screen = window.GetCurrentScreen();
-            
+
         return new System.Drawing.Size(
             UserSettings.Instance.General.WindowsTakeIntoAccountScreenScaling ? (int)(screen.WorkingArea.Width / screen.Scaling) : screen.WorkingArea.Width,
             UserSettings.Instance.General.WindowsTakeIntoAccountScreenScaling ? (int)(screen.WorkingArea.Height / screen.Scaling) : screen.WorkingArea.Height);
-    } 
-       
+    }
+
 }

@@ -193,7 +193,7 @@ public class OperationRepairLayers : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationRepairLayers) obj);
     }
-    
+
     #endregion
 
     #region Methods
@@ -257,7 +257,7 @@ public class OperationRepairLayers : Operation
                 var issuesGroup = IssueManager.GetIssuesBy(recursiveIssues, MainIssue.IssueType.Island)
                     .Where(issue => issue.PixelsCount <= RemoveIslandsBelowEqualPixelCount)
                     .GroupBy(issue => issue.LayerIndex);
-                        
+
 
                 if (!issuesGroup.Any()) break; // Nothing to process
 
@@ -309,7 +309,6 @@ public class OperationRepairLayers : Operation
             var issuesGroup = IssueManager.GetIssuesBy(islandsToProcess, MainIssue.IssueType.Island).GroupBy(issue => issue.LayerIndex);
 
             progress.Reset("Attempt to attach islands below", (uint) islandsToProcess.Count);
-            var sync = new object();
             Parallel.ForEach(issuesGroup, CoreSettings.GetParallelOptions(progress), group =>
             {
                 progress.PauseIfRequested();
@@ -319,7 +318,7 @@ public class OperationRepairLayers : Operation
                 var matCacheModified = new Dictionary<uint, bool>();
                 var startLayer = Math.Max(0, (int)group.Key - 2);
                 var lowestPossibleLayer = (uint)Math.Max(0, (int)group.Key - 1 - _attachIslandsBelowLayers);
-                    
+
                 for (var layerIndex = startLayer+1; layerIndex >= lowestPossibleLayer; layerIndex--)
                 {
                     //Debug.WriteLine(layerIndex);
@@ -336,7 +335,7 @@ public class OperationRepairLayers : Operation
                     for (var layerIndex = startLayer; layerIndex >= lowestPossibleLayer && foundAt < 0; layerIndex--)
                     {
                         uint pixelsSupportingIsland = 0;
-                            
+
                         unsafe
                         {
                             var span = matCache[(uint) layerIndex].GetBytePointer();
@@ -354,7 +353,7 @@ public class OperationRepairLayers : Operation
                                     break;
                                 }
                             }
-                                
+
                         }
                     }
 
@@ -376,7 +375,7 @@ public class OperationRepairLayers : Operation
                             }
                         }
 
-                        lock (sync)
+                        lock (progress.Mutex)
                         {
                             // Remove from processed issues
                             issues.Remove(issue.Parent!);

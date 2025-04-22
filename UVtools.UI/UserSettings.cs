@@ -71,8 +71,8 @@ public sealed class UserSettings : BindableBase
         private int _notificationBeepRepeatFrequencyOffset = 50;
         private ushort _notificationBeepRepeatDelay;
         private bool _sendToPromptForRemovableDeviceEject = true;
-        private RangeObservableCollection<MappedDevice> _sendToCustomLocations = new();
-        private RangeObservableCollection<MappedProcess> _sendToProcess = new();
+        private RangeObservableCollection<MappedDevice> _sendToCustomLocations = [];
+        private RangeObservableCollection<MappedProcess> _sendToProcess = [];
         private ushort _lockedFilesOpenCounter;
         private bool _fileSaveUpdateNameWithNewInformation = true;
         private decimal _availableRamLimit = 1M;
@@ -1693,7 +1693,7 @@ public sealed class UserSettings : BindableBase
 
     public sealed class NetworkUserSettings : BindableBase
     {
-        private RangeObservableCollection<RemotePrinter> _remotePrinters = new();
+        private RangeObservableCollection<RemotePrinter> _remotePrinters = [];
 
         public RangeObservableCollection<RemotePrinter> RemotePrinters
         {
@@ -1903,9 +1903,8 @@ public sealed class UserSettings : BindableBase
             if (_instance.Network.RemotePrinters.Count == 0)
             {
                 _instance.Network.RemotePrinters.AddRange(
-                    new[]
-                    {
-                        new RemotePrinter("0.0.0.0", 8081, "Nova3D")
+                [
+                    new RemotePrinter("0.0.0.0", 8081, "Nova3D")
                         {
                             CompatibleExtensions = "cws",
                             RequestUploadFile  = new (RemotePrinterRequest.RequestType.UploadFile,  RemotePrinterRequest.RequestMethod.POST, "file/upload/{0}"),
@@ -1939,8 +1938,8 @@ public sealed class UserSettings : BindableBase
                             // delhistory - deletes printing history.
                             // getPreview1 - returns a list of dimensions used for the print.
                             // getPreview2 - returns a binary preview image of the print.
-                        },
-                        /*new RemotePrinter("0.0.0.0", 40454, "Creality Halot")
+                        }
+                    /*new RemotePrinter("0.0.0.0", 40454, "Creality Halot")
                         {
                             CompatibleExtensions = "cxdlp",
                             RequestUploadFile  = new (RemotePrinterRequest.RequestType.UploadFile,  RemotePrinterRequest.RequestMethod.POST, "{0}"),
@@ -1953,7 +1952,7 @@ public sealed class UserSettings : BindableBase
                             //RequestPrintStatus = new (RemotePrinterRequest.RequestType.PrintStatus, RemotePrinterRequest.RequestMethod.GET, "job/list"),
                             //RequestPrinterInfo = new (RemotePrinterRequest.RequestType.PrinterInfo, RemotePrinterRequest.RequestMethod.GET, "setting/printerInfo"),
                         }*/
-                    });
+                ]);
             }
 
             if (_instance.General.SendToProcess.Count == 0)
@@ -2179,16 +2178,15 @@ public sealed class UserSettings : BindableBase
     }
 
     public static object[] PackObjects =>
-        new object[]
-        {
-            Instance.General,
+    [
+        Instance.General,
             Instance.LayerPreview,
             Instance.Issues,
             Instance.PixelEditor,
             Instance.LayerRepair,
             Instance.Automations,
             Instance.Network
-        };
+    ];
     #endregion
 
     #region Methods

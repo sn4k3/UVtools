@@ -47,8 +47,6 @@ public static class TypeExtensions
 
     public static bool IsPrimitive(this Type type)
     {
-        if (type == typeof(string) 
-            || type == typeof(decimal)) return true;
-        return type is { IsValueType: true, IsPrimitive: true };
+        return type.IsPrimitive || type.IsEnum || type.IsValueType || type == typeof(string);
     }
 }

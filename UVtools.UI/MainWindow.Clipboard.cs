@@ -11,6 +11,7 @@ using Avalonia.Input;
 using Avalonia.Threading;
 using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using UVtools.Core.Dialogs;
 using UVtools.UI.Extensions;
 
@@ -46,18 +47,18 @@ public partial class MainWindow
         }
     }
 
-    public void ClipboardUndo()
+    public async Task ClipboardUndo()
     {
         CanSave = true;
         if ((_globalModifiers & KeyModifiers.Shift) != 0)
         {
-            ClipboardUndoAndRerun(true);
+            await ClipboardUndoAndRerun(true);
             return;
         }
         ClipboardManager.Undo();
-    } 
+    }
 
-    public async void ClipboardUndoAndRerun(bool rerun)
+    public async Task ClipboardUndoAndRerun(bool rerun)
     {
         CanSave = true;
         var clip = ClipboardManager.CurrentClip;
@@ -91,7 +92,7 @@ public partial class MainWindow
         ClipboardManager.Redo();
     }
 
-    public async void ClipboardClear()
+    public async Task ClipboardClear()
     {
         if (await this.MessageBoxQuestion("Are you sure you want to clear the clipboard?\n" +
                                           "Current layers will be placed as original layers\n" +

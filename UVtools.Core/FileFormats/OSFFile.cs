@@ -158,7 +158,7 @@ public sealed class OSFFile : FileFormat
 
         [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public uint NumberOfLines { get; set; }
         [FieldOrder(2)] [FieldEndianness(Endianness.Big)] public ushort StartY { get; set; }
-        [Ignore] public byte[] EncodedRle { get; set; } = Array.Empty<byte>();
+        [Ignore] public byte[] EncodedRle { get; set; } = [];
 
         public OSFLayerDef() { }
 
@@ -169,7 +169,7 @@ public sealed class OSFFile : FileFormat
 
         internal unsafe void EncodeImage(Mat mat, Layer layer)
         {
-            List<byte> rawData = new();
+            List<byte> rawData = [];
             byte color = 0;
             uint stride = 0;
             var span = mat.GetBytePointer();
@@ -321,12 +321,13 @@ public sealed class OSFFile : FileFormat
     public OSFSettings Settings { get; private set; } = new();
     public override FileFormatType FileType => FileFormatType.Binary;
 
-    public override FileExtension[] FileExtensions { get; } = {
-        new (typeof(OSFFile), "osf", "Vlare Open File Format (OSF)"),
-    };
+    public override FileExtension[] FileExtensions { get; } =
+    [
+        new (typeof(OSFFile), "osf", "Vlare Open File Format (OSF)")
+    ];
 
     public override PrintParameterModifier[] PrintParameterModifiers { get; } =
-    {
+    [
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -360,18 +361,18 @@ public sealed class OSFFile : FileFormat
         PrintParameterModifier.RetractSpeed2,
 
         PrintParameterModifier.BottomLightPWM,
-        PrintParameterModifier.LightPWM,
-    };
+        PrintParameterModifier.LightPWM
+    ];
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    {
+    [
         new(148, 80),
         new(300, 140),
         new(208, 116),
-        new(404, 240),
-    };
+        new(404, 240)
+    ];
 
-    public override uint[] AvailableVersions { get; } = { 4 };
+    public override uint[] AvailableVersions { get; } = [4];
 
     public override uint DefaultVersion => DEFAULT_VERSION;
 
@@ -673,7 +674,7 @@ public sealed class OSFFile : FileFormat
     }
 
 
-    public override object[] Configs => new object[] { Settings };
+    public override object[] Configs => [Settings];
 
     #endregion
 

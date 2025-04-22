@@ -163,7 +163,7 @@ public class GCodeBuilder : BindableBase
         CommandPauseM25.Enabled = true;
         CommandChangeResinM600.Enabled = true;
 
-        CommandPauseM25.CommandAlias = new[] { "PAUSE" };
+        CommandPauseM25.CommandAlias = ["PAUSE"];
 
         EncodeThumbnails = true;
     }
@@ -526,7 +526,7 @@ public class GCodeBuilder : BindableBase
                         throw new ArgumentOutOfRangeException();
                 }
 
-                AppendLiftMoveGx(lift, new List<(float z, float feedrate, float acceleration)>(), 0, 0, lastLayer);
+                AppendLiftMoveGx(lift, [], 0, 0, lastLayer);
 
                 if (lastPosition < slicerFile.MachineZ)
                 {
@@ -1168,7 +1168,7 @@ public class GCodeBuilder : BindableBase
 
             if (line.StartsWith(thumbnailBegin))
             {
-                var thumbnailInfo = line[thumbnailBegin.Length..].Split(new []{' ', 'x'}, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                var thumbnailInfo = line[thumbnailBegin.Length..].Split([' ', 'x'], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                 if (thumbnailInfo.Length < 3) continue;
                 if (!uint.TryParse(thumbnailInfo[0], out var width)) continue;
                 if (!uint.TryParse(thumbnailInfo[1], out var height)) continue;

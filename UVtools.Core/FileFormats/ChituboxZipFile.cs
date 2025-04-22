@@ -27,7 +27,7 @@ public sealed class ChituboxZipFile : FileFormat
 
     public const string GCodeFilename = "run.gcode";
 
-    public static readonly string[] ThumbnailsEntryNames = { "preview.png", "preview_cropping.png" };
+    public static readonly string[] ThumbnailsEntryNames = ["preview.png", "preview_cropping.png"];
     #endregion
 
     #region Sub Classes
@@ -78,11 +78,13 @@ public sealed class ChituboxZipFile : FileFormat
 
     public override string ConvertMenuGroup => "Chitubox";
 
-    public override FileExtension[] FileExtensions { get; } = {
+    public override FileExtension[] FileExtensions { get; } =
+    [
         new(typeof(ChituboxZipFile), "zip", "Chitubox Zip")
-    };
+    ];
 
-    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
+    [
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -117,10 +119,11 @@ public sealed class ChituboxZipFile : FileFormat
         PrintParameterModifier.RetractSpeed2,
 
         PrintParameterModifier.BottomLightPWM,
-        PrintParameterModifier.LightPWM,
-    };
+        PrintParameterModifier.LightPWM
+    ];
 
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } =
+    [
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.WaitTimeBeforeCure,
         PrintParameterModifier.ExposureTime,
@@ -133,14 +136,14 @@ public sealed class ChituboxZipFile : FileFormat
         PrintParameterModifier.RetractSpeed,
         PrintParameterModifier.RetractHeight2,
         PrintParameterModifier.RetractSpeed2,
-        PrintParameterModifier.LightPWM,
-    };
+        PrintParameterModifier.LightPWM
+    ];
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    {
+    [
         new(954, 850), 
         new(168, 150)
-    };
+    ];
 
     public override uint ResolutionX
     {
@@ -341,7 +344,7 @@ public sealed class ChituboxZipFile : FileFormat
         set => base.MachineName = HeaderSettings.MachineType = value;
     }
 
-    public override object[] Configs => new object[] { HeaderSettings };
+    public override object[] Configs => [HeaderSettings];
 
     public override bool SupportGCode => base.SupportGCode && !IsPHZZip;
 
@@ -474,7 +477,7 @@ public sealed class ChituboxZipFile : FileFormat
     public override void RebuildGCode()
     {
         if (!SupportGCode || SuppressRebuildGCode) return;
-        GCode?.RebuildGCode(this, new object[]{ HeaderSettings });
+        GCode?.RebuildGCode(this, [HeaderSettings]);
         RaisePropertyChanged(nameof(GCodeStr));
     }
 

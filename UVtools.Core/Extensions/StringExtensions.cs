@@ -16,7 +16,7 @@ public static class StringExtensions
 {
     public static string RemoveFromEnd(this string input, int count)
     {
-        return input.Remove(input.Length - count);
+        return input[..^count];
     }
 
     public static string ReplaceFirst(this string text, string search, string replace)

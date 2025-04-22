@@ -99,7 +99,7 @@ public class ScriptVATClean : ScriptGlobals
         {
             SlicerFile.BottomLayerCount = 1;
                 
-            SlicerFile.Layers = new[] { layer };
+            SlicerFile.Layers = [layer];
         });
 
         SlicerFile.BottomExposureTime =

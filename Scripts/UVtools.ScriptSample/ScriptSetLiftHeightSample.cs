@@ -48,7 +48,7 @@ public class ScriptSetLiftHeightSample : ScriptGlobals
         Script.Author = "Tiago Conceição";
         Script.Version = new Version(0, 1);
 
-        Script.UserInputs.AddRange(new []{ BottomLiftHeight , LiftHeight});
+        Script.UserInputs.AddRange([BottomLiftHeight , LiftHeight]);
     }
 
     /// <summary>

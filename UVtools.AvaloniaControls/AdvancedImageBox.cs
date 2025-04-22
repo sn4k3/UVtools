@@ -120,9 +120,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         /// Returns the default zoom levels
         /// </summary>
         public static ZoomLevelCollection Default =>
-            new(new[] {
+            new([
                 7, 10, 15, 20, 25, 30, 50, 70, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600, 3200, 6400
-            });
+            ]);
 
         #endregion
 
@@ -1590,8 +1590,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                 _pointerPosition.X - destSize.Width / 2,
                 _pointerPosition.Y - destSize.Height / 2
             );
-            context.DrawImage(_trackerImage!, new Rect(destPos, destSize)
-            );
+            context.DrawImage(_trackerImage!, new Rect(destPos, destSize));
         }
 
         //SkiaContext.SkCanvas.dr

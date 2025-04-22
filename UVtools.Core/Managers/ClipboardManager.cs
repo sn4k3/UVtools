@@ -92,7 +92,7 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
 {
     #region Properties
 
-    public RangeObservableCollection<ClipboardItem> Items { get; } = new();
+    public RangeObservableCollection<ClipboardItem> Items { get; } = [];
 
     public FileFormat SlicerFile { get; set; } = null!;
 
@@ -202,7 +202,7 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
 
     #region Singleton
     private static readonly Lazy<ClipboardManager> InstanceHolder =
-        new(() => new ClipboardManager());
+        new(() => []);
 
     public static ClipboardManager Instance => InstanceHolder.Value;
     #endregion

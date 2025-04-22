@@ -65,7 +65,7 @@ $zipPackages = $true
 #$enableNugetPublish = $true
 
 # Profilling
-$stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
+$stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
 $deployStopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
 $stopWatch.Start()
 
@@ -132,7 +132,7 @@ Version: $version [$buildWith]
 ####################################
 ###    Self-contained runtimes   ###
 ####################################
-$runtimes = 
+$runtimes =
 @{
     "win-x64" = @{
         "extraCmd" = ""
@@ -185,7 +185,7 @@ $sb = [System.Text.StringBuilder]::new()
 foreach($line in $changelog) {
     $line = $line.TrimEnd()
     if([string]::IsNullOrWhiteSpace($line)) { continue }
-    if($line.StartsWith('##')) { 
+    if($line.StartsWith('##')) {
         if(!$foundHashTag)
         {
             $foundHashTag = $true
@@ -225,7 +225,7 @@ if($null -ne $enableNugetPublish -and $enableNugetPublish)
 }
 #>
 
-foreach ($obj in $runtimes.GetEnumerator()) {
+foreach ($obj in $runtimes.GetEnumerator()) { break;
     if(![string]::IsNullOrWhiteSpace($buildOnly) -and !$buildOnly.Equals($obj.Name)) {continue}
     # Configuration
     $deployStopWatch.Restart()
@@ -233,7 +233,7 @@ foreach ($obj in $runtimes.GetEnumerator()) {
     $extraCmd = $obj.extraCmd;  # extra cmd to run with dotnet
     $publishName="${software}_${runtime}_v$version"
     $publishCurrentPath="$publishPath\$publishName"
-    
+
     #dotnet build "UVtools.Cmd" -c $buildWith
     #dotnet build $project -c $buildWith
 
@@ -243,24 +243,24 @@ foreach ($obj in $runtimes.GetEnumerator()) {
         $targetZipPath = "$publishPath/$targetZipName"  # Target zip filename
         Remove-Item "$publishCurrentPath" -Recurse -ErrorAction Ignore
         Remove-Item "$targetZipPath" -ErrorAction Ignore
-        
+
         # Deploy
         Write-Output "################################
     Building: $runtime"
-        dotnet publish "$rootPath\UVtools.Cmd" -o "$publishCurrentPath" -c $buildWith -r $runtime -p:PublishReadyToRun=true --self-contained $extraCmd
+        #dotnet publish "$rootPath\UVtools.Cmd" -o "$publishCurrentPath" -c $buildWith -r $runtime -p:PublishReadyToRun=true --self-contained $extraCmd
         dotnet publish "$rootPath\$project" -o "$publishCurrentPath" -c $buildWith -r $runtime -p:PublishReadyToRun=true --self-contained $extraCmd
 
         #New-Item "$publishCurrentPath\runtime_package.dat" -ItemType File -Value $runtime
-        
+
         # Cleanup
         #Remove-Item "$rootPath\UVtools.Cmd\bin\$buildWith\net$netVersion\$runtime" -Recurse -ErrorAction Ignore
         #Remove-Item "$rootPath\UVtools.Cmd\obj\$buildWith\net$netVersion\$runtime" -Recurse -ErrorAction Ignore
 
         #Remove-Item "$releasePath\$runtime" -Recurse -ErrorAction Ignore
         #Remove-Item "$objPath\$runtime" -Recurse -ErrorAction Ignore
-        
+
         Write-Output "$publishCurrentPath"
-        
+
         foreach ($excludeObj in $obj.Value.exclude) {
             Write-Output "Excluding: $excludeObj"
             Remove-Item "$publishCurrentPath\$excludeObj" -Recurse -ErrorAction Ignore
@@ -284,11 +284,11 @@ foreach ($obj in $runtimes.GetEnumerator()) {
         {
             $buildArgs += ' -z' # Zip
         }
-        
+
         wsl --cd "$buildPath" bash -c "./createRelease.sh $buildArgs $runtime"
         #Start-Job { bash -c "'build/createRelease.sh' $using:buildArgs$buildArgs $using:runtime" }
     }
-    
+
     $deployStopWatch.Stop()
     Write-Output "Took: $($deployStopWatch.Elapsed)"
     Write-Output "################################"
@@ -319,7 +319,7 @@ if($null -ne $enableMSI -and $enableMSI)
     $runtime = 'win-x64'
     $publishName = "${software}_${runtime}_v$version";
     $publishCurrentPath="$publishPath\$publishName"
-    
+
     if ((Test-Path -Path $msiSourceFiles) -and ((Get-ChildItem "$msiSourceFiles" | Measure-Object).Count) -gt 0) {
 
         $msiTargetFile = "$publishPath\$publishName.msi"
@@ -371,8 +371,8 @@ if($null -ne $enableMSI -and $enableMSI)
 }
 
 # Cleanup
-Get-ChildItem -Force -Path "$artifactsPath" -Recurse -Directory | 
-  Where-Object { $_.name -match "^$($buildWith.ToLower())_.*-.*" } | 
+Get-ChildItem -Force -Path "$artifactsPath" -Recurse -Directory |
+  Where-Object { $_.name -match "^$($buildWith.ToLower())_.*-.*" } |
   Remove-Item -Force -Recurse #-Whatif
 
 

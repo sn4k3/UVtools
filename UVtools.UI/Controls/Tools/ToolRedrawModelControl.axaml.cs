@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 using UVtools.UI.Windows;
@@ -28,14 +29,14 @@ public partial class ToolRedrawModelControl : ToolControl
                 {
                     if (e.PropertyName == nameof(Operation.FilePath))
                     {
-                        ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.FilePath);
+                        ParentWindow!.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.FilePath);
                     }
                 };
                 break;
         }
     }
 
-    public async void ImportFile()
+    public async Task ImportFile()
     {
         var filters = AvaloniaStatic.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
         var orderedFilters = new List<FilePickerFileType> { filters[UserSettings.Instance.General.DefaultOpenFileExtensionIndex] };

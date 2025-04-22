@@ -15,7 +15,7 @@ public abstract class ScriptFileDialogInput : ScriptBaseInput<string>
     public class ScriptFileDialogFilter
     {
         public string? Name { get; set; }
-        public List<string> Extensions { get; set; } = new();
+        public List<string> Extensions { get; set; } = [];
     }
 
     /// <summary>

@@ -356,7 +356,7 @@ public sealed class OperationLayerExportMesh : Operation
                     foreach (var face in facesToCheck)
                     {
                         if (!faces.HasFlag(face)) continue;
-                        if (!threadDict.ContainsKey(face)) threadDict.Add(face, new());
+                        if (!threadDict.ContainsKey(face)) threadDict.Add(face, []);
                         threadDict[face].Add(new Point(x, y));
                     }
                 }
@@ -366,7 +366,7 @@ public sealed class OperationLayerExportMesh : Operation
                 {
                     foreach (var kvp in threadDict)
                     {
-                        if (!foundFaces.ContainsKey(kvp.Key)) foundFaces.Add(kvp.Key, new());
+                        if (!foundFaces.ContainsKey(kvp.Key)) foundFaces.Add(kvp.Key, []);
                         lock (foundFaces[kvp.Key]) foundFaces[kvp.Key].AddRange(kvp.Value);
                     }
                 }
@@ -557,10 +557,12 @@ public sealed class OperationLayerExportMesh : Operation
             if (currentFaceItem is null) return;
             while (currentFaceItem.FlatListNext is not null)
             {
-                layerTrees[layerIndex].Add(new[] { (float)currentFaceItem.Type, currentFaceItem.FaceRect.X, currentFaceItem.FaceRect.Y }, currentFaceItem);
+                layerTrees[layerIndex].Add([(float)currentFaceItem.Type, currentFaceItem.FaceRect.X, currentFaceItem.FaceRect.Y
+                ], currentFaceItem);
                 currentFaceItem = currentFaceItem.FlatListNext;
             }
-            layerTrees[layerIndex].Add(new[] { (float)currentFaceItem.Type, currentFaceItem.FaceRect.X, currentFaceItem.FaceRect.Y }, currentFaceItem);
+            layerTrees[layerIndex].Add([(float)currentFaceItem.Type, currentFaceItem.FaceRect.X, currentFaceItem.FaceRect.Y
+            ], currentFaceItem);
 
             progress.LockAndIncrement();
         });
@@ -602,17 +604,17 @@ public sealed class OperationLayerExportMesh : Operation
                 {
                     if (point.Value.Type == Voxelizer.FaceOrientation.Top)
                     {
-                        pointBelow = new[] { point.Point[0], point.Point[1], point.Point[2] - 1 };
+                        pointBelow = [point.Point[0], point.Point[1], point.Point[2] - 1];
                     }
                     else
                     {
-                        pointBelow = new[] { point.Point[0], point.Point[1], point.Point[2] - 1 };
+                        pointBelow = [point.Point[0], point.Point[1], point.Point[2] - 1];
                     }
                     treeBelow = layerTrees[i];
                 }
                 else
                 {
-                    pointBelow = new[] { point.Point[0], point.Point[1], point.Point[2] };
+                    pointBelow = [point.Point[0], point.Point[1], point.Point[2]];
                     if (i > 0)
                     {
                         treeBelow = layerTrees[i - 1];

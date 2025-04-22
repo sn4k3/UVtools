@@ -19,7 +19,7 @@ public partial class ToolEditParametersControl : ToolControl
 {
     public OperationEditParameters Operation => (BaseOperation as OperationEditParameters)!;
 
-    public RowControl[] RowControls = Array.Empty<RowControl>();
+    public RowControl[] RowControls = [];
 
     public sealed class RowControl
     {
@@ -128,8 +128,8 @@ public partial class ToolEditParametersControl : ToolControl
     }
 
     private static (FileFormat.PrintParameterModifier modifierLeft, FileFormat.PrintParameterModifier modifierRight)[] TSMCModifierPairs =
-        {
-            new (FileFormat.PrintParameterModifier.BottomLiftHeight, FileFormat.PrintParameterModifier.BottomLiftHeight2),
+    [
+        new (FileFormat.PrintParameterModifier.BottomLiftHeight, FileFormat.PrintParameterModifier.BottomLiftHeight2),
             new (FileFormat.PrintParameterModifier.BottomLiftSpeed, FileFormat.PrintParameterModifier.BottomLiftSpeed2),
             new (FileFormat.PrintParameterModifier.BottomLiftAcceleration, FileFormat.PrintParameterModifier.BottomLiftAcceleration2),
             //new (FileFormat.PrintParameterModifier.BottomRetractHeight, FileFormat.PrintParameterModifier.BottomRetractHeight2),
@@ -141,8 +141,8 @@ public partial class ToolEditParametersControl : ToolControl
             new (FileFormat.PrintParameterModifier.LiftAcceleration, FileFormat.PrintParameterModifier.LiftAcceleration2),
             //new (FileFormat.PrintParameterModifier.RetractHeight, FileFormat.PrintParameterModifier.RetractHeight2),
             new (FileFormat.PrintParameterModifier.RetractSpeed, FileFormat.PrintParameterModifier.RetractSpeed2),
-            new (FileFormat.PrintParameterModifier.RetractAcceleration, FileFormat.PrintParameterModifier.RetractAcceleration2),
-        };
+            new (FileFormat.PrintParameterModifier.RetractAcceleration, FileFormat.PrintParameterModifier.RetractAcceleration2)
+    ];
 
     public ToolEditParametersControl()
     {

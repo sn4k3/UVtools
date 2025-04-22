@@ -84,8 +84,8 @@ public sealed class OperationDynamicLayerHeight : Operation
     private decimal _exposureTime;
     private decimal _bottomExposureStep = 0.5m;
     private decimal _exposureStep = 0.2m;
-    private RangeObservableCollection<ExposureItem> _automaticExposureTable = new();
-    private RangeObservableCollection<ExposureItem> _manualExposureTable = new();
+    private RangeObservableCollection<ExposureItem> _automaticExposureTable = [];
+    private RangeObservableCollection<ExposureItem> _manualExposureTable = [];
 
     #endregion
 
@@ -539,7 +539,7 @@ public sealed class OperationDynamicLayerHeight : Operation
             }
         };
 
-        List<Layer> layers = new();
+        List<Layer> layers = [];
 
         using Mat matXor = new();
         Mat? matXorSum = null;

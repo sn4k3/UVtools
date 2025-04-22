@@ -3,6 +3,7 @@ using Emgu.CV;
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.SystemOS;
@@ -29,7 +30,7 @@ public partial class AboutWindow : WindowEx
         }
     }
 
-    public static string LoadedAssemblies 
+    public static string LoadedAssemblies
     {
         get
         {
@@ -61,7 +62,7 @@ public partial class AboutWindow : WindowEx
             {
                 return typeof(Mat).Assembly.GetName().Version!.ToString(3);
             }
-            catch 
+            catch
             {
                 // ignored
             }
@@ -106,7 +107,7 @@ public partial class AboutWindow : WindowEx
                 // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                 var onScreen = Screens.ScreenFromVisual(App.MainWindow is not null ? App.MainWindow : this);
                 var screen = Screens.All[i];
-                result.AppendLine($"{i+1}: {screen.Bounds.Width} x {screen.Bounds.Height} @ {Math.Round(screen.Scaling * 100, 2)}%" + 
+                result.AppendLine($"{i+1}: {screen.Bounds.Width} x {screen.Bounds.Height} @ {Math.Round(screen.Scaling * 100, 2)}%" +
                                   (screen.IsPrimary ? " (Primary)" : null) +
                                   (onScreen == screen ? " (On this)" : null)
                 );
@@ -123,7 +124,7 @@ public partial class AboutWindow : WindowEx
         Title = $"About {About.SoftwareWithVersion}";
     }
 
-    public async void TermsOfUseClicked()
+    public async Task TermsOfUseClicked()
     {
         var messageWindow = new MessageWindow(About.TermsOfUseTitle, "fa-solid fa-handshake",
             About.TermsOfUseHeader,
@@ -189,7 +190,7 @@ public partial class AboutWindow : WindowEx
     {
         Clipboard?.SetTextAsync(GetEssentialInformation());
     }
-        
+
 
     public void CopyOpenCVInformationToClipboard()
     {
@@ -201,7 +202,7 @@ public partial class AboutWindow : WindowEx
         Clipboard?.SetTextAsync(LoadedAssemblies);
     }
 
-    public async void CopyInformationToClipboard()
+    public async Task CopyInformationToClipboard()
     {
         var message = new StringBuilder();
         message.Append(GetEssentialInformation());

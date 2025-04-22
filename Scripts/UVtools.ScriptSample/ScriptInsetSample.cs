@@ -54,11 +54,10 @@ public class ScriptInsetSample : ScriptGlobals
         Script.Description = "Performs a black inset around objects";
         Script.Author = "Tiago Conceição";
         Script.Version = new Version(0, 1);
-        Script.UserInputs.AddRange(new[]
-        {
+        Script.UserInputs.AddRange([
             InsetMarginFromEdge,
-            InsetThickness  
-        });
+            InsetThickness
+        ]);
     }
 
     /// <summary>

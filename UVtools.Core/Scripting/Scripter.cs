@@ -9,8 +9,8 @@ namespace UVtools.Core.Scripting;
 
 public class Scripter
 {
-    public static string[] Imports => new[]
-    {
+    public static string[] Imports =>
+    [
         "System",
         "System.Collections.Generic",
         "System.Math",
@@ -34,7 +34,7 @@ public class Scripter
         "UVtools.Core.Slicer",
         "UVtools.Core.Suggestions",
         "UVtools.Core.SystemOS"
-    };
+    ];
 
     public static Task<ScriptState<object>> RunScript(string text, object? globals = null, CancellationToken token = default)
     {

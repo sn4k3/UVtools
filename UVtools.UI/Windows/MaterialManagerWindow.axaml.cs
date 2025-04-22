@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using UVtools.Core.Dialogs;
 using UVtools.Core.Managers;
 using UVtools.Core.Objects;
@@ -40,7 +41,7 @@ public partial class MaterialManagerWindow : WindowEx
         Manager.RaisePropertiesChanged();
     }
 
-    public async void AddNewMaterial()
+    public async Task AddNewMaterial()
     {
         if (string.IsNullOrWhiteSpace(Material.Name))
         {
@@ -65,7 +66,7 @@ public partial class MaterialManagerWindow : WindowEx
         Material = new();
     }
 
-    public async void RemoveSelectedMaterials()
+    public async Task RemoveSelectedMaterials()
     {
         if (MaterialsTable.SelectedItems.Count <= 0) return;
         if (await this.MessageBoxQuestion($"Are you sure you want to remove {MaterialsTable.SelectedItems.Count} materials?") != MessageButtonResult.Yes) return;
@@ -73,7 +74,7 @@ public partial class MaterialManagerWindow : WindowEx
         MaterialManager.Save();
     }
 
-    public async void ClearMaterials()
+    public async Task ClearMaterials()
     {
         if (Manager.Count == 0) return;
         if (await this.MessageBoxQuestion($"Are you sure you want to clear {Manager.Count} materials?") != MessageButtonResult.Yes) return;
