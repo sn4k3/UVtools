@@ -225,7 +225,7 @@ if($null -ne $enableNugetPublish -and $enableNugetPublish)
 }
 #>
 
-foreach ($obj in $runtimes.GetEnumerator()) { break;
+foreach ($obj in $runtimes.GetEnumerator()) {
     if(![string]::IsNullOrWhiteSpace($buildOnly) -and !$buildOnly.Equals($obj.Name)) {continue}
     # Configuration
     $deployStopWatch.Restart()
