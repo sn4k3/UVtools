@@ -4,7 +4,6 @@ using Avalonia.Layout;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 using Projektanker.Icons.Avalonia;
 using UVtools.AvaloniaControls;
@@ -12,6 +11,7 @@ using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 using UVtools.UI.Windows;
+using ZLinq;
 
 namespace UVtools.UI.Controls.Tools;
 
@@ -179,7 +179,7 @@ public partial class ToolEditParametersControl : ToolControl
         {
             var grid = new Grid
             {
-                ColumnDefinitions = Operation.PerLayerOverride 
+                ColumnDefinitions = Operation.PerLayerOverride
                     ? new ColumnDefinitions("*,Auto,*")
                     : new ColumnDefinitions("Auto,Auto,*")
             };
@@ -231,21 +231,21 @@ public partial class ToolEditParametersControl : ToolControl
             grid.Children.Add(rowControl1.FirstColumn);
 
             Control valueContainer = rowControl1.NumericUpDown;
-            
+
             Grid.SetRow(rowControl1.FirstColumn, rowDict[isBottomLayer]);
             Grid.SetColumn(rowControl1.FirstColumn, column++);
 
             foreach (var modifierPair in TSMCModifierPairs)
             {
                 if (!ReferenceEquals(modifierPair.modifierLeft, modifier)) continue;
-                if(!Operation.Modifiers.Contains(modifierPair.modifierRight)) break;
+                if(!Operation.Modifiers.AsValueEnumerable().Contains(modifierPair.modifierRight)) break;
 
                 rowControl2 = new RowControl(modifierPair.modifierRight);
                 valueContainer = CreateTSMCfields(rowControl1, rowControl2);
 
                 break;
             }
-            
+
             if (rowControl2 is null && ReferenceEquals(modifier, FileFormat.PrintParameterModifier.BottomRetractHeight2))
             {
                 rowControl1.Name.Text = rowControl1.Name.Text?.Replace("2) ", string.Empty).FirstCharToUpper();

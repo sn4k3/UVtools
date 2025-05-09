@@ -10,9 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Text.Json;
 using System.Xml;
+using ZLinq;
 
 namespace UVtools.Core.Extensions;
 
@@ -114,7 +114,7 @@ public static class ZipArchiveExtensions
         var destFileName = Path.GetFullPath(Path.Combine(destinationPath, preserveFullName ? entry.FullName : entry.Name));
         var fullDestDirPath = Path.GetFullPath(Path.Combine(destinationPath, (preserveFullName ? Path.GetDirectoryName(entry.FullName) : string.Empty)!) + Path.DirectorySeparatorChar);
         if (!destFileName.StartsWith(fullDestDirPath)) return null; // Entry is outside the target dir
-        
+
         //Creates the directory (if it doesn't exist) for the new path
         Directory.CreateDirectory(fullDestDirPath);
 
@@ -137,7 +137,7 @@ public static class ZipArchiveExtensions
                 }
                 break;
             case Overwrite.Never:
-                //Put the file in if it is new but ignores the 
+                //Put the file in if it is new but ignores the
                 //file if it already exists
                 if (!File.Exists(destFileName))
                 {
@@ -235,7 +235,7 @@ public static class ZipArchiveExtensions
         {
             foreach (string file in files)
             {
-                var fileInZip = (from f in zipFile.Entries
+                var fileInZip = (from f in zipFile.Entries.AsValueEnumerable()
                     where f.Name == Path.GetFileName(file)
                     select f).FirstOrDefault();
 
@@ -442,7 +442,7 @@ public static class ZipArchiveExtensions
         using var stream = entry.Open();
         if (mode == ZipArchiveMode.Update) stream.SetLength(0);
 
-        if(xmlOptions is null) 
+        if(xmlOptions is null)
         {
             XmlExtensions.Serialize(classObject, stream, noNamespace);
         }
@@ -450,7 +450,7 @@ public static class ZipArchiveExtensions
         {
             XmlExtensions.Serialize(classObject, stream, xmlOptions, noNamespace);
         }
-        
+
 
         return entry;
     }

@@ -8,11 +8,11 @@
 
 using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Text;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.Suggestions;
 
@@ -42,7 +42,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
 
     #region Members
     private SuggestionWaitTimeBeforeCureSetType _setType = SuggestionWaitTimeBeforeCureSetType.ProportionalLayerArea;
-    
+
     private decimal _bottomHeight = 1;
     private decimal _fixedBottomWaitTimeBeforeCure = 15;
     private decimal _fixedWaitTimeBeforeCure = 2;
@@ -62,7 +62,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
     private decimal _maximumBottomWaitTimeBeforeCure = 30;
     private decimal _maximumWaitTimeBeforeCure = 4;
     private bool _createEmptyFirstLayer = true;
-    
+
     #endregion
 
     #region Properties
@@ -143,7 +143,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-                
+
             return true;
         }
     }
@@ -156,9 +156,9 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
     {
         get
         {
-            if(SlicerFile.CanUseLayerAnyWaitTimeBeforeCure 
-               || SlicerFile 
-                   is {CanUseBottomWaitTimeBeforeCure: true, CanUseWaitTimeBeforeCure: true} 
+            if(SlicerFile.CanUseLayerAnyWaitTimeBeforeCure
+               || SlicerFile
+                   is {CanUseBottomWaitTimeBeforeCure: true, CanUseWaitTimeBeforeCure: true}
                    or {CanUseBottomLightOffDelay: true, CanUseLightOffDelay: true})
             {
                 return IsApplied
@@ -459,7 +459,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
                 SlicerFile.SetNormalWaitTimeBeforeCureOrLightOffDelay(CalculateWaitTime(LayerGroup.Normal));
             }
         });
-        
+
         if (SlicerFile.CanUseLayerWaitTimeBeforeCure || SlicerFile.CanUseLayerLightOffDelay)
         {
             foreach (var layer in SlicerFile)
@@ -495,7 +495,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
 
         return true;
     }
-        
+
 
     public float CalculateWaitTime(LayerGroup layerGroup, Layer? layer = null)
     {
@@ -508,9 +508,9 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
         if (_setType == SuggestionWaitTimeBeforeCureSetType.Fixed)
         {
             if(layer is null || layerGroup == LayerGroup.Bottom || _waitTimeBeforeCureTransitionLayerCount == 0) return (float)(layerGroup == LayerGroup.Bottom ? _fixedBottomWaitTimeBeforeCure : _fixedWaitTimeBeforeCure);
-            
+
             // Check for transition layer
-            var firstNormalLayer = SlicerFile.FirstOrDefault(target => (decimal) target.PositionZ > _bottomHeight);
+            var firstNormalLayer = SlicerFile.AsValueEnumerable().FirstOrDefault(target => (decimal) target.PositionZ > _bottomHeight);
             if (firstNormalLayer is not null)
             {
                 if (layer.Index >= firstNormalLayer.Index &&
@@ -584,7 +584,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
         float value = _setType switch
         {
             SuggestionWaitTimeBeforeCureSetType.ProportionalLayerPixels => (float) (layerGroup == LayerGroup.Bottom
-                    ? (decimal)mass * _proportionalBottomWaitTimeBeforeCure / _proportionalBottomLayerPixels 
+                    ? (decimal)mass * _proportionalBottomWaitTimeBeforeCure / _proportionalBottomLayerPixels
                     : (decimal)mass * _proportionalWaitTimeBeforeCure / _proportionalLayerPixels),
             SuggestionWaitTimeBeforeCureSetType.ProportionalLayerArea => (float) (layerGroup == LayerGroup.Bottom
                     ? (decimal)mass * _proportionalBottomWaitTimeBeforeCure / _proportionalBottomLayerArea

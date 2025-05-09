@@ -21,7 +21,7 @@ using UVtools.Core.FileFormats;
 using Point = System.Drawing.Point;
 using Size = System.Drawing.Size;
 using SixLabors.ImageSharp.Formats.Gif;
-using System.Linq;
+using ZLinq;
 
 namespace UVtools.Core.Operations;
 
@@ -219,7 +219,7 @@ public sealed class OperationLayerExportGif : Operation
 
         //using var gif = AnimatedGif.AnimatedGif.Create(_filePath, FPSToMilliseconds, _repeats);
         // Set animation loop repeat count to 5.
-        
+
         progress.Reset("Packed layers", TotalLayers);
 
         var fontFace = FontFace.HersheyDuplex;
@@ -240,7 +240,7 @@ public sealed class OperationLayerExportGif : Operation
 
         var delay = FPSToMilliseconds / 10;
         var layerBuffer = new byte[TotalLayers][];
-        var batches = Enumerable.Range(0, (int)TotalLayers).Chunk(FileFormat.DefaultParallelBatchCount);
+        var batches = ValueEnumerable.Range(0, (int)TotalLayers).Chunk(FileFormat.DefaultParallelBatchCount);
         foreach (var batch in batches)
         {
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), i =>
@@ -411,7 +411,7 @@ public sealed class OperationLayerExportGif : Operation
             {
                 gif.Dispose();
             }
-            
+
         }
 
         return !progress.Token.IsCancellationRequested;
@@ -431,6 +431,6 @@ public sealed class OperationLayerExportGif : Operation
     {
         return ReferenceEquals(this, obj) || obj is OperationLayerExportGif other && Equals(other);
     }
-    
+
     #endregion
 }

@@ -17,11 +17,12 @@ using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
+using ZLinq;
 
 namespace UVtools.Core.EmguCV;
 
 /// <summary>
-/// Utility methods for contour handling.  
+/// Utility methods for contour handling.
 /// Use only with Tree type
 /// </summary>
 public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
@@ -66,19 +67,19 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
     /// Gets the total solid area enclosed in all contours, including children contours, which is the sum of all positive areas minus the sum of all negative areas
     /// </summary>
     /// <remarks>Only work with tree contour detection method</remarks>
-    public double TotalSolidArea => Families.Sum(family => family.TotalSolidArea);
+    public double TotalSolidArea => IsEmpty ? 0 : Families.AsValueEnumerable().Sum(family => family.TotalSolidArea);
 
     /// <summary>
     /// Gets the minimum solid area enclosed in all contours, including children contours, which is the sum of all positive areas minus the sum of all negative areas
     /// </summary>
     /// <remarks>Only work with tree contour detection method</remarks>
-    public double MinSolidArea => Families.Min(family => family.TotalSolidArea);
+    public double MinSolidArea => IsEmpty ? 0 : Families.AsValueEnumerable().Min(family => family.TotalSolidArea);
 
     /// <summary>
     /// Gets the maximum solid area enclosed in all contours, including children contours, which is the sum of all positive areas minus the sum of all negative areas
     /// </summary>
     /// <remarks>Only work with tree contour detection method</remarks>
-    public double MaxSolidArea => Families.Max(family => family.TotalSolidArea);
+    public double MaxSolidArea => IsEmpty ? 0 : Families.AsValueEnumerable().Max(family => family.TotalSolidArea);
     #endregion
 
     #region Constructor
@@ -212,7 +213,7 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
                 count++;
             }
 
-            if(sortByDistance) items[i] = items[i].OrderBy(tuple => tuple.Distance).ToArray();
+            if(sortByDistance) items[i] = items[i].AsValueEnumerable().OrderBy(tuple => tuple.Distance).ToArray();
         }
 
         return items;
@@ -474,7 +475,7 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
         double result = CvInvoke.ContourArea(contours[0]);
         for (var i = 1; i < vectorSize; i++)
         {
-            if (hierarchy[i, EmguContour.HierarchyParent] != -1) continue; // External contours are the biggest 
+            if (hierarchy[i, EmguContour.HierarchyParent] != -1) continue; // External contours are the biggest
             result = Math.Max(result, CvInvoke.ContourArea(contours[i]));
         }
         return result;
@@ -504,7 +505,7 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
                 result[i] = GetContourArea(contours[i]);
             }
         }
-            
+
         return result;
     }
 
@@ -518,7 +519,7 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
     {
         var contour1Rect = CvInvoke.BoundingRectangle(contour1[0]);
         var contour2Rect = CvInvoke.BoundingRectangle(contour2[0]);
-        
+
         /* early exit if the bounding rectangles don't intersect */
         if (!contour1Rect.IntersectsWith(contour2Rect)) return 0;
         //var totalRect = Rectangle.Union(contour1Rect, contour2Rect);

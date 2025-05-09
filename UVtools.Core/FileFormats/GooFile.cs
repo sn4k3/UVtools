@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using UVtools.Core.Exceptions;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -999,7 +999,7 @@ public sealed class GooFile : FileFormat
 
         var expectedMagic = FileMagic;
 
-        if (!Header.Magic.SequenceEqual(expectedMagic))
+        if (!Header.Magic.AsValueEnumerable().SequenceEqual(expectedMagic))
         {
             throw new FileLoadException("Not a valid GOO file! Magic value mismatch", FileFullPath);
         }
@@ -1056,7 +1056,7 @@ public sealed class GooFile : FileFormat
 
         Footer = Helpers.Deserialize<FileFooter>(inputFile);
         Debug.WriteLine($"Footer: {Footer}");
-        if (!Footer.Magic.SequenceEqual(expectedMagic))
+        if (!Footer.Magic.AsValueEnumerable().SequenceEqual(expectedMagic))
         {
             throw new FileLoadException("Not a valid GOO file! Footer magic value mismatch", FileFullPath);
         }
@@ -1069,9 +1069,10 @@ public sealed class GooFile : FileFormat
         // Fixes virtual bottom properties
         SuppressRebuildPropertiesWork(() =>
         {
-            base.BottomWaitTimeBeforeCure = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeBeforeCure ?? 0;
-            base.BottomWaitTimeAfterCure = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
-            base.BottomWaitTimeAfterLift = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
+            var enumerable = this.AsValueEnumerable();
+            base.BottomWaitTimeBeforeCure = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeBeforeCure ?? 0;
+            base.BottomWaitTimeAfterCure = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
+            base.BottomWaitTimeAfterLift = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
         });
     }
 
@@ -1081,15 +1082,26 @@ public sealed class GooFile : FileFormat
         Header.Volume = Volume;
         Header.MaterialGrams = MaterialMilliliters;
 
-
         if (HaveTiltingVat)
         {
-            BottomLiftHeightTotal = 0;
-            LiftHeightTotal = 0;
-            BottomLiftSpeed = 0;
-            LiftSpeed = 0;
-            BottomRetractSpeed = 0;
-            RetractSpeed = 0;
+            const float liftValue = 0;
+            const float speedValue = 0;
+
+            BottomLiftHeight = liftValue;
+            BottomLiftHeight2 = liftValue;
+            BottomLiftSpeed = speedValue;
+            BottomLiftSpeed2 = speedValue;
+            BottomRetractHeight2 = liftValue;
+            BottomRetractSpeed = speedValue;
+            BottomRetractSpeed2 = speedValue;
+
+            LiftHeight = liftValue;
+            LiftHeight2 = liftValue;
+            LiftSpeed = speedValue;
+            LiftSpeed2 = speedValue;
+            RetractHeight2 = speedValue;
+            RetractSpeed = speedValue;
+            RetractSpeed2 = speedValue;
         }
     }
 

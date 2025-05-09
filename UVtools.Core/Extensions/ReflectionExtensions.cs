@@ -9,9 +9,9 @@
 using System;
 using System.Drawing;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using ZLinq;
 
 namespace UVtools.Core.Extensions;
 
@@ -95,7 +95,7 @@ public static class ReflectionExtensions
             attribute.SetValue(obj, value.Convert<long>());
             return true;
         }
-        
+
         if (attribute.PropertyType == typeof(Half))
         {
             attribute.SetValue(obj, Half.Parse(value, CultureInfo.InvariantCulture));
@@ -246,8 +246,8 @@ public static class ReflectionExtensions
 
     public static void CopyPropertiesTo(object src, object dest, params string[] ignoredProperties)
     {
-        var srcProperties = src.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(info => info is { CanRead: true, CanWrite: true, GetMethod: not null } && !ignoredProperties.Contains(info.Name));
-        var destProperties = dest.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(info => info is { CanRead: true, CanWrite: true, SetMethod: not null } && !ignoredProperties.Contains(info.Name));
+        var srcProperties = src.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).AsValueEnumerable().Where(info => info is { CanRead: true, CanWrite: true, GetMethod: not null } && !ignoredProperties.AsValueEnumerable().Contains(info.Name));
+        var destProperties = dest.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).AsValueEnumerable().Where(info => info is { CanRead: true, CanWrite: true, SetMethod: not null } && !ignoredProperties.AsValueEnumerable().Contains(info.Name));
         foreach (var srcProperty in srcProperties)
         {
             foreach (var destProperty in destProperties)

@@ -8,12 +8,12 @@
 
 using System;
 using System.Drawing;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
+using ZLinq;
 
 namespace UVtools.Core.EmguCV;
 
@@ -362,7 +362,7 @@ public class CMat : IEquatable<CMat>
     }
 
     /// <summary>
-    /// Compresses the <see cref="Mat"/> into a byte array. 
+    /// Compresses the <see cref="Mat"/> into a byte array.
     /// </summary>
     /// <param name="src"></param>
     /// <param name="argument"></param>
@@ -571,7 +571,7 @@ public class CMat : IEquatable<CMat>
     /// <param name="dst"></param>
     public void CopyTo(CMat dst)
     {
-        dst._compressedBytes = _compressedBytes.ToArray();
+        dst._compressedBytes = _compressedBytes.AsValueEnumerable().ToArray();
         dst._hash = _hash;
         dst.IsInitialized = IsInitialized;
         dst.IsCompressed = IsCompressed;
@@ -584,7 +584,7 @@ public class CMat : IEquatable<CMat>
         dst.Channels = Channels;
         dst.Roi = Roi;
     }
-    
+
     /// <summary>
     /// Creates a clone of the <see cref="CMat"/> with the same <see cref="CompressedBytes"/>.
     /// </summary>
@@ -592,7 +592,7 @@ public class CMat : IEquatable<CMat>
     public CMat Clone()
     {
         var clone = (CMat)MemberwiseClone();
-        clone._compressedBytes = _compressedBytes.ToArray();
+        clone._compressedBytes = _compressedBytes.AsValueEnumerable().ToArray();
         return clone;
     }
     #endregion
@@ -610,16 +610,16 @@ public class CMat : IEquatable<CMat>
     {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
-        return IsInitialized == other.IsInitialized 
-               && IsCompressed == other.IsCompressed 
-               //&& ThresholdToCompress == other.ThresholdToCompress 
-               && Width == other.Width 
-               && Height == other.Height 
-               && Depth == other.Depth 
-               && Channels == other.Channels 
+        return IsInitialized == other.IsInitialized
+               && IsCompressed == other.IsCompressed
+               //&& ThresholdToCompress == other.ThresholdToCompress
+               && Width == other.Width
+               && Height == other.Height
+               && Depth == other.Depth
+               && Channels == other.Channels
                && Roi.Equals(other.Roi)
                && _compressedBytes.Length == other._compressedBytes.Length
-               && _compressedBytes.SequenceEqual(other._compressedBytes);
+               && _compressedBytes.AsValueEnumerable().SequenceEqual(other._compressedBytes);
     }
 
     public override bool Equals(object? obj)

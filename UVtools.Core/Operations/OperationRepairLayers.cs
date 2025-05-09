@@ -20,6 +20,7 @@ using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Managers;
+using ZLinq;
 
 namespace UVtools.Core.Operations;
 

@@ -1,6 +1,6 @@
-using System.Linq;
 using UVtools.Core.FileFormats;
 using UVtools.UI.Controls;
+using ZLinq;
 
 namespace UVtools.UI.Windows;
 
@@ -37,7 +37,7 @@ public partial class VersionSelectorWindow : WindowEx
     {
         SlicerFile = slicerFile;
         FileExtension = fileExtension;
-        Version = availableVersions.Contains(slicerFile.DefaultVersion) ? SlicerFile.DefaultVersion : availableVersions[^1];
+        Version = availableVersions.AsValueEnumerable().Contains(slicerFile.DefaultVersion) ? SlicerFile.DefaultVersion : availableVersions[^1];
         AvailableVersions = availableVersions;
         Title += $" - {FileExtension.Description}";
         DataContext = this;
@@ -51,7 +51,7 @@ public partial class VersionSelectorWindow : WindowEx
 
     public void SelectDefault()
     {
-        Version = AvailableVersions.Contains(SlicerFile.DefaultVersion) ? SlicerFile.DefaultVersion : AvailableVersions[^1];
+        Version = AvailableVersions.AsValueEnumerable().Contains(SlicerFile.DefaultVersion) ? SlicerFile.DefaultVersion : AvailableVersions[^1];
         DialogResult = DialogResults.OK;
         Close();
     }

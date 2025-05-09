@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Emgu.CV.Util;
+using ZLinq;
 
 namespace UVtools.Core.EmguCV;
 
@@ -37,7 +38,7 @@ public class EmguContourFamily : List<EmguContourFamily>
         get
         {
             var current = this;
-                
+
             while (!current.IsExternal)
             {
                 current = current.Parent;
@@ -161,8 +162,8 @@ public class EmguContourFamily : List<EmguContourFamily>
     /// <returns></returns>
     public EmguContour[] ToEmguContourArray()
     {
-        return TraverseTreeAsEmguContour().ToArray();
+        return TraverseTreeAsEmguContour().AsValueEnumerable().ToArray();
     }
 
-    
+
 }

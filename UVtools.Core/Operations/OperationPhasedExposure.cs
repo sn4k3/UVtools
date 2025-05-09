@@ -11,7 +11,6 @@ using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +18,7 @@ using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
+using ZLinq;
 
 namespace UVtools.Core.Operations;
 
@@ -79,7 +79,7 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
             _iterations = iterations;
         }
 
-        
+
 
         public PhasedExposure Clone()
         {
@@ -141,7 +141,7 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
         {
             sb.AppendLine("This tool requires at least two phased exposures in order to run.");
         }
-        
+
         float lastPositionZ = SlicerFile[LayerIndexStart].PositionZ;
         for (uint layerIndex = LayerIndexStart + 1; layerIndex <= LayerIndexEnd; layerIndex++)
         {
@@ -319,7 +319,7 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
     protected override bool ExecuteInternally(OperationProgress progress)
     {
         var layers = new Layer?[SlicerFile.LayerCount + LayerRangeCount * (_phasedExposures.Count - 1)];
-        
+
         // Untouched
         for (uint i = 0; i < LayerIndexStart; i++)
         {
@@ -333,7 +333,7 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
             progress.PauseIfRequested();
             var layer = SlicerFile[layerIndex];
 
-            if (layer.IsEmpty) 
+            if (layer.IsEmpty)
             {
                 progress.LockAndIncrement();
                 return;
@@ -342,7 +342,7 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
             var isBottomLayer = layer.IsBottomLayer;
 
             uint newLayerIndex = (uint)(LayerIndexStart + (layerIndex - LayerIndexStart) * _phasedExposures.Count);
-            
+
             if (isBottomLayer) Interlocked.Increment(ref bottomLayers);
 
             using var matRoi = layer.LayerMatBoundingRectangle;
@@ -414,7 +414,7 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
         SlicerFile.SuppressRebuildPropertiesWork(() =>
         {
             SlicerFile.BottomLayerCount = (ushort)bottomLayers;
-            SlicerFile.Layers = layers.Where(layer => layer is not null).ToArray()!;
+            SlicerFile.Layers = layers.AsValueEnumerable().Where(layer => layer is not null).ToArray()!;
         });
 
         return !progress.Token.IsCancellationRequested;

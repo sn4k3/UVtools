@@ -9,10 +9,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Xml.Serialization;
 using UVtools.Core.Extensions;
 using UVtools.Core.PixelEditor;
+using ZLinq;
 
 namespace UVtools.UI.Structures;
 
@@ -75,7 +75,7 @@ public class PixelEditorProfiles //: IList<Operation>
     #endregion
 
     #region Enumerable
-        
+
     public IEnumerator<PixelOperation> GetEnumerator()
     {
         return Profiles.GetEnumerator();
@@ -229,8 +229,8 @@ public class PixelEditorProfiles //: IList<Operation>
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    public static List<PixelOperation> GetProfiles(Type type) 
-        => ProfileList.Where(operation => operation.GetType() == type).ToList();
+    public static List<PixelOperation> GetProfiles(Type type)
+        => ProfileList.AsValueEnumerable().Where(operation => operation.GetType() == type).ToList();
 
     /// <summary>
     /// Get all profiles within a type

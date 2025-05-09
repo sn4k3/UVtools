@@ -14,11 +14,11 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -320,9 +320,9 @@ public sealed class MDLPFile : FileFormat
             previews[i] = null!;
         }
         outputFile.WriteSerialize(SlicerInfoSettings);
-            
+
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-        var range = Enumerable.Range(0, (int)LayerCount);
+        var range = ValueEnumerable.Range(0, (int)LayerCount);
 
         var layerBytes = new List<byte>[LayerCount];
         foreach (var batch in BatchLayersIndexes())

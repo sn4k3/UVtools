@@ -12,7 +12,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -20,6 +19,7 @@ using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -97,7 +97,7 @@ public sealed class KlipperFile : FileFormat
 
     #region Properties
     public Header HeaderSettings { get; } = new();
-        
+
     public override FileFormatType FileType => FileFormatType.Archive;
 
     public override string? ConvertMenuGroup => "Klipper";
@@ -115,7 +115,7 @@ public sealed class KlipperFile : FileFormat
 
         PrintParameterModifier.BottomWaitTimeBeforeCure,
         PrintParameterModifier.WaitTimeBeforeCure,
-            
+
         PrintParameterModifier.BottomExposureTime,
         PrintParameterModifier.ExposureTime,
 
@@ -180,7 +180,7 @@ public sealed class KlipperFile : FileFormat
 
     public override Size[] ThumbnailsOriginalSize { get; } =
     [
-        new(32, 32), 
+        new(32, 32),
         new(400, 300)
     ];
 
@@ -205,7 +205,7 @@ public sealed class KlipperFile : FileFormat
     public override float DisplayHeight
     {
         get => HeaderSettings.DisplayHeight;
-        set => base.DisplayHeight = HeaderSettings.DisplayHeight = RoundDisplaySize(value); 
+        set => base.DisplayHeight = HeaderSettings.DisplayHeight = RoundDisplaySize(value);
     }
 
     public override float MachineZ
@@ -539,7 +539,7 @@ public sealed class KlipperFile : FileFormat
                              $"VOLUME={Volume} " +
                              $"MATERIALML={MaterialMilliliters}"
                              );
-            
+
             e.Cancel = true;
         };
 
@@ -570,7 +570,7 @@ public sealed class KlipperFile : FileFormat
             GCode.AppendLine("PRINT_END");
             e.Cancel = true;
         };
-        
+
         GCode.AfterRebuildGCode += (sender, e) =>
         {
             GCode.AppendLine();
@@ -650,7 +650,7 @@ public sealed class KlipperFile : FileFormat
     protected override void DecodeInternally(OperationProgress progress)
     {
         using var inputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Read);
-        var entry = inputFile.Entries.FirstOrDefault(entry => entry.Name.EndsWith(".gcode"));
+        var entry = inputFile.Entries.AsValueEnumerable().FirstOrDefault(entry => entry.Name.EndsWith(".gcode"));
         if (entry is null)
         {
             Clear();
@@ -674,7 +674,7 @@ public sealed class KlipperFile : FileFormat
                     foreach (var propertyInfo in HeaderSettings.GetType()
                                  .GetProperties(BindingFlags.Public | BindingFlags.Instance))
                     {
-                        var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
+                        var displayNameAttribute = propertyInfo.GetCustomAttributes(false).AsValueEnumerable().OfType<DisplayNameAttribute>().FirstOrDefault();
                         if (displayNameAttribute is null) continue;
                         if (!splitLine[0].Trim(' ', ';').Equals(displayNameAttribute.DisplayName, StringComparison.OrdinalIgnoreCase)) continue;
                         propertyInfo.SetValueFromString(HeaderSettings, splitLine[1].Trim());
@@ -726,7 +726,7 @@ public sealed class KlipperFile : FileFormat
             {
                 if(!zipEntry.Name.EndsWith(".png")) continue;
                 var filename = Path.GetFileNameWithoutExtension(zipEntry.Name);
-                if (!filename.All(char.IsDigit)) continue;
+                if (!filename.AsValueEnumerable().All(char.IsDigit)) continue;
                 if (!uint.TryParse(filename, out var layerIndex)) continue;
                 HeaderSettings.LayerCount = Math.Max(HeaderSettings.LayerCount, layerIndex);
             }
@@ -740,7 +740,7 @@ public sealed class KlipperFile : FileFormat
             LayerImageFormat = FetchImageFormat(inputFile, ImageFormat.Png24RgbAA);
             DecodeLayersFromZip(inputFile, IndexStartNumber.One, progress);
         }
-        
+
 
         GCode?.ParseLayersFromGCode(this);
 
@@ -760,7 +760,7 @@ public sealed class KlipperFile : FileFormat
     protected override void PartialSaveInternally(OperationProgress progress)
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
-        var entriesToRemove = outputFile.Entries.Where(zipEntry => zipEntry.Name.EndsWith(".gcode")).ToArray();
+        var entriesToRemove = outputFile.Entries.AsValueEnumerable().Where(zipEntry => zipEntry.Name.EndsWith(".gcode")).ToArray();
         foreach (var zipEntry in entriesToRemove)
         {
             zipEntry.Delete();

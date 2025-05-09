@@ -15,12 +15,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -275,12 +275,12 @@ public sealed class FDGFile : FileFormat
     public class Preview
     {
         /// <summary>
-        /// Gets the X dimension of the preview image, in pixels. 
+        /// Gets the X dimension of the preview image, in pixels.
         /// </summary>
         [FieldOrder(0)] public uint ResolutionX { get; set; }
 
         /// <summary>
-        /// Gets the Y dimension of the preview image, in pixels. 
+        /// Gets the Y dimension of the preview image, in pixels.
         /// </summary>
         [FieldOrder(1)] public uint ResolutionY { get; set; }
 
@@ -434,7 +434,7 @@ public sealed class FDGFile : FileFormat
         public void Encode(Mat mat, uint layerIndex)
         {
             List<byte> rawData = [];
-                
+
             //byte color = byte.MaxValue >> 1;
             byte color = byte.MaxValue;
             uint stride = 0;
@@ -467,7 +467,7 @@ public sealed class FDGFile : FileFormat
                 var span = mat.GetRowByteSpan(y);
                 for (int x = 0; x < span.Length; x++)
                 {
-                        
+
                     var grey7 = (byte)((span[x] >> 1) & 0x7f);
                     if (grey7 > 0x7c)
                     {
@@ -496,8 +496,8 @@ public sealed class FDGFile : FileFormat
             }
 
 
-            EncodedRle = Parent!.HeaderSettings.EncryptionKey > 0 
-                ? LayerRleCrypt(Parent.HeaderSettings.EncryptionKey, layerIndex, rawData) 
+            EncodedRle = Parent!.HeaderSettings.EncryptionKey > 0
+                ? LayerRleCrypt(Parent.HeaderSettings.EncryptionKey, layerIndex, rawData)
                 : rawData.ToArray();
 
             DataSize = (uint) EncodedRle.Length;
@@ -960,7 +960,7 @@ public sealed class FDGFile : FileFormat
 
         Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
         LayersDefinitions = new LayerDef[HeaderSettings.LayerCount];
-            
+
         progress.Reset(OperationProgress.StatusDecodeLayers, HeaderSettings.LayerCount);
         foreach (var batch in BatchLayersIndexes())
         {
@@ -971,7 +971,7 @@ public sealed class FDGFile : FileFormat
                 var layerDef = Helpers.Deserialize<LayerDef>(inputFile);
                 layerDef.Parent = this;
                 LayersDefinitions[layerIndex] = layerDef;
-                    
+
                 Debug.Write($"LAYER {layerIndex} -> ");
                 Debug.WriteLine(layerDef);
 
@@ -1031,7 +1031,7 @@ public sealed class FDGFile : FileFormat
     #region Static Methods
     public static byte[] LayerRleCrypt(uint seed, uint layerIndex, IEnumerable<byte> input)
     {
-        var result = input.ToArray();
+        var result = input.AsValueEnumerable().ToArray();
         LayerRleCryptBuffer(seed, layerIndex, result);
         return result;
     }

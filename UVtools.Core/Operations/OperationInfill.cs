@@ -13,11 +13,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Linq;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
+using ZLinq;
 
 namespace UVtools.Core.Operations;
 
@@ -159,7 +159,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
     {
         return ReferenceEquals(this, obj) || obj is OperationInfill other && Equals(other);
     }
-    
+
     public static bool operator ==(OperationInfill? left, OperationInfill? right)
     {
         return Equals(left, right);
@@ -180,7 +180,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
         if (_infillType == InfillAlgorithm.Honeycomb)
         {
             mask = GetHoneycombMask(GetRoiSizeOrVolumeSize());
-            
+
         }
         else if (_infillType == InfillAlgorithm.Concentric)
         {
@@ -229,10 +229,10 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
         using var target = GetRoiOrVolumeBounds(mat);
         using var mask = GetMask(mat);
         bool disposeTargetMask = true;
-             
-        if (_infillType is InfillAlgorithm.Pillars 
-            or InfillAlgorithm.CubicCross 
-            or InfillAlgorithm.CubicCrossAlternating 
+
+        if (_infillType is InfillAlgorithm.Pillars
+            or InfillAlgorithm.CubicCross
+            or InfillAlgorithm.CubicCrossAlternating
             or InfillAlgorithm.CubicStar)
         {
             using var infillPattern = EmguExtensions.InitMat(new Size(_infillSpacing, _infillSpacing));
@@ -445,7 +445,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
                 using var infillPatternRoi = infillPattern.Roi(new Size(maxY + radius + 2 + _infillSpacing, infillPattern.Height));
                 CvInvoke.Polylines(infillPatternRoi, points.ToArray(), false, infillColor, _infillThickness);
                 CvInvoke.Repeat(infillPatternRoi, 1, target.Cols / infillPatternRoi.Cols + 1, infillPattern);
-                
+
             }
             points.Clear();
 
@@ -461,7 +461,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
             //var scaleY = 0.04 * _infillSpacing * Math.PI / target.Height;
             var scaleX = scaleRatio * mat.Width;
             var scaleY = scaleRatio * mat.Height;
-            
+
             //const double scaleZ = 2.0 * Math.PI;
             //var dz = 2.0 * scaleZ / LayerRangeCount; // z step
             //var zz = 0.05 * (SlicerFile[index].LayerHeight / 0.05f) * (layerIndex + 1);
@@ -477,7 +477,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
                 var yy = y * scaleY; // y position of pixel
                 for (int x = 0; x < patternMask.Width; x++)
                 {
-                    var xx = x * scaleX; // x position of pixel                
+                    var xx = x * scaleX; // x position of pixel
 
                     var d = Math.Sin(xx) * Math.Cos(yy) // compute gyroid equation
                             + Math.Sin(yy) * Math.Cos(zz)
@@ -624,7 +624,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
 
         var points = new List<Point> {new(x, y)};
 
-        while (hitLimits.Any(hitLimit => !hitLimit))
+        while (hitLimits.AsValueEnumerable().Any(hitLimit => !hitLimit))
         {
             x += directions[position].X * multiplier;
             y += directions[position].Y * multiplier;
@@ -641,7 +641,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
                 position = 0;
             }
         }
-        
+
 
         CvInvoke.Polylines(patternMask, points.ToArray(), false, new MCvScalar(_infillBrightness), _infillThickness);
 

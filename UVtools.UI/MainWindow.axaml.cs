@@ -14,7 +14,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -49,6 +48,7 @@ using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Timers;
 using UVtools.Core.Scripting;
+using ZLinq;
 
 namespace UVtools.UI;
 
@@ -767,7 +767,7 @@ public partial class MainWindow : WindowEx
             if (!_isGUIEnabled) return;
             var files = args.Data.GetFiles();
             if (files is null) return;
-            await ProcessFiles(files.Select(file => file.TryGetLocalPath()).ToArray()!);
+            await ProcessFiles(files.AsValueEnumerable().Select(file => file.TryGetLocalPath()).ToArray()!);
         });
 
         AddLog($"{About.Software} start", Program.ProgramStartupTime.Elapsed.TotalSeconds);
@@ -1000,7 +1000,7 @@ public partial class MainWindow : WindowEx
         //var ext = Path.GetExtension(SlicerFile.FileFullPath);
         //var extNoDot = ext.Remove(0, 1);
         //var extension = FileExtension.Find(ext);
-        var extension = SlicerFile.FileExtensions.FirstOrDefault(fileExtension => fileExtension.Extension == ext);
+        var extension = SlicerFile.FileExtensions.AsValueEnumerable().FirstOrDefault(fileExtension => fileExtension.Extension == ext);
         if (extension is null)
         {
             await this.MessageBoxError("Unable to find the target extension.", "Invalid extension");
@@ -1085,7 +1085,7 @@ public partial class MainWindow : WindowEx
 
         if (files.Count == 0) return;
 
-        await ProcessFiles(files.Select(file => file.TryGetLocalPath()!).ToArray(), newWindow, fileDecodeType);
+        await ProcessFiles(files.AsValueEnumerable().Select(file => file.TryGetLocalPath()!).ToArray(), newWindow, fileDecodeType);
     }
 
     public async Task MenuFileCloseFileClicked()
@@ -1133,9 +1133,9 @@ public partial class MainWindow : WindowEx
         ClearROIAndMask();
 
         if(!Settings.Tools.LastUsedSettingsKeepOnCloseFile) OperationSessionManager.Instance.Clear();
-        if(_menuFileOpenRecentItems.Any())
+        if(_menuFileOpenRecentItems.AsValueEnumerable().Any())
         {
-            _menuFileOpenRecentItems.First().IsEnabled = true; // Re-enable last file
+            _menuFileOpenRecentItems.AsValueEnumerable().First().IsEnabled = true; // Re-enable last file
         }
 
         UpdateLoadedFileSize();
@@ -1396,7 +1396,7 @@ public partial class MainWindow : WindowEx
     {
         if (files.Length == 0) return;
 
-        if (IsFileLoaded && files.All(s => OperationPCBExposure.ValidExtensions.Any(extension => s.EndsWith($".{extension}", StringComparison.OrdinalIgnoreCase))))
+        if (IsFileLoaded && files.AsValueEnumerable().All(s => OperationPCBExposure.ValidExtensions.AsValueEnumerable().Any(extension => s.EndsWith($".{extension}", StringComparison.OrdinalIgnoreCase))))
         {
             var operation = new OperationPCBExposure(SlicerFile!);
             operation.AddFiles(files);
@@ -1871,7 +1871,7 @@ public partial class MainWindow : WindowEx
             var extensions = SlicerFile.GetAvailableVersionsForExtension();
             if (extensions.Length > 0)
             {
-                if (!extensions.Contains(SlicerFile.Version))
+                if (!extensions.AsValueEnumerable().Contains(SlicerFile.Version))
                 {
                     var lastVersion = extensions[^1];
                     var result = await this.MessageBoxQuestion(

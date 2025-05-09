@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
+using ZLinq;
 
 namespace UVtools.Core.Layers;
 
@@ -22,16 +22,16 @@ public sealed class IssueOfPoints : Issue
 
     public IssueOfPoints() { }
 
-    public IssueOfPoints(Layer layer, IEnumerable<Point> points, Rectangle boundingRectangle = default) : base(layer, boundingRectangle, points.Count())
+    public IssueOfPoints(Layer layer, IEnumerable<Point> points, Rectangle boundingRectangle = default) : base(layer, boundingRectangle, points.AsValueEnumerable().Count())
     {
-        Points = points.ToArray();
+        Points = points.AsValueEnumerable().ToArray();
         PixelsCount = (uint)Points.Length;
         FirstPoint = Points[0];
     }
 
     private bool Equals(IssueOfPoints other)
     {
-        return Points.SequenceEqual(other.Points);
+        return Points.AsValueEnumerable().SequenceEqual(other.Points);
     }
 
     public override bool Equals(object? obj)

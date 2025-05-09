@@ -11,12 +11,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.Managers;
 
@@ -25,7 +25,7 @@ public sealed class ClipboardItem : List<Layer>
     private Operation _operation = null!;
 
     #region Properties
-        
+
     /// <summary>
     /// Gets the LayerCount for this clip
     /// </summary>
@@ -69,7 +69,7 @@ public sealed class ClipboardItem : List<Layer>
         if (!description.StartsWith(operation.Title)) description = $"{operation.Title}: {description}";
         Description = description;
     }
-        
+
     public ClipboardItem(FileFormat slicerFile, string? description = null, bool isFullBackup = false)
     {
         LayerCount = slicerFile.LayerCount;
@@ -131,7 +131,7 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
                     }
                     else
                     {
-                        layers = SlicerFile.Layers.ToArray();
+                        layers = SlicerFile.Layers.AsValueEnumerable().ToArray();
 
                         if (SlicerFile.LayerCount != clip.LayerCount) // Need resize layer manager
                         {
@@ -160,7 +160,7 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
                     {
                         SlicerFile.Layers = Layer.CloneLayers(layers);
                     });
-                        
+
                     if (i == _currentIndex) break;
                 }
             }
@@ -192,7 +192,7 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
         get => _snapshotLayers;
         private set => RaiseAndSetIfChanged(ref _snapshotLayers, value);
     }
-        
+
     public ClipboardItem? CurrentClip => _currentIndex < 0 || _currentIndex >= Count ? null : this[_currentIndex];
 
     public bool CanUndo => CurrentIndex < Count - 1;
@@ -403,7 +403,7 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
 
             CurrentIndex = 0;
         });
-            
+
         return clip;
     }
 

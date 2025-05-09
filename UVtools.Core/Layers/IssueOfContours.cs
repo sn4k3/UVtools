@@ -9,8 +9,8 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using UVtools.Core.Extensions;
+using ZLinq;
 
 namespace UVtools.Core.Layers;
 
@@ -25,7 +25,7 @@ public sealed class IssueOfContours : Issue
 
     public IssueOfContours(Layer layer, IEnumerable<Point[]> contours, Rectangle boundingRectangle, double area) : base(layer, boundingRectangle, area)
     {
-        Contours = contours.ToArray();
+        Contours = contours.AsValueEnumerable().ToArray();
         PixelsCount = (uint)area;
         FirstPoint = Contours[0][0];
     }
@@ -39,7 +39,7 @@ public sealed class IssueOfContours : Issue
         if (Contours.Length != other.Contours.Length) return false;
         for (int i = 0; i < Contours.Length; i++)
         {
-            if (!Contours[i].SequenceEqual(other.Contours[i])) return false;
+            if (!Contours[i].AsValueEnumerable().SequenceEqual(other.Contours[i])) return false;
         }
 
         return true;

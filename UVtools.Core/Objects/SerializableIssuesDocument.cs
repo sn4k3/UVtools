@@ -9,12 +9,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
+using ZLinq;
 
 namespace UVtools.Core.Objects;
 
@@ -43,7 +43,7 @@ public sealed class SerializableIssuesDocument : IReadOnlyList<MainIssue>
         LayerCount = slicerFile.LayerCount;
         DisplayMirror = slicerFile.DisplayMirror;
 
-        Issues = slicerFile.IssueManager.ToArray();
+        Issues = slicerFile.IssueManager.AsValueEnumerable().ToArray();
     }
 
     public async Task SerializeAsync(string path)

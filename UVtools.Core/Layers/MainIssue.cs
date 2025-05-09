@@ -10,10 +10,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using UVtools.Core.Extensions;
+using ZLinq;
 
 namespace UVtools.Core.Layers;
 
@@ -152,11 +152,11 @@ public class MainIssue : IReadOnlyList<Issue>
         if (Childs.Length == 1)
         {
             Area = Childs[0].Area;
-            Childs = issues.ToArray();
+            Childs = issues.AsValueEnumerable().ToArray();
         }
         else
         {
-            Childs = issues.OrderBy(issue => issue.LayerIndex).ToArray();
+            Childs = issues.AsValueEnumerable().OrderBy(issue => issue.LayerIndex).ToArray();
         }
 
         Area = Math.Round(Area, 3);
@@ -189,7 +189,7 @@ public class MainIssue : IReadOnlyList<Issue>
 
     protected bool Equals(MainIssue other)
     {
-        return Type == other.Type && BoundingRectangle.Equals(other.BoundingRectangle) && PixelCount == other.PixelCount && Area.Equals(other.Area) && Childs.SequenceEqual(other.Childs);
+        return Type == other.Type && BoundingRectangle.Equals(other.BoundingRectangle) && PixelCount == other.PixelCount && Area.Equals(other.Area) && Childs.AsValueEnumerable().SequenceEqual(other.Childs);
     }
 
     public override bool Equals(object? obj)

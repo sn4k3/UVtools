@@ -16,7 +16,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -25,6 +24,7 @@ using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -94,7 +94,7 @@ public class FlashForgeSVGXSvgPrintParams
 public class FlashForgeSVGXSvgProjectionTime
 {
     [XmlAttribute("attachlayer")] public ushort BottomLayerCount { get; set; } = 3;
-    [XmlAttribute("buildinlayer")] public ushort TransitionLayerCount { get; set; } = 5; 
+    [XmlAttribute("buildinlayer")] public ushort TransitionLayerCount { get; set; } = 5;
     [XmlAttribute("attachtime")] public float BottomExposureTime { get; set; }
     [XmlAttribute("basetime")] public float ExposureTime { get; set; }
 
@@ -187,7 +187,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
     {
         public const byte IdentifierLength = 16;
         public const string IdentifierText = "DLP-II 1.1\n";
-            
+
         [FieldOrder(0)] [FieldLength(IdentifierLength)] [SerializeAs(SerializedType.TerminatedString)] public string Identifier { get; set; } = IdentifierText;
         [FieldOrder(1)] public uint Preview1Address { get; set; }
         [FieldOrder(2)] public uint Preview2Address { get; set; }
@@ -213,8 +213,8 @@ public sealed class FlashForgeSVGXFile : FileFormat
         /// <summary>
         /// Gets or sets the identifier, BM = bitmap?
         /// </summary>
-        [FieldOrder(0)] [FieldLength(IdentifierLength)] public string Identifier { get; set; } = IdentifierText; 
-            
+        [FieldOrder(0)] [FieldLength(IdentifierLength)] public string Identifier { get; set; } = IdentifierText;
+
         /// <summary>
         /// Gets or sets the table total size
         /// </summary>
@@ -226,7 +226,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
         [FieldOrder(5)] public uint ResolutionX { get; set; }
 
         /// <summary>
-        /// Gets the Y dimension of the preview image, in pixels. 
+        /// Gets the Y dimension of the preview image, in pixels.
         /// </summary>
         [FieldOrder(6)] public uint ResolutionY { get; set; }
 
@@ -273,7 +273,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
 
     public override Size[] ThumbnailsOriginalSize { get; } =
     [
-        new(128, 128), 
+        new(128, 128),
         new(200, 240)
     ];
 
@@ -296,20 +296,20 @@ public sealed class FlashForgeSVGXFile : FileFormat
         get => SVGDocument.PrintParameters.DisplayWidth;
         set => base.DisplayWidth = SVGDocument.PrintParameters.DisplayWidth = RoundDisplaySize(value);
     }
-    
+
     public override float DisplayHeight
     {
         get => SVGDocument.PrintParameters.DisplayHeight;
         set => base.DisplayHeight = SVGDocument.PrintParameters.DisplayHeight = RoundDisplaySize(value);
     }
-        
+
     public override FlipDirection DisplayMirror
     {
         get => FlipDirection.Vertically;
         set {}
     }
 
-    public override float MachineZ 
+    public override float MachineZ
     {
         get => SVGDocument.PrintParameters.MachineZ > 0 ? SVGDocument.PrintParameters.MachineZ : base.MachineZ;
         set => base.MachineZ = SVGDocument.PrintParameters.MachineZ = MathF.Round(value, 2);
@@ -396,7 +396,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
         set => base.LightPWM = (byte) (HeaderSettings.LightPWM = value);
     }*/
 
-    public override float MaterialMilliliters 
+    public override float MaterialMilliliters
     {
         get => SVGDocument.PrintParameters.MaterialMilliliters;
         set
@@ -567,7 +567,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
 
         outputFile.Seek(0, SeekOrigin.Begin);
         outputFile.WriteSerialize(HeaderSettings);
-            
+
         Debug.WriteLine("Encode Results:");
         Debug.WriteLine(HeaderSettings);
         Debug.WriteLine(SVGDocument);
@@ -627,7 +627,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
 
             using (var mat = EmguExtensions.InitMat(Resolution))
             {
-                var group = SVGDocument.Groups.FirstOrDefault(g => g.Id == $"layer-{layerIndex}");
+                var group = SVGDocument.Groups.AsValueEnumerable().FirstOrDefault(g => g.Id == $"layer-{layerIndex}");
 
                 if (group is not null)
                 {

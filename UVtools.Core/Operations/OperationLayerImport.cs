@@ -12,13 +12,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
+using ZLinq;
 
 namespace UVtools.Core.Operations;
 
@@ -115,7 +115,7 @@ public sealed class OperationLayerImport : Operation
             }
             message.AppendLine(file.Content);
         }
-        
+
 
         return new StringTag(message.ToString(), result);*/
 
@@ -162,7 +162,7 @@ public sealed class OperationLayerImport : Operation
         }
     }
 
-        
+
     public static Array ImportTypesItems => Enum.GetValues(typeof(ImportTypes));
 
     public bool IsImportStackType => _importType == ImportTypes.Stack;
@@ -222,7 +222,7 @@ public sealed class OperationLayerImport : Operation
     {
         _files.Sort();
     }
-        
+
 
     /*public uint CalculateTotalLayers(uint totalLayers)
     {
@@ -249,7 +249,7 @@ public sealed class OperationLayerImport : Operation
     protected override bool ExecuteInternally(OperationProgress progress)
     {
         progress.ItemCount = 0;
-        var result = SlicerFile.SuppressRebuildPropertiesWork(() => { 
+        var result = SlicerFile.SuppressRebuildPropertiesWork(() => {
             var fileFormats = new List<FileFormat>();
             var keyImage = new List<KeyValuePair<uint, string>>();
             int lastProcessedLayerIndex = -1;
@@ -257,7 +257,7 @@ public sealed class OperationLayerImport : Operation
             // Order raw images
             for (int i = 0; i < Count; i++)
             {
-                if(!ValidImageExtensions.Any(extension => _files[i].IsExtension(extension))) continue;
+                if(!ValidImageExtensions.AsValueEnumerable().Any(extension => _files[i].IsExtension(extension))) continue;
                 keyImage.Add(new KeyValuePair<uint, string>((uint)keyImage.Count, _files[i].FilePath));
             }
 
@@ -292,7 +292,7 @@ public sealed class OperationLayerImport : Operation
             // Order remaining possible file formats that are not images
             for (int i = 0; i < Count; i++)
             {
-                if (ValidImageExtensions.Any(extension => _files[i].IsExtension(extension))) continue;
+                if (ValidImageExtensions.AsValueEnumerable().Any(extension => _files[i].IsExtension(extension))) continue;
                 var fileFormat = FileFormat.FindByExtensionOrFilePath(_files[i].FilePath, true);
                 if (fileFormat is null) continue;
                 fileFormat.FileFullPath = _files[i].FilePath;
@@ -338,7 +338,7 @@ public sealed class OperationLayerImport : Operation
                             (SlicerFile.Resolution.Width < fileFormatBoundingRectangle.Width ||
                              SlicerFile.Resolution.Height < fileFormatBoundingRectangle.Height)) continue;
 
-                        //if(fileFormatBoundingRectangle.Width >= SlicerFile.ResolutionX || fileFormatBoundingRectangle.Height >= SlicerFile.ResolutionY) 
+                        //if(fileFormatBoundingRectangle.Width >= SlicerFile.ResolutionX || fileFormatBoundingRectangle.Height >= SlicerFile.ResolutionY)
                         //    continue;
 
                         if (_importType == ImportTypes.Stack)
@@ -537,7 +537,7 @@ public sealed class OperationLayerImport : Operation
                 new OperationMove(SlicerFile).Execute(progress);
             }
 
-            
+
 
             if (lastProcessedLayerIndex + 1 < SlicerFile.LayerCount && _discardUnmodifiedLayers)
             {
@@ -546,7 +546,7 @@ public sealed class OperationLayerImport : Operation
 
             return true;
         });
-            
+
         return !progress.Token.IsCancellationRequested && result;
     }
 

@@ -6,11 +6,10 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
-using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using UVtools.Core.FileFormats;
+using ZLinq;
 
 namespace UVtools.Core.Operations;
 
@@ -91,17 +90,17 @@ public class OperationEditParameters : Operation
 
 
         var sb = new StringBuilder();
-        var changed = Modifiers.Any(modifier => modifier.HasChanged);
+        var changed = Modifiers.AsValueEnumerable().Any(modifier => modifier.HasChanged);
 
         if (!changed)
         {
             sb.AppendLine("Nothing changed\nDo some changes or cancel the operation.");
         }
 
-        if (Modifiers.Contains(FileFormat.PrintParameterModifier.PositionZ) 
+        if (Modifiers.AsValueEnumerable().Contains(FileFormat.PrintParameterModifier.PositionZ)
             && FileFormat.PrintParameterModifier.PositionZ.HasChanged
             && _skipNumberOfLayer > 0
-            && LayerRangeCount > 1 
+            && LayerRangeCount > 1
             && _setNumberOfLayer + _skipNumberOfLayer < LayerRangeCount)
         {
             sb.AppendLine("Can not change the PositionZ in layers with an active alternating pattern.");

@@ -12,12 +12,12 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Reflection;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -73,7 +73,7 @@ public sealed class ChituboxZipFile : FileFormat
 
     #region Properties
     public Header HeaderSettings { get; } = new();
-        
+
     public override FileFormatType FileType => FileFormatType.Archive;
 
     public override string ConvertMenuGroup => "Chitubox";
@@ -90,7 +90,7 @@ public sealed class ChituboxZipFile : FileFormat
 
         PrintParameterModifier.BottomWaitTimeBeforeCure,
         PrintParameterModifier.WaitTimeBeforeCure,
-            
+
         PrintParameterModifier.BottomExposureTime,
         PrintParameterModifier.ExposureTime,
 
@@ -141,7 +141,7 @@ public sealed class ChituboxZipFile : FileFormat
 
     public override Size[] ThumbnailsOriginalSize { get; } =
     [
-        new(954, 850), 
+        new(954, 850),
         new(168, 150)
     ];
 
@@ -166,7 +166,7 @@ public sealed class ChituboxZipFile : FileFormat
     public override float DisplayHeight
     {
         get => HeaderSettings.MachineY;
-        set => base.DisplayHeight = HeaderSettings.MachineY = RoundDisplaySize(value); 
+        set => base.DisplayHeight = HeaderSettings.MachineY = RoundDisplaySize(value);
     }
 
     public override float MachineZ
@@ -434,7 +434,7 @@ public sealed class ChituboxZipFile : FileFormat
 
                 foreach (var propertyInfo in HeaderSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
+                    var displayNameAttribute = propertyInfo.GetCustomAttributes(false).AsValueEnumerable().OfType<DisplayNameAttribute>().FirstOrDefault();
                     if (displayNameAttribute is null) continue;
                     if (!splitLine[0].Trim(' ', ';').Equals(displayNameAttribute.DisplayName)) continue;
                     propertyInfo.SetValueFromString(HeaderSettings, splitLine[1].Trim());
@@ -453,7 +453,7 @@ public sealed class ChituboxZipFile : FileFormat
             {
                 if(!zipEntry.Name.EndsWith(".png")) continue;
                 var filename = Path.GetFileNameWithoutExtension(zipEntry.Name);
-                if (!filename.All(char.IsDigit)) continue;
+                if (!filename.AsValueEnumerable().All(char.IsDigit)) continue;
                 if (!uint.TryParse(filename, out var layerIndex)) continue;
                 HeaderSettings.LayerCount = Math.Max(HeaderSettings.LayerCount, layerIndex);
             }
@@ -484,7 +484,7 @@ public sealed class ChituboxZipFile : FileFormat
     protected override void PartialSaveInternally(OperationProgress progress)
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
-        var entriesToRemove = outputFile.Entries.Where(zipEntry => zipEntry.Name.EndsWith(".gcode")).ToArray();
+        var entriesToRemove = outputFile.Entries.AsValueEnumerable().Where(zipEntry => zipEntry.Name.EndsWith(".gcode")).ToArray();
         foreach (var zipEntry in entriesToRemove)
         {
             zipEntry.Delete();

@@ -10,18 +10,17 @@
 
 using BinarySerialization;
 using Emgu.CV;
-using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -290,12 +289,12 @@ public sealed class PHZFile : FileFormat
     public class Preview
     {
         /// <summary>
-        /// Gets the X dimension of the preview image, in pixels. 
+        /// Gets the X dimension of the preview image, in pixels.
         /// </summary>
         [FieldOrder(0)] public uint ResolutionX { get; set; }
 
         /// <summary>
-        /// Gets the Y dimension of the preview image, in pixels. 
+        /// Gets the Y dimension of the preview image, in pixels.
         /// </summary>
         [FieldOrder(1)] public uint ResolutionY { get; set; }
 
@@ -449,7 +448,7 @@ public sealed class PHZFile : FileFormat
         public void Encode(Mat image, uint layerIndex)
         {
             List<byte> rawData = [];
-                
+
             //byte color = byte.MaxValue >> 1;
             byte color = byte.MaxValue;
             uint stride = 0;
@@ -482,7 +481,7 @@ public sealed class PHZFile : FileFormat
                 var span = image.GetRowByteSpan(y);
                 for (int x = 0; x < span.Length; x++)
                 {
-                        
+
                     var grey7 = (byte)((span[x] >> 1) & 0x7f);
                     if (grey7 > 0x7c)
                     {
@@ -511,8 +510,8 @@ public sealed class PHZFile : FileFormat
             }
 
 
-            EncodedRle = Parent.HeaderSettings.EncryptionKey > 0 
-                ? LayerRleCrypt(Parent.HeaderSettings.EncryptionKey, layerIndex, rawData) 
+            EncodedRle = Parent.HeaderSettings.EncryptionKey > 0
+                ? LayerRleCrypt(Parent.HeaderSettings.EncryptionKey, layerIndex, rawData)
                 : rawData.ToArray();
 
             DataSize = (uint) EncodedRle.Length;
@@ -559,7 +558,7 @@ public sealed class PHZFile : FileFormat
         PrintParameterModifier.LiftHeight,
         PrintParameterModifier.LiftSpeed,
         PrintParameterModifier.RetractSpeed,
-            
+
 
         PrintParameterModifier.BottomLightPWM,
         PrintParameterModifier.LightPWM
@@ -572,7 +571,7 @@ public sealed class PHZFile : FileFormat
 
     public override Size[] ThumbnailsOriginalSize { get; } =
     [
-        new(400, 300), 
+        new(400, 300),
         new(200, 125)
     ];
 
@@ -832,7 +831,7 @@ public sealed class PHZFile : FileFormat
         {
             var image = thumbnails[i];
             if (image is null) continue;
-            
+
             var previewBytes = EncodeChituImageRGB15Rle(image);
             if (previewBytes.Length == 0) continue;
 
@@ -1009,7 +1008,7 @@ public sealed class PHZFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    
+
                     using (var mat = LayersDefinitions[layerIndex].Decode((uint)layerIndex))
                     {
                         _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
@@ -1053,7 +1052,7 @@ public sealed class PHZFile : FileFormat
     #region Static Methods
     public static byte[] LayerRleCrypt(uint seed, uint layerIndex, IEnumerable<byte> input)
     {
-        var result = input.ToArray();
+        var result = input.AsValueEnumerable().ToArray();
         LayerRleCryptBuffer(seed, layerIndex, result);
         return result;
     }

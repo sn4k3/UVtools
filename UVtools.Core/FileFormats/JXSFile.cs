@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -22,6 +21,7 @@ using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -354,7 +354,7 @@ public sealed class JXSFile : FileFormat
             if (line.StartsWith(GCode.CommandShowImageM6054.Command))
             {
                 var match = Regex.Match(line, GCode.GetShowImageString(@"([0-9]+)"));
-                
+
                 if (!match.Success || match.Groups.Count <= 1)
                 {
                     throw new InvalidDataException($"Unable to parse layer index from: {line}");
@@ -403,7 +403,7 @@ public sealed class JXSFile : FileFormat
             {
                 lastG0 = line;
             }
-            
+
             ControlFile.Actions.Add([
                 "gcode", line
             ]);
@@ -435,7 +435,7 @@ public sealed class JXSFile : FileFormat
                 {
                     if (!propertyInfo.CanWrite) continue;
                     var customAttributes = propertyInfo.GetCustomAttributes();
-                    if (customAttributes.Any(attribute =>
+                    if (customAttributes.AsValueEnumerable().Any(attribute =>
                         {
                             var type = attribute.GetType();
                             if (type == typeof(XmlIgnoreAttribute)) return true;
@@ -560,7 +560,7 @@ public sealed class JXSFile : FileFormat
                 if (propertyInfo.Name.Equals("Item")) continue;
 
                 var customAttributes = propertyInfo.GetCustomAttributes();
-                if (customAttributes.Any(attribute =>
+                if (customAttributes.AsValueEnumerable().Any(attribute =>
                 {
                     var type = attribute.GetType();
                     if (type == typeof(XmlIgnoreAttribute)) return true;
@@ -586,7 +586,7 @@ public sealed class JXSFile : FileFormat
     protected override void PartialSaveInternally(OperationProgress progress)
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
-        var entriesToRemove = outputFile.Entries.Where(zipEntry => zipEntry.Name.EndsWith(".ini") || zipEntry.Name.EndsWith(".json")).ToArray();
+        var entriesToRemove = outputFile.Entries.AsValueEnumerable().Where(zipEntry => zipEntry.Name.EndsWith(".ini") || zipEntry.Name.EndsWith(".json")).ToArray();
         foreach (var zipEntry in entriesToRemove)
         {
             zipEntry.Delete();
@@ -604,7 +604,7 @@ public sealed class JXSFile : FileFormat
                 if (propertyInfo.Name.Equals("Item")) continue;
 
                 var customAttributes = propertyInfo.GetCustomAttributes();
-                if (customAttributes.Any(attribute =>
+                if (customAttributes.AsValueEnumerable().Any(attribute =>
                     {
                         var type = attribute.GetType();
                         if (type == typeof(XmlIgnoreAttribute)) return true;

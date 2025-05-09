@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using UVtools.Core.Dialogs;
@@ -12,6 +11,7 @@ using UVtools.UI.Controls;
 using UVtools.UI.Controls.Suggestions;
 using UVtools.UI.Extensions;
 using AvaloniaStatic = UVtools.UI.Controls.AvaloniaStatic;
+using ZLinq;
 
 namespace UVtools.UI.Windows;
 
@@ -124,7 +124,7 @@ public partial class SuggestionSettingsWindow : WindowEx
 
         if (highlightSuggestion is not null)
         {
-            SelectedSuggestion = Suggestions.FirstOrDefault(suggestion => suggestion.GetType() == highlightSuggestion.GetType());
+            SelectedSuggestion = Suggestions.AsValueEnumerable().FirstOrDefault(suggestion => suggestion.GetType() == highlightSuggestion.GetType());
         }
     }
 
@@ -213,7 +213,7 @@ public partial class SuggestionSettingsWindow : WindowEx
                 await this.MessageBoxError("Unable to import settings, file may be malformed.", "Error while trying to import the settings");
                 return;
             }
-            
+
             if (_activeSuggestion.GetType() != suggestion.GetType())
             {
                 await this.MessageBoxError($"Unable to import '{suggestion.GetType().Name}' to '{_activeSuggestion.GetType().Name}', the type does not match the active suggestion.\n" +

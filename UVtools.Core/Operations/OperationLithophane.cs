@@ -13,12 +13,12 @@ using System;
 using System.Collections.Concurrent;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
+using ZLinq;
 
 namespace UVtools.Core.Operations;
 
@@ -315,7 +315,7 @@ public class OperationLithophane : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationLithophane) obj);
     }
-    
+
     #endregion
 
     #region Methods
@@ -342,9 +342,9 @@ public class OperationLithophane : Operation
     {
         var mat = GetSourceMat();
         if (mat is null) return null;
-        
+
         if (_resizeFactor != 100) mat.Resize((double)_resizeFactor / 100.0);
-        
+
         if (_enhanceContrast) CvInvoke.EqualizeHist(mat, mat);
         if (_brightnessGain != 0)
         {
@@ -361,7 +361,7 @@ public class OperationLithophane : Operation
 
         if (_removeNoiseIterations > 0) CvInvoke.MorphologyEx(mat, mat, MorphOp.Open, EmguExtensions.Kernel3x3Rectangle, EmguExtensions.AnchorCenter, _removeNoiseIterations, BorderType.Reflect101, default);
         if (_gapClosingIterations > 0) CvInvoke.MorphologyEx(mat, mat, MorphOp.Close, EmguExtensions.Kernel3x3Rectangle, EmguExtensions.AnchorCenter, _gapClosingIterations, BorderType.Reflect101, default);
-        
+
         if (_rotate != RotateDirection.None) CvInvoke.Rotate(mat, mat, (RotateFlags) _rotate);
         if (_mirror)
         {
@@ -409,7 +409,7 @@ public class OperationLithophane : Operation
                     "Unable to continue due to no threshold layers was generated, either by lack of pixels or by using a short range.");
             }
 
-            thresholdLayers = layersBag.OrderBy(pair => pair.Key).Select(pair => pair.Value).ToArray();
+            thresholdLayers = layersBag.AsValueEnumerable().OrderBy(pair => pair.Key).Select(pair => pair.Value).ToArray();
 
             if (!_oneLayerPerThreshold)
             {
@@ -488,15 +488,15 @@ public class OperationLithophane : Operation
             int baseLayerCount = (int)(_baseThickness / _layerHeight);
             var newLayers = new Layer[thresholdLayers.Length + baseLayerCount];
             using var baseMat = SlicerFile.CreateMat();
-            
+
             switch (_baseType)
             {
                 case LithophaneBaseType.Square:
                 {
                     var rectangle = new Rectangle(
                         baseMat.Width / 2 - mat.Width / 2 - _baseMargin / 2,
-                        baseMat.Height / 2 - mat.Height / 2 - _baseMargin / 2, 
-                        mat.Width + _baseMargin, 
+                        baseMat.Height / 2 - mat.Height / 2 - _baseMargin / 2,
+                        mat.Width + _baseMargin,
                         mat.Height + _baseMargin);
                     CvInvoke.Rectangle(baseMat, rectangle, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                     break;
@@ -510,7 +510,7 @@ public class OperationLithophane : Operation
                     break;
                 }
             }
-            
+
             var baseLayer = new Layer(baseMat, SlicerFile);
             newLayers[0] = baseLayer;
             for (int i = 1; i < baseLayerCount; i++)
@@ -530,7 +530,7 @@ public class OperationLithophane : Operation
 
             SlicerFile.Layers = thresholdLayers;
         }, true);
-        
+
 
         using var bgrMat = new Mat();
         CvInvoke.CvtColor(mat, bgrMat, ColorConversion.Gray2Bgr);

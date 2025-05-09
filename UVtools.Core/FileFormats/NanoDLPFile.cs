@@ -12,7 +12,6 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -20,6 +19,7 @@ using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -47,7 +47,7 @@ public sealed class NanoDLPFile : FileFormat
         public int FormatVersion { get; set; } = 2;
 
         /// <summary>
-        /// Manufacturer or target printer 
+        /// Manufacturer or target printer
         /// </summary>
         public string Distro { get; set; } = "generic";
 
@@ -62,7 +62,7 @@ public sealed class NanoDLPFile : FileFormat
         public string Version { get; set; } = About.VersionString;
 
         /// <summary>
-        /// OS used to export it 
+        /// OS used to export it
         /// </summary>
         public string OS { get; set; } = RuntimeInformation.RuntimeIdentifier;
 
@@ -152,13 +152,13 @@ public sealed class NanoDLPFile : FileFormat
         public float SupportLayerNumber { get; set; } = DefaultBottomLayerCount;
         public float Thickness { get; set; } = DefaultLayerHeight;
         public float XOffset { get; set; }
-        public float YOffset { get; set; } 
-        public float ZOffset { get; set; } 
-        public float XPixelSize { get; set; } 
-        public float YPixelSize { get; set; } 
-        public string? Mask { get; set; } 
-        public bool SliceFromZero { get; set; } 
-        public bool DisableValidator { get; set; } 
+        public float YOffset { get; set; }
+        public float ZOffset { get; set; }
+        public float XPixelSize { get; set; }
+        public float YPixelSize { get; set; }
+        public string? Mask { get; set; }
+        public bool SliceFromZero { get; set; }
+        public bool DisableValidator { get; set; }
         public byte AutoCenter { get; set; }
         public bool PreviewGenerate { get; set; }
         public bool Running { get; set; }
@@ -590,7 +590,7 @@ public sealed class NanoDLPFile : FileFormat
                 OverrideManifest.AntiAlias = Math.Clamp(value, (byte)1, (byte)16);
             }
             base.AntiAliasing = SlicerManifest.AntiAlias = ProfileManifest.AntiAlias = Math.Clamp(value, (byte)1, (byte)16);
-        } 
+        }
     }
 
 
@@ -630,7 +630,7 @@ public sealed class NanoDLPFile : FileFormat
             {
                 base.TransitionLayerCount = ProfileManifest.TransitionalLayer = (ushort)Math.Min(value, MaximumPossibleTransitionLayerCount);
             }
-            
+
         }
     }
 
@@ -977,7 +977,7 @@ public sealed class NanoDLPFile : FileFormat
         {
             outputFile.CreateEntryFromContent(ThumbnailMetaFileName, _3dMetaBytes, ZipArchiveMode.Create);
         }
-        
+
         EncodeThumbnailsInZip(outputFile, progress, ThumbnailFileName);
         EncodeLayersInZip(outputFile, IndexStartNumber.One, progress);
     }
@@ -1098,7 +1098,7 @@ public sealed class NanoDLPFile : FileFormat
         GCode.AppendLine();
 
 
-        
+
         if (PlateManifest.LayersCount == 0)
         {
             uint layerCount = 0;
@@ -1107,7 +1107,7 @@ public sealed class NanoDLPFile : FileFormat
             {
                 if (!zipEntry.Name.EndsWith(".png")) continue;
                 var filename = Path.GetFileNameWithoutExtension(zipEntry.Name);
-                if (!filename.All(char.IsDigit)) continue;
+                if (!filename.AsValueEnumerable().All(char.IsDigit)) continue;
                 if (!uint.TryParse(filename, out var layerIndex)) continue;
                 layerCount = Math.Max(layerCount, layerIndex);
             }

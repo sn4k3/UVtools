@@ -7,7 +7,7 @@
  */
 using System;
 using System.Drawing;
-using System.Linq;
+using ZLinq;
 
 namespace UVtools.Core.Extensions;
 
@@ -39,27 +39,27 @@ public static class RectangleExtensions
     /// </summary>
     /// <param name="rectangles"></param>
     /// <returns>The smallest rectangle</returns>
-    public static Rectangle SmallestRectangle(params Rectangle[] rectangles) => rectangles.MinBy(rectangle => rectangle.Perimeter());
+    public static Rectangle SmallestRectangle(params Rectangle[] rectangles) => rectangles.AsValueEnumerable().MinBy(rectangle => rectangle.Perimeter());
 
     /// <summary>
     /// Gets the smallest rectangle among all rectangles
     /// </summary>
     /// <param name="rectangles"></param>
     /// <returns>The smallest rectangle</returns>
-    public static RectangleF SmallestRectangle(params RectangleF[] rectangles) => rectangles.MinBy(rectangle => rectangle.Perimeter());
+    public static RectangleF SmallestRectangle(params RectangleF[] rectangles) => rectangles.AsValueEnumerable().MinBy(rectangle => rectangle.Perimeter());
 
     /// <summary>
     /// Gets the largest rectangle among all rectangles
     /// </summary>
     /// <param name="rectangles"></param>
     /// <returns>The largest rectangle</returns>
-    public static Rectangle LargestRectangle(params Rectangle[] rectangles) => rectangles.MaxBy(rectangle => rectangle.Perimeter());
+    public static Rectangle LargestRectangle(params Rectangle[] rectangles) => rectangles.AsValueEnumerable().MaxBy(rectangle => rectangle.Perimeter());
 
     /// <summary>
     /// Gets the largest rectangle among all rectangles
     /// </summary>
     /// <param name="rectangles"></param>
     /// <returns>The largest rectangle</returns>
-    public static RectangleF LargestRectangle(params RectangleF[] rectangles) => rectangles.MaxBy(rectangle => rectangle.Perimeter());
+    public static RectangleF LargestRectangle(params RectangleF[] rectangles) => rectangles.AsValueEnumerable().MaxBy(rectangle => rectangle.Perimeter());
 
 }

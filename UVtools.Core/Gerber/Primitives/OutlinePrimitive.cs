@@ -14,9 +14,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
 using UVtools.Core.Extensions;
+using ZLinq;
 
 namespace UVtools.Core.Gerber.Primitives;
 
@@ -151,8 +151,8 @@ public class OutlinePrimitive : Primitive
     public override Primitive Clone()
     {
         var primitive = MemberwiseClone() as OutlinePrimitive;
-        primitive!.CoordinatesExpression = primitive.CoordinatesExpression.ToArray();
-        primitive.Coordinates = primitive.Coordinates.ToArray();
+        primitive!.CoordinatesExpression = primitive.CoordinatesExpression.AsValueEnumerable().ToArray();
+        primitive.Coordinates = primitive.Coordinates.AsValueEnumerable().ToArray();
         return primitive;
     }
 }

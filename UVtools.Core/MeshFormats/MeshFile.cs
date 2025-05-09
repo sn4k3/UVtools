@@ -9,10 +9,10 @@
 using System;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Numerics;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using ZLinq;
 
 namespace UVtools.Core.MeshFormats;
 
@@ -40,7 +40,7 @@ public abstract class MeshFile : IDisposable
     public static FileExtension? FindFileExtension(string filePath)
     {
         var ext = Path.GetExtension(filePath);
-        return AvailableMeshFiles.FirstOrDefault(fileExtension => $".{fileExtension.Extension}" == ext);
+        return AvailableMeshFiles.AsValueEnumerable().FirstOrDefault(fileExtension => $".{fileExtension.Extension}" == ext);
     }
 
     public static MeshFile? CreateInstance(string filePath, FileMode fileMode, MeshFileFormat fileFormat = MeshFileFormat.BINARY, FileFormat? slicerFile = null)
@@ -101,7 +101,7 @@ public abstract class MeshFile : IDisposable
     /// </summary>
     public uint TriangleCount { get; protected set; }
     #endregion
-        
+
     #region Constructor
     protected MeshFile(string filePath, FileMode fileMode, MeshFileFormat meshFileFormat = MeshFileFormat.BINARY, FileFormat? slicerFile = null)
     {

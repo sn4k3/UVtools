@@ -13,13 +13,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using UVtools.Core.Converters;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -2026,7 +2026,7 @@ public sealed class AnycubicFile : FileFormat
             throw new FileLoadException($"Invalid Filemark {FileMarkSettings.Mark}, expected {FileMark.SectionMarkFile}", FileFullPath);
         }
 
-        if (!AvailableVersions.Contains(FileMarkSettings.Version))
+        if (!AvailableVersions.AsValueEnumerable().Contains(FileMarkSettings.Version))
         {
             throw new FileLoadException($"Invalid Version {FileMarkSettings.Version}, expecting {string.Join(" or ", AvailableVersions)}", FileFullPath);
         }
@@ -2183,7 +2183,7 @@ public sealed class AnycubicFile : FileFormat
                     {
                         this[layerIndex] = new Layer((uint)layerIndex, mat, this)
                         {
-                            PositionZ = LayersDefinition.Layers
+                            PositionZ = LayersDefinition.Layers.AsValueEnumerable()
                                 .Where((_, i) => i <= layerIndex)
                                 .Sum(def => def.LayerHeight),
                         };

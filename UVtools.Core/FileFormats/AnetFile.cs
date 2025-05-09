@@ -13,13 +13,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using UVtools.Core.Converters;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 using UVtools.Core.Printer;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -129,7 +129,7 @@ public sealed class AnetFile : FileFormat
         public LayerDef()
         {
         }
-        
+
         public void SetFrom(Layer layer)
         {
             WhitePixelsCount = layer.NonZeroPixelCount; // To be re-set latter while encoding
@@ -560,7 +560,7 @@ public sealed class AnetFile : FileFormat
                             ResolutionX = resolutionX;
                             ResolutionY = resolutionY;
 
-                            var machine = Machine.Machines.FirstOrDefault(machine =>
+                            var machine = Machine.Machines.AsValueEnumerable().FirstOrDefault(machine =>
                                 machine.Brand == PrinterBrand.Anet && machine.ResolutionX == resolutionX &&
                                 machine.ResolutionY == resolutionY);
 

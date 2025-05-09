@@ -515,7 +515,7 @@ public sealed class CrealityCXDLPv1File : FileFormat
         outputFile.WriteSerialize(SlicerInfoSettings);
 
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-            
+
 
         for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
         {

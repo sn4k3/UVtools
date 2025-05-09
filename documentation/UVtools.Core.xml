@@ -328,7 +328,7 @@
         </member>
         <member name="M:UVtools.Core.EmguCV.CMat.Compress(Emgu.CV.Mat,System.Object)">
             <summary>
-            Compresses the <see cref="P:UVtools.Core.EmguCV.CMat.Mat"/> into a byte array. 
+            Compresses the <see cref="P:UVtools.Core.EmguCV.CMat.Mat"/> into a byte array.
             </summary>
             <param name="src"></param>
             <param name="argument"></param>
@@ -543,7 +543,7 @@
         </member>
         <member name="T:UVtools.Core.EmguCV.EmguContours">
             <summary>
-            Utility methods for contour handling.  
+            Utility methods for contour handling.
             Use only with Tree type
             </summary>
         </member>
@@ -3175,7 +3175,7 @@
         </member>
         <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.SlicerAddress">
             <summary>
-            Gets the slicer tablet address 
+            Gets the slicer tablet address
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.SlicerSize">
@@ -3268,12 +3268,12 @@
         </member>
         <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Preview.ResolutionX">
             <summary>
-            Gets the X dimension of the preview image, in pixels. 
+            Gets the X dimension of the preview image, in pixels.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Preview.ResolutionY">
             <summary>
-            Gets the Y dimension of the preview image, in pixels. 
+            Gets the Y dimension of the preview image, in pixels.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Preview.ImageOffset">
@@ -3545,12 +3545,12 @@
         </member>
         <member name="P:UVtools.Core.FileFormats.FDGFile.Preview.ResolutionX">
             <summary>
-            Gets the X dimension of the preview image, in pixels. 
+            Gets the X dimension of the preview image, in pixels.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FDGFile.Preview.ResolutionY">
             <summary>
-            Gets the Y dimension of the preview image, in pixels. 
+            Gets the Y dimension of the preview image, in pixels.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FDGFile.Preview.ImageOffset">
@@ -5781,7 +5781,7 @@
         </member>
         <member name="P:UVtools.Core.FileFormats.FlashForgeSVGXFile.Preview.ResolutionY">
             <summary>
-            Gets the Y dimension of the preview image, in pixels. 
+            Gets the Y dimension of the preview image, in pixels.
             </summary>
         </member>
         <member name="F:UVtools.Core.FileFormats.GooFile.DelayModes.LightOff">
@@ -5849,7 +5849,7 @@
         </member>
         <member name="P:UVtools.Core.FileFormats.NanoDLPFile.NanoDLPMetaManifest.Distro">
             <summary>
-            Manufacturer or target printer 
+            Manufacturer or target printer
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.NanoDLPFile.NanoDLPMetaManifest.Program">
@@ -5864,7 +5864,7 @@
         </member>
         <member name="P:UVtools.Core.FileFormats.NanoDLPFile.NanoDLPMetaManifest.OS">
             <summary>
-            OS used to export it 
+            OS used to export it
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.NanoDLPFile.NanoDLPMetaManifest.Arch">
@@ -6121,12 +6121,12 @@
         </member>
         <member name="P:UVtools.Core.FileFormats.PHZFile.Preview.ResolutionX">
             <summary>
-            Gets the X dimension of the preview image, in pixels. 
+            Gets the X dimension of the preview image, in pixels.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PHZFile.Preview.ResolutionY">
             <summary>
-            Gets the Y dimension of the preview image, in pixels. 
+            Gets the Y dimension of the preview image, in pixels.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PHZFile.Preview.ImageOffset">

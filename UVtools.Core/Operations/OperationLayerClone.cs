@@ -10,6 +10,7 @@ using System;
 using System.Linq;
 using System.Text;
 using UVtools.Core.FileFormats;
+using ZLinq;
 
 namespace UVtools.Core.Operations;
 
@@ -107,7 +108,7 @@ public sealed class OperationLayerClone : Operation
         uint totalClones = (LayerIndexEnd - LayerIndexStart + 1) * Clones;
         progress.Reset(ProgressAction, totalClones);
 
-        var oldLayers = SlicerFile.ToArray();
+        var oldLayers = SlicerFile.AsValueEnumerable().ToArray();
 
         SlicerFile.Init(SlicerFile.LayerCount + totalClones);
 
@@ -122,7 +123,7 @@ public sealed class OperationLayerClone : Operation
             {
                 oldLayers[layerIndex].PositionZ += incrementedPositionZ;
             }
-            
+
             if (layerIndex < LayerIndexStart || layerIndex > LayerIndexEnd) continue;
             float increment = SlicerFile[layerIndex].RelativePositionZ;
             for (uint i = 0; i < _clones; i++)

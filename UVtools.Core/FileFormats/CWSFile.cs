@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml.Serialization;
@@ -20,6 +19,7 @@ using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -245,7 +245,7 @@ public sealed class CWSFile : FileFormat
         [DisplayName("Flip Y")] public bool FlipY { get; set; }
         [DisplayName("Number of Slices")] public uint LayersNum { get; set; }
 
-        // ;(****Machine Configuration ******)  
+        // ;(****Machine Configuration ******)
         [DisplayName("Platform X Size")] public float PlatformXSize { get; set; }
         [DisplayName("Platform Y Size")] public float PlatformYSize { get; set; }
         [DisplayName("Platform Z Size")] public float PlatformZSize { get; set; }
@@ -254,7 +254,7 @@ public sealed class CWSFile : FileFormat
         [DisplayName("Max Z Feedrate")] public ushort MaxZFeedrate { get; set; } = 200;
         [DisplayName("Machine Type")] public string MachineType { get; set; } = "UV_LCD";
 
-        // ;(****UVtools Configuration ******)  
+        // ;(****UVtools Configuration ******)
         [DisplayName("Bottom Layer Light PWM")] public byte BottomLightPWM { get; set; } = 255;
         [DisplayName("Layer Light PWM")] public byte LightPWM { get; set; } = 255;
     }
@@ -277,7 +277,7 @@ public sealed class CWSFile : FileFormat
         [DisplayName("lift_when_finished")] public byte LiftWhenFinished { get; set; } = 80;
     }
 
-        
+
 
     #endregion
 
@@ -358,8 +358,8 @@ public sealed class CWSFile : FileFormat
         get => SliceSettings.Xres > 0 ? SliceSettings.Xres : SliceBuildConfig.XResolution;
         set
         {
-            SliceBuildConfig.XResolution = 
-                OutputSettings.XResolution = 
+            SliceBuildConfig.XResolution =
+                OutputSettings.XResolution =
                     SliceSettings.Xres = (ushort) value;
             base.ResolutionX = value;
         }
@@ -370,8 +370,8 @@ public sealed class CWSFile : FileFormat
         get => SliceSettings.Yres > 0 ? SliceSettings.Yres : SliceBuildConfig.YResolution;
         set
         {
-            SliceBuildConfig.YResolution = 
-                OutputSettings.YResolution = 
+            SliceBuildConfig.YResolution =
+                OutputSettings.YResolution =
                     SliceSettings.Yres = (ushort) value;
             base.ResolutionY = value;
         }
@@ -484,7 +484,7 @@ public sealed class CWSFile : FileFormat
         get => TimeConverter.MillisecondsToSeconds(OutputSettings.LayerTime);
         set
         {
-            OutputSettings.LayerTime = 
+            OutputSettings.LayerTime =
                 SliceSettings.LayersExpoMs = TimeConverter.SecondsToMillisecondsUint(value);
             base.ExposureTime = value;
         }
@@ -501,13 +501,13 @@ public sealed class CWSFile : FileFormat
         get => OutputSettings.ZBottomLiftFeedRate;
         set => base.BottomLiftSpeed = OutputSettings.ZBottomLiftFeedRate = MathF.Round(value, 2);
     }
-        
+
 
     public override float LiftSpeed
     {
         get => OutputSettings.ZLiftFeedRate;
         set =>
-            base.LiftSpeed = 
+            base.LiftSpeed =
                 OutputSettings.ZLiftFeedRate =
                     SliceSettings.LiftUpSpeed = MathF.Round(value, 2);
     }
@@ -631,7 +631,7 @@ public sealed class CWSFile : FileFormat
 
             foreach (var propertyInfo in SliceSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
-                var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
+                var displayNameAttribute = propertyInfo.GetCustomAttributes(false).AsValueEnumerable().OfType<DisplayNameAttribute>().FirstOrDefault();
                 if (displayNameAttribute is null) continue;
                 tw.WriteLine($"{displayNameAttribute.DisplayName.PadRight(24)}= {propertyInfo.GetValue(SliceSettings)}");
             }
@@ -667,9 +667,9 @@ public sealed class CWSFile : FileFormat
                 Clear();
                 throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", FileFullPath);
             }
-                    
 
-            entry = inputFile.Entries.FirstOrDefault(e => e.Name.EndsWith(".slicing"));
+
+            entry = inputFile.Entries.AsValueEnumerable().FirstOrDefault(e => e.Name.EndsWith(".slicing"));
 
             if (entry is not null)
             {
@@ -708,7 +708,7 @@ public sealed class CWSFile : FileFormat
 
                 foreach (var propertyInfo in SliceSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
+                    var displayNameAttribute = propertyInfo.GetCustomAttributes(false).AsValueEnumerable().OfType<DisplayNameAttribute>().FirstOrDefault();
                     if (displayNameAttribute is null) continue;
                     if (!splitLine[0].Trim().Equals(displayNameAttribute.DisplayName)) continue;
                     propertyInfo.SetValueFromString(SliceSettings, splitLine[1].Trim());
@@ -717,7 +717,7 @@ public sealed class CWSFile : FileFormat
             tr.Close();
         }
 
-        entry = inputFile.Entries.FirstOrDefault(e => e.Name.EndsWith(".gcode"));
+        entry = inputFile.Entries.AsValueEnumerable().FirstOrDefault(e => e.Name.EndsWith(".gcode"));
         if (entry is null)
         {
             Clear();
@@ -742,7 +742,7 @@ public sealed class CWSFile : FileFormat
 
                 foreach (var propertyInfo in OutputSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
+                    var displayNameAttribute = propertyInfo.GetCustomAttributes(false).AsValueEnumerable().OfType<DisplayNameAttribute>().FirstOrDefault();
                     if (displayNameAttribute is null) continue;
                     if (!splitLine[0].Trim(' ', ';', '(').Equals(displayNameAttribute.DisplayName)) continue;
                     try
@@ -753,7 +753,7 @@ public sealed class CWSFile : FileFormat
                     {
                         // ignored
                     }
-                            
+
                     //Debug.WriteLine(splitLine[1].Trim(' ', ')', 'm', 'n', '/'));
                 }
             }
@@ -763,7 +763,7 @@ public sealed class CWSFile : FileFormat
         Init(OutputSettings.LayersNum, DecodeType == FileDecodeType.Partial);
 
         if (LayerCount <= 0) return;
-        
+
         // Must discover png depth grayscale or color
         if (DecodeType == FileDecodeType.Full)
         {
@@ -796,7 +796,7 @@ public sealed class CWSFile : FileFormat
 
         foreach (var propertyInfo in OutputSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
-            var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
+            var displayNameAttribute = propertyInfo.GetCustomAttributes(false).AsValueEnumerable().OfType<DisplayNameAttribute>().FirstOrDefault();
             if (displayNameAttribute is null) continue;
             if (propertyInfo.Name.Equals(nameof(OutputSettings.LayersNum)))
             {
@@ -908,13 +908,13 @@ public sealed class CWSFile : FileFormat
 
             foreach (var propertyInfo in SliceSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
-                var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
+                var displayNameAttribute = propertyInfo.GetCustomAttributes(false).AsValueEnumerable().OfType<DisplayNameAttribute>().FirstOrDefault();
                 if (displayNameAttribute is null) continue;
                 tw.WriteLine($"{displayNameAttribute.DisplayName.PadRight(24)}= {propertyInfo.GetValue(SliceSettings)}");
             }
         }
 
-        var entriesToRemove = outputFile.Entries.Where(zipEntry => zipEntry.Name.EndsWith(".gcode")).ToArray();
+        var entriesToRemove = outputFile.Entries.AsValueEnumerable().Where(zipEntry => zipEntry.Name.EndsWith(".gcode")).ToArray();
         foreach (var zipEntry in entriesToRemove)
         {
             zipEntry.Delete();

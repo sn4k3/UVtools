@@ -11,6 +11,7 @@ using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 using UVtools.UI.Extensions;
 using UVtools.UI.Windows;
+using ZLinq;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace UVtools.UI.Controls.Tools;
@@ -62,7 +63,7 @@ public partial class ToolPCBExposureControl : ToolControl
         {
             var files = args.Data.GetFiles();
             if (files is null) return;
-            Operation.AddFiles(files.Select(file => file.TryGetLocalPath()).ToArray()!);
+            Operation.AddFiles(files.AsValueEnumerable().Select(file => file.TryGetLocalPath()).ToArray()!);
         });
 
         _timer = new Timer(50)
@@ -120,9 +121,9 @@ public partial class ToolPCBExposureControl : ToolControl
                 return;
             }
 
-            if (!OperationPCBExposure.ValidExtensions.Any(extension => _selectedFile.IsExtension(extension)) || !_selectedFile.Exists) return;
+            if (!OperationPCBExposure.ValidExtensions.AsValueEnumerable().Any(extension => _selectedFile.IsExtension(extension)) || !_selectedFile.Exists) return;
             var file = (OperationPCBExposure.PCBExposureFile)_selectedFile.Clone();
-            file.InvertPolarity = ExcellonDrillFormat.Extensions.Any(extension => file.IsExtension(extension));
+            file.InvertPolarity = ExcellonDrillFormat.Extensions.AsValueEnumerable().Any(extension => file.IsExtension(extension));
             _previewImage?.Dispose();
             using var mat = Operation.GetMat(file);
 
@@ -151,7 +152,7 @@ public partial class ToolPCBExposureControl : ToolControl
 
         if (files.Count == 0) return;
 
-        Operation.AddFiles(files.Select(file => file.TryGetLocalPath()!).ToArray());
+        Operation.AddFiles(files.AsValueEnumerable().Select(file => file.TryGetLocalPath()!).ToArray());
     }
 
     public async Task AddFilesFromZip()

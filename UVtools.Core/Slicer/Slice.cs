@@ -7,7 +7,6 @@
  */
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Slicer;
@@ -20,7 +19,7 @@ public class Slice : List<SliceLine>
         if (Count < 3)
             return false;
 
-        var allPoints = this.ToList();
+        var allPoints = this.ToArray();
         var pointFreq = new Dictionary<SliceLine, int>();
 
         // There can't be any hanging lines. Verify every point connects to at least one other line.

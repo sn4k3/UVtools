@@ -153,7 +153,7 @@ public sealed class AnycubicZipFile : FileFormat
         public int[] Preview2ImageSize { get; set; } = [336, 252];
 
         [JsonPropertyName("raster_segments_capacity")]
-        public uint RasterSegmentsCapacity { get; set; } = 100000;
+        public uint RasterSegmentsCapacity { get; set; }
 
         [JsonPropertyName("raster_antialiasing")]
         public byte RasterAntialiasing { get; set; } = 8;
@@ -348,7 +348,7 @@ public sealed class AnycubicZipFile : FileFormat
     public sealed class SettingsResinSlicePara
     {
         [JsonPropertyName("anti_count")]
-        public byte AntiCount { get; set; }
+        public byte AntiCount { get; set; } = 1;
 
         [JsonPropertyName("blur_level")]
         public byte BlurLevel { get; set; }

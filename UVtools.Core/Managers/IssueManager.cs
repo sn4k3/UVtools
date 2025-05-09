@@ -15,6 +15,7 @@ using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
+using ZLinq;
 
 namespace UVtools.Core.Managers;
 
@@ -37,7 +38,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
     /// <returns></returns>
     public MainIssue[] GetVisible()
     {
-        return this.Where(mainIssue => !IgnoredIssues.Contains(mainIssue)).ToArray();
+        return this.AsValueEnumerable().Where(mainIssue => !IgnoredIssues.Contains(mainIssue)).ToArray();
     }
 
     public static Issue[] GetIssues(IEnumerable<MainIssue> issues)
@@ -123,11 +124,11 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
         config ??= new IssuesDetectionConfiguration();
         var (
-            islandConfig, 
-            overhangConfig, 
-            resinTrapConfig, 
-            touchBoundConfig, 
-            printHeightConfig, 
+            islandConfig,
+            overhangConfig,
+            resinTrapConfig,
+            touchBoundConfig,
+            printHeightConfig,
             emptyLayerConfig
             ) = config;
 
@@ -153,7 +154,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
         List<MainIssue> GetResult()
         {
-            return result.OrderBy(mainIssue => mainIssue.Type).ThenBy(issue => issue.StartLayerIndex).ThenByDescending(issue => issue.Area).ToList();
+            return result.AsValueEnumerable().OrderBy(mainIssue => mainIssue.Type).ThenBy(issue => issue.StartLayerIndex).ThenByDescending(issue => issue.Area).ToList();
         }
 
         void GenerateAirMap(IInputArray input, IInputOutputArray output, VectorOfVectorOfPoint? externals)
@@ -169,6 +170,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
             if (SlicerFile.PrintHeight > printHeightWithOffset)
             {
                 var issues = (from layer in SlicerFile where layer.PositionZ > printHeightWithOffset select new Issue(layer)).ToList();
+
                 if(issues.Count > 0) AddIssue(new MainIssue(MainIssue.IssueType.PrintHeight, issues));
             }
         }
@@ -179,8 +181,8 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
             {
                 var layer = SlicerFile[layerIndex];
                 if (!layer.IsEmpty) continue;
-                
-                if (!emptyLayerConfig.IgnoreStartingEmptyLayers 
+
+                if (!emptyLayerConfig.IgnoreStartingEmptyLayers
                     && emptyLayerConfig is {IgnoreLooseEmptyLayers: false, IgnoreEndingEmptyLayers: false})
                 {
                     AddIssue(new MainIssue(MainIssue.IssueType.EmptyLayer, new Issue(layer)));
@@ -279,7 +281,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                         int miny = int.MaxValue;
                         int maxx = 0;
                         int maxy = 0;
-                        
+
                         if (touchTop || touchBottom)
                         {
                             for (int x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++) // Check Top and Bottom bounds
@@ -466,7 +468,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                 // Get array that contains details of each connected component
                                 //var ccStats = stats.GetData();
                                 //stats[i][0]: Left Edge of Connected Component
-                                //stats[i][1]: Top Edge of Connected Component 
+                                //stats[i][1]: Top Edge of Connected Component
                                 //stats[i][2]: Width of Connected Component
                                 //stats[i][3]: Height of Connected Component
                                 //stats[i][4]: Total Area (in pixels) in Connected Component
@@ -499,7 +501,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                                     List<Point> points = [];
                                     uint pixelsSupportingIsland = 0;
-                                    
+
                                     for (int y = rect.Y; y < rect.Bottom; y++)
                                     for (int x = rect.X; x < rect.Right; x++)
                                     {
@@ -581,7 +583,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                             continue;
                                         }
                                     }
-                                    
+
                                     AddIssue(new MainIssue(MainIssue.IssueType.Island, new IssueOfPoints(layer, points, islandBoundingRectangle)));
                                 }
                             }
@@ -670,7 +672,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
             };
 
             /* define all mats up front, reducing allocations */
-            
+
             using var layerAirMap = new Mat();
             Mat? currentAirMap = null;
             /* the first pass does bottom to top, and tracks anything it thinks is a resin trap */
@@ -779,7 +781,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
             for (int layerIndex = resinTraps.Length - 1; layerIndex >= resinTrapConfig.StartLayerIndex; layerIndex--)
             {
                 if (progress.Token.IsCancellationRequested) return GetResult();
-                    
+
                 var curLayer = matCache.Get((uint)layerIndex, 1);
 
                 if (layerIndex == resinTraps.Length - 1)
@@ -850,7 +852,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                     var group = resinTrapGroups[groupIndex];
                                     if (group[^1].layerIndex > layerIndex + 1)
                                     {
-                                        // this group is disconnected from current layer by at least 1 layer, no need to process anything from here anymore 
+                                        // this group is disconnected from current layer by at least 1 layer, no need to process anything from here anymore
                                         //group.Clear();
                                         //resinTrapGroups.Remove(group);
                                         continue;
@@ -862,7 +864,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                         var testContour = group[contourIndex].contour;
 
                                         if (!EmguContours.ContoursIntersect(testContour, resinTraps[layerIndex][x])) continue;
-                                        // if any contours in this group, that are on the previous layer, overlap the new suction area, they are all suction areas 
+                                        // if any contours in this group, that are on the previous layer, overlap the new suction area, they are all suction areas
 
                                         foreach (var item in group)
                                         {
@@ -903,7 +905,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                                 if (overlappingGroupIndexes.Count == 0)
                                 {
-                                    // no overlaps, make a single issue 
+                                    // no overlaps, make a single issue
                                     resinTrapGroups.Add([(resinTraps[layerIndex][x], (uint)layerIndex)]);
                                 }
                                 else if (overlappingGroupIndexes.Count == 1)
@@ -1052,7 +1054,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                     foreach (var group in resinTrapGroups)
                     {
-                        if(group.Any(issue => issue.LayerIndex == 0)) continue; // Not a trap if on plate
+                        if(group.AsValueEnumerable().Any(issue => issue.LayerIndex == 0)) continue; // Not a trap if on plate
                         AddIssue(new MainIssue(MainIssue.IssueType.ResinTrap, group));
                     }
                 },

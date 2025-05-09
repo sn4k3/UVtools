@@ -40,6 +40,7 @@ using AvaloniaStatic = UVtools.UI.Controls.AvaloniaStatic;
 using Point = System.Drawing.Point;
 using Size = System.Drawing.Size;
 using Emgu.CV.Reg;
+using ZLinq;
 
 namespace UVtools.UI;
 
@@ -146,7 +147,7 @@ public partial class MainWindow
                 }
                 else
                 {
-                    if (!SlicerFile.IssueManager.Any(
+                    if (!SlicerFile.IssueManager.AsValueEnumerable().Any(
                             mainIssue => // Find a valid candidate to update layer preview, otherwise quit
                                 mainIssue.IsIssueInBetween(_actualLayer)
                                 && mainIssue.Type is not MainIssue.IssueType.TouchingBound and not MainIssue.IssueType.EmptyLayer)) return;
@@ -731,7 +732,7 @@ public partial class MainWindow
         }*/
     public void AddMaskPoints(Point[] points, bool refreshLayer = true)
     {
-        if (_maskPoints.RemoveAll(points1 => points1.SequenceEqual(points)) <= 0)
+        if (_maskPoints.RemoveAll(points1 => points1.AsValueEnumerable().SequenceEqual(points)) <= 0)
         {
             _maskPoints.Add(points);
         }
@@ -753,7 +754,7 @@ public partial class MainWindow
         {
             foreach (var points in pointsOfPoints)
             {
-                if (_maskPoints.RemoveAll(points1 => points1.SequenceEqual(points)) <= 0)
+                if (_maskPoints.RemoveAll(points1 => points1.AsValueEnumerable().SequenceEqual(points)) <= 0)
                 {
                     _maskPoints.Add(points);
                 }
@@ -1088,7 +1089,7 @@ public partial class MainWindow
             if (_showLayerImageIssues && SlicerFile.IssueManager.Count > 0)
             {
                 //var count = 0;
-                foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer)
+                foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer).AsValueEnumerable()
                              .Where(issue => issue.Parent!.Type
                                  is not MainIssue.IssueType.PrintHeight
                                  and not MainIssue.IssueType.EmptyLayer))
@@ -1442,7 +1443,7 @@ public partial class MainWindow
 
                 // Don't render crosshairs for selected issue that are not on the current layer, or for
                 // issue types that don't have a specific location or bounds.
-                foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer)
+                foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer).AsValueEnumerable()
                              .Where(issue => issue.Parent!.Type
                                  is not MainIssue.IssueType.TouchingBound
                                  and not MainIssue.IssueType.PrintHeight

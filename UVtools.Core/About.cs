@@ -8,12 +8,12 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using ZLinq;
 
 namespace UVtools.Core;
 
@@ -44,36 +44,36 @@ public static class About
     public const string TermsOfUse =
         $"1) License:\n" +
         $"The {Software} is an open-source application distributed under the GNU Affero General Public License v3.0 (AGPL). This license governs your use, modification, and distribution of the {Software}. Please refer to the AGPL license agreement accompanying the {Software} for more details.\n\n" +
-        
+
         $"2) No Liability:\n" +
         $"The {Software} is provided \"as is\" and without any warranties or guarantees of any kind, whether express or implied. In no event shall we (the developers, contributors, or any associated parties) be liable for any damages or liabilities arising out of the use, misuse or inability to use UVtools, including but not limited to any indirect, incidental, or consequential damages, even if we have been advised of the possibility of such damages. You acknowledge that you use the {Software} at your own risk and it is your responsibility to ensure the suitability, accuracy, and reliability of {Software} for your intended purpose.\n\n" +
-        
+
         $"3) Third-Party Components and Services:\n" +
         $"The {Software} may include or rely on third-party components, libraries, or services. These third-party components are subject to their respective licenses and terms of use. We do not assume any responsibility or liability for any third-party components or services used in {Software}.\n\n" +
-        
+
         $"4) Intellectual Property:\n" +
         $"The {Software} may contain intellectual property owned by third parties, such as trademarks, logos, or copyrighted material. Your use of the {Software} does not grant you any rights or licenses to such intellectual property.\n\n" +
 
         $"5) No Support:\n" +
         $"We do not guarantee any support for the {Software}. While we may provide resources such as documentation, forums, or community platforms, we are under no obligation to respond to inquiries, address issues, or provide updates for the {Software}.\n\n" +
-        
+
         $"6) Indemnification:\n" +
         $"You agree to indemnify, defend, and hold us harmless from any claims, damages, liabilities, or expenses arising out of or related to your use of the {Software} or any violation of these terms of use.\n\n" +
-        
+
         $"7) Donations:\n" +
         $"We may accept voluntary donations to support the development and maintenance of {Software}. However, such donations do not grant any additional rights, privileges, or powers to the donor. They are purely voluntary and non-binding. Once a donation is made, it cannot be refunded or reversed.\n\n" +
-        
+
         $"8) Modification of Terms:\n" +
         $"We reserve the right to modify or update these terms of use at any time without prior notice. It is your responsibility to review these terms periodically. Your continued use of the {Software} after any modifications constitutes your acceptance of the updated terms.\n\n" +
-        
+
         $"9) Severability:\n" +
         $"If any provision of these terms of use is found to be invalid or unenforceable, the remaining provisions shall remain in full force and effect.\n\n" +
-        
+
         $"10) Entire Agreement:\n" +
         $"These terms of use in addition with the license constitute the entire agreement between you and us regarding the use of the {Software}, superseding any prior agreements or understandings.\n\n" +
-        
+
         //$"If you have any questions or concerns regarding these terms of use, please contact us via the GitHub page.\n" +
-        $"By using the {Software}, you acknowledge that you have read, understood, and agreed to these terms of use."; 
+        $"By using the {Software}, you acknowledge that you have read, understood, and agreed to these terms of use.";
 
     #region Assembly properties
     public static Assembly CoreAssembly => Assembly.GetExecutingAssembly();
@@ -111,7 +111,7 @@ public static class About
 
             var description = ((AssemblyDescriptionAttribute)attributes[0]).Description + $"{Environment.NewLine}{Environment.NewLine}Available File Formats:";
 
-            return FileFormat.AvailableFormats.SelectMany(fileFormat => fileFormat.FileExtensions).Aggregate(description, (current, fileExtension) => current + $"{Environment.NewLine}- {fileExtension.Description} (.{fileExtension.Extension})");
+            return FileFormat.AvailableFormats.AsValueEnumerable().SelectMany(fileFormat => fileFormat.FileExtensions).Aggregate(description, (current, fileExtension) => current + $"{Environment.NewLine}- {fileExtension.Description} (.{fileExtension.Extension})");
         }
     }
 
@@ -229,7 +229,7 @@ public static class About
                 sb.Append($", {months} month");
                 if (months > 1) sb.Append("(s)");
             }
-            
+
             var days = 31 + now.Day - born.Day;
             if (days >= 31) days -= 31;
             if (days > 0)

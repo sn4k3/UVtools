@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -1126,7 +1126,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
         inputFile.Seek(Header.SignatureOffset, SeekOrigin.Begin);
         var hash = inputFile.ReadBytes(Header.SignatureSize);
-        if (!hash.SequenceEqual(encryptedHash))
+        if (!hash.AsValueEnumerable().SequenceEqual(encryptedHash))
         {
             throw new FileLoadException("The file checksum does not match, malformed file.", FileFullPath);
         }
@@ -1259,9 +1259,10 @@ public sealed class CTBEncryptedFile : FileFormat
         // Fixes virtual bottom properties
         SuppressRebuildPropertiesWork(() =>
         {
-            BottomWaitTimeBeforeCure = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeBeforeCure ?? 0;
-            BottomWaitTimeAfterCure = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
-            BottomWaitTimeAfterLift = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
+            var enumerable = this.AsValueEnumerable();
+            BottomWaitTimeBeforeCure = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeBeforeCure ?? 0;
+            BottomWaitTimeAfterCure = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
+            BottomWaitTimeAfterLift = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
         });
 
         if (!buggyLayers.IsEmpty)
@@ -1306,15 +1307,25 @@ public sealed class CTBEncryptedFile : FileFormat
 
         if (HaveTiltingVat)
         {
-            BottomLiftHeightTotal = LayerHeight;
-            LiftHeightTotal = LayerHeight;
-            if (BottomLiftSpeed > 0.5 || LiftSpeed > 0.5 || BottomRetractSpeed > 0.5 || RetractSpeed > 0.5)
-            {
-                BottomLiftSpeed = 0.05f;
-                LiftSpeed = 0.05f;
-                BottomRetractSpeed = 0.05f;
-                RetractSpeed = 0.05f;
-            }
+            var liftValue = LayerHeight;
+            var speedValue = 60;
+
+
+            BottomLiftHeight = liftValue;
+            BottomLiftHeight2 = liftValue;
+            BottomLiftSpeed = speedValue;
+            BottomLiftSpeed2 = speedValue;
+            BottomRetractHeight2 = liftValue;
+            BottomRetractSpeed = speedValue;
+            BottomRetractSpeed2 = speedValue;
+
+            LiftHeight = liftValue;
+            LiftHeight2 = liftValue;
+            LiftSpeed = speedValue;
+            LiftSpeed2 = speedValue;
+            RetractHeight2 = speedValue;
+            RetractSpeed = speedValue;
+            RetractSpeed2 = speedValue;
         }
 
         Settings.ModifiedTimestampMinutes = (uint)DateTimeExtensions.TimestampMinutes;

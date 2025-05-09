@@ -12,8 +12,8 @@ using Emgu.CV.Structure;
 using System;
 using System.Drawing;
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
+using ZLinq;
 
 namespace UVtools.Core.Gerber.Apertures;
 
@@ -119,9 +119,9 @@ public abstract class Aperture
                 string[] args = ["0"];
                 if (match.Groups.Count >= 4)
                 {
-                    args = args.Concat(match.Groups[3].Value.Split('X', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToArray();
+                    args = args.AsValueEnumerable().Concat(match.Groups[3].Value.Split('X', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToArray();
                 }
-                
+
                 foreach (var primitive in macro)
                 {
                     primitive.ParseExpressions(args);

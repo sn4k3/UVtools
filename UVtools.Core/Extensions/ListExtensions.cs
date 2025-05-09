@@ -7,7 +7,7 @@
  */
 using System.Collections.Generic;
 using System;
-using System.Linq;
+using ZLinq;
 
 namespace UVtools.Core.Extensions;
 
@@ -15,6 +15,6 @@ public static class ListExtensions
 {
     public static List<T> Clone<T>(this List<T> listToClone) where T : class, ICloneable
     {
-        return listToClone.Select(item => (T)item.Clone()).ToList();
+        return listToClone.AsValueEnumerable().Select(item => (T)item.Clone()).ToList();
     }
 }

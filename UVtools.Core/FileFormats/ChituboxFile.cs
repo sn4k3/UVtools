@@ -15,12 +15,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -2165,9 +2165,10 @@ public sealed class ChituboxFile : FileFormat
             // Fixes virtual bottom properties
             SuppressRebuildPropertiesWork(() =>
             {
-                base.BottomWaitTimeBeforeCure = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeBeforeCure ?? 0;
-                base.BottomWaitTimeAfterCure = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
-                base.BottomWaitTimeAfterLift = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
+                var enumerable = this.AsValueEnumerable();
+                base.BottomWaitTimeBeforeCure = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeBeforeCure ?? 0;
+                base.BottomWaitTimeAfterCure = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
+                base.BottomWaitTimeAfterLift = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
             });
         }
     }
@@ -2220,7 +2221,7 @@ public sealed class ChituboxFile : FileFormat
     #region Static Methods
     public static byte[] LayerRleCrypt(uint seed, uint layerIndex, IEnumerable<byte> input)
     {
-        var result = input.ToArray();
+        var result = input.AsValueEnumerable().ToArray();
         LayerRleCryptBuffer(seed, layerIndex, result);
         return result;
     }

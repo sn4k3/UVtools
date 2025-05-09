@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UVtools.Core.EmguCV;
@@ -22,6 +21,7 @@ using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -34,7 +34,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
     private const string HEADER_VALUE_GENERIC = "CXSW3D";
 
     public const byte DEFAULT_VERSION = 4;
-    
+
     #endregion
 
     #region Sub Classes
@@ -167,7 +167,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         [FieldOrder(23)] public uint EncryptionKey { get; set; }
 
         /// <summary>
-        /// Gets the slicer tablet address 
+        /// Gets the slicer tablet address
         /// </summary>
         [FieldOrder(24)] public uint SlicerAddress { get; set; }
 
@@ -305,7 +305,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         [FieldOrder(16)] public uint TransitionLayerCount { get; set; }
         [FieldOrder(17)] public uint Padding1         { get; set; }
         [FieldOrder(18)] public uint Padding2         { get; set; }
-        
+
 
         public override string ToString()
         {
@@ -323,12 +323,12 @@ public sealed class CrealityCXDLPv4File : FileFormat
     public class Preview
     {
         /// <summary>
-        /// Gets the X dimension of the preview image, in pixels. 
+        /// Gets the X dimension of the preview image, in pixels.
         /// </summary>
         [FieldOrder(0)] public uint ResolutionX { get; set; }
 
         /// <summary>
-        /// Gets the Y dimension of the preview image, in pixels. 
+        /// Gets the Y dimension of the preview image, in pixels.
         /// </summary>
         [FieldOrder(1)] public uint ResolutionY { get; set; }
 
@@ -991,7 +991,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         {
             value = Math.Clamp(MathF.Round(value, 2), 0, RetractHeightTotal);
             base.RetractHeight2 = SlicerInfoSettings.RetractHeight2 = value;
-        } 
+        }
     }
 
     public override float RetractSpeed2
@@ -1097,7 +1097,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
     {
         HeaderSettings.PrintParametersSize = (uint)Helpers.Serializer.SizeOf(PrintParametersSettings);
         HeaderSettings.EncryptionKey = 0; // Force disable encryption
-        
+
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.ReadWrite);
         outputFile.Seek(Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.Begin);
 
@@ -1134,7 +1134,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         }
 
 
-       
+
         HeaderSettings.PrintParametersOffsetAddress = (uint)outputFile.Position;
         outputFile.WriteSerialize(PrintParametersSettings);
 
@@ -1196,7 +1196,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
         outputFile.Seek(0, SeekOrigin.Begin);
         outputFile.WriteSerialize(HeaderSettings);
-        
+
         uint checkSum = CalculateCheckSum(outputFile, false);
 
         outputFile.WriteUIntBigEndian(checkSum);
@@ -1329,12 +1329,13 @@ public sealed class CrealityCXDLPv4File : FileFormat
         // Fixes virtual bottom properties
         SuppressRebuildPropertiesWork(() =>
         {
-            BottomWaitTimeBeforeCure = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeBeforeCure ?? 0;
-            BottomWaitTimeAfterCure = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
-            BottomWaitTimeAfterLift = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
-            BottomRetractSpeed = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.RetractSpeed ?? 0;
-            BottomRetractHeight2 = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.RetractHeight2 ?? 0;
-            BottomRetractSpeed2 = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.RetractSpeed2 ?? 0;
+            var enumerable = this.AsValueEnumerable();
+            BottomWaitTimeBeforeCure = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeBeforeCure ?? 0;
+            BottomWaitTimeAfterCure = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
+            BottomWaitTimeAfterLift = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
+            BottomRetractSpeed = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.RetractSpeed ?? 0;
+            BottomRetractHeight2 = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.RetractHeight2 ?? 0;
+            BottomRetractSpeed2 = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.RetractSpeed2 ?? 0;
         });
     }
 
@@ -1386,7 +1387,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         const int bufferSize = 50 * 1024 * 1024;
 
         fs.Seek(0, SeekOrigin.Begin);
-        
+
         // https://github.com/dotnet/runtime/blob/main/src/libraries/System.IO.Hashing/src/System/IO/Hashing/Crc32.Table.cs
         var table = new uint[256];
 
@@ -1422,7 +1423,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
                 checkSum = table[idx] ^ (checkSum >> 8);
             }
         }
-       
+
         if (restorePosition) fs.Seek(position, SeekOrigin.Begin);
 
         return checkSum;
@@ -1433,7 +1434,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
     #region Static Methods
     public static byte[] LayerRleCrypt(uint seed, uint layerIndex, IEnumerable<byte> input)
     {
-        var result = input.ToArray();
+        var result = input.AsValueEnumerable().ToArray();
         LayerRleCryptBuffer(seed, layerIndex, result);
         return result;
     }

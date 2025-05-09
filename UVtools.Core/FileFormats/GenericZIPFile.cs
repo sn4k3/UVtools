@@ -11,11 +11,11 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Xml.Serialization;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -25,7 +25,7 @@ namespace UVtools.Core.FileFormats;
 public class GenericZipManifest
 {
     public string CreatedBy { get; set; } = About.SoftwareWithVersion;
-        
+
     public string UpdatedBy { get; set; } = About.SoftwareWithVersion;
 
     public string CreatedDate { get; set; } = DateTime.UtcNow.ToString("u");
@@ -138,7 +138,7 @@ public sealed class GenericZIPFile : FileFormat
         try
         {
             using var zip = ZipFile.Open(fileFullPath!, ZipArchiveMode.Read);
-            
+
             foreach (var entry in zip.Entries)
             {
                 if (entry.Name == ManifestFileName) return true;
@@ -151,7 +151,7 @@ public sealed class GenericZIPFile : FileFormat
             Debug.WriteLine(e);
             return false;
         }
-            
+
 
         return false;
     }
@@ -196,7 +196,7 @@ public sealed class GenericZIPFile : FileFormat
         {
             if (!zipEntry.Name.EndsWith(".png")) continue;
             var filename = Path.GetFileNameWithoutExtension(zipEntry.Name);
-            if (!filename.All(char.IsDigit)) continue;
+            if (!filename.AsValueEnumerable().All(char.IsDigit)) continue;
             if (!uint.TryParse(filename, out var layerIndex)) continue;
             layerCount = Math.Max(layerCount, layerIndex);
         }

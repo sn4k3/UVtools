@@ -6,7 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using System.Collections.Generic;
 using System.Linq;

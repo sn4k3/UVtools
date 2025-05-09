@@ -43,7 +43,7 @@ public sealed class OperationLayerExportMesh : Operation
 
 
     #endregion
-        
+
     #region Members
     private string _filePath = null!;
     private MeshFile.MeshFileFormat _meshFileFormat = MeshFile.MeshFileFormat.BINARY;
@@ -81,7 +81,7 @@ public sealed class OperationLayerExportMesh : Operation
         {
             sb.AppendLine("The used file extension is invalid.");
         }
-            
+
         return sb.ToString();
     }
 
@@ -227,7 +227,7 @@ public sealed class OperationLayerExportMesh : Operation
                 xyplane0 = mat.GetDataSpan<float>().ToArray();
                 continue;
             }
-            
+
             xyplane1 = mat.GetDataSpan<float>().ToArray();
 
             // Calculate triangles for the xy-planes corresponding to z - 1 and z by marching cubes.
@@ -247,7 +247,7 @@ public sealed class OperationLayerExportMesh : Operation
 
         return true;*/
 
-        /* For the 1st stage, we maintain up to 3 mats, the current layer, the one below us, and the one above us 
+        /* For the 1st stage, we maintain up to 3 mats, the current layer, the one below us, and the one above us
          * (below will be null when current layer is 0, above will be null when currentlayer is layercount-1) */
         /* We init the aboveLayer to the first layer, in the loop coming up we shift above->current->below, so this effectively inits current layer */
         Mat? aboveLayer;
@@ -377,10 +377,10 @@ public sealed class OperationLayerExportMesh : Operation
             {
                 if (foundFaces.ContainsKey(faceType) == false || foundFaces[faceType].Count == 0) continue;
 
-                if (faceType 
-                    is Voxelizer.FaceOrientation.Front 
-                    or Voxelizer.FaceOrientation.Back 
-                    or Voxelizer.FaceOrientation.Top 
+                if (faceType
+                    is Voxelizer.FaceOrientation.Front
+                    or Voxelizer.FaceOrientation.Back
+                    or Voxelizer.FaceOrientation.Top
                     or Voxelizer.FaceOrientation.Bottom)
                 {
                     /* sort the faces by coordinate */
@@ -577,7 +577,7 @@ public sealed class OperationLayerExportMesh : Operation
         progress.ProcessedItems = 0;
         long collapseCount = 0;
 
-        /* Begin Stage 3: Vertical collapse 
+        /* Begin Stage 3: Vertical collapse
          * Since we don't modify the lists/objects and only connect them via doubly linked list
          * we can process each layer independant of the others.
          */
@@ -594,8 +594,8 @@ public sealed class OperationLayerExportMesh : Operation
                 if (point.Value.Parent is not null) continue;
 
 
-                /* deterimine the point below to check. 
-                 * For front/back/left/right its the same X/Y point and Z is different, and Z is done basically by looking at the layer tree below us 
+                /* deterimine the point below to check.
+                 * For front/back/left/right its the same X/Y point and Z is different, and Z is done basically by looking at the layer tree below us
                  * For Top/Bottom its a bit different, the Z stays the same (we query our own layer tree) but the Y coordinate is 1 less */
 
                 float[]? pointBelow = null;

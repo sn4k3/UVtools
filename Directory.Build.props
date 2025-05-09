@@ -37,8 +37,8 @@
         <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
 
         <!-- Versions -->
-        <UVtoolsVersion>5.1.0</UVtoolsVersion>
-        <AvaloniaVersion>11.3.0-beta2</AvaloniaVersion>
+        <UVtoolsVersion>5.1.1</UVtoolsVersion>
+        <AvaloniaVersion>11.3.0</AvaloniaVersion>
 
         <!-- MvvmToolkit -->
         <MvvmToolkitEnableINotifyPropertyChangingSupport>false</MvvmToolkitEnableINotifyPropertyChangingSupport>

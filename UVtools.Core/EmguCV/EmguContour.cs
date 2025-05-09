@@ -14,8 +14,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using UVtools.Core.Extensions;
+using ZLinq;
 
 namespace UVtools.Core.EmguCV;
 
@@ -77,7 +77,7 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
             {
                 _area = CvInvoke.ContourArea(_vector);
             }
-                
+
             return _area;
         }
     }
@@ -112,7 +112,7 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
     /// <summary>
     /// Gets the centroid of the contour
     /// </summary>
-    public Point Centroid => _centroid ??= Moments.M00 == 0 ? new Point(-1,-1) : 
+    public Point Centroid => _centroid ??= Moments.M00 == 0 ? new Point(-1,-1) :
         new Point(
             (int)Math.Round(Moments.M10 / Moments.M00),
             (int)Math.Round(Moments.M01 / Moments.M00));
@@ -219,12 +219,12 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
 
     public void FitCircle(Mat src, MCvScalar color, int thickness = 1, LineType lineType = LineType.EightConnected, int shift = 0)
     {
-        CvInvoke.Circle(src, 
-            MinEnclosingCircle.Center.ToPoint(), 
-            (int) Math.Round(MinEnclosingCircle.Radius), 
-            color, 
-            thickness, 
-            lineType, 
+        CvInvoke.Circle(src,
+            MinEnclosingCircle.Center.ToPoint(),
+            (int) Math.Round(MinEnclosingCircle.Radius),
+            color,
+            thickness,
+            lineType,
             shift);
     }
 
@@ -288,7 +288,7 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
     protected bool Equals(EmguContour other)
     {
         if (Count != other.Count) return false;
-        return _vector.ToArray().SequenceEqual(other.ToArray());
+        return _vector.ToArray().AsValueEnumerable().SequenceEqual(other.AsValueEnumerable().ToArray());
     }
 
     public override bool Equals(object? obj)

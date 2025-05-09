@@ -40,7 +40,7 @@ public sealed class OperationLayerRemove : Operation
         (_useThreshold ? $" with an pixel threshold of {_pixelThreshold}px" : string.Empty)
         +"?";
 
-    public override string ProgressTitle => 
+    public override string ProgressTitle =>
         $"Removing layers {LayerIndexStart} through {LayerIndexEnd}" +
         (_useThreshold ? $" with an pixel threshold of {_pixelThreshold}px" : string.Empty);
 

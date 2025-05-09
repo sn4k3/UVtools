@@ -11,9 +11,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using UVtools.Core.Extensions;
 using UVtools.Core.Objects;
+using ZLinq;
 
 namespace UVtools.Core.Managers;
 
@@ -54,27 +54,27 @@ public class MaterialManager : BindableBase, IList<Material>
     /// <summary>
     /// Gets the total number of bottles in stock
     /// </summary>
-    public int BottlesInStock => this.Sum(material => material.BottlesInStock);
+    public int BottlesInStock => this.AsValueEnumerable().Sum(material => material.BottlesInStock);
 
     /// <summary>
     /// Gets the total number of bottles ever owned
     /// </summary>
-    public int OwnedBottles => this.Sum(material => material.OwnedBottles);
+    public int OwnedBottles => this.AsValueEnumerable().Sum(material => material.OwnedBottles);
 
     /// <summary>
     /// Gets the total of consumed volume in milliliters
     /// </summary>
-    public decimal ConsumedVolume => this.Sum(material => material.ConsumedVolume);
+    public decimal ConsumedVolume => this.AsValueEnumerable().Sum(material => material.ConsumedVolume);
 
     /// <summary>
     /// Gets the total of consumed volume in liters
     /// </summary>
-    public decimal ConsumedVolumeLiters => this.Sum(material => material.ConsumedVolumeLiters);
+    public decimal ConsumedVolumeLiters => this.AsValueEnumerable().Sum(material => material.ConsumedVolumeLiters);
 
     /// <summary>
     /// Gets the total volume in stock in milliliters
     /// </summary>
-    public decimal VolumeInStock => this.Sum(material => material.VolumeInStock);
+    public decimal VolumeInStock => this.AsValueEnumerable().Sum(material => material.VolumeInStock);
 
     /// <summary>
     /// Gets the total volume in stock in liters
@@ -84,12 +84,12 @@ public class MaterialManager : BindableBase, IList<Material>
     /// <summary>
     /// Gets the total costs
     /// </summary>
-    public decimal TotalCost => this.Sum(material => material.TotalCost);
+    public decimal TotalCost => this.AsValueEnumerable().Sum(material => material.TotalCost);
 
     /// <summary>
     /// Gets the total print time in hours
     /// </summary>
-    public double PrintTime => this.Sum(material => material.PrintTime);
+    public double PrintTime => this.AsValueEnumerable().Sum(material => material.PrintTime);
 
     /// <summary>
     /// Gets the total print time

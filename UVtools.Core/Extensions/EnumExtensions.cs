@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using UVtools.Core.Objects;
+using ZLinq;
 
 namespace UVtools.Core.Extensions;
 
@@ -19,9 +20,9 @@ public static class EnumExtensions
     public static string GetDescription(this Enum value)
     {
         var attributes = value.GetType().GetField(value.ToString())?.GetCustomAttributes(typeof(DescriptionAttribute), false);
-        if (attributes is not null && attributes.Any())
+        if (attributes is not null && attributes.AsValueEnumerable().Any())
         {
-            if (attributes.First() is DescriptionAttribute attr) return attr.Description;
+            if (attributes.AsValueEnumerable().First() is DescriptionAttribute attr) return attr.Description;
         }
 
         // If no description is found, the least we can do is replace underscores with spaces

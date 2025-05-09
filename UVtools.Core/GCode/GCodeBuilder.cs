@@ -12,7 +12,6 @@ using System.ComponentModel;
 using System.Data;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -25,17 +24,18 @@ using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.GCode;
 
 public class GCodeBuilder : BindableBase
 {
     #region Events
-    
+
     public sealed class  LayerChangeEventArgs : CancelEventArgs
     {
         public uint LayerIndex { get; set; }
-        
+
         public LayerChangeEventArgs(uint layerIndex)
         {
             LayerIndex = layerIndex;
@@ -119,12 +119,12 @@ public class GCodeBuilder : BindableBase
     public GCodeCommand CommandMoveG0 { get; } = new("G0", "Z{0} F{1}", "Move Z");
     public GCodeCommand CommandMoveG1 { get; } = new("G1", "Z{0} F{1}", "Move Z");
     public GCodeCommand CommandSetAccelerationM204 { get; } = new("M204", "S{0}", "Set acceleration", false);
-    
+
     public GCodeCommand CommandSyncMovements { get; } = new("G4", "P0", "Sync movements", false);
 
     public GCodeCommand CommandWaitSyncDelay { get; } = new("G4", "P0{0}", "Sync movement", false);
     public GCodeCommand CommandWaitG4 { get; } = new("G4", "P{0}", "Delay");
-    
+
     public GCodeCommand CommandShowImageM6054 = new("M6054", "\"{0}\"", "Show image");
     public GCodeCommand CommandClearImage = new(";<Slice> Blank"); // Clear image
     public GCodeCommand CommandTurnLedM106 { get; } = new("M106", "S{0}", "Turn LED");
@@ -246,7 +246,7 @@ public class GCodeBuilder : BindableBase
     #region Members
     private readonly StringBuilder _gcode = new();
 
-       
+
     private GCodePositioningTypes _gCodePositioningType = GCodePositioningTypes.Absolute;
     private GCodeTimeUnits _gCodeTimeUnit = GCodeTimeUnits.Milliseconds;
     private GCodeSpeedUnits _gCodeSpeedUnit = GCodeSpeedUnits.MillimetersPerMinute;
@@ -422,7 +422,7 @@ public class GCodeBuilder : BindableBase
     public void AppendFormat(string format, params object[] args)
     {
         _gcode.AppendFormat(format, args);
-        LineCount += (uint)format.Count(c => c == '\n');
+        LineCount += (uint)format.AsValueEnumerable().Count(c => c == '\n');
     }
 
     public void AppendLineIfCanComment(string line)
@@ -625,7 +625,7 @@ public class GCodeBuilder : BindableBase
     {
         if (enable)
             AppendMotorsOn();
-        else 
+        else
             AppendMotorsOff();
     }
 
@@ -657,7 +657,7 @@ public class GCodeBuilder : BindableBase
             AppendMoveG1(z, feedRate);
     }
 
-    public void AppendLiftMoveGx(List<(float z, float feedrate, float acceleration)> lifts, 
+    public void AppendLiftMoveGx(List<(float z, float feedrate, float acceleration)> lifts,
         List<(float z, float feedrate, float acceleration)> retracts, float waitAfterLift = 0, float waitAfterRetract = 0, Layer? layer = null)
     {
         if (_layerMoveCommand == GCodeMoveCommands.G0)
@@ -673,10 +673,10 @@ public class GCodeBuilder : BindableBase
         AppendLine(CommandMoveG0, z, feedRate);
     }
 
-    public void AppendLiftMoveG0(List<(float z, float feedrate, float acceleration)> lifts, 
+    public void AppendLiftMoveG0(List<(float z, float feedrate, float acceleration)> lifts,
         List<(float z, float feedrate, float acceleration)> retracts, float waitAfterLift = 0, float waitAfterRetract = 0, Layer? layer = null)
     {
-        if (lifts.Count == 0 || lifts.All(tuple => tuple.z <= 0)) return;
+        if (lifts.Count == 0 || lifts.AsValueEnumerable().All(tuple => tuple.z <= 0)) return;
 
         for (var i = 0; i < lifts.Count; i++)
         {
@@ -703,7 +703,7 @@ public class GCodeBuilder : BindableBase
             AppendWaitG4(waitAfterLift, "Wait after lift");
         }
 
-        if (retracts.Count > 0 && retracts.All(tuple => tuple.z != 0))
+        if (retracts.Count > 0 && retracts.AsValueEnumerable().All(tuple => tuple.z != 0))
         {
             for (var i = 0; i < retracts.Count; i++)
             {
@@ -735,8 +735,8 @@ public class GCodeBuilder : BindableBase
     public void AppendLiftMoveG0(float upZ, float upFeedrate, float upAcceleration, float downZ, float downFeedrate, float downAcceleration,
         float waitAfterLift = 0, float waitAfterRetract = 0, Layer? layer = null)
         => AppendLiftMoveG0(
-            new List<(float, float, float)> { new(upZ, upFeedrate, upAcceleration) }, 
-            new List<(float, float, float)> { new(downZ, downFeedrate, downAcceleration) }, 
+            new List<(float, float, float)> { new(upZ, upFeedrate, upAcceleration) },
+            new List<(float, float, float)> { new(downZ, downFeedrate, downAcceleration) },
             waitAfterLift, waitAfterRetract, layer);
 
     public void AppendMoveG1(float z, float feedRate)
@@ -745,10 +745,10 @@ public class GCodeBuilder : BindableBase
         AppendLine(CommandMoveG1, z, feedRate);
     }
 
-    public void AppendLiftMoveG1(List<(float z, float feedrate, float acceleration)> lifts, 
+    public void AppendLiftMoveG1(List<(float z, float feedrate, float acceleration)> lifts,
         List<(float z, float feedrate, float acceleration)> retracts, float waitAfterLift = 0, float waitAfterRetract = 0, Layer? layer = null)
     {
-        if (lifts.Count == 0 || lifts.All(tuple => tuple.z <= 0)) return;
+        if (lifts.Count == 0 || lifts.AsValueEnumerable().All(tuple => tuple.z <= 0)) return;
 
         for (var i = 0; i < lifts.Count; i++)
         {
@@ -775,7 +775,7 @@ public class GCodeBuilder : BindableBase
             AppendWaitG4(waitAfterLift, "Wait after lift");
         }
 
-        if (retracts.Count > 0 && retracts.All(tuple => tuple.z != 0))
+        if (retracts.Count > 0 && retracts.AsValueEnumerable().All(tuple => tuple.z != 0))
         {
             for (var i = 0; i < retracts.Count; i++)
             {
@@ -916,20 +916,20 @@ public class GCodeBuilder : BindableBase
         Clear();
 
         OnBeforeRebuildGCode();
-        
+
         AppendUVtools();
 
         if (_encodeThumbnails && slicerFile.ThumbnailsCount > 0)
         {
             AppendLine();
-            
+
             for (int i = 0; i < slicerFile.ThumbnailsCount; i++)
             {
                 var thumbnail = slicerFile.Thumbnails[i];
                 if (thumbnail.IsEmpty) continue;
                 var pngBytes = thumbnail.GetPngByes();
                 var base64Thumbnail = Convert.ToBase64String(pngBytes);
-                var chunks = base64Thumbnail.Chunk(78);
+                var chunks = base64Thumbnail.AsValueEnumerable().Chunk(78);
 
                 AppendLine();
                 AppendLine(";");
@@ -942,7 +942,7 @@ public class GCodeBuilder : BindableBase
                 AppendLine(";");
             }
 
-            
+
             AppendLine();
             AppendLine();
         }
@@ -1031,8 +1031,8 @@ public class GCodeBuilder : BindableBase
             AppendLineIfCanComment(BeginLayerComments, layerIndex, layer.PositionZ);
             if (!OnBeforeWriteLayerGCode(layerIndex))
             {
-                AppendPrintProgressM73(MathF.Round(layerIndex * 100.0f / slicerFile.LayerCount, 2, MidpointRounding.AwayFromZero), 
-                    MathF.Round(slicerFile.Skip((int)layerIndex).Sum(l => l.PrintTime) / 60, 2, MidpointRounding.AwayFromZero));
+                AppendPrintProgressM73(MathF.Round(layerIndex * 100.0f / slicerFile.LayerCount, 2, MidpointRounding.AwayFromZero),
+                    MathF.Round(slicerFile.AsValueEnumerable().Skip((int)layerIndex).Sum(l => l.PrintTime) / 60, 2, MidpointRounding.AwayFromZero));
 
                 AppendLayerPause(layer);
                 AppendLayerChangeResinM600(layer);
@@ -1084,7 +1084,7 @@ public class GCodeBuilder : BindableBase
         AppendEndGCode(slicerFile);
         OnAfterRebuildGCode();
     }
-    
+
     public void RebuildGCode(FileFormat slicerFile, object[]? configs, string separator = ":")
     {
         StringBuilder? sb = null;
@@ -1095,7 +1095,7 @@ public class GCodeBuilder : BindableBase
             {
                 foreach (var propertyInfo in config.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
+                    var displayNameAttribute = propertyInfo.GetCustomAttributes(false).AsValueEnumerable().OfType<DisplayNameAttribute>().FirstOrDefault();
                     string name;
                     if (displayNameAttribute is null)
                     {
@@ -1126,13 +1126,13 @@ public class GCodeBuilder : BindableBase
         return _gCodePositioningType;
     }
 
-    public void ParseLayersFromGCode(FileFormat slicerFile, bool rebuildGlobalTable = true) 
+    public void ParseLayersFromGCode(FileFormat slicerFile, bool rebuildGlobalTable = true)
         => ParseLayersFromGCode(slicerFile, null, rebuildGlobalTable);
 
     public void ParseLayersFromGCode(FileFormat slicerFile, string? gcode, bool rebuildGlobalTable = true)
     {
         if (!slicerFile.HaveLayers) return;
-            
+
         if (string.IsNullOrWhiteSpace(gcode))
         {
             gcode = _gcode.ToString();
@@ -1192,7 +1192,7 @@ public class GCodeBuilder : BindableBase
                     base64Thumbnail.Append(subLine.Trim(';', ' '));
                 }
             }
-                
+
             // Search for and switch position type when needed
             if (line.StartsWith(CommandPositioningAbsoluteG90.Command))
             {
@@ -1296,7 +1296,7 @@ public class GCodeBuilder : BindableBase
             if (line.StartsWith(CommandMoveG0.Command) || line.StartsWith(CommandMoveG1.Command))
             {
                 match = Regex.Match(line, $"{CommandMoveG0.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(([0-9]*[.])?[0-9]+)")}|{CommandMoveG1.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(([0-9]*[.])?[0-9]+)")}", RegexOptions.IgnoreCase);
-                
+
                 if (match is {Success: true, Groups.Count: >= 9} && !layerBlock.RetractSpeed2.HasValue && layerBlock.LightOffCount < 2)
                 {
                     var startIndex = match.Groups[1].Value.Length > 0 ? 0 : 4;
@@ -1342,7 +1342,7 @@ public class GCodeBuilder : BindableBase
                 continue;
             }
 
-            // Check for waits 
+            // Check for waits
             if (line.StartsWith(CommandWaitG4.Command))
             {
                 match = Regex.Match(line, CommandWaitG4.ToStringWithoutComments(@"(([0-9]*[.])?[0-9]+)"), RegexOptions.IgnoreCase);
@@ -1400,7 +1400,7 @@ public class GCodeBuilder : BindableBase
             // Check LightPWM Off
             if (CommandTurnLedOff.Enabled)
             {
-                if (line.StartsWith(CommandTurnLedOff.Command) && 
+                if (line.StartsWith(CommandTurnLedOff.Command) &&
                     (string.IsNullOrWhiteSpace(CommandTurnLedOff.Arguments) || line.Contains(CommandTurnLedOff.Arguments)))
                 {
                     if (layerBlock.LightPWM.HasValue)

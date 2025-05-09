@@ -18,7 +18,6 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +31,7 @@ using UVtools.UI.Structures;
 using UVtools.UI.Windows;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using UVtools.UI.Extensions;
+using ZLinq;
 
 namespace UVtools.UI;
 
@@ -465,7 +465,7 @@ public class App : Application
 
             var description = ((AssemblyDescriptionAttribute)attributes[0]).Description + $"{Environment.NewLine}{Environment.NewLine}Available File Formats:";
 
-            return FileFormat.AvailableFormats.SelectMany(fileFormat => fileFormat.FileExtensions).Aggregate(description, (current, fileExtension) => current + $"{Environment.NewLine}- {fileExtension.Description} (.{fileExtension.Extension})");
+            return FileFormat.AvailableFormats.AsValueEnumerable().SelectMany(fileFormat => fileFormat.FileExtensions).Aggregate(description, (current, fileExtension) => current + $"{Environment.NewLine}- {fileExtension.Description} (.{fileExtension.Extension})");
         }
     }
 

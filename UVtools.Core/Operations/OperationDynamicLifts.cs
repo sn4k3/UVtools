@@ -8,10 +8,10 @@
 
 using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Text;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
+using ZLinq;
 
 namespace UVtools.Core.Operations;
 
@@ -113,7 +113,7 @@ public sealed class OperationDynamicLifts : Operation
 
     public override string ToString()
     {
-        var result = 
+        var result =
             $"[Method: {_setMethod}]" +
             $" [Bottom height: {_smallestBottomLiftHeight}/{_largestBottomLiftHeight}mm]" +
             $" [Bottom speed: {_slowestBottomLiftSpeed}/{_fastestBottomLiftSpeed}mm/min]" +
@@ -183,35 +183,27 @@ public sealed class OperationDynamicLifts : Operation
     }
 
     //public uint MinBottomLayerPixels => SlicerFile.Where(layer => layer.IsBottomLayer && !layer.IsEmpty && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd).Max(layer => layer.NonZeroPixelCount);
-    public uint MinBottomLayerPixels => (from layer in SlicerFile
-        where layer.IsBottomLayer
-        where !layer.IsEmpty
-        where layer.Index >= LayerIndexStart
-        where layer.Index <= LayerIndexEnd
-        select layer.NonZeroPixelCount).Min();
+    public uint MinBottomLayerPixels => SlicerFile.AsValueEnumerable()
+        .Where(layer => layer.IsBottomLayer && !layer.IsEmpty && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd)
+        .Select(layer => layer.NonZeroPixelCount)
+        .Min();
 
     //public uint MinNormalLayerPixels => SlicerFile.Where(layer => layer.IsNormalLayer && !layer.IsEmpty && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd).Max(layer => layer.NonZeroPixelCount);
-    public uint MinNormalLayerPixels => (from layer in SlicerFile
-        where layer.IsNormalLayer
-        where !layer.IsEmpty
-        where layer.Index >= LayerIndexStart
-        where layer.Index <= LayerIndexEnd
-        select layer.NonZeroPixelCount).Min();
+    public uint MinNormalLayerPixels => SlicerFile.AsValueEnumerable()
+        .Where(layer => layer.IsNormalLayer && !layer.IsEmpty && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd)
+        .Select(layer => layer.NonZeroPixelCount)
+        .Min();
 
     //public uint MaxBottomLayerPixels => SlicerFile.Where(layer => layer.IsBottomLayer && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd).Max(layer => layer.NonZeroPixelCount);
-    public uint MaxBottomLayerPixels => (from layer in SlicerFile
-        where layer.IsBottomLayer
-        where !layer.IsEmpty
-        where layer.Index >= LayerIndexStart
-        where layer.Index <= LayerIndexEnd
-        select layer.NonZeroPixelCount).Max();
+    public uint MaxBottomLayerPixels => SlicerFile.AsValueEnumerable()
+        .Where(layer => layer.IsBottomLayer && !layer.IsEmpty && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd)
+        .Select(layer => layer.NonZeroPixelCount)
+        .Max();
     //public uint MaxNormalLayerPixels => SlicerFile.Where(layer => layer.IsNormalLayer && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd).Max(layer => layer.NonZeroPixelCount);
-    public uint MaxNormalLayerPixels => (from layer in SlicerFile
-        where layer.IsNormalLayer
-        where !layer.IsEmpty
-        where layer.Index >= LayerIndexStart
-        where layer.Index <= LayerIndexEnd
-        select layer.NonZeroPixelCount).Max();
+    public uint MaxNormalLayerPixels => SlicerFile.AsValueEnumerable()
+        .Where(layer => layer.IsNormalLayer && !layer.IsEmpty && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd)
+        .Select(layer => layer.NonZeroPixelCount)
+        .Max();
 
     #endregion
 
@@ -318,7 +310,7 @@ public sealed class OperationDynamicLifts : Operation
                     default:
                         throw new NotImplementedException(nameof(SetMethod));
                 }
-                    
+
             }
             else
             {
@@ -344,7 +336,7 @@ public sealed class OperationDynamicLifts : Operation
                 setLayer.LiftHeightTotal = MathF.Round(liftHeight, 1);
                 if (!float.IsNaN(liftSpeed)) setLayer.LiftSpeed = MathF.Round(liftSpeed, 1);
             }
-            
+
 
             progress++;
         }
@@ -354,12 +346,12 @@ public sealed class OperationDynamicLifts : Operation
 
     public Layer? GetSmallestLayer(bool isBottom)
     {
-        return SlicerFile.Where((layer, index) => !layer.IsEmpty && layer.IsBottomLayer == isBottom && index >= LayerIndexStart && index <= LayerIndexEnd).MinBy(layer => layer.NonZeroPixelCount);
+        return SlicerFile.AsValueEnumerable().Where((layer, index) => !layer.IsEmpty && layer.IsBottomLayer == isBottom && index >= LayerIndexStart && index <= LayerIndexEnd).MinBy(layer => layer.NonZeroPixelCount);
     }
 
     public Layer? GetLargestLayer(bool isBottom)
     {
-        return SlicerFile.Where((layer, index) => !layer.IsEmpty && layer.IsBottomLayer == isBottom && index >= LayerIndexStart && index <= LayerIndexEnd).MaxBy(layer => layer.NonZeroPixelCount);
+        return SlicerFile.AsValueEnumerable().Where((layer, index) => !layer.IsEmpty && layer.IsBottomLayer == isBottom && index >= LayerIndexStart && index <= LayerIndexEnd).MaxBy(layer => layer.NonZeroPixelCount);
     }
 
     #endregion

@@ -32,6 +32,7 @@ using UVtools.Core.Operations;
 using UVtools.UI.Controls;
 using UVtools.UI.Extensions;
 using Brushes = Avalonia.Media.Brushes;
+using ZLinq;
 
 namespace UVtools.UI;
 
@@ -105,13 +106,14 @@ public partial class MainWindow
 
     public async Task RemoveRepairIssues(IEnumerable<MainIssue> issues, bool promptConfirmation = true, bool suctionCupDrill = true)
     {
-        if (!issues.Any()) return;
+        var mainIssues = issues as MainIssue[] ?? issues.ToArray();
+        if (mainIssues.Length == 0) return;
 
         uint emptyLayers = 0;
         uint islands = 0;
         uint resinTraps = 0;
         uint suctionCups = 0;
-        foreach (MainIssue mainIssue in issues)
+        foreach (MainIssue mainIssue in mainIssues)
         {
             switch (mainIssue.Type)
             {
@@ -147,21 +149,21 @@ public partial class MainWindow
         if (emptyLayers == 0 && islands == 0 && resinTraps == 0 && suctionCups == 0) return;
 
         if (promptConfirmation && await this.MessageBoxQuestion(
-                $"Are you sure you want to remove and/or repair all selected {issues.Count()} issues?\n\n" +
+                $"Are you sure you want to remove and/or repair all selected {mainIssues.Length} issues?\n\n" +
                 "If any, this option will:\n" +
                 (emptyLayers > 0 ? $"- Remove {emptyLayers} empty layer(s)\n" : string.Empty) +
                 (islands > 0 ? $"- Remove {emptyLayers} island(s)\n" : string.Empty) +
                 (resinTraps > 0 ? $"- Fill/solidify {resinTraps} resin trap(s)\n" : string.Empty) +
                 (suctionCups > 0 ? $"- Drill {suctionCups} suction cup(s) at it's center\n" : string.Empty) +
                 "\nWarning: Removing an island can cause other issues to appear if there is material present in the layers above it.\n" +
-                "Always check previous and next layers before performing an island removal.", $"Remove {issues.Count()} Issues?") != MessageButtonResult.Yes) return;
+                "Always check previous and next layers before performing an island removal.", $"Remove {mainIssues.Length} Issues?") != MessageButtonResult.Yes) return;
 
         var processParallelIssues = new Dictionary<uint, List<Issue>>();
         var processSuctionCups = new List<MainIssue>();
         var layersToRemove = new List<uint>();
 
 
-        foreach (MainIssue mainIssue in issues)
+        foreach (MainIssue mainIssue in mainIssues)
         {
             switch (mainIssue.Type)
             {
@@ -295,7 +297,7 @@ public partial class MainWindow
 
         // Update GUI
 
-        foreach (MainIssue issue in issues)
+        foreach (MainIssue issue in mainIssues)
         {
             if (issue.IsSuctionCup && !suctionCupDrill)
             {
@@ -488,7 +490,7 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _issueSelectedIndex, value)) return;
-            if(_issueSelectedIndex >= 0) IssuesGrid.ScrollIntoView(SlicerFile!.IssueManager.FirstOrDefault(issue => ReferenceEquals(issue, IssuesGrid.SelectedItem)), null);
+            if(_issueSelectedIndex >= 0) IssuesGrid.ScrollIntoView(SlicerFile!.IssueManager.AsValueEnumerable().FirstOrDefault(issue => ReferenceEquals(issue, IssuesGrid.SelectedItem)), null);
         }
     }
 
@@ -503,7 +505,7 @@ public partial class MainWindow
             return;
         }
 
-        var issue = mainIssue.FirstOrDefault();
+        var issue = mainIssue.AsValueEnumerable().FirstOrDefault();
         if (issue is null) return;
         ZoomToIssue(issue, true);
     }
@@ -614,12 +616,12 @@ public partial class MainWindow
                         // This order is already made on the detection
                         break;
                     case IssuesOrderBy.TypeAscAreaDescLayerAsc:
-                        issues = issues.OrderBy(issue => issue.Type)
+                        issues = issues.AsValueEnumerable().OrderBy(issue => issue.Type)
                             .ThenByDescending(issue => issue.Area)
                             .ThenBy(issue => issue.StartLayerIndex).ToList();
                         break;
                     case IssuesOrderBy.AreaDescLayerIndexAscTypeAsc:
-                        issues = issues.OrderByDescending(issue => issue.Area)
+                        issues = issues.AsValueEnumerable().OrderByDescending(issue => issue.Area)
                             .ThenBy(issue => issue.StartLayerIndex)
                             .ThenBy(issue => issue.Type).ToList();
                         break;
@@ -698,7 +700,7 @@ public partial class MainWindow
         var colorDictionary = GetIssueColors(true);
 
 
-        var issues = SlicerFile.IssueManager.GetIssues().OrderBy(issue => issue.Parent!.Type).DistinctBy(mainIssue => mainIssue.LayerIndex);
+        var issues = SlicerFile.IssueManager.GetIssues().AsValueEnumerable().OrderBy(issue => issue.Parent!.Type).DistinctBy(mainIssue => mainIssue.LayerIndex);
 
         foreach (var issue in issues)
         {

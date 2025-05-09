@@ -12,6 +12,7 @@ using UVtools.Core.Network;
 using UVtools.Core.Objects;
 using UVtools.UI.Controls;
 using UVtools.UI.Extensions;
+using ZLinq;
 
 namespace UVtools.UI.Windows;
 
@@ -46,13 +47,16 @@ public partial class SettingsWindow : WindowEx
         {
             "All slicer files"
         };
-        fileFormats.AddRange(from format in FileFormat.AvailableFormats from extension in format.FileExtensions where extension.IsVisibleOnFileFilters select $"{extension.Description} (.{extension.Extension})");
+        fileFormats.AddRange(FileFormat.AvailableFormats
+            .SelectMany(fileFormat => fileFormat.FileExtensions, (fileFormat, extension) => new { fileFormat = fileFormat, extension })
+            .Where(obj => obj.extension.IsVisibleOnFileFilters)
+            .Select(obj => $"{obj.extension.Description} (.{obj.extension.Extension})"));
         FileOpenDialogFilters = fileFormats.ToArray();
 
 
         // Derive strings for the zoom lock and crosshair fade combo-boxes from the
         // ZoomLevels constant array, and add those strings to the comboboxes.
-        ZoomRanges = AppSettings.ZoomLevels.Skip(AppSettings.ZoomLevelSkipCount).Select(
+        ZoomRanges = AppSettings.ZoomLevels.AsValueEnumerable().Skip(AppSettings.ZoomLevelSkipCount).Select(
             s => Convert.ToString(s / 100, CultureInfo.InvariantCulture) + "x").ToArray();
 
         ScrollViewerMaxHeight = this.GetScreenWorkingArea().Height - Settings.General.WindowsVerticalMargin;

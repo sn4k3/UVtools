@@ -8,8 +8,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.Managers;
 
@@ -45,7 +45,7 @@ public class OperationSessionManager : IList<Operation>
 
     public Operation? Find(Type type)
     {
-        return this.FirstOrDefault(operation => operation.GetType() == type);
+        return this.AsValueEnumerable().FirstOrDefault(operation => operation.GetType() == type);
     }
 
     public Operation? Find(Operation fromOperation) => Find(fromOperation.GetType());

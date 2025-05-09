@@ -1,5 +1,12 @@
 # Changelog
 
+## 09/05/2025 - v5.1.1
+
+- (Fix) Anycubic ZIP: `System.InvalidOperationException: Sequence contains no elements` when having empty layers (#1023)
+- (Improvement) CTB and GOO: Set all lift properties instead some of them for the tilting vat printers
+- (Improvement) Convert most Linq to ZLinq
+- (Upgrade) AvaloniaUI from 11.3.0-beta2 to 11.3.0
+
 ## 22/04/2025 - v5.1.0
 
 - (Add) Pixel Arithmetic - Brightness Step: Mutates the initial brightness with a step that is added/subtracted to the current value dependent on the processed layer count (#1014)

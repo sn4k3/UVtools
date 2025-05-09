@@ -14,7 +14,6 @@ using System.Collections.ObjectModel;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Text;
 using UVtools.Core.Excellon;
 using UVtools.Core.Extensions;
@@ -22,6 +21,7 @@ using UVtools.Core.FileFormats;
 using UVtools.Core.Gerber;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
+using ZLinq;
 
 namespace UVtools.Core.Operations;
 
@@ -134,14 +134,14 @@ public class OperationPCBExposure : Operation
         {
             sb.AppendLine("Select at least one gerber file");
         }
-        else 
+        else
         {
             foreach (var file in _files)
             {
                 if(!file.Exists) sb.AppendLine($"The file {file} does not exists");
             }
         }
-        
+
         return sb.ToString();
     }
 
@@ -257,7 +257,7 @@ public class OperationPCBExposure : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationPCBExposure) obj);
     }
-    
+
     #endregion
 
     #region Methods
@@ -270,7 +270,7 @@ public class OperationPCBExposure : Operation
         var tmpPath = PathExtensions.GetTemporaryDirectory($"{About.Software}.");
         foreach (var entry in zip.Entries)
         {
-            if(!ValidExtensions.Any(extension => entry.Name.EndsWith($".{extension}", StringComparison.OrdinalIgnoreCase))) continue;
+            if(!ValidExtensions.AsValueEnumerable().Any(extension => entry.Name.EndsWith($".{extension}", StringComparison.OrdinalIgnoreCase))) continue;
 
             var filePath = entry.ImprovedExtractToFile(tmpPath, false);
             if (!string.IsNullOrEmpty(filePath))
@@ -289,7 +289,7 @@ public class OperationPCBExposure : Operation
             if(handleZipFiles) AddFilesFromZip(filePath);
             return;
         }
-        if(!ValidExtensions.Any(extension => filePath.EndsWith($".{extension}", StringComparison.OrdinalIgnoreCase))) return;
+        if(!ValidExtensions.AsValueEnumerable().Any(extension => filePath.EndsWith($".{extension}", StringComparison.OrdinalIgnoreCase))) return;
         var file = new PCBExposureFile(filePath);
         if (_files.Contains(file)) return;
         _files.Add(file);
@@ -316,8 +316,8 @@ public class OperationPCBExposure : Operation
     {
         if (!file.Exists) return;
 
-        
-        if (ExcellonDrillFormat.Extensions.Any(file.IsExtension))
+
+        if (ExcellonDrillFormat.Extensions.AsValueEnumerable().Any(file.IsExtension))
         {
             ExcellonDrillFormat.ParseAndDraw(file, mat, SlicerFile.Ppmm, _sizeMidpointRounding, new SizeF((float)OffsetX, (float)OffsetY), _enableAntiAliasing);
         }
@@ -325,7 +325,7 @@ public class OperationPCBExposure : Operation
         {
             GerberFormat.ParseAndDraw(file, mat, SlicerFile.Ppmm, _sizeMidpointRounding, new SizeF((float)OffsetX, (float)OffsetY), _enableAntiAliasing);
         }
-        
+
         //var boundingRectangle = CvInvoke.BoundingRectangle(mat);
         //var cropped = mat.Roi(new Size(boundingRectangle.Right, boundingRectangle.Bottom));
         var cropped = mat.CropByBounds();
@@ -349,7 +349,7 @@ public class OperationPCBExposure : Operation
         progress.ItemCount = FileCount;
 
         //var orderFiles = _files.OrderBy(file => file.IsExtension(".drl") || file.IsExtension(".xln")).ToArray();
-        var orderFiles = _files.OrderBy(file => ExcellonDrillFormat.Extensions.Any(file.IsExtension)).ToArray();
+        var orderFiles = _files.AsValueEnumerable().OrderBy(file => ExcellonDrillFormat.Extensions.AsValueEnumerable().Any(file.IsExtension)).ToArray();
 
         for (var i = 0; i < orderFiles.Length; i++)
         {
@@ -397,7 +397,7 @@ public class OperationPCBExposure : Operation
 
             SlicerFile.Layers = layers.ToArray();
         }, true);
-        
+
         if (_mirror) // Reposition layers
         {
             using var op = new OperationMove(SlicerFile, Anchor.TopLeft)

@@ -6,10 +6,9 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System.Linq;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using System;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
@@ -131,7 +130,7 @@ public sealed class OperationLayerExportHeatMap : Operation
         using var resultMatRoi = GetRoiOrDefault(resultMat);
         using var mask = GetMask(resultMat, HaveROI ? ROI.Location.Invert() : default);
 
-        var layerRange = _mergeSamePositionedLayers 
+        var layerRange = _mergeSamePositionedLayers
             ? SlicerFile.GetDistinctLayersByPositionZ(LayerIndexStart, LayerIndexEnd).ToArray()
             : GetSelectedLayerRange().ToArray();
 
@@ -141,7 +140,7 @@ public sealed class OperationLayerExportHeatMap : Operation
        Parallel.ForEach(layerRange, CoreSettings.GetParallelOptions(progress), layer =>
         {
             progress.PauseIfRequested();
-            using var mat = _mergeSamePositionedLayers 
+            using var mat = _mergeSamePositionedLayers
                 ? SlicerFile.GetMergedMatForSequentialPositionedLayers(layer.Index)
                 : layer.LayerMat;
             using var matRoi = GetRoiOrDefault(mat);

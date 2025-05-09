@@ -8,11 +8,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UVtools.Core.FileFormats;
 using UVtools.Core.MeshFormats;
 using UVtools.Core.Operations;
 using UVtools.Core.SystemOS;
+using ZLinq;
 
 namespace UVtools.UI;
 
@@ -72,7 +72,7 @@ public static class ConsoleArguments
 
                 if(targetFormat.IsExtensionValid(outputFile))
                     outputFile = $"{filenameNoExt}.{args[i]}";
-                    
+
 
                 filesToConvert.Add(new KeyValuePair<FileFormat, string>(targetFormat, outputFile));
             }
@@ -88,7 +88,7 @@ public static class ConsoleArguments
             Console.WriteLine($"Loading file: {args[1]}");
             slicerFile.Decode(args[1]);
 
-            foreach (var (outputSlicerFile, outputFile) in filesToConvert.DistinctBy(pair => pair.Value))
+            foreach (var (outputSlicerFile, outputFile) in filesToConvert.AsValueEnumerable().DistinctBy(pair => pair.Value))
             {
                 Console.WriteLine($"Converting to: {outputFile}");
                 slicerFile.Convert(outputSlicerFile, outputFile);
@@ -283,7 +283,7 @@ public static class ConsoleArguments
 
             var operation = new OperationScripting(slicerFile);
             operation.ReloadScriptFromFile(args[2]);
-                
+
             Console.WriteLine($"Running script: {operation.Title}");
             operation.Execute();
             slicerFile.Save();
@@ -319,7 +319,7 @@ public static class ConsoleArguments
                 Console.WriteLine($"Target file does not exists: {args[1]}");
                 return true;
             }
-                
+
             var fromFile = FileFormat.FindByExtensionOrFilePath(args[1], true);
             if (fromFile is null)
             {
@@ -333,7 +333,7 @@ public static class ConsoleArguments
                 Console.WriteLine($"Invalid target file: {args[2]}");
                 return true;
             }
-                
+
             Console.WriteLine("Loading files");
             fromFile.Decode(args[1], FileFormat.FileDecodeType.Partial);
             toFile.Decode(args[2], FileFormat.FileDecodeType.Partial);
@@ -357,9 +357,9 @@ public static class ConsoleArguments
                 Console.WriteLine($"Input file does not exists: {args[1]}");
                 return true;
             }
-                
+
             CTBEncryptedFile.CryptFile(args[1]);
-                
+
             return true;
         }
 

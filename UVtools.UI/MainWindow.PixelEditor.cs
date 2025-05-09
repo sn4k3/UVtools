@@ -9,7 +9,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
-using Emgu.CV;
 using Emgu.CV.CvEnum;
 using SkiaSharp;
 using System;

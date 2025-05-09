@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using UVtools.Core.Converters;
@@ -22,6 +21,7 @@ using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -29,7 +29,7 @@ namespace UVtools.Core.FileFormats;
 [XmlRoot(ElementName = "Print")]
 public class ZCodePrint
 {
-    
+
     [XmlRoot(ElementName = "Device")]
     public class ZcodePrintDevice
     {
@@ -50,14 +50,14 @@ public class ZCodePrint
 
     }
 
-    
+
     [XmlRoot(ElementName = "Profile")]
     public class ZcodePrintProfile
     {
         [XmlAttribute("name")]
         public string Name { get; set; } = "UVtools";
 
-        
+
         [XmlRoot(ElementName = "Slice")]
         public class ZcodePrintProfileSlice
         {
@@ -104,7 +104,7 @@ public class ZCodePrint
         public ZcodePrintProfileSlice Slice { get; set; } = new();
     }
 
-    
+
     [XmlRoot(ElementName = "Job")]
     public class ZcodePrintJob
     {
@@ -510,12 +510,12 @@ public sealed class ZCodeFile : FileFormat
             {
                 if (string.IsNullOrEmpty(line)) continue;
                 if (!line.EndsWith("==")) continue;
-                        
+
                 byte[] data = System.Convert.FromBase64String(line);
                 var decodedBytes = encryptEngine.ProcessBlock(data, 0, data.Length);
-                decodedBytes = decodedBytes.Skip(2).SkipWhile(b => b is 255 or 0).ToArray();
+                decodedBytes = decodedBytes.AsValueEnumerable().Skip(2).SkipWhile(b => b is 255 or 0).ToArray();
                 GCode!.AppendLine(Encoding.UTF8.GetString(decodedBytes));
-                        
+
                 progress++;
             }
 
@@ -534,7 +534,7 @@ public sealed class ZCodeFile : FileFormat
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
 
-        var entriesToRemove = outputFile.Entries.Where(zipEntry => zipEntry.Name.EndsWith(".gcode") || zipEntry.Name.EndsWith(".xml")).ToArray();
+        var entriesToRemove = outputFile.Entries.AsValueEnumerable().Where(zipEntry => zipEntry.Name.EndsWith(".gcode") || zipEntry.Name.EndsWith(".xml")).ToArray();
         foreach (var zipEntry in entriesToRemove)
         {
             zipEntry.Delete();
@@ -565,7 +565,7 @@ public sealed class ZCodeFile : FileFormat
             var data = Encoding.UTF8.GetBytes(line);
             List<byte> padData = new(64) {0, 1, 0};
             padData.AddRange(data);
-                
+
             if (padData.Count > 64)
             {
                 throw new ArgumentOutOfRangeException($"Too long gcode line to encrypt, got: {padData.Count} bytes while expecting less than 64 bytes");

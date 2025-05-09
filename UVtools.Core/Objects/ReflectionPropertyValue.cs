@@ -8,9 +8,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UVtools.Core.Extensions;
+using ZLinq;
 
 namespace UVtools.Core.Objects;
 
@@ -56,7 +56,7 @@ public sealed class ReflectionPropertyValue
 
     public static uint SetProperties(object obj, IEnumerable<ReflectionPropertyValue> properties)
     {
-        if (!properties.Any()) return 0;
+        if (!properties.AsValueEnumerable().Any()) return 0;
         uint count = 0;
         foreach (var propertyInfo in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {

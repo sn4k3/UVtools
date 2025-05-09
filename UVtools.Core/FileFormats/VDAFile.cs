@@ -11,11 +11,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Xml.Serialization;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -24,10 +24,10 @@ namespace UVtools.Core.FileFormats;
 [XmlRoot(ElementName = "root")]
 public class VDARoot
 {
-    
+
     public class VDAFileInfo
     {
-        
+
         public class VDAVersion
         {
             public ushort Major { get; set; } = 1;
@@ -35,10 +35,10 @@ public class VDARoot
 
         }
 
-        
+
         public class VDAWritten
         {
-            
+
             [XmlRoot(ElementName = "By")]
             public class VDABy
             {
@@ -77,7 +77,7 @@ public class VDARoot
         public VDAWritten Written { get; set; } = new();
     }
 
-    
+
     public class VDASlices
     {
         public ushort Count { get; set; } = 1;
@@ -95,7 +95,7 @@ public class VDARoot
         public uint LayerCount { get; set; }
     }
 
-    
+
     public class VDAMachines
     {
         public string FileType { get; set; } = "ZIP File";
@@ -103,7 +103,7 @@ public class VDARoot
         public string PixelXSize { get; set; } = "50um";
         public string PixelYSize { get; set; } = "50um";
 
-        [XmlElement("Anti-Aliasing")] 
+        [XmlElement("Anti-Aliasing")]
         public byte AntiAliasing { get; set; } = 1;
 
         public float XLength { get; set; }
@@ -265,12 +265,12 @@ public sealed class VDAFile : FileFormat
         set => base.LayerCount = ManifestFile.Slices.LayerCount = base.LayerCount;
     }
 
-        
+
     public override object[] Configs =>
     [
         ManifestFile.FileInfo.Version,
-        ManifestFile.FileInfo.Written, 
-        ManifestFile.Machines, 
+        ManifestFile.FileInfo.Written,
+        ManifestFile.Machines,
         ManifestFile.Slices
     ];
 
@@ -290,13 +290,13 @@ public sealed class VDAFile : FileFormat
         try
         {
             using var zip = ZipFile.Open(fileFullPath!, ZipArchiveMode.Read);
-            if (zip.Entries.Any(entry => entry.Name.EndsWith(".xml"))) return true;
+            if (zip.Entries.AsValueEnumerable().Any(entry => entry.Name.EndsWith(".xml"))) return true;
         }
         catch (Exception e)
         {
             Debug.WriteLine(e);
         }
-            
+
 
         return false;
     }
@@ -314,14 +314,14 @@ public sealed class VDAFile : FileFormat
             Replace($".{FileExtensions[0].Extension}", ".xml");
 
         EncodeLayersInZip(outputFile, 4, IndexStartNumber.One, progress);
-        
+
         outputFile.CreateEntryFromSerializeXml(manifestFilename, ManifestFile, ZipArchiveMode.Create, XmlExtensions.SettingsIndent, true);
     }
 
     protected override void DecodeInternally(OperationProgress progress)
     {
         using var inputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Read);
-        var entry = inputFile.Entries.FirstOrDefault(zipEntry => zipEntry.Name.EndsWith(".xml"));
+        var entry = inputFile.Entries.AsValueEnumerable().FirstOrDefault(zipEntry => zipEntry.Name.EndsWith(".xml"));
         if (entry is null)
         {
             Clear();

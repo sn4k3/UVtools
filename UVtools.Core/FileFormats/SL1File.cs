@@ -12,11 +12,11 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Reflection;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -558,7 +558,7 @@ public sealed class SL1File : FileFormat
     {
         string memberName = string.Empty;
         string[] objs = keyName.Split('_');
-        return objs.Aggregate(memberName, (current, obj) => current + obj.FirstCharToUpper());
+        return objs.AsValueEnumerable().Aggregate(memberName, (current, obj) => current + obj.FirstCharToUpper());
     }
 
     public static string MemberNameToIniKey(string memberName)

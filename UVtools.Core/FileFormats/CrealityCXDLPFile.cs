@@ -16,7 +16,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UVtools.Core.Converters;
@@ -26,6 +25,7 @@ using UVtools.Core.Layers;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.Core.Printer;
+using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -48,16 +48,16 @@ public sealed class CrealityCXDLPFile : FileFormat
         /// <summary>
         /// Gets the size of the magic
         /// </summary>
-        [FieldOrder(0)] 
-        [FieldEndianness(Endianness.Big)] 
+        [FieldOrder(0)]
+        [FieldEndianness(Endianness.Big)]
         public uint MagicSize { get; set; } = MAGIC_SIZE;
 
         /// <summary>
         /// Gets the magic name
         /// </summary>
-        [FieldOrder(1)] 
-        [FieldLength(MAGIC_SIZE)] 
-        [SerializeAs(SerializedType.TerminatedString)] 
+        [FieldOrder(1)]
+        [FieldLength(MAGIC_SIZE)]
+        [SerializeAs(SerializedType.TerminatedString)]
         public string Magic { get; set; } = MAGIC_VALUE;
 
         [FieldOrder(2)]
@@ -73,24 +73,24 @@ public sealed class CrealityCXDLPFile : FileFormat
         /// <summary>
         /// Gets the number of records in the layer table
         /// </summary>
-        [FieldOrder(4)] 
-        [FieldEndianness(Endianness.Big)] 
+        [FieldOrder(4)]
+        [FieldEndianness(Endianness.Big)]
         public ushort LayerCount { get; set; }
 
         /// <summary>
         /// Gets the printer resolution along X axis, in pixels. This information is critical to correctly decoding layer images.
         /// </summary>
         [FieldOrder(5)]
-        [FieldEndianness(Endianness.Big)] 
+        [FieldEndianness(Endianness.Big)]
         public ushort ResolutionX { get; set; }
 
         /// <summary>
         /// Gets the printer resolution along Y axis, in pixels. This information is critical to correctly decoding layer images.
         /// </summary>
         [FieldOrder(6)]
-        [FieldEndianness(Endianness.Big)] 
+        [FieldEndianness(Endianness.Big)]
         public ushort ResolutionY { get; set; }
-            
+
         [FieldOrder(7)] [FieldLength(64)]
         public byte[] Offset { get; set; } = new byte[64];
 
@@ -618,7 +618,7 @@ public sealed class CrealityCXDLPFile : FileFormat
        if (string.IsNullOrWhiteSpace(MachineName) || (!MachineName.StartsWith("CL") && !MachineName.StartsWith("CT")))
         {
             bool found = false;
-            foreach (var machine in Machine.Machines
+            foreach (var machine in Machine.Machines.AsValueEnumerable()
                          .Where(machine => machine.Brand == PrinterBrand.Creality
                                            && (machine.Model.StartsWith("CL") || machine.Model.StartsWith("CT"))
                                            ))
@@ -630,7 +630,7 @@ public sealed class CrealityCXDLPFile : FileFormat
                     break;
                 }
             }
-            
+
             if(!found) throw new InvalidDataException("Unable to detect the printer model from resolution, check if resolution is well defined on slicer for your printer model.");
         }
 
@@ -647,7 +647,7 @@ public sealed class CrealityCXDLPFile : FileFormat
         {
             progress.PauseIfRequested();
             var encodeLength = ThumbnailsOriginalSize[previewIndex].Area() * 2;
-            
+
             previews[previewIndex] = EncodeImage(DATATYPE_RGB565_BE, Thumbnails[previewIndex]);
 
             if (encodeLength != previews[previewIndex].Length)
@@ -892,7 +892,7 @@ public sealed class CrealityCXDLPFile : FileFormat
         }
 
         SanitizeProperties();
-            
+
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.ReadWrite);
         outputFile.Seek(offset, SeekOrigin.Begin);
         outputFile.WriteSerialize(SlicerInfoSettings);
@@ -970,7 +970,7 @@ public sealed class CrealityCXDLPFile : FileFormat
                 }
             }
         }
-            
+
 
         if (restorePosition) fs.Seek(position, SeekOrigin.Begin);
 
