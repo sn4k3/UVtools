@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using CommunityToolkit.Diagnostics;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -24,7 +25,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using CommunityToolkit.Diagnostics;
+using UVtools.Core.Exceptions;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
 using UVtools.Core.Layers;
@@ -32,9 +33,8 @@ using UVtools.Core.Managers;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
-using UVtools.Core.Exceptions;
-using Timer = System.Timers.Timer;
 using ZLinq;
+using Timer = System.Timers.Timer;
 
 namespace UVtools.Core.FileFormats;
 
@@ -1947,7 +1947,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => GetBoundingRectangle();
         set
         {
-            RaiseAndSetIfChanged(ref _boundingRectangle, value);
+            if(!RaiseAndSetIfChanged(ref _boundingRectangle, value)) return;
             RaisePropertyChanged(nameof(BoundingRectangleMillimeters));
         }
     }
@@ -6866,7 +6866,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         var firstLayer = FirstLayer;
         if (!_boundingRectangle.IsEmpty || !HaveLayers || firstLayer is null || !firstLayer.HaveImage) return _boundingRectangle;
         progress ??= new OperationProgress(OperationProgress.StatusOptimizingBounds, LayerCount - 1);
-        _boundingRectangle = Rectangle.Empty;
+        var boundingRectangle = Rectangle.Empty;
         uint firstValidLayerBounds = 0;
 
         void FindFirstBoundingRectangle()
@@ -6874,8 +6874,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             for (uint layerIndex = 0; layerIndex < Count; layerIndex++)
             {
                 firstValidLayerBounds = layerIndex;
-                if (this[layerIndex] is null || this[layerIndex].BoundingRectangle == Rectangle.Empty) continue;
-                _boundingRectangle = this[layerIndex].BoundingRectangle;
+                var layer = this[layerIndex];
+                if (layer is null || layer.NonZeroPixelCount == 0 || layer.BoundingRectangle.IsEmpty) continue;
+                boundingRectangle = layer.BoundingRectangle;
                 break;
             }
         }
@@ -6883,7 +6884,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         FindFirstBoundingRectangle();
         //_boundingRectangle = firstLayer.BoundingRectangle;
 
-        if (_boundingRectangle.IsEmpty) // Safe checking, all layers haven't a bounding rectangle
+        if (boundingRectangle.IsEmpty) // Safe checking, all layers haven't a bounding rectangle
         {
             progress.Reset(OperationProgress.StatusOptimizingBounds, LayerCount - 1);
             Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
@@ -6901,13 +6902,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             progress.Reset(OperationProgress.StatusCalculatingBounds, LayerCount - firstValidLayerBounds - 1);
             for (var i = firstValidLayerBounds + 1; i < LayerCount; i++)
             {
-                if (this[i] is null || this[i].BoundingRectangle.IsEmpty) continue;
-                _boundingRectangle = Rectangle.Union(_boundingRectangle, this[i].BoundingRectangle);
+                var layer = this[i];
+                if (layer is null || layer.NonZeroPixelCount == 0 || layer.BoundingRectangle.IsEmpty) continue;
+                boundingRectangle = Rectangle.Union(boundingRectangle, layer.BoundingRectangle);
                 progress++;
             }
         }
 
-        RaisePropertyChanged(nameof(BoundingRectangle));
+        BoundingRectangle = boundingRectangle;
         return _boundingRectangle;
     }
 

@@ -335,7 +335,7 @@ public sealed class OperationCalibrateStressTower : Operation
         var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), EmguExtensions.AnchorCenter);*/
         SlicerFile.Init(LayerCount);
 
-        Parallel.For(0, LayerCount, CoreSettings.GetParallelDebugOptions(progress), layerIndex =>
+        Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
             using var mat = SlicerFile.CreateMat();

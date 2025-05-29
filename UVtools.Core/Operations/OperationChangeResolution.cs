@@ -71,7 +71,7 @@ public sealed class OperationChangeResolution : Operation
         "Only use this tool if both source and target printer have the same pixel pitch spec, otherwise the model size will be invalidated and result in a different size than the originally sliced for.\n" +
         "As alternative, set the correct display size of the target printer or select an machine preset to match the new pixel pitch and let it auto fix the pixel ratio. It's always good practice to set the correct display size, even if you don't want to fix the pixel ratio, that is a critical information for both software and printers.";
 
-    public override string ConfirmationText => 
+    public override string ConfirmationText =>
         $"change print resolution from {SlicerFile.ResolutionX}x{SlicerFile.ResolutionY} to {NewResolutionX}x{NewResolutionY}?";
 
     public override string ProgressTitle =>
@@ -251,10 +251,9 @@ public sealed class OperationChangeResolution : Operation
     {
         progress.ItemCount = SlicerFile.LayerCount;
         var newSize = new Size((int) NewResolutionX, (int) NewResolutionY);
-        var finalBoundsWidth = FinalBoundsWidth;
-        var finalBoundsHeight = FinalBoundsHeight;
 
-        var finalBounds = new Size((int)finalBoundsWidth, (int)finalBoundsHeight);
+        var newFixedRatioX = NewFixedRatioX;
+        var newFixedRatioY = NewFixedRatioY;
 
         Parallel.For(0, SlicerFile.LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
@@ -265,15 +264,15 @@ public sealed class OperationChangeResolution : Operation
             {
                 using var matDst = EmguExtensions.InitMat(newSize);
 
-                var newFixedRatioX = NewFixedRatioX;
-                var newFixedRatioY = NewFixedRatioY;
-                if (_fixRatio && (newFixedRatioX != 1.0 || newFixedRatioY != 1.0))
+                if (SlicerFile[layerIndex].NonZeroPixelCount > 0)
                 {
-                    //mat.TransformFromCenter();
-                    CvInvoke.Resize(mat, mat, SlicerFile.Resolution.Multiply(newFixedRatioX, newFixedRatioY));
-                }
+                    mat.CopyRegionToCenter(OriginalBoundingRectangle, matDst);
 
-                mat.CopyCenterToCenter(finalBounds, matDst);
+                    if (_fixRatio && (newFixedRatioX != 1.0 || newFixedRatioY != 1.0))
+                    {
+                        matDst.TransformFromCenter(newFixedRatioX, newFixedRatioY);
+                    }
+                }
 
                 SlicerFile[layerIndex].LayerMat = matDst;
             }
@@ -304,7 +303,7 @@ public sealed class OperationChangeResolution : Operation
         //mat.Transform(1, 1, newResolutionX-mat.Width+roi.Width, newResolutionY-mat.Height - roi.Height/2, new Size((int) newResolutionX, (int) newResolutionY));
         using var matRoi = new Mat(mat, VolumeBonds);
         using var matDst = new Mat(new Size((int)NewResolutionX, (int)NewResolutionY), mat.Depth, mat.NumberOfChannels);
-        using var matDstRoi = new Mat(matDst, 
+        using var matDstRoi = new Mat(matDst,
                 new Rectangle((int)(NewResolutionX / 2 - VolumeBonds.Width / 2),
                 (int)NewResolutionY / 2 - VolumeBonds.Height / 2,
                 VolumeBonds.Width, VolumeBonds.Height));

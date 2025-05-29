@@ -40,6 +40,7 @@ public sealed class AnycubicZipFile : FileFormat
     public const string NormalLayersStage2Key = "normal_1";
 
     #endregion
+
     #region Sub classes
 
     public sealed class SettingsManifest
@@ -616,12 +617,12 @@ public sealed class AnycubicZipFile : FileFormat
         public float PrintTime { get; set; }
 
         [JsonPropertyName("volume")]
-        public float Volume { get; set; }
+        public float MaterialMilliliters { get; set; }
 
         public override string ToString()
         {
             return
-                $"{nameof(Cost)}: {Cost}, {nameof(Currency)}: {Currency}, {nameof(PrintTime)}: {PrintTime}, {nameof(Volume)}: {Volume}";
+                $"{nameof(Cost)}: {Cost}, {nameof(Currency)}: {Currency}, {nameof(PrintTime)}: {PrintTime}, {nameof(MaterialMilliliters)}: {MaterialMilliliters}";
         }
     }
 
@@ -1595,7 +1596,7 @@ public sealed class AnycubicZipFile : FileFormat
 
         PrintInfoSettings.Cost = MaterialCost;
         PrintInfoSettings.PrintTime = PrintTime;
-        PrintInfoSettings.Volume = Volume;
+        PrintInfoSettings.MaterialMilliliters = MaterialMilliliters;
         SoftwareInfoSettings.Update();
 
         var resinSetting = GetResinSetting();

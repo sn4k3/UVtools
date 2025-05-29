@@ -9023,7 +9023,7 @@
         </member>
         <member name="P:UVtools.Core.Printer.Machine.PpmmMax">
             <summary>
-            Gets the maximum (Width or Height) pixels per mm 
+            Gets the maximum (Width or Height) pixels per mm
             </summary>
         </member>
         <member name="P:UVtools.Core.Printer.Machine.PixelWidth">

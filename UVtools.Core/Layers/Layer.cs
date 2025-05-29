@@ -195,7 +195,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         get => _boundingRectangle;
         internal set
         {
-            RaiseAndSetIfChanged(ref _boundingRectangle, value);
+            if (!RaiseAndSetIfChanged(ref _boundingRectangle, value)) return;
             RaisePropertyChanged(nameof(BoundingRectangleMillimeters));
         }
     }

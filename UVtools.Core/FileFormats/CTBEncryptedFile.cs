@@ -1307,25 +1307,25 @@ public sealed class CTBEncryptedFile : FileFormat
 
         if (HaveTiltingVat)
         {
-            var liftValue = LayerHeight;
-            var speedValue = 60;
+            var lift = LayerHeight;
+            var speed = 60;
 
 
-            BottomLiftHeight = liftValue;
-            BottomLiftHeight2 = liftValue;
-            BottomLiftSpeed = speedValue;
-            BottomLiftSpeed2 = speedValue;
-            BottomRetractHeight2 = liftValue;
-            BottomRetractSpeed = speedValue;
-            BottomRetractSpeed2 = speedValue;
+            BottomLiftHeight = lift;
+            BottomLiftHeight2 = lift;
+            BottomLiftSpeed = speed;
+            BottomLiftSpeed2 = speed;
+            BottomRetractHeight2 = lift;
+            BottomRetractSpeed = speed;
+            BottomRetractSpeed2 = speed;
 
-            LiftHeight = liftValue;
-            LiftHeight2 = liftValue;
-            LiftSpeed = speedValue;
-            LiftSpeed2 = speedValue;
-            RetractHeight2 = speedValue;
-            RetractSpeed = speedValue;
-            RetractSpeed2 = speedValue;
+            LiftHeight = lift;
+            LiftHeight2 = lift;
+            LiftSpeed = speed;
+            LiftSpeed2 = speed;
+            RetractHeight2 = lift;
+            RetractSpeed = speed;
+            RetractSpeed2 = speed;
         }
 
         Settings.ModifiedTimestampMinutes = (uint)DateTimeExtensions.TimestampMinutes;

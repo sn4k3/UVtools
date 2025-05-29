@@ -594,7 +594,7 @@ public class OperationPixelArithmetic : Operation
         }
 
 
-        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelDebugOptions(progress), layerIndex =>
+        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
 

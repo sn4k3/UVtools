@@ -41,7 +41,7 @@ namespace UVtools.Core.Printer
         public float MachineZ { get; set; }
 
         public FlipDirection DisplayMirror { get; set; }
-        
+
         public object? Tag { get; set; }
 
         public float TotalPrintTime
@@ -144,7 +144,7 @@ namespace UVtools.Core.Printer
         public SizeF Ppmm => new(Xppmm, Yppmm);
 
         /// <summary>
-        /// Gets the maximum (Width or Height) pixels per mm 
+        /// Gets the maximum (Width or Height) pixels per mm
         /// </summary>
         public float PpmmMax => Ppmm.Max();
 
@@ -289,8 +289,9 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Elegoo, "Elegoo Mars C", "Mars C", 1440, 2560, 68.04f, 120.96f, 150f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Saturn", "Saturn", 3840, 2400, 192f, 120f, 200f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Saturn 2", "Saturn 2", 7680, 4320, 218.88f, 123.12f, 250f, FlipDirection.Horizontally),
-                new(PrinterBrand.Elegoo, "Elegoo Saturn 3", "Saturn 3", 11520, 5120, 218.88f, 122.88f, 249.7f, FlipDirection.Horizontally),
+                new(PrinterBrand.Elegoo, "Elegoo Saturn 3", "Saturn 3", 11520, 5120, 218.88f, 122.88f, 250f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Saturn 3 Ultra", "Saturn 3 Ultra", 11520, 5120, 218.88f, 122.88f, 260f, FlipDirection.Horizontally),
+                new(PrinterBrand.Elegoo, "Elegoo Saturn 4", "Saturn 4", 11520, 5120, 218.88f, 122.88f, 220f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Saturn 4 Ultra 12K", "Saturn 4 Ultra 12K", 11520, 5120, 218.88f, 122.88f, 220f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Saturn 4 Ultra 16K", "Saturn 4 Ultra 16K", 15120, 6230, 211.68f, 118.37f, 220f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Saturn 8K", "Saturn 8K", 7680, 4320, 218.88f, 123.12f, 210f, FlipDirection.Horizontally),
@@ -490,7 +491,7 @@ namespace UVtools.Core.Printer
                 }
                 sb.AppendLine($"new(PrinterBrand.{machine.Brand}, \"{machine.Name}\", \"{machine.Model}\", {machine.ResolutionX}, {machine.ResolutionY}, {machine.DisplayWidth}f, {machine.DisplayHeight}f, {machine.MachineZ}f, FlipDirection.{machine.DisplayMirror}),");
             }
-            
+
             return sb.ToString();
         }
 
