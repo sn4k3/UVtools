@@ -8,6 +8,9 @@ using UVtools.Core.Scripting;
 
 namespace UVtools.ScriptSample;
 
+/// <summary>
+/// https://github.com/sn4k3/UVtools/issues/1032
+/// </summary>
 public class ScriptTransposeOrientation : ScriptGlobals
 {
     readonly ScriptToggleSwitchInput RotationInput = new()
@@ -34,7 +37,7 @@ public class ScriptTransposeOrientation : ScriptGlobals
     {
         Script.MinimumVersionToRun = new Version(0, 4, 0);
         Script.Name = "Transpose screen orientation";
-        Script.Description = "Transposes the screen orientation and assign the swap properties to resolution and display.";
+        Script.Description = "Transposes the screen orientation and assign the swapped properties to resolution and display.";
         Script.Author = "Tiago Conceição";
         Script.Version = new Version(0, 1);
         Script.UserInputs.Add(RotationInput);
