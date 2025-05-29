@@ -35,7 +35,7 @@ public class ScriptTransposeOrientation : ScriptGlobals
 
     public void ScriptInit()
     {
-        Script.MinimumVersionToRun = new Version(0, 4, 0);
+        Script.MinimumVersionToRun = new Version(4, 0, 0);
         Script.Name = "Transpose screen orientation";
         Script.Description = "Transposes the screen orientation and assign the swapped properties to resolution and display.";
         Script.Author = "Tiago Conceição";
