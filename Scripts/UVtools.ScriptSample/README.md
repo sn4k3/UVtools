@@ -46,22 +46,31 @@ With this approach you dont need to convert your .cs file to a script file .csx,
 ### How to setup the development environment
 
 1. Start by cloning/download UVtools code, this will give you access to all code completion, syntax, variables, constants etc. 
-   * Git: https://github.com/sn4k3/UVtools.git
-   * Download as zip: https://github.com/sn4k3/UVtools/archive/refs/heads/master.zip
+   - Git: https://github.com/sn4k3/UVtools.git
+   - Download as zip: https://github.com/sn4k3/UVtools/archive/refs/heads/master.zip
 2. Extract the contents to a folder, eg: UVtoolsDev
-3. Now you need something to write code (IDE), i recommend Visual Code as is free, light and fast to start
-   1. https://code.visualstudio.com
-4. After installing, open the Visual Code
-5. Go to File -> Open Folder (Ctrl + O)
-6. Locate and open the folder: UVtools/UVtools.ScriptSample
-7. Now with the project open, locate and open "ScriptInsetSample.cs" inside Visual Code
-8. A popup message will show on bottom right, asking if you want to install the C# extension, accept and click install
-9. After get the confirmation of a successful installation i recommend to restart the Visual Code, you can close it and open again, last selected project will auto load with
-10. Now open the "ScriptInsetSample.cs" again
-11. Locate "public void ScriptInit()"
-12. On "Script.xxxx" put the cursor after the dot and make sure the caret is located just after the dot, eg: Script.|
-13. Now press Ctrl + Space, if extension is correctly loaded a popup will show with code completion, showing all possible variables and calls
-14. If you hover the mouse over a variable it also must show an popup with information about it
+3. Now you need something to write code (IDE), choose one of:
+   - [JetBrains Rider](https://www.jetbrains.com/rider):
+      1. After installing, open the Rider
+      2. Click on "Open"
+      3. Locate and open the file: `UVtools/Scripts/UVtools.ScriptSample/UVtools.ScriptSample.csproj`
+   - [Microsoft Visual Studio code](https://code.visualstudio.com):
+       1. After installing, open the Visual Code
+       2. Go to File -> Open Folder (Ctrl + O)
+       3. Locate and open the folder: `UVtools/Scripts/UVtools.ScriptSample`
+       4. Now with the project open, locate and open "ScriptInsetSample.cs" inside Visual Code
+       5. A popup message will show on bottom right, asking if you want to install the "C# dev kit" extension, accept and click install
+       6. After get the confirmation of a successful installation i recommend to restart the Visual Code, you can close it and open again, last selected project will auto load with
+   - [Microsoft Visual Studio Community](https://visualstudio.microsoft.com) (Windows-only):
+      1. Install with ".NET Desktop development" workload selected
+      1. After installing, open the Visual Studio
+      2. Click on "Open a project or solution"
+      3. Locate and open the file: `UVtools/Scripts/UVtools.ScriptSample/UVtools.ScriptSample.csproj`
+4. Now open the "ScriptInsetSample.cs" again
+5. Locate "public void ScriptInit()"
+6. On "Script.xxxx" put the cursor after the dot and make sure the caret is located just after the dot, eg: Script.|
+7. Now press Ctrl + Space, if extension is correctly loaded a popup will show with code completion, showing all possible variables and calls
+8. If you hover the mouse over a variable it also must show a popup with information about it
 
 ### Script structure
 
