@@ -2183,9 +2183,9 @@ public sealed class AnycubicFile : FileFormat
                     {
                         this[layerIndex] = new Layer((uint)layerIndex, mat, this)
                         {
-                            PositionZ = LayersDefinition.Layers.AsValueEnumerable()
+                            PositionZ = (float)LayersDefinition.Layers.AsValueEnumerable()
                                 .Where((_, i) => i <= layerIndex)
-                                .Sum(def => def.LayerHeight),
+                                .Sum(def => (decimal)def.LayerHeight)
                         };
                     }
 

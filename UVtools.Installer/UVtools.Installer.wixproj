@@ -1,4 +1,4 @@
-﻿<Project Sdk="WixToolset.Sdk/6.0.0">
+﻿<Project Sdk="WixToolset.Sdk/6.0.1">
   <PropertyGroup>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
     <ProductVersion>$(UVtoolsVersion)</ProductVersion>
@@ -25,9 +25,9 @@
     <DefineConstants>Debug;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="WixToolset.Util.wixext" Version="6.0.0" />
-    <PackageReference Include="WixToolset.Iis.wixext" Version="6.0.0" />
-    <PackageReference Include="WixToolset.UI.wixext" Version="6.0.0" />
+    <PackageReference Include="WixToolset.Util.wixext" Version="6.0.1" />
+    <PackageReference Include="WixToolset.Iis.wixext" Version="6.0.1" />
+    <PackageReference Include="WixToolset.UI.wixext" Version="6.0.1" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources" />

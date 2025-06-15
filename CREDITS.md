@@ -108,3 +108,5 @@
 - Jorge W. Quinones
 - Brian Dainty
 - Jason Simpson
+- Christopher Staples
+- Meri Švragulja

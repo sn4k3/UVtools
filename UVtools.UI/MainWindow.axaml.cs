@@ -9,6 +9,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
@@ -19,12 +21,14 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Web;
-using Avalonia.Platform.Storage;
-using Avalonia.Reactive;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Dialogs;
@@ -35,6 +39,7 @@ using UVtools.Core.Managers;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
+using UVtools.Core.Scripting;
 using UVtools.Core.SystemOS;
 using UVtools.UI.Controls;
 using UVtools.UI.Controls.Calibrators;
@@ -42,13 +47,9 @@ using UVtools.UI.Controls.Tools;
 using UVtools.UI.Extensions;
 using UVtools.UI.Structures;
 using UVtools.UI.Windows;
+using ZLinq;
 using Path = System.IO.Path;
 using Point = Avalonia.Point;
-using System.Runtime;
-using System.Runtime.InteropServices;
-using System.Timers;
-using UVtools.Core.Scripting;
-using ZLinq;
 
 namespace UVtools.UI;
 
@@ -133,7 +134,7 @@ public partial class MainWindow : WindowEx
     #region Members
 
     public Stopwatch LastStopWatch = new();
-    private readonly Timer _ramUsageTimer = new(2000) { AutoReset = true };
+    private readonly System.Timers.Timer _ramUsageTimer = new(2000) { AutoReset = true };
 
     private bool _isGUIEnabled = true;
     private uint _savesCount;
@@ -1357,6 +1358,9 @@ public partial class MainWindow : WindowEx
         }
 
         _titleStringBuilder.Append($"   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}");
+
+        var threads = IsProgressVisible ? ThreadPool.ThreadCount : 1;
+        _titleStringBuilder.Append($"   Threads: {threads}");
 
         if (IsFileLoaded)
         {

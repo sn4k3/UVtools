@@ -180,7 +180,7 @@ public class App : Application
                 {
                     bugDescription += $"\nFile: {Program.Args[3]}";
                 }
-                bugDescription += $"\n\nMachine date time: {DateTime.Now}\n    UTC date time: {DateTime.UtcNow}";
+                bugDescription += $"\n\nMachine date time: {DateTime.Now}\n       UTC date time: {DateTime.UtcNow}";
 
                 try
                 {

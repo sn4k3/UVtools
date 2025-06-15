@@ -54,7 +54,7 @@ With this approach you dont need to convert your .cs file to a script file .csx,
       1. After installing, open the Rider
       2. Click on "Open"
       3. Locate and open the file: `UVtools/Scripts/UVtools.ScriptSample/UVtools.ScriptSample.csproj`
-   - [Microsoft Visual Studio code](https://code.visualstudio.com):
+   - [Microsoft Visual Studio Code](https://code.visualstudio.com):
        1. After installing, open the Visual Code
        2. Go to File -> Open Folder (Ctrl + O)
        3. Locate and open the folder: `UVtools/Scripts/UVtools.ScriptSample`
