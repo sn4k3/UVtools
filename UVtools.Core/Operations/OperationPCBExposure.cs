@@ -387,8 +387,18 @@ public class OperationPCBExposure : Operation
             SlicerFile.BottomLayerCount = 1;
             SlicerFile.BottomExposureTime = (float) _exposureTime;
             SlicerFile.ExposureTime = (float)_exposureTime;
-            SlicerFile.BottomLiftHeightTotal = 0;
-            SlicerFile.LiftHeightTotal = 0;
+
+            if (SlicerFile.SupportGCode)
+            {
+                SlicerFile.BottomLiftHeightTotal = 0;
+                SlicerFile.LiftHeightTotal = 0;
+            }
+            else
+            {
+                SlicerFile.BottomLiftHeightTotal = 0.1f;
+                SlicerFile.LiftHeightTotal = 0.1f;
+            }
+
             /*SlicerFile.BottomLiftSpeed = 300;
             SlicerFile.BottomLiftSpeed2 = 300;
             SlicerFile.LiftSpeed = 300;

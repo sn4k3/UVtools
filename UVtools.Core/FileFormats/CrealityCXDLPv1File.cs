@@ -473,6 +473,23 @@ public sealed class CrealityCXDLPv1File : FileFormat
 
     #region Methods
 
+    protected override void OnBeforeEncode(bool isPartialEncode)
+    {
+        // Print error if 0 on the following properties:
+        if (WaitTimeBeforeCure <= 0)
+        {
+            WaitTimeBeforeCure = 1;
+        }
+        if (BottomLiftHeight <= 0)
+        {
+            BottomLiftHeight = DefaultBottomLiftHeight;
+        }
+        if (LiftHeight <= 0)
+        {
+            LiftHeight = DefaultLiftHeight;
+        }
+    }
+
     protected override void EncodeInternally(OperationProgress progress)
     {
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);

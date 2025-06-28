@@ -20,21 +20,21 @@ internal static class PrintGCodeCommand
         {
             GlobalArguments.InputFileArgument,
         };
+        
+        command.SetAction(result =>
+        {
+            var inputFile = result.GetRequiredValue(GlobalArguments.InputFileArgument);
 
-        command.SetHandler((inputFile) =>
+            var slicerFile = Program.OpenInputFile(inputFile, FileFormat.FileDecodeType.Partial);
+            if (slicerFile.SupportGCode)
             {
-                var slicerFile = Program.OpenInputFile(inputFile, FileFormat.FileDecodeType.Partial);
-                if (slicerFile.SupportGCode)
-                {
-                    Console.WriteLine(slicerFile.GCodeStr);
-                }
-                else
-                {
-                    Program.WriteLineWarning("File do not support gcode");
-                }
-
-
-            }, GlobalArguments.InputFileArgument);
+                Console.WriteLine(slicerFile.GCodeStr);
+            }
+            else
+            {
+                Program.WriteLineWarning($"The file {inputFile.Name} do not support gcode");
+            }
+        });
 
         return command;
     }

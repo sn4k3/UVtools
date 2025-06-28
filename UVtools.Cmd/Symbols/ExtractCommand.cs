@@ -6,15 +6,13 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Emgu.CV.Flann;
-using Emgu.CV;
-using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UVtools.Core.FileFormats;
+using static UVtools.Core.Extensions.ZipArchiveExtensions;
 
 namespace UVtools.Cmd.Symbols;
 
@@ -30,10 +28,26 @@ internal static class ExtractCommand
 
     internal static Command CreateCommand()
     {
-        var noOverwriteOption = new Option<bool>("--no-overwrite", "If the output folder exists do not overwrite");
-        var contentTypeOption = new Option<ExtractContentType>(["-c", "--content"], () => ExtractContentType.File, "Set the type of content to extract");
-        var indexesOption = new Option<uint[] >(["-i", "--index"], "Sets the thumbnail or layer index to extract");
-        var rangeOption = new Option<string>(["-r", "--range"], "Sets the layer range to extract");
+        var noOverwriteOption = new Option<bool>("--no-overwrite")
+        {
+            Description = "If the output folder exists do not overwrite"
+        };
+
+        var contentTypeOption = new Option<ExtractContentType>("-c", "--content")
+        {
+            Description = "Set the type of content to extract",
+            DefaultValueFactory = _ => ExtractContentType.File
+        };
+
+        var indexesOption = new Option<uint[]>("-i", "--index")
+        {
+            Description = "Sets the thumbnail or layer index to extract"
+        };
+
+        var rangeOption = new Option<string>("--range")
+        {
+            Description = "Sets the layer range to extract"
+        };
 
         var command = new Command("extract", "Extract file contents to a folder")
         {
@@ -45,138 +59,145 @@ internal static class ExtractCommand
             rangeOption
         };
 
-        command.SetHandler((inputFile, outputDirectory, noOverwrite, contentType, indexes, range) =>
-            {
-                var path = outputDirectory is null
+
+        command.SetAction(result =>
+        {
+            var inputFile = result.GetRequiredValue(GlobalArguments.InputFileArgument);
+            var outputDirectory = result.GetValue(GlobalArguments.OutputDirectoryArgument);
+            var noOverwrite = result.GetValue(noOverwriteOption);
+            var contentType = result.GetValue(contentTypeOption);
+            var indexes = result.GetValue(indexesOption) ?? [];
+            var range = result.GetValue(rangeOption) ?? string.Empty;
+
+            var path = outputDirectory is null
                     ? Path.Combine(inputFile.DirectoryName!, Path.GetFileNameWithoutExtension(inputFile.Name))
                     : outputDirectory.FullName;
 
-                if (noOverwrite && Directory.Exists(path))
+            if (noOverwrite && Directory.Exists(path))
+            {
+                Program.WriteLineError($"{path} already exits! --no-overwrite is enabled.");
+                return;
+            }
+
+            var slicerFile = Program.OpenInputFile(inputFile, contentType == ExtractContentType.Thumbnails ? FileFormat.FileDecodeType.Partial : FileFormat.FileDecodeType.Full);
+
+            Program.ProgressBarWork($"Extracting to {Path.GetFileName(path)}",
+                () =>
                 {
-                    Program.WriteLineError($"{path} already exits! --no-overwrite is enabled.");
-                    return;
-                }
-
-                var slicerFile = Program.OpenInputFile(inputFile, contentType == ExtractContentType.Thumbnails ? FileFormat.FileDecodeType.Partial : FileFormat.FileDecodeType.Full);
-
-                Program.ProgressBarWork($"Extracting to {Path.GetFileName(path)}",
-                    () =>
+                    if (contentType == ExtractContentType.File)
                     {
-                        if (contentType == ExtractContentType.File)
+                        slicerFile.Extract(path, progress: Program.Progress);
+                    }
+                    else
+                    {
+                        var indexesList = new List<uint>();
+
+                        if (contentType == ExtractContentType.Layers)
                         {
-                            slicerFile.Extract(path, progress: Program.Progress);
-                        }
-                        else
-                        {
-                            var indexesList = new List<uint>();
-
-                            if (contentType == ExtractContentType.Layers)
+                            if (!slicerFile.HaveLayers)
                             {
-                                if (!slicerFile.HaveLayers)
-                                {
-                                    Program.WriteLineWarning("File have no valid layers to extract.");
-                                    return;
-                                }
-
-                                if (!string.IsNullOrWhiteSpace(range))
-                                {
-                                    if (slicerFile.TryParseLayerIndexRange(range, out var layerIndexStart, out var layerIndexEnd))
-                                    {
-                                        for (var layerIndex = layerIndexStart; layerIndex <= layerIndexEnd; layerIndex++)
-                                        {
-                                            indexesList.Add(layerIndex);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Program.WriteLineError($"The specified layer range '{range}' is malformed, use startindex:endindex with positive numbers");
-                                    }
-                                }
-                            }
-                            else if (contentType == ExtractContentType.Thumbnails)
-                            {
-                                if (slicerFile.ThumbnailsCount == 0)
-                                {
-                                    Program.WriteLineWarning("File have no valid thumbnails to extract.");
-                                    return;
-                                }
-                            }
-
-                            if (indexes.Length == 0 && indexesList.Count == 0)
-                            {
-                                if (contentType == ExtractContentType.Layers)
-                                {
-                                    for (uint i = 0; i < slicerFile.LayerCount; i++)
-                                    {
-                                        indexesList.Add(slicerFile.SanitizeLayerIndex(i));
-                                    }
-                                }
-                                else if (contentType == ExtractContentType.Thumbnails)
-                                {
-                                    for (uint i = 0; i < slicerFile.Thumbnails.Count; i++)
-                                    {
-                                        indexesList.Add(i);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (contentType == ExtractContentType.Layers)
-                                {
-                                    foreach (var index in indexes)
-                                    {
-                                        if (index < slicerFile.LayerCount)
-                                        {
-                                            indexesList.Add(index);
-                                        }
-                                    }
-                                }
-                                else if (contentType == ExtractContentType.Thumbnails)
-                                {
-                                    foreach (var index in indexes)
-                                    {
-                                        if (index < slicerFile.ThumbnailsCount)
-                                        {
-                                            indexesList.Add(index);
-                                        }
-                                    }
-                                }
-                            }
-
-                            indexesList = indexesList.Distinct().OrderBy(layerIndex => layerIndex).ToList();
-                            if (indexesList.Count == 0)
-                            {
-                                Program.WriteLineWarning("No valid indexes to extract.");
+                                Program.WriteLineWarning("File have no valid layers to extract.");
                                 return;
                             }
 
-                            Directory.CreateDirectory(path);
-
-                            if (contentType == ExtractContentType.Layers)
+                            if (!string.IsNullOrWhiteSpace(range))
                             {
-                                Parallel.ForEach(indexesList, layerIndex =>
+                                if (slicerFile.TryParseLayerIndexRange(range, out var layerIndexStart, out var layerIndexEnd))
                                 {
-                                    using var mat = slicerFile[layerIndex].LayerMat;
-                                    mat.Save(Path.Combine(path, slicerFile[layerIndex].Filename));
-                                });
-                            }
-                            else if (contentType == ExtractContentType.Thumbnails)
-                            {
-                                foreach (var index in indexesList)
-                                {
-                                    var thumbnail = slicerFile.Thumbnails[(int)index];
-                                    if (thumbnail.IsEmpty)
+                                    for (var layerIndex = layerIndexStart; layerIndex <= layerIndexEnd; layerIndex++)
                                     {
-                                        continue;
+                                        indexesList.Add(layerIndex);
                                     }
-
-                                    thumbnail.Save(Path.Combine(path, $"Thumbnail{index}.png"));
+                                }
+                                else
+                                {
+                                    Program.WriteLineError($"The specified layer range '{range}' is malformed, use startindex:endindex with positive numbers");
                                 }
                             }
                         }
-                    });
+                        else if (contentType == ExtractContentType.Thumbnails)
+                        {
+                            if (slicerFile.ThumbnailsCount == 0)
+                            {
+                                Program.WriteLineWarning("File have no valid thumbnails to extract.");
+                                return;
+                            }
+                        }
 
-            }, GlobalArguments.InputFileArgument, GlobalArguments.OutputDirectoryArgument, noOverwriteOption, contentTypeOption, indexesOption, rangeOption);
+                        if (indexes.Length == 0 && indexesList.Count == 0)
+                        {
+                            if (contentType == ExtractContentType.Layers)
+                            {
+                                for (uint i = 0; i < slicerFile.LayerCount; i++)
+                                {
+                                    indexesList.Add(slicerFile.SanitizeLayerIndex(i));
+                                }
+                            }
+                            else if (contentType == ExtractContentType.Thumbnails)
+                            {
+                                for (uint i = 0; i < slicerFile.Thumbnails.Count; i++)
+                                {
+                                    indexesList.Add(i);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (contentType == ExtractContentType.Layers)
+                            {
+                                foreach (var index in indexes)
+                                {
+                                    if (index < slicerFile.LayerCount)
+                                    {
+                                        indexesList.Add(index);
+                                    }
+                                }
+                            }
+                            else if (contentType == ExtractContentType.Thumbnails)
+                            {
+                                foreach (var index in indexes)
+                                {
+                                    if (index < slicerFile.ThumbnailsCount)
+                                    {
+                                        indexesList.Add(index);
+                                    }
+                                }
+                            }
+                        }
+
+                        indexesList = indexesList.Distinct().OrderBy(layerIndex => layerIndex).ToList();
+                        if (indexesList.Count == 0)
+                        {
+                            Program.WriteLineWarning("No valid indexes to extract.");
+                            return;
+                        }
+
+                        Directory.CreateDirectory(path);
+
+                        if (contentType == ExtractContentType.Layers)
+                        {
+                            Parallel.ForEach(indexesList, layerIndex =>
+                            {
+                                using var mat = slicerFile[layerIndex].LayerMat;
+                                mat.Save(Path.Combine(path, slicerFile[layerIndex].Filename));
+                            });
+                        }
+                        else if (contentType == ExtractContentType.Thumbnails)
+                        {
+                            foreach (var index in indexesList)
+                            {
+                                var thumbnail = slicerFile.Thumbnails[(int)index];
+                                if (thumbnail.IsEmpty)
+                                {
+                                    continue;
+                                }
+
+                                thumbnail.Save(Path.Combine(path, $"Thumbnail{index}.png"));
+                            }
+                        }
+                    }
+                });
+        });
 
         return command;
     }

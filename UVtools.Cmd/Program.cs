@@ -58,13 +58,11 @@ internal class Program
             GlobalOptions.QuietOption,
             GlobalOptions.NoProgressOption,
             GlobalOptions.DummyOption,
-            new Option<bool>("--core-version", "Show core version information"),
+            GlobalOptions.CoreVersionOption,
         };
 
-        //rootCommand.SetHandler(() => { });
-
         HandleGlobals();
-        await rootCommand.InvokeAsync(args);
+        await rootCommand.Parse(args).InvokeAsync();
 
         return 1;
 
@@ -74,29 +72,36 @@ internal class Program
     {
         foreach (var arg in Args)
         {
-            if (GlobalOptions.QuietOption.Aliases.Any(alias => arg == alias))
+            if (arg[0] != '-') continue;
+
+            if (GlobalOptions.QuietOption.Name == arg || GlobalOptions.QuietOption.Aliases.Any(alias => arg == alias))
             {
                 Quiet = true;
                 continue;
             }
 
-            if (GlobalOptions.NoProgressOption.Aliases.Any(alias => arg == alias))
+            if (GlobalOptions.NoProgressOption.Name == arg || GlobalOptions.NoProgressOption.Aliases.Any(alias => arg == alias))
             {
                 NoProgress = true;
                 continue;
             }
 
-            if (GlobalOptions.DummyOption.Aliases.Any(alias => arg == alias))
+            if (GlobalOptions.DummyOption.Name == arg || GlobalOptions.DummyOption.Aliases.Any(alias => arg == alias))
             {
                 DummyMode = true;
                 continue;
             }
 
-            if (arg == "--core-version")
+            if (GlobalOptions.CoreVersionOption.Name == arg)
             {
                 Console.WriteLine(About.VersionString);
                 Environment.Exit(0);
             }
+        }
+
+        if (DummyMode)
+        {
+            Console.WriteLine("> Dummy mode active!");
         }
     }
 

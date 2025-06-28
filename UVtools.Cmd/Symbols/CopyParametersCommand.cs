@@ -17,15 +17,23 @@ internal static class CopyParametersCommand
 {
     internal static Command CreateCommand()
     {
-        var targetFilesArgument = new Argument<FileInfo[]>("target-files", "Target file(s) to set the parameters").ExistingOnly();
+        var targetFilesArgument = new Argument<FileInfo[]>("target-files")
+        {
+            Description = "Target file(s) to set the parameters",
+        }.AcceptExistingOnly();
+
         var command = new Command("copy-parameters", "Copy print parameters from one file to another")
         {
             GlobalArguments.InputFileArgument,
             targetFilesArgument
         };
 
-        command.SetHandler((inputFile, targetFiles) =>
+        command.SetAction(result =>
         {
+            var inputFile = result.GetRequiredValue(GlobalArguments.InputFileArgument);
+            var targetFiles = result.GetRequiredValue(targetFilesArgument);
+
+
             var slicerFile1 = Program.OpenInputFile(inputFile, FileFormat.FileDecodeType.Partial);
 
             var distinctFiles = targetFiles.DistinctBy(fi => fi.FullName);
@@ -48,8 +56,7 @@ internal static class CopyParametersCommand
                 Program.WriteLine($"{count} properties changed");
             }
 
-
-        }, GlobalArguments.InputFileArgument, targetFilesArgument);
+        });
 
         return command;
     }

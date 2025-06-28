@@ -1,5 +1,7 @@
-- (Add) Thread count to the title bar, it will show the cached managed thread count used by the program
-- (Fix) Anycubic: Layer rounding problems when decoding files (#1033)
-- (Upgrade) AvaloniaUI from 11.3.0 to 11.3.1
-- (Upgrade) .NET from 9.0.5 to 9.0.6
+- **PCB Exposure:**
+  - (Change) Set no lift for gcode printers and 0.1mm for other printers (#1038)
+  - (Fix) Implemented Deprecated Syntax Variations: Combining G01/G02/G03 and D01 in a single command (#1039)
+- (Fix) CXDLP: Don't allow 0mm as lift height (#1038)
+- (Upgrade) UVtoolsCmd parser and rebuild the commands
+- (Upgrade) AvaloniaUI from 11.3.1 to 11.3.2
 

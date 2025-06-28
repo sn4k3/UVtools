@@ -19,11 +19,16 @@ internal static class RunCommand
 {
     internal static Command CreateCommand()
     {
-        var classesFilesArgument = new Argument<string[]>("classes/files", "Operations, suggestions and script class/files(.uvtop, .uvtsu .cs, .csx) to run");
-        var propertiesOption = new Option<string[]>(["-p", "--property"], "Set a property with a new value (Compatible with operations only)")
+        var classesFilesArgument = new Argument<string[]>("classes/files")
         {
+            Description = "Operations, suggestions and script class/files(.uvtop, .uvtsu .cs, .csx) to run",
+        };
+
+        var propertiesOption = new Option<string[]>("-p", "--property")
+        {
+            Description = "Set a property with a new value (Compatible with operations only)",
+            HelpName = "property=value",
             AllowMultipleArgumentsPerToken = true,
-            ArgumentHelpName = "property=value"
         };
 
         var command = new Command("run", "Run operations, suggestions and/or scripts")
@@ -36,8 +41,13 @@ internal static class RunCommand
             GlobalOptions.OpenInPartialMode
         };
 
-        command.SetHandler((inputFile, classesFiles, properties, outputFile, partialMode) =>
-        {
+        command.SetAction(result => {
+            var inputFile = result.GetRequiredValue(GlobalArguments.InputFileArgument);
+            var classesFiles = result.GetRequiredValue(classesFilesArgument);
+            var properties = result.GetValue(propertiesOption) ?? [];
+            var outputFile = result.GetValue(GlobalOptions.OutputFile);
+            var partialMode = result.GetValue(GlobalOptions.OpenInPartialMode);
+
             if (classesFiles.Length == 0)
             {
                 Program.WriteLineError("No specified files to run");
@@ -57,10 +67,10 @@ internal static class RunCommand
                 if (operation is not null)
                 {
                     ReflectionPropertyValue.SetProperties(operation, parsedProperties);
-                    var result = operation.ValidateInternally();
-                    if (!string.IsNullOrWhiteSpace(result))
+                    var message = operation.ValidateInternally();
+                    if (!string.IsNullOrWhiteSpace(message))
                     {
-                        Program.WriteLineWarning($"Operation '{operation.Title}' can not execute: {result}");
+                        Program.WriteLineWarning($"Operation '{operation.Title}' can not execute: {message}");
                         continue;
                     }
 
@@ -87,10 +97,10 @@ internal static class RunCommand
                     suggestion.Enabled = true;
                     ReflectionPropertyValue.SetProperties(suggestion, parsedProperties);
 
-                    var result = suggestion.Validate();
-                    if (!string.IsNullOrWhiteSpace(result))
+                    var message = suggestion.Validate();
+                    if (!string.IsNullOrWhiteSpace(message))
                     {
-                        Program.WriteLineWarning($"Suggestion '{suggestion.Title}' can not execute: {result}");
+                        Program.WriteLineWarning($"Suggestion '{suggestion.Title}' can not execute: {message}");
                         continue;
                     }
 
@@ -109,8 +119,8 @@ internal static class RunCommand
                 {
                     var operationScripting = new OperationScripting(slicerFile);
                     operationScripting.ReloadScriptFromFile(classFile);
-                    var result = operationScripting.ValidateInternally();
-                    if (string.IsNullOrWhiteSpace(result))
+                    var message = operationScripting.ValidateInternally();
+                    if (string.IsNullOrWhiteSpace(message))
                     {
                         Program.ProgressBarWork($"Script {++runs}: {operationScripting.ScriptGlobals?.Script.Name ?? operationScripting.ProgressTitle}",
                             () =>
@@ -120,7 +130,7 @@ internal static class RunCommand
                     }
                     else
                     {
-                        Program.WriteLineWarning($"Script {classFile} can not execute: {result}");
+                        Program.WriteLineWarning($"Script {classFile} can not execute: {message}");
                     }
                     continue;
                 }
@@ -135,7 +145,7 @@ internal static class RunCommand
             }
 
             if (successfulRuns > 0) Program.SaveFile(slicerFile, outputFile);
-        }, GlobalArguments.InputFileArgument, classesFilesArgument, propertiesOption, GlobalOptions.OutputFile, GlobalOptions.OpenInPartialMode);
+        });
 
         return command;
     }

@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using SixLabors.ImageSharp.Formats.Bmp;
 using System;
 using System.CommandLine;
 using System.Text.Json;
@@ -18,8 +19,14 @@ internal static class PrintMachinesCommand
 {
     internal static Command CreateCommand()
     {
-        var jsonOption = new Option<bool>("--json", "Print in json format");
-        var xmlOption = new Option<bool>("--xml", "Print in xml format");
+        var jsonOption = new Option<bool>("--json")
+        {
+            Description = "Print in json format"
+        };
+        var xmlOption = new Option<bool>("--xml")
+        {
+            Description = "Print in xml format"
+        };
 
         var command = new Command("print-machines", "Prints machine settings")
         {
@@ -27,27 +34,29 @@ internal static class PrintMachinesCommand
             xmlOption
         };
 
-        command.SetHandler((jsonFormat, xmlFormat) =>
+
+        command.SetAction(result =>
+        {
+            var jsonFormat = result.GetValue(jsonOption);
+            var xmlFormat = result.GetValue(xmlOption);
+
+            if (jsonFormat)
             {
-                if (jsonFormat)
-                {
-                    Console.WriteLine(JsonSerializer.Serialize(Machine.Machines, JsonExtensions.SettingsIndent));
-                    return;
-                }
+                Console.WriteLine(JsonSerializer.Serialize(Machine.Machines, JsonExtensions.SettingsIndent));
+                return;
+            }
 
-                if (xmlFormat)
-                {
-                    Console.WriteLine(XmlExtensions.SerializeToString(Machine.Machines, XmlExtensions.SettingsIndent));
-                    return;
-                }
+            if (xmlFormat)
+            {
+                Console.WriteLine(XmlExtensions.SerializeToString(Machine.Machines, XmlExtensions.SettingsIndent));
+                return;
+            }
 
-                foreach (var machine in Machine.Machines)
-                {
-                    Console.WriteLine(machine);
-                }
-
-
-            }, jsonOption, xmlOption);
+            foreach (var machine in Machine.Machines)
+            {
+                Console.WriteLine(machine);
+            }
+        });
 
         return command;
     }

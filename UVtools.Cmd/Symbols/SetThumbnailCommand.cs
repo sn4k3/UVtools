@@ -20,129 +20,139 @@ internal static class SetThumbnailCommand
     private const string RandomLayerArg = ":random-layer";
     internal static Command CreateCommand()
     {
-        var sourceArgument = new Argument<string>($"file path|layer index|{RandomLayerArg}|{HeatmapArg}", () => HeatmapArg, "Choose from a file, layer index, random layer or generate a heatmap");
-        var thumbnailIndexesOption = new Option<byte[]>(["-i", "--indexes"], "Replaces only the matching thumbnail(s) index(es)")
+        var sourceArgument = new Argument<string>($"file path|layer index|{RandomLayerArg}|{HeatmapArg}")
         {
+            Description = "Choose from a file, layer index, random layer or generate a heatmap",
+            DefaultValueFactory = _ => HeatmapArg
+        };
+
+        var thumbnailIndexesOption = new Option<byte[]>("-i", "--indexes")
+        {
+            Description = "Replaces only the matching thumbnail(s) index(es)",
             AllowMultipleArgumentsPerToken = true
         };
 
         var command = new Command("set-thumbnail", "Sets and replace thumbnail(s) in the file")
         {
+
             GlobalArguments.InputFileArgument,
             sourceArgument,
             thumbnailIndexesOption,
         };
 
-        command.AddAlias("set-preview");
+        command.Aliases.Add("set-preview");
 
-        command.SetHandler(async (inputFile, source, thumbnailIndexes) =>
+
+        command.SetAction(async result =>
+        {
+            var inputFile = result.GetRequiredValue(GlobalArguments.InputFileArgument);
+            var source = result.GetValue(sourceArgument);
+            var thumbnailIndexes = result.GetValue(thumbnailIndexesOption) ?? [];
+
+            if (string.IsNullOrWhiteSpace(source))
             {
-                if (string.IsNullOrWhiteSpace(source))
+                Program.WriteLineError("Invalid empty source argument.");
+            }
+
+            bool success = false;
+
+            if (string.Equals(source, HeatmapArg, StringComparison.OrdinalIgnoreCase))
+            {
+                var slicerFile = Program.OpenInputFile(inputFile);
+                using var mat = await Program.ProgressBarWork($"Generating a heatmap from layers 0 through {slicerFile.LastLayerIndex}",
+                    () => slicerFile.GenerateHeatmapAsync(slicerFile.GetBoundingRectangle(50, 100, Program.Progress), Program.Progress));
+
+                CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgr);
+
+
+                if (thumbnailIndexes.Length > 0)
                 {
-                    Program.WriteLineError("Invalid empty source argument.");
+                    foreach (var thumbnailIndex in thumbnailIndexes)
+                    {
+                        success = slicerFile.SetThumbnail(thumbnailIndex, mat);
+                    }
+                }
+                else
+                {
+                    success = slicerFile.SetThumbnails(mat);
                 }
 
-                bool result = false;
+                if (success) Program.SaveFile(slicerFile);
+                return;
+            }
 
-                if (string.Equals(source, HeatmapArg, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(source, RandomLayerArg, StringComparison.OrdinalIgnoreCase))
+            {
+                var slicerFile = Program.OpenInputFile(inputFile);
+                if (!slicerFile.HaveLayers) Program.WriteLineError("The file have no valid layers");
+
+
+                using var matRoi = slicerFile[Random.Shared.Next((int)slicerFile.LayerCount)].GetLayerMatBoundingRectangle(50, 100);
+                CvInvoke.CvtColor(matRoi.RoiMat, matRoi.RoiMat, ColorConversion.Gray2Bgr);
+
+                if (thumbnailIndexes.Length > 0)
                 {
-                    var slicerFile = Program.OpenInputFile(inputFile);
-                    using var mat = await Program.ProgressBarWork($"Generating a heatmap from layers 0 through {slicerFile.LastLayerIndex}",
-                        () => slicerFile.GenerateHeatmapAsync(slicerFile.GetBoundingRectangle(50, 100, Program.Progress), Program.Progress));
-
-                    CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgr);
-
-
-                    if (thumbnailIndexes.Length > 0)
+                    foreach (var thumbnailIndex in thumbnailIndexes)
                     {
-                        foreach (var thumbnailIndex in thumbnailIndexes)
-                        {
-                            result = slicerFile.SetThumbnail(thumbnailIndex, mat);
-                        }
+                        success = slicerFile.SetThumbnail(thumbnailIndex, matRoi.RoiMat);
                     }
-                    else
-                    {
-                        result = slicerFile.SetThumbnails(mat);
-                    }
-
-                    if (result) Program.SaveFile(slicerFile);
-                    return;
+                }
+                else
+                {
+                    success = slicerFile.SetThumbnails(matRoi.RoiMat);
                 }
 
-                if (string.Equals(source, RandomLayerArg, StringComparison.OrdinalIgnoreCase))
+                if (success) Program.SaveFile(slicerFile);
+                return;
+            }
+
+            if (uint.TryParse(source, out var layerIndex))
+            {
+                var slicerFile = Program.OpenInputFile(inputFile);
+                if (!slicerFile.HaveLayers) Program.WriteLineError("The file have no valid layers");
+                slicerFile.SanitizeLayerIndex(ref layerIndex);
+
+                using var matRoi = slicerFile[layerIndex].GetLayerMatBoundingRectangle(50, 100);
+                CvInvoke.CvtColor(matRoi.RoiMat, matRoi.RoiMat, ColorConversion.Gray2Bgr);
+
+                if (thumbnailIndexes.Length > 0)
                 {
-                    var slicerFile = Program.OpenInputFile(inputFile);
-                    if (!slicerFile.HaveLayers) Program.WriteLineError("The file have no valid layers");
-
-
-                    using var matRoi = slicerFile[Random.Shared.Next((int)slicerFile.LayerCount)].GetLayerMatBoundingRectangle(50, 100);
-                    CvInvoke.CvtColor(matRoi.RoiMat, matRoi.RoiMat, ColorConversion.Gray2Bgr);
-
-                    if (thumbnailIndexes.Length > 0)
+                    foreach (var thumbnailIndex in thumbnailIndexes)
                     {
-                        foreach (var thumbnailIndex in thumbnailIndexes)
-                        {
-                            result = slicerFile.SetThumbnail(thumbnailIndex, matRoi.RoiMat);
-                        }
+                        success = slicerFile.SetThumbnail(thumbnailIndex, matRoi.RoiMat);
                     }
-                    else
-                    {
-                        result = slicerFile.SetThumbnails(matRoi.RoiMat);
-                    }
-
-                    if (result) Program.SaveFile(slicerFile);
-                    return;
+                }
+                else
+                {
+                    success = slicerFile.SetThumbnails(matRoi.RoiMat);
                 }
 
-                if (uint.TryParse(source, out var layerIndex))
+                if (success) Program.SaveFile(slicerFile);
+                return;
+            }
+
+            if (File.Exists(source))
+            {
+                var slicerFile = Program.OpenInputFile(inputFile);
+
+                if (thumbnailIndexes.Length > 0)
                 {
-                    var slicerFile = Program.OpenInputFile(inputFile);
-                    if (!slicerFile.HaveLayers) Program.WriteLineError("The file have no valid layers");
-                    slicerFile.SanitizeLayerIndex(ref layerIndex);
-
-                    using var matRoi = slicerFile[layerIndex].GetLayerMatBoundingRectangle(50, 100);
-                    CvInvoke.CvtColor(matRoi.RoiMat, matRoi.RoiMat, ColorConversion.Gray2Bgr);
-
-                    if (thumbnailIndexes.Length > 0)
+                    foreach (var thumbnailIndex in thumbnailIndexes)
                     {
-                        foreach (var thumbnailIndex in thumbnailIndexes)
-                        {
-                            result = slicerFile.SetThumbnail(thumbnailIndex, matRoi.RoiMat);
-                        }
+                        success = slicerFile.SetThumbnail(thumbnailIndex, source);
                     }
-                    else
-                    {
-                        result = slicerFile.SetThumbnails(matRoi.RoiMat);
-                    }
-
-                    if (result) Program.SaveFile(slicerFile);
-                    return;
+                }
+                else
+                {
+                    success = slicerFile.SetThumbnails(source);
                 }
 
-                if (File.Exists(source))
-                {
-                    var slicerFile = Program.OpenInputFile(inputFile);
+                if (success) Program.SaveFile(slicerFile);
+                return;
+            }
 
-                    if (thumbnailIndexes.Length > 0)
-                    {
-                        foreach (var thumbnailIndex in thumbnailIndexes)
-                        {
-                            result = slicerFile.SetThumbnail(thumbnailIndex, source);
-                        }
-                    }
-                    else
-                    {
-                        result = slicerFile.SetThumbnails(source);
-                    }
-
-                    if (result) Program.SaveFile(slicerFile);
-                    return;
-                }
-
-                Program.WriteLineError($"'{source}' is not a file nor layer index nor {RandomLayerArg} nor {HeatmapArg}");
-
-
-            }, GlobalArguments.InputFileArgument, sourceArgument, thumbnailIndexesOption);
+            Program.WriteLineError($"'{source}' is not a file nor layer index nor {RandomLayerArg} nor {HeatmapArg}");
+        });
 
         return command;
     }

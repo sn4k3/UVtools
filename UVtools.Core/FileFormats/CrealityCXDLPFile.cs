@@ -606,9 +606,21 @@ public sealed class CrealityCXDLPFile : FileFormat
 
     #region Methods
 
-    private void SanitizeProperties()
+    protected override void OnBeforeEncode(bool isPartialEncode)
     {
-        SlicerInfoSettings.WaitTimeBeforeCure = (ushort)Math.Max(1, WaitTimeBeforeCure);
+        // Print error if 0 on the following properties:
+        if (WaitTimeBeforeCure <= 0)
+        {
+            WaitTimeBeforeCure = 1;
+        }
+        if (BottomLiftHeight <= 0)
+        {
+            BottomLiftHeight = DefaultBottomLiftHeight;
+        }
+        if (LiftHeight <= 0)
+        {
+            LiftHeight = DefaultLiftHeight;
+        }
     }
 
     protected override void EncodeInternally(OperationProgress progress)
@@ -633,8 +645,6 @@ public sealed class CrealityCXDLPFile : FileFormat
 
             if(!found) throw new InvalidDataException("Unable to detect the printer model from resolution, check if resolution is well defined on slicer for your printer model.");
         }
-
-        SanitizeProperties();
 
         var pageBreak = PageBreak.Bytes;
 
@@ -890,8 +900,6 @@ public sealed class CrealityCXDLPFile : FileFormat
         {
             offset += size.Area() * 2 + 2; // + page break
         }
-
-        SanitizeProperties();
 
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.ReadWrite);
         outputFile.Seek(offset, SeekOrigin.Begin);

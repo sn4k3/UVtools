@@ -41,7 +41,10 @@ internal static class PrintFormatsCommand
 {
     internal static Command CreateCommand()
     {
-        var jsonOption = new Option<bool>("--json", "Print in json format");
+        var jsonOption = new Option<bool>("--json")
+        {
+            Description = "Print in json format"
+        };
         //var xmlOption = new Option<bool>("--xml", "Print in xml format");
 
         var command = new Command("print-formats", "Prints the available formats")
@@ -50,36 +53,36 @@ internal static class PrintFormatsCommand
             //xmlOption
         };
 
-        command.SetHandler((jsonFormat) =>
+
+        command.SetAction(result =>
+        {
+            var jsonFormat = result.GetValue(jsonOption);
+
+            var formats = FileFormat.AvailableFormats.Select(slicerFile => new AvailableFormat
             {
-
-                var formats = FileFormat.AvailableFormats.Select(slicerFile => new AvailableFormat
-                    {
-                        ClassName = slicerFile.GetType().Name,
-                        DefaultVersion = slicerFile.DefaultVersion,
-                        Versions = slicerFile.AvailableVersions,
-                        Extensions = slicerFile.FileExtensions,
-                        FileType = slicerFile.FileType,
-                        LayerImageFormat = slicerFile.LayerImageFormat,
-                        ThumbnailsOriginalSize = slicerFile.ThumbnailsOriginalSize,
-                        PrintParameterModifiers = slicerFile.PrintParameterModifiers.Select(modifier => modifier.Name).ToArray(),
-                        PrintParameterPerLayerModifiers = slicerFile.PrintParameterPerLayerModifiers.Select(modifier => modifier.Name).ToArray()
-                    });
+                ClassName = slicerFile.GetType().Name,
+                DefaultVersion = slicerFile.DefaultVersion,
+                Versions = slicerFile.AvailableVersions,
+                Extensions = slicerFile.FileExtensions,
+                FileType = slicerFile.FileType,
+                LayerImageFormat = slicerFile.LayerImageFormat,
+                ThumbnailsOriginalSize = slicerFile.ThumbnailsOriginalSize,
+                PrintParameterModifiers = slicerFile.PrintParameterModifiers.Select(modifier => modifier.Name).ToArray(),
+                PrintParameterPerLayerModifiers = slicerFile.PrintParameterPerLayerModifiers.Select(modifier => modifier.Name).ToArray()
+            });
 
 
-                if (jsonFormat)
-                {
-                    Console.WriteLine(JsonSerializer.Serialize(formats, JsonExtensions.SettingsIndent));
-                    return;
-                }
+            if (jsonFormat)
+            {
+                Console.WriteLine(JsonSerializer.Serialize(formats, JsonExtensions.SettingsIndent));
+                return;
+            }
 
-                foreach (var machine in formats)
-                {
-                    Console.WriteLine(machine);
-                }
-
-
-            }, jsonOption);
+            foreach (var machine in formats)
+            {
+                Console.WriteLine(machine);
+            }
+        });
 
         return command;
     }

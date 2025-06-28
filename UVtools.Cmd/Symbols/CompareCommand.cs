@@ -10,7 +10,6 @@ using System;
 using System.CommandLine;
 using System.IO;
 using UVtools.Core.FileFormats;
-using static UVtools.Core.FileFormats.UVJFile;
 
 namespace UVtools.Cmd.Symbols;
 
@@ -18,29 +17,46 @@ internal static class CompareCommand
 {
     internal static Command CreateCommand()
     {
-        var fileAArgument = new Argument<FileInfo>("input-file-a", "Input file (A) to compare").ExistingOnly();
-        var fileBArgument = new Argument<FileInfo>("input-file-b", "Input file (B) to compare").ExistingOnly();
-        var excludeLayersOption = new Option<bool>(["--without-layers"], "Do not compare layers");
-        var propertiesOption = new Option<string[]>(["-p", "--property"], "List of strict properties to show if different");
+        var fileAArgument = new Argument<FileInfo>("input-file-a")
+        {
+            Description = "Input file (A) to compare"
+        }.AcceptExistingOnly();
+        var fileBArgument = new Argument<FileInfo>("input-file-b")
+        {
+            Description = "Input file (B) to compare"
+        }.AcceptExistingOnly();
+        var excludeLayersOption = new Option<bool>("--without-layers")
+        {
+            Description = "Do not compare layers"
+        };
+        var propertiesOption = new Option<string[]>("-p", "--property")
+        {
+            Description = "List of strict properties to show if different",
+        };
 
         var command = new Command("compare", "Compare two files and output the differences")
         {
-	        fileAArgument,
-	        fileBArgument,
+            fileAArgument,
+            fileBArgument,
 
-	        excludeLayersOption,
-	        propertiesOption,
-			GlobalOptions.OpenInFullMode
-		};
+            excludeLayersOption,
+            propertiesOption,
+            GlobalOptions.OpenInFullMode
+        };
 
-        command.SetHandler((inputFileA, inputFileB, excludeLayers, properties, fullMode) =>
+        command.SetAction(result =>
         {
+            var inputFileA = result.GetRequiredValue(fileAArgument);
+            var inputFileB = result.GetRequiredValue(fileBArgument);
+            var excludeLayers = result.GetValue(excludeLayersOption);
+            var properties = result.GetValue(propertiesOption) ?? [];
+            var fullMode = result.GetValue(GlobalOptions.OpenInFullMode);
+
             var slicerFileA = Program.OpenInputFile(inputFileA, fullMode ? FileFormat.FileDecodeType.Full : FileFormat.FileDecodeType.Partial);
             var slicerFileB = Program.OpenInputFile(inputFileB, fullMode ? FileFormat.FileDecodeType.Full : FileFormat.FileDecodeType.Partial);
             var comparison = FileFormat.Compare(slicerFileA, slicerFileB, !excludeLayers, properties);
             Console.Write(comparison);
-
-        }, fileAArgument, fileBArgument, excludeLayersOption, propertiesOption, GlobalOptions.OpenInFullMode);
+        });
 
         return command;
     }

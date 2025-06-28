@@ -26,8 +26,24 @@ namespace UVtools.Core.Gerber;
 /// <summary>
 /// https://www.ucamco.com/files/downloads/file_en/456/gerber-layer-format-specification-revision-2022-02_en.pdf?ac97011bf6bce9aaf0b1aac43d84b05f
 /// </summary>
-public class GerberFormat
+public partial class GerberFormat
 {
+    #region Regex Generators
+    [GeneratedRegex(@"D([0-9]+)")]
+    private static partial Regex LineDParse();
+
+    [GeneratedRegex(@"X-?([0-9]+)?")]
+    private static partial Regex LineXParse();
+
+    [GeneratedRegex(@"Y-?([0-9]+)?")]
+    private static partial Regex LineYParse();
+
+    [GeneratedRegex(@"I(-?[0-9]+)")]
+    private static partial Regex LineIParse();
+    [GeneratedRegex(@"J(-?[0-9]+)")]
+    private static partial Regex LineJParse();
+    #endregion
+
     #region Properties
 
     public GerberZerosSuppressionType ZerosSuppressionType { get; set; } = GerberZerosSuppressionType.NoSuppression;
@@ -107,7 +123,7 @@ public class GerberFormat
         while (file.ReadLine()?.Trim() is { } line)
         {
             if (line.Length == 0) continue;
-            if (line.StartsWith("M02")) break;
+            if (line.StartsWith("M02")) break; // End-of-File
 
             var accumulatedLine = line;
             while (!accumulatedLine.Contains('*') && (line = file.ReadLine()) is not null)
@@ -190,23 +206,33 @@ public class GerberFormat
                 continue;
             }
 
+            if (line.StartsWith("G04")) // Comment
+            {
+                continue;
+            }
+
+            bool combiningWithG0x = false; // Deprecated syntax: Combining G01/G02/G03 and D01 in a single command, eg: G01X100Y100D01* [page 193]
             if (line.StartsWith("G01"))
             {
                 document.MoveType = GerberMoveType.Linear;
-                continue;
+                if (line.Length == 4) continue; // G01*
+                combiningWithG0x = true;
             }
 
             if (line.StartsWith("G02"))
             {
                 document.MoveType = GerberMoveType.Arc;
-                continue;
+                if (line.Length == 4) continue; // G02*
+                combiningWithG0x = true;
             }
 
             if (line.StartsWith("G03"))
             {
                 document.MoveType = GerberMoveType.ArcCounterClockwise;
-                continue;
+                if (line.Length == 4) continue; // G03*
+                combiningWithG0x = true;
             }
+
 
             if (line.StartsWith("G36"))
             {
@@ -253,7 +279,7 @@ public class GerberFormat
                 line = accumulatedLine[..^2];
 
                 var split = line.Split(['*', '%'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                
+
                 var macro = Macro.Parse(document, split[0]);
                 if (macro is null) continue;
                 document.Macros.Add(macro.Name, macro);
@@ -275,15 +301,11 @@ public class GerberFormat
                 continue;
             }
 
-            if (line.StartsWith("G04")) // Comment
-            {
-                continue;
-            }
 
             // Aperture selector
             if (line[0] == 'D' || line.StartsWith("G54"))
             {
-                var matchD = Regex.Match(line, @"D([0-9]+)");
+                var matchD = LineDParse().Match(line);
                 if (!matchD.Success || matchD.Groups.Count < 2) continue;
 
                 if (!int.TryParse(matchD.Groups[1].Value, out var d)) continue;
@@ -296,11 +318,14 @@ public class GerberFormat
             }
 
 
-            if (line[0] == 'X' || line[0] == 'Y' || line[0] == 'D')
+            if (combiningWithG0x
+                || line[0] == 'X'
+                || line[0] == 'Y'
+                || line[0] == 'D')
             {
-                var matchX = Regex.Match(line, @"X-?([0-9]+)?");
-                var matchY = Regex.Match(line, @"Y-?([0-9]+)?");
-                var matchD = Regex.Match(line, @"D([0-9]+)");
+                var matchX = LineXParse().Match(line);
+                var matchY = LineYParse().Match(line);
+                var matchD = LineDParse().Match(line);
 
                 double nowX = 0;
                 double nowY = 0;
@@ -351,7 +376,7 @@ public class GerberFormat
                     nowY = currentY;
                 }
 
-                if (insideRegion)
+                if (insideRegion && !combiningWithG0x)
                 {
                     if (d == 2)
                     {
@@ -376,8 +401,8 @@ public class GerberFormat
                             {
                                 double xOffset = 0;
                                 double yOffset = 0;
-                                var matchI = Regex.Match(line, @"I(-?[0-9]+)");
-                                var matchJ = Regex.Match(line, @"J(-?[0-9]+)");
+                                var matchI = LineIParse().Match(line);
+                                var matchJ = LineJParse().Match(line);
                                 if (!matchI.Success || !matchJ.Success || matchI.Groups.Count < 2 || matchJ.Groups.Count < 2) continue;
 
                                 // xOffset
@@ -421,13 +446,13 @@ public class GerberFormat
                                         document.PositionMmToPx(nowX + xOffset, nowY + yOffset),
                                         document.SizeMmToPx(Math.Abs(xOffset), Math.Abs(xOffset)),
                                         0, 0, 360.0, document.PolarityColor,
-                                        EmguExtensions.CorrectThickness(document.SizeMmToPx(circleAperture.Diameter)),
+                                        combiningWithG0x ? -1 : EmguExtensions.CorrectThickness(document.SizeMmToPx(circleAperture.Diameter)),
                                         enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected
                                     );
                                 }
                                 else
                                 {
-                                    
+
                                     // Calculate center point and radius
                                     double realCenterX = currentX + xOffset;
                                     double realCenterY = currentY - yOffset;
@@ -440,7 +465,7 @@ public class GerberFormat
                                     // BUT the Y-coord also needs to be negated back again (!) due opposing coordinate systems of Gerber (+y-up) and C# (+y-down)
                                     double angleStart = Math.Atan2(yOffset, -xOffset) * 180 / Math.PI;
                                     double angleEnd = Math.Atan2(nowY - currentY + yOffset, nowX - realCenterX) * 180 / Math.PI;
-                                    
+
                                     if (document.MoveType == GerberMoveType.Arc)
                                     {
                                         // For CW arcs, angleEnd must be greater than angleStart...
@@ -456,11 +481,11 @@ public class GerberFormat
                                     double angleDiff = angleEnd - angleStart;
                                     double angleSpan = angleStart + angleDiff;
                                     if (angleSpan == 0) angleSpan = 360;
-                                    
+
                                     CvInvoke.Ellipse(mat, document.PositionMmToPx(realCenterX, realCenterY),
-                                        document.SizeMmToPx(radius, radius), 
+                                        document.SizeMmToPx(radius, radius),
                                         0, document.MoveType == GerberMoveType.ArcCounterClockwise ? angleStart : -angleStart, document.MoveType == GerberMoveType.ArcCounterClockwise ? angleSpan : -angleSpan, document.PolarityColor,
-                                        EmguExtensions.CorrectThickness(document.SizeMmToPx(circleAperture.Diameter)),
+                                        combiningWithG0x ? -1 : EmguExtensions.CorrectThickness(document.SizeMmToPx(circleAperture.Diameter)),
                                         enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected
                                     );
 
@@ -687,7 +712,7 @@ public class GerberFormat
             {
                 var layerMatches = Regex.Matches(parseLine, @"\S.Cu");
                 if (layerMatches.Count < 1) continue;
-                
+
                 var atMatch = Regex.Match(parseLine, @"\(at\s+(\S+)\s+(\S+)\)");
                 if (!atMatch.Success || atMatch.Groups.Count < 3) continue;
 
@@ -778,7 +803,7 @@ public class GerberFormat
 
                 var atMatch = Regex.Match(parseLine, @"\(at\s+(\S+)\s+(\S+)\)");
                 if (!atMatch.Success || atMatch.Groups.Count < 3) continue;
-                
+
                 var sizeMatch = Regex.Match(parseLine, @"\(size\s+(\S+)\s+(\S+)\)");
                 if (!sizeMatch.Success || sizeMatch.Groups.Count < 3) continue;
 
@@ -802,7 +827,7 @@ public class GerberFormat
                     var size = new System.Drawing.Size((int)(sizef.Width / 2 * pixelsPerMm), (int)(sizef.Height / 2 * pixelsPerMm));
                     CvInvoke.Ellipse(mat, at, size, 0, 0, 360, EmguExtensions.WhiteColor, -1);
                 }
-                
+
                 if (drillMatch.Success && drillMatch.Groups.Count >= 2)
                 {
                     var drillf = float.Parse(drillMatch.Groups[1].Value, CultureInfo.InvariantCulture);

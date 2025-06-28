@@ -12,8 +12,11 @@
         <Version>4.1.0</Version>
 
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <RepositoryUrl>https://github.com/sn4k3/UVtools/tree/master/UVtools.AvaloniaControls</RepositoryUrl>
         <PackageTags>Advanced image box; NumericUpDown; Index Selector; Group Box; Avalonia</PackageTags>
+        <RepositoryUrl>https://github.com/sn4k3/UVtools/tree/master/UVtools.AvaloniaControls</RepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <AssemblyOriginatorKeyFile>UVtools.AvaloniaControls.snk</AssemblyOriginatorKeyFile>
@@ -26,6 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
         <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
     </ItemGroup>
 

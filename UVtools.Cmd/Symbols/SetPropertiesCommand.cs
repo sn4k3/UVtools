@@ -18,16 +18,20 @@ internal static class SetPropertiesCommand
 {
     internal static Command CreateCommand()
     {
-        var propertiesArgument = new Argument<string[]>("property=value", "Properties names and values to set")
+        var propertiesArgument = new Argument<string[]>("property=value")
         {
-            Arity = ArgumentArity.OneOrMore
+            Description = "Properties names and values to set",
         };
-        var layerRangeOption = new Option<string>(["-r", "--range"], "Sets properties to the matching layer(s) index(es) in a range")
+
+        var layerRangeOption = new Option<string>("-r", "--range")
         {
-            ArgumentHelpName = "startindex:endindex"
+            Description = "Sets properties to the matching layer(s) index(es) in a range",
+            HelpName = "startindex:endindex"
         };
-        var layerIndexesOption = new Option<uint[]>(["-i", "--indexes"], "Sets properties to the matching layer(s) index(es)")
+
+        var layerIndexesOption = new Option<uint[]>("-i", "--indexes")
         {
+            Description = "Sets properties to the matching layer(s) index(es)",
             AllowMultipleArgumentsPerToken = true
         };
 
@@ -41,8 +45,14 @@ internal static class SetPropertiesCommand
             GlobalOptions.OutputFile,
         };
 
-        command.SetHandler((inputFile, properties, layerRange, layerIndexes, outputFile) =>
+        command.SetAction(result =>
         {
+            var inputFile = result.GetRequiredValue(GlobalArguments.InputFileArgument);
+            var properties = result.GetRequiredValue(propertiesArgument);
+            var layerRange = result.GetValue(layerRangeOption);
+            var layerIndexes = result.GetValue(layerIndexesOption) ?? [];
+            var outputFile = result.GetValue(GlobalOptions.OutputFile);
+
             var parsedProperties = ReflectionPropertyValue.ParseFromString(properties);
 
             if (parsedProperties.Count == 0)
@@ -100,7 +110,7 @@ internal static class SetPropertiesCommand
             if (setProperties <= 0) return;
             Program.WriteLine($"Properties set: {setProperties}");
             Program.SaveFile(slicerFile, outputFile);
-        }, GlobalArguments.InputFileArgument, propertiesArgument, layerRangeOption, layerIndexesOption, GlobalOptions.OutputFile);
+        });
 
         return command;
     }
