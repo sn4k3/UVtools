@@ -119,14 +119,15 @@ if [ "$osVariant" == "osx" ]; then
         exit -1
     fi
 
-    if ! testcmd codesign && ! testcmd brew; then
-        echo '- Codesign required, installing...'
-        bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        if [ -f "/opt/homebrew/bin/brew" -a -z "$(command -v brew)" ]; then
-            echo '# Set PATH, MANPATH, etc., for Homebrew.' >> "$HOME/.zprofile"
-            echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
-            eval "$(/opt/homebrew/bin/brew shellenv)"
-        fi
+    if ! testcmd codesign; then
+        echo '- Codesign required, installing, please accept the prompt...'
+        xcode-select --install
+
+        # Wait until installation is complete
+        until xcode-select -p &>/dev/null
+        do
+            sleep 2
+        done
     fi
 
     echo '- Detecting download'
@@ -179,7 +180,7 @@ else
     if [ $(version $lddversion) -lt $(version $requiredlddversion) ]; then
         echo ""
         echo "##########################################################"
-        echo "Error: Unable to auto install the latest version."    
+        echo "Error: Unable to auto install the latest version."
         echo "ldd version: $lddversion detected, but requires at least version $requiredlddversion."
         echo "Solutions:"
         echo "- Upgrade your system to the most recent version"
