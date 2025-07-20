@@ -735,8 +735,8 @@ public class GCodeBuilder : BindableBase
     public void AppendLiftMoveG0(float upZ, float upFeedrate, float upAcceleration, float downZ, float downFeedrate, float downAcceleration,
         float waitAfterLift = 0, float waitAfterRetract = 0, Layer? layer = null)
         => AppendLiftMoveG0(
-            new List<(float, float, float)> { new(upZ, upFeedrate, upAcceleration) },
-            new List<(float, float, float)> { new(downZ, downFeedrate, downAcceleration) },
+            [new(upZ, upFeedrate, upAcceleration)],
+            [new(downZ, downFeedrate, downAcceleration)],
             waitAfterLift, waitAfterRetract, layer);
 
     public void AppendMoveG1(float z, float feedRate)
@@ -807,8 +807,8 @@ public class GCodeBuilder : BindableBase
     public void AppendLiftMoveG1(float upZ, float upFeedrate, float upAcceleration, float downZ, float downFeedrate, float downAcceleration,
         float waitAfterLift = 0, float waitAfterRetract = 0, Layer? layer = null)
         => AppendLiftMoveG1(
-            new List<(float, float, float)> { new(upZ, upFeedrate, upAcceleration) },
-            new List<(float, float, float)> { new(downZ, downFeedrate, downAcceleration) },
+            [new(upZ, upFeedrate, upAcceleration)],
+            [new(downZ, downFeedrate, downAcceleration)],
             waitAfterLift, waitAfterRetract, layer);
 
     public void AppendWaitSyncDelay(float time, string? comment = null)

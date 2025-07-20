@@ -59,8 +59,6 @@ public sealed class OperationCalibrateTolerance : Operation
 
     public override bool CanROI => false;
 
-    public override bool CanCancel => false;
-
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override string IconClass => "fa-solid fa-dot-circle";
     public override string Title => "Tolerance";
@@ -95,12 +93,12 @@ public sealed class OperationCalibrateTolerance : Operation
         {
             sb.AppendLine("Hole diameter must be smaller than female diameter.");
         }
-            
+
         if (OutputObjects <= 0)
         {
             sb.AppendLine("No objects to output.");
         }
-            
+
         return sb.ToString();
     }
 
@@ -464,7 +462,7 @@ public sealed class OperationCalibrateTolerance : Operation
     {
         return ReferenceEquals(this, obj) || obj is OperationCalibrateTolerance other && Equals(other);
     }
-    
+
     #endregion
 
     #region Methods
@@ -497,7 +495,7 @@ public sealed class OperationCalibrateTolerance : Operation
                     CvInvoke.Circle(layer, new Point(currentX, currentY), (int) (FemaleDiameterXPixels / 2), EmguExtensions.WhiteColor, -1, lineType);
                     CvInvoke.Circle(layer, new Point(currentX, currentY), (int) (FemaleHoleDiameterXPixels / 2), EmguExtensions.BlackColor, -1, lineType);
                     currentX += (int) FemaleDiameterXPixels / 2 + PartMargin;
-                        
+
                     break;
                 case Shapes.Square:
                     int offsetX = (int) ((FemaleDiameterXPixels - FemaleHoleDiameterXPixels) / 2);
@@ -617,8 +615,8 @@ public sealed class OperationCalibrateTolerance : Operation
 
         if (_erodeBottomIterations > 0)
         {
-            Parallel.For(0, _bottomLayers, CoreSettings.ParallelOptions, layerIndex => 
-            { 
+            Parallel.For(0, _bottomLayers, CoreSettings.ParallelOptions, layerIndex =>
+            {
                 CvInvoke.Erode(layers[layerIndex], layers[layerIndex], kernel, EmguExtensions.AnchorCenter, _erodeBottomIterations, BorderType.Reflect101, default);
             });
         }
@@ -682,13 +680,13 @@ public sealed class OperationCalibrateTolerance : Operation
         CvInvoke.PutText(thumbnail, $"Objects: {OutputObjects}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
 
         /*thumbnail.SetTo(EmguExtensions.Black3Byte);
-            
+
             CvInvoke.Circle(thumbnail, new Point(400/2, 200/2), 200/2, EmguExtensions.White3Byte, -1);
             for (int angle = 0; angle < 360; angle+=20)
             {
                 CvInvoke.Line(thumbnail, new Point(400 / 2, 200 / 2), new Point((int)(400 / 2 + 100 * Math.Cos(angle * Math.PI / 180)), (int)(200 / 2 + 100 * Math.Sin(angle * Math.PI / 180))), new MCvScalar(255, 27, 245), 3);
             }
-            
+
             thumbnail.Save("D:\\Thumbnail.png");*/
         return thumbnail;
     }
@@ -724,7 +722,7 @@ public sealed class OperationCalibrateTolerance : Operation
             SlicerFile.TransitionLayerCount = 0;
             SlicerFile.Layers = newLayers;
         }, true);
-            
+
         var moveOp = new OperationMove(SlicerFile);
         moveOp.Execute(progress);
 

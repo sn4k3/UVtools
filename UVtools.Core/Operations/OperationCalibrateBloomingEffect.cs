@@ -45,8 +45,6 @@ public sealed class OperationCalibrateBloomingEffect : Operation
 
     public override bool CanROI => false;
 
-    public override bool CanCancel => false;
-
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override string IconClass => "fa-solid fa-sun";
     public override string Title => "Blooming effect";
@@ -85,7 +83,7 @@ public sealed class OperationCalibrateBloomingEffect : Operation
 
         if (SlicerFile.ResolutionX - _leftRightMargin * 2 <= 0)
             sb.AppendLine("The top/bottom margin is too big, it overlaps the screen resolution.");
-            
+
         if (SlicerFile.ResolutionY - _topBottomMargin * 2 <= 0)
             sb.AppendLine("The top/bottom margin is too big, it overlaps the screen resolution.");
 
@@ -290,14 +288,14 @@ public sealed class OperationCalibrateBloomingEffect : Operation
         CvInvoke.PutText(thumbnail, "Bloom Effect Cal.", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
         CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
         CvInvoke.PutText(thumbnail, $"Wait: {_waitTimeBeforeCureStart}s/+{_waitTimeBeforeCureIncrement}s", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
-            
+
         return thumbnail;
     }
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
         progress.ItemCount = 1;
-            
+
         var newLayers = new List<Layer>();
 
         if (SlicerFile.ThumbnailsCount > 0)
@@ -331,6 +329,7 @@ public sealed class OperationCalibrateBloomingEffect : Operation
 
             for (decimal waitTime = _waitTimeBeforeCureStart; waitTime <= maxWaitTime; waitTime += _waitTimeBeforeCureIncrement)
             {
+                progress.PauseOrCancelIfRequested();
                 if (currentX + _objectDiameter > maxWidth)
                 {
                     currentX = _leftRightMargin;
@@ -372,6 +371,7 @@ public sealed class OperationCalibrateBloomingEffect : Operation
             currentY = _topBottomMargin;
             for (decimal waitTime = _waitTimeBeforeCureStart; waitTime <= maxWaitTime; waitTime += _waitTimeBeforeCureIncrement)
             {
+                progress.PauseOrCancelIfRequested();
                 if (currentX + _objectDiameter > maxWidth)
                 {
                     currentX = _leftRightMargin;
@@ -381,7 +381,7 @@ public sealed class OperationCalibrateBloomingEffect : Operation
 
                 waitTime = Math.Round(waitTime, 2);
 
-                textMat.PutTextExtended($"E: {_bottomExposure}s/{_normalExposure}s\nW: {waitTime}s", new Point((int)currentX + 20, (int)currentY + _objectDiameter / 2), 
+                textMat.PutTextExtended($"E: {_bottomExposure}s/{_normalExposure}s\nW: {waitTime}s", new Point((int)currentX + 20, (int)currentY + _objectDiameter / 2),
                     FontFace.HersheyDuplex, 2.0, EmguExtensions.WhiteColor, 2, 10);
                 currentX += (uint)(_objectDiameter + _objectMargin);
             }
@@ -410,7 +410,7 @@ public sealed class OperationCalibrateBloomingEffect : Operation
         }
 
         progress++;
-        
+
         return !progress.Token.IsCancellationRequested;
     }
 

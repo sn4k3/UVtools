@@ -25,22 +25,22 @@ public static class NetworkExtensions
     public static async Task<HttpResponseMessage> DownloadAsync(this HttpClient client, string requestUri, Stream destination, IProgress<(long total, long bytes)>? progress = null, CancellationToken cancellationToken = default)
     {
         // Get the http headers first to examine the content length
-        var response = await client.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        var response = await client.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         var contentLength = response.Content.Headers.ContentLength;
 
-        await using var download = await response.Content.ReadAsStreamAsync(cancellationToken);
-        // Ignore progress reporting when no progress reporter was 
+        await using var download = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        // Ignore progress reporting when no progress reporter was
         // passed or when the content length is unknown
         if (progress is null || !contentLength.HasValue)
         {
-            await download.CopyToAsync(destination, cancellationToken);
+            await download.CopyToAsync(destination, cancellationToken).ConfigureAwait(false);
             return response;
         }
-            
+
         // Convert absolute progress (bytes downloaded) into relative progress (0% - 100%)
         var relativeProgress = new Progress<long>(downloadedBytes => progress.Report(new (contentLength.Value, downloadedBytes)));
         // Use extension method to report progress while downloading
-        await download.CopyToAsync(destination, relativeProgress, cancellationToken);
+        await download.CopyToAsync(destination, relativeProgress, cancellationToken).ConfigureAwait(false);
         progress.Report(new(contentLength.Value, contentLength.Value));
         return response;
     }
@@ -48,14 +48,14 @@ public static class NetworkExtensions
     public static async Task<HttpResponseMessage> DownloadAsync(this HttpClient client, string requestUri, string destinationFilePath, IProgress<(long total, long bytes)>? progress = null, CancellationToken cancellationToken = default)
     {
         await using var stream = File.Open(destinationFilePath, FileMode.Create, FileAccess.Write);
-        return await DownloadAsync(client, requestUri, stream, progress, cancellationToken);
+        return await DownloadAsync(client, requestUri, stream, progress, cancellationToken).ConfigureAwait(false);
     }
 
 
     public static async Task<HttpResponseMessage> DownloadAsync(string requestUri, Stream destination, IProgress<(long total, long bytes)>? progress = null, CancellationToken cancellationToken = default)
-        => await HttpClient.DownloadAsync(requestUri, destination, progress, cancellationToken);
+        => await HttpClient.DownloadAsync(requestUri, destination, progress, cancellationToken).ConfigureAwait(false);
 
     public static async Task<HttpResponseMessage> DownloadAsync(string requestUri, string destinationFilePath, IProgress<(long total, long bytes)>? progress = null, CancellationToken cancellationToken = default)
-        => await HttpClient.DownloadAsync(requestUri, destinationFilePath, progress, cancellationToken);
+        => await HttpClient.DownloadAsync(requestUri, destinationFilePath, progress, cancellationToken).ConfigureAwait(false);
 
 }

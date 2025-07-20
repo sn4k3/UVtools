@@ -7,9 +7,9 @@
  */
 
 using System;
-using System.Linq;
 using System.Text;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Layers;
 using ZLinq;
 
 namespace UVtools.Core.Operations;
@@ -41,9 +41,7 @@ public sealed class OperationLayerClone : Operation
 
     public override string ProgressAction => "Cloned layers";
 
-    public override bool CanCancel => false;
-
-    public override bool CanHaveProfiles => false;
+    //public override bool CanHaveProfiles => false;
 
     public override string? ValidateInternally()
     {
@@ -109,14 +107,14 @@ public sealed class OperationLayerClone : Operation
         progress.Reset(ProgressAction, totalClones);
 
         var oldLayers = SlicerFile.AsValueEnumerable().ToArray();
-
         SlicerFile.Init(SlicerFile.LayerCount + totalClones);
-
         //var newLayers = new Layer[SlicerFile.LayerCount + totalClones];
+
         uint newLayerIndex = 0;
         float incrementedPositionZ = 0;
         for (uint layerIndex = 0; layerIndex < oldLayers.Length; layerIndex++)
         {
+            progress.PauseOrCancelIfRequested();
             SlicerFile[newLayerIndex++] = oldLayers[layerIndex];
 
             if (!_keepSamePositionZ && incrementedPositionZ > 0)
@@ -126,6 +124,7 @@ public sealed class OperationLayerClone : Operation
 
             if (layerIndex < LayerIndexStart || layerIndex > LayerIndexEnd) continue;
             float increment = SlicerFile[layerIndex].RelativePositionZ;
+            if (increment == 0) increment = SlicerFile.LayerHeight;
             for (uint i = 0; i < _clones; i++)
             {
                 SlicerFile[newLayerIndex] = oldLayers[layerIndex].Clone();

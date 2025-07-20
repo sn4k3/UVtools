@@ -54,8 +54,6 @@ public sealed class OperationCalibrateGrayscale : Operation
 
     public override bool CanROI => false;
 
-    public override bool CanCancel => false;
-
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override string IconClass => "fa-solid fa-chart-pie";
     public override string Title => "Grayscale";
@@ -111,7 +109,7 @@ public sealed class OperationCalibrateGrayscale : Operation
 
     public override void InitWithSlicerFile()
     {
-        base.InitWithSlicerFile(); 
+        base.InitWithSlicerFile();
         if(_layerHeight <= 0) _layerHeight = (decimal)SlicerFile.LayerHeight;
         if(_bottomLayers <= 0) _bottomLayers = SlicerFile.BottomLayerCount;
         if(_bottomExposure <= 0) _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
@@ -135,7 +133,7 @@ public sealed class OperationCalibrateGrayscale : Operation
             RaisePropertyChanged(nameof(TotalHeight));
         }
     }
-        
+
     public ushort Microns => (ushort) (LayerHeight * 1000);
 
     public ushort BottomLayers
@@ -305,7 +303,7 @@ public sealed class OperationCalibrateGrayscale : Operation
             RaisePropertyChanged(nameof(LineDivisionBrightnessPercent));
         }
     }
-        
+
     public float LineDivisionBrightnessPercent => MathF.Round(_lineDivisionBrightness * 100 / 255.0f, 2);
 
     public short TextXOffset
@@ -353,7 +351,7 @@ public sealed class OperationCalibrateGrayscale : Operation
         layers[1] = layers[0].Clone();
         layers[2] = layers[0].Clone();
 
-            
+
 
         int i = 0;
         for (ushort brightness = _startBrightness; brightness <= _endBrightness; brightness += _brightnessSteps)
@@ -375,7 +373,7 @@ public sealed class OperationCalibrateGrayscale : Operation
             if (topLineLength == 0) topLineLength = PointExtensions.FindLength(points[1], points[2]);
 
             CvInvoke.FillPoly(layers[2], vec, new MCvScalar(brightness), lineType);
-                
+
             if (_enableLineDivisions && _lineDivisionThickness > 0)
             {
                 CvInvoke.Polylines(layers[2], vec, false, new MCvScalar(_lineDivisionBrightness), _lineDivisionThickness, lineType);
@@ -430,8 +428,8 @@ public sealed class OperationCalibrateGrayscale : Operation
 
         fontScale = 1.5;
         fontThickness = 3;
-        CvInvoke.PutText(layers[0], $"{Microns}um at {_bottomExposure}s/{_normalExposure}s", 
-            new Point(center.X - radius / 2, center.Y + radius / 2 +40), 
+        CvInvoke.PutText(layers[0], $"{Microns}um at {_bottomExposure}s/{_normalExposure}s",
+            new Point(center.X - radius / 2, center.Y + radius / 2 +40),
             fontFace, fontScale, EmguExtensions.BlackColor, fontThickness, lineType, true);
 
         CvInvoke.PutText(layers[0], $"{_startBrightness}-{_endBrightness} S:{_brightnessSteps}",
@@ -490,6 +488,7 @@ public sealed class OperationCalibrateGrayscale : Operation
         uint layerIndex = 0;
         for (uint i = 0; i < BottomLayers; i++)
         {
+            progress.PauseOrCancelIfRequested();
             newLayers[layerIndex] = bottomLayer.Clone();
             progress++;
             layerIndex++;
@@ -497,6 +496,7 @@ public sealed class OperationCalibrateGrayscale : Operation
 
         for (uint i = 0; i < InterfaceLayers; i++)
         {
+            progress.PauseOrCancelIfRequested();
             newLayers[layerIndex] = interfaceLayer!.Clone();
             progress++;
             layerIndex++;
@@ -505,6 +505,7 @@ public sealed class OperationCalibrateGrayscale : Operation
 
         for (uint i = 0; i < NormalLayers; i++)
         {
+            progress.PauseOrCancelIfRequested();
             newLayers[layerIndex] = layer.Clone();
             progress++;
             layerIndex++;
@@ -532,7 +533,7 @@ public sealed class OperationCalibrateGrayscale : Operation
 
             SlicerFile.Layers = newLayers;
         }, true);
-            
+
         return !progress.Token.IsCancellationRequested;
     }
 

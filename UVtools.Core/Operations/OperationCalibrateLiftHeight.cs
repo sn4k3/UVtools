@@ -46,8 +46,6 @@ public sealed class OperationCalibrateLiftHeight : Operation
 
     public override bool CanROI => false;
 
-    public override bool CanCancel => false;
-
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override string IconClass => "mdi-arrow-expand-up";
     public override string Title => "Lift height";
@@ -72,7 +70,7 @@ public sealed class OperationCalibrateLiftHeight : Operation
 
         if (SlicerFile.ResolutionX - _leftRightMargin * 2 <= 0)
             sb.AppendLine("The top/bottom margin is too big, it overlaps the screen resolution.");
-            
+
         if (SlicerFile.ResolutionY - _topBottomMargin * 2 <= 0)
             sb.AppendLine("The top/bottom margin is too big, it overlaps the screen resolution.");
 
@@ -84,7 +82,7 @@ public sealed class OperationCalibrateLiftHeight : Operation
             if(_minimumImageFactor is 0 or >= 100)
                 sb.AppendLine("The minimum image decrease factor must be between 1 and 99%");
         }
-            
+
         return sb.ToString();
     }
 
@@ -115,7 +113,7 @@ public sealed class OperationCalibrateLiftHeight : Operation
             RaisePropertyChanged(nameof(TotalHeight));
         }
     }
-        
+
     public ushort Microns => (ushort) (LayerHeight * 1000);
 
     public ushort BottomLayers
@@ -151,7 +149,7 @@ public sealed class OperationCalibrateLiftHeight : Operation
             {
                 layerCount += (100u - _minimumImageFactor) / _decreaseImageFactor;
                 //layerCount += (uint)Math.Ceiling((100.0 - _minimumImageFactor - _decreaseImageFactor) / _decreaseImageFactor);
-                //for (int factor = 100 - _decreaseImageFactor; factor >= _minimumImageFactor; factor -= _decreaseImageFactor) 
+                //for (int factor = 100 - _decreaseImageFactor; factor >= _minimumImageFactor; factor -= _decreaseImageFactor)
                 //    layerCount++;
             }
             return layerCount;
@@ -337,19 +335,19 @@ public sealed class OperationCalibrateLiftHeight : Operation
         CvInvoke.PutText(thumbnail, "Lift Height Cal.", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
         CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
         //CvInvoke.PutText(thumbnail, $"{ObjectCount} Objects", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
-            
+
         return thumbnail;
     }
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
         progress.ItemCount = LayerCount;
-            
+
         var newLayers = new Layer[LayerCount];
 
         var layers = GetLayers();
         progress++;
-            
+
         var layer = new Layer(0, layers[0], SlicerFile)
         {
             IsModified = true
@@ -358,6 +356,7 @@ public sealed class OperationCalibrateLiftHeight : Operation
         uint layerIndex = 0;
         for (; layerIndex < _bottomLayers + _normalLayers; layerIndex++)
         {
+            progress.PauseOrCancelIfRequested();
             newLayers[layerIndex] = layer.Clone();
             progress++;
         }
@@ -376,9 +375,9 @@ public sealed class OperationCalibrateLiftHeight : Operation
                 int height = rect.Height * factor / 100;
                 int x = (int)(SlicerFile.ResolutionX - width) / 2;
                 int y = (int)(SlicerFile.ResolutionY - height) / 2;
-                    
+
                 CvInvoke.Rectangle(mat,
-                    new Rectangle(x, y, width, height), 
+                    new Rectangle(x, y, width, height),
                     EmguExtensions.WhiteColor, -1);
 
                 newLayers[layerIndex] = new Layer(0, mat, SlicerFile)
@@ -420,7 +419,7 @@ public sealed class OperationCalibrateLiftHeight : Operation
 
             SlicerFile.Layers = newLayers;
         }, true);
-            
+
         return !progress.Token.IsCancellationRequested;
     }
 

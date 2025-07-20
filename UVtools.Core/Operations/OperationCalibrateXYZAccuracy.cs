@@ -60,8 +60,6 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
 
     public override bool CanROI => false;
 
-    public override bool CanCancel => false;
-
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override string IconClass => "fa-solid fa-cubes";
     public override string Title => "XYZ Accuracy";
@@ -92,12 +90,12 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
         {
             sb.AppendLine("Display height must be a positive value.");
         }
-            
+
         if (OutputObjects <= 0)
         {
             sb.AppendLine("No objects to output.");
         }
-            
+
         return sb.ToString();
     }
 
@@ -250,7 +248,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
     }
 
     public decimal RealZSize => LayerCount * _layerHeight;
-        
+
     public uint XPixels => (uint)(XSize * Xppmm);
     public uint YPixels => (uint)(YSize * Yppmm);
 
@@ -403,7 +401,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
             RaisePropertyChanged(nameof(OutputObjects));
         }
     }
-        
+
     public byte OutputObjects => (byte) (_outputTLObject.ToByte() +
                                          _outputTCObject.ToByte() +
                                          _outputTRObject.ToByte() +
@@ -587,7 +585,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
             layers[i] = EmguExtensions.InitMat(SlicerFile.Resolution);
         }
 
-            
+
         int currentX = 0;
         int currentY = 0;
         string positionYString = string.Empty;
@@ -650,12 +648,12 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
                     if(y == 2 && x == 1 && !_outputBCObject) continue;
                     if(y == 2 && x == 2 && !_outputBRObject) continue;
                     var layer = layers[i];
-                    CvInvoke.Rectangle(layer, 
-                        new Rectangle(currentX, currentY, (int)xPixels, (int) yPixels), 
+                    CvInvoke.Rectangle(layer,
+                        new Rectangle(currentX, currentY, (int)xPixels, (int) yPixels),
                         EmguExtensions.WhiteColor, -1);
-                        
-                    CvInvoke.PutText(layer, positionString, 
-                        new Point(currentX + fontStartX, currentY + fontStartY), fontFace, fontScale, 
+
+                    CvInvoke.PutText(layer, positionString,
+                        new Point(currentX + fontStartX, currentY + fontStartY), fontFace, fontScale,
                         EmguExtensions.BlackColor, fontThickness);
 
                     CvInvoke.PutText(layer, $"{XSize},{YSize},{ZSize}",
@@ -715,13 +713,13 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
         CvInvoke.PutText(thumbnail, $"{XSize} x {YSize} x {ZSize} mm", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
 
         /*thumbnail.SetTo(EmguExtensions.Black3Byte);
-            
+
             CvInvoke.Circle(thumbnail, new Point(400/2, 200/2), 200/2, EmguExtensions.White3Byte, -1);
             for (int angle = 0; angle < 360; angle+=20)
             {
                 CvInvoke.Line(thumbnail, new Point(400 / 2, 200 / 2), new Point((int)(400 / 2 + 100 * Math.Cos(angle * Math.PI / 180)), (int)(200 / 2 + 100 * Math.Sin(angle * Math.PI / 180))), new MCvScalar(255, 27, 245), 3);
             }
-            
+
             thumbnail.Save("D:\\Thumbnail.png");*/
         return thumbnail;
     }
@@ -751,6 +749,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
 
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
         {
+            progress.PauseOrCancelIfRequested();
             newLayers[layerIndex] = SlicerFile.GetBottomOrNormalValue(layerIndex, bottomLayer.Clone(),
                 (_hollowModel || _centerHoleRelief) && _drainHoleArea > 0 && layerIndex <= _bottomLayers + (int)(_drainHoleArea / _layerHeight)
                     ? ventLayer.Clone() : layer.Clone());
@@ -778,7 +777,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
             SlicerFile.TransitionLayerCount = 0;
             SlicerFile.Layers = newLayers;
         }, true);
-            
+
         return !progress.Token.IsCancellationRequested;
     }
 

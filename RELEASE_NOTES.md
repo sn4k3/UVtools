@@ -1,7 +1,14 @@
-- **PCB Exposure:**
-  - (Change) Set no lift for gcode printers and 0.1mm for other printers (#1038)
-  - (Fix) Implemented Deprecated Syntax Variations: Combining G01/G02/G03 and D01 in a single command (#1039)
-- (Fix) CXDLP: Don't allow 0mm as lift height (#1038)
-- (Upgrade) UVtoolsCmd parser and rebuild the commands
-- (Upgrade) AvaloniaUI from 11.3.1 to 11.3.2
+- (Add) Setting - When unable to hit action: Select to continue or kill the process in cases where is not possible to pause or cancel the operation, default: Continue
+- (Improvement) File reload confirmation in case of unsaved changes (#1041)
+- (Improvement) Allow profiles on Clone and Remove layer actions
+- (Improvement) Allow to pause or cancel the following operations:
+  - Calibrate XYZ Accuracy
+  - Calibrate Tolerance (#1044)
+  - Calibrate Blooming Effect
+  - Calibrate Elephant Foot
+  - Calibrate Grayscale
+  - Calibrate Lift Height
+  - Layer clone
+- (Change) Replace the update and auto upgrade code by the `Updatum` library, this allows a more stable and reliable update process but also presents the changelog for all skipped versions between the current and the latest version
+- (Fix) Cloning layers with relative 0mm height cause incorrect layer height increment (#1046)
 

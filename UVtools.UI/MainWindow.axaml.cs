@@ -29,6 +29,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Web;
+using Updatum;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Dialogs;
@@ -57,7 +58,8 @@ public partial class MainWindow : WindowEx
 {
     #region Redirects
 
-    public AppVersionChecker VersionChecker => App.VersionChecker;
+    //public AppVersionChecker VersionChecker => App.VersionChecker;
+    public UpdatumManager AppUpdater => App.AppUpdater;
     public static ClipboardManager ClipboardManager => ClipboardManager.Instance;
     #endregion
 
@@ -139,9 +141,9 @@ public partial class MainWindow : WindowEx
     private bool _isGUIEnabled = true;
     private uint _savesCount;
     private bool _canSave;
-    private IEnumerable<MenuItem> _menuFileOpenRecentItems = Array.Empty<MenuItem>();
-    private IEnumerable<MenuItem> _menuFileSendToItems = Array.Empty<MenuItem>();
-    private IEnumerable<MenuItem> _menuFileConvertItems = Array.Empty<MenuItem>();
+    private IEnumerable<MenuItem> _menuFileOpenRecentItems = [];
+    private IEnumerable<MenuItem> _menuFileSendToItems = [];
+    private IEnumerable<MenuItem> _menuFileConvertItems = [];
 
     private PointerEventArgs? _globalPointerEventArgs;
     private PointerPoint _globalPointerPoint;
@@ -460,9 +462,32 @@ public partial class MainWindow : WindowEx
 
         _ramUsageTimer.Elapsed += RamUsageTimerOnElapsed;
 
+        AppUpdater.PropertyChanged += AppUpdaterOnPropertyChanged;
+        AppUpdater.InstallUpdateCompleted += (sender, asset) =>
+        {
+            if (!Settings.General.StartMaximized &&
+                (Settings.General.RestoreWindowLastPosition ||
+                 Settings.General.RestoreWindowLastSize))
+            {
+                UserSettings.Save();
+            }
+        };
+
 #if DEBUG
         this.AttachDevTools(new KeyGesture(Key.F12, KeyModifiers.Control));
 #endif
+    }
+
+    private void AppUpdaterOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(AppUpdater.DownloadSizeMegabytes))
+        {
+            Progress.ItemCount = (uint)AppUpdater.DownloadSizeMegabytes;
+        }
+        else if (e.PropertyName == nameof(AppUpdater.DownloadedMegabytes))
+        {
+            Progress.ProcessedItems = (uint)AppUpdater.DownloadedMegabytes;
+        }
     }
 
     private void RamUsageTimerOnElapsed(object? sender, ElapsedEventArgs e)
@@ -497,7 +522,7 @@ public partial class MainWindow : WindowEx
                         Progress.IsPaused = true;
                         break;
                     case RamLimitAction.Cancel:
-                        Progress.TokenSource.Cancel();
+                        await Progress.TokenSource.CancelAsync();
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(Settings.General.AvailableRamOnHitLimitAction),
@@ -516,13 +541,16 @@ public partial class MainWindow : WindowEx
             }
             else
             {
-                // Kills
-                throw new InsufficientMemoryException(
-                    $"Your system memory RAM hit the limit of {usedMemory}GB from a total of {totalMemory}GB.  Available: {availableMemory}GB.  {About.Software}: {processMemory}GB ({percentProcessMemory}%).\n" +
-                    $"The program crashed on purpose due the impossibility to pause or cancel the running operation, this was to relief pressure and ensure the system stability.\n\n" +
-                    $"Monitor your memory RAM under the system tools and re-run the operation to check the usages and find the cause.\n" +
-                    $"You may need to stop other processes or increase your memory RAM in order to deal with huge files and/or heavy operations.\n\n" +
-                    $"Currently you have configured a lower limit of {Settings.General.AvailableRamLimit}GB of available memory RAM for the operations.");
+                if (Settings.General.AvailableRamOnHitLimitKillIfUnableToAction)
+                {
+                    // Kills
+                    throw new InsufficientMemoryException(
+                        $"Your system memory RAM hit the limit of {usedMemory}GB from a total of {totalMemory}GB.  Available: {availableMemory}GB.  {About.Software}: {processMemory}GB ({percentProcessMemory}%).\n" +
+                        $"The program crashed on purpose due the impossibility to pause or cancel the running operation, this was to relief pressure and ensure the system stability.\n\n" +
+                        $"Monitor your memory RAM under the system tools and re-run the operation to check the usages and find the cause.\n" +
+                        $"You may need to stop other processes or increase your memory RAM in order to deal with huge files and/or heavy operations.\n\n" +
+                        $"Currently you have configured a lower limit of {Settings.General.AvailableRamLimit}GB of available memory RAM for the operations.");
+                }
             }
         });
     }
@@ -775,7 +803,8 @@ public partial class MainWindow : WindowEx
 
         if (Settings.General.CheckForUpdatesOnStartup)
         {
-            _ = Task.Run(() => VersionChecker.Check());
+            //_ = Task.Run(() => VersionChecker.Check());
+            _ = AppUpdater.CheckForUpdatesAsync();
         }
 
         await ProcessFiles(Program.Args);
@@ -1091,8 +1120,10 @@ public partial class MainWindow : WindowEx
 
     public async Task MenuFileCloseFileClicked()
     {
-        if (CanSave && await this.MessageBoxQuestion("There are unsaved changes. Do you want close this file without saving?") !=
-            MessageButtonResult.Yes)
+        if (CanSave && await this.MessageBoxQuestion("""
+                                                     You have unsaved changes. Closing the file will discard them.
+                                                     Do you want to close without saving?
+                                                     """, "Close file - Unsaved changes") != MessageButtonResult.Yes)
         {
             return;
         }
@@ -1104,7 +1135,7 @@ public partial class MainWindow : WindowEx
     {
         if (!IsFileLoaded) return;
 
-        MenuFileConvertItems = Array.Empty<MenuItem>();
+        MenuFileConvertItems = [];
 
         ClipboardManager.Instance.Reset();
 
@@ -1285,22 +1316,39 @@ public partial class MainWindow : WindowEx
         await this.MessageBoxError(string.Concat(Enumerable.Repeat("Informative message:\n\nLorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.\n", 100)));
     }
 
-    public void MenuHelpDebugTriggerNewUpdateClicked()
+    public async Task MenuHelpDebugTriggerNewUpdateClicked()
     {
-        VersionChecker.Check(true);
+        //VersionChecker.Check(true);
+        if (AppUpdater.IsUpdateAvailable) return;
+        if (AppUpdater.CheckForUpdateCount == 0)
+        {
+            await AppUpdater.CheckForUpdatesAsync();
+        }
+        if (AppUpdater.Releases.Count > 0)
+        {
+            AppUpdater.ForceTriggerUpdateFromRelease(AppUpdater.Releases[0]);
+        }
     }
 
     public async Task MenuNewVersionClicked()
     {
+        var release = AppUpdater.LatestRelease;
+        if (release is null) return;
+        var asset = AppUpdater.GetCompatibleReleaseAsset(release);
+        if (asset is null) return;
+
         var autoUpdateButton = MessageWindow.CreateButton("Auto update", MessageWindow.IconButtonDownload);
         var manualUpdateButton = MessageWindow.CreateButton("Manual update", MessageWindow.IconButtonOpenBrowser);
 
-        var messageBox = new MessageWindow($"Update UVtools to v{VersionChecker.Version}?",
+        var messageBox = new MessageWindow($"Update UVtools to v{AppUpdater.LatestReleaseTagVersionStr}?",
             MessageWindow.IconHeaderQuestion,
-            $"Do you like to update {About.Software} from v{About.VersionString} to v{VersionChecker.Version}?",
-            "## Changelog:\n\n" +
-            $"{VersionChecker.Changelog}",
-            string.IsNullOrWhiteSpace(VersionChecker.DownloadLink) ?
+            $"Do you like to update {About.Software} from v{About.VersionString} to v{AppUpdater.LatestReleaseTagVersionStr}?",
+            $"""
+             ## Changelog:
+
+             {AppUpdater.GetChangelog()}
+             """,
+            string.IsNullOrWhiteSpace(release.HtmlUrl) ?
                 [
                     manualUpdateButton,
                     MessageWindow.CreateCancelButton()
@@ -1318,13 +1366,23 @@ public partial class MainWindow : WindowEx
         if (ReferenceEquals(result, autoUpdateButton))
         {
             IsGUIEnabled = false;
-            ShowProgressWindow($"Downloading: {VersionChecker.Filename}");
-            await VersionChecker.AutoUpgrade(Progress);
+            ShowProgressWindow($"Downloading: {asset.Name}");
+            Progress.Reset("Megabytes", (uint)(asset.Size / 1_000_000));
+            try
+            {
+                await AppUpdater.DownloadAndInstallUpdateAsync(release, Progress.Token);
+            }
+            catch
+            {
+                // ignored
+            }
+
+            //await VersionChecker.AutoUpgrade(Progress);
             IsGUIEnabled = true;
         }
         else if (ReferenceEquals(result, manualUpdateButton))
         {
-            SystemAware.OpenBrowser(VersionChecker.UrlLatestRelease);
+            SystemAware.OpenBrowser(release.HtmlUrl);
         }
     }
 
@@ -1467,12 +1525,21 @@ public partial class MainWindow : WindowEx
         }
     }
 
-    public void ReloadFile() => ReloadFile(_actualLayer);
+    public Task ReloadFile() => ReloadFile(_actualLayer);
 
-    public Task ReloadFile(uint actualLayer)
+    public async Task ReloadFile(uint actualLayer)
     {
-        if (!IsFileLoaded) return Task.CompletedTask;
-        return ProcessFile(SlicerFile!.FileFullPath!, SlicerFile.DecodeType, _actualLayer);
+        if (!IsFileLoaded) return;
+        if (CanSave
+            && await this.MessageBoxQuestion("""
+                                             You have unsaved changes. Reloading will discard them.
+                                             Do you want to reload without saving?
+                                             """,
+                "Reload file - Unsaved changes") != MessageButtonResult.Yes)
+        {
+            return;
+        }
+        await ProcessFile(SlicerFile!.FileFullPath!, SlicerFile.DecodeType, _actualLayer);
     }
 
     private Task ProcessFile(string fileName, uint actualLayer = 0) => ProcessFile(fileName, FileFormat.FileDecodeType.Full, actualLayer);

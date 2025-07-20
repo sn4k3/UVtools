@@ -57,8 +57,6 @@ public sealed class OperationCalibrateElephantFoot : Operation
 
     public override bool CanROI => false;
 
-    public override bool CanCancel => false;
-
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override string IconClass => "mdi-elephant";
     public override string Title => "Elephant foot";
@@ -98,7 +96,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
                 sb.AppendLine("As alternative, re-slice the file with a AntiAliasing level greater than 1 and run this tool again.");
             }
         }
-            
+
 
         if (ObjectCount <= 0)
         {
@@ -137,7 +135,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
             RaisePropertyChanged(nameof(TotalHeight));
         }
     }
-        
+
     public ushort Microns => (ushort) (LayerHeight * 1000);
 
     public bool SyncLayers
@@ -354,8 +352,8 @@ public sealed class OperationCalibrateElephantFoot : Operation
 
     public KernelConfiguration DimmingKernel { get; set; } = new();
 
-    public uint ErodeObjects => _isErodeEnabled ? 
-        (uint)((_erodeEndIteration - _erodeStartIteration) / (decimal)_erodeIterationSteps) + 1 
+    public uint ErodeObjects => _isErodeEnabled ?
+        (uint)((_erodeEndIteration - _erodeStartIteration) / (decimal)_erodeIterationSteps) + 1
         : 0;
 
     public uint DimmingObjects => _isDimmingEnabled ?
@@ -388,7 +386,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
     #endregion
 
     #region Equality
-        
+
     private bool Equals(OperationCalibrateElephantFoot other)
     {
         return _layerHeight == other._layerHeight && _syncLayers == other._syncLayers && _bottomLayers == other._bottomLayers && _normalLayers == other._normalLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _partScale == other._partScale && _margin == other._margin && _extrudeText == other._extrudeText && _textHeight == other._textHeight && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _isErodeEnabled == other._isErodeEnabled && _erodeStartIteration == other._erodeStartIteration && _erodeEndIteration == other._erodeEndIteration && _erodeIterationSteps == other._erodeIterationSteps && _isDimmingEnabled == other._isDimmingEnabled && _dimmingWallThickness == other._dimmingWallThickness && _dimmingStartBrightness == other._dimmingStartBrightness && _dimmingEndBrightness == other._dimmingEndBrightness && _dimmingBrightnessSteps == other._dimmingBrightnessSteps && _outputOriginalPart == other._outputOriginalPart;
@@ -410,7 +408,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
     public Mat[] GetLayers()
     {
         var layers = new Mat[3];
-            
+
         layers[0] = EmguExtensions.InitMat(SlicerFile.Resolution);
         layers[2] = layers[0].Clone();
         LineType lineType = _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
@@ -470,7 +468,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
 
 
         int ellipseHeight = (int) (50 * _partScale);
-            
+
         maxY += ellipseHeight;
         using Mat shape = EmguExtensions.InitMat(new Size(maxX + startX, maxY + startY));
         CvInvoke.FillPoly(shape, new VectorOfPoint(pointList.ToArray()), EmguExtensions.WhiteColor, lineType);
@@ -490,7 +488,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
         int fontStartY = length / 4 + fontMargin;
         double fontScale = 1.3 * (double) _partScale;
         int fontThickness = (int) (3 * _partScale);
-            
+
 
         void addText(Mat mat, ushort number, params string[]? text)
         {
@@ -536,7 +534,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
         }
 
 
-            
+
 
         if (IsErodeEnabled)
         {
@@ -571,7 +569,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
                     {
                         addText(roi, count, $"E: {iteration}i");
                     }
-                        
+
                 }
 
                 using (var roi = layers[0].Roi(new Rectangle(new Point(currentX, currentY), shape.Size)))
@@ -670,13 +668,13 @@ public sealed class OperationCalibrateElephantFoot : Operation
         CvInvoke.PutText(thumbnail, $"{ObjectCount} Objects", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
 
         /*thumbnail.SetTo(EmguExtensions.Black3Byte);
-            
+
             CvInvoke.Circle(thumbnail, new Point(400/2, 200/2), 200/2, EmguExtensions.White3Byte, -1);
             for (int angle = 0; angle < 360; angle+=20)
             {
                 CvInvoke.Line(thumbnail, new Point(400 / 2, 200 / 2), new Point((int)(400 / 2 + 100 * Math.Cos(angle * Math.PI / 180)), (int)(200 / 2 + 100 * Math.Sin(angle * Math.PI / 180))), new MCvScalar(255, 27, 245), 3);
             }
-            
+
             thumbnail.Save("D:\\Thumbnail.png");*/
         return thumbnail;
     }
@@ -684,7 +682,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
     protected override bool ExecuteInternally(OperationProgress progress)
     {
         progress.ItemCount = 3;
-            
+
         var newLayers = new Layer[LayerCount];
 
         var layers = GetLayers();
@@ -692,7 +690,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
 
 
         var bottomLayer = new Layer(0, layers[0], SlicerFile);
-            
+
         Layer? extrudeLayer = null;
         var moveOp = new OperationMove(SlicerFile, bottomLayer.BoundingRectangle);
         moveOp.Execute(layers[0]);
@@ -710,7 +708,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
             {
                 IsModified = true
             };
-                
+
         }
         bottomLayer.LayerMat = layers[0];
 
@@ -720,6 +718,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
              layerIndex < _bottomLayers + _normalLayers;
              layerIndex++)
         {
+            progress.PauseOrCancelIfRequested();
             newLayers[layerIndex] = SlicerFile.GetBottomOrNormalValue(layerIndex, bottomLayer.Clone(), layer.Clone());
         }
 
@@ -755,7 +754,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
 
             SlicerFile.Layers = newLayers;
         }, true);
-            
+
         return !progress.Token.IsCancellationRequested;
     }
 

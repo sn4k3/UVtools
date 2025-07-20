@@ -47,14 +47,13 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
     private decimal _retractSpeed;
     private decimal _waitTimeBeforeStir;
     private decimal _waitTimeAfterLift;
-    
+
     #endregion
 
     #region Overrides
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override bool CanROI => false;
     public override bool CanMask => false;
-
     public override bool CanCancel => false;
 
     public override string IconClass => "fa-solid fa-blender";
@@ -340,7 +339,7 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
 
                     SlicerFile.SetBottomWaitTimeBeforeCureOrLightOffDelay((float)_waitTimeBeforeStir);
                     SlicerFile.SetNormalWaitTimeBeforeCureOrLightOffDelay((float)_waitTimeBeforeStir);
-                    
+
                     SlicerFile.BottomWaitTimeAfterCure = 0;
                     SlicerFile.WaitTimeAfterCure = 0;
 

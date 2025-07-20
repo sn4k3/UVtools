@@ -10,6 +10,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
@@ -22,16 +23,16 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Avalonia.Media;
+using Updatum;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
 using UVtools.Core.SystemOS;
+using UVtools.UI.Extensions;
 using UVtools.UI.Structures;
 using UVtools.UI.Windows;
-using Bitmap = Avalonia.Media.Imaging.Bitmap;
-using UVtools.UI.Extensions;
 using ZLinq;
+using Bitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace UVtools.UI;
 
@@ -68,7 +69,13 @@ public class App : Application
     public static MainWindow MainWindow = null!;
     public static FileFormat? SlicerFile;
 
-    public static AppVersionChecker VersionChecker { get; } = new();
+    internal static readonly UpdatumManager AppUpdater = new(EntryApplication.AssemblyRepositoryUrl)
+    {
+        InstallUpdateWindowsInstallerArguments = "/qb",
+        InstallUpdateSingleFileExecutableName = About.Software,
+        InstallUpdateCodesignMacOSApp = true,
+        DownloadProgressUpdateFrequencySeconds = 0.1 // 10 FPS
+    };
 
     public static void ApplyTheme()
     {

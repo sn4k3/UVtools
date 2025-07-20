@@ -48,14 +48,14 @@ public sealed class OperationLayerRemove : Operation
 
     public override bool CanCancel => false;
 
-    public override bool CanHaveProfiles => false;
+    //public override bool CanHaveProfiles => false;
 
     public override string? ValidateInternally()
     {
         var sb = new StringBuilder();
 
         var layersToRemove = LayerRemoveCount;
-        if (LayerRemoveCount == 0)
+        if (layersToRemove == 0)
         {
             sb.AppendLine("The used values will not remove any layer, please adjust.");
         }

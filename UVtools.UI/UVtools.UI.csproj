@@ -36,6 +36,7 @@
         <PackageReference Include="Projektanker.Icons.Avalonia" Version="9.6.2" />
         <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="9.6.2" />
         <PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="9.6.2" />
+        <PackageReference Include="Updatum" Version="1.1.5" />
     </ItemGroup>
 
     <ItemGroup>

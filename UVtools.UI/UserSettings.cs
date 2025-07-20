@@ -47,6 +47,9 @@ public sealed class UserSettings : BindableBase
         private bool _checkForUpdatesOnStartup = true;
         private bool _loadDemoFileOnStartup = true;
         private bool _loadLastRecentFileOnStartup;
+        private decimal _availableRamLimit = 1M;
+        private RamLimitAction _availableRamOnHitLimitAction;
+        private bool _availableRamOnHitLimitKillIfUnableToAction;
         private int _maxDegreeOfParallelism = -2;
         private LayerCompressionCodec _layerCompressionCodec = CoreSettings.DefaultLayerCompressionCodec;
         private float _averageResin1000MlBottleCost = CoreSettings.AverageResin1000MlBottleCost;
@@ -75,8 +78,7 @@ public sealed class UserSettings : BindableBase
         private RangeObservableCollection<MappedProcess> _sendToProcess = [];
         private ushort _lockedFilesOpenCounter;
         private bool _fileSaveUpdateNameWithNewInformation = true;
-        private decimal _availableRamLimit = 1M;
-        private RamLimitAction _availableRamOnHitLimitAction;
+
 
 
         public const byte LockedFilesMaxOpenCounter = 10;
@@ -148,6 +150,12 @@ public sealed class UserSettings : BindableBase
         {
             get => _availableRamOnHitLimitAction;
             set => RaiseAndSetIfChanged(ref _availableRamOnHitLimitAction, value);
+        }
+
+        public bool AvailableRamOnHitLimitKillIfUnableToAction
+        {
+            get => _availableRamOnHitLimitKillIfUnableToAction;
+            set => RaiseAndSetIfChanged(ref _availableRamOnHitLimitKillIfUnableToAction, value);
         }
 
         /// <summary>
