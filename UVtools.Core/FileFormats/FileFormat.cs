@@ -38,6 +38,30 @@ using Timer = System.Timers.Timer;
 
 namespace UVtools.Core.FileFormats;
 
+#region Global enums
+public enum PerLayerSettingsModes : byte
+{
+    /// <summary>
+    /// Disables the per-layer settings and capabilities.
+    /// For GCode files this is not respected (Always enabled)
+    /// </summary>
+    [Description("Disabled (Always print with the global settings)")]
+    Disabled,
+
+    /// <summary>
+    /// Disables the per-layer settings and capabilities only to known problematic file formats.
+    /// </summary>
+    [Description("Enabled (But exclude known problematic file formats)")]
+    EnabledButExcludeProblematicFileFormats,
+
+    /// <summary>
+    /// Per-layer settings available and used
+    /// </summary>
+    [Description("Enabled (When compatible with the file format)")]
+    Enabled,
+}
+#endregion
+
 /// <summary>
 /// Slicer <see cref="FileFormat"/> representation
 /// </summary>
@@ -2402,6 +2426,17 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     public bool SupportPerLayerSettings => PrintParameterPerLayerModifiers.Length > 0;
 
+    /// <summary>
+    /// Checks if this file format is allowed to use per layer settings
+    /// </summary>
+    public bool IsPerLayerSettingsAllowed =>
+        SupportGCode ||
+        CoreSettings.PerLayerSettingsMode == PerLayerSettingsModes.Enabled ||
+        (CoreSettings.PerLayerSettingsMode == PerLayerSettingsModes.EnabledButExcludeProblematicFileFormats
+         && !CoreSettings.PerLayerSettingsProblematicFileFormats.Contains(GetType()));
+
+
+    /// <inheritdoc />
     public bool IsReadOnly => false;
 
     /// <summary>

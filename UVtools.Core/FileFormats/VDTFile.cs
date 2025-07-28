@@ -259,7 +259,7 @@ public sealed class VDTFile : FileFormat
         PrintParameterModifier.RetractSpeed,
         PrintParameterModifier.RetractHeight2,
         PrintParameterModifier.RetractSpeed2,
-            
+
         PrintParameterModifier.BottomLightPWM,
         PrintParameterModifier.LightPWM
     ];
@@ -434,7 +434,7 @@ public sealed class VDTFile : FileFormat
         get => ManifestFile.Print.LiftHeight;
         set => base.LiftHeight = ManifestFile.Print.LiftHeight = MathF.Round(value, 2);
     }
-        
+
     public override float LiftSpeed
     {
         get => ManifestFile.Print.LiftSpeed;
@@ -458,7 +458,7 @@ public sealed class VDTFile : FileFormat
         get => ManifestFile.Print.LiftHeight2;
         set => base.LiftHeight2 = ManifestFile.Print.LiftHeight2 = MathF.Round(value, 2);
     }
-        
+
     public override float LiftSpeed2
     {
         get => ManifestFile.Print.LiftSpeed2;
@@ -497,7 +497,7 @@ public sealed class VDTFile : FileFormat
             base.BottomRetractHeight2 = ManifestFile.Print.BottomRetractHeight2 = value;
         }
     }
-        
+
     public override float BottomRetractSpeed2
     {
         get => ManifestFile.Print.BottomRetractSpeed2;
@@ -513,7 +513,7 @@ public sealed class VDTFile : FileFormat
             base.RetractHeight2 = ManifestFile.Print.RetractHeight2 = value;
         }
     }
-        
+
     public override float RetractSpeed2
     {
         get => ManifestFile.Print.RetractSpeed2;
@@ -648,7 +648,7 @@ public sealed class VDTFile : FileFormat
         }
 
         ManifestFile = JsonSerializer.Deserialize<VDTManifest>(entry.Open())!;
-                
+
         Init((uint) ManifestFile.Layers!.Length, DecodeType == FileDecodeType.Partial);
 
         DecodeThumbnailsFromZip(inputFile, progress, FilePreviewNames);
@@ -659,7 +659,7 @@ public sealed class VDTFile : FileFormat
             var manifestLayer = ManifestFile.Layers[layerIndex];
             manifestLayer.CopyTo(this[layerIndex]);
         }
-                
+
         progress.ProcessedItems++;
     }
 

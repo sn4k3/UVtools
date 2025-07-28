@@ -564,10 +564,19 @@ public sealed class PHZFile : FileFormat
         PrintParameterModifier.LightPWM
     ];
 
-    /*public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
-        PrintParameterModifier.ExposureSeconds,
-        PrintParameterModifier.LightOffDelay,
-    };*/
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers
+    {
+        get
+        {
+            if (!IsPerLayerSettingsAllowed) return base.PrintParameterPerLayerModifiers;
+
+            return
+            [
+                PrintParameterModifier.LightOffDelay,
+                PrintParameterModifier.ExposureTime
+            ];
+        }
+    }
 
     public override Size[] ThumbnailsOriginalSize { get; } =
     [

@@ -825,13 +825,21 @@ public sealed class AnycubicZipFile : FileFormat
         }
     }
 
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } =
-    [
-        PrintParameterModifier.PositionZ,
-        PrintParameterModifier.ExposureTime,
-        PrintParameterModifier.LiftHeight,
-        PrintParameterModifier.LiftSpeed
-    ];
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers
+    {
+        get
+        {
+            if (!IsPerLayerSettingsAllowed) return base.PrintParameterPerLayerModifiers;
+
+            return
+            [
+                PrintParameterModifier.PositionZ,
+                PrintParameterModifier.ExposureTime,
+                PrintParameterModifier.LiftHeight,
+                PrintParameterModifier.LiftSpeed
+            ];
+        }
+    }
 
     public override string ConvertMenuGroup => "Anycubic Photon Workshop";
 
@@ -1603,7 +1611,7 @@ public sealed class AnycubicZipFile : FileFormat
         if (resinSetting is not null)
         {
             resinSetting.SliceExtPara.MultiStateUsed = System.Convert.ToByte(IsUsingTSMC);
-            resinSetting.SlicePara.UseIndividualLayerPara = System.Convert.ToByte(UsingPerLayerSettings);
+            resinSetting.SlicePara.UseIndividualLayerPara = System.Convert.ToByte(SupportPerLayerSettings && UsingPerLayerSettings);
         }
 
         LayersSettings.Layers = new LayerManifest[LayerCount];

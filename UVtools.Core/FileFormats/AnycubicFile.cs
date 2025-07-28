@@ -1125,13 +1125,22 @@ public sealed class AnycubicFile : FileFormat
         }
     }
 
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } =
-    [
-        PrintParameterModifier.PositionZ,
-        PrintParameterModifier.ExposureTime,
-        PrintParameterModifier.LiftHeight,
-        PrintParameterModifier.LiftSpeed
-    ];
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers
+    {
+        get
+        {
+            if (!IsPerLayerSettingsAllowed) return base.PrintParameterPerLayerModifiers;
+
+            return
+            [
+                PrintParameterModifier.PositionZ,
+                PrintParameterModifier.ExposureTime,
+                PrintParameterModifier.LiftHeight,
+                PrintParameterModifier.LiftSpeed
+            ];
+        }
+    }
+
 
     public override Size[] ThumbnailsOriginalSize => [new(224, 168), new(330, 190)];
     /*public override Size[]? ThumbnailsOriginalSize =>
@@ -1814,7 +1823,7 @@ public sealed class AnycubicFile : FileFormat
 
     protected override void OnBeforeEncode(bool isPartialEncode)
     {
-        HeaderSettings.PerLayerOverride = UsingPerLayerSettings;
+        HeaderSettings.PerLayerOverride = SupportPerLayerSettings && UsingPerLayerSettings;
     }
 
     protected override void EncodeInternally(OperationProgress progress)

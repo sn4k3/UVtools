@@ -2026,10 +2026,43 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
+            <TabItem VerticalContentAlignment="Center"
+                     Header="File formats">
+                <ScrollViewer Name="ScrollViewer6">
+                    <StackPanel Orientation="Vertical"
+                                Spacing="5">
+                        <uvtava:GroupBox Margin="5"
+                                         Header="Common">
+
+                            <StackPanel Orientation="Vertical"
+                                        Spacing="10">
+
+                                <Grid ColumnDefinitions="Auto,*"
+                                      ColumnSpacing="10"
+                                      RowDefinitions="Auto,Auto"
+                                      RowSpacing="10">
+                                    <TextBlock Grid.Row="0"
+                                               Grid.Column="0"
+                                               VerticalAlignment="Center"
+                                               Text="Per-layer settings:"
+                                               ToolTip.Tip="Per-layer settings are known to cause unexpected printing problems in some file formats. Mostly despite the flag and feature exists, no slicer make use of it, so it's poor implemented by printer firmwares causing all sort of problems.&#10;By disabling on problematic files (Recommended), will ensure such formats to follow and print by the global settings.&#10;&#10;Known problematic file formats: &#10;- Anycubic&#10;- Goo&#10;- PHZ&#10;&#10;Note: This option does not apply to GCode nor intermediate file formats." />
+                                    <ComboBox Grid.Row="0"
+                                              Grid.Column="1"
+                                              HorizontalAlignment="Stretch"
+                                              ItemsSource="{Binding Settings.FileFormats.PerLayerSettingsMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                              SelectedItem="{Binding Settings.FileFormats.PerLayerSettingsMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}" />
+                                </Grid>
+
+                            </StackPanel>
+
+                        </uvtava:GroupBox>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
 
             <TabItem VerticalContentAlignment="Center"
                      Header="Automations">
-                <ScrollViewer Name="ScrollViewer6">
+                <ScrollViewer Name="ScrollViewer7">
                     <StackPanel Orientation="Vertical"
                                 Spacing="5">
                         <uvtava:GroupBox Margin="5"
@@ -2189,7 +2222,7 @@
 
             <TabItem VerticalContentAlignment="Center"
                      Header="Network">
-                <ScrollViewer Name="ScrollViewer7">
+                <ScrollViewer Name="ScrollViewer8">
                     <StackPanel Orientation="Vertical"
                                 Spacing="5">
                         <uvtava:GroupBox Margin="5"

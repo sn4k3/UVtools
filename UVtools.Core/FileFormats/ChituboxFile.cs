@@ -1128,7 +1128,7 @@ public sealed class ChituboxFile : FileFormat
     public override PrintParameterModifier[] PrintParameterPerLayerModifiers {
         get
         {
-            if (!IsCtbFile) return []; // Only ctb files
+            if (!IsCtbFile || !IsPerLayerSettingsAllowed) return base.PrintParameterPerLayerModifiers; // Only ctb files
             /* Disable for v2 beside the fields on format they are not used
              if (HeaderSettings.Version <= 2)
             {
@@ -1770,7 +1770,7 @@ public sealed class ChituboxFile : FileFormat
             }
         }
 
-        SlicerInfoSettings.PerLayerSettings = AllLayersAreUsingGlobalParameters
+        SlicerInfoSettings.PerLayerSettings = SupportPerLayerSettings && AllLayersAreUsingGlobalParameters
             ? PERLAYER_SETTINGS_DISALLOW
             : (byte)(Version * 0x10); // 0x10, 0x20, 0x30, 0x40, 0x50, ...
 

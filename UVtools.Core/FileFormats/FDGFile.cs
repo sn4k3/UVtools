@@ -77,7 +77,7 @@ public sealed class FDGFile : FileFormat
         /// <summary>
         /// Gets the layer height setting used at slicing, in millimeters. Actual height used by the machine is in the layer table.
         /// </summary>
-        [FieldOrder(8)] public float LayerHeightMilimeter { get; set; }
+        [FieldOrder(8)] public float LayerHeightMillimeter { get; set; }
 
         /// <summary>
         /// Gets the exposure time setting used at slicing, in seconds, for normal (non-bottom) layers, respectively. Actual time used by the machine is in the layer table.
@@ -262,7 +262,7 @@ public sealed class FDGFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(_machineName)}: {_machineName}, {nameof(Magic)}: {Magic}, {nameof(Version)}: {Version}, {nameof(LayerCount)}: {LayerCount}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(BottomLayersCount2)}: {BottomLayersCount2}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerHeightMilimeter)}: {LayerHeightMilimeter}, {nameof(LayerExposureSeconds)}: {LayerExposureSeconds}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(PreviewLargeOffsetAddress)}: {PreviewLargeOffsetAddress}, {nameof(PreviewSmallOffsetAddress)}: {PreviewSmallOffsetAddress}, {nameof(LayersDefinitionOffsetAddress)}: {LayersDefinitionOffsetAddress}, {nameof(PrintTime)}: {PrintTime}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(OverallHeightMilimeter)}: {OverallHeightMilimeter}, {nameof(BedSizeX)}: {BedSizeX}, {nameof(BedSizeY)}: {BedSizeY}, {nameof(BedSizeZ)}: {BedSizeZ}, {nameof(EncryptionKey)}: {EncryptionKey}, {nameof(AntiAliasLevelInfo)}: {AntiAliasLevelInfo}, {nameof(EncryptionMode)}: {EncryptionMode}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(WeightG)}: {WeightG}, {nameof(CostDollars)}: {CostDollars}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(MachineName)}: {MachineName}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(Padding4)}: {Padding4}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(Padding11)}: {Padding11}, {nameof(ModifiedTimestampMinutes)}: {ModifiedTimestampMinutes}, {nameof(ModifiedDate)}: {ModifiedDate}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(Padding12)}: {Padding12}, {nameof(Padding13)}: {Padding13}, {nameof(Padding14)}: {Padding14}, {nameof(Padding15)}: {Padding15}, {nameof(Padding16)}: {Padding16}, {nameof(Padding17)}: {Padding17}";
+            return $"{nameof(_machineName)}: {_machineName}, {nameof(Magic)}: {Magic}, {nameof(Version)}: {Version}, {nameof(LayerCount)}: {LayerCount}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(BottomLayersCount2)}: {BottomLayersCount2}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerHeightMillimeter)}: {LayerHeightMillimeter}, {nameof(LayerExposureSeconds)}: {LayerExposureSeconds}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(PreviewLargeOffsetAddress)}: {PreviewLargeOffsetAddress}, {nameof(PreviewSmallOffsetAddress)}: {PreviewSmallOffsetAddress}, {nameof(LayersDefinitionOffsetAddress)}: {LayersDefinitionOffsetAddress}, {nameof(PrintTime)}: {PrintTime}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(OverallHeightMilimeter)}: {OverallHeightMilimeter}, {nameof(BedSizeX)}: {BedSizeX}, {nameof(BedSizeY)}: {BedSizeY}, {nameof(BedSizeZ)}: {BedSizeZ}, {nameof(EncryptionKey)}: {EncryptionKey}, {nameof(AntiAliasLevelInfo)}: {AntiAliasLevelInfo}, {nameof(EncryptionMode)}: {EncryptionMode}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(WeightG)}: {WeightG}, {nameof(CostDollars)}: {CostDollars}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(MachineName)}: {MachineName}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(Padding4)}: {Padding4}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(Padding11)}: {Padding11}, {nameof(ModifiedTimestampMinutes)}: {ModifiedTimestampMinutes}, {nameof(ModifiedDate)}: {ModifiedDate}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(Padding12)}: {Padding12}, {nameof(Padding13)}: {Padding13}, {nameof(Padding14)}: {Padding14}, {nameof(Padding15)}: {Padding15}, {nameof(Padding16)}: {Padding16}, {nameof(Padding17)}: {Padding17}";
         }
     }
     #endregion
@@ -548,11 +548,20 @@ public sealed class FDGFile : FileFormat
         PrintParameterModifier.LightPWM
     ];
 
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } =
-    [
-        PrintParameterModifier.LightOffDelay,
-        PrintParameterModifier.ExposureTime
-    ];
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers
+    {
+        get
+        {
+            if (!IsPerLayerSettingsAllowed) return base.PrintParameterPerLayerModifiers;
+
+            return
+            [
+                PrintParameterModifier.LightOffDelay,
+                PrintParameterModifier.ExposureTime
+            ];
+        }
+    }
+
 
     public override Size[] ThumbnailsOriginalSize { get; } =
     [
@@ -623,8 +632,8 @@ public sealed class FDGFile : FileFormat
 
     public override float LayerHeight
     {
-        get => HeaderSettings.LayerHeightMilimeter;
-        set => base.LayerHeight = HeaderSettings.LayerHeightMilimeter = Layer.RoundHeight(value);
+        get => HeaderSettings.LayerHeightMillimeter;
+        set => base.LayerHeight = HeaderSettings.LayerHeightMillimeter = Layer.RoundHeight(value);
     }
 
     public override float PrintHeight

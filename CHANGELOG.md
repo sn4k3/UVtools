@@ -1,5 +1,9 @@
 # Changelog
 
+## 28/07/2025 - v5.1.6
+- (Add) Setting - File formats - Per-layer settings: Controls if the per-layer settings can be used or not, default: Enabled (But exclude known problematic file formats)
+  - Fixes (#1049, #1013, #997, #941)
+
 ## 20/07/2025 - v5.1.5
 
 - (Add) Setting - When unable to hit action: Select to continue or kill the process in cases where is not possible to pause or cancel the operation, default: Continue
@@ -16,7 +20,7 @@
 - (Change) Replace the update and auto upgrade code by the `Updatum` library, this allows a more stable and reliable update process but also presents the changelog for all skipped versions between the current and the latest version
 - (Fix) Cloning layers with relative 0mm height cause incorrect layer height increment (#1046)
 - (Upgrade) .NET from 9.0.6 to 9.0.7
-- 
+
 ## 28/06/2025 - v5.1.4
 
 - **PCB Exposure:**

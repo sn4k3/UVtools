@@ -665,6 +665,8 @@ public sealed class CTBEncryptedFile : FileFormat
     {
         get
         {
+            if (!IsPerLayerSettingsAllowed) return base.PrintParameterPerLayerModifiers;
+
             if (HaveTiltingVat)
             {
                 return

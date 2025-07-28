@@ -13,6 +13,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 
@@ -127,7 +128,7 @@ public static class CoreSettings
     /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> and the <see cref="CancellationToken"/> set
     /// </summary>
     public static ParallelOptions GetParallelOptions(OperationProgress progress) => GetParallelOptions(progress.Token);
-    
+
 
     /// <summary>
     /// Gets or sets if operations run via CUDA when possible
@@ -149,6 +150,22 @@ public static class CoreSettings
     /// <para>Use 0 to disable.</para>
     /// </summary>
     public static float AverageResin1000MlBottleCost = 60f;
+
+    /// <summary>
+    /// Gets or sets the per-layer settings mode.
+    /// </summary>
+    public static PerLayerSettingsModes PerLayerSettingsMode = PerLayerSettingsModes.EnabledButExcludeProblematicFileFormats;
+
+    /// <summary>
+    /// Gets the most likely problematic file formats where per-layer settings can cause unexpected printing issues.
+    /// </summary>
+    public static Type[] PerLayerSettingsProblematicFileFormats { get; } =
+    [
+        typeof(AnycubicFile),
+        typeof(AnycubicZipFile),
+        typeof(GooFile),
+        typeof(PHZFile),
+    ];
 
     /// <summary>
     /// Gets the default folder to save the settings

@@ -29,7 +29,7 @@ namespace UVtools.UI;
 public sealed class UserSettings : BindableBase
 {
     #region Constants
-    public const ushort SETTINGS_VERSION = 7;
+    public const ushort SETTINGS_VERSION = 8;
     #endregion
 
     #region Sub classes
@@ -1626,8 +1626,28 @@ public sealed class UserSettings : BindableBase
 
     #endregion
 
-    #region Automations
 
+    #region File Formats
+
+    public sealed class FileFormatsUserSettings : BindableBase
+    {
+        private PerLayerSettingsModes _perLayerSettingsMode = CoreSettings.PerLayerSettingsMode;
+
+        public PerLayerSettingsModes PerLayerSettingsMode
+        {
+            get => _perLayerSettingsMode;
+            set => RaiseAndSetIfChanged(ref _perLayerSettingsMode, value);
+        }
+
+        public FileFormatsUserSettings Clone()
+        {
+            return (MemberwiseClone() as FileFormatsUserSettings)!;
+        }
+    }
+
+    #endregion
+
+    #region Automations
 
     public sealed class AutomationsUserSettings : BindableBase
     {
@@ -1748,6 +1768,7 @@ public sealed class UserSettings : BindableBase
     private PixelEditorUserSettings? _pixelEditor;
     private LayerRepairUserSettings? _layerRepair;
     private ToolsUserSettings? _tools;
+    private FileFormatsUserSettings? _fileFormats;
     private AutomationsUserSettings? _automations;
     private NetworkUserSettings? _network;
 
@@ -1796,6 +1817,12 @@ public sealed class UserSettings : BindableBase
     {
         get => _tools ??= new ToolsUserSettings();
         set => _tools = value;
+    }
+
+    public FileFormatsUserSettings FileFormats
+    {
+        get => _fileFormats ??= new FileFormatsUserSettings();
+        set => _fileFormats = value;
     }
 
     public AutomationsUserSettings Automations
@@ -1907,6 +1934,7 @@ public sealed class UserSettings : BindableBase
             CoreSettings.MaxDegreeOfParallelism = _instance.General.MaxDegreeOfParallelism;
             CoreSettings.DefaultLayerCompressionCodec = _instance.General.LayerCompressionCodec;
             CoreSettings.AverageResin1000MlBottleCost = _instance.General.AverageResin1000MlBottleCost;
+            CoreSettings.PerLayerSettingsMode = _instance.FileFormats.PerLayerSettingsMode;
 
             if (_instance.Network.RemotePrinters.Count == 0)
             {
@@ -2170,6 +2198,7 @@ public sealed class UserSettings : BindableBase
         CoreSettings.MaxDegreeOfParallelism = _instance.General.MaxDegreeOfParallelism;
         CoreSettings.DefaultLayerCompressionCodec = _instance.General.LayerCompressionCodec;
         CoreSettings.AverageResin1000MlBottleCost = _instance.General.AverageResin1000MlBottleCost;
+        CoreSettings.PerLayerSettingsMode = _instance.FileFormats.PerLayerSettingsMode;
         try
         {
             XmlExtensions.SerializeToFile(_instance, FilePath, XmlExtensions.SettingsIndent);
@@ -2188,12 +2217,13 @@ public sealed class UserSettings : BindableBase
     public static object[] PackObjects =>
     [
         Instance.General,
-            Instance.LayerPreview,
-            Instance.Issues,
-            Instance.PixelEditor,
-            Instance.LayerRepair,
-            Instance.Automations,
-            Instance.Network
+        Instance.LayerPreview,
+        Instance.Issues,
+        Instance.PixelEditor,
+        Instance.LayerRepair,
+        Instance.FileFormats,
+        Instance.Automations,
+        Instance.Network
     ];
     #endregion
 

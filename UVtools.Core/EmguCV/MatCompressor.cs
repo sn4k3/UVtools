@@ -180,7 +180,7 @@ public override byte[] Compress(Mat src, object? argument = null)
                 }
             }
         }
-        
+
 
         using var compressedStream = StreamExtensions.RecyclableMemoryStreamManager.GetStream();
         using (var deflateStream = new DeflateStream(compressedStream, CompressionLevel.Fastest, true))
@@ -189,7 +189,7 @@ public override byte[] Compress(Mat src, object? argument = null)
         }
 
         srcStream.Dispose();
-        
+
         return compressedStream.ToArray();
     }
 
@@ -253,7 +253,7 @@ public sealed class MatCompressorGZip : MatCompressor
         {
             srcStream.CopyTo(gzipStream);
         }
-        
+
         srcStream.Dispose();
 
         return compressedStream.ToArray();
@@ -382,7 +382,7 @@ public sealed class MatCompressorBrotli : MatCompressor
             ArrayPool<byte>.Shared.Return(rent);
             throw new Exception("Failed to compress, buffer is too short?");
         }
-                       
+
         var target = rentSpan[..encodedLength].ToArray();
 
         ArrayPool<byte>.Shared.Return(rent);
@@ -431,20 +431,16 @@ public sealed class MatCompressorLz4 : MatCompressor
 
         var rent = ArrayPool<byte>.Shared.Rent(srcSpan.Length - 1);
         var rentSpan = rent.AsSpan();
-        byte[] target;
 
         try
         {
             var encodedLength = LZ4Codec.Encode(srcSpan, rentSpan);
-            target = rentSpan[..encodedLength].ToArray();
+            return rentSpan[..encodedLength].ToArray();
         }
         finally
         {
             ArrayPool<byte>.Shared.Return(rent);
         }
-        
-        
-        return target;
     }
 
     /// <inheritdoc />

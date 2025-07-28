@@ -600,6 +600,8 @@ public sealed class GooFile : FileFormat
     {
         get
         {
+            if (!IsPerLayerSettingsAllowed) return base.PrintParameterPerLayerModifiers;
+
             if (HaveTiltingVat)
             {
                 return
@@ -1078,7 +1080,7 @@ public sealed class GooFile : FileFormat
 
     protected override void OnBeforeEncode(bool isPartialEncode)
     {
-        Header.PerLayerSettings = UsingPerLayerSettings;
+        Header.PerLayerSettings = SupportPerLayerSettings && UsingPerLayerSettings;
         Header.Volume = Volume;
         Header.MaterialGrams = MaterialMilliliters;
 

@@ -142,6 +142,16 @@
             <para>Use 0 to disable.</para>
             </summary>
         </member>
+        <member name="F:UVtools.Core.CoreSettings.PerLayerSettingsMode">
+            <summary>
+            Gets or sets the per-layer settings mode.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.CoreSettings.PerLayerSettingsProblematicFileFormats">
+            <summary>
+            Gets the most likely problematic file formats where per-layer settings can cause unexpected printing issues.
+            </summary>
+        </member>
         <member name="P:UVtools.Core.CoreSettings.DefaultSettingsFolder">
             <summary>
             Gets the default folder to save the settings
@@ -3388,7 +3398,7 @@
             Gets the printer resolution along Y axis, in pixels. This information is critical to correctly decoding layer images.
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.FDGFile.Header.LayerHeightMilimeter">
+        <member name="P:UVtools.Core.FileFormats.FDGFile.Header.LayerHeightMillimeter">
             <summary>
             Gets the layer height setting used at slicing, in millimeters. Actual height used by the machine is in the layer table.
             </summary>
@@ -3638,6 +3648,22 @@
             <param name="isVisibleOnFileFilters">True if this extension is visible on open file dialog filters</param>
             <param name="isVisibleOnConvertMenu">True if this extension is visible on convert to menu</param>
             <param name="tag">Tag object</param>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.PerLayerSettingsModes.Disabled">
+            <summary>
+            Disables the per-layer settings and capabilities.
+            For GCode files this is not respected (Always enabled)
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.PerLayerSettingsModes.EnabledButExcludeProblematicFileFormats">
+            <summary>
+            Disables the per-layer settings and capabilities only to known problematic file formats.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.PerLayerSettingsModes.Enabled">
+            <summary>
+            Per-layer settings available and used
+            </summary>
         </member>
         <member name="T:UVtools.Core.FileFormats.FileFormat">
             <summary>
@@ -4424,6 +4450,14 @@
             <summary>
             Checks if this file format supports per layer settings
             </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.IsPerLayerSettingsAllowed">
+            <summary>
+            Checks if this file format is allowed to use per layer settings
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.IsReadOnly">
+            <inheritdoc />
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.HaveLayers">
             <summary>

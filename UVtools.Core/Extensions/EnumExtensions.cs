@@ -31,11 +31,14 @@ public static class EnumExtensions
         return ti.ToTitleCase(ti.ToLower(value.ToString().Replace("_", " ")));
     }
 
-    public static IEnumerable<ValueDescription> GetAllValuesAndDescriptions(Type t)
+    public static ValueDescription[] GetAllValuesAndDescriptions(Type t)
     {
         if (!t.IsEnum)
             throw new ArgumentException($"{nameof(t)} must be an enum type");
 
-        return Enum.GetValues(t).Cast<Enum>().OrderBy(e => e).Select(e => new ValueDescription(e, e.GetDescription())).ToList();
+        return Enum.GetValues(t).AsValueEnumerable<Enum>()
+            .OrderBy(e => e)
+            .Select(e => new ValueDescription(e, e.GetDescription()))
+            .ToArray();
     }
 }

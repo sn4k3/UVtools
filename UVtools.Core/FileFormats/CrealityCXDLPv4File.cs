@@ -711,23 +711,32 @@ public sealed class CrealityCXDLPv4File : FileFormat
     ];
 
 
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers =>
-    [
-        PrintParameterModifier.PositionZ,
-            PrintParameterModifier.LightOffDelay,
-            PrintParameterModifier.WaitTimeBeforeCure,
-            PrintParameterModifier.ExposureTime,
-            PrintParameterModifier.WaitTimeAfterCure,
-            PrintParameterModifier.LiftHeight,
-            PrintParameterModifier.LiftSpeed,
-            PrintParameterModifier.LiftHeight2,
-            PrintParameterModifier.LiftSpeed2,
-            PrintParameterModifier.WaitTimeAfterLift,
-            PrintParameterModifier.RetractSpeed,
-            PrintParameterModifier.RetractHeight2,
-            PrintParameterModifier.RetractSpeed2,
-            PrintParameterModifier.LightPWM
-    ];
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers
+    {
+        get
+        {
+            if (!IsPerLayerSettingsAllowed) return base.PrintParameterPerLayerModifiers;
+
+            return [
+                PrintParameterModifier.PositionZ,
+                PrintParameterModifier.LightOffDelay,
+                PrintParameterModifier.WaitTimeBeforeCure,
+                PrintParameterModifier.ExposureTime,
+                PrintParameterModifier.WaitTimeAfterCure,
+                PrintParameterModifier.LiftHeight,
+                PrintParameterModifier.LiftSpeed,
+                PrintParameterModifier.LiftHeight2,
+                PrintParameterModifier.LiftSpeed2,
+                PrintParameterModifier.WaitTimeAfterLift,
+                PrintParameterModifier.RetractSpeed,
+                PrintParameterModifier.RetractHeight2,
+                PrintParameterModifier.RetractSpeed2,
+                PrintParameterModifier.LightPWM
+            ];
+        }
+    }
+
+    
 
     public override Size[] ThumbnailsOriginalSize { get; } =
     [
@@ -1089,7 +1098,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
     protected override void OnBeforeEncode(bool isPartialEncode)
     {
-        SlicerInfoSettings.PerLayerSettings = UsingPerLayerSettings;
+        SlicerInfoSettings.PerLayerSettings = SupportPerLayerSettings && UsingPerLayerSettings;
         SlicerInfoSettings.ModifiedTimestampMinutes = (uint)DateTimeExtensions.TimestampMinutes;
     }
 
