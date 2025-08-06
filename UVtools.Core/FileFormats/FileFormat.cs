@@ -4472,7 +4472,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         if (ThumbnailsCount == 0) return false;
         if (!File.Exists(filePath)) return false;
-        using var image = CvInvoke.Imread(filePath, ImreadModes.Color);
+        using var image = CvInvoke.Imread(filePath, ImreadModes.ColorBgr);
         return SetThumbnails(image);
     }
 
@@ -4507,7 +4507,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         if (index >= ThumbnailsCount) return false;
         if (!File.Exists(filePath)) return false;
-        return SetThumbnail(index, CvInvoke.Imread(filePath, ImreadModes.Color));
+        return SetThumbnail(index, CvInvoke.Imread(filePath, ImreadModes.ColorBgr));
     }
 
     /// <summary>
@@ -5005,7 +5005,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                     case ImageFormat.Png24BgrAA:
                     {
                         using var bgrMat = new Mat();
-                        CvInvoke.Imdecode(pngBytes, ImreadModes.Color, bgrMat);
+                        CvInvoke.Imdecode(pngBytes, ImreadModes.ColorBgr, bgrMat);
                         using var greyMat = bgrMat.Reshape(1);
 
                         _layers[layerIndex] = new Layer((uint) layerIndex, greyMat, this);
@@ -5015,7 +5015,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                     case ImageFormat.Png24RgbAA:
                     {
                         using Mat rgbMat = new();
-                        CvInvoke.Imdecode(pngBytes, ImreadModes.Color, rgbMat);
+                        CvInvoke.Imdecode(pngBytes, ImreadModes.ColorBgr, rgbMat);
                         CvInvoke.CvtColor(rgbMat, rgbMat, ColorConversion.Bgr2Rgb);
                         using var greyMat = rgbMat.Reshape(1);
 

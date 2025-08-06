@@ -1770,9 +1770,9 @@ public sealed class ChituboxFile : FileFormat
             }
         }
 
-        SlicerInfoSettings.PerLayerSettings = SupportPerLayerSettings && AllLayersAreUsingGlobalParameters
-            ? PERLAYER_SETTINGS_DISALLOW
-            : (byte)(Version * 0x10); // 0x10, 0x20, 0x30, 0x40, 0x50, ...
+        SlicerInfoSettings.PerLayerSettings = SupportPerLayerSettings && UsingPerLayerSettings
+            ? (byte)(Version * 0x10) // 0x10, 0x20, 0x30, 0x40, 0x50, ...
+            : PERLAYER_SETTINGS_DISALLOW;
 
         SlicerInfoSettings.ModifiedTimestampMinutes = (uint)DateTimeExtensions.TimestampMinutes;
     }

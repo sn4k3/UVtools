@@ -1183,7 +1183,7 @@ public class GCodeBuilder : BindableBase
                         var pngBytes = Convert.FromBase64String(base64Thumbnail.ToString());
 
                         var mat = new Mat();
-                        CvInvoke.Imdecode(pngBytes, ImreadModes.Color, mat);
+                        CvInvoke.Imdecode(pngBytes, ImreadModes.ColorBgr, mat);
                         if (mat.IsEmpty) break;
                         slicerFile.Thumbnails.Add(mat);
 

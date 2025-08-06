@@ -1086,24 +1086,31 @@ public sealed class GooFile : FileFormat
 
         if (HaveTiltingVat)
         {
-            const float lift = 0;
-            const float speed = 0;
+            const float lift = 0.05f;
+            const float speed = lift;
+
 
             BottomLiftHeight = lift;
-            BottomLiftHeight2 = lift;
             BottomLiftSpeed = speed;
-            BottomLiftSpeed2 = speed;
-            BottomRetractHeight2 = lift;
+
+            BottomLiftHeight2 = 0;
+            BottomLiftSpeed2 = 0;
+
+            BottomRetractHeight2 = 0;
+            BottomRetractSpeed2 = 0;
+
             BottomRetractSpeed = speed;
-            BottomRetractSpeed2 = speed;
 
             LiftHeight = lift;
-            LiftHeight2 = lift;
             LiftSpeed = speed;
-            LiftSpeed2 = speed;
-            RetractHeight2 = lift;
+
+            LiftHeight2 = 0;
+            LiftSpeed2 = 0;
+
+            RetractHeight2 = 0;
+            RetractSpeed2 = 0;
+
             RetractSpeed = speed;
-            RetractSpeed2 = speed;
         }
     }
 

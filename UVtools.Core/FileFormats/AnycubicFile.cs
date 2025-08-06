@@ -354,7 +354,7 @@ public sealed class AnycubicFile : FileFormat
         /// <summary>
         /// 80
         /// </summary>
-        [FieldOrder(17)] [SerializeAs(SerializedType.UInt4)] public bool PerLayerOverride { get; set; } // bool
+        [FieldOrder(17)] [SerializeAs(SerializedType.UInt4)] public bool PerLayerSettings { get; set; } // bool
 
         [FieldOrder(18)] public uint PrintTime { get; set; }
 
@@ -396,7 +396,7 @@ public sealed class AnycubicFile : FileFormat
 
         public override string ToString()
         {
-            return $"{base.ToString()}, {nameof(PixelSizeUm)}: {PixelSizeUm}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(WeightG)}: {WeightG}, {nameof(Price)}: {Price}, {nameof(PriceCurrencySymbol)}: {PriceCurrencySymbol}, {nameof(PerLayerOverride)}: {PerLayerOverride}, {nameof(PrintTime)}: {PrintTime}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(TransitionLayerType)}: {TransitionLayerType}, {nameof(AdvancedMode)}: {AdvancedMode}, {nameof(Grey)}: {Grey}, {nameof(BlurLevel)}: {BlurLevel}, {nameof(ResinType)}: {ResinType}, {nameof(IntelligentMode)}: {IntelligentMode}";
+            return $"{base.ToString()}, {nameof(PixelSizeUm)}: {PixelSizeUm}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(WeightG)}: {WeightG}, {nameof(Price)}: {Price}, {nameof(PriceCurrencySymbol)}: {PriceCurrencySymbol}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(PrintTime)}: {PrintTime}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(TransitionLayerType)}: {TransitionLayerType}, {nameof(AdvancedMode)}: {AdvancedMode}, {nameof(Grey)}: {Grey}, {nameof(BlurLevel)}: {BlurLevel}, {nameof(ResinType)}: {ResinType}, {nameof(IntelligentMode)}: {IntelligentMode}";
         }
     }
 
@@ -1823,7 +1823,7 @@ public sealed class AnycubicFile : FileFormat
 
     protected override void OnBeforeEncode(bool isPartialEncode)
     {
-        HeaderSettings.PerLayerOverride = SupportPerLayerSettings && UsingPerLayerSettings;
+        HeaderSettings.PerLayerSettings = SupportPerLayerSettings && UsingPerLayerSettings;
     }
 
     protected override void EncodeInternally(OperationProgress progress)

@@ -2566,7 +2566,7 @@
             24 00 00 00 $ or ¥ C2 A5 00 00 or € = E2 82 AC 00
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Header.PerLayerOverride">
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Header.PerLayerSettings">
             <summary>
             80
             </summary>

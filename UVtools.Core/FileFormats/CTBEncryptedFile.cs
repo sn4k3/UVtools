@@ -1303,31 +1303,37 @@ public sealed class CTBEncryptedFile : FileFormat
 
     protected override void OnBeforeEncode(bool isPartialEncode)
     {
-        Settings.PerLayerSettings = AllLayersAreUsingGlobalParameters
-            ? PERLAYER_SETTINGS_DISALLOW
-            : PERLAYER_SETTINGS_ALLOW;
+        Settings.PerLayerSettings = SupportPerLayerSettings && UsingPerLayerSettings
+            ? PERLAYER_SETTINGS_ALLOW
+            : PERLAYER_SETTINGS_DISALLOW;
 
         if (HaveTiltingVat)
         {
-            var lift = LayerHeight;
-            var speed = 60;
+            const float lift = 0.05f;
+            const float speed = lift;
 
 
             BottomLiftHeight = lift;
-            BottomLiftHeight2 = lift;
             BottomLiftSpeed = speed;
-            BottomLiftSpeed2 = speed;
-            BottomRetractHeight2 = lift;
+
+            BottomLiftHeight2 = 0;
+            BottomLiftSpeed2 = 0;
+
+            BottomRetractHeight2 = 0;
+            BottomRetractSpeed2 = 0;
+
             BottomRetractSpeed = speed;
-            BottomRetractSpeed2 = speed;
 
             LiftHeight = lift;
-            LiftHeight2 = lift;
             LiftSpeed = speed;
-            LiftSpeed2 = speed;
-            RetractHeight2 = lift;
+
+            LiftHeight2 = 0;
+            LiftSpeed2 = 0;
+
+            RetractHeight2 = 0;
+            RetractSpeed2 = 0;
+
             RetractSpeed = speed;
-            RetractSpeed2 = speed;
         }
 
         Settings.ModifiedTimestampMinutes = (uint)DateTimeExtensions.TimestampMinutes;
