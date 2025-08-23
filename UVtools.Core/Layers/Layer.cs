@@ -939,21 +939,22 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     {
         get
         {
-            if (_compressionCodec == LayerCompressionCodec.Png || _compressedMat.IsEmpty) return _compressedMat.CompressedBytes;
+            if (_compressedMat.IsEmpty ||
+                (_compressionCodec == LayerCompressionCodec.Png && _compressedMat.Roi.IsEmpty)) return _compressedMat.CompressedBytes;
 
             using var mat = LayerMat;
             return mat.GetPngByes();
         }
         set
         {
-            if (_compressionCodec == LayerCompressionCodec.Png || value.Length == 0)
+            if (value.Length == 0)
             {
-                _compressedMat.SetCompressedBytes(value, MatCompressorPngGreyScale.Instance);
+                _compressedMat.SetEmptyCompressedBytes();
                 InvalidateImage();
             }
             else
             {
-                var mat = new Mat();
+                using var mat = new Mat();
                 CvInvoke.Imdecode(value, ImreadModes.Grayscale, mat);
                 LayerMat = mat;
             }
@@ -969,7 +970,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// Gets or sets a new image instance
     /// </summary>
     [XmlIgnore]
-    [JsonInclude]
+    [JsonIgnore]
     public Mat LayerMat
     {
         get => SlicerFile.DecodeType != FileFormat.FileDecodeType.Full ? null! : _compressedMat.Mat;
@@ -1200,19 +1201,11 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         _isModified = false;
     }
 
-    public Layer(uint index, Stream stream, FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(index, stream.ToArray(), slicerFile, compressionMethod)
-    { }
+    public Layer(FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(0, slicerFile, compressionMethod) { }
 
-    public Layer(FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(0, slicerFile, compressionMethod)
-    { }
 
-    public Layer(byte[] pngBytes, FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(0, pngBytes, slicerFile, compressionMethod)
-    { }
+    public Layer(Mat layerMat, FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(0, layerMat, slicerFile, compressionMethod) { }
 
-    public Layer(Mat layerMat, FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(0, layerMat, slicerFile, compressionMethod)
-    { }
-
-    public Layer(Stream stream, FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(0, stream, slicerFile, compressionMethod) { }
 
     #endregion
 

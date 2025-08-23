@@ -44,7 +44,7 @@ public sealed class OSFFile : FileFormat
         [FieldEndianness(Endianness.Big)]
         public byte ImageLog { get; set; } = 2;
 
-        
+
         public override string ToString()
         {
             return $"{nameof(HeaderLength)}: {HeaderLength}, {nameof(Version)}: {Version}, {nameof(ImageLog)}: {ImageLog}";
@@ -56,7 +56,7 @@ public sealed class OSFFile : FileFormat
         [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public ushort ResolutionX { get; set; }
         [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public ushort ResolutionY { get; set; }
         [FieldOrder(2)] [FieldEndianness(Endianness.Big)] public ushort PixelUmMagnified100Times { get; set; }
-        
+
         /// <summary>
         /// (0x00 not mirrored, 0x01 X-axis mirroring, 0x02 Y-axis mirroring, 0x03 XY-axis mirroring)
         /// </summary>
@@ -76,12 +76,12 @@ public sealed class OSFFile : FileFormat
         [FieldOrder(16)] [FieldEndianness(Endianness.Big)] public UInt24BigEndian SupportDelayTimeMagnified100Times { set; get; } = new(50);
         [FieldOrder(17)] [FieldEndianness(Endianness.Big)] public UInt24BigEndian BottomSupportDelayTimeMagnified100Times { set; get; } = new(50);
         [FieldOrder(18)] [FieldEndianness(Endianness.Big)] public byte TransitionLayerCount { set; get; }
-        
+
         /// <summary>
         /// （0x00 linear transition）
         /// </summary>
         [FieldOrder(19)] [FieldEndianness(Endianness.Big)] public byte TransitionType { set; get; }
-        
+
         [FieldOrder(20)] [FieldEndianness(Endianness.Big)] public UInt24BigEndian TransitionLayerIntervalTimeDifferenceMagnified100Times { set; get; } = new();
         [FieldOrder(21)] [FieldEndianness(Endianness.Big)] public UInt24BigEndian WaitTimeAfterCureMagnified100Times { set; get; } = new();
         [FieldOrder(22)] [FieldEndianness(Endianness.Big)] public UInt24BigEndian WaitTimeAfterLiftMagnified100Times { set; get; } = new();
@@ -251,7 +251,7 @@ public sealed class OSFFile : FileFormat
             stride = (uint) ((imageLength - layer.LastPixelIndex - 1) % step);
             color = 0;
             AddRep();
-            
+
             NumberOfLines = lines;
 
             EncodedRle = rawData.ToArray();
@@ -333,7 +333,7 @@ public sealed class OSFFile : FileFormat
 
         PrintParameterModifier.BottomWaitTimeBeforeCure,
         PrintParameterModifier.WaitTimeBeforeCure,
-        
+
         PrintParameterModifier.BottomExposureTime,
         PrintParameterModifier.ExposureTime,
 
@@ -418,7 +418,7 @@ public sealed class OSFFile : FileFormat
                 _ => throw new ArgumentOutOfRangeException(nameof(value), value, null)
             };
         }
-    }      
+    }
 
     public override float LayerHeight
     {
@@ -595,7 +595,7 @@ public sealed class OSFFile : FileFormat
     }
 
     public override float BottomWaitTimeAfterLift {
-        get => MathF.Round(Settings.BottomWaitTimeAfterLiftMagnified100Times / 100f, 2); 
+        get => MathF.Round(Settings.BottomWaitTimeAfterLiftMagnified100Times / 100f, 2);
         set
         {
             Settings.BottomWaitTimeAfterLiftMagnified100Times = (ushort)(value * 100);
@@ -683,7 +683,7 @@ public sealed class OSFFile : FileFormat
     #endregion
 
     #region Methods
-    
+
     protected override void EncodeInternally(OperationProgress progress)
     {
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
@@ -726,7 +726,7 @@ public sealed class OSFFile : FileFormat
             {
                 progress.PauseIfRequested();
                 var layer = this[layerIndex];
-                
+
                 using (var mat = layer.LayerMat)
                 {
                     layerDef[layerIndex] = new OSFLayerDef
@@ -779,7 +779,7 @@ public sealed class OSFFile : FileFormat
         );
 
         Init(Settings.LayerCount, DecodeType == FileDecodeType.Partial);
-        
+
 
         if (DecodeType == FileDecodeType.Full)
         {
@@ -787,13 +787,13 @@ public sealed class OSFFile : FileFormat
             var layerDef = new OSFLayerDef[LayerCount];
             var rle = new List<byte>();
             progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
-            
+
             foreach (var batch in BatchLayersIndexes())
             {
                 foreach (var layerIndex in batch)
                 {
                     progress.PauseOrCancelIfRequested();
-                    
+
                     //Debug.WriteLine($"{layerIndex}: {inputFile.Position}");
                     layerDef[layerIndex] = Helpers.Deserialize<OSFLayerDef>(inputFile);
                     if (layerDef[layerIndex].NumberOfLines == 0) continue;
@@ -810,7 +810,7 @@ public sealed class OSFFile : FileFormat
                                 inputFile.Seek(-2, SeekOrigin.Current);
                                 break;
                             }
-                            
+
                             rle.Add((byte)buffer);
                             rle.Add((byte)slen);
 
@@ -847,7 +847,7 @@ public sealed class OSFFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    
+
                     using (var mat = layerDef[layerIndex].DecodeImage(this))
                     {
                         _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
@@ -869,6 +869,6 @@ public sealed class OSFFile : FileFormat
         outputFile.Seek(Header.HeaderLength - Helpers.Serializer.SizeOf(Settings), SeekOrigin.Begin);
         outputFile.WriteSerialize(Settings);
     }
-        
+
     #endregion
 }

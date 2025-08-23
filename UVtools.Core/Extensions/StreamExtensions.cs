@@ -29,6 +29,29 @@ public static class StreamExtensions
     /// <returns>Byte array data</returns>
     public static byte[] ToArray(this Stream stream)
     {
+        if (stream is MemoryStream isMemoryStream)
+        {
+            return isMemoryStream.TryGetBuffer(out var segment)
+                ? segment.AsSpan().ToArray()
+                : isMemoryStream.ToArray();
+        }
+
+
+        if (stream.CanSeek)
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+            var length = stream.Length;
+            if (length == 0)
+                return [];
+
+            if (length > int.MaxValue)
+                throw new InvalidOperationException("Stream too large to fit in a single byte array.");
+
+            var buffer = GC.AllocateUninitializedArray<byte>((int)length);
+            stream.ReadExactly(buffer);
+            return buffer;
+        }
+
         using var memoryStream = new MemoryStream();
         stream.CopyTo(memoryStream);
         return memoryStream.ToArray();
@@ -36,24 +59,41 @@ public static class StreamExtensions
 
     public static async Task CopyToAsync(this Stream source, Stream destination, int bufferSize, IProgress<long>? progress = null, CancellationToken cancellationToken = default)
     {
-        if (source == null)
+        if (source is null)
             throw new ArgumentNullException(nameof(source));
         if (!source.CanRead)
             throw new ArgumentException("Has to be readable", nameof(source));
-        if (destination == null)
+
+        if (destination is null)
             throw new ArgumentNullException(nameof(destination));
         if (!destination.CanWrite)
             throw new ArgumentException("Has to be writable", nameof(destination));
+
         if (bufferSize < 0)
             throw new ArgumentOutOfRangeException(nameof(bufferSize));
-        if (bufferSize == 0) bufferSize = DefaultCopyBufferSize;
 
-        var buffer = new byte[bufferSize];
+        if (bufferSize == 0)
+            bufferSize = DefaultCopyBufferSize;
+
+        // ✅ Skip zeroing the buffer
+        var buffer = GC.AllocateUninitializedArray<byte>(bufferSize);
+        var bufferMemory = buffer.AsMemory();
+
         long totalBytesRead = 0;
-        int bytesRead;
-        while ((bytesRead = await source.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken).ConfigureAwait(false)) != 0)
+
+        while (true)
         {
-            await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
+            int bytesRead = await source
+                .ReadAsync(bufferMemory, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (bytesRead == 0)
+                break;
+
+            await destination
+                .WriteAsync(bufferMemory[..bytesRead], cancellationToken)
+                .ConfigureAwait(false);
+
             totalBytesRead += bytesRead;
             progress?.Report(totalBytesRead);
         }

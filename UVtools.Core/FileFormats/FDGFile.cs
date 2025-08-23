@@ -952,8 +952,8 @@ public sealed class FDGFile : FileFormat
             Debug.WriteLine(Previews[i]);
 
             inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
-            var rawImageData = new byte[Previews[i].ImageLength];
-            inputFile.ReadExactly(rawImageData.AsSpan());
+            var rawImageData = GC.AllocateUninitializedArray<byte>((int)Previews[i].ImageLength);
+            inputFile.ReadExactly(rawImageData);
 
             Thumbnails.Add(DecodeChituImageRGB15Rle(rawImageData, Previews[i].ResolutionX, Previews[i].ResolutionY));
             progress++;
@@ -962,8 +962,8 @@ public sealed class FDGFile : FileFormat
         if (HeaderSettings is {MachineNameAddress: > 0, MachineNameSize: > 0})
         {
             inputFile.Seek(HeaderSettings.MachineNameAddress, SeekOrigin.Begin);
-            var buffer = new byte[HeaderSettings.MachineNameSize];
-            inputFile.ReadExactly(buffer.AsSpan());
+            var buffer = GC.AllocateUninitializedArray<byte>((int)HeaderSettings.MachineNameSize);
+            inputFile.ReadExactly(buffer);
             HeaderSettings.MachineName = Encoding.ASCII.GetString(buffer);
         }
 
@@ -1023,7 +1023,7 @@ public sealed class FDGFile : FileFormat
         /*if (HeaderSettings.MachineNameAddress > 0 && HeaderSettings.MachineNameSize > 0)
             {
                 outputFile.Seek(HeaderSettings.MachineNameAddress, SeekOrigin.Begin);
-                byte[] buffer = new byte[HeaderSettings.MachineNameSize];
+                byte[] buffer = GC.AllocateUninitializedArray<byte>((int)HeaderSettings.MachineNameSize);
                 outputFile.Write(Encoding.ASCII.GetBytes(HeaderSettings.MachineName), 0, (int)HeaderSettings.MachineNameSize);
             }*/
 

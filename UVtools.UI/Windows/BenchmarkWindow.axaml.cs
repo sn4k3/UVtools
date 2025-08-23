@@ -52,7 +52,7 @@ public partial class BenchmarkWindow : WindowEx
     private CancellationToken _token => _tokenSource.Token;
 
     public enum BenchmarkResolution
-    { 
+    {
         Resolution4K,
         Resolution8K
     }
@@ -115,7 +115,7 @@ public partial class BenchmarkWindow : WindowEx
             new BenchmarkTest("CBT 8K Encode", "TestCBTEncode", BenchmarkResolution.Resolution8K),
             new BenchmarkTest("PW0 4K Encode", "TestPW0Encode", BenchmarkResolution.Resolution4K),
             new BenchmarkTest("PW0 8K Encode", "TestPW0Encode", BenchmarkResolution.Resolution8K),
-            
+
             new BenchmarkTest("PNG 4K Compress", "TestPNGCompress", BenchmarkResolution.Resolution4K),
             new BenchmarkTest("PNG 8K Compress", "TestPNGCompress", BenchmarkResolution.Resolution8K),
 
@@ -224,7 +224,7 @@ public partial class BenchmarkWindow : WindowEx
         get => _multiThreadDiffMaxValue;
         set => RaiseAndSetIfChanged(ref _multiThreadDiffMaxValue, value);
     }
-    
+
     public IBrush SingleThreadDiffForeground
     {
         get => _singleThreadDiffForeground;
@@ -314,7 +314,7 @@ public partial class BenchmarkWindow : WindowEx
                         }
                     }
 
-                        
+
                     for (int i = 0; i < SingleThreadTests; i++)
                     {
                         if (_token.IsCancellationRequested) _token.ThrowIfCancellationRequested();
@@ -345,7 +345,7 @@ public partial class BenchmarkWindow : WindowEx
                 catch (Exception ex)
                 {
                     Dispatcher.UIThread.InvokeAsync(() => this.MessageBoxError(ex.ToString(), "Error"));
-                        
+
                 }
                 finally
                 {
@@ -382,7 +382,7 @@ public partial class BenchmarkWindow : WindowEx
         {
             var result = (double)Math.Round(SingleThreadTests / seconds, 2);
             SingleThreadTDPS = $"{result} {RunsAbbreviation} ({SingleThreadTests} tests / {seconds}s)";
-            var diff = BenchmarkMachines[_referenceSelectedIndex][_testSelectedIndex].SingleThreadResult > 0 
+            var diff = BenchmarkMachines[_referenceSelectedIndex][_testSelectedIndex].SingleThreadResult > 0
             ? result * 100.0 / BenchmarkMachines[_referenceSelectedIndex][_testSelectedIndex].SingleThreadResult
             : result;
 
@@ -401,10 +401,10 @@ public partial class BenchmarkWindow : WindowEx
             var result = (double)Math.Round(MultiThreadTests / seconds, 2);
             MultiThreadTDPS = $"{result} {RunsAbbreviation} ({MultiThreadTests} tests / {seconds}s)";
 
-            var diff = BenchmarkMachines[_referenceSelectedIndex][_testSelectedIndex].MultiThreadResult > 0 
+            var diff = BenchmarkMachines[_referenceSelectedIndex][_testSelectedIndex].MultiThreadResult > 0
                 ? result * 100.0 / BenchmarkMachines[_referenceSelectedIndex][_testSelectedIndex].MultiThreadResult
                 : result;
-            
+
             MultiThreadDiffForeground = diff switch
             {
                 < 90 => Avalonia.Media.Brushes.DarkRed,
@@ -700,7 +700,7 @@ public partial class BenchmarkWindow : WindowEx
 
     public void TestPNGCompress(BenchmarkResolution resolution)
     {
-        //Layer.CompressMat(Mats[resolution], LayerCompressionCodec.Png); 
+        //Layer.CompressMat(Mats[resolution], LayerCompressionCodec.Png);
         MatCompressorPngGreyScale.Instance.Compress(Mats[resolution]);
     }
 

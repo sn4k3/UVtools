@@ -264,7 +264,7 @@ public sealed class AnycubicPhotonSFile : FileFormat
         PrintParameterModifier.ExposureTime,
 
         //PrintParameterModifier.BottomLightOffDelay,
-            
+
         //PrintParameterModifier.BottomLiftHeight,
         //PrintParameterModifier.BottomLiftSpeed,
         PrintParameterModifier.LiftHeight,
@@ -282,7 +282,7 @@ public sealed class AnycubicPhotonSFile : FileFormat
         get => FlipDirection.Horizontally;
         set { }
     }
-        
+
     public override float LayerHeight
     {
         get => (float) Layer.RoundHeight(HeaderSettings.LayerHeight);
@@ -346,7 +346,7 @@ public sealed class AnycubicPhotonSFile : FileFormat
     }
 
     public override float BottomLiftHeight => LiftHeight;
-        
+
     public override float LiftHeight
     {
         get => (float) HeaderSettings.LiftHeight;
@@ -369,7 +369,7 @@ public sealed class AnycubicPhotonSFile : FileFormat
         set => base.RetractSpeed = (float) (HeaderSettings.RetractSpeed = Math.Round(value / 60.0, 2, MidpointRounding.AwayFromZero));
     }
 
-        
+
     public override float MaterialMilliliters
     {
         get => base.MaterialMilliliters;
@@ -453,16 +453,15 @@ public sealed class AnycubicPhotonSFile : FileFormat
         }
 
         int previewSize = (int) (HeaderSettings.PreviewResolutionX * HeaderSettings.PreviewResolutionY * 2);
-        byte[] previewData = new byte[previewSize];
-
-        inputFile.ReadBytes(previewData);
+        byte[] previewData = GC.AllocateUninitializedArray<byte>(previewSize);
+        inputFile.ReadExactly(previewData);
         Thumbnails.Add(DecodeImage(DATATYPE_BGR565, previewData, HeaderSettings.PreviewResolutionX, HeaderSettings.PreviewResolutionY));
 
         LayerSettings = Helpers.Deserialize<LayerHeader>(inputFile);
-            
+
         Debug.WriteLine(HeaderSettings);
         Debug.WriteLine(LayerSettings);
-  
+
 
         Init(LayerSettings.LayerCount, DecodeType == FileDecodeType.Partial);
         var layersDefinitions = new LayerDef[LayerSettings.LayerCount];
@@ -496,7 +495,7 @@ public sealed class AnycubicPhotonSFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    
+
                     using (var mat = layersDefinitions[layerIndex].Decode())
                     {
                         _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);

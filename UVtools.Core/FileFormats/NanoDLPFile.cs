@@ -857,6 +857,16 @@ public sealed class NanoDLPFile : FileFormat
         set => base.MachineName = ProfileManifest.Title = value;
     }
 
+    public override float MaterialMilliliters
+    {
+        get => base.MaterialMilliliters;
+        set
+        {
+            base.MaterialMilliliters = value;
+            PlateManifest.TotalSolidArea = base.MaterialMilliliters;
+        }
+    }
+
     public override object[] Configs =>
     [
         MetaManifest,
@@ -954,7 +964,8 @@ public sealed class NanoDLPFile : FileFormat
             if (pixelArea > 0)
             {
                 var contours = layer.Contours;
-                item.TotalSolidArea =  MathF.Round((float)contours.TotalSolidArea * pixelArea, 4, MidpointRounding.AwayFromZero);
+                //item.TotalSolidArea =  MathF.Round((float)contours.TotalSolidArea * pixelArea, 4, MidpointRounding.AwayFromZero);
+                item.TotalSolidArea = layer.MaterialMilliliters;
                 item.SmallestArea = MathF.Round((float)contours.MinSolidArea * pixelArea, 4, MidpointRounding.AwayFromZero);
                 item.LargestArea = MathF.Round((float)contours.MaxSolidArea * pixelArea, 4, MidpointRounding.AwayFromZero);
                 item.AreaCount = (uint)contours.ExternalContoursCount;
@@ -1133,8 +1144,7 @@ public sealed class NanoDLPFile : FileFormat
         entry = inputFile.GetEntry(ThumbnailMetaFileName);
         if (entry is not null)
         {
-            using var stream = entry.Open();
-            _3dMetaBytes = stream.ToArray();
+            _3dMetaBytes = entry.ToArray();
         }
 
         DecodeThumbnailsFromZip(inputFile, progress, ThumbnailFileName);

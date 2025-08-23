@@ -1146,8 +1146,8 @@ public sealed class CTBEncryptedFile : FileFormat
             Debug.WriteLine(Previews[i]);
 
             inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
-            var rawImageData = new byte[Previews[i].ImageLength];
-            inputFile.ReadExactly(rawImageData.AsSpan());
+            var rawImageData = GC.AllocateUninitializedArray<byte>((int)Previews[i].ImageLength);
+            inputFile.ReadExactly(rawImageData);
 
             Thumbnails.Add(DecodeChituImageRGB15Rle(rawImageData, Previews[i].ResolutionX, Previews[i].ResolutionY));
             progress++;
@@ -1210,11 +1210,25 @@ public sealed class CTBEncryptedFile : FileFormat
                     {
                         /* Decrypt RLE data here */
 
-                        var byteBuffer = new byte[layerDef.EncryptedDataLength];
-                        Array.Copy(layerDef.RLEData!, (int)layerDef.EncryptedDataOffset, byteBuffer, 0, (int)layerDef.EncryptedDataLength);
+                        // Calculate bounds once
+                        int encryptedLength = (int)layerDef.EncryptedDataLength;
+                        int encryptedOffset = (int)layerDef.EncryptedDataOffset;
 
-                        byteBuffer = CryptExtensions.AesCryptBytes(byteBuffer, Bigfoot, CipherMode.CBC, PaddingMode.None, false, CookieMonster);
-                        Array.Copy(byteBuffer, 0, layerDef.RLEData!, layerDef.EncryptedDataOffset, layerDef.EncryptedDataLength);
+                        // Create buffer directly from the source with the correct slice
+                        var byteBuffer = layerDef.RLEData.AsSpan(encryptedOffset, encryptedLength).ToArray();
+
+                        // Decrypt in-place and copy back
+                        byteBuffer = CryptExtensions.AesCryptBytes(
+                            byteBuffer,
+                            Bigfoot,
+                            CipherMode.CBC,
+                            PaddingMode.None,
+                            false,
+                            CookieMonster
+                        );
+
+                        // Use more efficient Span copy if available
+                        byteBuffer.AsSpan().CopyTo(layerDef.RLEData.AsSpan(encryptedOffset));
                     }
 
                     bool isBugged = false;
@@ -1641,7 +1655,8 @@ public sealed class CTBEncryptedFile : FileFormat
                 var encryptedLayerData = reader.ReadBytes((int)encryptedLength);
                 var decryptedLayerData = CryptExtensions.AesCryptBytes(encryptedLayerData, Bigfoot, CipherMode.CBC, PaddingMode.None, encrypt, CookieMonster);
 
-                Array.Copy(decryptedLayerData, 0, cryptedFile, layerDataOffset + encryptedOffset, encryptedLength);
+                Buffer.BlockCopy(decryptedLayerData, 0, cryptedFile, (int)(layerDataOffset + encryptedOffset), (int)encryptedLength);
+
 
 
                 /* update encrypted markers in the layer header */
@@ -1657,7 +1672,7 @@ public sealed class CTBEncryptedFile : FileFormat
         var cipheredHash = cryptedFile[^0x20..];
 
         var plainHash = CryptExtensions.AesCryptBytes(cipheredHash, Bigfoot, CipherMode.CBC, PaddingMode.None, encrypt, CookieMonster);
-        Array.Copy(plainHash, 0, cryptedFile, cryptedFile.Length - 0x20, 0x20);
+        Buffer.BlockCopy(plainHash, 0, cryptedFile, cryptedFile.Length - 0x20, 0x20);
 
         File.WriteAllBytes(filePath, cryptedFile);
     }

@@ -143,7 +143,7 @@ public static class CoreSettings
     /// <summary>
     /// Gets or sets the default compression type for layers
     /// </summary>
-    public static LayerCompressionCodec DefaultLayerCompressionCodec { get; set; } = LayerCompressionCodec.Lz4;
+    public static LayerCompressionCodec DefaultLayerCompressionCodec { get; set; } = LayerCompressionCodec.Png;
 
     /// <summary>
     /// <para>The average resin 1000ml bottle cost, to use when bottle cost is not available.</para>

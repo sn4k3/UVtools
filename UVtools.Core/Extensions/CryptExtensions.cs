@@ -40,30 +40,37 @@ public static class CryptExtensions
 
     public static byte[] AesCryptBytes(byte[] data, byte[] key, CipherMode mode, PaddingMode paddingMode, bool encrypt, byte[]? iv = null)
     {
-        if (data.Length % 16 != 0)
+        // Pad manually if needed
+        var blockSize = 16;
+        var paddedLength = data.Length % blockSize == 0
+            ? data.Length
+            : ((data.Length / blockSize) + 1) * blockSize;
+
+        byte[] workingBuffer;
+        if (paddedLength != data.Length)
         {
-            Array.Resize(ref data, ((data.Length / 16) + 1) * 16);
+            workingBuffer = GC.AllocateUninitializedArray<byte>(paddedLength);
+            Buffer.BlockCopy(data, 0, workingBuffer, 0, data.Length);
+            // The remaining bytes will be left as zero padding
+        }
+        else
+        {
+            // No padding needed — can work directly
+            workingBuffer = data;
         }
 
-        var aes = Aes.Create();
+        using var aes = Aes.Create();
         aes.KeySize = key.Length * 8;
         aes.Key = key;
         aes.Padding = paddingMode;
         aes.Mode = mode;
+        if (iv is not null) aes.IV = iv;
 
-        if (iv != null)
-        {
-            aes.IV = iv;
-        }
+        using var transform = encrypt ? aes.CreateEncryptor() : aes.CreateDecryptor();
 
-        var cryptor = encrypt ? aes.CreateEncryptor() : aes.CreateDecryptor();
-        
-        using var msDecrypt = new MemoryStream(data);
-        using var csDecrypt = new CryptoStream(msDecrypt, cryptor, CryptoStreamMode.Read);
-        var outputBuffer = new byte[data.Length];
-        csDecrypt.ReadExactly(outputBuffer.AsSpan());
-
-        return outputBuffer;
+        // Transform in one go
+        // TransformFinalBlock returns a new array but reuses workingBuffer memory internally
+        return transform.TransformFinalBlock(workingBuffer, 0, paddedLength);
     }
 
     public static MemoryStream AesCryptMemoryStream(byte[] data, byte[] key, CipherMode mode, PaddingMode paddingMode, bool encrypt, byte[]? iv = null)
@@ -107,7 +114,7 @@ public static class CryptExtensions
 
     public static byte[] XORCipher(string text, string key)
     {
-        var output = new byte[text.Length];
+        var output = GC.AllocateUninitializedArray<byte>(text.Length);
 
         for (int i = 0; i < text.Length; i++)
         {
@@ -119,7 +126,7 @@ public static class CryptExtensions
 
     public static byte[] XORCipher(byte[] bytes, string key)
     {
-        var output = new byte[bytes.Length];
+        var output = GC.AllocateUninitializedArray<byte>(bytes.Length);
 
         for (int i = 0; i < bytes.Length; i++)
         {

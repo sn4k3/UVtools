@@ -736,7 +736,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         }
     }
 
-    
+
 
     public override Size[] ThumbnailsOriginalSize { get; } =
     [
@@ -1257,7 +1257,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
             Debug.WriteLine(Previews[i]);
 
             inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
-            var rawImageData = new byte[Previews[i].ImageLength];
+            var rawImageData = GC.AllocateUninitializedArray<byte>((int)Previews[i].ImageLength);
             inputFile.ReadExactly(rawImageData.AsSpan());
 
             Thumbnails.Add(DecodeChituImageRGB15Rle(rawImageData, Previews[i].ResolutionX, Previews[i].ResolutionY));

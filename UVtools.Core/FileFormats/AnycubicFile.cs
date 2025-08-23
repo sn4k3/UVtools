@@ -1901,7 +1901,7 @@ public sealed class AnycubicFile : FileFormat
 
             // Ensure the table is the correct size
             if (LayerImageColorSettings.Grey.Length != LayerImageColorSettings.GreyMaxCount)
-                LayerImageColorSettings.Grey = new byte[LayerImageColorSettings.GreyMaxCount];
+                LayerImageColorSettings.Grey = GC.AllocateUninitializedArray<byte>((int)LayerImageColorSettings.GreyMaxCount);
 
             // Map the grey values
             for (var i = 0; i < LayerImageColorSettings.GreyMaxCount; i++)

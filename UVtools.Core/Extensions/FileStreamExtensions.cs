@@ -14,19 +14,34 @@ namespace UVtools.Core.Extensions;
 
 public static class FileStreamExtensions
 {
-    public static uint ReadBytes(this FileStream fs, byte[] bytes, int offset = 0)
+    public static uint ReadBytes(this FileStream fs, Span<byte> bytes)
+    {
+        return (uint)fs.Read(bytes);
+    }
+
+    public static uint ReadBytes(this FileStream fs, byte[] bytes, int offset)
     {
         return (uint)fs.Read(bytes, offset, bytes.Length);
     }
 
-    public static byte[] ReadBytes(this FileStream fs, int length, int offset = 0)
+    public static byte[] ReadBytes(this FileStream fs, int length)
     {
-        var buffer = new byte[length];
+        var buffer = GC.AllocateUninitializedArray<byte>(length);
+        fs.ReadExactly(buffer);
+        return buffer;
+    }
+
+    public static byte[] ReadBytes(this FileStream fs, int length, int offset)
+    {
+        var buffer = GC.AllocateUninitializedArray<byte>(length);
         fs.ReadExactly(buffer, offset, length);
         return buffer;
     }
 
-    public static byte[] ReadBytes(this FileStream fs, uint length, int offset = 0)
+    public static byte[] ReadBytes(this FileStream fs, uint length)
+        => fs.ReadBytes((int)length);
+
+    public static byte[] ReadBytes(this FileStream fs, uint length, int offset)
         => fs.ReadBytes((int)length, offset);
 
     /// <summary>

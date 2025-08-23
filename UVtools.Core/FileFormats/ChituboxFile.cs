@@ -2013,7 +2013,7 @@ public sealed class ChituboxFile : FileFormat
             Debug.WriteLine(Previews[i]);
 
             inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
-            var rawImageData = new byte[Previews[i].ImageLength];
+            var rawImageData = GC.AllocateUninitializedArray<byte>((int)Previews[i].ImageLength);
             inputFile.ReadExactly(rawImageData.AsSpan());
 
 
@@ -2099,8 +2099,6 @@ public sealed class ChituboxFile : FileFormat
                 layerOffset += (uint) Helpers.Serializer.SizeOf(layerDef);
                 Debug.Write($"LAYER {layerIndex} -> ");
                 Debug.WriteLine(layerDef);
-
-                //layerDef.EncodedRle = new byte[layerDef.DataSize];
 
                 if (HeaderSettings.Version >= 3)
                 {

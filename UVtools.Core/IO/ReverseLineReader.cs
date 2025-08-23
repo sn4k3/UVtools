@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using CommunityToolkit.HighPerformance.Buffers;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.IO;
@@ -177,7 +178,7 @@ public sealed class ReverseLineReader : IEnumerable<string>
                     // Buffer.BlockCopy doesn't document its behaviour with respect
                     // to overlapping data: we *might* just have read 7 bytes instead of
                     // 8, and have two bytes to copy...
-                    Array.Copy(buffer, _bufferSize, buffer, bytesToRead, leftOverData);
+                    Buffer.BlockCopy(buffer, _bufferSize, buffer, bytesToRead, leftOverData);
                 }
                 // We've now *effectively* read this much data.
                 bytesToRead += leftOverData;

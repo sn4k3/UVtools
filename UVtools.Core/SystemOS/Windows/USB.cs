@@ -114,7 +114,7 @@ public static class USB
         byte[] buf = new byte[1];
         uint retVal;
 
-        buf[0] = (prevent) ? (byte)1 : (byte)0;
+        if (prevent) buf[0] = 1;
         return DeviceIoControl(handle, IOCTL_STORAGE_MEDIA_REMOVAL, buf, 1, IntPtr.Zero, 0, out retVal, IntPtr.Zero);
     }
 

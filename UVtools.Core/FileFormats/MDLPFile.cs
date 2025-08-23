@@ -116,7 +116,7 @@ public sealed class MDLPFile : FileFormat
 
         public static byte[] GetBytes(ushort StartY, ushort EndY, ushort StartX)
         {
-            var bytes = new byte[6];
+            var bytes = GC.AllocateUninitializedArray<byte>(6);
             BitExtensions.ToBytesBigEndian(StartY, bytes);
             BitExtensions.ToBytesBigEndian(EndY, bytes, 2);
             BitExtensions.ToBytesBigEndian(StartX, bytes, 4);
@@ -422,8 +422,8 @@ public sealed class MDLPFile : FileFormat
 
                     var lineCount = BitExtensions.ToUIntBigEndian(inputFile.ReadBytes(4));
 
-                    linesBytes[layerIndex] = new byte[lineCount * 6];
-                    inputFile.ReadBytes(linesBytes[layerIndex]);
+                    linesBytes[layerIndex] = GC.AllocateUninitializedArray<byte>((int)lineCount * 6);
+                    inputFile.ReadExactly(linesBytes[layerIndex]);
                     inputFile.Seek(2, SeekOrigin.Current);
                 }
 

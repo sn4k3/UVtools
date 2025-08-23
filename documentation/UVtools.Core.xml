@@ -2405,6 +2405,13 @@
             <param name="jsonOptions"></param>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.Extensions.ZipArchiveExtensions.ToArray(System.IO.Compression.ZipArchiveEntry)">
+            <summary>
+            Opens and reads a <see cref="T:System.IO.Compression.ZipArchiveEntry"/> into a byte array.
+            </summary>
+            <param name="entry"></param>
+            <returns>A byte array containing the contents of the entry.</returns>
+        </member>
         <member name="T:UVtools.Core.FileFormats.AnetFile">
             <summary>
             This file format is based on B9Creator job file (.b9j) with defined version = 3
@@ -3628,17 +3635,18 @@
             Gets if the extension shows up on convert to menu
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.FileExtension.Tag">
+        <member name="P:UVtools.Core.FileFormats.FileExtension.IsVirtual">
             <summary>
-            Gets a tag object
+            Gets if the file extension is virtual (contains a dot in the name)
             </summary>
+            <example>rgb.zip</example>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileExtension.Filter">
             <summary>
             Gets the file filter for open and save dialogs
             </summary>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileExtension.#ctor(System.Type,System.String,System.String,System.Boolean,System.Boolean,System.Object)">
+        <member name="M:UVtools.Core.FileFormats.FileExtension.#ctor(System.Type,System.String,System.String,System.Boolean,System.Boolean)">
             <summary>
             Constructor
             </summary>
@@ -3647,7 +3655,6 @@
             <param name="description">The extension description</param>
             <param name="isVisibleOnFileFilters">True if this extension is visible on open file dialog filters</param>
             <param name="isVisibleOnConvertMenu">True if this extension is visible on convert to menu</param>
-            <param name="tag">Tag object</param>
         </member>
         <member name="F:UVtools.Core.FileFormats.PerLayerSettingsModes.Disabled">
             <summary>
@@ -4926,7 +4933,7 @@
             <param name="isFilePath">True if <paramref name="extension"/> is a full file path, otherwise false for extension only</param>
             <returns>True if valid, otherwise false</returns>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.GetFileExtensions(System.String,System.String)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetFileExtensions(System.String,System.String,System.Boolean)">
             <summary>
             Gets all valid file extensions in a specified format
             </summary>
@@ -9104,6 +9111,81 @@
         <member name="P:UVtools.Core.PixelEditor.PixelOperation.Size">
             <summary>
             Gets the total size of the operation
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Printer.Machine.Brand">
+            <summary>
+            Gets or sets the printer brand
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Printer.Machine.Model">
+            <summary>
+            Gets or sets the printer model
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Printer.Machine.Name">
+            <summary>
+            Gets the printer name, which is a combination of <see cref="P:UVtools.Core.Printer.Machine.Brand"/> and <see cref="P:UVtools.Core.Printer.Machine.Model"/>>
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Printer.Machine.ResolutionX">
+            <summary>
+            Gets or sets the printer resolution in X direction
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Printer.Machine.ResolutionY">
+            <summary>
+            Gets or sets the printer resolution in Y direction
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Printer.Machine.DisplayWidth">
+            <summary>
+            Gets or sets the display width in millimeters
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Printer.Machine.DisplayHeight">
+            <summary>
+            Gets or sets the display height in millimeters
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Printer.Machine.MachineZ">
+            <summary>
+            Gets or sets the machine Z height in millimeters
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Printer.Machine.DisplayMirror">
+            <summary>
+            Gets or sets the display mirror direction
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Printer.Machine.TotalPrintTime">
+            <summary>
+            Gets or sets the total print time in seconds
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Printer.Machine.TotalPrintTimeString">
+            <summary>
+            Gets the total print time as a formatted string
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Printer.Machine.TotalDisplayOnTime">
+            <summary>
+            Gets or sets the total display on time in seconds
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Printer.Machine.DisplayTotalOnTimeString">
+            <summary>
+            Gets the total display on time as a formatted string
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Printer.Machine.TotalDisplayOffTime">
+            <summary>
+            Gets the total display off time in seconds, which is the difference between total print time and total display on time
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Printer.Machine.DisplayTotalOffTimeString">
+            <summary>
+            Gets the total display off time as a formatted string
             </summary>
         </member>
         <member name="P:UVtools.Core.Printer.Machine.Xppmm">

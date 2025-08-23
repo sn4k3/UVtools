@@ -291,7 +291,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
 
                         var increment = 255f / _multipleBrightnessGenEmulatedAALevel;
 
-                        byte[] validAA = new byte[_multipleBrightnessGenEmulatedAALevel];
+                        byte[] validAA = GC.AllocateUninitializedArray<byte>(_multipleBrightnessGenEmulatedAALevel);
 
                         for (byte frac = 0; frac < _multipleBrightnessGenEmulatedAALevel; frac++)
                         {
@@ -1242,7 +1242,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
         var fractions = _multipleBrightnessGenExposureFractions;
         var increment = 255f / _multipleBrightnessGenEmulatedAALevel;
 
-        byte[] validAA = new byte[fractions];
+        byte[] validAA = GC.AllocateUninitializedArray<byte>(fractions);
 
         for (byte frac = 0; frac < fractions; frac++)
         {

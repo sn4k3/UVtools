@@ -6,16 +6,19 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
-using System.Buffers;
-using System.IO.Compression;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using K4os.Compression.LZ4;
+using System;
+using System.Buffers;
+using System.IO;
+using System.IO.Compression;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+using K4os.Compression.LZ4.Encoders;
 using UVtools.Core.Extensions;
+using StreamExtensions = UVtools.Core.Extensions.StreamExtensions;
 
 namespace UVtools.Core.EmguCV;
 
@@ -362,32 +365,33 @@ public sealed class MatCompressorBrotli : MatCompressor
     /// <inheritdoc />
     public override byte[] Compress(Mat src, object? argument = null)
     {
-        ReadOnlySpan<byte> srcSpan;
-        if (src.IsContinuous)
-        {
-            srcSpan = src.GetDataByteReadOnlySpan();
-        }
-        else
-        {
-            var bytes = src.GetBytes(); // Need to copy the submatrix to get the full data in a contiguous block
-            srcSpan = new ReadOnlySpan<byte>(bytes);
-        }
+        ReadOnlySpan<byte> srcSpan = src.IsContinuous
+            ? src.GetDataByteReadOnlySpan()
+            : src.GetBytes(); // Need to copy the submatrix to get the full data in a contiguous block
 
         var rent = ArrayPool<byte>.Shared.Rent(srcSpan.Length - 1);
-        var rentSpan = rent.AsSpan();
 
-        bool result = BrotliEncoder.TryCompress(srcSpan, rentSpan, out var encodedLength, 0, 22);
+        bool result = BrotliEncoder.TryCompress(srcSpan, rent, out var encodedLength, 0, 22);
         if (!result) // Throw an exception if compression failed and let CMat handle it and use uncompressed data
         {
             ArrayPool<byte>.Shared.Return(rent);
             throw new Exception("Failed to compress, buffer is too short?");
         }
 
-        var target = rentSpan[..encodedLength].ToArray();
+        var compressedBytes = GC.AllocateUninitializedArray<byte>(encodedLength);
+        Buffer.BlockCopy(rent, 0, compressedBytes, 0, encodedLength);
 
         ArrayPool<byte>.Shared.Return(rent);
 
-        return target;
+        return compressedBytes;
+
+        /*var compressedData = GC.AllocateUninitializedArray<byte>(srcSpan.Length - 1);
+        bool result = BrotliEncoder.TryCompress(srcSpan, compressedData, out var encodedLength, 0, 22);
+        if (!result) // Throw an exception if compression failed and let CMat handle it and use uncompressed data
+        {
+            throw new Exception("Failed to compress, buffer is too short?");
+        }
+        return compressedData.AsSpan()[..encodedLength].ToArray();*/
     }
 
     /// <inheritdoc />
@@ -418,35 +422,47 @@ public sealed class MatCompressorLz4 : MatCompressor
     /// <inheritdoc />
     public override byte[] Compress(Mat src, object? argument = null)
     {
-        ReadOnlySpan<byte> srcSpan;
-        if (src.IsContinuous)
-        {
-            srcSpan = src.GetDataByteReadOnlySpan();
-        }
-        else
-        {
-            var bytes = src.GetBytes(); // Need to copy the submatrix to get the full data in a contiguous block
-            srcSpan = new ReadOnlySpan<byte>(bytes);
-        }
+        ReadOnlySpan<byte> srcSpan = src.IsContinuous
+            ? src.GetDataByteReadOnlySpan()
+            : src.GetBytes(); // Need to copy the submatrix to get the full data in a contiguous block
 
-        var rent = ArrayPool<byte>.Shared.Rent(srcSpan.Length - 1);
-        var rentSpan = rent.AsSpan();
-
+        // Method 1 - ArrayPool
+        /*var rent = ArrayPool<byte>.Shared.Rent(srcSpan.Length - 1);
         try
         {
-            var encodedLength = LZ4Codec.Encode(srcSpan, rentSpan);
-            return rentSpan[..encodedLength].ToArray();
+            var encodedLength = LZ4Codec.Encode(srcSpan, rent);
+            var compressedBytes = GC.AllocateUninitializedArray<byte>(encodedLength);
+            Buffer.BlockCopy(rent, 0, compressedBytes, 0, encodedLength);
+            return compressedBytes;
         }
         finally
         {
             ArrayPool<byte>.Shared.Return(rent);
         }
+        */
+
+        // Method 2 - Direct allocation
+        //var compressedData = GC.AllocateUninitializedArray<byte>(srcSpan.Length - 1);
+        //var encodedLength = LZ4Codec.Encode(srcSpan, compressedData);
+        //return compressedData.AsSpan()[..encodedLength].ToArray();
+
+        // Method 3 - Streams
+        //using var stream = StreamExtensions.RecyclableMemoryStreamManager.GetStream(); // caller owns & disposes
+        //using var lz4 = LZ4Stream.Encode(stream, LZ4Level.L00_FAST, leaveOpen: true);
+        //lz4.Write(srcSpan);
+        //var buffer = stream.ToArray();
+        //return buffer;
+
+        // Method 4 - Pickle
+        return LZ4Pickler.Pickle(srcSpan);
+
     }
 
     /// <inheritdoc />
     public override void Decompress(byte[] compressedBytes, Mat dst, object? argument = null)
     {
-        LZ4Codec.Decode(new ReadOnlySpan<byte>(compressedBytes), dst.GetDataByteSpan());
+        //LZ4Codec.Decode(new ReadOnlySpan<byte>(compressedBytes), dst.GetDataByteSpan());
+        LZ4Pickler.Unpickle(compressedBytes, dst.GetDataByteSpan());
     }
 
     public override string ToString()

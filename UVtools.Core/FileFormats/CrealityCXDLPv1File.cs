@@ -189,7 +189,7 @@ public sealed class CrealityCXDLPv1File : FileFormat
     {
         public static byte[] GetHeaderBytes(uint unknown, uint lineCount)
         {
-            var bytes = new byte[8];
+            var bytes = GC.AllocateUninitializedArray<byte>(8);
             BitExtensions.ToBytesBigEndian(unknown, bytes);
             BitExtensions.ToBytesBigEndian(lineCount, bytes, 4);
             return bytes;
@@ -647,7 +647,7 @@ public sealed class CrealityCXDLPv1File : FileFormat
                     inputFile.Seek(4, SeekOrigin.Current);
                     var lineCount = BitExtensions.ToUIntBigEndian(inputFile.ReadBytes(4));
 
-                    linesBytes[layerIndex] = new byte[lineCount * 6];
+                    linesBytes[layerIndex] = GC.AllocateUninitializedArray<byte>((int)lineCount * 6);
                     inputFile.ReadBytes(linesBytes[layerIndex]);
                     inputFile.Seek(2, SeekOrigin.Current);
 

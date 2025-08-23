@@ -21,6 +21,7 @@ using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
+using ZLinq;
 using Color = UVtools.UI.Structures.Color;
 
 namespace UVtools.UI;
@@ -47,7 +48,7 @@ public sealed class UserSettings : BindableBase
         private bool _checkForUpdatesOnStartup = true;
         private bool _loadDemoFileOnStartup = true;
         private bool _loadLastRecentFileOnStartup;
-        private decimal _availableRamLimit = 1M;
+        private decimal _availableRamLimit;
         private RamLimitAction _availableRamOnHitLimitAction;
         private bool _availableRamOnHitLimitKillIfUnableToAction;
         private int _maxDegreeOfParallelism = -2;
@@ -1953,7 +1954,7 @@ public sealed class UserSettings : BindableBase
                             RequestPrintStatus = new (RemotePrinterRequest.RequestType.PrintStatus, RemotePrinterRequest.RequestMethod.GET, "job/list"),
                             RequestPrinterInfo = new (RemotePrinterRequest.RequestType.PrinterInfo, RemotePrinterRequest.RequestMethod.GET, "setting/printerInfo"),
                         },
-                        new RemotePrinter("0.0.0.0", 6000, "AnyCubic")
+                        new RemotePrinter("0.0.0.0", 6000, "Anycubic")
                         {
                             // https://github.com/rudetrooper/Octoprint-Chituboard/issues/4#issuecomment-961264287
                             // https://github.com/adamoutler/anycubic-python
@@ -2061,7 +2062,7 @@ public sealed class UserSettings : BindableBase
                                     foreach (var slicerFile in FileFormat.AvailableFormats)
                                     {
                                         if (slicerFile is not AnycubicFile) continue;
-                                        application.CompatibleExtensions += slicerFile.GetFileExtensions(string.Empty, ";");
+                                        application.CompatibleExtensions += slicerFile.GetFileExtensions(string.Empty, ";", true);
                                     }
 
 
@@ -2101,10 +2102,24 @@ public sealed class UserSettings : BindableBase
                                 var executable = $"{directory}\\WinRAR.exe";
                                 if (File.Exists(executable))
                                 {
-                                    var application = new MappedProcess(executable, "Open archive: WinRAR")
+
+                                    var application = new MappedProcess(executable, "Open archive: WinRAR");
+                                    var extensions = new List<string>();
+                                    foreach (var slicerFile in FileFormat.AvailableFormats)
                                     {
-                                        CompatibleExtensions = "zip;sl1;sl1s;cws;zcode;zcodex;jxs;nanodlp;vdt;uvj;pm7;pm7m;pm4u;pwsz"
-                                    };
+                                        if (slicerFile.FileType != FileFormat.FileFormatType.Archive) continue;
+                                        using var pooledArray = slicerFile.FileExtensions
+                                            .AsValueEnumerable()
+                                            .Where(extension => !extension.IsVirtual)
+                                            .Select(extension => extension.Extension)
+                                            .ToArrayPool();
+                                        extensions.AddRange(pooledArray.Span);
+                                    }
+
+                                    application.CompatibleExtensions += extensions
+                                        .AsValueEnumerable()
+                                        .Distinct()
+                                        .JoinToString(';');
                                     _instance.General.SendToProcess.Add(application);
                                 }
 
@@ -2116,10 +2131,23 @@ public sealed class UserSettings : BindableBase
                                 var executable = $"{directory}\\7zFM.exe";
                                 if (File.Exists(executable))
                                 {
-                                    var application = new MappedProcess(executable, "Open archive: 7-Zip")
+                                    var application = new MappedProcess(executable, "Open archive: 7-Zip");
+                                    var extensions = new List<string>();
+                                    foreach (var slicerFile in FileFormat.AvailableFormats)
                                     {
-                                        CompatibleExtensions = "zip;sl1;sl1s;cws;zcode;zcodex;jxs;nanodlp;vdt;uvj;pm7;pm7m;pm4u;pwsz"
-                                    };
+                                        if (slicerFile.FileType != FileFormat.FileFormatType.Archive) continue;
+                                        using var pooledArray = slicerFile.FileExtensions
+                                            .AsValueEnumerable()
+                                            .Where(extension => !extension.IsVirtual)
+                                            .Select(extension => extension.Extension)
+                                            .ToArrayPool();
+                                        extensions.AddRange(pooledArray.Span);
+                                    }
+
+                                    application.CompatibleExtensions += extensions
+                                        .AsValueEnumerable()
+                                        .Distinct()
+                                        .JoinToString(';');
                                     _instance.General.SendToProcess.Add(application);
                                 }
 

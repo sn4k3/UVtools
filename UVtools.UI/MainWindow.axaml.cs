@@ -804,7 +804,14 @@ public partial class MainWindow : WindowEx
         if (Settings.General.CheckForUpdatesOnStartup)
         {
             //_ = Task.Run(() => VersionChecker.Check());
-            _ = AppUpdater.CheckForUpdatesAsync();
+            try
+            {
+                _ = AppUpdater.CheckForUpdatesAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
         }
 
         await ProcessFiles(Program.Args);
@@ -1322,7 +1329,14 @@ public partial class MainWindow : WindowEx
         if (AppUpdater.IsUpdateAvailable) return;
         if (AppUpdater.CheckForUpdateCount == 0)
         {
-            await AppUpdater.CheckForUpdatesAsync();
+            try
+            {
+                await AppUpdater.CheckForUpdatesAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
         }
         if (AppUpdater.Releases.Count > 0)
         {

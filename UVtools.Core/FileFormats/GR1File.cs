@@ -113,7 +113,7 @@ public sealed class GR1File : FileFormat
 
         public static byte[] GetBytes(ushort startY, ushort endY, ushort startX)
         {
-            var bytes = new byte[6];
+            var bytes = GC.AllocateUninitializedArray<byte>(6);
             BitExtensions.ToBytesBigEndian(startY, bytes);
             BitExtensions.ToBytesBigEndian(endY, bytes, 2);
             BitExtensions.ToBytesBigEndian(startX, bytes, 4);
@@ -359,9 +359,9 @@ public sealed class GR1File : FileFormat
             previews[i] = null!;
         }
         outputFile.WriteSerialize(SlicerInfoSettings);
-            
+
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-            
+
         var layerBytes = new List<byte>[LayerCount];
         foreach (var batch in BatchLayersIndexes())
         {
@@ -464,15 +464,15 @@ public sealed class GR1File : FileFormat
                     progress.PauseOrCancelIfRequested();
                     var lineCount = BitExtensions.ToUIntBigEndian(inputFile.ReadBytes(4));
 
-                    linesBytes[layerIndex] = new byte[lineCount * 6];
-                    inputFile.ReadBytes(linesBytes[layerIndex]);
+                    linesBytes[layerIndex] = GC.AllocateUninitializedArray<byte>((int)lineCount * 6);
+                    inputFile.ReadExactly(linesBytes[layerIndex]);
                     inputFile.Seek(2, SeekOrigin.Current);
                 }
 
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    
+
                     using (var mat = EmguExtensions.InitMat(Resolution))
                     {
 

@@ -47,11 +47,10 @@ public sealed class FileExtension : IEquatable<FileExtension>, IEquatable<string
     public bool IsVisibleOnConvertMenu { get; }
 
     /// <summary>
-    /// Gets a tag object
+    /// Gets if the file extension is virtual (contains a dot in the name)
     /// </summary>
-    [JsonIgnore]
-    [XmlIgnore]
-    public object? Tag { get; }
+    /// <example>rgb.zip</example>
+    public bool IsVirtual => Extension.Contains('.');
 
     /// <summary>
     /// Gets the file filter for open and save dialogs
@@ -69,15 +68,13 @@ public sealed class FileExtension : IEquatable<FileExtension>, IEquatable<string
     /// <param name="description">The extension description</param>
     /// <param name="isVisibleOnFileFilters">True if this extension is visible on open file dialog filters</param>
     /// <param name="isVisibleOnConvertMenu">True if this extension is visible on convert to menu</param>
-    /// <param name="tag">Tag object</param>
-    public FileExtension(Type fileFormatType, string extension, string description, bool isVisibleOnFileFilters = true, bool isVisibleOnConvertMenu = true, object? tag = null)
+    public FileExtension(Type fileFormatType, string extension, string description, bool isVisibleOnFileFilters = true, bool isVisibleOnConvertMenu = true)
     {
         FileFormatType = fileFormatType;
         Extension = extension;
         Description = description;
         IsVisibleOnFileFilters = isVisibleOnFileFilters;
         IsVisibleOnConvertMenu = isVisibleOnConvertMenu;
-        Tag = tag;
     }
     #endregion
 

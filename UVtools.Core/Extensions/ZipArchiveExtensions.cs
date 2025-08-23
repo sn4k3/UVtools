@@ -485,4 +485,17 @@ public static class ZipArchiveExtensions
 
         return entry;
     }
+
+    /// <summary>
+    /// Opens and reads a <see cref="ZipArchiveEntry"/> into a byte array.
+    /// </summary>
+    /// <param name="entry"></param>
+    /// <returns>A byte array containing the contents of the entry.</returns>
+    public static byte[] ToArray(this ZipArchiveEntry entry)
+    {
+        using var stream = entry.Open();
+        var buffer = GC.AllocateUninitializedArray<byte>((int)entry.Length);
+        stream.ReadExactly(buffer);
+        return buffer;
+    }
 }

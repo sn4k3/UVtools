@@ -5,18 +5,22 @@ Set-Location $PSScriptRoot
 ###         Configuration        ###
 ####################################
 # Variables
-$projectAPIUrl = "https://api.github.com/repos/sn4k3/UVtools/releases/latest"
-$projectPackageUrl = "https://github.com/sn4k3/UVtools/releases/tag/v"
+$company = "PTRTECH"
+$owner = "sn4k3"
+$software = "UVtools"
+
+$projectAPIUrl = "https://api.github.com/repos/$owner/$software/releases/latest"
+$projectPackageUrl = "https://github.com/$owner/$software/releases/tag/v"
 $rootPath      = $PSScriptRoot
 $outputFolder  = "$rootPath/manifests"
-$localeYaml    = "PTRTECH.UVtools.locale.en-US.yaml"
-$installerYaml = "PTRTECH.UVtools.installer.yaml"
+$localeYaml    = "$company.$software.locale.en-US.yaml"
+$installerYaml = "$company.$software.installer.yaml"
 $releaseDate   = Get-Date -Format "yyyy-MM-dd"
 $msiUrl = $null
 
 Write-Output "
 ####################################
-###    UVtools Winget publish    ###
+###    $software Winget publish    ###
 ####################################
 "
 
@@ -44,7 +48,7 @@ if($version.Length -lt 5){
 
 $projectPackageUrl = "$projectPackageUrl$version"
 
-$manifestsPath     = "$outputFolder/p/PTRTECH/UVtools/$version"
+$manifestsPath     = "$outputFolder/p/$company/$software/$version"
 $localeYamlFile    = "$manifestsPath/$localeYaml"
 $installerYamlFile = "$manifestsPath/$installerYaml"
 
@@ -75,8 +79,8 @@ if($actionInput -eq "y" -or $actionInput -eq "yes")
     # Clean
     Remove-Item $outputFolder -Recurse -ErrorAction Ignore 
 
-    #wingetcreate.exe update PTRTECH.UVtools --interactive
-    wingetcreate.exe update PTRTECH.UVtools --urls "$msiUrl|x64" --version $version --token $wingetTokenKeyFile
+    #wingetcreate.exe update "$company.$software" --interactive
+    wingetcreate.exe update "$company.$software" --urls "$msiUrl|x64" --version $version --token $wingetTokenKeyFile
     
     # Update dynamic content
     #(Get-Content "$localeYamlFile")    -replace 'ReleaseNotesUrl:.*', "ReleaseNotesUrl: $projectPackageUrl" | Out-File "$localeYamlFile"

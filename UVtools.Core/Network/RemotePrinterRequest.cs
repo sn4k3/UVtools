@@ -178,7 +178,7 @@ public class RemotePrinterRequest : BindableBase
                 formattedPathWithParameter = GetFormattedPath(param1);
             }
         }
-        
+
         if (!string.IsNullOrWhiteSpace(_path) && !string.IsNullOrWhiteSpace(formattedPathWithParameter)) url += $"/{formattedPathWithParameter}";
 
         switch (_method)
@@ -271,7 +271,7 @@ public class RemotePrinterRequest : BindableBase
                         var bytesSent = 0;
                         while (bytesSent < requestBytes.Length)
                         {
-                            bytesSent += await socket.SendAsync(requestBytes.AsMemory(bytesSent), SocketFlags.None);
+                            bytesSent += await socket.SendAsync(requestBytes.AsMemory(bytesSent), SocketFlags.None).ConfigureAwait(false);
                         }
                     }
                 }
@@ -279,19 +279,19 @@ public class RemotePrinterRequest : BindableBase
                 {
                     if (string.IsNullOrWhiteSpace(formattedPathWithParameter))
                     {
-                        await socket.SendFileAsync(uploadFilePath, progress.Token);
+                        await socket.SendFileAsync(uploadFilePath, progress.Token).ConfigureAwait(false);
                     }
                     else
                     {
                         var preRequestBytes = Encoding.UTF8.GetBytes(formattedPathWithParameter);
-                        await socket.SendFileAsync(uploadFilePath, preRequestBytes, ReadOnlyMemory<byte>.Empty, TransmitFileOptions.UseDefaultWorkerThread, progress.Token);
+                        await socket.SendFileAsync(uploadFilePath, preRequestBytes, ReadOnlyMemory<byte>.Empty, TransmitFileOptions.UseDefaultWorkerThread, progress.Token).ConfigureAwait(false);
                     }
                 }
 
-                var responseBytes = new byte[1024];
+                var responseBytes = GC.AllocateUninitializedArray<byte>(1024);
                 var sb = new StringBuilder();
                 int bytesReceived; // Receiving 0 bytes means EOF has been reached
-                while ((bytesReceived = await socket.ReceiveAsync(responseBytes, SocketFlags.None, progress.Token)) > 0)
+                while ((bytesReceived = await socket.ReceiveAsync(responseBytes, SocketFlags.None, progress.Token).ConfigureAwait(false)) > 0)
                 {
                     var result = Encoding.UTF8.GetString(responseBytes, 0, bytesReceived);
                     sb.Append(result);
@@ -312,7 +312,7 @@ public class RemotePrinterRequest : BindableBase
 
     public async Task<HttpResponseMessage> SendRequest(RemotePrinter remotePrinter,
         OperationProgress? progress = null, string? param1 = null, string? uploadFilePath = null)
-        => await SendRequest(remotePrinter.Host, remotePrinter.Port, progress, param1, uploadFilePath);
+        => await SendRequest(remotePrinter.Host, remotePrinter.Port, progress, param1, uploadFilePath).ConfigureAwait(false);
 
     public RemotePrinterRequest Clone()
     {

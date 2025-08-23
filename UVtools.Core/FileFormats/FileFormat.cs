@@ -4074,12 +4074,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets all valid file extensions in a specified format
     /// </summary>
-    public string GetFileExtensions(string prepend = ".", string separator = ", ")
+    public string GetFileExtensions(string prepend = ".", string separator = ", ", bool ignoreVirtualExtensions = false)
     {
         var result = string.Empty;
 
         foreach (var fileExt in FileExtensions)
         {
+            if (ignoreVirtualExtensions && fileExt.IsVirtual) continue;
             if (!ReferenceEquals(result, string.Empty))
             {
                 result += separator;
@@ -4775,8 +4776,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             if (!match.Success || match.Groups.Count < 2) continue;
             if (!uint.TryParse(match.Groups[1].Value, out _)) continue;
 
-            using var stream = pngEntry.Open();
-            return FetchImageFormat(stream.ToArray(), png24Variant);
+            return FetchImageFormat(pngEntry.ToArray(), png24Variant);
         }
 
         throw new MessageException("Unable to detect layer image format from the archive, no valid candidates found.");
@@ -4829,10 +4829,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         progress.Reset(OperationProgress.StatusDecodePreviews, (uint)entryPaths.Length);
         foreach (var entryPath in entryPaths)
         {
-            using var stream = zipArchive.GetEntry(entryPath)?.Open();
-            if (stream is null) continue;
+            var entry = zipArchive.GetEntry(entryPath);
+            if (entry is null) continue;
             var mat = new Mat();
-            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.Unchanged, mat);
+            CvInvoke.Imdecode(entry.ToArray(), ImreadModes.Unchanged, mat);
             Thumbnails.Add(mat);
             progress++;
         }
@@ -4842,13 +4842,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         progress ??= new OperationProgress();
         progress.Reset(OperationProgress.StatusDecodePreviews, (uint)ThumbnailCountFileShouldHave);
-        foreach (var entity in zipArchive.Entries)
+        foreach (var entry in zipArchive.Entries)
         {
-            if (!string.IsNullOrWhiteSpace(entryEndsWith) && !entity.Name.EndsWith(entryEndsWith)) continue;
-            if (!entity.Name.StartsWith(entryStartsWith)) continue;
-            using var stream = entity.Open();
+            if (!string.IsNullOrWhiteSpace(entryEndsWith) && !entry.Name.EndsWith(entryEndsWith)) continue;
+            if (!entry.Name.StartsWith(entryStartsWith)) continue;
             Mat mat = new();
-            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.Unchanged, mat);
+            CvInvoke.Imdecode(entry.ToArray(), ImreadModes.Unchanged, mat);
             Thumbnails.Add(mat);
             progress++;
         }
@@ -4966,8 +4965,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             byte[] pngBytes;
             lock (Mutex)
             {
-                using var stream = layerEntries[layerIndex].Open();
-                pngBytes = stream.ToArray();
+                pngBytes = layerEntries[layerIndex].ToArray();
             }
 
             if (matGenFunc is null)
@@ -5232,7 +5230,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                     var byteArr = layer.CompressedPngBytes;
                     if (byteArr.Length == 0) return;
                     using var stream = new FileStream(Path.Combine(path, layer.Filename), FileMode.Create, FileAccess.Write);
-                    stream.Write(byteArr, 0, byteArr.Length);
+                    stream.Write(byteArr);
                     progress.LockAndIncrement();
                 });
             }

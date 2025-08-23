@@ -1826,8 +1826,7 @@ public sealed class AnycubicZipFile : FileFormat
                         rleFormat = AnycubicZipRleFormat.PWSZ;
                     }
 
-                    using var stream = entry.Open();
-                    encodedRle = stream.ToArray();
+                    encodedRle = entry.ToArray();
                 }
 
                 this[layerIndex].LayerMat = DecodeLayerRle(rleFormat, encodedRle);

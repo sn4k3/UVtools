@@ -30,7 +30,7 @@ public class STLMeshFile : MeshFile
     public STLMeshFile(string filePath, FileMode fileMode, MeshFileFormat fileFormat = MeshFileFormat.BINARY, FileFormat? slicerFile = null) : base(filePath, fileMode, fileFormat, slicerFile)
     { }
 
-        
+
     #endregion
 
     #region Methods
@@ -42,9 +42,11 @@ public class STLMeshFile : MeshFile
         }
         else
         {
-            var header = new byte[80];
-            var headerText = Encoding.UTF8.GetBytes(HeaderComment);
-            Array.Copy(headerText, header, headerText.Length);
+            Span<byte> header = stackalloc byte[80];
+            header.Clear();
+
+            Encoding.UTF8.GetBytes(HeaderComment.AsSpan(0, Math.Min(HeaderComment.Length, header.Length)), header);
+
             MeshStream.Write(header);
             MeshStream.Seek(4, SeekOrigin.Current);
         }
@@ -61,7 +63,7 @@ public class STLMeshFile : MeshFile
             MeshStream.WriteLineLF($"      vertex {p3.X:E11} {p3.Y:E11} {p3.Z:E11}");
             MeshStream.WriteLineLF("    endloop");
             MeshStream.WriteLineLF("  endfacet");
-        } 
+        }
         else
         {
             MeshStream.WriteFloatLittleEndian(normal.X);
@@ -79,7 +81,7 @@ public class STLMeshFile : MeshFile
             MeshStream.WriteFloatLittleEndian(p3.X);
             MeshStream.WriteFloatLittleEndian(p3.Y);
             MeshStream.WriteFloatLittleEndian(p3.Z);
-                
+
             MeshStream.Write(new byte[2]);
         }
 
@@ -92,7 +94,7 @@ public class STLMeshFile : MeshFile
         if (FileFormat == MeshFileFormat.ASCII)
         {
             MeshStream.WriteLineLF($"endsolid \"{ObjectName}\"");
-        } 
+        }
         else
         {
             MeshStream.Seek(80, SeekOrigin.Begin);

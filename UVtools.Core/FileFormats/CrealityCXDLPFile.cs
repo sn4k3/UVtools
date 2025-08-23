@@ -258,7 +258,7 @@ public sealed class CrealityCXDLPFile : FileFormat
     {
         public static byte[] GetHeaderBytes(uint layerArea, uint lineCount)
         {
-            var bytes = new byte[8];
+            var bytes = GC.AllocateUninitializedArray<byte>(8);
             BitExtensions.ToBytesBigEndian(layerArea, bytes);
             BitExtensions.ToBytesBigEndian(lineCount, bytes, 4);
             return bytes;
@@ -630,7 +630,8 @@ public sealed class CrealityCXDLPFile : FileFormat
        if (string.IsNullOrWhiteSpace(MachineName) || (!MachineName.StartsWith("CL") && !MachineName.StartsWith("CT")))
         {
             bool found = false;
-            foreach (var machine in Machine.Machines.AsValueEnumerable()
+            foreach (var machine in Machine.Machines
+                         .AsValueEnumerable()
                          .Where(machine => machine.Brand == PrinterBrand.Creality
                                            && (machine.Model.StartsWith("CL") || machine.Model.StartsWith("CT"))
                                            ))
@@ -844,7 +845,7 @@ public sealed class CrealityCXDLPFile : FileFormat
                     inputFile.Seek(4, SeekOrigin.Current);
                     var lineCount = BitExtensions.ToUIntBigEndian(inputFile.ReadBytes(4));
 
-                    linesBytes[layerIndex] = new byte[lineCount * 6];
+                    linesBytes[layerIndex] = GC.AllocateUninitializedArray<byte>((int)lineCount * 6);
                     inputFile.ReadBytes(linesBytes[layerIndex]);
                     inputFile.Seek(2, SeekOrigin.Current);
                 }
