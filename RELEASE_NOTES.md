@@ -1,16 +1,7 @@
-- (Change) Setting: Default layer compression codec from `LZ4` to `PNG`, this will reduce the memory usage and better RAM management when handling large resolution files. For current users is required to change on settings if you want to switch
-- (Change) Setting: Default available RAM limit from `1GB` to `0` (Disabled)
-- (Change) PrusaSlicer printers: Rename all `AnyCubic` printers to `Anycubic`
-- (Improvement) Allocate some arrays as uninitialized to improve the performance
-- (Improvement) CTB: Less allocations while encrypting/decrypting layers
-- (Improvement) Less allocations when getting compressed zip entries to bytes
-- (Improvement) Less memory pressure when using `LZ4` layer compression
-- (Improvement) When read archive file formats with 8 bit png and PNG compressor, initialize the layer with the image instead of the bytes to force calculations
-- (Fix) Crash when checking for updates in some cases (#1054)
-- (Fix) NanoDLP: Fill TotalSolidArea with the resin millimeters (#1057)
-- (Fix) Anycubic PrusaSlicer printers name: File parameter, version number mismatch (#1055)
-- (Fix) Archive file formats when using PNG compressor are saving incomplete images and not loading the layer height
-- (Fix) Memory leak setting layer PNG bytes when using other compressor than PNG
-- (Fix) File - Extract when using PNG compressor was not extracting the whole layer image area
-- (Upgrade) AvaloniaUI from 11.3.3 to 11.3.4
+- (Add) PrusaSlicer printer: Elegoo Mars 5 (#1063)
+- (Fix) PCB Exposure Tool: Incorrect oval apertures (#1066)
+- (Fix) NanoDLP: Revert "Fill TotalSolidArea with the resin millimeters (#1057)" to solid area in mm² (#1069)
+- (Fix) Crash when launch software without internet connection (#1070)
+- (Upgrade) AvaloniaUI from 11.3.4 to 11.3.6
+- (Upgrade) .NET from 9.0.8 to 9.0.9
 

@@ -806,7 +806,7 @@ public partial class MainWindow : WindowEx
             //_ = Task.Run(() => VersionChecker.Check());
             try
             {
-                _ = AppUpdater.CheckForUpdatesAsync();
+                _ = await AppUpdater.CheckForUpdatesAsync();
             }
             catch (Exception ex)
             {

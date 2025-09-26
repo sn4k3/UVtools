@@ -964,8 +964,7 @@ public sealed class NanoDLPFile : FileFormat
             if (pixelArea > 0)
             {
                 var contours = layer.Contours;
-                //item.TotalSolidArea =  MathF.Round((float)contours.TotalSolidArea * pixelArea, 4, MidpointRounding.AwayFromZero);
-                item.TotalSolidArea = layer.MaterialMilliliters;
+                item.TotalSolidArea =  MathF.Round((float)contours.TotalSolidArea * pixelArea, 4, MidpointRounding.AwayFromZero);
                 item.SmallestArea = MathF.Round((float)contours.MinSolidArea * pixelArea, 4, MidpointRounding.AwayFromZero);
                 item.LargestArea = MathF.Round((float)contours.MaxSolidArea * pixelArea, 4, MidpointRounding.AwayFromZero);
                 item.AreaCount = (uint)contours.ExternalContoursCount;

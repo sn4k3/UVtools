@@ -316,6 +316,7 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Elegoo, "Mars 4 DLP", 4098, 2560, 132.8f, 74.7f, 150f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Mars 4 Max", 5760, 3600, 195.84f, 122.4f, 150f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Mars 4 Ultra", 8520, 4320, 153.36f, 77.76f, 165f, FlipDirection.Horizontally),
+                new(PrinterBrand.Elegoo, "Mars 5", 4098, 2560, 143.43f, 89.6f, 150f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Mars 5 Ultra", 8520, 4320, 153.36f, 77.76f, 165f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Mars C", 1440, 2560, 68.04f, 120.96f, 150f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Saturn", 3840, 2400, 192f, 120f, 200f, FlipDirection.Horizontally),

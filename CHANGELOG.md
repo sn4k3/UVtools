@@ -1,6 +1,14 @@
 # Changelog
 
-## 13/08/2025 - v5.2.0
+## 26/09/2025 - v5.2.1
+- (Add) PrusaSlicer printer: Elegoo Mars 5 (#1063)
+- (Fix) PCB Exposure Tool: Incorrect oval apertures (#1066)
+- (Fix) NanoDLP: Revert "Fill TotalSolidArea with the resin millimeters (#1057)" to solid area in mm² (#1069)
+- (Fix) Crash when launch software without internet connection (#1070)
+- (Upgrade) AvaloniaUI from 11.3.4 to 11.3.6
+- (Upgrade) .NET from 9.0.8 to 9.0.9
+
+## 23/08/2025 - v5.2.0
 - (Change) Setting: Default layer compression codec from `LZ4` to `PNG`, this will reduce the memory usage and better RAM management when handling large resolution files. For current users is required to change on settings if you want to switch
 - (Change) Setting: Default available RAM limit from `1GB` to `0` (Disabled)
 - (Change) PrusaSlicer printers: Rename all `AnyCubic` printers to `Anycubic`
