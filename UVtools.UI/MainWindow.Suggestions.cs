@@ -7,6 +7,7 @@
  */
 
 using Avalonia.Threading;
+using SukiUI.MessageBox;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -84,7 +85,7 @@ public partial class MainWindow
         {
             sb.AppendLine(suggestion.ConfirmationMessage);
         }
-        if (await this.MessageBoxQuestion(sb.ToString(), "Apply suggestions?") != MessageButtonResult.Yes) return;
+        if (await this.MessageBoxQuestion(sb.ToString(), "Apply suggestions?") != SukiMessageBoxResult.Yes) return;
 
         IsGUIEnabled = false;
         ShowProgressWindow($"Applying {suggestions.Length} suggestions", false);
@@ -138,7 +139,7 @@ public partial class MainWindow
     {
         if (!IsFileLoaded || suggestionObject is not Suggestion suggestion || suggestion.IsInformativeOnly) return;
 
-        if (await this.MessageBoxQuestion($"Are you sure you want to apply the following suggestion?:\n\n{suggestion.ConfirmationMessage}", "Apply the suggestion?") != MessageButtonResult.Yes) return;
+        if (await this.MessageBoxQuestion($"Are you sure you want to apply the following suggestion?:\n\n{suggestion.ConfirmationMessage}", "Apply the suggestion?") != SukiMessageBoxResult.Yes) return;
 
 
         IsGUIEnabled = false;

@@ -24,7 +24,8 @@
 
 	<!-- Add Styles Here -->
     <ControlTheme x:Key="{x:Type c:IndexSelector}" TargetType="c:IndexSelector">
-		<Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
+        <!--- 
+        <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
 		<Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
 		<Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
 		<Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
@@ -32,6 +33,7 @@
 		<Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}"/>
 		<Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
 		<Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
+        -->
 		<Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
         
         <Setter Property="Template">

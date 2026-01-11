@@ -1,5 +1,6 @@
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using SukiUI.MessageBox;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -93,7 +94,7 @@ public partial class CalibrateExposureFinderControl : ToolControl
             if (await ParentWindow!.MessageBoxQuestion(
                     "This automatic exposure table generation will clear the current table data!\n" +
                     "Do you want to continue?"
-                ) != MessageButtonResult.Yes) return;
+                ) != SukiMessageBoxResult.Yes) return;
         }
 
         Operation.GenerateExposureTable();
@@ -125,7 +126,7 @@ public partial class CalibrateExposureFinderControl : ToolControl
         if (Operation.ExposureTable.Count <= 0) return;
         if (await ParentWindow!.MessageBoxQuestion(
                 $"Are you sure you want to all the {Operation.ExposureTable.Count} entries?"
-            ) != MessageButtonResult.Yes) return;
+            ) != SukiMessageBoxResult.Yes) return;
 
         Operation.ExposureTable.Clear();
     }
@@ -135,7 +136,7 @@ public partial class CalibrateExposureFinderControl : ToolControl
         if (ExposureTable.SelectedItems.Count <= 0) return;
         if (await ParentWindow!.MessageBoxQuestion(
                 $"Are you sure you want to remove the {ExposureTable.SelectedItems.Count} selected entries?"
-            ) != MessageButtonResult.Yes) return;
+            ) != SukiMessageBoxResult.Yes) return;
 
         Operation.ExposureTable.RemoveRange(ExposureTable.SelectedItems.Cast<ExposureItem>());
     }

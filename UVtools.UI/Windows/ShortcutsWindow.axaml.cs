@@ -10,7 +10,7 @@ using UVtools.UI.Controls;
 
 namespace UVtools.UI.Windows;
 
-public partial class ShortcutsWindow : WindowEx
+public partial class ShortcutsWindow : GenericWindow
 {
     public ShortcutsWindow()
     {

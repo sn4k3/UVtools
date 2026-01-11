@@ -21,7 +21,7 @@ public class OperationCalculator : Operation
 
     public override bool CanRunInPartialMode => true;
 
-    public override string IconClass => "fa-solid fa-calculator";
+    public override string IconClass => "Calculator";
 
     public override string Title => "Calculator";
     public override string Description => null!;
@@ -154,7 +154,7 @@ public class OperationCalculator : Operation
         public decimal PixelsX => Math.Round(PixelsPerMillimeterX * Millimeters, 2);
         public decimal PixelsY => Math.Round(PixelsPerMillimeterY * Millimeters, 2);
 
-            
+
     }
 
     public sealed class LightOffDelayC : Calculation
@@ -288,7 +288,7 @@ public class OperationCalculator : Operation
             {
                 time += liftHeight / (retractSpeed / 60m);
             }
-                
+
             return Math.Round(time, 2);
         }
 
@@ -317,7 +317,7 @@ public class OperationCalculator : Operation
         }
 
         public static float CalculateSeconds(Layer layer, float extraTime)
-            => CalculateSeconds(layer.LiftHeight, layer.LiftSpeed, layer.RetractSpeed, extraTime, 
+            => CalculateSeconds(layer.LiftHeight, layer.LiftSpeed, layer.RetractSpeed, extraTime,
                 layer.LiftHeight2, layer.LiftSpeed2, layer.RetractHeight2, layer.RetractSpeed2);
 
         public static uint CalculateMilliseconds(Layer layer, float extraTime)

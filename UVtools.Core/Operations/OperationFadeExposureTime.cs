@@ -31,7 +31,7 @@ public class OperationFadeExposureTime : Operation
     public override bool CanRunInPartialMode => true;
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.Normal;
     public override bool LayerIndexEndEnabled => false;
-    public override string IconClass => "fa-solid fa-history";
+    public override string IconClass => "LightbulbNight ";
     public override string Title => "Fade exposure time";
 
     public override string Description =>
@@ -182,7 +182,7 @@ public class OperationFadeExposureTime : Operation
 
         if (SlicerFile.TransitionLayerType == FileFormat.TransitionLayerTypes.Firmware && _disableFirmwareTransitionLayers)
         {
-            SlicerFile.TransitionLayerCount = 0; 
+            SlicerFile.TransitionLayerCount = 0;
         }
         else
         {

@@ -47,7 +47,7 @@ public class OperationRepairLayers : Operation
 
     #region Overrides
     public override bool CanROI => false;
-    public override string IconClass => "fa-solid fa-toolbox";
+    public override string IconClass => "Toolbox";
     public override string Title => "Repair layers and issues";
     public override string Description => string.Empty;
 

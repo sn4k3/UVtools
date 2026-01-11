@@ -3,13 +3,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolLayerReHeightControl"
              x:DataType="tools:ToolLayerReHeightControl">
 
 
     <StackPanel Orientation="Vertical" Spacing="10">
-    <TextBlock VerticalAlignment="Center" 
+    <TextBlock VerticalAlignment="Center"
                IsVisible="{Binding !Operation.Method}"
                Text="{Binding CurrentLayers}"/>
 
@@ -27,7 +28,7 @@
                    VerticalAlignment="Center"
                    Text="Position offset:"/>
         <NumericUpDown Grid.Row="2" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        IsVisible="{Binding Operation.IsOffsetPositionZMethod}"
                        VerticalAlignment="Center"
                        Minimum="-1000"
@@ -36,7 +37,7 @@
                        FormatString="F3"
                        Value="{Binding Operation.PositionZOffset}"/>
 
-		<TextBlock Grid.Row="2" Grid.Column="0" 
+		<TextBlock Grid.Row="2" Grid.Column="0"
                    VerticalAlignment="Center"
                    IsVisible="{Binding Operation.IsReHeightMethod}"
                    Text="Modifier:"/>
@@ -48,7 +49,7 @@
             ItemsSource="{Binding Operation.Presets}"/>
 
         <TextBlock Grid.Row="4" Grid.Column="0"
-                   VerticalAlignment="Center" 
+                   VerticalAlignment="Center"
                    IsVisible="{Binding Operation.IsReHeightMethod}"
                    Text="Anti-Aliasing:"/>
         <ComboBox Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="5"
@@ -59,12 +60,12 @@
                   SelectedItem="{Binding Operation.AntiAliasingType, Converter={StaticResource FromValueDescriptionToEnumConverter}}">
         </ComboBox>
 
-        <TextBlock Grid.Row="6" Grid.Column="0" 
+        <TextBlock Grid.Row="6" Grid.Column="0"
                    IsVisible="{Binding Operation.IsReHeightMethod}"
-                   VerticalAlignment="Center" 
+                   VerticalAlignment="Center"
                    Text="Bottom exposure:"/>
         <NumericUpDown Grid.Row="6" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        IsVisible="{Binding Operation.IsReHeightMethod}"
                        VerticalAlignment="Center"
                        Minimum="0.01"
@@ -72,12 +73,12 @@
                        Increment="0.5"
                        Value="{Binding Operation.BottomExposure}"/>
 
-        <TextBlock Grid.Row="6" Grid.Column="4" 
+        <TextBlock Grid.Row="6" Grid.Column="4"
                    IsVisible="{Binding Operation.IsReHeightMethod}"
-                   VerticalAlignment="Center" 
+                   VerticalAlignment="Center"
                    Text="Normal exposure:"/>
         <NumericUpDown Grid.Row="6" Grid.Column="6"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        IsVisible="{Binding Operation.IsReHeightMethod}"
                        VerticalAlignment="Center"
                        Minimum="0.01"

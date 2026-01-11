@@ -40,7 +40,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
     #endregion
 
     #region Overrides
-    public override string IconClass => "mdi-checkerboard";
+    public override string IconClass => "Checkerboard";
     public override string Title => "Infill";
 
     public override string Description =>

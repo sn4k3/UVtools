@@ -2,8 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:i="https://github.com/projektanker/icons.avalonia"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolLayerExportGifControl"
              x:DataType="tools:ToolLayerExportGifControl">
@@ -11,7 +12,7 @@
     <StackPanel Spacing="10">
 
         <StackPanel Orientation="Horizontal" Spacing="5">
-            <TextBox 
+            <TextBox
                 Watermark="Output filepath"
                 UseFloatingWatermark="True"
                 VerticalAlignment="Center"
@@ -21,7 +22,7 @@
             <Button
                 VerticalAlignment="Stretch"
                 Command="{Binding ChooseFilePath}"
-                i:Attached.Icon="fa-solid fa-folder"/>
+                Content="{icon:MaterialIconExt Kind=Folder}"/>
         </StackPanel>
 
         <CheckBox
@@ -60,7 +61,7 @@
                    Text="Repeats:" />
 
         <NumericUpDown Grid.Row="2" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_times"
+                       suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Multiply}"
                        Minimum="0"
                        Maximum="65535"
                        Value="{Binding Operation.Repeats}"/>
@@ -75,7 +76,7 @@
                    Text="Skip:" />
 
         <NumericUpDown Grid.Row="4" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_layers"
+                       suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
                        Minimum="0"
                        Maximum="65535"
                        Value="{Binding Operation.Skip}"/>
@@ -94,7 +95,7 @@
                    Text="Scale:" />
 
         <NumericUpDown Grid.Row="6" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_percent"
+                       suki:NumericUpDownExtensions.Unit="%"
                        Minimum="1"
                        Maximum="100"
                        FormatString="F2"

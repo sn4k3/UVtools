@@ -24,7 +24,7 @@ public class OperationRotate : Operation
     #endregion
 
     #region Overrides
-    public override string IconClass => "fa-solid fa-sync-alt";
+    public override string IconClass => "Rotate3dVariant";
     public override string Title => "Rotate";
     public override string Description =>
         "Rotate the layers of the model.\n";
@@ -85,7 +85,7 @@ public class OperationRotate : Operation
         if (obj.GetType() != GetType()) return false;
         return Equals((OperationRotate) obj);
     }
-    
+
     #endregion
 
     #region Methods

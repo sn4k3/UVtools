@@ -1,3 +1,4 @@
+using SukiUI.MessageBox;
 using System;
 using System.IO;
 using System.Text;
@@ -126,7 +127,7 @@ public partial class RenameFileControl : ToolBaseControl
         if (!File.Exists(NewFilePath)) return await RenameCurrentSlicerFile();
         if (await ParentWindow!.MessageBoxQuestion(
                 $"The file \"{_newFileNameNoExt}\" already exists, do you want to overwrite?",
-                "File already exists") == MessageButtonResult.Yes)
+                "File already exists") == SukiMessageBoxResult.Yes)
         {
             Overwrite = true;
             return await RenameCurrentSlicerFile();

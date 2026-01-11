@@ -69,7 +69,7 @@ public class OperationLayerArithmetic : Operation
     #region Overrides
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    public override string IconClass => "fa-solid fa-square-root-alt";
+    public override string IconClass => "SquareRoot";
     public override string Title => "Layer arithmetic";
     public override string Description =>
         "Perform arithmetic operations over the layers\n" +
@@ -146,7 +146,7 @@ public class OperationLayerArithmetic : Operation
         if (string.IsNullOrEmpty(_sentence)) return false;
         Operations.Clear();
 
-        
+
         var sentences = Regex.Replace(_sentence, @"\s+", string.Empty)
             .Split(';', StringSplitOptions.RemoveEmptyEntries);
 
@@ -312,7 +312,7 @@ public class OperationLayerArithmetic : Operation
                 SlicerFile[layerIndex].LayerMat = result;
             });
         }
-        
+
 
         return !progress.Token.IsCancellationRequested;
     }

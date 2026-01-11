@@ -1,20 +1,18 @@
-﻿using Avalonia.Controls;
-using Avalonia.Media;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
+using Avalonia.Controls;
+using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using UVtools.Core.Objects;
 using ZLinq;
 
 namespace UVtools.UI.Structures;
 
-public class PSProfileFolder : BindableBase
+public partial class PSProfileFolder : ObservableObject
 {
     public static string AssetsPrusaSlicer => Path.Combine(App.ApplicationPath, "Assets", "PrusaSlicer");
-    private RangeObservableCollection<CheckBox> _items = [];
-    private ushort _installed;
-    private ushort _updates;
 
     public enum FolderType
     {
@@ -29,23 +27,14 @@ public class PSProfileFolder : BindableBase
     public string SourcePath { get; }
     public string TargetPath { get; }
 
-    public RangeObservableCollection<CheckBox> Items
-    {
-        get => _items;
-        set => RaiseAndSetIfChanged(ref _items, value);
-    }
+    [ObservableProperty]
+    public partial RangeObservableCollection<CheckBox> Items { get; set; } = [];
 
-    public ushort Installed
-    {
-        get => _installed;
-        set => RaiseAndSetIfChanged(ref _installed, value);
-    }
+    [ObservableProperty]
+    public partial ushort Installed { get; set; }
 
-    public ushort Updates
-    {
-        get => _updates;
-        set => RaiseAndSetIfChanged(ref _updates, value);
-    }
+    [ObservableProperty]
+    public partial ushort Updates { get; set; }
 
     public string SelectedFiles
     {

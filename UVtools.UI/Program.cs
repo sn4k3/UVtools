@@ -1,7 +1,4 @@
 ﻿using Avalonia;
-using Projektanker.Icons.Avalonia;
-using Projektanker.Icons.Avalonia.FontAwesome;
-using Projektanker.Icons.Avalonia.MaterialDesign;
 using System;
 using System.Diagnostics;
 using System.Globalization;
@@ -220,10 +217,6 @@ public static class Program
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
     {
-        IconProvider.Current
-            .Register<FontAwesomeIconProvider>()
-            .Register<MaterialDesignIconProvider>();
-
         return AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
@@ -233,6 +226,10 @@ public static class Program
             .With(new MacOSPlatformOptions { ShowInDock = true })
             .With(new AvaloniaNativePlatformOptions())
             //.UseSkia()
-            .LogToTrace();
+            .LogToTrace()
+#if DEBUG
+            .WithDeveloperTools()
+#endif
+            ;
     }
 }

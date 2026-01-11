@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using SukiUI.MessageBox;
 using System.Threading.Tasks;
 using UVtools.Core.Dialogs;
 using UVtools.UI.Controls;
@@ -13,7 +14,7 @@ using UVtools.UI.Extensions;
 
 namespace UVtools.UI.Windows;
 
-public sealed partial class MissingInformationWindow : WindowEx
+public sealed partial class MissingInformationWindow : GenericWindow
 {
     #region Members
     private decimal _layerHeight;
@@ -63,7 +64,7 @@ public sealed partial class MissingInformationWindow : WindowEx
 
     public async Task Apply()
     {
-        if (await this.MessageBoxQuestion("Are you sure you want to submit and apply the information?", "Submit and apply the information?") != MessageButtonResult.Yes) return;
+        if (await this.MessageBoxQuestion("Are you sure you want to submit and apply the information?", "Submit and apply the information?") != SukiMessageBoxResult.Yes) return;
 
         if ((decimal)SlicerFile!.DisplayWidth != _displayWidth && _displayWidth > 0)
         {

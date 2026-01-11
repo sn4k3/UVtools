@@ -4,6 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:UVtools.UI.Controls"
              xmlns:calibrators="clr-namespace:UVtools.UI.Controls.Calibrators"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
              x:Class="UVtools.UI.Controls.Calibrators.CalibrateElephantFootControl"
              x:DataType="calibrators:CalibrateElephantFootControl">
@@ -18,7 +20,7 @@
                      VerticalAlignment="Center"
                      Text="Layer height:"/>
           <NumericUpDown Grid.Row="0" Grid.Column="2"
-                         Classes="ValueLabel ValueLabel_mm"
+                         suki:NumericUpDownExtensions.Unit="mm"
                          Increment="0.01"
                          Minimum="0.001"
                          Maximum="0.30"
@@ -34,7 +36,7 @@
                      VerticalAlignment="Center"
                      Text="Bottom layers:"/>
           <NumericUpDown Grid.Row="2" Grid.Column="2"
-                         Classes="ValueLabel ValueLabel_layers"
+                         suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
                          Increment="1"
                          Minimum="1"
                          Maximum="1000"
@@ -50,7 +52,7 @@
                      IsEnabled="{Binding !Operation.SyncLayers}"
                      Text="Normal layers:"/>
           <NumericUpDown Grid.Row="2" Grid.Column="8"
-                         Classes="ValueLabel ValueLabel_layers"
+                         suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
                          IsEnabled="{Binding !Operation.SyncLayers}"
                          Increment="1"
                          Minimum="1"
@@ -65,7 +67,7 @@
                      VerticalAlignment="Center"
                      Text="Bottom exposure:"/>
           <NumericUpDown Grid.Row="4" Grid.Column="2"
-                         Classes="ValueLabel ValueLabel_s"
+                         suki:NumericUpDownExtensions.Unit="s"
                          Increment="0.5"
                          Minimum="0.1"
                          Maximum="200"
@@ -76,7 +78,7 @@
                      VerticalAlignment="Center"
                      Text="Normal exposure:"/>
           <NumericUpDown Grid.Row="4" Grid.Column="8"
-                         Classes="ValueLabel ValueLabel_s"
+                         suki:NumericUpDownExtensions.Unit="s"
                          Increment="0.5"
                          Minimum="0.1"
                          Maximum="200"
@@ -86,7 +88,7 @@
                      VerticalAlignment="Center"
                      Text="Part scale:"/>
           <NumericUpDown Grid.Row="6" Grid.Column="2"
-                         Classes="ValueLabel ValueLabel_times"
+                         suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Multiply}"
                          Increment="0.1"
                          Minimum="1"
                          Maximum="10"
@@ -96,7 +98,7 @@
                      VerticalAlignment="Center"
                      Text="Margin:"/>
           <NumericUpDown Grid.Row="6" Grid.Column="8"
-                         Classes="ValueLabel ValueLabel_px"
+                         suki:NumericUpDownExtensions.Unit="px"
                          Increment="1"
                          Minimum="0"
                          Maximum="255"
@@ -117,15 +119,15 @@
                      Text="Text height:"/>
 
           <NumericUpDown Grid.Row="8" Grid.Column="8"
-                         Classes="ValueLabel ValueLabel_mm"
+                         suki:NumericUpDownExtensions.Unit="mm"
                          Increment="0.5"
                          Minimum="0.5"
                          Maximum="10"
                          FormatString="F2"
                          IsEnabled="{Binding Operation.ExtrudeText}"
                          Value="{Binding Operation.TextHeight}"/>
-          
-          <StackPanel Grid.Row="10" Grid.Column="0" 
+
+          <StackPanel Grid.Row="10" Grid.Column="0"
                       VerticalAlignment="Center"
                       Spacing="0">
               <TextBlock
@@ -170,7 +172,7 @@
                     ToolTip.Tip="Most of the printers requires a mirror output to print with the correct orientation"
                     IsChecked="{Binding Operation.MirrorOutput}"
                     Content="Mirror output" />
-          
+
         </Grid>
 
         <Expander Header="{Binding Operation.ErodeObjects, StringFormat=Morph - Erode    [{0} objects]}"
@@ -179,7 +181,7 @@
 
         <StackPanel>
           <Grid
-              
+
               RowDefinitions="Auto,10,Auto"
               ColumnDefinitions="Auto,10,180,5,Auto,5,180,30,Auto,10,180">
 
@@ -193,7 +195,7 @@
                          Text="Iterations range:"/>
 
             <NumericUpDown Grid.Row="2" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_px"
+                           suki:NumericUpDownExtensions.Unit="px"
                            IsEnabled="{Binding Operation.IsErodeEnabled}"
                            Increment="1"
                            Minimum="1"
@@ -206,7 +208,7 @@
                        Text="-"/>
 
             <NumericUpDown Grid.Row="2" Grid.Column="6"
-                           Classes="ValueLabel ValueLabel_px"
+                           suki:NumericUpDownExtensions.Unit="px"
                            IsEnabled="{Binding Operation.IsErodeEnabled}"
                            Increment="1"
                            Minimum="1"
@@ -219,7 +221,7 @@
                        Text="Step increment(s):"/>
 
             <NumericUpDown Grid.Row="2" Grid.Column="10"
-                           Classes="ValueLabel ValueLabel_px"
+                           suki:NumericUpDownExtensions.Unit="px"
                            IsEnabled="{Binding Operation.IsErodeEnabled}"
                            Increment="1"
                            Minimum="1"
@@ -239,7 +241,7 @@
 
       </Expander>
 
-       
+
       <Expander Header="{Binding Operation.DimmingObjects, StringFormat=Wall dimming    [{0} objects]}"
                 HorizontalAlignment="Stretch"
                 IsExpanded="True">
@@ -278,7 +280,7 @@
                          Text="Wall thickness:"/>
 
               <NumericUpDown Grid.Row="2" Grid.Column="2"
-                             Classes="ValueLabel ValueLabel_px"
+                             suki:NumericUpDownExtensions.Unit="px"
                              IsEnabled="{Binding Operation.IsDimmingEnabled}"
                              Increment="1"
                              Minimum="1"
@@ -290,7 +292,7 @@
                            Text="Brightness range:"/>
 
               <NumericUpDown Grid.Row="4" Grid.Column="2"
-                             Classes="ValueLabel ValueLabel_sun"
+                             suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Brightness5}"
                              IsEnabled="{Binding Operation.IsDimmingEnabled}"
                              Increment="1"
                              Minimum="1"
@@ -304,7 +306,7 @@
                          Text="-"/>
 
               <NumericUpDown Grid.Row="4" Grid.Column="6"
-                             Classes="ValueLabel ValueLabel_sun"
+                             suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Brightness5}"
                              IsEnabled="{Binding Operation.IsDimmingEnabled}"
                              Increment="1"
                              Minimum="2"
@@ -316,7 +318,7 @@
                          Text="Step increment(s):"/>
 
               <NumericUpDown Grid.Row="4" Grid.Column="10"
-                             Classes="ValueLabel ValueLabel_sun"
+                             suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Brightness5}"
                              IsEnabled="{Binding Operation.IsDimmingEnabled}"
                              Increment="1"
                              Minimum="2"
@@ -349,9 +351,9 @@
 
       </StackPanel>
 
-        <Image Grid.Column="2" 
+        <Image Grid.Column="2"
                Stretch="Uniform"
                Source="{Binding PreviewImage}"/>
     </Grid>
-  
+
 </UserControl>

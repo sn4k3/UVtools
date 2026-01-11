@@ -40,6 +40,7 @@ using AvaloniaStatic = UVtools.UI.Controls.AvaloniaStatic;
 using Point = System.Drawing.Point;
 using Size = System.Drawing.Size;
 using Emgu.CV.Reg;
+using SukiUI.MessageBox;
 using ZLinq;
 
 namespace UVtools.UI;
@@ -2015,7 +2016,7 @@ public partial class MainWindow
                 if (e.KeyModifiers == KeyModifiers.Control)
                 {
                     if (await this.MessageBoxQuestion($"Are you sure you want to clone the current layer {_actualLayer}?",
-                            "Clone the current layer?") != MessageButtonResult.Yes) return;
+                            "Clone the current layer?") != SukiMessageBoxResult.Yes) return;
 
                     var operationLayerClone = new OperationLayerClone(SlicerFile!);
                     operationLayerClone.SelectCurrentLayer(_actualLayer);
@@ -2046,7 +2047,7 @@ public partial class MainWindow
                 }
 
                 if (await this.MessageBoxQuestion($"Are you sure you want to keep only the selected region/mask(s) {layerRange}?",
-                        "Keep only selected region/mask(s)?") != MessageButtonResult.Yes) return;
+                        "Keep only selected region/mask(s)?") != SukiMessageBoxResult.Yes) return;
                 await RunOperation(operation);
                 e.Handled = true;
                 return;
@@ -2056,7 +2057,7 @@ public partial class MainWindow
                 if (e.KeyModifiers == KeyModifiers.Control)
                 {
                     if (await this.MessageBoxQuestion($"Are you sure you want to remove the current layer {_actualLayer}?",
-                            "Remove the current layer?") != MessageButtonResult.Yes) return;
+                            "Remove the current layer?") != SukiMessageBoxResult.Yes) return;
 
                     var operationLayerRemove = new OperationLayerRemove(SlicerFile!);
                     operationLayerRemove.SelectCurrentLayer(_actualLayer);
@@ -2087,7 +2088,7 @@ public partial class MainWindow
                 }
 
                 if (await this.MessageBoxQuestion($"Are you sure you want to discard the selected region/mask(s) {layerRange}?",
-                        "Discard selected region/mask(s)?") != MessageButtonResult.Yes) return;
+                        "Discard selected region/mask(s)?") != SukiMessageBoxResult.Yes) return;
                 await RunOperation(operation);
                 e.Handled = true;
                 return;

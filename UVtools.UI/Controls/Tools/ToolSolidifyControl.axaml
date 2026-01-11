@@ -3,29 +3,29 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="100"
              x:Class="UVtools.UI.Controls.Tools.ToolSolidifyControl"
              x:DataType="tools:ToolSolidifyControl">
   <StackPanel Orientation="Horizontal" Spacing="5">
-    <TextBlock 
+    <TextBlock
       Text="Solidifies areas with or"
       VerticalAlignment="Center" />
 
     <ComboBox
       ItemsSource="{Binding Operation.AreaCheckTypeItems}"
       SelectedItem="{Binding Operation.AreaCheckType}"
-      Width="100"
+      Width="150"
       VerticalAlignment="Center" />
 
     <TextBlock
       Text="than:"
       VerticalAlignment="Center" />
 
-    <NumericUpDown
-        Classes="ValueLabel ValueLabel_px2"
-        Width="200"
-      Minimum="1"
-      Maximum="4294967295"
-      Value="{Binding Operation.MinimumArea}"/>
+    <NumericUpDown suki:NumericUpDownExtensions.Unit="px²"
+                   Width="200"
+                   Minimum="1"
+                   Maximum="4294967295"
+                   Value="{Binding Operation.MinimumArea}"/>
   </StackPanel>
 </UserControl>

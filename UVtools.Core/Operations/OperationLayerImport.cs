@@ -67,7 +67,7 @@ public sealed class OperationLayerImport : Operation
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override bool CanROI => false;
 
-    public override string IconClass => "mdi-database-import";
+    public override string IconClass => "FileImagePlus";
 
     public override string Title => "Import layers";
 

@@ -63,7 +63,7 @@ public class ConsoleMessageBoxStandard : AbstractMessageBoxStandard
             var line = Console.ReadLine();
 
             line = line?.Trim().ToLower();
-            
+
             switch (buttons)
             {
                 case MessageButtons.Ok:

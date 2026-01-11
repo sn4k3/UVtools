@@ -56,7 +56,7 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
     public override bool CanMask => false;
     public override bool CanCancel => false;
 
-    public override string IconClass => "fa-solid fa-blender";
+    public override string IconClass => "Blender";
     public override string Title => "Stir resin";
     public override string Description =>
         "Stir the resin in the VAT by moving the build plate up and down multiple times.\n" +

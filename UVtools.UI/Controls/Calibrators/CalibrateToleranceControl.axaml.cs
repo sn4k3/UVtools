@@ -94,7 +94,7 @@ public partial class CalibrateToleranceControl : ToolControl
         if (find is not null)
         {
             if (await ParentWindow.MessageBoxQuestion(
-                $"A profile with same name and/or values already exists, do you want to overwrite:\n{find}\nwith:\n{resize}\n?") != MessageButtonResult.Yes) return;
+                $"A profile with same name and/or values already exists, do you want to overwrite:\n{find}\nwith:\n{resize}\n?") != SukiMessageBoxResult.Yes) return;
 
             OperationProfiles.RemoveProfile(resize, false);
         }

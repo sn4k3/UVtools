@@ -30,7 +30,7 @@ public sealed class OperationBlur : Operation
 
     #region Overrides
 
-    public override string IconClass => "fa-solid fa-burn";
+    public override string IconClass => "WaterOpacity";
     public override string Title => "Blur";
     public override string Description =>
         $"Blur layer images by applying a low pass filter.\n\n" +
@@ -134,7 +134,7 @@ public sealed class OperationBlur : Operation
     #region Methods
 
     protected override bool ExecuteInternally(OperationProgress progress)
-    { 
+    {
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();

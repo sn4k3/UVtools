@@ -62,7 +62,7 @@ public sealed class OperationChangeResolution : Operation
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override bool CanROI => false;
-    public override string IconClass => "mdi-resize";
+    public override string IconClass => "Resize";
     public override string Title => "Change print resolution";
     public override string Description =>
         "Crops or resizes all layer images to fit an alternate print resolution.\n" +

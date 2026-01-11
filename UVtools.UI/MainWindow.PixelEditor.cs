@@ -11,6 +11,7 @@ using Avalonia.Input;
 using Avalonia.Threading;
 using Emgu.CV.CvEnum;
 using SkiaSharp;
+using SukiUI.MessageBox;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -146,7 +147,7 @@ public partial class MainWindow
     {
         if (Drawings.Count == 0) return;
         if (await this.MessageBoxQuestion($"Are you sure you want to clear {Drawings.Count} operations?",
-                "Clear pixel editor operations?") != MessageButtonResult.Yes) return;
+                "Clear pixel editor operations?") != SukiMessageBoxResult.Yes) return;
         Drawings.Clear();
         ShowLayer();
     }
@@ -539,14 +540,14 @@ public partial class MainWindow
             return;
         }
 
-        MessageButtonResult result;
+        SukiMessageBoxResult result;
 
         if (exitEditor)
         {
             result = await this.MessageBoxQuestion(
                 "There are edit operations that have not been applied.  " +
                 "Would you like to apply all operations before closing the editor?",
-                "Closing image editor?", MessageButtons.YesNoCancel);
+                "Closing image editor?", SukiMessageBoxButtons.YesNoCancel);
         }
         else
         {
@@ -557,16 +558,16 @@ public partial class MainWindow
 
             // For the "apply" case, We aren't exiting the editor, so map "No" to "Cancel" here
             // in order to prevent pixel history from being cleared.
-            result = result == MessageButtonResult.No ? MessageButtonResult.Cancel : MessageButtonResult.Yes;
+            result = result == SukiMessageBoxResult.No ? SukiMessageBoxResult.Cancel : SukiMessageBoxResult.Yes;
         }
 
-        if (result == MessageButtonResult.Cancel)
+        if (result == SukiMessageBoxResult.Cancel)
         {
             IsPixelEditorActive = true;
             return;
         }
 
-        if (result == MessageButtonResult.Yes)
+        if (result == SukiMessageBoxResult.Yes)
         {
             IsGUIEnabled = false;
             ShowProgressWindow("Drawing pixels");
@@ -633,7 +634,7 @@ public partial class MainWindow
         Drawings.Clear();
         ShowLayer();
 
-        if (exitEditor || (Settings.PixelEditor.CloseEditorOnApply && result == MessageButtonResult.Yes))
+        if (exitEditor || (Settings.PixelEditor.CloseEditorOnApply && result == SukiMessageBoxResult.Yes))
         {
             IsPixelEditorActive = false;
             if (!ReferenceEquals(LastSelectedTabItem, TabPixelEditor))

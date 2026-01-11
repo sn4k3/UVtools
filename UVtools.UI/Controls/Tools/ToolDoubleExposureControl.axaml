@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:UVtools.UI.Controls"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolDoubleExposureControl"
              x:DataType="tools:ToolDoubleExposureControl">
@@ -28,7 +29,7 @@
                        Text="1º exposure:"/>
 
 			<NumericUpDown Grid.Row="2" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_s"
+                           suki:NumericUpDownExtensions.Unit="s"
                            IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                            VerticalAlignment="Center"
                            Minimum="0.01"
@@ -37,7 +38,7 @@
                            Value="{Binding Operation.FirstBottomExposure}"/>
 
               <NumericUpDown Grid.Row="2" Grid.Column="4"
-                             Classes="ValueLabel ValueLabel_s"
+                             suki:NumericUpDownExtensions.Unit="s"
                               IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                               VerticalAlignment="Center"
                               Minimum="0.01"
@@ -50,7 +51,7 @@
                        Text="1º erode iterations:"/>
 
             <NumericUpDown Grid.Row="4" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_px"
+                           suki:NumericUpDownExtensions.Unit="px"
                            IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                            VerticalAlignment="Center"
                            Minimum="0"
@@ -59,7 +60,7 @@
                            Value="{Binding Operation.FirstBottomErodeIterations}"/>
 
             <NumericUpDown Grid.Row="4" Grid.Column="4"
-                           Classes="ValueLabel ValueLabel_px"
+                           suki:NumericUpDownExtensions.Unit="px"
                            IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                            VerticalAlignment="Center"
                            Minimum="0"
@@ -72,7 +73,7 @@
                        Text="2º exposure:"/>
 
             <NumericUpDown Grid.Row="6" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_s"
+                           suki:NumericUpDownExtensions.Unit="s"
                            IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                            VerticalAlignment="Center"
                            Minimum="0.01"
@@ -81,7 +82,7 @@
                            Value="{Binding Operation.SecondBottomExposure}"/>
 
             <NumericUpDown Grid.Row="6" Grid.Column="4"
-                           Classes="ValueLabel ValueLabel_s"
+                           suki:NumericUpDownExtensions.Unit="s"
                            VerticalAlignment="Center"
                            IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                            Minimum="0.01"
@@ -94,7 +95,7 @@
                        Text="2º erode iterations:"/>
 
             <NumericUpDown Grid.Row="8" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_px"
+                           suki:NumericUpDownExtensions.Unit="px"
                            IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                            VerticalAlignment="Center"
                            Minimum="0"
@@ -103,7 +104,7 @@
                            Value="{Binding Operation.SecondBottomErodeIterations}"/>
 
             <NumericUpDown Grid.Row="8" Grid.Column="4"
-                           Classes="ValueLabel ValueLabel_px"
+                           suki:NumericUpDownExtensions.Unit="px"
                            VerticalAlignment="Center"
                            IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                            Minimum="0"
@@ -112,7 +113,7 @@
                            Value="{Binding Operation.SecondNormalErodeIterations}"/>
         </Grid>
 
-        <ToggleSwitch 
+        <ToggleSwitch
             OffContent="Exposure the whole image for the second layer"
             OnContent="Exposure the difference between first and second layer for the second layer"
             IsChecked="{Binding Operation.SecondLayerDifference}"/>
@@ -122,11 +123,11 @@
         <TextBlock Grid.Row="0" Grid.Column="0"
                    VerticalAlignment="Center"
                    IsEnabled="{Binding Operation.SecondLayerDifference}"
-                   ToolTip.Tip="When the 'Exposure the difference between first and second layer for the second layer' is active, 
+                   ToolTip.Tip="When the 'Exposure the difference between first and second layer for the second layer' is active,
 this setting will further erode the layer producing a overlap of n pixel perimeters over the previous layer"
                    Text="Difference overlap by:"/>
         <NumericUpDown Grid.Row="0" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_px"
+                       suki:NumericUpDownExtensions.Unit="px"
                        VerticalAlignment="Center"
                        IsEnabled="{Binding Operation.SecondLayerDifference}"
                        Minimum="0"
@@ -141,7 +142,7 @@ this setting will further erode the layer producing a overlap of n pixel perimet
               Content="Use different settings for the second layer:"
               IsChecked="{Binding Operation.DifferentSettingsForSecondLayer}"/>
 
-      <Grid RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,10,Auto" 
+      <Grid RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,10,Auto"
             IsEnabled="{Binding Operation.DifferentSettingsForSecondLayer}">
         <CheckBox Grid.Row="0" Grid.Column="0"
                    ToolTip.Tip="Use a low value to speed up layers with same Z position, lift is not really required here.
@@ -152,7 +153,7 @@ this setting will further erode the layer producing a overlap of n pixel perimet
                    IsChecked="{Binding Operation.SecondLayerLiftHeightEnabled}"
                    VerticalAlignment="Center"/>
         <NumericUpDown Grid.Row="0" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Increment="0.5"
                        Minimum="0"
                        Maximum="1000"
@@ -175,7 +176,7 @@ this setting will further erode the layer producing a overlap of n pixel perimet
           </CheckBox.IsVisible>
         </CheckBox>
         <NumericUpDown Grid.Row="2" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Increment="0.5"
                        Minimum="0"
                        Maximum="1000"

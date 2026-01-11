@@ -142,7 +142,7 @@ public class OperationPixelArithmetic : Operation
     #endregion
 
     #region Overrides
-    public override string IconClass => "mdi-circle-opacity";
+    public override string IconClass => "CircleOpacity";
     public override string Title => "Pixel arithmetic";
 
     public override string Description =>

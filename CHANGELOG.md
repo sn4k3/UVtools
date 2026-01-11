@@ -1,6 +1,7 @@
 # Changelog
 
-## /12/2025 - v5.3.0
+## /12/2025 - v6.0.0
+- Redesign the UI and UX of the application to be more user friendly and modern
 - (Add) Layer compression level setting: Allow to set different compression levels for compressors (Default: Optimal) 
 - (Add) `UVtoolsCmd benchmark-layer-codecs` command: Benchmarks all available layer codecs and return the metrics
 - (Improvement) Optimize the layer previewer by caching some objects and use pattern rendering for background grid

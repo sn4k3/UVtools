@@ -3,6 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolRaftReliefControl"
              x:DataType="tools:ToolRaftReliefControl">
@@ -24,12 +26,12 @@
         Grid.Column="0"
         ToolTip.Tip="Defines the mask layer to use and ignore it white blobs on the raft.
 &#x0a;Often this is the first layer where raft ends and supports starts.
-&#x0a;Use '0' to auto detect the mask layer, otherwise if it fails or if you have multiple rafts with different heights 
+&#x0a;Use '0' to auto detect the mask layer, otherwise if it fails or if you have multiple rafts with different heights
 you must manually input the layer index of the last raft where it ends and supports starts."
         Text="Mask layer index:" VerticalAlignment="Center"/>
 
     <NumericUpDown Grid.Row="2" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_layers"
+                   suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
                    Minimum="0"
                    Maximum="{Binding SlicerFile.LastLayerIndex}"
                    Increment="1"
@@ -38,7 +40,7 @@ you must manually input the layer index of the last raft where it ends and suppo
                 Orientation="Horizontal" Spacing="5">
 
         <Button Content="Use current layer" Command="{Binding UseCurrentLayerAsMask}" />
-    
+
         <TextBlock VerticalAlignment="Center"
                    Text="(0 = Auto detect)" />
     </StackPanel>
@@ -49,7 +51,7 @@ you must manually input the layer index of the last raft where it ends and suppo
         Text="Ignore first:" VerticalAlignment="Center"/>
 
     <NumericUpDown Grid.Row="4" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_layers"
+                   suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
                    Minimum="0"
                    Maximum="255"
                    Increment="1"
@@ -65,7 +67,7 @@ you must manually input the layer index of the last raft where it ends and suppo
         Text="Pixel brightness:" VerticalAlignment="Center"/>
 
     <NumericUpDown Grid.Row="6" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_sun"
+                   suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Brightness5}"
                    Minimum="0"
                    Maximum="255"
                    Increment="1"
@@ -79,7 +81,7 @@ you must manually input the layer index of the last raft where it ends and suppo
     </NumericUpDown>
 
     <NumericUpDown Grid.Row="6" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_sun"
+                   suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Brightness5}"
                    Minimum="0"
                    Maximum="255"
                    Increment="1"
@@ -107,7 +109,7 @@ you must manually input the layer index of the last raft where it ends and suppo
     </TextBlock>
 
     <TextBlock Grid.Row="8" Grid.Column="0"
-               ToolTip.Tip="Raft will be replaced by the present supports and then dilated by this value to thicken the supports and increase the adhesion. 
+               ToolTip.Tip="Raft will be replaced by the present supports and then dilated by this value to thicken the supports and increase the adhesion.
 &#x0a;Use large numbers with tiny supports for best adhesion."
                Text="Dilate supports by:" VerticalAlignment="Center">
         <TextBlock.IsVisible>
@@ -123,7 +125,7 @@ you must manually input the layer index of the last raft where it ends and suppo
                Text="Tab triangle base:" VerticalAlignment="Center"/>
 
     <NumericUpDown Grid.Row="8" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_px"
+                   suki:NumericUpDownExtensions.Unit="px"
                    Minimum="0"
                    Maximum="255"
                    Increment="1"
@@ -132,7 +134,7 @@ you must manually input the layer index of the last raft where it ends and suppo
 
 
       <NumericUpDown Grid.Row="8" Grid.Column="2"
-                     Classes="ValueLabel ValueLabel_px"
+                     suki:NumericUpDownExtensions.Unit="px"
                      Minimum="5"
                      Maximum="65535"
                      Increment="1"
@@ -160,7 +162,7 @@ you must manually input the layer index of the last raft where it ends and suppo
                Text="Tab triangle height:" VerticalAlignment="Center"/>
 
     <NumericUpDown Grid.Row="10" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_px"
+                   suki:NumericUpDownExtensions.Unit="px"
                    Minimum="1"
                    Maximum="255"
                    Increment="1"
@@ -174,7 +176,7 @@ you must manually input the layer index of the last raft where it ends and suppo
     </NumericUpDown>
 
     <NumericUpDown Grid.Row="10" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_times"
+                   suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Multiply}"
                    Minimum="0"
                    Maximum="255"
                    Increment="1"
@@ -189,7 +191,7 @@ you must manually input the layer index of the last raft where it ends and suppo
               IsChecked="{Binding Operation.LinkedExternalSupports}"/>
 
     <NumericUpDown Grid.Row="10" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_px"
+                   suki:NumericUpDownExtensions.Unit="px"
                    Minimum="5"
                    Maximum="65535"
                    Increment="1"
@@ -207,7 +209,7 @@ you must manually input the layer index of the last raft where it ends and suppo
                IsVisible="{Binding Operation.IsLinkedLines}"/>
 
     <NumericUpDown Grid.Row="12" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_px"
+                   suki:NumericUpDownExtensions.Unit="px"
                    Minimum="10"
                    Maximum="255"
                    Increment="1"
@@ -215,7 +217,7 @@ you must manually input the layer index of the last raft where it ends and suppo
                    IsVisible="{Binding Operation.IsRelief}"/>
 
     <NumericUpDown Grid.Row="12" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_px"
+                   suki:NumericUpDownExtensions.Unit="px"
                    Minimum="4"
                    Maximum="255"
                    Increment="1"
@@ -228,7 +230,7 @@ you must manually input the layer index of the last raft where it ends and suppo
       IsVisible="{Binding Operation.IsRelief}"/>
 
     <NumericUpDown Grid.Row="14" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_px"
+                   suki:NumericUpDownExtensions.Unit="px"
                    Minimum="10"
                    Maximum="255"
                    Increment="1"

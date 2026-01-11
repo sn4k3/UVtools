@@ -1,26 +1,22 @@
-﻿/*
- *                     GNU AFFERO GENERAL PUBLIC LICENSE
- *                       Version 3, 19 November 2007
- *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
- *  Everyone is permitted to copy and distribute verbatim copies
- *  of this license document, but changing it is not allowed.
- */
-
 using Avalonia.Controls;
+using Avalonia.Platform.Storage;
+using SukiUI.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Avalonia.Platform.Storage;
 using UVtools.Core.FileFormats;
-using UVtools.UI.Extensions;
-using Size = Avalonia.Size;
 
-namespace UVtools.UI.Controls;
+namespace UVtools.UI.Windows;
 
-public class WindowEx : Window, INotifyPropertyChanged
+public partial class GenericWindow : SukiWindow, INotifyPropertyChanged
 {
+    public GenericWindow()
+    {
+        InitializeComponent();
+    }
+
     #region BindableBase
     /// <summary>
     ///     Multicast event for property change notifications.
@@ -40,7 +36,7 @@ public class WindowEx : Window, INotifyPropertyChanged
         RaisePropertyChanged(propertyName);
         return true;
     }
-    
+
     protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
     {
     }
@@ -61,18 +57,6 @@ public class WindowEx : Window, INotifyPropertyChanged
     }
     #endregion
 
-    #region Enum
-
-    public enum WindowConstrainsMaxSizeType : byte
-    {
-        None,
-        UserSettings,
-        Ratio
-    }
-    #endregion
-
-    protected override Type StyleKeyOverride => typeof(Window);
-
     public DialogResults DialogResult { get; set; } = DialogResults.Unknown;
     public enum DialogResults
     {
@@ -80,25 +64,6 @@ public class WindowEx : Window, INotifyPropertyChanged
         OK,
         Cancel
     }
-
-    public double WindowMaxWidth => this.GetScreenWorkingArea().Width - UserSettings.Instance.General.WindowsHorizontalMargin;
-
-    public double WindowMaxHeight => this.GetScreenWorkingArea().Height - UserSettings.Instance.General.WindowsVerticalMargin;
-
-    public Size WindowMaxSize
-    {
-        get
-        {
-            var size = this.GetScreenWorkingArea();
-            return new Size(size.Width - UserSettings.Instance.General.WindowsHorizontalMargin,
-                this.GetScreenWorkingArea().Height - UserSettings.Instance.General.WindowsVerticalMargin);
-        }
-    }
-
-    public WindowConstrainsMaxSizeType WindowConstrainMaxSize { get; set; } = WindowConstrainsMaxSizeType.UserSettings;
-
-    public double WindowsWidthMaxSizeRatio { get; set; } = 1;
-    public double WindowsHeightMaxSizeRatio { get; set; } = 1;
 
     public bool IsDebug
     {
@@ -112,62 +77,6 @@ public class WindowEx : Window, INotifyPropertyChanged
     {
         get => App.SlicerFile;
         set => App.SlicerFile = value;
-    }
-
-    public WindowEx()
-    {
-    }
-
-    protected override void OnInitialized()
-    {
-        ConstainsWindowMaxSize();
-        base.OnInitialized();
-    }
-
-    protected override void OnOpened(EventArgs e)
-    {
-        // Fix positions and sizes
-        if (WindowState == WindowState.Normal)
-        {
-            if (Position.X < 0) Position = Position.WithX(0);
-            if (Position.Y < 0) Position = Position.WithY(0);
-
-            if ((SizeToContent & SizeToContent.Height) == 0)
-            {
-                var workingArea = this.GetScreenWorkingArea();
-                if (Bounds.Bottom > workingArea.Height)
-                {
-                    Height = workingArea.Height - Position.Y;
-                }
-            }
-        }
-
-        //Debug.WriteLine("OnOpened");
-        base.OnOpened(e);
-    }
-
-    public void ConstainsWindowMaxSize()
-    {
-        /*if (WindowStartupLocation == WindowStartupLocation.CenterOwner && Owner is null)
-        {
-            WindowStartupLocation = WindowStartupLocation.CenterScreen;
-        }*/
-
-        if (!CanResize && WindowState == WindowState.Normal && WindowConstrainMaxSize != WindowConstrainsMaxSizeType.None)
-        {
-            switch (WindowConstrainMaxSize)
-            {
-                case WindowConstrainsMaxSizeType.UserSettings:
-                    MaxWidth = WindowMaxWidth;
-                    MaxHeight = WindowMaxHeight;
-                    break;
-                case WindowConstrainsMaxSizeType.Ratio:
-                    var size = this.GetScreenWorkingArea();
-                    if (WindowsWidthMaxSizeRatio is > 0 and < 1) MaxWidth = size.Width * WindowsWidthMaxSizeRatio;
-                    if (WindowsHeightMaxSizeRatio is > 0 and < 1) MaxHeight = size.Height * WindowsHeightMaxSizeRatio;
-                    break;
-            }
-        }
     }
 
     public void CloseWithResult()
@@ -230,7 +139,7 @@ public class WindowEx : Window, INotifyPropertyChanged
         {
             defaultExt = filters[0].Patterns![0][2..];
         }
-        
+
         return StorageProvider.SaveFilePickerAsync(new()
         {
             SuggestedStartLocation = directory,
@@ -280,7 +189,7 @@ public class WindowEx : Window, INotifyPropertyChanged
         IStorageFolder? storageFolder = null;
         return OpenFilePickerAsync(storageFolder, filters, title, allowMultiple);
     }
-    
+
     public Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(IStorageFolder? directory = null, string? title = null, bool allowMultiple = false)
     {
         return StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions

@@ -107,7 +107,7 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
     public override bool CanROI => false;
     public override bool CanMask => false;
 
-    public override string IconClass => "fa-solid fa-bars-staggered";
+    public override string IconClass => "SunClock ";
     public override string Title => "Phased exposure";
     public override string Description =>
         "The phased exposure method clones the selected layer range and print the same layer with different exposure times and strategies.\n" +

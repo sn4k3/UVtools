@@ -34,7 +34,7 @@ public sealed class OperationLayerExportHeatMap : Operation
 
     public override bool CanHaveProfiles => false;
 
-    public override string IconClass => "fa-solid fa-file-image";
+    public override string IconClass => "Image360";
     public override string Title => "Export layers to heat map";
 
     public override string Description =>

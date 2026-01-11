@@ -1,10 +1,9 @@
 using UVtools.Core.FileFormats;
-using UVtools.UI.Controls;
 using ZLinq;
 
 namespace UVtools.UI.Windows;
 
-public partial class VersionSelectorWindow : WindowEx
+public partial class VersionSelectorWindow : GenericWindow
 {
     private uint _version;
 

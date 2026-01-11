@@ -29,7 +29,7 @@ public sealed class OperationLayerRemove : Operation
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.Current;
     public override bool CanROI => false;
     public override bool PassActualLayerIndex => true;
-    public override string IconClass => "mdi-layers-remove";
+    public override string IconClass => "LayersRemove";
     public override string Title => "Remove layers";
 
     public override string Description =>

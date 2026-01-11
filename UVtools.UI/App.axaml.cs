@@ -12,8 +12,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Styling;
-using Avalonia.Themes.Fluent;
 using Emgu.CV;
 using System;
 using System.ComponentModel;
@@ -23,12 +21,12 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Material.Icons;
 using Updatum;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
 using UVtools.Core.SystemOS;
-using UVtools.UI.Extensions;
 using UVtools.UI.Structures;
 using UVtools.UI.Windows;
 using ZLinq;
@@ -36,7 +34,7 @@ using Bitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace UVtools.UI;
 
-public class App : Application
+public partial class App : Application
 {
     public enum ApplicationTheme
     {
@@ -56,16 +54,8 @@ public class App : Application
         SimpleDark*/
     }
 
-    private static readonly Styles ThemeStylesContainer = [];
-    public static FluentTheme _fluentTheme = null!;
-    //public static SimpleTheme _simpleTheme = null!;
-    private static IStyle _colorPickerFluent = null!, _colorPickerSimple = null!;
-    private static IStyle _dataGridFluent = null!, _dataGridSimple = null!;
-    //private static IStyle _avaloniaEditFluent, _avaloniaEditSimple = null!;
-
     private static ApplicationTheme? _prevTheme;
 
-    //public static ThemeSelector ThemeSelector { get; set; }
     public static MainWindow MainWindow = null!;
     public static FileFormat? SlicerFile;
 
@@ -77,90 +67,14 @@ public class App : Application
         DownloadProgressUpdateFrequencySeconds = 0.1 // 10 FPS
     };
 
-    public static void ApplyTheme()
-    {
-        var app = Current!;
-        var theme = UserSettings.Instance.General.Theme;
-        if (theme == _prevTheme) return;
-
-        var prevTheme = _prevTheme;
-        _prevTheme = theme;
-        var shouldReopenWindow = prevTheme is not null && prevTheme.ToString()![0] != theme.ToString()[0];
-
-        if (ThemeStylesContainer.Count == 0)
-        {
-            ThemeStylesContainer.Add(new Style());
-            ThemeStylesContainer.Add(new Style());
-            ThemeStylesContainer.Add(new Style());
-        }
-
-        _fluentTheme.DensityStyle = UserSettings.Instance.General.ThemeDensity;
-
-        bool isFluentTheme = theme is ApplicationTheme.FluentSystem or ApplicationTheme.FluentLight or ApplicationTheme.FluentDark;
-        //bool isLightTheme = theme is ApplicationTheme.FluentLight //or ApplicationTheme.SimpleLight
-        //                    || (theme == ApplicationTheme.FluentSystem && app.ActualThemeVariant == ThemeVariant.Light);
-        //                    //|| (theme == ApplicationTheme.SimpleSystem && app.ActualThemeVariant == ThemeVariant.Light);
-
-        var styleCount = 0;
-        if (isFluentTheme)
-        {
-            ThemeStylesContainer[styleCount++] = _fluentTheme;
-            ThemeStylesContainer[styleCount++] = _colorPickerFluent;
-            ThemeStylesContainer[styleCount++] = _dataGridFluent;
-            //ThemeStylesContainer[styleCount++] = _avaloniaEditFluent;
-        }
-        else
-        {
-            //ThemeStylesContainer[styleCount++] = _simpleTheme;
-            ThemeStylesContainer[styleCount++] = _colorPickerSimple;
-            ThemeStylesContainer[styleCount++] = _dataGridSimple;
-            //ThemeStylesContainer[styleCount++] = _avaloniaEditSimple;
-        }
-
-        app.RequestedThemeVariant = theme switch
-        {
-            ApplicationTheme.FluentLight => ThemeVariant.Light,
-            ApplicationTheme.FluentDark => ThemeVariant.Dark,
-            //ApplicationTheme.SimpleLight => ThemeVariant.Light,
-            //ApplicationTheme.SimpleDark => ThemeVariant.Dark,
-            _ => app.RequestedThemeVariant
-        };
-
-        if (shouldReopenWindow)
-        {
-            if (app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime && desktopLifetime.MainWindow is MainWindow mainWindow)
-            {
-                mainWindow.MessageBoxInfo(
-                    "The theme has changed to a different theme type, please save your work and restart program in order to apply the new theme.",
-                    "Theme changing requires restart.").ConfigureAwait(true);
-                //app.Styles.RemoveAt(0);
-                //app.Styles.Insert(0, _themeStylesContainer);
-                /*var oldWindow = desktopLifetime.MainWindow;
-                var newWindow = new MainWindow();
-                desktopLifetime.MainWindow = newWindow;
-                desktopLifetime.MainWindow = oldWindow;
-                newWindow.Close();*/
-            }
-        }
-    }
 
     public override void Initialize()
     {
-        Styles.Add(ThemeStylesContainer);
+        //Styles.Add(ThemeStylesContainer);
         AvaloniaXamlLoader.Load(this);
-
-        _fluentTheme = (FluentTheme)Resources["FluentTheme"]!;
-        //_simpleTheme = (SimpleTheme)Resources["SimpleTheme"]!;
-        _colorPickerFluent = (IStyle)Resources["ColorPickerFluent"]!;
-        _colorPickerSimple = (IStyle)Resources["ColorPickerSimple"]!;
-        _dataGridFluent = (IStyle)Resources["DataGridFluent"]!;
-        _dataGridSimple = (IStyle)Resources["DataGridSimple"]!;
-        //_avaloniaEditFluent = (IStyle)Resources["AvaloniaEditFluent"]!;
-        //_avaloniaEditSimple = (IStyle)Resources["AvaloniaEditSimple"]!;
 
         UserSettings.Load();
         UserSettings.SetVersion();
-        ApplyTheme();
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -168,6 +82,8 @@ public class App : Application
         // Line below is needed to remove Avalonia data validation.
         // Without this line you will get duplicate validations from both Avalonia and CT
         //BindingPlugins.DataValidators.RemoveAt(0);
+
+        SetupTheme();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -201,15 +117,15 @@ public class App : Application
                 using var reader = new StringReader(bugDescription);
                 MessageWindow window = null!;
                 window = new MessageWindow($"{About.SoftwareWithVersion} - Crash report",
-                    "fa-regular fa-frown",
+                    MaterialIconKind.EmojiFrownOutline,
                     $"{About.Software} crashed due an unexpected {category.ToLowerInvariant()} error.\nYou can report this error if you find necessary.\nFind more details below:\n",
                     bugDescription,
                     TextWrapping.Wrap,
                     [
-                        MessageWindow.CreateLinkButtonAction("Report", "fa-solid fa-bug", $"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title={HttpUtility.UrlEncode($"[Crash] {reader.ReadLine()}")}&system={HttpUtility.UrlEncode(system)}&bug_description={HttpUtility.UrlEncode($"```\n{bugDescription}\n```")}", () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
-                        MessageWindow.CreateLinkButtonAction("Help", "fa-solid fa-question", "https://github.com/sn4k3/UVtools/discussions/categories/q-a", () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
-                        MessageWindow.CreateButtonAction("Restart", "fa-solid fa-redo-alt", () => SystemAware.StartThisApplication()),
-                        MessageWindow.CreateCloseButton("fa-solid fa-sign-out-alt")
+                        MessageWindow.CreateLinkButtonAction("Report", MaterialIconKind.Bug, $"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title={HttpUtility.UrlEncode($"[Crash] {reader.ReadLine()}")}&system={HttpUtility.UrlEncode(system)}&bug_description={HttpUtility.UrlEncode($"```\n{bugDescription}\n```")}", () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
+                        MessageWindow.CreateLinkButtonAction("Help", MaterialIconKind.QuestionMark, "https://github.com/sn4k3/UVtools/discussions/categories/q-a", () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
+                        MessageWindow.CreateButtonAction("Restart", MaterialIconKind.Restart, () => SystemAware.StartThisApplication()),
+                        MessageWindow.CreateCloseButton(MaterialIconKind.SignOut)
                     ])
                 {
                     AboutButtonIsVisible = true
@@ -316,14 +232,14 @@ public class App : Application
                    "Check the manual page at 'Requirements' section for help.";
 
         return new MessageWindow($"{About.SoftwareWithVersion} is unable to run",
-            "fa-regular fa-frown",
+            MaterialIconKind.EmojiFrownOutline,
             $"{About.SoftwareWithVersionArch} [{SystemAware.OperatingSystemName}]\nUnable to run due one or more missing dependencies.\nTriggered by: libcvextern  (OpenCV)",
             message,
             TextWrapping.Wrap,
             [
-                MessageWindow.CreateLinkButton("Open manual", "fa-brands fa-edge", "https://github.com/sn4k3/UVtools#requirements"),
-                MessageWindow.CreateLinkButton("Ask for help", "fa-solid fa-question", "https://github.com/sn4k3/UVtools/discussions/categories/q-a"),
-                MessageWindow.CreateCloseButton("fa-solid fa-sign-out-alt")
+                MessageWindow.CreateLinkButton("Open manual", MaterialIconKind.MicrosoftEdge, "https://github.com/sn4k3/UVtools#requirements"),
+                MessageWindow.CreateLinkButton("Ask for help", MaterialIconKind.QuestionMark, "https://github.com/sn4k3/UVtools/discussions/categories/q-a"),
+                MessageWindow.CreateCloseButton(MaterialIconKind.SignOut)
             ])
         {
             AboutButtonIsVisible = true

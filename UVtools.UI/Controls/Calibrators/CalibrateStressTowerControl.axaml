@@ -3,6 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:calibrators="clr-namespace:UVtools.UI.Controls.Calibrators"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
              x:Class="UVtools.UI.Controls.Calibrators.CalibrateStressTowerControl"
              x:DataType="calibrators:CalibrateStressTowerControl">
@@ -23,7 +25,7 @@
                   ToolTip.Tip="The printer display width. Required to calculate the pixels per mm."
                    Text="Display width:"/>
         <NumericUpDown Grid.Row="0" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Increment="0.1"
                        Minimum="0"
                        Maximum="10000"
@@ -35,7 +37,7 @@
                    ToolTip.Tip="The printer display height. Required to calculate the pixels per mm."
                    Text="Display height:"/>
         <NumericUpDown Grid.Row="0" Grid.Column="6"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Increment="0.1"
                        Minimum="0"
                        Maximum="10000"
@@ -46,7 +48,7 @@
                    VerticalAlignment="Center"
                    Text="Layer height:"/>
         <NumericUpDown Grid.Row="2" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Increment="0.01"
                        Minimum="0.001"
                        Maximum="0.30"
@@ -57,7 +59,7 @@
                    VerticalAlignment="Center"
                    Text="Bottom layers:"/>
         <NumericUpDown Grid.Row="2" Grid.Column="6"
-                       Classes="ValueLabel ValueLabel_layers"
+                       suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
                        Increment="1"
                        Minimum="1"
                        Maximum="1000"
@@ -67,7 +69,7 @@
                    VerticalAlignment="Center"
                    Text="Bottom exposure:"/>
         <NumericUpDown Grid.Row="4" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Increment="0.5"
                        Minimum="0.1"
                        Maximum="200"
@@ -78,7 +80,7 @@
                    VerticalAlignment="Center"
                    Text="Normal exposure:"/>
         <NumericUpDown Grid.Row="4" Grid.Column="6"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Increment="0.5"
                        Minimum="0.1"
                        Maximum="200"
@@ -89,7 +91,7 @@
                    VerticalAlignment="Center"
                    Text="Base height:"/>
         <NumericUpDown Grid.Row="6" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Increment="1"
                        Minimum="0"
                        Maximum="100"
@@ -100,7 +102,7 @@
                    VerticalAlignment="Center"
                    Text="Base diameter:"/>
         <NumericUpDown Grid.Row="6" Grid.Column="6"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Increment="1"
                        Minimum="1"
                        Maximum="10000"
@@ -111,18 +113,18 @@
                    VerticalAlignment="Center"
                    Text="Ceil height:"/>
         <NumericUpDown Grid.Row="8" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Increment="1"
                        Minimum="0"
                        Maximum="100"
                        FormatString="F2"
                        Value="{Binding Operation.CeilHeight}"/>
-        
+
         <TextBlock Grid.Row="8" Grid.Column="4"
                    VerticalAlignment="Center"
                    Text="Body height:"/>
         <NumericUpDown Grid.Row="8" Grid.Column="6"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Increment="1"
                        Minimum="0"
                        Maximum="10000"
@@ -154,14 +156,14 @@
 
         </StackPanel>
 
-        
+
 
         <TextBlock Grid.Row="10" Grid.Column="0"
                    VerticalAlignment="Center"
                    ToolTip.Tip="Chamfer the bottom layers"
                    Text="Chamfer layers:"/>
         <NumericUpDown Grid.Row="10" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_layers"
+                       suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
                        Increment="1"
                        Minimum="0"
                        Maximum="255"
@@ -192,7 +194,7 @@
                        Text="Number of spirals:"
                        VerticalAlignment="Center"/>
             <NumericUpDown Grid.Row="0" Grid.Column="2"
-                             
+
                              Increment="1"
                              Minimum="1"
                              Maximum="10"
@@ -213,7 +215,7 @@
                        Text="Spiral diameter:"
                        VerticalAlignment="Center"/>
             <NumericUpDown Grid.Row="2" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_mm"
+                           suki:NumericUpDownExtensions.Unit="mm"
                            Increment="1"
                            Minimum="0.1"
                            Maximum="10000"
@@ -225,7 +227,7 @@
                        ToolTip.Tip="Spirals will turn this angle per layer."
                        VerticalAlignment="Center"/>
             <NumericUpDown Grid.Row="2" Grid.Column="6"
-                           Classes="ValueLabel ValueLabel_deg"
+                           suki:NumericUpDownExtensions.Unit="º"
                            Increment="1"
                            Minimum="0.01"
                            Maximum="359.99"

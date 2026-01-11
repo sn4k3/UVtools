@@ -3,11 +3,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolIPrintedThisFileControl"
              x:DataType="tools:ToolIPrintedThisFileControl">
-  
-    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" 
+
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
           ColumnDefinitions="Auto,10,Auto">
         <TextBlock Grid.Row="0" Grid.Column="0"
                    VerticalAlignment="Center"
@@ -23,8 +25,8 @@
                    VerticalAlignment="Center"
                    Text="Volume:"/>
 
-        <NumericUpDown Grid.Row="2" Grid.Column="2" 
-                       Classes="ValueLabel ValueLabel_ml"
+        <NumericUpDown Grid.Row="2" Grid.Column="2"
+                       suki:NumericUpDownExtensions.Unit="ml"
                        HorizontalAlignment="Left"
                        Minimum="1"
                        Maximum="1000000"
@@ -32,7 +34,7 @@
                        FormatString="F3"
                        Width="250"
                        Value="{Binding Operation.Volume}"/>
-        
+
 
         <TextBlock Grid.Row="4" Grid.Column="0"
                    VerticalAlignment="Center"
@@ -40,7 +42,7 @@
 
         <StackPanel Grid.Row="4" Grid.Column="2"
                     Orientation="Horizontal" Spacing="5">
-            <NumericUpDown Classes="ValueLabel ValueLabel_s"
+            <NumericUpDown suki:NumericUpDownExtensions.Unit="s"
                            HorizontalAlignment="Left"
                            Minimum="1"
                            Maximum="100000000"
@@ -59,7 +61,7 @@
                    Text="Multiplier:"/>
 
             <NumericUpDown Grid.Row="6" Grid.Column="2"
-                           Classes="ValueLabel_px ValueLabel_times"
+                           suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Multiply}"
                            HorizontalAlignment="Left"
                            Minimum="0.01"
                            Maximum="500"

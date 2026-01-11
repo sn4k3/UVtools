@@ -2,8 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:i="https://github.com/projektanker/icons.avalonia"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolPatternControl"
              x:DataType="tools:ToolPatternControl">
@@ -49,7 +49,7 @@
         Padding="10,5"
         ToolTip.Tip="Fill spacing given the current number of columns, object size and left over space."
         Command="{Binding Operation.FillColumnSpacing}"
-        i:Attached.Icon="fa-solid fa-expand-alt"/>
+        Content="{icon:MaterialIconExt Kind=ArrowExpandAll}"/>
       <TextBlock
         Grid.Column="10"
         Grid.Row="0"
@@ -88,7 +88,7 @@
         Padding="10,5"
         ToolTip.Tip="Fill spacing given the current number of rows, object size and left over space."
         Command="{Binding Operation.FillRowSpacing}"
-        i:Attached.Icon="fa-solid fa-expand-alt"/>
+        Content="{icon:MaterialIconExt Kind=ArrowExpandAll}"/>
       <TextBlock
         Grid.Column="10"
         Grid.Row="2"
@@ -107,7 +107,7 @@
       </StackPanel>
 
 
-      <Grid 
+      <Grid
         Grid.Column="2"
         RowDefinitions="Auto,Auto,Auto"
               ColumnDefinitions="Auto,Auto,Auto,5,Auto"
@@ -209,8 +209,8 @@
           Content="Computed center"
           />
       </Grid>
-     
-    </Grid>   
-    
+
+    </Grid>
+
   </StackPanel>
 </UserControl>

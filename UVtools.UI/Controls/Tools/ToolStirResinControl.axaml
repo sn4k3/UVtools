@@ -3,10 +3,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolStirResinControl"
              x:DataType="tools:ToolStirResinControl"
-             Width="550">
+             Width="500">
 
     <StackPanel Orientation="Vertical" Spacing="20">
         <SelectableTextBlock
@@ -16,7 +18,8 @@
             Text="Warning: Your printer and/or file format can not use layers in same Z position, as so, each stir/layer will increment in height.
 &#x0a;Make sure the total stirs are below the set lift height."/>
 
-        <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*">
+        <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+              ColumnDefinitions="Auto,10,*">
             <TextBlock Grid.Row="0" Grid.Column="0"
                        VerticalAlignment="Center"
                        Text="Stirring time:" />
@@ -41,7 +44,7 @@
 
             <Grid Grid.Row="4" Grid.Column="2"
                   RowDefinitions="Auto" ColumnDefinitions="*,20,Auto">
-                <NumericUpDown Grid.Row="0" Grid.Column="0" Classes="ValueLabel ValueLabel_times"
+                <NumericUpDown Grid.Row="0" Grid.Column="0" suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Multiply}"
                                VerticalAlignment="Center"
                                Minimum="1"
                                Maximum="65535"
@@ -62,7 +65,7 @@
                        ToolTip.Tip="Time in seconds to exposure the dummy layer.
 &#x0a;Use the lowest value possible."/>
             <NumericUpDown Grid.Row="6" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_s"
+                           suki:NumericUpDownExtensions.Unit="s"
                            VerticalAlignment="Center"
                            Minimum="0"
                            Maximum="1000"
@@ -82,7 +85,7 @@
                        ToolTip.Tip="The lift height in millimeters to raise the plate between stirs.
 &#x0a;Use a height above your resin level."/>
             <NumericUpDown Grid.Row="8" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_mm"
+                           suki:NumericUpDownExtensions.Unit="mm"
                            VerticalAlignment="Center"
                            Minimum="0"
                            Maximum="1000"
@@ -100,7 +103,7 @@
                        IsEnabled="{Binding SlicerFile.CanUseAnyLiftSpeed}"
                        Text="Lift speed:" />
             <NumericUpDown Grid.Row="10" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_mmmin"
+                           suki:NumericUpDownExtensions.Unit="mm/min"
                            VerticalAlignment="Center"
                            Minimum="1"
                            Maximum="1000"
@@ -118,7 +121,7 @@
                        IsEnabled="{Binding SlicerFile.CanUseAnyRetractSpeed}"
                        Text="Retract speed:" />
             <NumericUpDown Grid.Row="12" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_mmmin"
+                           suki:NumericUpDownExtensions.Unit="mm/min"
                            VerticalAlignment="Center"
                            Minimum="1"
                            Maximum="1000"
@@ -143,7 +146,7 @@
                 </TextBlock.IsEnabled>
             </TextBlock>
             <NumericUpDown Grid.Row="14" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_s"
+                           suki:NumericUpDownExtensions.Unit="s"
                            VerticalAlignment="Center"
                            Minimum="0"
                            Maximum="3600"
@@ -169,7 +172,7 @@
                        Text="Wait time after lift:"
                        ToolTip.Tip="The time in seconds to wait when the build plate is raised (After lift / before retract)."/>
             <NumericUpDown Grid.Row="16" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_s"
+                           suki:NumericUpDownExtensions.Unit="s"
                            VerticalAlignment="Center"
                            Minimum="0"
                            Maximum="3600"

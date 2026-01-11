@@ -103,7 +103,7 @@ public class OperationPCBExposure : Operation
     #region Overrides
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    public override string IconClass => "fa-solid fa-microchip";
+    public override string IconClass => "Chip";
     public override string Title => "PCB exposure";
     public override string Description =>
         "Converts a gerber file to a pixel perfect image given your printer LCD/resolution to exposure the copper traces.\n" +

@@ -3,6 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:calibrators="clr-namespace:UVtools.UI.Controls.Calibrators"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Calibrators.CalibrateLiftHeightControl"
              x:DataType="calibrators:CalibrateLiftHeightControl">
@@ -15,7 +17,7 @@
                    VerticalAlignment="Center"
                    Text="Layer height:"/>
         <NumericUpDown Grid.Row="0" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Increment="0.01"
                        Minimum="0.001"
                        Maximum="0.30"
@@ -43,7 +45,7 @@
                    VerticalAlignment="Center"
                    Text="Bottom layers:"/>
         <NumericUpDown Grid.Row="2" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_layers"
+                       suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
                        Increment="1"
                        Minimum="1"
                        Maximum="1000"
@@ -58,7 +60,7 @@
                    VerticalAlignment="Center"
                    Text="Normal layers:"/>
         <NumericUpDown Grid.Row="2" Grid.Column="8"
-                       Classes="ValueLabel ValueLabel_layers"
+                       suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
                        Increment="1"
                        Minimum="1"
                        Maximum="1000"
@@ -71,7 +73,7 @@
                    VerticalAlignment="Center"
                    Text="Bottom exposure:"/>
         <NumericUpDown Grid.Row="4" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Increment="0.5"
                        Minimum="0.1"
                        Maximum="200"
@@ -81,7 +83,7 @@
                    VerticalAlignment="Center"
                    Text="Normal exposure:"/>
         <NumericUpDown Grid.Row="4" Grid.Column="8"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Increment="0.5"
                        Minimum="0.1"
                        Maximum="200"
@@ -92,7 +94,7 @@
                    VerticalAlignment="Center"
                    Text="Bottom lift height:"/>
         <NumericUpDown Grid.Row="6" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Increment="0.5"
                        Minimum="0.5"
                        Maximum="50"
@@ -103,7 +105,7 @@
                    VerticalAlignment="Center"
                    Text="Normal lift height:"/>
         <NumericUpDown Grid.Row="6" Grid.Column="8"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Increment="0.5"
                        Minimum="0.5"
                        Maximum="50"
@@ -115,7 +117,7 @@
                    VerticalAlignment="Center"
                    Text="Bottom lift speed:"/>
         <NumericUpDown Grid.Row="8" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_mmmin"
+                       suki:NumericUpDownExtensions.Unit="mm/min"
                        Increment="0.5"
                        Minimum="0.5"
                        Maximum="1000"
@@ -126,7 +128,7 @@
                    VerticalAlignment="Center"
                    Text="Normal lift speed:"/>
         <NumericUpDown Grid.Row="8" Grid.Column="8"
-                       Classes="ValueLabel ValueLabel_mmmin"
+                       suki:NumericUpDownExtensions.Unit="mm/min"
                        Increment="0.5"
                        Minimum="0.5"
                        Maximum="1000"
@@ -138,7 +140,7 @@
                    VerticalAlignment="Center"
                    Text="Retract speed:"/>
         <NumericUpDown Grid.Row="10" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_mmmin"
+                       suki:NumericUpDownExtensions.Unit="mm/min"
                        Increment="0.5"
                        Minimum="0.5"
                        Maximum="1000"
@@ -149,7 +151,7 @@
                    VerticalAlignment="Center"
                    Text="Left/right margin:"/>
         <NumericUpDown Grid.Row="12" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_px"
+                       suki:NumericUpDownExtensions.Unit="px"
                        Increment="5"
                        Minimum="0"
                        Maximum="{Binding Operation.MaxLeftRightMargin}"
@@ -159,7 +161,7 @@
                    VerticalAlignment="Center"
                    Text="Top/right margin:"/>
         <NumericUpDown Grid.Row="12" Grid.Column="8"
-                       Classes="ValueLabel ValueLabel_px"
+                       suki:NumericUpDownExtensions.Unit="px"
                        Increment="5"
                        Minimum="0"
                        Maximum="{Binding Operation.MaxTopBottomMargin}"
@@ -175,7 +177,7 @@
                    VerticalAlignment="Center"
                    Text="Decreasing factor:"/>
         <NumericUpDown Grid.Row="16" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_percent"
+                       suki:NumericUpDownExtensions.Unit="%"
                        IsEnabled="{Binding Operation.DecreaseImage}"
                        Increment="1"
                        Minimum="1"
@@ -188,7 +190,7 @@
                    HorizontalAlignment="Right"
                    Text="Decrease down to:"/>
         <NumericUpDown Grid.Row="16" Grid.Column="8"
-                       Classes="ValueLabel ValueLabel_percent"
+                       suki:NumericUpDownExtensions.Unit="%"
                        IsEnabled="{Binding Operation.DecreaseImage}"
                        Increment="1"
                        Minimum="1"

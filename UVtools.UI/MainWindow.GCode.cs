@@ -5,12 +5,11 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
-using Avalonia;
-using Avalonia.Controls;
+using Avalonia.Platform.Storage;
+using SukiUI.MessageBox;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Avalonia.Platform.Storage;
 using UVtools.Core.Dialogs;
 using UVtools.Core.SystemOS;
 using UVtools.UI.Extensions;
@@ -58,7 +57,7 @@ public partial class MainWindow
         var result = await this.MessageBoxQuestion(
             "GCode save was successful. Do you want open the file in the default editor?",
             "GCode save complete");
-        if (result != MessageButtonResult.Yes) return;
+        if (result != SukiMessageBoxResult.Yes) return;
 
         SystemAware.StartProcess(filePath);
     }

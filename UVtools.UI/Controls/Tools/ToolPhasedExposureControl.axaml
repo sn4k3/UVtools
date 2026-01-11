@@ -4,6 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
              xmlns:controls="clr-namespace:UVtools.UI.Controls"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolPhasedExposureControl"
              x:DataType="tools:ToolPhasedExposureControl">
@@ -14,55 +16,38 @@
 
             <Grid ColumnDefinitions="Auto,*" Margin="5">
                 <StackPanel Grid.Column="0" Spacing="5" Orientation="Horizontal">
-                    <controls:ButtonWithIcon Padding="5"
-                                             Command="{Binding AddExposure}"
-                                             Text="Add exposure"
-                                             Spacing="5"
-                                             Icon="fa-solid fa-plus"/>
+                    <Button Command="{Binding AddExposure}"
+                            Content="{icon:MaterialIconTextExt Kind=Plus, Text='Add exposure'}" />
 
-                    <controls:ButtonWithIcon Padding="5"
-                                             IsEnabled="{Binding #PhasedExposuresGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                             Command="{Binding RemoveExposure}"
-                                             Text="Remove exposure"
-                                             Spacing="5"
-                                             Icon="fa-solid fa-minus"/>
+                    <Button IsEnabled="{Binding #PhasedExposuresGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            Command="{Binding RemoveExposure}"
+                            Content="{icon:MaterialIconTextExt Kind=Minus, Text='Remove exposure'}" />
 
-                    <controls:ButtonWithIcon
-                        IsEnabled="{Binding Operation.PhasedExposures.Count}"
-                        Padding="5" Command="{Binding ResetExposures}"
-                        Text="{Binding Operation.PhasedExposures.Count, StringFormat=Reset {0} exposures}"
-                        Spacing="5"
-                        Icon="fa-solid fa-xmark"/>
+                    <Button IsEnabled="{Binding Operation.PhasedExposures.Count}"
+                            Padding="5" Command="{Binding ResetExposures}"
+                            Content="{icon:MaterialIconTextExt Kind=DeleteSweep, Text={Binding Operation.PhasedExposures.Count, StringFormat=Reset {0} exposures}}" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Spacing="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                    <controls:ButtonWithIcon Padding="5"
-                                             IsEnabled="{Binding #PhasedExposuresGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                             Command="{Binding MoveExposureTop}"
-                                             ToolTip.Tip="Move exposure to top"
-                                             Spacing="5"
-                                             Icon="fa-solid fa-angles-up"/>
+                    <Button IsEnabled="{Binding #PhasedExposuresGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            Command="{Binding MoveExposureTop}"
+                            ToolTip.Tip="Move exposure to top"
+                            Content="{icon:MaterialIconExt Kind=ChevronDoubleUp}"/>
 
-                    <controls:ButtonWithIcon Padding="5"
-                                             IsEnabled="{Binding #PhasedExposuresGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                             Command="{Binding MoveExposureUp}"
-                                             ToolTip.Tip="Move exposure up"
-                                             Spacing="5"
-                                             Icon="fa-solid fa-sort-up"/>
+                    <Button IsEnabled="{Binding #PhasedExposuresGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            Command="{Binding MoveExposureUp}"
+                            ToolTip.Tip="Move exposure up"
+                            Content="{icon:MaterialIconExt Kind=ChevronUp}"/>
 
-                    <controls:ButtonWithIcon Padding="5"
-                                             IsEnabled="{Binding #PhasedExposuresGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                             Command="{Binding MoveExposureDown}"
-                                             ToolTip.Tip="Move exposure down"
-                                             Spacing="5"
-                                             Icon="fa-solid fa-sort-down"/>
+                    <Button IsEnabled="{Binding #PhasedExposuresGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            Command="{Binding MoveExposureDown}"
+                            ToolTip.Tip="Move exposure down"
+                            Content="{icon:MaterialIconExt Kind=ChevronDown}"/>
 
-                    <controls:ButtonWithIcon Padding="5"
-                                             IsEnabled="{Binding #PhasedExposuresGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                             Command="{Binding MoveExposureBottom}"
-                                             ToolTip.Tip="Move exposure to bottom"
-                                             Spacing="5"
-                                             Icon="fa-solid fa-angles-down"/>
+                    <Button IsEnabled="{Binding #PhasedExposuresGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            Command="{Binding MoveExposureBottom}"
+                            ToolTip.Tip="Move exposure to bottom"
+                            Content="{icon:MaterialIconExt Kind=ChevronDoubleDown}"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -99,7 +84,7 @@
                                            Minimum="0"
                                            Maximum="1000"
                                            Increment="0.50"
-                                           Classes="ValueLabel ValueLabel_s"
+                                           suki:NumericUpDownExtensions.Unit="s"
                                            HorizontalAlignment="Stretch"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellEditingTemplate>
@@ -118,7 +103,7 @@
                                            Minimum="0"
                                            Maximum="65535"
                                            Increment="1"
-                                           Classes="ValueLabel ValueLabel_px"
+                                           suki:NumericUpDownExtensions.Unit="px"
                                            HorizontalAlignment="Stretch"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellEditingTemplate>
@@ -138,7 +123,7 @@
                                            Minimum="0"
                                            Maximum="1000"
                                            Increment="0.50"
-                                           Classes="ValueLabel ValueLabel_s"
+                                           suki:NumericUpDownExtensions.Unit="s"
                                            HorizontalAlignment="Stretch"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellEditingTemplate>
@@ -157,7 +142,7 @@
                                            Minimum="0"
                                            Maximum="65535"
                                            Increment="1"
-                                           Classes="ValueLabel ValueLabel_px"
+                                           suki:NumericUpDownExtensions.Unit="px"
                                            HorizontalAlignment="Stretch"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellEditingTemplate>
@@ -171,7 +156,7 @@
                 OnContent="Exposure the difference between the original and phased layer and overlap by"
                 IsChecked="{Binding Operation.ExposureDifferenceOnly}"/>
 
-            <NumericUpDown Classes="ValueLabel ValueLabel_px"
+            <NumericUpDown suki:NumericUpDownExtensions.Unit="px"
                            VerticalAlignment="Center"
                            IsVisible="{Binding Operation.ExposureDifferenceOnly}"
                            IsEnabled="{Binding Operation.ExposureDifferenceOnly}"
@@ -197,7 +182,7 @@
                        IsChecked="{Binding Operation.SequentialLiftHeightEnabled}"
                        VerticalAlignment="Center"/>
             <NumericUpDown Grid.Row="0" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_mm"
+                           suki:NumericUpDownExtensions.Unit="mm"
                            Increment="0.5"
                            Minimum="0"
                            Maximum="1000"
@@ -220,7 +205,7 @@
                 </CheckBox.IsVisible>
             </CheckBox>
             <NumericUpDown Grid.Row="2" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_s"
+                           suki:NumericUpDownExtensions.Unit="s"
                            Increment="0.5"
                            Minimum="0"
                            Maximum="1000"
@@ -247,5 +232,5 @@
         </Expander>
 
     </StackPanel>
-    
+
 </UserControl>

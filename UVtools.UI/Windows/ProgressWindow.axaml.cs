@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
 using System;
@@ -17,7 +18,7 @@ using UVtools.UI.Structures;
 
 namespace UVtools.UI.Windows;
 
-public partial class ProgressWindow : WindowEx, IDisposable
+public partial class ProgressWindow : GenericWindow, IDisposable
 {
     public Stopwatch StopWatch => Progress.StopWatch;
     public OperationProgress Progress { get; } = new ();
@@ -43,7 +44,7 @@ public partial class ProgressWindow : WindowEx, IDisposable
         InitializeComponent();
 
         Cursor = new Cursor(StandardCursorType.AppStarting);
-            
+
         _timer.Elapsed += (sender, args) =>
         {
             var elapsedSeconds = StopWatch.ElapsedMilliseconds / 1000;

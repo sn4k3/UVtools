@@ -3,12 +3,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
              mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="250"
              x:Class="UVtools.UI.Controls.Tools.ToolMoveControl"
              x:DataType="tools:ToolMoveControl">
-  
+
   <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,10,Auto">
-    <StackPanel Grid.Row="0" Grid.Column="0" 
+    <StackPanel Grid.Row="0" Grid.Column="0"
                 VerticalAlignment="Center"
                 Orientation="Vertical"
                 Spacing="5">
@@ -20,10 +21,10 @@
 
       <TextBlock Margin="0,10,0,0" Text="{Binding Operation.IsWithinBoundaryString}"/>
 
-      <CheckBox 
+      <CheckBox
         Margin="0,5,0,0"
-        Content="Do a cut move" 
-        ToolTip.Tip="When selected, the object will be cutted and pasted on the new location.
+        Content="Do a cut move"
+        ToolTip.Tip="When selected, the object will be cut and pasted on the new location.
 &#x0a;Otherwise a copy will be performed to the new location."
         IsChecked="{Binding Operation.IsCutMove}" />
 
@@ -44,7 +45,7 @@
                   FontWeight="Bold"
                   Text="Left"/>
               <NumericUpDown
-                  Classes="ValueLabel ValueLabel_px"
+                  suki:NumericUpDownExtensions.Unit="px"
                   VerticalAlignment="Center"
                   ButtonSpinnerLocation="Left"
                   Width="150"
@@ -61,7 +62,7 @@
                   Margin="0,0,0,5"
                   Text="Top"/>
             <NumericUpDown
-                Classes="ValueLabel ValueLabel_px"
+                suki:NumericUpDownExtensions.Unit="px"
                   VerticalAlignment="Center"
                   Width="150"
                   Minimum="-100000"
@@ -69,12 +70,12 @@
                   Value="{Binding Operation.MarginTop}"/>
           </StackPanel>
 
-          <StackPanel Grid.Row="1" Grid.Column="2" 
-                      Orientation="Horizontal" 
+          <StackPanel Grid.Row="1" Grid.Column="2"
+                      Orientation="Horizontal"
                       VerticalAlignment="Center"
                       Spacing="5">
             <NumericUpDown
-                Classes="ValueLabel ValueLabel_px"
+                suki:NumericUpDownExtensions.Unit="px"
                 VerticalAlignment="Center"
                   Width="150"
                     Minimum="-100000"
@@ -88,7 +89,7 @@
 
           <StackPanel Grid.Row="2" Grid.Column="1">
             <NumericUpDown
-                Classes="ValueLabel ValueLabel_px"
+                suki:NumericUpDownExtensions.Unit="px"
                   VerticalAlignment="Center"
                   Width="150"
                   Minimum="-100000"

@@ -3,17 +3,19 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
              x:Class="UVtools.UI.Controls.Tools.ToolMaskControl"
              x:DataType="tools:ToolMaskControl">
   <StackPanel Spacing="10">
     <StackPanel Orientation="Horizontal" Spacing="10">
-      <Button 
+      <Button
         Padding="10"
         Content="Import grayscale mask image from file"
         Command="{Binding ImportImageMask}"/>
 
-      <CheckBox 
+      <CheckBox
         VerticalAlignment="Center"
         IsChecked="{Binding IsMaskInverted}"
         Content="Invert Mask"/>
@@ -34,11 +36,11 @@
           ColumnDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
           Margin="0,10,0,0">
 
-          <TextBlock 
+          <TextBlock
             VerticalAlignment="Center"
             Text="Minimum brightness:"/>
           <NumericUpDown Grid.Row="0" Grid.Column="2"
-                         Classes="ValueLabel ValueLabel_sun"
+                         suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Brightness5}"
                          Minimum="0"
                          Maximum="255"
                          Width="180"
@@ -51,7 +53,7 @@
                      VerticalAlignment="Center"
                      Text="Maximum brightness:"/>
           <NumericUpDown Grid.Row="0" Grid.Column="8"
-                         Classes="ValueLabel ValueLabel_sun"
+                         suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Brightness5}"
                          Minimum="0"
                          Maximum="255"
                          Width="180"
@@ -61,7 +63,7 @@
                      VerticalAlignment="Center"
                      Text="Diameter in pixels:"/>
           <NumericUpDown Grid.Row="2" Grid.Column="2"
-                         Classes="ValueLabel ValueLabel_px"
+                         suki:NumericUpDownExtensions.Unit="px"
                          Minimum="0"
                          Maximum="10000"
                          Width="180"
@@ -75,11 +77,11 @@
             VerticalAlignment="Stretch"
             Command="{Binding GenerateMask}"
             />
-          
+
         </Grid>
 
      </StackPanel>
-      
+
     </Border>
 
     <TextBlock Text="{Binding InfoPrinterResolutionString}"/>
@@ -98,9 +100,9 @@
           Height="300"
           Width="450"
           Stretch="UniformToFill"
-          Source="{Binding MaskImage}"/>  
+          Source="{Binding MaskImage}"/>
       </StackPanel>
     </Border>
-    
+
   </StackPanel>
 </UserControl>

@@ -47,7 +47,7 @@ public sealed class OperationCalibrateLiftHeight : Operation
     public override bool CanROI => false;
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    public override string IconClass => "mdi-arrow-expand-up";
+    public override string IconClass => "TrayArrowUp";
     public override string Title => "Lift height";
     public override string Description =>
         "Generates test models with various strategies and increments to measure the optimal lift height or peel forces for layers given the printed area.\n" +

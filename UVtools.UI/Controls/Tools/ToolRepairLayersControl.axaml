@@ -3,6 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              MinWidth="550"
              x:Class="UVtools.UI.Controls.Tools.ToolRepairLayersControl"
@@ -53,19 +55,19 @@
 &#x0a;Islands remaining after repair will require supports to be added manually.
 &#x0a;NOTE: This repair method requires the issues to be manually computed before hand."
                  Text="Remove islands equal or smaller than:"/>
-      
+
         <NumericUpDown Grid.Row="0" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_px"
+                       suki:NumericUpDownExtensions.Unit="px"
                        Increment="1"
                        Minimum="0"
                        Maximum="65535"
                        IsEnabled="{Binding Operation.RepairIslands}"
-          
+
                        ToolTip.Tip="The pixel area threshold above which islands will not be removed by this repair.
 &#x0a;Islands remaining after repair will require supports to be added manually.
 &#x0a;NOTE: This repair method requires the issues to be manually computed before hand."
                        Value="{Binding Operation.RemoveIslandsBelowEqualPixelCount}"/>
-        
+
 
 
 
@@ -81,7 +83,7 @@
                  Text="Recursively remove islands for up to:"/>
 
       <NumericUpDown Grid.Row="2" Grid.Column="2"
-                     Classes="ValueLabel ValueLabel_layers"
+                     suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
                      Increment="1"
                      Minimum="0"
                      Maximum="65535"
@@ -92,7 +94,7 @@
 &#x0a;This repair method requires the issues to be manually computed before hand.
 &#x0a;Using this function with high values can be extremely slow depending on resolution and issue count."
                      Value="{Binding Operation.RemoveIslandsRecursiveIterations}"/>
-        
+
       <TextBlock Grid.Row="2" Grid.Column="4"
                  VerticalAlignment="Center"
                  IsEnabled="{Binding Operation.RepairIslands}"
@@ -110,7 +112,7 @@
                  Text="Attempt to attach islands down to:"/>
 
       <NumericUpDown Grid.Row="4" Grid.Column="2"
-                     Classes="ValueLabel ValueLabel_layers"
+                     suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
                      Increment="1"
                      Minimum="0"
                      Maximum="65535"
@@ -136,7 +138,7 @@
                  Text="Overlap and expand resin traps by:"/>
 
       <NumericUpDown Grid.Row="6" Grid.Column="2"
-                     Classes="ValueLabel ValueLabel_px"
+                     suki:NumericUpDownExtensions.Unit="px"
                      Increment="1"
                      Minimum="0"
                      Maximum="65535"
@@ -154,7 +156,7 @@
                  Text="Suction cup vent hole diameter:"/>
 
       <NumericUpDown Grid.Row="8" Grid.Column="2"
-                     Classes="ValueLabel ValueLabel_px"
+                     suki:NumericUpDownExtensions.Unit="px"
                      Increment="1"
                      Minimum="4"
                      Maximum="255"
@@ -164,9 +166,9 @@
     </Grid>
 
 
-    <Grid 
+    <Grid
       IsVisible="{Binding ParentWindow.IsCheckBox1Checked}"
-      RowDefinitions="Auto,10,Auto" 
+      RowDefinitions="Auto,10,Auto"
       ColumnDefinitions="Auto,10,155">
 
       <!-- Gap closing iterations -->
@@ -187,14 +189,14 @@
         Increment="1"
         Minimum="0"
         Maximum="255"
-        
+
         ToolTip.Tip="Attempt to repair islands by attaching them to other nearby islands in safe increments.
 &#x0a;If enabled, gap closing is attempted before island removal is attempted.
 &#x0a;Set iterations to 0 to disable.
 &#x0a;WARNING: Using high iteration values can destroy your model. Low values recommended."
         Value="{Binding Operation.GapClosingIterations}"
         />
-        
+
 
       <!-- Noise removal iterations: -->
       <TextBlock
@@ -206,7 +208,7 @@
 &#x0a;Set iterations to 0 to disable.
 &#x0a;WARNING: Even at low settings this operation has the potential to introduce new islands, as it may remove supporting material from previous layers."
         Text="Noise removal iterations:"/>
-        
+
 
       <NumericUpDown
         Grid.Row="2"
@@ -214,16 +216,16 @@
         Increment="1"
         Minimum="0"
         Maximum="255"
-        
+
         ToolTip.Tip="Remove individual or small clusters of pixels in iterations.
 &#x0a;This settings can remove noise from a layer, but will also remove fine details.
 &#x0a;Set iterations to 0 to disable.
 &#x0a;WARNING: Even at low settings this operation has the potential to introduce new islands, as it may remove supporting material from previous layers."
         Value="{Binding Operation.NoiseRemovalIterations}"
         />
-        
+
     </Grid>
-    
+
   </StackPanel>
-  
+
 </UserControl>

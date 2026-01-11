@@ -5,40 +5,40 @@ using System;
 using System.Threading.Tasks;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
-using Markdown.Avalonia;
+using Material.Icons;
+using Material.Icons.Avalonia;
 using UVtools.Core.Dialogs;
 using UVtools.Core.SystemOS;
-using UVtools.UI.Controls;
 
 namespace UVtools.UI.Windows;
 
-public partial class MessageWindow : WindowEx
+public partial class MessageWindow : GenericWindow
 {
     #region Constants
 
-    public const string IconHeaderInformation = "fa-solid fa-circle-info";
-    public const string IconHeaderQuestion = "fa-solid fa-circle-question";
-    public const string IconHeaderWarning = "fa-solid fa-triangle-exclamation";
-    public const string IconHeaderError = "fa-solid fa-circle-exclamation";
-        
-    public const string IconButtonYes = "fa-solid fa-check";
-    public const string IconButtonOk = IconButtonYes;
-    public const string IconButtonNo = "fa-solid fa-xmark";
-    public const string IconButtonNone = IconButtonNo;
-    public const string IconButtonAbort = "fa-solid fa-ban";
-    public const string IconButtonCancel = "fa-solid fa-ban";
-    public const string IconButtonExit = "fa-solid fa-right-from-bracket";
-    public const string IconButtonClose = IconButtonExit;
+    public const MaterialIconKind IconHeaderInformation = MaterialIconKind.InformationCircle;
+    public const MaterialIconKind IconHeaderQuestion = MaterialIconKind.QuestionMarkCircle;
+    public const MaterialIconKind IconHeaderWarning = MaterialIconKind.Alert;
+    public const MaterialIconKind IconHeaderError = MaterialIconKind.Error;
 
-    public const string IconButtonDownload = "fa-solid fa-cloud-arrow-down";
-    public const string IconButtonOpenBrowser = "fa-brands fa-edge";
+    public const MaterialIconKind IconButtonYes = MaterialIconKind.Check;
+    public const MaterialIconKind IconButtonOk = IconButtonYes;
+    public const MaterialIconKind IconButtonNo = MaterialIconKind.Close;
+    public const MaterialIconKind IconButtonNone = IconButtonNo;
+    public const MaterialIconKind IconButtonAbort = MaterialIconKind.Ban;
+    public const MaterialIconKind IconButtonCancel = MaterialIconKind.Cancel;
+    public const MaterialIconKind IconButtonExit = MaterialIconKind.SignOut;
+    public const MaterialIconKind IconButtonClose = IconButtonExit;
+
+    public const MaterialIconKind IconButtonDownload = MaterialIconKind.CloudDownload;
+    public const MaterialIconKind IconButtonOpenBrowser = MaterialIconKind.MicrosoftEdge;
 
     #endregion
 
     #region Members
 
     private TextWrapping _textWrap = TextWrapping.Wrap;
-    private string? _headerIcon;
+    private MaterialIconKind? _headerIcon;
     private ushort _headerIconSize;
     private string? _headerText;
     private bool _aboutButtonIsVisible;
@@ -50,7 +50,7 @@ public partial class MessageWindow : WindowEx
     /// <summary>
     /// Gets the pressed button
     /// </summary>
-    public ButtonWithIcon? PressedButton { get; private set; }
+    public Button? PressedButton { get; private set; }
 
     public TextWrapping TextWrap
     {
@@ -71,7 +71,7 @@ public partial class MessageWindow : WindowEx
         }
     }
 
-    public string? HeaderIcon
+    public MaterialIconKind? HeaderIcon
     {
         get => _headerIcon;
         set
@@ -132,7 +132,7 @@ public partial class MessageWindow : WindowEx
         DataContext = this;
     }
 
-    public MessageWindow(string title, string? headerIcon, string? headerText, string messageText, TextWrapping textWrap, ButtonWithIcon[]? rightButtons = null, bool renderMarkdown = false) : this()
+    public MessageWindow(string title, MaterialIconKind? headerIcon, string? headerText, string messageText, TextWrapping textWrap, Button[]? rightButtons = null, bool renderMarkdown = false) : this()
     {
         Title = title.Trim();
         TextWrap = textWrap;
@@ -143,9 +143,9 @@ public partial class MessageWindow : WindowEx
 
         if (renderMarkdown)
         {
-            MarkdownBorder.Content = new MarkdownScrollViewer
+            MarkdownBorder.Content = new MarkdownViewer.Core.Controls.MarkdownViewer
             {
-                Markdown = messageText
+                MarkdownText = messageText
             };
         }
 
@@ -167,15 +167,15 @@ public partial class MessageWindow : WindowEx
         }
     }
 
-    public MessageWindow(string title, string? headerIcon, string? headerText, string messageText, ButtonWithIcon[]? rightButtons = null, bool renderMarkdown = false) : this(title, headerIcon, headerText, messageText, TextWrapping.Wrap, rightButtons, renderMarkdown) { }
-    public MessageWindow(string title, string message, TextWrapping textWrap, ButtonWithIcon[]? buttons = null, bool renderMarkdown = false) : this(title, null, null, message, textWrap, buttons, renderMarkdown) { }
-    public MessageWindow(string title, string message, ButtonWithIcon[]? buttons = null, bool renderMarkdown = false) : this(title, null, null, message, buttons, renderMarkdown) { }
-        
+    public MessageWindow(string title, MaterialIconKind? headerIcon, string? headerText, string messageText, Button[]? rightButtons = null, bool renderMarkdown = false) : this(title, headerIcon, headerText, messageText, TextWrapping.Wrap, rightButtons, renderMarkdown) { }
+    public MessageWindow(string title, string message, TextWrapping textWrap, Button[]? buttons = null, bool renderMarkdown = false) : this(title, null, null, message, textWrap, buttons, renderMarkdown) { }
+    public MessageWindow(string title, string message, Button[]? buttons = null, bool renderMarkdown = false) : this(title, null, null, message, buttons, renderMarkdown) { }
+
 
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
-        if (_headerIconSize <= 0 && !string.IsNullOrWhiteSpace(_headerIcon))
+        if (_headerIconSize <= 0 && _headerIcon is not null)
         {
             if (HeaderIsVisible)
             {
@@ -198,36 +198,43 @@ public partial class MessageWindow : WindowEx
     #endregion
 
     #region Static methods
-    public static ButtonWithIcon CreateButtonFunc(string? text, string? icon, Func<bool> customAction, int padding = 10, object? tag = null)
+    public static Button CreateButtonFunc(string? text, MaterialIconKind? icon, Func<bool> customAction, int padding = 10, object? tag = null)
     {
         var button = CreateButton(text, icon, padding);
         button.Click += (sender, e) => e.Handled = customAction.Invoke();
         return button;
     }
 
-    public static ButtonWithIcon CreateButtonAction(string? text, string? icon, Action customAction, int padding = 10, object? tag = null)
+    public static Button CreateButtonAction(string? text, MaterialIconKind? icon, Action customAction, int padding = 10, object? tag = null)
     {
         var button = CreateButton(text, icon, padding);
         button.Click += (sender, e) => customAction.Invoke();
         return button;
     }
 
-    public static ButtonWithIcon CreateButtonFunc(string? text, Func<bool> customAction, int padding = 10, object? tag = null) => CreateButtonFunc(text, null, customAction, padding);
-    public static ButtonWithIcon CreateButtonAction(string? text, Action customAction, int padding = 10, object? tag = null) => CreateButtonAction(text, null, customAction, padding);
+    public static Button CreateButtonFunc(string? text, Func<bool> customAction, int padding = 10, object? tag = null) => CreateButtonFunc(text, null, customAction, padding);
+    public static Button CreateButtonAction(string? text, Action customAction, int padding = 10, object? tag = null) => CreateButtonAction(text, null, customAction, padding);
 
-    public static ButtonWithIcon CreateButton(string? text, string? icon, int padding = 10, object? tag = null) => new()
+    public static Button CreateButton(string? text, MaterialIconKind? icon, int padding = 10, object? tag = null)
     {
-        Icon = icon,
-        Text = text,
+        var kind = MaterialIconKind.Check;
+        return new Button
+        {
+            Content = new MaterialIconTextExt
+        {
+            Kind = kind,
+            Text = text
+        },
         VerticalAlignment = VerticalAlignment.Center,
         Padding = new Thickness(padding),
         Tag = tag
-    };
+        };
+    }
 
-    public static ButtonWithIcon CreateButton(string? text, int padding = 10, object? tag = null) => CreateButton(text, null, padding, tag);
+    public static Button CreateButton(string? text, int padding = 10, object? tag = null) => CreateButton(text, null, padding, tag);
 
 
-    public static ButtonWithIcon CreateLinkButtonAction(string? text, string? icon, string url, Action customAction, int padding = 10, object? tag = null)
+    public static Button CreateLinkButtonAction(string? text, MaterialIconKind? icon, string url, Action customAction, int padding = 10, object? tag = null)
     {
         var button = CreateButtonFunc(text, icon, () =>
         {
@@ -238,7 +245,7 @@ public partial class MessageWindow : WindowEx
         return button;
     }
 
-    public static ButtonWithIcon CreateLinkButton(string? text, string? icon, string url, int padding = 10, object? tag = null)
+    public static Button CreateLinkButton(string? text, MaterialIconKind? icon, string url, int padding = 10, object? tag = null)
     {
         var button = CreateButtonFunc(text, icon, () =>
         {
@@ -247,10 +254,10 @@ public partial class MessageWindow : WindowEx
         }, padding, tag);
         return button;
     }
-    public static ButtonWithIcon CreateLinkButtonAction(string? text, string url, Action customAction, int padding = 10, object? tag = null) => CreateLinkButtonAction(text, null, url, customAction, padding, tag);
-    public static ButtonWithIcon CreateLinkButton(string? text, string url, int padding = 10, object? tag = null) => CreateLinkButton(text, null, url, padding, tag);
+    public static Button CreateLinkButtonAction(string? text, string url, Action customAction, int padding = 10, object? tag = null) => CreateLinkButtonAction(text, null, url, customAction, padding, tag);
+    public static Button CreateLinkButton(string? text, string url, int padding = 10, object? tag = null) => CreateLinkButton(text, null, url, padding, tag);
 
-    public static ButtonWithIcon CreateOkButton(string? icon = IconButtonOk, int padding = 10, bool isDefault = true, bool isCancel = false)
+    public static Button CreateOkButton(MaterialIconKind? icon = IconButtonOk, int padding = 10, bool isDefault = true, bool isCancel = false)
     {
         var btn = CreateButton("Ok", icon, padding, MessageButtonResult.Ok);
         btn.IsDefault = isDefault;
@@ -258,7 +265,7 @@ public partial class MessageWindow : WindowEx
         return btn;
     }
 
-    public static ButtonWithIcon CreateYesButton(string? icon = IconButtonYes, int padding = 10, bool isDefault = true, bool isCancel = false)
+    public static Button CreateYesButton(MaterialIconKind? icon = IconButtonYes, int padding = 10, bool isDefault = true, bool isCancel = false)
     {
         var btn = CreateButton("Yes", icon, padding, MessageButtonResult.Yes);
         btn.IsDefault = isDefault;
@@ -266,7 +273,7 @@ public partial class MessageWindow : WindowEx
         return btn;
     }
 
-    public static ButtonWithIcon CreateNoButton(string? icon = IconButtonNo, int padding = 10, bool isDefault = false, bool isCancel = false)
+    public static Button CreateNoButton(MaterialIconKind? icon = IconButtonNo, int padding = 10, bool isDefault = false, bool isCancel = false)
     {
         var btn = CreateButton("No", icon, padding, MessageButtonResult.No);
         btn.IsDefault = isDefault;
@@ -274,7 +281,7 @@ public partial class MessageWindow : WindowEx
         return btn;
     }
 
-    public static ButtonWithIcon CreateNoneButton(string? icon = IconButtonNone, int padding = 10, bool isDefault = false, bool isCancel = false)
+    public static Button CreateNoneButton(MaterialIconKind? icon = IconButtonNone, int padding = 10, bool isDefault = false, bool isCancel = false)
     {
         var btn = CreateButton("None", icon, padding, MessageButtonResult.None);
         btn.IsDefault = isDefault;
@@ -282,7 +289,7 @@ public partial class MessageWindow : WindowEx
         return btn;
     }
 
-    public static ButtonWithIcon CreateAbortButton(string? icon = IconButtonAbort, int padding = 10, bool isDefault = false, bool isCancel = true)
+    public static Button CreateAbortButton(MaterialIconKind? icon = IconButtonAbort, int padding = 10, bool isDefault = false, bool isCancel = true)
     {
         var btn = CreateButton("Abort", icon, padding, MessageButtonResult.Abort);
         btn.IsDefault = isDefault;
@@ -290,7 +297,7 @@ public partial class MessageWindow : WindowEx
         return btn;
     }
 
-    public static ButtonWithIcon CreateCancelButton(string? icon = IconButtonCancel, int padding = 10, bool isDefault = false, bool isCancel = true)
+    public static Button CreateCancelButton(MaterialIconKind? icon = IconButtonCancel, int padding = 10, bool isDefault = false, bool isCancel = true)
     {
         var btn = CreateButton("Cancel", icon, padding, MessageButtonResult.Cancel);
         btn.IsDefault = isDefault;
@@ -298,7 +305,7 @@ public partial class MessageWindow : WindowEx
         return btn;
     }
 
-    public static ButtonWithIcon CreateCloseButton(string? icon = IconButtonClose, int padding = 10, bool isDefault = false, bool isCancel = true)
+    public static Button CreateCloseButton(MaterialIconKind? icon = IconButtonClose, int padding = 10, bool isDefault = false, bool isCancel = true)
     {
         var btn = CreateButton("Close", icon, padding, MessageButtonResult.Cancel);
         btn.IsDefault = isDefault;

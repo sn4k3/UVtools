@@ -4,6 +4,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Material.Icons;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.SystemOS;
@@ -11,7 +12,7 @@ using UVtools.UI.Controls;
 
 namespace UVtools.UI.Windows;
 
-public partial class AboutWindow : WindowEx
+public partial class AboutWindow : GenericWindow
 {
     public static string OpenCVBuildInformation
     {
@@ -121,12 +122,11 @@ public partial class AboutWindow : WindowEx
     {
         InitializeComponent();
         DataContext = this;
-        Title = $"About {About.SoftwareWithVersion}";
     }
 
     public async Task TermsOfUseClicked()
     {
-        var messageWindow = new MessageWindow(About.TermsOfUseTitle, "fa-solid fa-handshake",
+        var messageWindow = new MessageWindow(About.TermsOfUseTitle, MaterialIconKind.Handshake,
             About.TermsOfUseHeader,
             About.TermsOfUse);
 

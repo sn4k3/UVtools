@@ -4,6 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:UVtools.UI.Controls"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolPCBExposureControl"
              x:DataType="tools:ToolPCBExposureControl">
@@ -15,73 +17,50 @@
                 <Grid>
                     <StackPanel Spacing="5" Orientation="Vertical">
                         <StackPanel Spacing="5" Orientation="Horizontal">
-                            <controls:ButtonWithIcon Padding="5"
-                                                     Command="{Binding AddFiles}"
-                                                     Text="Add"
-                                                     Spacing="5"
-                                                     Icon="fa-solid fa-plus"/>
+                            <Button Command="{Binding AddFiles}"
+                                    Content="{icon:MaterialIconTextExt Kind=Plus, Text='Add'}" />
 
-                            <controls:ButtonWithIcon Padding="5"
-                                                     Command="{Binding AddFilesFromZip}"
-                                                     Text="Import zip"
-                                                     Spacing="5"
-                                                     Icon="fa-solid fa-file-zipper"/>
+                            <Button Command="{Binding AddFilesFromZip}"
+                                    Content="{icon:MaterialIconTextExt Kind=ZipBox, Text='Add'}" />
 
-                            <controls:ButtonWithIcon Padding="5"
-                                                     IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                     Command="{Binding RemoveFiles}"
-                                                     Text="Remove"
-                                                     Spacing="5"
-                                                     Icon="fa-solid fa-minus"/>
+                            <Button IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                    Command="{Binding RemoveFiles}"
+                                    Content="{icon:MaterialIconTextExt Kind=Minus, Text='Remove'}" />
                         </StackPanel>
 
                         <StackPanel Spacing="2" Orientation="Horizontal">
-                            <controls:ButtonWithIcon Padding="5"
-                                                     IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                     Command="{Binding MoveFileTop}"
-                                                     ToolTip.Tip="Move gerber to top"
-                                                     Spacing="5"
-                                                     Icon="fa-solid fa-angles-up"/>
+                            <Button IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                    Command="{Binding MoveFileTop}"
+                                    Content="{icon:MaterialIconExt Kind=ChevronDoubleUp}"
+                                    ToolTip.Tip="Move gerber to top" />
 
-                            <controls:ButtonWithIcon Padding="5"
-                                                     IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                     Command="{Binding MoveFileUp}"
-                                                     ToolTip.Tip="Move gerber up"
-                                                     Spacing="5"
-                                                     Icon="fa-solid fa-sort-up"/>
+                            <Button IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                    Command="{Binding MoveFileUp}"
+                                    Content="{icon:MaterialIconExt Kind=ChevronUp}"
+                                    ToolTip.Tip="Move gerber up" />
 
-                            <controls:ButtonWithIcon Padding="5"
-                                                     IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                     Command="{Binding MoveFileDown}"
-                                                     ToolTip.Tip="Move gerber down"
-                                                     Spacing="5"
-                                                     Icon="fa-solid fa-sort-down"/>
+                            <Button IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                    Command="{Binding MoveFileDown}"
+                                    Content="{icon:MaterialIconExt Kind=ChevronDown}"
+                                    ToolTip.Tip="Move gerber down" />
 
-                            <controls:ButtonWithIcon Padding="5"
-                                                     IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                     Command="{Binding MoveFileBottom}"
-                                                     ToolTip.Tip="Move gerber to bottom"
-                                                     Spacing="5"
-                                                     Icon="fa-solid fa-angles-down"/>
+                            <Button IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                    Command="{Binding MoveFileBottom}"
+                                    Content="{icon:MaterialIconExt Kind=ChevronDoubleDown}"
+                                    ToolTip.Tip="Move gerber to bottom" />
                         </StackPanel>
                     </StackPanel>
 
                     <StackPanel HorizontalAlignment="Right" Spacing="5" Orientation="Vertical">
                         <StackPanel HorizontalAlignment="Right" Spacing="5" Orientation="Horizontal">
-                            <controls:ButtonWithIcon
-                                IsEnabled="{Binding Operation.Files.Count}"
-                                Padding="5" Command="{Binding ClearFiles}"
-                                Text="{Binding Operation.Files.Count, StringFormat=Clear {0} files}"
-                                Spacing="5"
-                                Icon="fa-solid fa-xmark"/>
+                            <Button IsEnabled="{Binding Operation.Files.Count}"
+                                Command="{Binding ClearFiles}"
+                                Content="{icon:MaterialIconTextExt Kind=DeleteSweep, Text={Binding Operation.Files.Count, StringFormat=Clear {0} files}}" />
                         </StackPanel>
                         <StackPanel HorizontalAlignment="Right" Spacing="5" Orientation="Horizontal">
-                            <controls:ButtonWithIcon Padding="5"
-                                                     IsEnabled="{Binding Operation.Files.Count}"
-                                                     Command="{Binding Operation.Sort}"
-                                                     Text="Sort ASC"
-                                                     Spacing="5"
-                                                     Icon="fa-solid fa-sort-alpha-up"/>
+                            <Button IsEnabled="{Binding Operation.Files.Count}"
+                                    Command="{Binding Operation.Sort}"
+                                    Content="{icon:MaterialIconTextExt Kind=SortAlphabeticalAscending, Text='Sort ASC'}" />
                         </StackPanel>
                     </StackPanel>
                 </Grid>
@@ -138,19 +117,19 @@
                            VerticalAlignment="Center"
                            Text="Layer height:"/>
 				<NumericUpDown Grid.Row="2" Grid.Column="2"
-							   Classes="ValueLabel ValueLabel_mm"
+							   suki:NumericUpDownExtensions.Unit="mm"
 							   Increment="0.01"
 							   Minimum="0.001"
 							   Maximum="500"
 							   FormatString="F3"
 							   Value="{Binding Operation.LayerHeight}"/>
 
-				
+
 				<TextBlock Grid.Row="4" Grid.Column="0"
 						   VerticalAlignment="Center"
 						   Text="Exposure time:"/>
 				<NumericUpDown Grid.Row="4" Grid.Column="2"
-							   Classes="ValueLabel ValueLabel_s"
+							   suki:NumericUpDownExtensions.Unit="s"
 							   Increment="0.5"
 							   Minimum="0.5"
 							   Maximum="1000"
@@ -175,7 +154,7 @@
 
                 <StackPanel Grid.Row="8" Grid.Column="2"
                             Orientation="Horizontal" Spacing="20">
-                    <NumericUpDown Classes="ValueLabel ValueLabel_mm"
+                    <NumericUpDown suki:NumericUpDownExtensions.Unit="mm"
                                    Increment="0.05"
                                    Minimum="-10000"
                                    Maximum="10000"
@@ -183,7 +162,7 @@
                                    Width="187"
                                    Value="{Binding Operation.OffsetX}"/>
 
-                    <NumericUpDown Classes="ValueLabel ValueLabel_mm"
+                    <NumericUpDown suki:NumericUpDownExtensions.Unit="mm"
                                    Increment="0.05"
                                    Minimum="-10000"
                                    Maximum="10000"

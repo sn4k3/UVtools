@@ -5,7 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Projektanker.Icons.Avalonia;
+using Material.Icons;
+using Material.Icons.Avalonia;
 using UVtools.AvaloniaControls;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -43,43 +44,43 @@ public partial class ToolEditParametersControl : ToolControl
 
             if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.PositionZ))
             {
-                stackPanel.Children.Add(new Icon { Value = "fa-solid fa-stairs" });
+                stackPanel.Children.Add(new MaterialIcon { Kind = MaterialIconKind.Stairs });
             }
             else if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.BottomLayerCount))
             {
-                stackPanel.Children.Add(new Icon { Value = "fa-solid fa-fire-burner" });
+                stackPanel.Children.Add(new MaterialIcon { Kind = MaterialIconKind.Fire });
             }
             else if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.TransitionLayerCount))
             {
-                stackPanel.Children.Add(new Icon { Value = "fa-solid fa-layer-group" });
+                stackPanel.Children.Add(new MaterialIcon { Kind = MaterialIconKind.Layers });
             }
             else if (label.Contains("delay", StringComparison.InvariantCultureIgnoreCase) || label.Contains("wait", StringComparison.InvariantCultureIgnoreCase))
             {
-                stackPanel.Children.Add(new Icon { Value = "fa-solid fa-stopwatch" });
+                stackPanel.Children.Add(new MaterialIcon { Kind = MaterialIconKind.Stopwatch });
             }
             else if (label.Contains("exposure", StringComparison.InvariantCultureIgnoreCase))
             {
-                stackPanel.Children.Add(new Icon { Value = "fa-regular fa-eye" });
+                stackPanel.Children.Add(new MaterialIcon { Kind = MaterialIconKind.Eye });
             }
             else if (label.Contains("lift", StringComparison.InvariantCultureIgnoreCase))
             {
-                stackPanel.Children.Add(new Icon { Value = "fa-solid fa-arrow-up-from-bracket" });
+                stackPanel.Children.Add(new MaterialIcon { Kind = MaterialIconKind.TrayArrowUp });
             }
             else if (label.Contains("retract", StringComparison.InvariantCultureIgnoreCase))
             {
-                stackPanel.Children.Add(new Icon { Value = "fa-solid fa-arrows-down-to-line" });
+                stackPanel.Children.Add(new MaterialIcon { Kind = MaterialIconKind.TrayArrowDown });
             }
             else if (label.Contains("pwm", StringComparison.InvariantCultureIgnoreCase))
             {
-                stackPanel.Children.Add(new Icon { Value = "fa-regular fa-sun" });
+                stackPanel.Children.Add(new MaterialIcon { Kind = MaterialIconKind.Brightness7 });
             }
             else if (label.Contains("pause", StringComparison.InvariantCultureIgnoreCase))
             {
-                stackPanel.Children.Add(new Icon { Value = "fa-solid fa-pause" });
+                stackPanel.Children.Add(new MaterialIcon { Kind = MaterialIconKind.Pause });
             }
             else if (label.Contains("change resin", StringComparison.InvariantCultureIgnoreCase))
             {
-                stackPanel.Children.Add(new Icon { Value = "fa-solid fa-flask" });
+                stackPanel.Children.Add(new MaterialIcon { Kind = MaterialIconKind.Flask });
             }
 
             Name = new TextBlock

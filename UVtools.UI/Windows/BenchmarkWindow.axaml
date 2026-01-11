@@ -1,153 +1,153 @@
-﻿<controls:WindowEx xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:controls="clr-namespace:UVtools.UI.Controls"
-        xmlns:windows="clr-namespace:UVtools.UI.Windows"
-        xmlns:system="clr-namespace:System;assembly=System.Runtime"
-        xmlns:ac="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        Title="Benchmark"
-        Icon="/Assets/Icons/UVtools.ico"
-        SizeToContent="WidthAndHeight"
-        WindowStartupLocation="CenterOwner"
-        MinWidth="560"
-        CanResize="False"
-        x:Class="UVtools.UI.Windows.BenchmarkWindow"
-        x:DataType="windows:BenchmarkWindow">
-  <Grid RowDefinitions="Auto,10,
-    Auto,10,
-    Auto,20,
-    Auto">
-  <Border Background="{DynamicResource LightBackground}"
-          Padding="10"
-          BorderBrush="Black"
-          BorderThickness="1">
+﻿<windows:GenericWindow xmlns="https://github.com/avaloniaui"
+                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                       xmlns:windows="clr-namespace:UVtools.UI.Windows"
+                       xmlns:system="clr-namespace:System;assembly=System.Runtime"
+                       xmlns:suki="https://github.com/kikipoulet/SukiUI"
+                       mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                       Title="Benchmark"
+                       SizeToContent="WidthAndHeight"
+                       WindowStartupLocation="CenterOwner"
+                       MinWidth="560"
+                       CanResize="False"
+                       x:Class="UVtools.UI.Windows.BenchmarkWindow"
+                       x:DataType="windows:BenchmarkWindow">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto">
+        <suki:GlassCard Classes="Flat">
+            <SelectableTextBlock Text="{Binding Description}"/>
+        </suki:GlassCard>
 
-      <SelectableTextBlock Text="{Binding Description}"/>
+        <suki:GlassCard Grid.Row="1" Classes="CardNoBottom">
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*"
+                  RowSpacing="10" ColumnSpacing="10"
 
-  </Border>
+                  Margin="10">
 
-    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*"
-          Grid.Row="2"
-          Margin="10">
+                <TextBlock  Grid.Row="0" Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Text="Your CPU:"/>
 
-        <TextBlock  Grid.Row="0" Grid.Column="0"
-                    VerticalAlignment="Center"
-                    Text="Your CPU:"/>
+                <TextBox Grid.Row="0" Grid.Column="1"
+                         Text="{Binding ProcessorName}"
+                         Classes="ReadOnly"
+                         Watermark="Processor:"
+                         UseFloatingWatermark="True"/>
 
-        <TextBox Grid.Row="0" Grid.Column="2"
-                 Text="{Binding ProcessorName}"
-                 Classes="ReadOnly"
-                 Watermark="Processor:"
-                 UseFloatingWatermark="True"/>
+                <TextBlock Grid.Row="1" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Reference:"/>
+                <ComboBox Grid.Row="1" Grid.Column="1"
+                          HorizontalAlignment="Stretch"
+                          SelectedIndex="{Binding ReferenceSelectedIndex}"
+                          ItemsSource="{Binding BenchmarkMachines}"
+                          IsEnabled="{Binding !IsRunning}"/>
 
-        <TextBlock Grid.Row="2" Grid.Column="0"
-                   VerticalAlignment="Center"
-                   Text="Reference:"/>
-        <ComboBox Grid.Row="2" Grid.Column="2"
-                  HorizontalAlignment="Stretch"
-                  SelectedIndex="{Binding ReferenceSelectedIndex}"
-                  ItemsSource="{Binding BenchmarkMachines}"
-                  IsEnabled="{Binding !IsRunning}"/>
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Benchmark:"/>
+                <ComboBox Grid.Row="2" Grid.Column="1"
+                          HorizontalAlignment="Stretch"
+                          SelectedIndex="{Binding TestSelectedIndex}"
+                          ItemsSource="{Binding Tests}"
+                          IsEnabled="{Binding !IsRunning}"/>
 
-		<TextBlock Grid.Row="4" Grid.Column="0"
-                   VerticalAlignment="Center"
-                   Text="Benchmark:"/>
-      <ComboBox Grid.Row="4" Grid.Column="2"
-                HorizontalAlignment="Stretch"
-                SelectedIndex="{Binding TestSelectedIndex}"
-                ItemsSource="{Binding Tests}"
-                IsEnabled="{Binding !IsRunning}"/>
+                <TextBlock Grid.Row="3" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Threads:"/>
 
-        <TextBlock Grid.Row="6" Grid.Column="0"
-                   VerticalAlignment="Center"
-                   Text="Threads:"/>
+                <NumericUpDown Grid.Row="3" Grid.Column="1"
+                                          HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Center"
+                                          Minimum="-2"
+                                          Maximum="{Binding Source={x:Static system:Environment.ProcessorCount}}"
+                                          Value="{Binding Threads}"
+                                          suki:NumericUpDownExtensions.Unit="{Binding Source={x:Static system:Environment.ProcessorCount}, StringFormat=Max: {0}}"
+                                          IsEnabled="{Binding !IsRunning}"
+                                          ToolTip.Tip="Sets the maximum number of concurrent tasks/threads enabled to run by parallel method calls.
+                                          &#x0a;-2: Will utilize an optimal number in order to relief some load and therefore preventing the computer from lags and freezes, mostly this is the processor core count less a few. The more cores the CPU haves the larger is the margin up to a limit. (Optimal/Recommended)
+                                          &#x0a;-1: Will utilize however many threads the underlying scheduler provides, mostly this is the processor core count. (Fast/Performance)
+                                          &#x0a;0: Will utilize the processor core count. (Fast/Performance)"/>
+            </Grid>
+        </suki:GlassCard>
 
-        <ac:ExtendedNumericUpDown Grid.Row="6" Grid.Column="2"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Center"
-                                    Minimum="-2"
-                                    Maximum="{Binding Source={x:Static system:Environment.ProcessorCount}}"
-                                    Value="{Binding Threads}"
-                                    ValueUnit="{Binding Source={x:Static system:Environment.ProcessorCount}, StringFormat=Max: {0}}"
-                                    IsEnabled="{Binding !IsRunning}"
-                                    ToolTip.Tip="Sets the maximum number of concurrent tasks/threads enabled to run by parallel method calls.
-&#x0a;-2: Will utilize an optimal number in order to relief some load and therefore preventing the computer from lags and freezes, mostly this is the processor core count less a few. The more cores the CPU haves the larger is the margin up to a limit. (Optimal/Recommended)
-&#x0a;-1: Will utilize however many threads the underlying scheduler provides, mostly this is the processor core count. (Fast/Performance)
-&#x0a;0: Will utilize the processor core count. (Fast/Performance)"/>
+        <suki:GlassCard Grid.Row="2"
+                        Classes="Card">
+            <Grid
+                RowDefinitions="Auto,10,Auto,10,Auto,20,Auto,10,Auto"
+                ColumnDefinitions="*,5,*"
+                Margin="10,0">
+
+                <TextBlock Grid.Row="0"
+                           FontWeight="Bold" Text="Your results:"/>
+
+                <TextBox Grid.Row="2" Grid.Column="0"
+                         Classes="ReadOnly"
+                         UseFloatingWatermark="True"
+                         Watermark="Single thread"
+                         Text="{Binding SingleThreadTDPS}"/>
+
+                <TextBox Grid.Row="2" Grid.Column="2"
+                         Classes="ReadOnly"
+                         UseFloatingWatermark="True"
+                         Watermark="Multi thread"
+                         Text="{Binding MultiThreadTDPS}"/>
+
+                <ProgressBar Grid.Row="4" Grid.Column="0"
+                             Name="SingleThreadDiffProgressBar"
+                             FontWeight="Bold"
+                             MinHeight="30"
+                             Value="{Binding SingleThreadDiffValue}"
+                             Maximum="{Binding SingleThreadDiffMaxValue}"
+                             Foreground="{Binding SingleThreadDiffForeground}"
+                             ShowProgressText="True"
+                             ProgressTextFormat="{Binding #SingleThreadDiffProgressBar.Value, StringFormat='{}{0:0}%'}"/>
+
+                <ProgressBar Grid.Row="4" Grid.Column="2"
+                             Name="MultiThreadDiffProgressBar"
+                             FontWeight="Bold"
+                             MinHeight="30"
+                             Value="{Binding MultiThreadDiffValue}"
+                             Maximum="{Binding MultiThreadDiffMaxValue}"
+                             Foreground="{Binding MultiThreadDiffForeground}"
+                             ShowProgressText="True"
+                             ProgressTextFormat="{Binding #MultiThreadDiffProgressBar.Value, StringFormat='{}{0:0}%'}"/>
+
+                <TextBlock Grid.Row="6" Grid.Column="0"
+                           FontWeight="Bold" Text="Developer results:"/>
+
+                <TextBox Grid.Row="8" Grid.Column="0"
+                         Classes="ReadOnly"
+                         UseFloatingWatermark="True"
+                         Watermark="Single thread"
+                         Text="{Binding DevSingleThreadTDPS}"/>
+
+                <TextBox Grid.Row="8" Grid.Column="2"
+                         Classes="ReadOnly"
+                         UseFloatingWatermark="True"
+                         Watermark="Multi thread"
+                         Text="{Binding DevMultiThreadTDPS}"/>
+            </Grid>
+        </suki:GlassCard>
+
+        <suki:GlassCard Grid.Row="3"
+                        Classes="Flat">
+            <Grid ColumnDefinitions="*,Auto"
+                  ColumnSpacing="15">
+                <ProgressBar Grid.Column="0"
+                             IsIndeterminate="{Binding IsRunning}"
+                             IsEnabled="{Binding IsRunning}"
+                             VerticalAlignment="Stretch"/>
+
+                <Button Name="StartStopButton"
+                        Grid.Column="1"
+                        Classes="Large Flat"
+                        IsDefault="True"
+                        Content="{Binding StartStopButtonText}"
+                        Command="{Binding StartStop}"/>
+
+            </Grid>
+        </suki:GlassCard>
+
     </Grid>
-
-	  <Grid Grid.Row="4"
-			RowDefinitions="Auto,10,Auto,10,Auto,20,Auto,10,Auto"
-			ColumnDefinitions="*,5,*"
-			Margin="10,0">
-
-		  <TextBlock Grid.Row="0"
-                     FontWeight="Bold" Text="Your results:"/>
-
-        <TextBox Grid.Row="2" Grid.Column="0"
-                 Classes="ReadOnly"
-                 UseFloatingWatermark="True"
-                 Watermark="Single thread"
-                 Text="{Binding SingleThreadTDPS}"/>
-
-		<TextBox Grid.Row="2" Grid.Column="2"
-                 Classes="ReadOnly"
-                 UseFloatingWatermark="True"
-                 Watermark="Multi thread"
-                 Text="{Binding MultiThreadTDPS}"/>
-
-          <ProgressBar Grid.Row="4" Grid.Column="0"
-                       Name="SingleThreadDiffProgressBar"
-                       FontWeight="Bold"
-                       MinHeight="30"
-                       Value="{Binding SingleThreadDiffValue}"
-                       Maximum="{Binding SingleThreadDiffMaxValue}"
-                       Foreground="{Binding SingleThreadDiffForeground}"
-                       ShowProgressText="True"
-                       ProgressTextFormat="{Binding #SingleThreadDiffProgressBar.Value, StringFormat='{}{0:0}%'}"/>
-
-		  <ProgressBar Grid.Row="4" Grid.Column="2"
-                       Name="MultiThreadDiffProgressBar"
-                       FontWeight="Bold"
-                       MinHeight="30"
-                       Value="{Binding MultiThreadDiffValue}"
-                       Maximum="{Binding MultiThreadDiffMaxValue}"
-                       Foreground="{Binding MultiThreadDiffForeground}"
-                       ShowProgressText="True"
-                       ProgressTextFormat="{Binding #MultiThreadDiffProgressBar.Value, StringFormat='{}{0:0}%'}"/>
-
-          <TextBlock Grid.Row="6" Grid.Column="0"
-                     FontWeight="Bold" Text="Developer results:"/>
-
-          <TextBox Grid.Row="8" Grid.Column="0"
-                   Classes="ReadOnly"
-                   UseFloatingWatermark="True"
-                   Watermark="Single thread"
-                   Text="{Binding DevSingleThreadTDPS}"/>
-
-          <TextBox Grid.Row="8" Grid.Column="2"
-                   Classes="ReadOnly"
-                   UseFloatingWatermark="True"
-                   Watermark="Multi thread"
-                   Text="{Binding DevMultiThreadTDPS}"/>
-	  </Grid>
-
-
-    <Grid Grid.Row="6"
-          ColumnDefinitions="*,Auto">
-      <ProgressBar IsIndeterminate="{Binding IsRunning}"
-                   IsEnabled="{Binding IsRunning}"
-                   VerticalAlignment="Stretch"/>
-
-      <Button Name="StartStopButton"
-              Grid.Column="1"
-              Padding="40,10"
-              IsDefault="True"
-              Content="{Binding StartStopButtonText}"
-              Command="{Binding StartStop}"/>
-
-    </Grid>
-  </Grid>
-</controls:WindowEx>
+</windows:GenericWindow>

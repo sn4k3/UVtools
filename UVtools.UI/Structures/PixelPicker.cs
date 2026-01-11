@@ -1,38 +1,21 @@
 ﻿using System.Drawing;
-using UVtools.Core.Objects;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace UVtools.UI.Structures;
 
-public class PixelPicker : BindableBase
+public partial class PixelPicker : ObservableObject
 {
-    private bool _isSet;
-    private Point _location;
-    private PointF _lcdLocation;
-    private byte _brightness;
+    [ObservableProperty]
+    public partial bool IsSet { get; private set; }
 
-    public bool IsSet
-    {
-        get => _isSet;
-        private set => RaiseAndSetIfChanged(ref _isSet, value);
-    }
+    [ObservableProperty]
+    public partial Point Location { get; set; }
 
-    public Point Location
-    {
-        get => _location;
-        set => RaiseAndSetIfChanged(ref _location, value);
-    }
+    [ObservableProperty]
+    public partial PointF LcdLocation { get; set; }
 
-    public PointF LcdLocation
-    {
-        get => _lcdLocation;
-        set => RaiseAndSetIfChanged(ref _lcdLocation, value);
-    }
-
-    public byte Brightness
-    {
-        get => _brightness;
-        private set => RaiseAndSetIfChanged(ref _brightness, value);
-    }
+    [ObservableProperty]
+    public partial byte Brightness { get; private set; }
 
     public void Set(Point location, byte brightness, PointF lcdLocation = default)
     {
@@ -52,10 +35,10 @@ public class PixelPicker : BindableBase
 
     public override string ToString()
     {
-        var text = $"{{X={_location.X}, Y={_location.Y}, B={_brightness}}}";
-        if (!_lcdLocation.IsEmpty)
+        var text = $"{{X={Location.X}, Y={Location.Y}, B={Brightness}}}";
+        if (!LcdLocation.IsEmpty)
         {
-            text += $"\n{{X={_lcdLocation.X}, Y={_lcdLocation.Y} mm}}";
+            text += $"\n{{X={LcdLocation.X}, Y={LcdLocation.Y} mm}}";
         }
 
         return text;

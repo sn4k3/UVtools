@@ -45,7 +45,7 @@ public class OperationDoubleExposure : Operation
 
     #region Overrides
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.Bottom;
-    public override string IconClass => "fa-solid fa-grip-lines";
+    public override string IconClass => "LightbulbGroup";
     public override string Title => "Double exposure";
     public override string Description =>
         "The double exposure method clones the selected layer range and print the same layer twice with different exposure times and strategies.\n" +
@@ -251,7 +251,7 @@ public class OperationDoubleExposure : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationDoubleExposure)obj);
     }
-    
+
     #endregion
 
     #region Methods
@@ -366,8 +366,8 @@ public class OperationDoubleExposure : Operation
                 }
             }
 
-            uint index = LayerIndexStart + (uint)(layerIndex - LayerIndexStart) * 2; 
-                
+            uint index = LayerIndexStart + (uint)(layerIndex - LayerIndexStart) * 2;
+
             layers[index] = firstLayer;
             layers[index + 1] = secondLayer;
 

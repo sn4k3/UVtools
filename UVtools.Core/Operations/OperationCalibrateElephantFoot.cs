@@ -58,7 +58,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
     public override bool CanROI => false;
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    public override string IconClass => "mdi-elephant";
+    public override string IconClass => "Elephant";
     public override string Title => "Elephant foot";
     public override string Description =>
         "Generates test models with various strategies and increments to verify the best method/values to remove the elephant foot.\n" +

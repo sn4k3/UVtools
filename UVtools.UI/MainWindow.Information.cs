@@ -7,8 +7,10 @@
  */
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Platform.Storage;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using SukiUI.MessageBox;
 using System;
 using System.Collections;
 using System.Collections.ObjectModel;
@@ -24,9 +26,8 @@ using UVtools.Core.Objects;
 using UVtools.Core.SystemOS;
 using UVtools.UI.Extensions;
 using UVtools.UI.Structures;
-using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using AvaloniaStatic = UVtools.UI.Controls.AvaloniaStatic;
-using Avalonia.Platform.Storage;
+using Bitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace UVtools.UI;
 
@@ -352,7 +353,7 @@ public partial class MainWindow
         var result = await this.MessageBoxQuestion(
             "Properties save was successful. Do you want open the file in the default editor?",
             "Properties save complete");
-        if (result != MessageButtonResult.Yes) return;
+        if (result != SukiMessageBoxResult.Yes) return;
 
         SystemAware.StartProcess(filePath);
     }

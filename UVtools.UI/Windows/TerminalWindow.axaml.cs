@@ -14,11 +14,10 @@ using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using UVtools.Core;
 using UVtools.Core.Scripting;
-using UVtools.UI.Controls;
 
 namespace UVtools.UI.Windows;
 
-public partial class TerminalWindow : WindowEx
+public partial class TerminalWindow : GenericWindow
 {
     private static readonly string DefaultTerminalText = $"> Welcome to {About.Software} interactive terminal.\n" +
                                                          "> Type in some commands in C# language to inject code.\n" +
@@ -150,7 +149,7 @@ public partial class TerminalWindow : WindowEx
             DialogResult = DialogResults.OK;
             App.MainWindow.CanSave = true;
 
-			if (_scriptState.ReturnValue is not null)
+            if (_scriptState.ReturnValue is not null)
             {
                 output.AppendLine(_scriptState.ReturnValue.ToString());
             }

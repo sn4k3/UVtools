@@ -2,9 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:i="https://github.com/projektanker/icons.avalonia"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
-             xmlns:op="clr-namespace:UVtools.Core.Operations;assembly=UVtools.Core"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolRedrawModelControl"
              x:DataType="tools:ToolRedrawModelControl">
@@ -24,7 +24,7 @@
                 <Button VerticalAlignment="Stretch"
                         ToolTip.Tip="Select the sliced file without supports and raft. (Model B)"
                         Command="{Binding ImportFile}"
-                        i:Attached.Icon="fa-solid fa-file-import"/>
+                        Content="{icon:MaterialIconExt Kind=FileImport}"/>
             </StackPanel>
 
 
@@ -36,7 +36,7 @@
                 <ComboBox HorizontalAlignment="Stretch"
                           ItemsSource="{Binding Operation.RedrawType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                           SelectedItem="{Binding Operation.RedrawType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
-                          Width="120"/>
+                          Width="150"/>
 
                 <CheckBox VerticalAlignment="Center"
                           IsVisible="{Binding !Operation.RedrawType}"
@@ -62,7 +62,7 @@
                      Text="Brightness:"/>
 
             <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal" Spacing="5">
-              <NumericUpDown Classes="ValueLabel ValueLabel_sun"
+              <NumericUpDown suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Brightness5}"
                              Width="180"
                              Minimum="0"
                              Maximum="255"
@@ -77,7 +77,7 @@
                        Text="Operator:">
                 <TextBlock.IsVisible>
                     <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                        <Binding Path="Operation.RedrawType" 
+                        <Binding Path="Operation.RedrawType"
                                  Converter="{StaticResource EnumToBooleanConverter}"
                                  ConverterParameter="Model"/>
                         <Binding Path="!Operation.ContactPointsOnly"/>
@@ -98,6 +98,6 @@
                     </MultiBinding>
                 </ComboBox.IsVisible>
             </ComboBox>
-           
+
       </Grid>
 </UserControl>

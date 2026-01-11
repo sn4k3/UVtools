@@ -2,8 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:controls="clr-namespace:UVtools.UI.Controls"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolLayerImportControl"
              x:DataType="tools:ToolLayerImportControl">
@@ -47,7 +48,7 @@
                              VerticalAlignment="Center"
                              Text="Start at layer:"/>
       <NumericUpDown Grid.Row="2" Grid.Column="2"
-                     Classes="ValueLabel ValueLabel_layers"
+                     suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
                      Minimum="0"
                      Maximum="{Binding MaximumLayer}"
                      Value="{Binding Operation.StartLayerIndex}"/>
@@ -70,7 +71,7 @@
                  IsVisible="{Binding Operation.IsImportStackType}"
                  Text="Stack margin:"/>
       <NumericUpDown Grid.Row="6" Grid.Column="2"
-                     Classes="ValueLabel ValueLabel_px"
+                     suki:NumericUpDownExtensions.Unit="px"
                      IsVisible="{Binding Operation.IsImportStackType}"
                      Minimum="0"
                      Maximum="65535"
@@ -89,36 +90,26 @@
     <Border BorderBrush="Gray" BorderThickness="1" Padding="5">
       <Grid>
         <StackPanel Spacing="5" Orientation="Horizontal">
-          <controls:ButtonWithIcon Padding="5" 
-                                   Command="{Binding AddFiles}"
-                                   Text="Add"
-                                   Spacing="5"
-                                   Icon="fa-solid fa-plus"/>
+          <Button Command="{Binding AddFiles}"
+                  Content="{icon:MaterialIconTextExt Kind=Plus, Text='Add'}" />
 
-          <controls:ButtonWithIcon Padding="5"
-                                   IsEnabled="{Binding #FilesListBox.SelectedItems.Count}"
-                                   Command="{Binding RemoveFiles}"
-                                   Text="Remove"
-                                   Spacing="5"
-                                   Icon="fa-solid fa-minus"/>
+          <Button IsEnabled="{Binding #FilesListBox.SelectedItems.Count}"
+                  Command="{Binding RemoveFiles}"
+                  Content="{icon:MaterialIconTextExt Kind=Minus, Text='Remove'}" />
         </StackPanel>
 
         <StackPanel
           HorizontalAlignment="Right"
           Spacing="5" Orientation="Horizontal">
-          <controls:ButtonWithIcon Padding="5" 
+          <Button Padding="5"
                   IsEnabled="{Binding Operation.Files.Count}"
                   Command="{Binding Operation.Sort}"
-                  Text="Sort by file name"
-                  Spacing="5"
-                  Icon="fa-solid fa-sort-alpha-up"/>
+                  Content="{icon:MaterialIconTextExt Kind=SortAlphabeticalAscending, Text='Sort by file name'}" />
 
-          <controls:ButtonWithIcon
+          <Button
             IsEnabled="{Binding Operation.Files.Count}"
             Padding="5" Command="{Binding ClearFiles}"
-            Text="Clear"
-            Spacing="5"
-            Icon="fa-solid fa-xmark"/>
+            Content="{icon:MaterialIconTextExt Kind=DeleteSweep, Text='Clear'}" />
 
           <TextBlock
             VerticalAlignment="Center"
@@ -137,15 +128,15 @@
         SelectedItem="{Binding SelectedFile}"
         ItemsSource="{Binding Operation.Files}" />
 
-      <Image 
+      <Image
         Grid.Column="1"
         Stretch="Uniform"
         Source="{Binding PreviewImage}"/>
     </Grid>
-    
-    
+
+
   </StackPanel>
 
-  
-  
+
+
 </UserControl>

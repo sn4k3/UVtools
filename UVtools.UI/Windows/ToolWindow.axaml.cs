@@ -5,14 +5,15 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Platform.Storage;
+using SukiUI.MessageBox;
 using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Threading.Tasks;
-using Avalonia.Platform.Storage;
 using UVtools.Core;
-using UVtools.Core.Dialogs;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Managers;
@@ -22,11 +23,10 @@ using UVtools.UI.Controls.Tools;
 using UVtools.UI.Extensions;
 using UVtools.UI.Structures;
 using AvaloniaStatic = UVtools.UI.Controls.AvaloniaStatic;
-using Avalonia.Controls;
 
 namespace UVtools.UI.Windows;
 
-public partial class ToolWindow : WindowEx
+public partial class ToolWindow : GenericWindow
 {
     public enum Callbacks : byte
     {
@@ -353,7 +353,7 @@ public partial class ToolWindow : WindowEx
     {
         if (await this.MessageBoxQuestion("Are you sure you want to clear the current ROI?\n" +
                                           "This action can not be reverted, to select another ROI you must quit this window and select it on layer preview.",
-                "Clear the current ROI?") != MessageButtonResult.Yes) return;
+                "Clear the current ROI?") != SukiMessageBoxResult.Yes) return;
 
         ROI = Rectangle.Empty;
         ToolControl?.Callback(Callbacks.ClearROI);
@@ -363,7 +363,7 @@ public partial class ToolWindow : WindowEx
     {
         if (await this.MessageBoxQuestion("Are you sure you want to clear all masks?\n" +
                                           "This action can not be reverted, to select another mask(s) you must quit this window and select it on layer preview.",
-                "Clear the all masks?") != MessageButtonResult.Yes) return;
+                "Clear the all masks?") != SukiMessageBoxResult.Yes) return;
         IsMasksVisible = false;
         App.MainWindow.ClearMask();
         if (ToolControl?.BaseOperation is not null)
@@ -441,7 +441,7 @@ public partial class ToolWindow : WindowEx
         {
             if (await this.MessageBoxQuestion(
                     $"A profile with same name or settings already exists.\nDo you want to overwrite:\n{operation}",
-                    "Overwrite profile?") != MessageButtonResult.Yes) return;
+                    "Overwrite profile?") != SukiMessageBoxResult.Yes) return;
             /*var index = OperationProfiles.Instance.IndexOf(operation);
             OperationProfiles.Profiles[index] = ToolControl.BaseOperation;
             index = Profiles.IndexOf(operation);
@@ -466,7 +466,7 @@ public partial class ToolWindow : WindowEx
 
         if (await this.MessageBoxQuestion(
                 $"Are you sure you want to remove the selected profile?\n{_selectedProfileItem}",
-                "Remove selected profile?") != MessageButtonResult.Yes) return;
+                "Remove selected profile?") != SukiMessageBoxResult.Yes) return;
 
         OperationProfiles.RemoveProfile(_selectedProfileItem);
         Profiles.Remove(_selectedProfileItem);
@@ -479,7 +479,7 @@ public partial class ToolWindow : WindowEx
         if (Profiles.Count == 0) return;
         if (await this.MessageBoxQuestion(
                 $"Are you sure you want to clear all the {Profiles.Count} profiles?",
-                "Clear all profiles?") != MessageButtonResult.Yes) return;
+                "Clear all profiles?") != SukiMessageBoxResult.Yes) return;
 
         OperationProfiles.ClearProfiles(Profiles[0].GetType());
         Profiles.Clear();
@@ -498,7 +498,7 @@ public partial class ToolWindow : WindowEx
         {
             if (await this.MessageBoxQuestion(
                     $"Are you sure you want to clear the selected profile as default settings for this dialog?",
-                    "Clear the default profile?") != MessageButtonResult.Yes) return;
+                    "Clear the default profile?") != SukiMessageBoxResult.Yes) return;
 
             foreach (var operation in Profiles)
             {
@@ -509,7 +509,7 @@ public partial class ToolWindow : WindowEx
         {
             if (await this.MessageBoxQuestion(
                     $"Are you sure you want to set the selected profile as default settings for this dialog?\n{_selectedProfileItem}",
-                    "Set as default profile?") != MessageButtonResult.Yes) return;
+                    "Set as default profile?") != SukiMessageBoxResult.Yes) return;
 
             foreach (var operation in Profiles)
             {
@@ -720,8 +720,8 @@ public partial class ToolWindow : WindowEx
     {
         base.OnOpened(e);
 
-        DescriptionMaxWidth = Math.Max(DesiredSize.Width, _contentControl.DesiredSize.Width) - 20;
-        ProfileBoxMaxWidth = DescriptionMaxWidth - 64;
+        DescriptionMaxWidth = Math.Max(DesiredSize.Width, _contentControl.DesiredSize.Width);
+        ProfileBoxMaxWidth = DescriptionMaxWidth;
         //Height = MaxHeight;
 
         /*Dispatcher.UIThread.Post(() =>
@@ -799,7 +799,7 @@ public partial class ToolWindow : WindowEx
 
     public async Task Process()
     {
-        if(!await _contentControl.OnBeforeProcess()) return;
+        if (!await _contentControl.OnBeforeProcess()) return;
 
         if (LayerIndexStart > LayerIndexEnd)
         {
@@ -822,7 +822,8 @@ public partial class ToolWindow : WindowEx
             {
                 var result = await this.MessageBoxQuestion(
                         $"Are you sure you want to {ToolControl.BaseOperation.ConfirmationText}");
-                if (result != MessageButtonResult.Yes) return;
+                if (result != SukiMessageBoxResult.Yes) return;
+                await Task.Delay(100); // Small delay to avoid crash
             }
         }
         else
@@ -840,6 +841,7 @@ public partial class ToolWindow : WindowEx
         DialogResult = DialogResults.OK;
         if (_closeWindowAfterProcess)
         {
+            Dispose();
             Close(DialogResult);
         }
 

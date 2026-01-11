@@ -1,8 +1,9 @@
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using SukiUI.MessageBox;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using UVtools.Core.Dialogs;
 using UVtools.Core.PixelEditor;
 using UVtools.UI.Extensions;
@@ -71,7 +72,7 @@ namespace UVtools.UI.Controls.Fragments
         {
             if (_selectedProfileIndex <= -1 || _profiles is null) return;
 
-            if (await App.MainWindow.MessageBoxQuestion($"Are you sure you want to mark the selected profile as default?\n{_profiles[_selectedProfileIndex]}", "Mark the selected profile as default?") != MessageButtonResult.Yes) return;
+            if (await App.MainWindow.MessageBoxQuestion($"Are you sure you want to mark the selected profile as default?\n{_profiles[_selectedProfileIndex]}", "Mark the selected profile as default?") != SukiMessageBoxResult.Yes) return;
 
             foreach (var profile in _profiles)
             {
@@ -86,7 +87,7 @@ namespace UVtools.UI.Controls.Fragments
         {
             if (_selectedProfileIndex <= -1 || _profiles is null) return;
 
-            if (await App.MainWindow.MessageBoxQuestion($"Are you sure you want to remove the selected profile?\n{_profiles[_selectedProfileIndex]}", "Remove the selected profile?") != MessageButtonResult.Yes) return;
+            if (await App.MainWindow.MessageBoxQuestion($"Are you sure you want to remove the selected profile?\n{_profiles[_selectedProfileIndex]}", "Remove the selected profile?") != SukiMessageBoxResult.Yes) return;
 
             PixelEditorProfiles.RemoveProfile(_profiles[_selectedProfileIndex]);
             _profiles.RemoveAt(_selectedProfileIndex);

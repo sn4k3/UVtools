@@ -58,7 +58,7 @@ public sealed class OperationLayerExportMesh : Operation
 
     public override bool CanHaveProfiles => false;
 
-    public override string IconClass => "fa-solid fa-cubes";
+    public override string IconClass => "Cube";
     public override string Title => "Export layers to mesh";
 
     public override string Description =>

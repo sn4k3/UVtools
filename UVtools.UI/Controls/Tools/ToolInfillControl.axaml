@@ -3,6 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="300"
              x:Class="UVtools.UI.Controls.Tools.ToolInfillControl"
              x:DataType="tools:ToolInfillControl">
@@ -27,7 +29,7 @@
             Text="Floor/ceil thickness:"/>
 
         <NumericUpDown Grid.Row="2" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Minimum="0"
                        Maximum="100"
                        Increment="0.1"
@@ -42,7 +44,7 @@
 		  Text="Wall thickness:"/>
 
 		<NumericUpDown Grid.Row="4" Grid.Column="2"
-					   Classes="ValueLabel ValueLabel_px"
+					   suki:NumericUpDownExtensions.Unit="px"
 		  Minimum="0"
 		  Maximum="65535"
 		  Increment="1"
@@ -54,7 +56,7 @@
 				   Text="Infill brightness:"/>
 
 		<NumericUpDown Grid.Row="6" Grid.Column="2"
-					   Classes="ValueLabel ValueLabel_sun"
+					   suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Brightness5}"
 					   Minimum="0"
 					   Maximum="255"
 					   Increment="1"
@@ -66,12 +68,12 @@
 				   Text="Infill thickness:"/>
 
 		<NumericUpDown Grid.Row="8" Grid.Column="2"
-					   Classes="ValueLabel ValueLabel_px"
+					   suki:NumericUpDownExtensions.Unit="px"
 					   Name="InfillThickness"
 					   Minimum="0"
 					   Maximum="65535"
 					   Increment="1"
-      
+
 					   Value="{Binding Operation.InfillThickness}"/>
 
 		<!--Infill spacing-->
@@ -80,7 +82,7 @@
 				   Text="Infill spacing:"/>
 
 		<NumericUpDown Grid.Row="10" Grid.Column="2"
-					   Classes="ValueLabel ValueLabel_px"
+					   suki:NumericUpDownExtensions.Unit="px"
 					   Minimum="{Binding #InfillThickness.Value}"
 					   Maximum="65535"
 					   Increment="1"

@@ -50,7 +50,7 @@ public sealed class OperationCalibrateStressTower : Operation
     public override bool CanROI => false;
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    public override string IconClass => "fa-solid fa-chess-rook";
+    public override string IconClass => "ChessRook";
     public override string Title => "Stress tower";
     public override string Description =>
         "Generates a stress tower to test the printer capabilities.\n" +
@@ -77,7 +77,7 @@ public sealed class OperationCalibrateStressTower : Operation
         {
             sb.AppendLine("Display height must be a positive value.");
         }
-           
+
         return sb.ToString();
     }
 
@@ -398,7 +398,7 @@ public sealed class OperationCalibrateStressTower : Operation
             SlicerFile.ExposureTime = (float)NormalExposure;
             SlicerFile.BottomLayerCount = BottomLayers;
         }, true);
-            
+
         return !progress.Token.IsCancellationRequested;
     }
 

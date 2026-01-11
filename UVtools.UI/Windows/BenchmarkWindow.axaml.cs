@@ -13,14 +13,13 @@ using Avalonia.Media;
 using UVtools.Core;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
-using UVtools.UI.Controls;
 using UVtools.UI.Extensions;
 using UVtools.UI.Structures;
 using UVtools.Core.SystemOS;
 
 namespace UVtools.UI.Windows;
 
-public partial class BenchmarkWindow : WindowEx
+public partial class BenchmarkWindow : GenericWindow
 {
     private int _referenceSelectedIndex;
     private int _testSelectedIndex;

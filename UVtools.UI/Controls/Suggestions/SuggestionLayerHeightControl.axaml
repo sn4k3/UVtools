@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:suggestions="clr-namespace:UVtools.UI.Controls.Suggestions"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
              mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="150"
              x:Class="UVtools.UI.Controls.Suggestions.SuggestionLayerHeightControl"
              x:DataType="suggestions:SuggestionLayerHeightControl">
@@ -40,7 +41,7 @@
 
 		<NumericUpDown Grid.Row="4" Grid.Column="2"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Minimum="0"
                        Maximum="1000"
                        FormatString="F3"
@@ -53,7 +54,7 @@
 
 		<NumericUpDown Grid.Row="4" Grid.Column="6"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Minimum="0"
                        Maximum="1000"
                        FormatString="F3"

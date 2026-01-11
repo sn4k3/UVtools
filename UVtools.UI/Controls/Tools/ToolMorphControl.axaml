@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:uc="clr-namespace:UVtools.UI.Controls"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
              x:Class="UVtools.UI.Controls.Tools.ToolMorphControl"
              x:DataType="tools:ToolMorphControl">
@@ -21,7 +22,7 @@
       <StackPanel Grid.Row="0" Grid.Column="2"
                   Orientation="Horizontal" Spacing="10">
 
-        <NumericUpDown Classes="ValueLabel ValueLabel_px"
+        <NumericUpDown suki:NumericUpDownExtensions.Unit="px"
                        Minimum="1"
                        Width="180"
                        Value="{Binding Operation.IterationsStart}"/>
@@ -30,7 +31,7 @@
                    Text="To:"
                    IsEnabled="{Binding Operation.Chamfer}"/>
 
-        <NumericUpDown Classes="ValueLabel ValueLabel_px"
+        <NumericUpDown suki:NumericUpDownExtensions.Unit="px"
                        Minimum="1"
                        Width="180"
                        Value="{Binding Operation.IterationsEnd}"
@@ -52,7 +53,7 @@
 
     </Grid>
 
-      
+
   <Expander Header="Kernel - Advanced options (Click to expand)" Margin="0,10,0,0" HorizontalAlignment="Stretch">
     <uc:KernelControl Name="KernelCtrl"
                       Kernel="{Binding $parent.((tools:ToolMorphControl)DataContext).Operation.Kernel}"
@@ -60,6 +61,6 @@
   </Expander>
 
   </StackPanel>
-  
-  
+
+
 </UserControl>

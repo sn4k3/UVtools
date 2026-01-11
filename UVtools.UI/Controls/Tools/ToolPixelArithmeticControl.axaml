@@ -5,6 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              d:DesignHeight="450"
              d:DesignWidth="800"
              x:DataType="tools:ToolPixelArithmeticControl"
@@ -96,7 +98,7 @@
                           SelectedItem="{Binding Operation.IgnoreAreaOperator, Converter={StaticResource FromValueDescriptionToEnumConverter}}" />
 
                 <NumericUpDown Width="150"
-                               Classes="ValueLabel ValueLabel_px2"
+                               suki:NumericUpDownExtensions.Unit="px²"
                                Maximum="4294967295"
                                Minimum="0"
                                ToolTip.Tip="Ignore all areas smaller or larger than this threshold. &#x0a;0 = Disabled"
@@ -145,7 +147,7 @@
                                Text="Threshold:" />
 
                     <NumericUpDown Width="80"
-                                   Classes="ValueLabel ValueLabel_sun"
+                                   suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Brightness5}"
                                    Maximum="255"
                                    Minimum="0"
                                    ToolTip.Tip="Only the pixels with brightness above this threshold are processed"
@@ -158,7 +160,7 @@
                                Text="Noise pixel area:   " />
 
                     <NumericUpDown Width="80"
-                                   Classes="ValueLabel ValueLabel_px2"
+                                   suki:NumericUpDownExtensions.Unit="px²"
                                    Maximum="65535"
                                    Minimum="1"
                                    Value="{Binding Operation.NoisePixelArea}" />
@@ -167,7 +169,7 @@
                                Text="Number of passes:" />
 
                     <NumericUpDown Width="80"
-                                   Classes="ValueLabel ValueLabel_times"
+                                   suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Multiply}"
                                    Maximum="255"
                                    Minimum="1"
                                    Value="{Binding Operation.NoisePasses}" />
@@ -190,7 +192,7 @@
                         Orientation="Horizontal"
                         Spacing="5">
 
-                <NumericUpDown Classes="ValueLabel ValueLabel_sun"
+                <NumericUpDown suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Brightness5}"
                                IsEnabled="{Binding !Operation.UsePattern}"
                                Maximum="255"
                                Minimum="0"
@@ -207,7 +209,7 @@
                            ToolTip.Tip="Mutates the initial brightness with a step that is added/subtracted to the current value dependent on the processed layer count" />
 
                 <NumericUpDown Width="140"
-                               Classes="ValueLabel ValueLabel_sun"
+                               suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Brightness5}"
                                FormatString="F3"
                                IsEnabled="{Binding !Operation.UsePattern}"
                                Maximum="255"
@@ -491,7 +493,7 @@
                                            Text="Thickness:" />
                                 <NumericUpDown Grid.Row="0"
                                                Grid.Column="2"
-                                               Classes="ValueLabel ValueLabel_px"
+                                               suki:NumericUpDownExtensions.Unit="px"
                                                Maximum="10000"
                                                Minimum="5"
                                                Value="{Binding Operation.PatternGenInfillThickness}" />
@@ -502,7 +504,7 @@
                                            Text="Spacing:" />
                                 <NumericUpDown Grid.Row="2"
                                                Grid.Column="2"
-                                               Classes="ValueLabel ValueLabel_px"
+                                               suki:NumericUpDownExtensions.Unit="px"
                                                Maximum="10000"
                                                Minimum="5"
                                                Value="{Binding Operation.PatternGenInfillSpacing}" />

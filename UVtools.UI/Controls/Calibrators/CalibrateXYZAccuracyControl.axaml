@@ -2,8 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:i="https://github.com/projektanker/icons.avalonia"
              xmlns:calibrators="clr-namespace:UVtools.UI.Controls.Calibrators"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
              x:Class="UVtools.UI.Controls.Calibrators.CalibrateXYZAccuracyControl"
              x:DataType="calibrators:CalibrateXYZAccuracyControl">
@@ -13,7 +14,7 @@
         <Expander Header="Step 1: Generate and print test model"
                   HorizontalAlignment="Stretch"
                   IsExpanded="True">
-       
+
         <Grid
             RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
             ColumnDefinitions="Auto,10,190,20,Auto,10,190">
@@ -24,7 +25,7 @@
                     ToolTip.Tip="The printer display width. Required to calculate the pixels per mm."
                      Text="Display width:"/>
           <NumericUpDown Grid.Row="0" Grid.Column="2"
-                         Classes="ValueLabel ValueLabel_mm"
+                         suki:NumericUpDownExtensions.Unit="mm"
                          Increment="0.1"
                          Minimum="0"
                          Maximum="10000"
@@ -36,7 +37,7 @@
                      ToolTip.Tip="The printer display height. Required to calculate the pixels per mm."
                      Text="Display height:"/>
           <NumericUpDown Grid.Row="0" Grid.Column="6"
-                         Classes="ValueLabel ValueLabel_mm"
+                         suki:NumericUpDownExtensions.Unit="mm"
                          Increment="0.1"
                          Minimum="0"
                          Maximum="10000"
@@ -47,7 +48,7 @@
                      VerticalAlignment="Center"
                      Text="Layer height:"/>
         <NumericUpDown Grid.Row="2" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Increment="0.01"
                        Minimum="0.001"
                        Maximum="0.30"
@@ -58,7 +59,7 @@
                    VerticalAlignment="Center"
                    Text="Bottom layers:"/>
         <NumericUpDown Grid.Row="2" Grid.Column="6"
-                        Classes="ValueLabel ValueLabel_layers"
+                        suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
                        Increment="1"
                        Minimum="1"
                        Maximum="1000"
@@ -68,7 +69,7 @@
                    VerticalAlignment="Center"
                    Text="Bottom exposure:"/>
         <NumericUpDown Grid.Row="4" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Increment="0.5"
                        Minimum="0.1"
                        Maximum="200"
@@ -79,7 +80,7 @@
                    VerticalAlignment="Center"
                    Text="Normal exposure:"/>
         <NumericUpDown Grid.Row="4" Grid.Column="6"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Increment="0.5"
                        Minimum="0.1"
                        Maximum="200"
@@ -90,7 +91,7 @@
                      VerticalAlignment="Center"
                      Text="X length:"/>
           <NumericUpDown Grid.Row="6" Grid.Column="2"
-                         Classes="ValueLabel ValueLabel_mm"
+                         suki:NumericUpDownExtensions.Unit="mm"
                          Increment="1"
                          Minimum="5"
                          Maximum="100"
@@ -101,7 +102,7 @@
                      VerticalAlignment="Center"
                      Text="Y length:"/>
           <NumericUpDown Grid.Row="6" Grid.Column="6"
-                         Classes="ValueLabel ValueLabel_mm"
+                         suki:NumericUpDownExtensions.Unit="mm"
                          Increment="1"
                          Minimum="5"
                          Maximum="100"
@@ -112,7 +113,7 @@
                      VerticalAlignment="Center"
                      Text="Z height:"/>
           <NumericUpDown Grid.Row="8" Grid.Column="2"
-                         Classes="ValueLabel ValueLabel_mm"
+                         suki:NumericUpDownExtensions.Unit="mm"
                          Increment="1"
                          Minimum="5"
                          Maximum="100"
@@ -148,7 +149,7 @@
                    VerticalAlignment="Center"
                    Text="Top/bottom margin:"/>
         <NumericUpDown Grid.Row="10" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_px"
+                       suki:NumericUpDownExtensions.Unit="px"
                        Increment="1"
                        Minimum="0"
                        Maximum="10000"
@@ -158,7 +159,7 @@
                      VerticalAlignment="Center"
                      Text="Left/right margin:"/>
           <NumericUpDown Grid.Row="10" Grid.Column="6"
-                         Classes="ValueLabel ValueLabel_mm"
+                         suki:NumericUpDownExtensions.Unit="mm"
                          Increment="1"
                          Minimum="0"
                          Maximum="10000"
@@ -175,7 +176,7 @@
               </TextBlock.IsEnabled>
           </TextBlock>
           <NumericUpDown Grid.Row="12" Grid.Column="2"
-                         Classes="ValueLabel ValueLabel_mm3"
+                         suki:NumericUpDownExtensions.Unit="mm³"
                          Increment="0.5"
                          Minimum="0"
                          Maximum="100"
@@ -188,13 +189,13 @@
               </MultiBinding>
             </NumericUpDown.IsEnabled>
           </NumericUpDown>
-          
+
           <TextBlock Grid.Row="12" Grid.Column="4"
                     Text="Wall thickness:"
                     VerticalAlignment="Center"
                     IsEnabled="{Binding Operation.HollowModel}"/>
           <NumericUpDown Grid.Row="12" Grid.Column="6"
-                         Classes="ValueLabel ValueLabel_mm"
+                         suki:NumericUpDownExtensions.Unit="mm"
                          Increment="0.5"
                          Minimum="0"
                          Maximum="100"
@@ -203,18 +204,18 @@
                          Value="{Binding Operation.WallThickness}"/>
 
           <StackPanel Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="7" Orientation="Horizontal" Spacing="20">
-              <CheckBox 
+              <CheckBox
                         ToolTip.Tip="Most of the printers requires a mirror output to print with the correct orientation"
                         IsChecked="{Binding Operation.MirrorOutput}"
                         Content="Mirror output" />
 
-              <CheckBox 
+              <CheckBox
                         VerticalAlignment="Center"
                         IsChecked="{Binding Operation.CenterHoleRelief}"
                         Content="Relief base with a center hole"/>
 
 
-              <CheckBox 
+              <CheckBox
                         Content="Hollow model"
                         IsChecked="{Binding Operation.HollowModel}"/>
           </StackPanel>
@@ -291,7 +292,7 @@
           <StackPanel Grid.Row="16" Grid.Column="4"
                       VerticalAlignment="Center"
                       Spacing="5">
-            <Button 
+            <Button
                   Command="{Binding Operation.SelectNoneObjects}"
                   HorizontalAlignment="Stretch"
                   HorizontalContentAlignment="Center"
@@ -329,8 +330,8 @@
 
         <StackPanel Orientation="Horizontal" Spacing="5">
             <TextBlock VerticalAlignment="Center" Text="X:"/>
-            <NumericUpDown 
-                           Classes="ValueLabel ValueLabel_mm"
+            <NumericUpDown
+                           suki:NumericUpDownExtensions.Unit="mm"
                            Increment="1"
                            Minimum="0"
                            Maximum="100"
@@ -341,7 +342,7 @@
             <TextBlock VerticalAlignment="Center" Text="Y:"
                        Margin="20,0,0,0"/>
             <NumericUpDown
-                Classes="ValueLabel ValueLabel_mm"
+                suki:NumericUpDownExtensions.Unit="mm"
                 Increment="1"
                 Minimum="0"
                 Maximum="100"
@@ -352,7 +353,7 @@
           <TextBlock VerticalAlignment="Center" Text="Z:"
                      Margin="20,0,0,0"/>
           <NumericUpDown
-              Classes="ValueLabel ValueLabel_mm"
+              suki:NumericUpDownExtensions.Unit="mm"
                 Increment="1"
                 Minimum="0"
                 Maximum="100"
@@ -438,10 +439,10 @@
             <Button Grid.Column="6" VerticalAlignment="Center"
                     IsEnabled="{Binding IsProfileAddEnabled}"
                     Command="{Binding AddProfile}"
-                    i:Attached.Icon="fa-solid fa-plus"/>
+                    Content="{icon:MaterialIconExt Kind=Plus}"/>
         </Grid>
       </Expander>
-        
+
 
     </StackPanel>
 

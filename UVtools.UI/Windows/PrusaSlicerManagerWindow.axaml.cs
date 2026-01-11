@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SukiUI.MessageBox;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using UVtools.Core.Dialogs;
@@ -8,7 +9,7 @@ using UVtools.UI.Structures;
 
 namespace UVtools.UI.Windows;
 
-public partial class PrusaSlicerManagerWindow : WindowEx
+public partial class PrusaSlicerManagerWindow : GenericWindow
 {
     public PSProfileFolder[] PrusaSlicerProfiles { get; } =
     [
@@ -82,7 +83,7 @@ public partial class PrusaSlicerManagerWindow : WindowEx
                 "---------------\n" +
                 "Click 'Yes' to continue\n" +
                 "Click 'No' to cancel this operation",
-                $"Install printers into {slicerName}") != MessageButtonResult.Yes) return;
+                $"Install printers into {slicerName}") != SukiMessageBoxResult.Yes) return;
 
         ushort count = 0;
 

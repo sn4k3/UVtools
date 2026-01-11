@@ -6,7 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Avalonia.Themes.Fluent;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,8 +13,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.IO.Compression;
 using System.Xml.Serialization;
+using Avalonia.Themes.Fluent;
+using CommunityToolkit.Mvvm.ComponentModel;
+using SukiUI.Enums;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -28,7 +29,7 @@ using Color = UVtools.UI.Structures.Color;
 namespace UVtools.UI;
 
 
-public sealed class UserSettings : BindableBase
+public partial class UserSettings : ObservableObject
 {
     #region Constants
     public const ushort SETTINGS_VERSION = 8;
@@ -38,308 +39,172 @@ public sealed class UserSettings : BindableBase
 
     #region General
 
-    public sealed class GeneralUserSettings : BindableBase
+    public partial class GeneralUserSettings : ObservableObject
     {
-        private App.ApplicationTheme _theme = App.ApplicationTheme.FluentLight;
-        private DensityStyle _themeDensity = DensityStyle.Normal;
-        internal Rectangle _lastWindowBounds = new(40, 40, 1024, 600);
-        private bool _startMaximized = true;
-        private bool _restoreWindowLastPosition;
-        private bool _restoreWindowLastSize;
-        private bool _checkForUpdatesOnStartup = true;
-        private bool _loadDemoFileOnStartup = true;
-        private bool _loadLastRecentFileOnStartup;
-        private decimal _availableRamLimit;
-        private RamLimitAction _availableRamOnHitLimitAction;
-        private bool _availableRamOnHitLimitKillIfUnableToAction;
-        private int _maxDegreeOfParallelism = -2;
-        private LayerCompressionCodec _layerCompressionCodec = CoreSettings.DefaultLayerCompressionCodec;
-        private LayerCompressionLevel _layerCompressionLevel = CoreSettings.DefaultLayerCompressionLevel;
-        private float _averageResin1000MlBottleCost = CoreSettings.AverageResin1000MlBottleCost;
-        private bool _windowsCanResize;
-        private bool _windowsTakeIntoAccountScreenScaling = true;
-        private ushort _windowsHorizontalMargin = 100;
-        private ushort _windowsVerticalMargin = 80;
-        private byte _defaultOpenFileExtensionIndex;
-        private string? _defaultDirectoryOpenFile;
-        private string? _defaultDirectorySaveFile;
-        private string? _defaultDirectoryExtractFile;
-        private string? _defaultDirectoryConvertFile;
-        private string? _defaultDirectoryScripts;
-        private bool _fileSavePromptOverwrite = true;
-        private string? _fileSaveAsDefaultName = "{0}_{PrintTimeString}_{MaterialMillilitersInteger}ml_copy";
-        private string? _fileSaveAsDefaultNameCleanUpRegex = @"_?[0-9]+h[0-9]+m([0-9]+s)?|_?(([0-9]*[.])?[0-9]+)ml|_copy([0-9]*)?";
-        private bool _notificationBeep = true;
-        private byte _notificationBeepCount = 1;
-        private ushort _notificationBeepActivateAboveTime = 20;
-        private ushort _notificationBeepFrequency = 600;
-        private ushort _notificationBeepDuration = 300;
-        private int _notificationBeepRepeatFrequencyOffset = 50;
-        private ushort _notificationBeepRepeatDelay;
-        private bool _sendToPromptForRemovableDeviceEject = true;
-        private RangeObservableCollection<MappedDevice> _sendToCustomLocations = [];
-        private RangeObservableCollection<MappedProcess> _sendToProcess = [];
-        private ushort _lockedFilesOpenCounter;
-        private bool _fileSaveUpdateNameWithNewInformation = true;
-
-
-
         public const byte LockedFilesMaxOpenCounter = 10;
 
-        public App.ApplicationTheme Theme
-        {
-            get => _theme;
-            set => RaiseAndSetIfChanged(ref _theme, value);
-        }
+        [ObservableProperty]
+        public partial App.ApplicationTheme Theme { get; set; } = App.ApplicationTheme.FluentSystem;
 
-        public DensityStyle ThemeDensity
-        {
-            get => _themeDensity;
-            set => RaiseAndSetIfChanged(ref _themeDensity, value);
-        }
+        [ObservableProperty]
+        public partial DensityStyle ThemeDensity { get; set; } = DensityStyle.Normal;
 
-        public Rectangle LastWindowBounds
-        {
-            get => _lastWindowBounds;
-            set => RaiseAndSetIfChanged(ref _lastWindowBounds, value);
-        }
+        [ObservableProperty]
+        public partial string ThemeColor { get; set; } = string.Empty;
 
-        public bool StartMaximized
-        {
-            get => _startMaximized;
-            set => RaiseAndSetIfChanged(ref _startMaximized, value);
-        }
+        [ObservableProperty]
+        public partial bool BackgroundAnimations { get; set; }
 
-        public bool RestoreWindowLastPosition
-        {
-            get => _restoreWindowLastPosition;
-            set => RaiseAndSetIfChanged(ref _restoreWindowLastPosition, value);
-        }
+        [ObservableProperty]
+        public partial bool BackgroundTransitions { get; set; } = true;
 
-        public bool RestoreWindowLastSize
-        {
-            get => _restoreWindowLastSize;
-            set => RaiseAndSetIfChanged(ref _restoreWindowLastSize, value);
-        }
+        [ObservableProperty]
+        public partial SukiBackgroundStyle BackgroundStyle { get; set; } = SukiBackgroundStyle.GradientSoft;
 
-        public bool CheckForUpdatesOnStartup
-        {
-            get => _checkForUpdatesOnStartup;
-            set => RaiseAndSetIfChanged(ref _checkForUpdatesOnStartup, value);
-        }
+        [ObservableProperty]
+        public partial Rectangle LastWindowBounds { get; set; } = new(40, 40, 1024, 600);
 
-        public bool LoadDemoFileOnStartup
-        {
-            get => _loadDemoFileOnStartup;
-            set => RaiseAndSetIfChanged(ref _loadDemoFileOnStartup, value);
-        }
+        [ObservableProperty]
+        public partial bool StartMaximized { get; set; } = true;
 
-        public bool LoadLastRecentFileOnStartup
-        {
-            get => _loadLastRecentFileOnStartup;
-            set => RaiseAndSetIfChanged(ref _loadLastRecentFileOnStartup, value);
-        }
+        [ObservableProperty]
+        public partial bool RestoreWindowLastPosition { get; set; }
+
+        [ObservableProperty]
+        public partial bool RestoreWindowLastSize { get; set; }
+
+        [ObservableProperty]
+        public partial bool CheckForUpdatesOnStartup { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool LoadDemoFileOnStartup { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool LoadLastRecentFileOnStartup { get; set; }
 
         /// <summary>
         /// Gets or sets the minimum amount of available RAM in GB to be able to run, otherwise will pause/cancel or exit.
         /// </summary>
         public decimal AvailableRamLimit
         {
-            get => _availableRamLimit;
-            set => RaiseAndSetIfChanged(ref _availableRamLimit, Math.Max(0, value));
+            get;
+            set => SetProperty(ref field, Math.Max(0, value));
         }
 
-        public RamLimitAction AvailableRamOnHitLimitAction
-        {
-            get => _availableRamOnHitLimitAction;
-            set => RaiseAndSetIfChanged(ref _availableRamOnHitLimitAction, value);
-        }
+        [ObservableProperty]
+        public partial RamLimitAction AvailableRamOnHitLimitAction { get; set; }
 
-        public bool AvailableRamOnHitLimitKillIfUnableToAction
-        {
-            get => _availableRamOnHitLimitKillIfUnableToAction;
-            set => RaiseAndSetIfChanged(ref _availableRamOnHitLimitKillIfUnableToAction, value);
-        }
+        [ObservableProperty]
+        public partial bool AvailableRamOnHitLimitKillIfUnableToAction { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum number of concurrent tasks enabled by a ParallelOptions instance.
         /// </summary>
         public int MaxDegreeOfParallelism
         {
-            get => _maxDegreeOfParallelism;
-            set => RaiseAndSetIfChanged(ref _maxDegreeOfParallelism, Math.Min(value, Environment.ProcessorCount));
-        }
+            get;
+            set => SetProperty(ref field, Math.Min(value, Environment.ProcessorCount));
+        } = -2;
 
-        public LayerCompressionCodec LayerCompressionCodec
-        {
-            get => _layerCompressionCodec;
-            set => RaiseAndSetIfChanged(ref _layerCompressionCodec, value);
-        }
+        [ObservableProperty]
+        public partial LayerCompressionCodec LayerCompressionCodec { get; set; } = CoreSettings.DefaultLayerCompressionCodec;
 
-        public LayerCompressionLevel LayerCompressionLevel
-        {
-            get => _layerCompressionLevel;
-            set => RaiseAndSetIfChanged(ref _layerCompressionLevel, value);
-        }
+        [ObservableProperty]
+        public partial LayerCompressionLevel LayerCompressionLevel { get; set; } = CoreSettings.DefaultLayerCompressionLevel;
 
-        public float AverageResin1000MlBottleCost
-        {
-            get => _averageResin1000MlBottleCost;
-            set => RaiseAndSetIfChanged(ref _averageResin1000MlBottleCost, value);
-        }
+        [ObservableProperty]
+        public partial float AverageResin1000MlBottleCost { get; set; } = CoreSettings.AverageResin1000MlBottleCost;
 
-        public bool WindowsCanResize
-        {
-            get => _windowsCanResize;
-            set => RaiseAndSetIfChanged(ref _windowsCanResize, value);
-        }
+        [ObservableProperty]
+        public partial bool WindowsCanResize { get; set; }
 
-        public bool WindowsTakeIntoAccountScreenScaling
-        {
-            get => _windowsTakeIntoAccountScreenScaling;
-            set => RaiseAndSetIfChanged(ref _windowsTakeIntoAccountScreenScaling, value);
-        }
+        [ObservableProperty]
+        public partial bool WindowsTakeIntoAccountScreenScaling { get; set; } = true;
 
-        public ushort WindowsHorizontalMargin
-        {
-            get => _windowsHorizontalMargin;
-            set => RaiseAndSetIfChanged(ref _windowsHorizontalMargin, value);
-        }
+        [ObservableProperty]
+        public partial float WindowsMaxWidthScreenRatio { get; set; } = 0.9f;
 
-        public ushort WindowsVerticalMargin
-        {
-            get => _windowsVerticalMargin;
-            set => RaiseAndSetIfChanged(ref _windowsVerticalMargin, value);
-        }
+        [ObservableProperty]
+        public partial float WindowsMaxHeightScreenRatio { get; set; } = 0.9f;
 
-        public byte DefaultOpenFileExtensionIndex
-        {
-            get => _defaultOpenFileExtensionIndex;
-            set => RaiseAndSetIfChanged(ref _defaultOpenFileExtensionIndex, value);
-        }
+        [ObservableProperty]
+        public partial byte DefaultOpenFileExtensionIndex { get; set; }
 
-        public string? DefaultDirectoryOpenFile
-        {
-            get => _defaultDirectoryOpenFile;
-            set => RaiseAndSetIfChanged(ref _defaultDirectoryOpenFile, value);
-        }
+        [ObservableProperty]
+        public partial string? DefaultDirectoryOpenFile { get; set; }
 
-        public string? DefaultDirectorySaveFile
-        {
-            get => _defaultDirectorySaveFile;
-            set => RaiseAndSetIfChanged(ref _defaultDirectorySaveFile, value);
-        }
+        [ObservableProperty]
+        public partial string? DefaultDirectorySaveFile { get; set; }
 
-        public string? DefaultDirectoryExtractFile
-        {
-            get => _defaultDirectoryExtractFile;
-            set => RaiseAndSetIfChanged(ref _defaultDirectoryExtractFile, value);
-        }
+        [ObservableProperty]
+        public partial string? DefaultDirectoryExtractFile { get; set; }
 
-        public string? DefaultDirectoryConvertFile
-        {
-            get => _defaultDirectoryConvertFile;
-            set => RaiseAndSetIfChanged(ref _defaultDirectoryConvertFile, value);
-        }
+        [ObservableProperty]
+        public partial string? DefaultDirectoryConvertFile { get; set; }
 
-        public string? DefaultDirectoryScripts
-        {
-            get => _defaultDirectoryScripts;
-            set => RaiseAndSetIfChanged(ref _defaultDirectoryScripts, value);
-        }
+        [ObservableProperty]
+        public partial string? DefaultDirectoryScripts { get; set; }
 
+        [ObservableProperty]
+        public partial bool FileSavePromptOverwrite { get; set; } = true;
 
-        public bool FileSavePromptOverwrite
-        {
-            get => _fileSavePromptOverwrite;
-            set => RaiseAndSetIfChanged(ref _fileSavePromptOverwrite, value);
-        }
+        [ObservableProperty]
+        public partial bool FileSaveUpdateNameWithNewInformation { get; set; } = true;
 
-        public bool FileSaveUpdateNameWithNewInformation
-        {
-            get => _fileSaveUpdateNameWithNewInformation;
-            set => RaiseAndSetIfChanged(ref _fileSaveUpdateNameWithNewInformation, value);
-        }
+        [ObservableProperty]
+        public partial string? FileSaveAsDefaultName { get; set; } = "{0}_{PrintTimeString}_{MaterialMillilitersInteger}ml_copy";
 
-        public string? FileSaveAsDefaultName
-        {
-            get => _fileSaveAsDefaultName;
-            set => RaiseAndSetIfChanged(ref _fileSaveAsDefaultName, value);
-        }
+        [ObservableProperty]
+        public partial string? FileSaveAsDefaultNameCleanUpRegex { get; set; } = @"_?[0-9]+h[0-9]+m([0-9]+s)?|_?(([0-9]*[.])?[0-9]+)ml|_copy([0-9]*)?";
 
-        public string? FileSaveAsDefaultNameCleanUpRegex
-        {
-            get => _fileSaveAsDefaultNameCleanUpRegex;
-            set => RaiseAndSetIfChanged(ref _fileSaveAsDefaultNameCleanUpRegex, value);
-        }
+        [ObservableProperty]
+        public partial bool NotificationBeep { get; set; } = true;
 
-        public bool NotificationBeep
-        {
-            get => _notificationBeep;
-            set => RaiseAndSetIfChanged(ref _notificationBeep, value);
-        }
+        [ObservableProperty]
+        public partial byte NotificationBeepCount { get; set; } = 1;
 
-        public byte NotificationBeepCount
-        {
-            get => _notificationBeepCount;
-            set => RaiseAndSetIfChanged(ref _notificationBeepCount, value);
-        }
+        [ObservableProperty]
+        public partial ushort NotificationBeepActivateAboveTime { get; set; } = 20;
 
-        public ushort NotificationBeepActivateAboveTime
-        {
-            get => _notificationBeepActivateAboveTime;
-            set => RaiseAndSetIfChanged(ref _notificationBeepActivateAboveTime, value);
-        }
+        [ObservableProperty]
+        public partial ushort NotificationBeepFrequency { get; set; } = 600;
 
-        public ushort NotificationBeepFrequency
-        {
-            get => _notificationBeepFrequency;
-            set => RaiseAndSetIfChanged(ref _notificationBeepFrequency, value);
-        }
+        [ObservableProperty]
+        public partial ushort NotificationBeepDuration { get; set; } = 300;
 
-        public ushort NotificationBeepDuration
-        {
-            get => _notificationBeepDuration;
-            set => RaiseAndSetIfChanged(ref _notificationBeepDuration, value);
-        }
+        [ObservableProperty]
+        public partial int NotificationBeepRepeatFrequencyOffset { get; set; } = 50;
 
-        public int NotificationBeepRepeatFrequencyOffset
-        {
-            get => _notificationBeepRepeatFrequencyOffset;
-            set => RaiseAndSetIfChanged(ref _notificationBeepRepeatFrequencyOffset, value);
-        }
+        [ObservableProperty]
+        public partial ushort NotificationBeepRepeatDelay { get; set; }
 
-        public ushort NotificationBeepRepeatDelay
-        {
-            get => _notificationBeepRepeatDelay;
-            set => RaiseAndSetIfChanged(ref _notificationBeepRepeatDelay, value);
-        }
+        [ObservableProperty]
+        public partial bool SendToPromptForRemovableDeviceEject { get; set; } = true;
 
-        public bool SendToPromptForRemovableDeviceEject
-        {
-            get => _sendToPromptForRemovableDeviceEject;
-            set => RaiseAndSetIfChanged(ref _sendToPromptForRemovableDeviceEject, value);
-        }
+        [ObservableProperty]
+        public partial RangeObservableCollection<MappedDevice> SendToCustomLocations { get; set; } = [];
 
-        public RangeObservableCollection<MappedDevice> SendToCustomLocations
-        {
-            get => _sendToCustomLocations;
-            set => RaiseAndSetIfChanged(ref _sendToCustomLocations, value);
-        }
+        [ObservableProperty]
+        public partial RangeObservableCollection<MappedProcess> SendToProcess { get; set; } = [];
 
-        public RangeObservableCollection<MappedProcess> SendToProcess
-        {
-            get => _sendToProcess;
-            set => RaiseAndSetIfChanged(ref _sendToProcess, value);
-        }
-
-        public ushort LockedFilesOpenCounter
-        {
-            get => _lockedFilesOpenCounter;
-            set => RaiseAndSetIfChanged(ref _lockedFilesOpenCounter, value);
-        }
+        [ObservableProperty]
+        public partial ushort LockedFilesOpenCounter { get; set; }
 
         public GeneralUserSettings() { }
+
+        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+
+            if (e.PropertyName == nameof(Theme))
+            {
+                App.ChangeBaseTheme(Theme);
+            }
+            else if (e.PropertyName == nameof(ThemeColor))
+            {
+                App.ChangeColorTheme(ThemeColor);
+            }
+        }
 
         public GeneralUserSettings Clone()
         {
@@ -358,650 +223,354 @@ public sealed class UserSettings : BindableBase
 
     #region Layer Preview
 
-    public sealed class LayerPreviewUserSettings : BindableBase
+    public sealed partial class LayerPreviewUserSettings : ObservableObject
     {
-        private Color _tooltipOverlayBackgroundColor = new(210, 226, 223, 215);
-        private bool _tooltipOverlay = true;
-        private Color _volumeBoundsOutlineColor = new(255, 0, 255, 0);
-        private byte _volumeBoundsOutlineThickness = 3;
-        private bool _volumeBoundsOutline = true;
-        private Color _layerBoundsOutlineColor = new(255, 45, 150, 45);
-        private byte _layerBoundsOutlineThickness = 3;
-        private bool _layerBoundsOutline = false;
-        private Color _contourBoundsOutlineColor = new(255, 50, 100, 50);
-        private byte _contourBoundsOutlineThickness = 2;
-        private bool _contourBoundsOutline = false;
-        private Color _enclosingCirclesOutlineColor = new(255, 127, 0, 0);
-        private byte  _enclosingCirclesOutlineThickness = 2;
-        private bool  _enclosingCirclesOutline = false;
-        private Color _hollowOutlineColor = new(255, 255, 165, 0);
-        private sbyte _hollowOutlineLineThickness = 5;
-        private bool _hollowOutline = false;
-        private Color _centroidOutlineColor = new(255, 255, 0, 0);
-        private byte _centroidOutlineDiameter = 8;
-        private bool _centroidOutlineHollow = false;
-        private bool _centroidOutline = false;
-        private Color _triangulateOutlineColor = new(255, 0, 0, 255);
-        private byte _triangulateOutlineLineThickness = 2;
-        private bool _triangulateOutlineShowCount = true;
-        private Color _maskOutlineColor = new(255, 42, 157, 244);
-        private sbyte _maskOutlineLineThickness = 10;
-        private bool _maskClearRoiAfterSet = true;
-        private Color _previousLayerDifferenceColor = new(255, 81, 131, 82);
-        private Color _nextLayerDifferenceColor = new(255, 81, 249, 252);
-        private Color _bothLayerDifferenceColor = new(255, 246, 240, 216);
-        private bool _showLayerDifference = false;
-        private bool _layerDifferenceHighlightSimilarityInstead = false;
-        private bool _useIssueColorOnTracker = true;
-        private Color _islandColor = new(255, 255, 255, 0);
-        private Color _islandHighlightColor = new(255, 255, 215, 0);
-        private Color _overhangColor = new(255, 255, 105, 180);
-        private Color _overhangHighlightColor = new(255, 255, 20, 147);
-        private Color _resinTrapColor = new(255, 255, 165, 0);
-        private Color _resinTrapHighlightColor = new(255, 255, 127, 0);
-        private Color _suctionCupColor = new(255, 180, 235, 255);
-        private Color _suctionCupHighlightColor = new(255, 77, 207, 255);
-        private Color _touchingBoundsColor = new(255, 255, 0, 0);
-        private Color _crosshairColor = new(255, 255, 0, 0);
-        private bool _zoomToFitPrintVolumeBounds = true;
-        private byte _zoomLockLevelIndex = 7;
-        private bool _zoomIssues = true;
-        private bool _crosshairShowOnlyOnSelectedIssues = false;
-        private byte _crosshairFadeLevelIndex = 5;
-        private uint _crosshairLength = 20;
-        private byte _crosshairMargin = 5;
-        private bool _autoRotateLayerBestView = true;
-        private bool _autoFlipLayerIfMirrored = true;
-        private bool _layerZoomToFitOnLoad = true;
-        private bool _showBackgroudGrid;
-        private ushort _layerSliderDebounce;
-        private bool _zoomPreferNative;
-        private ushort _zoomDebounceMilliseconds = 20;
-
-
-        public Color TooltipOverlayBackgroundColor
-        {
-            get => _tooltipOverlayBackgroundColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _tooltipOverlayBackgroundColor, value);
-                RaisePropertyChanged(nameof(TooltipOverlayBackgroundBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(TooltipOverlayBackgroundBrush))]
+        public partial Color TooltipOverlayBackgroundColor { get; set; } = new(210, 226, 223, 215);
 
         [XmlIgnore]
         public Avalonia.Media.Color TooltipOverlayBackgroundBrush
         {
-            get => _tooltipOverlayBackgroundColor.ToAvalonia();
+            get => TooltipOverlayBackgroundColor.ToAvalonia();
             set => TooltipOverlayBackgroundColor = new Color(value);
         }
 
-        public bool TooltipOverlay
-        {
-            get => _tooltipOverlay;
-            set => RaiseAndSetIfChanged(ref _tooltipOverlay, value);
-        }
+        [ObservableProperty]
+        public partial bool TooltipOverlay { get; set; } = true;
 
-        public Color VolumeBoundsOutlineColor
-        {
-            get => _volumeBoundsOutlineColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _volumeBoundsOutlineColor, value);
-                RaisePropertyChanged(nameof(VolumeBoundsOutlineBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(VolumeBoundsOutlineBrush))]
+        public partial Color VolumeBoundsOutlineColor { get; set; } = new(255, 0, 255, 0);
 
         [XmlIgnore]
         public Avalonia.Media.Color VolumeBoundsOutlineBrush
         {
-            get => _volumeBoundsOutlineColor.ToAvalonia();
+            get => VolumeBoundsOutlineColor.ToAvalonia();
             set => VolumeBoundsOutlineColor = new Color(value);
         }
 
-        public byte VolumeBoundsOutlineThickness
-        {
-            get => _volumeBoundsOutlineThickness;
-            set => RaiseAndSetIfChanged(ref _volumeBoundsOutlineThickness, value);
-        }
+        [ObservableProperty]
+        public partial byte VolumeBoundsOutlineThickness { get; set; } = 3;
 
-        public bool VolumeBoundsOutline
-        {
-            get => _volumeBoundsOutline;
-            set => RaiseAndSetIfChanged(ref _volumeBoundsOutline, value);
-        }
+        [ObservableProperty]
+        public partial bool VolumeBoundsOutline { get; set; } = true;
 
-        public Color LayerBoundsOutlineColor
-        {
-            get => _layerBoundsOutlineColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _layerBoundsOutlineColor, value);
-                RaisePropertyChanged(nameof(LayerBoundsOutlineBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(LayerBoundsOutlineBrush))]
+        public partial Color LayerBoundsOutlineColor { get; set; } = new(255, 45, 150, 45);
 
         [XmlIgnore]
         public Avalonia.Media.Color LayerBoundsOutlineBrush
         {
-            get => _layerBoundsOutlineColor.ToAvalonia();
+            get => LayerBoundsOutlineColor.ToAvalonia();
             set => LayerBoundsOutlineColor = new Color(value);
         }
 
-        public byte LayerBoundsOutlineThickness
-        {
-            get => _layerBoundsOutlineThickness;
-            set => RaiseAndSetIfChanged(ref _layerBoundsOutlineThickness, value);
-        }
+        [ObservableProperty]
+        public partial byte LayerBoundsOutlineThickness { get; set; } = 3;
 
-        public bool LayerBoundsOutline
-        {
-            get => _layerBoundsOutline;
-            set => RaiseAndSetIfChanged(ref _layerBoundsOutline, value);
-        }
+        [ObservableProperty]
+        public partial bool LayerBoundsOutline { get; set; }
 
-        public Color ContourBoundsOutlineColor
-        {
-            get => _contourBoundsOutlineColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _contourBoundsOutlineColor, value);
-                RaisePropertyChanged(nameof(ContourBoundsOutlineBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ContourBoundsOutlineBrush))]
+        public partial Color ContourBoundsOutlineColor { get; set; } = new(255, 50, 100, 50);
 
         [XmlIgnore]
         public Avalonia.Media.Color ContourBoundsOutlineBrush
         {
-            get => _contourBoundsOutlineColor.ToAvalonia();
+            get => ContourBoundsOutlineColor.ToAvalonia();
             set => ContourBoundsOutlineColor = new Color(value);
         }
 
-        public byte ContourBoundsOutlineThickness
-        {
-            get => _contourBoundsOutlineThickness;
-            set => RaiseAndSetIfChanged(ref _contourBoundsOutlineThickness, value);
-        }
+        [ObservableProperty]
+        public partial byte ContourBoundsOutlineThickness { get; set; } = 2;
 
-        public bool ContourBoundsOutline
-        {
-            get => _contourBoundsOutline;
-            set => RaiseAndSetIfChanged(ref _contourBoundsOutline, value);
-        }
+        [ObservableProperty]
+        public partial bool ContourBoundsOutline { get; set; }
 
-        public Color EnclosingCirclesOutlineColor
-        {
-            get => _enclosingCirclesOutlineColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _enclosingCirclesOutlineColor, value);
-                RaisePropertyChanged(nameof(EnclosingCirclesOutlineBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(EnclosingCirclesOutlineBrush))]
+        public partial Color EnclosingCirclesOutlineColor { get; set; } = new(255, 127, 0, 0);
 
         [XmlIgnore]
         public Avalonia.Media.Color EnclosingCirclesOutlineBrush
         {
-            get => _enclosingCirclesOutlineColor.ToAvalonia();
+            get => EnclosingCirclesOutlineColor.ToAvalonia();
             set => EnclosingCirclesOutlineColor = new Color(value);
         }
 
-        public byte EnclosingCirclesOutlineThickness
-        {
-            get => _enclosingCirclesOutlineThickness;
-            set => RaiseAndSetIfChanged(ref _enclosingCirclesOutlineThickness, value);
-        }
+        [ObservableProperty]
+        public partial byte EnclosingCirclesOutlineThickness { get; set; } = 2;
 
-        public bool EnclosingCirclesOutline
-        {
-            get => _enclosingCirclesOutline;
-            set => RaiseAndSetIfChanged(ref _enclosingCirclesOutline, value);
-        }
+        [ObservableProperty]
+        public partial bool EnclosingCirclesOutline { get; set; }
 
-        public Color HollowOutlineColor
-        {
-            get => _hollowOutlineColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _hollowOutlineColor, value);
-                RaisePropertyChanged(nameof(HollowOutlineBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HollowOutlineBrush))]
+        public partial Color HollowOutlineColor { get; set; } = new(255, 255, 165, 0);
 
         [XmlIgnore]
         public Avalonia.Media.Color HollowOutlineBrush
         {
-            get => _hollowOutlineColor.ToAvalonia();
+            get => HollowOutlineColor.ToAvalonia();
             set => HollowOutlineColor = new Color(value);
         }
 
-        public sbyte HollowOutlineLineThickness
-        {
-            get => _hollowOutlineLineThickness;
-            set => RaiseAndSetIfChanged(ref _hollowOutlineLineThickness, value);
-        }
+        [ObservableProperty]
+        public partial sbyte HollowOutlineLineThickness { get; set; } = 5;
 
-        public bool HollowOutline
-        {
-            get => _hollowOutline;
-            set => RaiseAndSetIfChanged(ref _hollowOutline, value);
-        }
+        [ObservableProperty]
+        public partial bool HollowOutline { get; set; }
 
-        public Color CentroidOutlineColor
-        {
-            get => _centroidOutlineColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _centroidOutlineColor, value);
-                RaisePropertyChanged(nameof(CentroidOutlineBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CentroidOutlineBrush))]
+        public partial Color CentroidOutlineColor { get; set; } = new(255, 255, 0, 0);
 
         [XmlIgnore]
         public Avalonia.Media.Color CentroidOutlineBrush
         {
-            get => _centroidOutlineColor.ToAvalonia();
+            get => CentroidOutlineColor.ToAvalonia();
             set => CentroidOutlineColor = new Color(value);
         }
 
-        public byte CentroidOutlineDiameter
-        {
-            get => _centroidOutlineDiameter;
-            set => RaiseAndSetIfChanged(ref _centroidOutlineDiameter, value);
-        }
+        [ObservableProperty]
+        public partial byte CentroidOutlineDiameter { get; set; } = 8;
 
-        public bool CentroidOutlineHollow
-        {
-            get => _centroidOutlineHollow;
-            set => RaiseAndSetIfChanged(ref _centroidOutlineHollow, value);
-        }
+        [ObservableProperty]
+        public partial bool CentroidOutlineHollow { get; set; }
 
-        public bool CentroidOutline
-        {
-            get => _centroidOutline;
-            set => RaiseAndSetIfChanged(ref _centroidOutline, value);
-        }
+        [ObservableProperty]
+        public partial bool CentroidOutline { get; set; }
 
-        public Color TriangulateOutlineColor
-        {
-            get => _triangulateOutlineColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _triangulateOutlineColor, value);
-                RaisePropertyChanged(nameof(TriangulateOutlineBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(TriangulateOutlineBrush))]
+        public partial Color TriangulateOutlineColor { get; set; } = new(255, 0, 0, 255);
 
         [XmlIgnore]
         public Avalonia.Media.Color TriangulateOutlineBrush
         {
-            get => _triangulateOutlineColor.ToAvalonia();
+            get => TriangulateOutlineColor.ToAvalonia();
             set => TriangulateOutlineColor = new Color(value);
         }
 
-        public byte TriangulateOutlineLineThickness
-        {
-            get => _triangulateOutlineLineThickness;
-            set => RaiseAndSetIfChanged(ref _triangulateOutlineLineThickness, value);
-        }
+        [ObservableProperty]
+        public partial byte TriangulateOutlineLineThickness { get; set; } = 2;
 
-        public bool TriangulateOutlineShowCount
-        {
-            get => _triangulateOutlineShowCount;
-            set => RaiseAndSetIfChanged(ref _triangulateOutlineShowCount, value);
-        }
+        [ObservableProperty]
+        public partial bool TriangulateOutlineShowCount { get; set; } = true;
 
-        public Color MaskOutlineColor
-        {
-            get => _maskOutlineColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _maskOutlineColor, value);
-                RaisePropertyChanged(nameof(MaskOutlineBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(MaskOutlineBrush))]
+        public partial Color MaskOutlineColor { get; set; } = new(255, 42, 157, 244);
 
         [XmlIgnore]
         public Avalonia.Media.Color MaskOutlineBrush
         {
-            get => _maskOutlineColor.ToAvalonia();
+            get => MaskOutlineColor.ToAvalonia();
             set => MaskOutlineColor = new Color(value);
         }
 
-        public sbyte MaskOutlineLineThickness
-        {
-            get => _maskOutlineLineThickness;
-            set => RaiseAndSetIfChanged(ref _maskOutlineLineThickness, value);
-        }
+        [ObservableProperty]
+        public partial sbyte MaskOutlineLineThickness { get; set; } = 10;
 
-        public bool MaskClearROIAfterSet
-        {
-            get => _maskClearRoiAfterSet;
-            set => RaiseAndSetIfChanged(ref _maskClearRoiAfterSet, value);
-        }
+        [ObservableProperty]
+        public partial bool MaskClearROIAfterSet { get; set; } = true;
 
-        public Color PreviousLayerDifferenceColor
-        {
-            get => _previousLayerDifferenceColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _previousLayerDifferenceColor, value);
-                RaisePropertyChanged(nameof(PreviousLayerDifferenceBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(PreviousLayerDifferenceBrush))]
+        public partial Color PreviousLayerDifferenceColor { get; set; } = new(255, 81, 131, 82);
 
         [XmlIgnore]
         public Avalonia.Media.Color PreviousLayerDifferenceBrush
         {
-            get => _previousLayerDifferenceColor.ToAvalonia();
+            get => PreviousLayerDifferenceColor.ToAvalonia();
             set => PreviousLayerDifferenceColor = new Color(value);
         }
 
-        public Color NextLayerDifferenceColor
-        {
-            get => _nextLayerDifferenceColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _nextLayerDifferenceColor, value);
-                RaisePropertyChanged(nameof(NextLayerDifferenceBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(NextLayerDifferenceBrush))]
+        public partial Color NextLayerDifferenceColor { get; set; } = new(255, 81, 249, 252);
 
         [XmlIgnore]
         public Avalonia.Media.Color NextLayerDifferenceBrush
         {
-            get => _nextLayerDifferenceColor.ToAvalonia();
+            get => NextLayerDifferenceColor.ToAvalonia();
             set => NextLayerDifferenceColor = new Color(value);
         }
 
-        public Color BothLayerDifferenceColor
-        {
-            get => _bothLayerDifferenceColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _bothLayerDifferenceColor, value);
-                RaisePropertyChanged(nameof(BothLayerDifferenceBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(BothLayerDifferenceBrush))]
+        public partial Color BothLayerDifferenceColor { get; set; } = new(255, 246, 240, 216);
 
         [XmlIgnore]
         public Avalonia.Media.Color BothLayerDifferenceBrush
         {
-            get => _bothLayerDifferenceColor.ToAvalonia();
+            get => BothLayerDifferenceColor.ToAvalonia();
             set => BothLayerDifferenceColor = new Color(value);
         }
 
-        public bool ShowLayerDifference
-        {
-            get => _showLayerDifference;
-            set => RaiseAndSetIfChanged(ref _showLayerDifference, value);
-        }
+        [ObservableProperty]
+        public partial bool ShowLayerDifference { get; set; }
 
-        public bool LayerDifferenceHighlightSimilarityInstead
-        {
-            get => _layerDifferenceHighlightSimilarityInstead;
-            set => RaiseAndSetIfChanged(ref _layerDifferenceHighlightSimilarityInstead, value);
-        }
+        [ObservableProperty]
+        public partial bool LayerDifferenceHighlightSimilarityInstead { get; set; }
 
-        public bool UseIssueColorOnTracker
-        {
-            get => _useIssueColorOnTracker;
-            set => RaiseAndSetIfChanged(ref _useIssueColorOnTracker, value);
-        }
+        [ObservableProperty]
+        public partial bool UseIssueColorOnTracker { get; set; } = true;
 
-        public Color IslandColor
-        {
-            get => _islandColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _islandColor, value);
-                RaisePropertyChanged(nameof(IslandBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IslandBrush))]
+        public partial Color IslandColor { get; set; } = new(255, 255, 255, 0);
 
         [XmlIgnore]
         public Avalonia.Media.Color IslandBrush
         {
-            get => _islandColor.ToAvalonia();
+            get => IslandColor.ToAvalonia();
             set => IslandColor = new Color(value);
         }
 
-        public Color IslandHighlightColor
-        {
-            get => _islandHighlightColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _islandHighlightColor, value);
-                RaisePropertyChanged(nameof(IslandHighlightBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IslandHighlightBrush))]
+        public partial Color IslandHighlightColor { get; set; } = new(255, 255, 215, 0);
 
         [XmlIgnore]
         public Avalonia.Media.Color IslandHighlightBrush
         {
-            get => _islandHighlightColor.ToAvalonia();
+            get => IslandHighlightColor.ToAvalonia();
             set => IslandHighlightColor = new Color(value);
         }
 
-        public Color OverhangColor
-        {
-            get => _overhangColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _overhangColor, value);
-                RaisePropertyChanged(nameof(OverhangBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(OverhangBrush))]
+        public partial Color OverhangColor { get; set; } = new(255, 255, 105, 180);
 
         [XmlIgnore]
         public Avalonia.Media.Color OverhangBrush
         {
-            get => _overhangColor.ToAvalonia();
+            get => OverhangColor.ToAvalonia();
             set => OverhangColor = new Color(value);
         }
 
-        public Color OverhangHighlightColor
-        {
-            get => _overhangHighlightColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _overhangHighlightColor, value);
-                RaisePropertyChanged(nameof(OverhangHighlightBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(OverhangHighlightBrush))]
+        public partial Color OverhangHighlightColor { get; set; } = new(255, 255, 20, 147);
 
         [XmlIgnore]
         public Avalonia.Media.Color OverhangHighlightBrush
         {
-            get => _overhangHighlightColor.ToAvalonia();
+            get => OverhangHighlightColor.ToAvalonia();
             set => OverhangHighlightColor = new Color(value);
         }
 
-        public Color ResinTrapColor
-        {
-            get => _resinTrapColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _resinTrapColor, value);
-                RaisePropertyChanged(nameof(ResinTrapBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ResinTrapBrush))]
+        public partial Color ResinTrapColor { get; set; } = new(255, 255, 165, 0);
 
         [XmlIgnore]
         public Avalonia.Media.Color ResinTrapBrush
         {
-            get => _resinTrapColor.ToAvalonia();
+            get => ResinTrapColor.ToAvalonia();
             set => ResinTrapColor = new Color(value);
         }
 
-        public Color ResinTrapHighlightColor
-        {
-            get => _resinTrapHighlightColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _resinTrapHighlightColor, value);
-                RaisePropertyChanged(nameof(ResinTrapHighlightBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ResinTrapHighlightBrush))]
+        public partial Color ResinTrapHighlightColor { get; set; } = new(255, 255, 127, 0);
 
         [XmlIgnore]
         public Avalonia.Media.Color ResinTrapHighlightBrush
         {
-            get => _resinTrapHighlightColor.ToAvalonia();
+            get => ResinTrapHighlightColor.ToAvalonia();
             set => ResinTrapHighlightColor = new Color(value);
         }
 
-        public Color SuctionCupColor
-        {
-            get => _suctionCupColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _suctionCupColor, value);
-                RaisePropertyChanged(nameof(SuctionCupBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(SuctionCupBrush))]
+        public partial Color SuctionCupColor { get; set; } = new(255, 180, 235, 255);
 
         [XmlIgnore]
         public Avalonia.Media.Color SuctionCupBrush
         {
-            get => _suctionCupColor.ToAvalonia();
+            get => SuctionCupColor.ToAvalonia();
             set => SuctionCupColor = new Color(value);
         }
 
-        public Color SuctionCupHighlightColor
-        {
-            get => _suctionCupHighlightColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _suctionCupHighlightColor, value);
-                RaisePropertyChanged(nameof(SuctionCupHighlightBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(SuctionCupHighlightBrush))]
+        public partial Color SuctionCupHighlightColor { get; set; } = new(255, 77, 207, 255);
 
         [XmlIgnore]
         public Avalonia.Media.Color SuctionCupHighlightBrush
         {
-            get => _suctionCupHighlightColor.ToAvalonia();
+            get => SuctionCupHighlightColor.ToAvalonia();
             set => SuctionCupHighlightColor = new Color(value);
         }
 
-        public Color TouchingBoundsColor
-        {
-            get => _touchingBoundsColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _touchingBoundsColor, value);
-                RaisePropertyChanged(nameof(TouchingBoundsBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(TouchingBoundsBrush))]
+        public partial Color TouchingBoundsColor { get; set; } = new(255, 255, 0, 0);
 
         [XmlIgnore]
         public Avalonia.Media.Color TouchingBoundsBrush
         {
-            get => _touchingBoundsColor.ToAvalonia();
+            get => TouchingBoundsColor.ToAvalonia();
             set => TouchingBoundsColor = new Color(value);
         }
 
-        public Color CrosshairColor
-        {
-            get => _crosshairColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _crosshairColor, value);
-                RaisePropertyChanged(nameof(CrosshairBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CrosshairBrush))]
+        public partial Color CrosshairColor { get; set; } = new(255, 255, 0, 0);
 
         [XmlIgnore]
         public Avalonia.Media.Color CrosshairBrush
         {
-            get => _crosshairColor.ToAvalonia();
+            get => CrosshairColor.ToAvalonia();
             set => CrosshairColor = new Color(value);
         }
 
-        public bool ZoomPreferNative
-        {
-            get => _zoomPreferNative;
-            set => RaiseAndSetIfChanged(ref _zoomPreferNative, value);
-        }
+        [ObservableProperty]
+        public partial bool ZoomPreferNative { get; set; }
 
-        public ushort ZoomDebounceMilliseconds
-        {
-            get => _zoomDebounceMilliseconds;
-            set => RaiseAndSetIfChanged(ref _zoomDebounceMilliseconds, value);
-        }
+        [ObservableProperty]
+        public partial ushort ZoomDebounceMilliseconds { get; set; } = 20;
 
-        public bool ZoomToFitPrintVolumeBounds
-        {
-            get => _zoomToFitPrintVolumeBounds;
-            set => RaiseAndSetIfChanged(ref _zoomToFitPrintVolumeBounds, value);
-        }
+        [ObservableProperty]
+        public partial bool ZoomToFitPrintVolumeBounds { get; set; } = true;
 
-        public byte ZoomLockLevelIndex
-        {
-            get => _zoomLockLevelIndex;
-            set => RaiseAndSetIfChanged(ref _zoomLockLevelIndex, value);
-        }
+        [ObservableProperty]
+        public partial byte ZoomLockLevelIndex { get; set; } = 7;
 
-        public bool ZoomIssues
-        {
-            get => _zoomIssues;
-            set => RaiseAndSetIfChanged(ref _zoomIssues, value);
-        }
+        [ObservableProperty]
+        public partial bool ZoomIssues { get; set; } = true;
 
-        public bool CrosshairShowOnlyOnSelectedIssues
-        {
-            get => _crosshairShowOnlyOnSelectedIssues;
-            set => RaiseAndSetIfChanged(ref _crosshairShowOnlyOnSelectedIssues, value);
-        }
+        [ObservableProperty]
+        public partial bool CrosshairShowOnlyOnSelectedIssues { get; set; }
 
-        public byte CrosshairFadeLevelIndex
-        {
-            get => _crosshairFadeLevelIndex;
-            set => RaiseAndSetIfChanged(ref _crosshairFadeLevelIndex, value);
-        }
+        [ObservableProperty]
+        public partial byte CrosshairFadeLevelIndex { get; set; } = 5;
 
-        public uint CrosshairLength
-        {
-            get => _crosshairLength;
-            set => RaiseAndSetIfChanged(ref _crosshairLength, value);
-        }
+        [ObservableProperty]
+        public partial uint CrosshairLength { get; set; } = 20;
 
-        public byte CrosshairMargin
-        {
-            get => _crosshairMargin;
-            set => RaiseAndSetIfChanged(ref _crosshairMargin, value);
-        }
+        [ObservableProperty]
+        public partial byte CrosshairMargin { get; set; } = 5;
 
-        public bool AutoRotateLayerBestView
-        {
-            get => _autoRotateLayerBestView;
-            set => RaiseAndSetIfChanged(ref _autoRotateLayerBestView, value);
-        }
+        [ObservableProperty]
+        public partial bool AutoRotateLayerBestView { get; set; } = true;
 
-        public bool AutoFlipLayerIfMirrored
-        {
-            get => _autoFlipLayerIfMirrored;
-            set => RaiseAndSetIfChanged(ref _autoFlipLayerIfMirrored, value);
-        }
+        [ObservableProperty]
+        public partial bool AutoFlipLayerIfMirrored { get; set; } = true;
 
-        public bool LayerZoomToFitOnLoad
-        {
-            get => _layerZoomToFitOnLoad;
-            set => RaiseAndSetIfChanged(ref _layerZoomToFitOnLoad, value);
-        }
+        [ObservableProperty]
+        public partial bool LayerZoomToFitOnLoad { get; set; } = true;
 
-        public bool ShowBackgroudGrid
-        {
-            get => _showBackgroudGrid;
-            set => RaiseAndSetIfChanged(ref _showBackgroudGrid, value);
-        }
+        [ObservableProperty]
+        public partial bool ShowBackgroudGrid { get; set; }
 
-        public ushort LayerSliderDebounce
-        {
-            get => _layerSliderDebounce;
-            set => RaiseAndSetIfChanged(ref _layerSliderDebounce, value);
-        }
+        [ObservableProperty]
+        public partial ushort LayerSliderDebounce { get; set; }
 
         public LayerPreviewUserSettings Clone()
         {
@@ -1013,7 +582,7 @@ public sealed class UserSettings : BindableBase
 
     #region Issues
 
-    public sealed class IssuesUserSettings : BindableBase
+    public sealed partial class IssuesUserSettings : ObservableObject
     {
         public enum ComputeIssuesOnFileLoadType : byte
         {
@@ -1025,286 +594,153 @@ public sealed class UserSettings : BindableBase
             EnabledIssues,
         }
 
-        private ComputeIssuesOnFileLoadType _computeIssuesOnFileLoad = ComputeIssuesOnFileLoadType.TimeInexpensiveIssues;
-        private bool _autoRepairIssuesOnLoad;
-        private bool _computeIssuesOnClickTab = true;
-        private bool _computeIslands = true;
-        private bool _computeOverhangs = true;
-        private bool _computeResinTraps = true;
-        private bool _computeSuctionCups = true;
-        private bool _computeTouchingBounds = true;
-        private bool _computePrintHeight = true;
-        private bool _computeEmptyLayers = true;
-        private bool _dataGridGroupByType = true;
-        private bool _dataGridGroupByLayerIndex;
-        private bool _islandEnhancedDetection = true;
-        private bool _islandAllowDiagonalBonds;
-        private byte _islandBinaryThreshold;
-        private byte _islandRequiredAreaToProcessCheck = 1;
-        private byte _islandRequiredPixelBrightnessToProcessCheck = 1;
-        private byte _islandRequiredPixelsToSupport = 10;
-        private decimal _islandRequiredPixelsToSupportMultiplier = 0.25m;
-        private byte _islandRequiredPixelBrightnessToSupport = 150;
-        private bool _overhangIndependentFromIslands = true;
-        private byte _overhangErodeIterations = 49;
-        private byte _resinTrapBinaryThreshold = 127;
-        private byte _resinTrapRequiredAreaToProcessCheck = 17;
-        private byte _resinTrapRequiredBlackPixelsToDrain = 10;
-        private byte _resinTrapMaximumPixelBrightnessToDrain = 30;
-        private uint _suctionCupRequiredAreaToConsider = 10000;
-        private decimal _suctionCupRequiredHeightToConsider = 0.5m;
-        private byte _touchingBoundMinimumPixelBrightness = 127;
-        private byte _touchingBoundMarginLeft = 5;
-        private byte _touchingBoundMarginTop = 5;
-        private byte _touchingBoundMarginRight = 5;
-        private byte _touchingBoundMarginBottom = 5;
-        private bool _touchingBoundSyncMargins = true;
-        private decimal _printHeightOffset;
-        private IssuesOrderBy _dataGridOrderBy = IssuesOrderBy.TypeAscLayerAscAreaDesc;
+        [ObservableProperty]
+        public partial ComputeIssuesOnFileLoadType ComputeIssuesOnFileLoad { get; set; } = ComputeIssuesOnFileLoadType.TimeInexpensiveIssues;
 
-        public ComputeIssuesOnFileLoadType ComputeIssuesOnFileLoad
-        {
-            get => _computeIssuesOnFileLoad;
-            set => RaiseAndSetIfChanged(ref _computeIssuesOnFileLoad, value);
-        }
+        [ObservableProperty]
+        public partial bool AutoRepairIssuesOnLoad { get; set; }
 
-        public bool AutoRepairIssuesOnLoad
-        {
-            get => _autoRepairIssuesOnLoad;
-            set => RaiseAndSetIfChanged(ref _autoRepairIssuesOnLoad, value);
-        }
+        [ObservableProperty]
+        public partial bool ComputeIssuesOnClickTab { get; set; } = true;
 
-        public bool ComputeIssuesOnClickTab
-        {
-            get => _computeIssuesOnClickTab;
-            set => RaiseAndSetIfChanged(ref _computeIssuesOnClickTab, value);
-        }
+        [ObservableProperty]
+        public partial bool ComputeIslands { get; set; } = true;
 
-        public bool ComputeIslands
-        {
-            get => _computeIslands;
-            set => RaiseAndSetIfChanged(ref _computeIslands, value);
-        }
+        [ObservableProperty]
+        public partial bool ComputeOverhangs { get; set; } = true;
 
-        public bool ComputeOverhangs
-        {
-            get => _computeOverhangs;
-            set => RaiseAndSetIfChanged(ref _computeOverhangs, value);
-        }
+        [ObservableProperty]
+        public partial bool ComputeResinTraps { get; set; } = true;
 
-        public bool ComputeResinTraps
-        {
-            get => _computeResinTraps;
-            set => RaiseAndSetIfChanged(ref _computeResinTraps, value);
-        }
+        [ObservableProperty]
+        public partial bool ComputeSuctionCups { get; set; } = true;
 
-        public bool ComputeSuctionCups
-        {
-            get => _computeSuctionCups;
-            set => RaiseAndSetIfChanged(ref _computeSuctionCups, value);
-        }
+        [ObservableProperty]
+        public partial bool ComputeTouchingBounds { get; set; } = true;
 
-        public bool ComputeTouchingBounds
-        {
-            get => _computeTouchingBounds;
-            set => RaiseAndSetIfChanged(ref _computeTouchingBounds, value);
-        }
+        [ObservableProperty]
+        public partial bool ComputePrintHeight { get; set; } = true;
 
-        public bool ComputePrintHeight
-        {
-            get => _computePrintHeight;
-            set => RaiseAndSetIfChanged(ref _computePrintHeight, value);
-        }
+        [ObservableProperty]
+        public partial bool ComputeEmptyLayers { get; set; } = true;
 
-        public bool ComputeEmptyLayers
-        {
-            get => _computeEmptyLayers;
-            set => RaiseAndSetIfChanged(ref _computeEmptyLayers, value);
-        }
+        [ObservableProperty]
+        public partial IssuesOrderBy DataGridOrderBy { get; set; } = IssuesOrderBy.TypeAscLayerAscAreaDesc;
 
-        public IssuesOrderBy DataGridOrderBy
-        {
-            get => _dataGridOrderBy;
-            set => RaiseAndSetIfChanged(ref _dataGridOrderBy, value);
-        }
+        [ObservableProperty]
+        public partial bool DataGridGroupByType { get; set; } = true;
 
-        public bool DataGridGroupByType
-        {
-            get => _dataGridGroupByType;
-            set => RaiseAndSetIfChanged(ref _dataGridGroupByType, value);
-        }
+        [ObservableProperty]
+        public partial bool DataGridGroupByLayerIndex { get; set; }
 
-        public bool DataGridGroupByLayerIndex
-        {
-            get => _dataGridGroupByLayerIndex;
-            set => RaiseAndSetIfChanged(ref _dataGridGroupByLayerIndex, value);
-        }
+        [ObservableProperty]
+        public partial bool IslandEnhancedDetection { get; set; } = true;
 
-        public bool IslandEnhancedDetection
-        {
-            get => _islandEnhancedDetection;
-            set => RaiseAndSetIfChanged(ref _islandEnhancedDetection, value);
-        }
+        [ObservableProperty]
+        public partial bool IslandAllowDiagonalBonds { get; set; }
 
-        public bool IslandAllowDiagonalBonds
-        {
-            get => _islandAllowDiagonalBonds;
-            set => RaiseAndSetIfChanged(ref _islandAllowDiagonalBonds, value);
-        }
+        [ObservableProperty]
+        public partial byte IslandBinaryThreshold { get; set; }
 
-        public byte IslandBinaryThreshold
-        {
-            get => _islandBinaryThreshold;
-            set => RaiseAndSetIfChanged(ref _islandBinaryThreshold, value);
-        }
+        [ObservableProperty]
+        public partial byte IslandRequiredAreaToProcessCheck { get; set; } = 1;
 
-        public byte IslandRequiredAreaToProcessCheck
-        {
-            get => _islandRequiredAreaToProcessCheck;
-            set => RaiseAndSetIfChanged(ref _islandRequiredAreaToProcessCheck, value);
-        }
+        [ObservableProperty]
+        public partial decimal IslandRequiredPixelsToSupportMultiplier { get; set; } = 0.25m;
 
-        public decimal IslandRequiredPixelsToSupportMultiplier
-        {
-            get => _islandRequiredPixelsToSupportMultiplier;
-            set => RaiseAndSetIfChanged(ref _islandRequiredPixelsToSupportMultiplier, value);
-        }
+        [ObservableProperty]
+        public partial byte IslandRequiredPixelsToSupport { get; set; } = 10;
 
-        public byte IslandRequiredPixelsToSupport
-        {
-            get => _islandRequiredPixelsToSupport;
-            set => RaiseAndSetIfChanged(ref _islandRequiredPixelsToSupport, value);
-        }
+        [ObservableProperty]
+        public partial byte IslandRequiredPixelBrightnessToProcessCheck { get; set; } = 1;
 
-        public byte IslandRequiredPixelBrightnessToProcessCheck
-        {
-            get => _islandRequiredPixelBrightnessToProcessCheck;
-            set => RaiseAndSetIfChanged(ref _islandRequiredPixelBrightnessToProcessCheck, value);
-        }
+        [ObservableProperty]
+        public partial byte IslandRequiredPixelBrightnessToSupport { get; set; } = 150;
 
-        public byte IslandRequiredPixelBrightnessToSupport
-        {
-            get => _islandRequiredPixelBrightnessToSupport;
-            set => RaiseAndSetIfChanged(ref _islandRequiredPixelBrightnessToSupport, value);
-        }
+        [ObservableProperty]
+        public partial bool OverhangIndependentFromIslands { get; set; } = true;
 
-        public bool OverhangIndependentFromIslands
-        {
-            get => _overhangIndependentFromIslands;
-            set => RaiseAndSetIfChanged(ref _overhangIndependentFromIslands, value);
-        }
+        [ObservableProperty]
+        public partial byte OverhangErodeIterations { get; set; } = 49;
 
-        public byte OverhangErodeIterations
-        {
-            get => _overhangErodeIterations;
-            set => RaiseAndSetIfChanged(ref _overhangErodeIterations, value);
-        }
+        [ObservableProperty]
+        public partial byte ResinTrapBinaryThreshold { get; set; } = 127;
 
-        public byte ResinTrapBinaryThreshold
-        {
-            get => _resinTrapBinaryThreshold;
-            set => RaiseAndSetIfChanged(ref _resinTrapBinaryThreshold, value);
-        }
+        [ObservableProperty]
+        public partial byte ResinTrapRequiredAreaToProcessCheck { get; set; } = 17;
 
-        public byte ResinTrapRequiredAreaToProcessCheck
-        {
-            get => _resinTrapRequiredAreaToProcessCheck;
-            set => RaiseAndSetIfChanged(ref _resinTrapRequiredAreaToProcessCheck, value);
-        }
+        [ObservableProperty]
+        public partial byte ResinTrapRequiredBlackPixelsToDrain { get; set; } = 10;
 
-        public byte ResinTrapRequiredBlackPixelsToDrain
-        {
-            get => _resinTrapRequiredBlackPixelsToDrain;
-            set => RaiseAndSetIfChanged(ref _resinTrapRequiredBlackPixelsToDrain, value);
-        }
+        [ObservableProperty]
+        public partial byte ResinTrapMaximumPixelBrightnessToDrain { get; set; } = 30;
 
-        public byte ResinTrapMaximumPixelBrightnessToDrain
-        {
-            get => _resinTrapMaximumPixelBrightnessToDrain;
-            set => RaiseAndSetIfChanged(ref _resinTrapMaximumPixelBrightnessToDrain, value);
-        }
+        [ObservableProperty]
+        public partial uint SuctionCupRequiredAreaToConsider { get; set; } = 10000;
 
-        public uint SuctionCupRequiredAreaToConsider
-        {
-            get => _suctionCupRequiredAreaToConsider;
-            set => RaiseAndSetIfChanged(ref _suctionCupRequiredAreaToConsider, value);
-        }
+        [ObservableProperty]
+        public partial decimal SuctionCupRequiredHeightToConsider { get; set; } = 0.5m;
 
-        public decimal SuctionCupRequiredHeightToConsider
-        {
-            get => _suctionCupRequiredHeightToConsider;
-            set => RaiseAndSetIfChanged(ref _suctionCupRequiredHeightToConsider, value);
-        }
-
-        public byte TouchingBoundMinimumPixelBrightness
-        {
-            get => _touchingBoundMinimumPixelBrightness;
-            set => RaiseAndSetIfChanged(ref _touchingBoundMinimumPixelBrightness, value);
-        }
+        [ObservableProperty]
+        public partial byte TouchingBoundMinimumPixelBrightness { get; set; } = 127;
 
         public byte TouchingBoundMarginLeft
         {
-            get => _touchingBoundMarginLeft;
+            get;
             set
             {
-                if(!RaiseAndSetIfChanged(ref _touchingBoundMarginLeft, value)) return;
-                if (_touchingBoundSyncMargins)
+                if (!SetProperty(ref field, value)) return;
+                if (TouchingBoundSyncMargins)
                 {
                     TouchingBoundMarginRight = value;
                 }
             }
-        }
+        } = 5;
 
         public byte TouchingBoundMarginTop
         {
-            get => _touchingBoundMarginTop;
+            get;
             set
             {
-                if (!RaiseAndSetIfChanged(ref _touchingBoundMarginTop, value)) return;
-                if (_touchingBoundSyncMargins)
+                if (!SetProperty(ref field, value)) return;
+                if (TouchingBoundSyncMargins)
                 {
                     TouchingBoundMarginBottom = value;
                 }
             }
-        }
+        } = 5;
 
         public byte TouchingBoundMarginRight
         {
-            get => _touchingBoundMarginRight;
+            get;
             set
             {
-                if(!RaiseAndSetIfChanged(ref _touchingBoundMarginRight, value)) return;
-                if (_touchingBoundSyncMargins)
+                if (!SetProperty(ref field, value)) return;
+                if (TouchingBoundSyncMargins)
                 {
                     TouchingBoundMarginLeft = value;
                 }
             }
-        }
+        } = 5;
 
         public byte TouchingBoundMarginBottom
         {
-            get => _touchingBoundMarginBottom;
+            get;
             set
             {
-                if(!RaiseAndSetIfChanged(ref _touchingBoundMarginBottom, value)) return;
-                if (_touchingBoundSyncMargins)
+                if (!SetProperty(ref field, value)) return;
+                if (TouchingBoundSyncMargins)
                 {
                     TouchingBoundMarginTop = value;
                 }
             }
-        }
+        } = 5;
 
-        public bool TouchingBoundSyncMargins
-        {
-            get => _touchingBoundSyncMargins;
-            set => RaiseAndSetIfChanged(ref _touchingBoundSyncMargins, value);
-        }
+        [ObservableProperty]
+        public partial bool TouchingBoundSyncMargins { get; set; } = true;
 
-        public decimal PrintHeightOffset
-        {
-            get => _printHeightOffset;
-            set => RaiseAndSetIfChanged(ref _printHeightOffset, value);
-        }
+        [ObservableProperty]
+        public partial decimal PrintHeightOffset { get; set; }
 
         public IssuesUserSettings Clone()
         {
@@ -1316,184 +752,112 @@ public sealed class UserSettings : BindableBase
 
     #region Pixel Editor
 
-    public sealed class PixelEditorUserSettings : BindableBase
+    public sealed partial class PixelEditorUserSettings : ObservableObject
     {
-        private Color _addPixelColor = new(255, 144, 238, 144);
-        private Color _addPixelHighlightColor = new(255, 0, 255, 0);
-        private Color _removePixelColor = new(255, 219, 112, 147);
-        private Color _removePixelHighlightColor = new(255, 139, 0, 0);
-        private Color _supportsColor = new(255, 0, 255, 255);
-        private Color _supportsHighlightColor = new(255, 0, 139, 139);
-        private Color _drainHoleColor = new(255, 142, 69, 133);
-        private Color _drainHoleHighlightColor = new(255, 159, 0, 197);
-        private Color _cursorColor = new(150, 52, 152, 219);
-        private bool _partialUpdateIslandsOnEditing = true;
-        private bool _closeEditorOnApply;
-
-        public Color AddPixelColor
-        {
-            get => _addPixelColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _addPixelColor, value);
-                RaisePropertyChanged(nameof(AddPixelBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(AddPixelBrush))]
+        public partial Color AddPixelColor { get; set; } = new(255, 144, 238, 144);
 
         [XmlIgnore]
         public Avalonia.Media.Color AddPixelBrush
         {
-            get => _addPixelColor.ToAvalonia();
+            get => AddPixelColor.ToAvalonia();
             set => AddPixelColor = new Color(value);
         }
 
-        public Color AddPixelHighlightColor
-        {
-            get => _addPixelHighlightColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _addPixelHighlightColor, value);
-                RaisePropertyChanged(nameof(AddPixelHighlightBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(AddPixelHighlightBrush))]
+        public partial Color AddPixelHighlightColor { get; set; } = new(255, 0, 255, 0);
 
         [XmlIgnore]
         public Avalonia.Media.Color AddPixelHighlightBrush
         {
-            get => _addPixelHighlightColor.ToAvalonia();
+            get => AddPixelHighlightColor.ToAvalonia();
             set => AddPixelHighlightColor = new Color(value);
         }
 
-        public Color RemovePixelColor
-        {
-            get => _removePixelColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _removePixelColor, value);
-                RaisePropertyChanged(nameof(RemovePixelBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(RemovePixelBrush))]
+        public partial Color RemovePixelColor { get; set; } = new(255, 219, 112, 147);
 
         [XmlIgnore]
         public Avalonia.Media.Color RemovePixelBrush
         {
-            get => _removePixelColor.ToAvalonia();
+            get => RemovePixelColor.ToAvalonia();
             set => RemovePixelColor = new Color(value);
         }
 
-        public Color RemovePixelHighlightColor
-        {
-            get => _removePixelHighlightColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _removePixelHighlightColor, value);
-                RaisePropertyChanged(nameof(RemovePixelHighlightBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(RemovePixelHighlightBrush))]
+        public partial Color RemovePixelHighlightColor { get; set; } = new(255, 139, 0, 0);
 
         [XmlIgnore]
         public Avalonia.Media.Color RemovePixelHighlightBrush
         {
-            get => _removePixelHighlightColor.ToAvalonia();
+            get => RemovePixelHighlightColor.ToAvalonia();
             set => RemovePixelHighlightColor = new Color(value);
         }
 
-        public Color SupportsColor
-        {
-            get => _supportsColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _supportsColor, value);
-                RaisePropertyChanged(nameof(SupportsBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(SupportsBrush))]
+        public partial Color SupportsColor { get; set; } = new(255, 0, 255, 255);
 
         [XmlIgnore]
         public Avalonia.Media.Color SupportsBrush
         {
-            get => _supportsColor.ToAvalonia();
+            get => SupportsColor.ToAvalonia();
             set => SupportsColor = new Color(value);
         }
 
-        public Color SupportsHighlightColor
-        {
-            get => _supportsHighlightColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _supportsHighlightColor, value);
-                RaisePropertyChanged(nameof(SupportsHighlightBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(SupportsHighlightBrush))]
+        public partial Color SupportsHighlightColor { get; set; } = new(255, 0, 139, 139);
 
         [XmlIgnore]
         public Avalonia.Media.Color SupportsHighlightBrush
         {
-            get => _supportsHighlightColor.ToAvalonia();
+            get => SupportsHighlightColor.ToAvalonia();
             set => SupportsHighlightColor = new Color(value);
         }
 
-        public Color DrainHoleColor
-        {
-            get => _drainHoleColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _drainHoleColor, value);
-                RaisePropertyChanged(nameof(DrainHoleBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(DrainHoleBrush))]
+        public partial Color DrainHoleColor { get; set; } = new(255, 142, 69, 133);
 
         [XmlIgnore]
         public Avalonia.Media.Color DrainHoleBrush
         {
-            get => _drainHoleColor.ToAvalonia();
+            get => DrainHoleColor.ToAvalonia();
             set => DrainHoleColor = new Color(value);
         }
 
-        public Color DrainHoleHighlightColor
-        {
-            get => _drainHoleHighlightColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _drainHoleHighlightColor, value);
-                RaisePropertyChanged(nameof(DrainHoleHighlightBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(DrainHoleHighlightBrush))]
+        public partial Color DrainHoleHighlightColor { get; set; } = new(255, 159, 0, 197);
 
         [XmlIgnore]
         public Avalonia.Media.Color DrainHoleHighlightBrush
         {
-            get => _drainHoleHighlightColor.ToAvalonia();
+            get => DrainHoleHighlightColor.ToAvalonia();
             set => DrainHoleHighlightColor = new Color(value);
         }
 
-        public Color CursorColor
-        {
-            get => _cursorColor;
-            set
-            {
-                RaiseAndSetIfChanged(ref _cursorColor, value);
-                RaisePropertyChanged(nameof(CursorBrush));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CursorBrush))]
+        public partial Color CursorColor { get; set; } = new(150, 52, 152, 219);
 
         [XmlIgnore]
         public Avalonia.Media.Color CursorBrush
         {
-            get => _cursorColor.ToAvalonia();
+            get => CursorColor.ToAvalonia();
             set => CursorColor = new Color(value);
         }
 
-        public bool PartialUpdateIslandsOnEditing
-        {
-            get => _partialUpdateIslandsOnEditing;
-            set => RaiseAndSetIfChanged(ref _partialUpdateIslandsOnEditing, value);
-        }
+        [ObservableProperty]
+        public partial bool PartialUpdateIslandsOnEditing { get; set; } = true;
 
-        public bool CloseEditorOnApply
-        {
-            get => _closeEditorOnApply;
-            set => RaiseAndSetIfChanged(ref _closeEditorOnApply, value);
-        }
+        [ObservableProperty]
+        public partial bool CloseEditorOnApply { get; set; }
 
         public PixelEditorUserSettings Clone()
         {
@@ -1504,85 +868,40 @@ public sealed class UserSettings : BindableBase
 
     #region Layer Repair
 
-    public sealed class LayerRepairUserSettings : BindableBase
+    public sealed partial class LayerRepairUserSettings : ObservableObject
     {
-        private bool _repairIslands = true;
-        private bool _repairResinTraps = true;
-        private bool _repairSuctionCups;
-        private bool _removeEmptyLayers = true;
-        private ushort _removeIslandsBelowEqualPixels = 5;
-        private ushort _removeIslandsRecursiveIterations = 4;
-        private ushort _attachIslandsBelowLayers = 2;
-        private byte _resinTrapsOverlapBy = 0;
-        private byte _suctionCupsVentHole = 16;
-        private byte _closingIterations = 2;
-        private byte _openingIterations = 0;
+        [ObservableProperty]
+        public partial bool RepairIslands { get; set; } = true;
 
-        public bool RepairIslands
-        {
-            get => _repairIslands;
-            set => RaiseAndSetIfChanged(ref _repairIslands, value);
-        }
+        [ObservableProperty]
+        public partial bool RepairResinTraps { get; set; } = true;
 
-        public bool RepairResinTraps
-        {
-            get => _repairResinTraps;
-            set => RaiseAndSetIfChanged(ref _repairResinTraps, value);
-        }
+        [ObservableProperty]
+        public partial bool RepairSuctionCups { get; set; }
 
-        public bool RepairSuctionCups
-        {
-            get => _repairSuctionCups;
-            set => RaiseAndSetIfChanged(ref _repairSuctionCups, value);
-        }
+        [ObservableProperty]
+        public partial bool RemoveEmptyLayers { get; set; } = true;
 
-        public bool RemoveEmptyLayers
-        {
-            get => _removeEmptyLayers;
-            set => RaiseAndSetIfChanged(ref _removeEmptyLayers, value);
-        }
+        [ObservableProperty]
+        public partial ushort RemoveIslandsBelowEqualPixels { get; set; } = 5;
 
-        public ushort RemoveIslandsBelowEqualPixels
-        {
-            get => _removeIslandsBelowEqualPixels;
-            set => RaiseAndSetIfChanged(ref _removeIslandsBelowEqualPixels, value);
-        }
+        [ObservableProperty]
+        public partial ushort RemoveIslandsRecursiveIterations { get; set; } = 4;
 
-        public ushort RemoveIslandsRecursiveIterations
-        {
-            get => _removeIslandsRecursiveIterations;
-            set => RaiseAndSetIfChanged(ref _removeIslandsRecursiveIterations, value);
-        }
+        [ObservableProperty]
+        public partial ushort AttachIslandsBelowLayers { get; set; } = 2;
 
-        public ushort AttachIslandsBelowLayers
-        {
-            get => _attachIslandsBelowLayers;
-            set => RaiseAndSetIfChanged(ref _attachIslandsBelowLayers, value);
-        }
+        [ObservableProperty]
+        public partial byte ResinTrapsOverlapBy { get; set; }
 
-        public byte ResinTrapsOverlapBy
-        {
-            get => _resinTrapsOverlapBy;
-            set => RaiseAndSetIfChanged(ref _resinTrapsOverlapBy, value);
-        }
+        [ObservableProperty]
+        public partial byte SuctionCupsVentHole { get; set; } = 16;
 
-        public byte SuctionCupsVentHole
-        {
-            get => _suctionCupsVentHole;
-            set => RaiseAndSetIfChanged(ref _suctionCupsVentHole, value);
-        }
+        [ObservableProperty]
+        public partial byte ClosingIterations { get; set; } = 2;
 
-        public byte ClosingIterations
-        {
-            get => _closingIterations;
-            set => RaiseAndSetIfChanged(ref _closingIterations, value);
-        }
-
-        public byte OpeningIterations
-        {
-            get => _openingIterations;
-            set => RaiseAndSetIfChanged(ref _openingIterations, value);
-        }
+        [ObservableProperty]
+        public partial byte OpeningIterations { get; set; }
 
         public LayerRepairUserSettings Clone()
         {
@@ -1594,59 +913,32 @@ public sealed class UserSettings : BindableBase
     #region Tools
 
 
-    public sealed class ToolsUserSettings : BindableBase
+    public sealed partial class ToolsUserSettings : ObservableObject
     {
-        private bool _expandDescriptions = true;
-        private bool _promptForConfirmation = true;
-        private bool _restoreLastUsedSettings;
-        private bool _lastUsedSettingsKeepOnCloseFile = true;
-        private bool _lastUsedSettingsPriorityOverDefaultProfile = true;
+        [ObservableProperty]
+        public partial bool ExpandDescriptions { get; set; } = true;
 
-        public bool ExpandDescriptions
-        {
-            get => _expandDescriptions;
-            set => RaiseAndSetIfChanged(ref _expandDescriptions, value);
-        }
+        [ObservableProperty]
+        public partial bool PromptForConfirmation { get; set; } = true;
 
-        public bool PromptForConfirmation
-        {
-            get => _promptForConfirmation;
-            set => RaiseAndSetIfChanged(ref _promptForConfirmation, value);
-        }
+        [ObservableProperty]
+        public partial bool RestoreLastUsedSettings { get; set; }
 
-        public bool RestoreLastUsedSettings
-        {
-            get => _restoreLastUsedSettings;
-            set => RaiseAndSetIfChanged(ref _restoreLastUsedSettings, value);
-        }
+        [ObservableProperty]
+        public partial bool LastUsedSettingsKeepOnCloseFile { get; set; } = true;
 
-        public bool LastUsedSettingsKeepOnCloseFile
-        {
-            get => _lastUsedSettingsKeepOnCloseFile;
-            set => RaiseAndSetIfChanged(ref _lastUsedSettingsKeepOnCloseFile, value);
-        }
-
-        public bool LastUsedSettingsPriorityOverDefaultProfile
-        {
-            get => _lastUsedSettingsPriorityOverDefaultProfile;
-            set => RaiseAndSetIfChanged(ref _lastUsedSettingsPriorityOverDefaultProfile, value);
-        }
+        [ObservableProperty]
+        public partial bool LastUsedSettingsPriorityOverDefaultProfile { get; set; } = true;
     }
 
     #endregion
 
-
     #region File Formats
 
-    public sealed class FileFormatsUserSettings : BindableBase
+    public sealed partial class FileFormatsUserSettings : ObservableObject
     {
-        private PerLayerSettingsModes _perLayerSettingsMode = CoreSettings.PerLayerSettingsMode;
-
-        public PerLayerSettingsModes PerLayerSettingsMode
-        {
-            get => _perLayerSettingsMode;
-            set => RaiseAndSetIfChanged(ref _perLayerSettingsMode, value);
-        }
+        [ObservableProperty]
+        public partial PerLayerSettingsModes PerLayerSettingsMode { get; set; } = CoreSettings.PerLayerSettingsMode;
 
         public FileFormatsUserSettings Clone()
         {
@@ -1658,64 +950,31 @@ public sealed class UserSettings : BindableBase
 
     #region Automations
 
-    public sealed class AutomationsUserSettings : BindableBase
+    public sealed partial class AutomationsUserSettings : ObservableObject
     {
-        private bool _saveFileAfterModifications = true;
-        private bool _fileNameOnlyAsciiCharacters;
-        private bool _autoConvertFiles = true;
-        private RemoveSourceFileAction _removeSourceFileAfterAutoConversion = RemoveSourceFileAction.No;
-        private RemoveSourceFileAction _removeSourceFileAfterManualConversion = RemoveSourceFileAction.No;
-        private string? _eventAfterFileLoadScriptFile;
-        private string? _eventBeforeFileSaveScriptFile;
-        private string? _eventAfterFileSaveScriptFile;
+        [ObservableProperty]
+        public partial bool SaveFileAfterModifications { get; set; } = true;
 
-        public bool SaveFileAfterModifications
-        {
-            get => _saveFileAfterModifications;
-            set => RaiseAndSetIfChanged(ref _saveFileAfterModifications, value);
-        }
+        [ObservableProperty]
+        public partial bool FileNameOnlyAsciiCharacters { get; set; }
 
-        public bool FileNameOnlyAsciiCharacters
-        {
-            get => _fileNameOnlyAsciiCharacters;
-            set => RaiseAndSetIfChanged(ref _fileNameOnlyAsciiCharacters, value);
-        }
+        [ObservableProperty]
+        public partial bool AutoConvertFiles { get; set; } = true;
 
-        public bool AutoConvertFiles
-        {
-            get => _autoConvertFiles;
-            set => RaiseAndSetIfChanged(ref _autoConvertFiles, value);
-        }
+        [ObservableProperty]
+        public partial RemoveSourceFileAction RemoveSourceFileAfterAutoConversion { get; set; } = RemoveSourceFileAction.No;
 
-        public RemoveSourceFileAction RemoveSourceFileAfterAutoConversion
-        {
-            get => _removeSourceFileAfterAutoConversion;
-            set => RaiseAndSetIfChanged(ref _removeSourceFileAfterAutoConversion, value);
-        }
+        [ObservableProperty]
+        public partial RemoveSourceFileAction RemoveSourceFileAfterManualConversion { get; set; } = RemoveSourceFileAction.No;
 
-        public RemoveSourceFileAction RemoveSourceFileAfterManualConversion
-        {
-            get => _removeSourceFileAfterManualConversion;
-            set => RaiseAndSetIfChanged(ref _removeSourceFileAfterManualConversion, value);
-        }
+        [ObservableProperty]
+        public partial string? EventAfterFileLoadScriptFile { get; set; }
 
-        public string? EventAfterFileLoadScriptFile
-        {
-            get => _eventAfterFileLoadScriptFile;
-            set => RaiseAndSetIfChanged(ref _eventAfterFileLoadScriptFile, value);
-        }
+        [ObservableProperty]
+        public partial string? EventBeforeFileSaveScriptFile { get; set; }
 
-        public string? EventBeforeFileSaveScriptFile
-        {
-            get => _eventBeforeFileSaveScriptFile;
-            set => RaiseAndSetIfChanged(ref _eventBeforeFileSaveScriptFile, value);
-        }
-
-        public string? EventAfterFileSaveScriptFile
-        {
-            get => _eventAfterFileSaveScriptFile;
-            set => RaiseAndSetIfChanged(ref _eventAfterFileSaveScriptFile, value);
-        }
+        [ObservableProperty]
+        public partial string? EventAfterFileSaveScriptFile { get; set; }
 
         public AutomationsUserSettings Clone()
         {
@@ -1728,15 +987,10 @@ public sealed class UserSettings : BindableBase
     #region Network
 
 
-    public sealed class NetworkUserSettings : BindableBase
+    public sealed partial class NetworkUserSettings : ObservableObject
     {
-        private RangeObservableCollection<RemotePrinter> _remotePrinters = [];
-
-        public RangeObservableCollection<RemotePrinter> RemotePrinters
-        {
-            get => _remotePrinters;
-            set => RaiseAndSetIfChanged(ref _remotePrinters, value);
-        }
+        [ObservableProperty]
+        public partial RangeObservableCollection<RemotePrinter> RemotePrinters { get; set; } = [];
 
         public NetworkUserSettings Clone()
         {
@@ -1781,11 +1035,7 @@ public sealed class UserSettings : BindableBase
     private AutomationsUserSettings? _automations;
     private NetworkUserSettings? _network;
 
-    private ushort _settingsVersion = SETTINGS_VERSION;
     private string? _appVersion;
-    private int _lastBirthdayYearsOld;
-    private uint _savesCount;
-    private DateTime _modifiedDateTime;
 
 
     public GeneralUserSettings General
@@ -1853,11 +1103,8 @@ public sealed class UserSettings : BindableBase
     public uint ResetCount { get; set; }
     */
 
-    public ushort SettingsVersion
-    {
-        get => _settingsVersion;
-        set => RaiseAndSetIfChanged(ref _settingsVersion,  value);
-    }
+    [ObservableProperty]
+    public partial ushort SettingsVersion { get; set; } = SETTINGS_VERSION;
 
     /// <summary>
     /// Gets or sets the last running version of UVtools with these settings
@@ -1865,32 +1112,23 @@ public sealed class UserSettings : BindableBase
     public string AppVersion
     {
         get => _appVersion ??= About.VersionString;
-        set => RaiseAndSetIfChanged(ref _appVersion, value);
+        set => SetProperty(ref _appVersion, value);
     }
 
-    public int LastBirthdayYearsOld
-    {
-        get => _lastBirthdayYearsOld;
-        set => RaiseAndSetIfChanged(ref _lastBirthdayYearsOld, value);
-    }
+    [ObservableProperty]
+    public partial int LastBirthdayYearsOld { get; set; }
 
     /// <summary>
     /// Gets or sets the number of times this file has been saved
     /// </summary>
-    public uint SavesCount
-    {
-        get => _savesCount;
-        set => RaiseAndSetIfChanged(ref _savesCount, value);
-    }
+    [ObservableProperty]
+    public partial uint SavesCount { get; set; }
 
     /// <summary>
     /// Gets or sets the last time this file has been modified
     /// </summary>
-    public DateTime ModifiedDateTime
-    {
-        get => _modifiedDateTime;
-        set => RaiseAndSetIfChanged(ref _modifiedDateTime, value);
-    }
+    [ObservableProperty]
+    public partial DateTime ModifiedDateTime { get; set; }
 
     #endregion
 

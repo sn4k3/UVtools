@@ -3,6 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:calibrators="clr-namespace:UVtools.UI.Controls.Calibrators"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Calibrators.CalibrateBloomingEffectControl"
              x:DataType="calibrators:CalibrateBloomingEffectControl">
@@ -15,7 +17,7 @@
 						   VerticalAlignment="Center"
 						   Text="Layer height:"/>
 				<NumericUpDown Grid.Row="0" Grid.Column="2"
-							   Classes="ValueLabel ValueLabel_mm"
+							   suki:NumericUpDownExtensions.Unit="mm"
 							   Increment="0.01"
 							   Minimum="0.001"
 							   Maximum="0.30"
@@ -27,7 +29,7 @@
 						   VerticalAlignment="Center"
 						   Text="Bottom layers:"/>
 				<NumericUpDown Grid.Row="0" Grid.Column="6"
-							   Classes="ValueLabel ValueLabel_layers"
+							   suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
 							   Increment="1"
 							   Minimum="1"
 							   Maximum="1000"
@@ -38,7 +40,7 @@
 						   VerticalAlignment="Center"
 						   Text="Bottom exposure:"/>
 				<NumericUpDown Grid.Row="2" Grid.Column="2"
-							   Classes="ValueLabel ValueLabel_s"
+							   suki:NumericUpDownExtensions.Unit="s"
 							   Increment="0.5"
 							   Minimum="0.1"
 							   Maximum="200"
@@ -48,7 +50,7 @@
 						   VerticalAlignment="Center"
 						   Text="Normal exposure:"/>
 				<NumericUpDown Grid.Row="2" Grid.Column="6"
-							   Classes="ValueLabel ValueLabel_s"
+							   suki:NumericUpDownExtensions.Unit="s"
 							   Increment="0.5"
 							   Minimum="0.1"
 							   Maximum="200"
@@ -59,7 +61,7 @@
 						   VerticalAlignment="Center"
 						   Text="Left/right margin:"/>
 				<NumericUpDown Grid.Row="4" Grid.Column="2"
-							   Classes="ValueLabel ValueLabel_px"
+							   suki:NumericUpDownExtensions.Unit="px"
 							   Increment="5"
 							   Minimum="0"
 							   Maximum="{Binding Operation.MaxLeftRightMargin}"
@@ -69,7 +71,7 @@
 						   VerticalAlignment="Center"
 						   Text="Top/right margin:"/>
 				<NumericUpDown Grid.Row="4" Grid.Column="6"
-							   Classes="ValueLabel ValueLabel_px"
+							   suki:NumericUpDownExtensions.Unit="px"
 							   Increment="5"
 							   Minimum="0"
 							   Maximum="{Binding Operation.MaxTopBottomMargin}"
@@ -81,7 +83,7 @@
 						   ToolTip.Tip="The wait time before cure for the first object"
                            Text="Starting wait time:"/>
                 <NumericUpDown Grid.Row="6" Grid.Column="2"
-                               Classes="ValueLabel ValueLabel_s"
+                               suki:NumericUpDownExtensions.Unit="s"
                                Increment="0.5"
                                Minimum="0"
                                Maximum="1000"
@@ -93,7 +95,7 @@
                            ToolTip.Tip="The wait time before cure increment per object"
                            Text="Wait time increment:"/>
                 <NumericUpDown Grid.Row="6" Grid.Column="6"
-                               Classes="ValueLabel ValueLabel_s"
+                               suki:NumericUpDownExtensions.Unit="s"
                                Increment="0.50"
                                Minimum="0.05"
                                Maximum="100"
@@ -105,7 +107,7 @@
                            VerticalAlignment="Center"
                            Text="Number of objects:"/>
                 <NumericUpDown Grid.Row="8" Grid.Column="2"
-                               Classes="ValueLabel ValueLabel_times"
+                               suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Multiply}"
                                Increment="1"
                                Minimum="1"
                                Maximum="1000"
@@ -116,7 +118,7 @@
 						   ToolTip.Tip="Margin between objects in XY"
                            Text="Object margin:"/>
                 <NumericUpDown Grid.Row="8" Grid.Column="6"
-                               Classes="ValueLabel ValueLabel_px"
+                               suki:NumericUpDownExtensions.Unit="px"
                                Increment="1"
                                Minimum="1"
                                Maximum="1000"
@@ -126,7 +128,7 @@
                            VerticalAlignment="Center"
                            Text="Object diameter:"/>
                 <NumericUpDown Grid.Row="10" Grid.Column="2"
-                               Classes="ValueLabel ValueLabel_px"
+                               suki:NumericUpDownExtensions.Unit="px"
                                Increment="10"
                                Minimum="1"
                                Maximum="10000"
@@ -136,7 +138,7 @@
                            VerticalAlignment="Center"
                            Text="Object height:"/>
                 <NumericUpDown Grid.Row="10" Grid.Column="6"
-                               Classes="ValueLabel ValueLabel_mm"
+                               suki:NumericUpDownExtensions.Unit="mm"
                                Increment="1"
                                Minimum="0.5"
                                Maximum="1000"

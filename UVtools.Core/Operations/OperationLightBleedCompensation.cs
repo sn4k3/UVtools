@@ -63,7 +63,7 @@ public class OperationLightBleedCompensation : Operation
     #region Overrides
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.Normal;
-    public override string IconClass => "mdi-lightbulb-on";
+    public override string IconClass => "LightbulbOn";
     public override string Title => "Light bleed compensation";
     public override string Description =>
         "Compensate the over-curing and light bleed from clear resins by dimming the sequential pixels in the Z axis.\n" +

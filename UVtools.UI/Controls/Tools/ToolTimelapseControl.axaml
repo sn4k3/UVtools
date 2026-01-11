@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolTimelapseControl"
              x:DataType="tools:ToolTimelapseControl">
@@ -28,7 +29,7 @@
 
             <StackPanel Grid.Row="2" Grid.Column="2"
                         Orientation="Horizontal" Spacing="5">
-			    <NumericUpDown Classes="ValueLabel ValueLabel_mm"
+                <NumericUpDown suki:NumericUpDownExtensions.Unit="mm"
                                Minimum="10"
                                Maximum="10000"
                                Increment="1"
@@ -49,9 +50,9 @@
     &#x0a;Use 0mm to raise at each layer."
                        Text="Raise each:"/>
 
-			<StackPanel Grid.Row="4" Grid.Column="2"
+            <StackPanel Grid.Row="4" Grid.Column="2"
                         Orientation="Horizontal" Spacing="5">
-			    <NumericUpDown Classes="ValueLabel ValueLabel_mm"
+                <NumericUpDown suki:NumericUpDownExtensions.Unit="mm"
                                HorizontalAlignment="Left"
                                Minimum="0"
                                Maximum="10000"
@@ -67,9 +68,9 @@
                            FontWeight="Bold"
                            Text="{Binding Operation.NumberOfLifts, StringFormat=Lifts: {0}}"/>
 
-			</StackPanel>
+            </StackPanel>
 
-		    <!-- LiftHeight: Wait time after lift -->
+            <!-- LiftHeight: Wait time after lift -->
             <TextBlock Grid.Row="6" Grid.Column="0"
                        VerticalAlignment="Center"
                        ToolTip.Tip="The time to wait on the set position.
@@ -78,20 +79,20 @@
                        Text="Wait time:"/>
 
             <NumericUpDown Grid.Row="6" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_s"
+                           suki:NumericUpDownExtensions.Unit="s"
                            HorizontalAlignment="Left"
                            Minimum="0"
                            Maximum="1000"
                            Increment="0.5"
                            Width="100"
                            Value="{Binding Operation.WaitTimeAfterLift}">
-			    <NumericUpDown.IsVisible>
-				    <MultiBinding Converter="{x:Static BoolConverters.And}">
-					    <Binding Path="Operation.IsLiftHeightMode"/>
-					    <Binding Path="SlicerFile.CanUseLayerWaitTimeAfterLift"/>
-				    </MultiBinding>
-			    </NumericUpDown.IsVisible>
-		    </NumericUpDown>
+                <NumericUpDown.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                        <Binding Path="Operation.IsLiftHeightMode"/>
+                        <Binding Path="SlicerFile.CanUseLayerWaitTimeAfterLift"/>
+                    </MultiBinding>
+                </NumericUpDown.IsVisible>
+            </NumericUpDown>
 
             <TextBlock Grid.Row="6" Grid.Column="2"
                        VerticalAlignment="Center"
@@ -119,8 +120,8 @@
             <StackPanel Grid.Row="6" Grid.Column="2"
                         Orientation="Horizontal" Spacing="10">
 
-				<NumericUpDown 
-                           Classes="ValueLabel ValueLabel_s"
+                <NumericUpDown
+                           suki:NumericUpDownExtensions.Unit="s"
                            HorizontalAlignment="Left"
                            Minimum="0"
                            Maximum="100"
@@ -135,7 +136,7 @@
                     </NumericUpDown.IsVisible>
                 </NumericUpDown>
 
-            
+
                 <CheckBox VerticalAlignment="Center"
                           ToolTip.Tip="If enabled, output a dummy pixel inside the layer bound to prevent a empty image and to ensure the correct handle by the firmware. This will also prevent layer being removed by auto-fix issues (Empty Layers)."
                           Content="Output a dummy pixel"
@@ -151,7 +152,7 @@
                        Text="(Not supported by your printer / file format)">
                 <TextBlock.IsVisible>
                     <MultiBinding Converter="{x:Static BoolConverters.And}">
-					    <Binding Path="Operation.IsVirtualLayerMode"/>
+                        <Binding Path="Operation.IsVirtualLayerMode"/>
                         <Binding Path="!SlicerFile.CanUseLayerExposureTime"/>
                     </MultiBinding>
                 </TextBlock.IsVisible>
@@ -170,19 +171,19 @@
                       Content="Set custom lift parameters"
                       IsVisible="{Binding SlicerFile.CanUseLayerLiftHeight}"
                       IsChecked="{Binding Operation.UseCustomLift}"/>
-	    </Grid>
+        </Grid>
 
-		<!-- Custom lift -->
+        <!-- Custom lift -->
         <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
               ColumnDefinitions="Auto,10,210,5,Auto,5,210">
-			<Grid.IsVisible>
-				<MultiBinding Converter="{x:Static BoolConverters.And}">
-					<Binding Path="Operation.UseCustomLift"/>
-					<Binding Path="SlicerFile.CanUseLayerLiftHeight"/>
-				</MultiBinding>
-			</Grid.IsVisible>
+            <Grid.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="Operation.UseCustomLift"/>
+                    <Binding Path="SlicerFile.CanUseLayerLiftHeight"/>
+                </MultiBinding>
+            </Grid.IsVisible>
 
-			<!-- Slow lift height-->
+            <!-- Slow lift height-->
             <TextBlock Grid.Row="0" Grid.Column="0"
                        VerticalAlignment="Center"
                        ToolTip.Tip="The slow first lift sequence (TSMC).
@@ -190,7 +191,7 @@
                        Text="Slow lift height:"/>
 
             <NumericUpDown Grid.Row="0" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_mm"
+                           suki:NumericUpDownExtensions.Unit="mm"
                            Minimum="0"
                            Maximum="20"
                            Increment="1"
@@ -207,21 +208,21 @@
                        VerticalAlignment="Center"
                        ToolTip.Tip="(Not supported by your printer / file format)"
                        Text="(Not supported)">
-				<TextBlock.IsVisible>
-					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="!SlicerFile.CanUseLayerLiftHeight2"/>
-						<Binding Path="!Operation.IsVirtualLayerMode"/>
-					</MultiBinding>
-				</TextBlock.IsVisible>
-			</TextBlock>
+                <TextBlock.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                        <Binding Path="!SlicerFile.CanUseLayerLiftHeight2"/>
+                        <Binding Path="!Operation.IsVirtualLayerMode"/>
+                    </MultiBinding>
+                </TextBlock.IsVisible>
+            </TextBlock>
 
-			<!-- Lift Speed -->
+            <!-- Lift Speed -->
             <TextBlock Grid.Row="2" Grid.Column="0"
                        VerticalAlignment="Center"
                        Text="Lift speed:"/>
 
             <NumericUpDown Grid.Row="2" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_mmmin"
+                           suki:NumericUpDownExtensions.Unit="mm/min"
                            Minimum="0"
                            Maximum="10000"
                            Increment="10"
@@ -241,19 +242,19 @@
                 </TextBlock.IsVisible>
             </TextBlock>
 
-			<TextBlock Grid.Row="2" Grid.Column="4"
-					   VerticalAlignment="Center"
-					   Text="-">
-				<TextBlock.IsVisible>
-					<MultiBinding Converter="{x:Static BoolConverters.Or}">
-						<Binding Path="SlicerFile.CanUseLayerLiftSpeed2"/>
-						<Binding Path="Operation.IsVirtualLayerMode"/>
-					</MultiBinding>
-				</TextBlock.IsVisible>
-			</TextBlock>
+            <TextBlock Grid.Row="2" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="-">
+                <TextBlock.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                        <Binding Path="SlicerFile.CanUseLayerLiftSpeed2"/>
+                        <Binding Path="Operation.IsVirtualLayerMode"/>
+                    </MultiBinding>
+                </TextBlock.IsVisible>
+            </TextBlock>
 
             <NumericUpDown Grid.Row="2" Grid.Column="6"
-                           Classes="ValueLabel ValueLabel_mmmin"
+                           suki:NumericUpDownExtensions.Unit="mm/min"
                            Minimum="0"
                            Maximum="10000"
                            Increment="10"
@@ -266,7 +267,7 @@
                 </NumericUpDown.IsVisible>
             </NumericUpDown>
 
-			<!-- Slow retract -->
+            <!-- Slow retract -->
             <TextBlock Grid.Row="4" Grid.Column="0"
                        VerticalAlignment="Center"
                        ToolTip.Tip="The slow last retract sequence (TSMC).
@@ -274,7 +275,7 @@
                        Text="Slow retract height:"/>
 
             <NumericUpDown Grid.Row="4" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_mm"
+                           suki:NumericUpDownExtensions.Unit="mm"
                            Minimum="0"
                            Maximum="20"
                            Increment="1"
@@ -284,29 +285,29 @@
                         <Binding Path="SlicerFile.CanUseLayerRetractHeight2"/>
                         <Binding Path="Operation.IsVirtualLayerMode"/>
                     </MultiBinding>
-				</NumericUpDown.IsVisible>
+                </NumericUpDown.IsVisible>
             </NumericUpDown>
 
             <TextBlock Grid.Row="4" Grid.Column="2"
                        VerticalAlignment="Center"
                        ToolTip.Tip="(Not supported by your printer / file format)"
                        Text="(Not supported)">
-				<TextBlock.IsVisible>
-					<MultiBinding Converter="{x:Static BoolConverters.And}">
-						<Binding Path="!SlicerFile.CanUseLayerRetractHeight2"/>
-						<Binding Path="!Operation.IsVirtualLayerMode"/>
-					</MultiBinding>
-				</TextBlock.IsVisible>
-			</TextBlock>
+                <TextBlock.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                        <Binding Path="!SlicerFile.CanUseLayerRetractHeight2"/>
+                        <Binding Path="!Operation.IsVirtualLayerMode"/>
+                    </MultiBinding>
+                </TextBlock.IsVisible>
+            </TextBlock>
 
 
-			<!-- Retract speed -->
+            <!-- Retract speed -->
             <TextBlock Grid.Row="6" Grid.Column="0"
                        VerticalAlignment="Center"
                        Text="Retract speed:"/>
 
             <NumericUpDown Grid.Row="6" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_mmmin"
+                           suki:NumericUpDownExtensions.Unit="mm/min"
                            Minimum="0"
                            Maximum="10000"
                            Increment="10"
@@ -329,29 +330,29 @@
             <TextBlock Grid.Row="6" Grid.Column="4"
                        VerticalAlignment="Center"
                        Text="-">
-				<TextBlock.IsVisible>
-					<MultiBinding Converter="{x:Static BoolConverters.Or}">
-						<Binding Path="SlicerFile.CanUseLayerRetractSpeed2"/>
-						<Binding Path="Operation.IsVirtualLayerMode"/>
-					</MultiBinding>
-				</TextBlock.IsVisible>
-			</TextBlock>
+                <TextBlock.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                        <Binding Path="SlicerFile.CanUseLayerRetractSpeed2"/>
+                        <Binding Path="Operation.IsVirtualLayerMode"/>
+                    </MultiBinding>
+                </TextBlock.IsVisible>
+            </TextBlock>
 
 
             <NumericUpDown Grid.Row="6" Grid.Column="6"
-                           Classes="ValueLabel ValueLabel_mmmin"
+                           suki:NumericUpDownExtensions.Unit="mm/min"
                            Minimum="0"
                            Maximum="10000"
                            Increment="10"
                            Value="{Binding Operation.RetractSpeed2}">
-				<NumericUpDown.IsVisible>
-					<MultiBinding Converter="{x:Static BoolConverters.Or}">
-						<Binding Path="SlicerFile.CanUseLayerRetractSpeed2"/>
-						<Binding Path="Operation.IsVirtualLayerMode"/>
-					</MultiBinding>
-				</NumericUpDown.IsVisible>
-			</NumericUpDown>
-            
+                <NumericUpDown.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                        <Binding Path="SlicerFile.CanUseLayerRetractSpeed2"/>
+                        <Binding Path="Operation.IsVirtualLayerMode"/>
+                    </MultiBinding>
+                </NumericUpDown.IsVisible>
+            </NumericUpDown>
+
         </Grid>
 
     </StackPanel>

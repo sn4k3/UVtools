@@ -2,8 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:i="https://github.com/projektanker/icons.avalonia"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="UVtools.UI.Controls.Tools.ToolLithophaneControl"
              x:DataType="tools:ToolLithophaneControl">
@@ -17,7 +18,7 @@
 						   VerticalAlignment="Center"
 						   Text="Layer height:"/>
 				<NumericUpDown Grid.Row="0" Grid.Column="2"
-							   Classes="ValueLabel ValueLabel_mm"
+							   suki:NumericUpDownExtensions.Unit="mm"
 							   Increment="0.01"
 							   Minimum="0.001"
 							   Maximum="0.30"
@@ -29,7 +30,7 @@
                            HorizontalAlignment="Right"
 						   Text="Bottom layer count:"/>
 				<NumericUpDown Grid.Row="0" Grid.Column="6"
-							   Classes="ValueLabel ValueLabel_layers"
+							   suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
 							   Increment="1"
 							   Minimum="1"
 							   Maximum="1000"
@@ -40,7 +41,7 @@
 						   VerticalAlignment="Center"
 						   Text="Bottom exposure:"/>
 				<NumericUpDown Grid.Row="2" Grid.Column="2"
-							   Classes="ValueLabel ValueLabel_s"
+							   suki:NumericUpDownExtensions.Unit="s"
 							   Increment="0.5"
 							   Minimum="0.1"
 							   Maximum="200"
@@ -51,7 +52,7 @@
                            HorizontalAlignment="Right"
 						   Text="Normal exposure:"/>
 				<NumericUpDown Grid.Row="2" Grid.Column="6"
-							   Classes="ValueLabel ValueLabel_s"
+							   suki:NumericUpDownExtensions.Unit="s"
 							   Increment="0.5"
 							   Minimum="0.1"
 							   Maximum="200"
@@ -68,10 +69,10 @@
 							 IsReadOnly="True"
                              VerticalAlignment="Center"
                              Text="{Binding Operation.FilePath}"/>
-					<Button Grid.Column="1" 
+					<Button Grid.Column="1"
                             VerticalAlignment="Stretch"
                             Command="{Binding SelectFile}"
-                            i:Attached.Icon="fa-solid fa-file-import"/>
+                            Content="{icon:MaterialIconExt Kind=FileImport}"/>
 				</Grid>
 
                 <TextBlock Grid.Row="6" Grid.Column="0"
@@ -99,7 +100,7 @@
                            Text="Resize:"/>
 
 				<NumericUpDown Grid.Row="8" Grid.Column="2"
-							   Classes="ValueLabel ValueLabel_percent"
+							   suki:NumericUpDownExtensions.Unit="%"
 							   Minimum="1"
 							   Maximum="900"
 							   Increment="1"
@@ -111,7 +112,7 @@
                            Text="Brightness gain:"/>
 
                 <NumericUpDown Grid.Row="10" Grid.Column="2"
-                               Classes="ValueLabel ValueLabel_sun"
+                               suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Brightness5}"
                                Minimum="-128"
                                Maximum="127"
                                Increment="1"
@@ -127,7 +128,7 @@
                            Text="Noise removal:"/>
 
                 <NumericUpDown Grid.Row="12" Grid.Column="2"
-                               Classes="ValueLabel ValueLabel_px"
+                               suki:NumericUpDownExtensions.Unit="px"
                                Minimum="0"
                                Maximum="255"
                                Increment="1"
@@ -139,7 +140,7 @@
                            Text="Gap closing:"/>
 
                 <NumericUpDown Grid.Row="12" Grid.Column="6"
-                               Classes="ValueLabel ValueLabel_px"
+                               suki:NumericUpDownExtensions.Unit="px"
                                Minimum="0"
                                Maximum="255"
                                Increment="1"
@@ -150,7 +151,7 @@
                            Text="Gaussian blur:"/>
 
                 <NumericUpDown Grid.Row="14" Grid.Column="2"
-                               Classes="ValueLabel ValueLabel_px"
+                               suki:NumericUpDownExtensions.Unit="px"
                                Minimum="0"
                                Maximum="255"
                                Increment="1"
@@ -167,7 +168,7 @@
                            Text="Start threshold:"/>
 
                 <NumericUpDown Grid.Row="18" Grid.Column="2"
-                               Classes="ValueLabel ValueLabel_sun"
+                               suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Brightness5}"
                                IsEnabled="{Binding Operation.SeparateGrayscalePixels}"
                                Minimum="1"
                                Maximum="255"
@@ -181,7 +182,7 @@
                            Text="End threshold:"/>
 
                 <NumericUpDown Grid.Row="18" Grid.Column="6"
-                               Classes="ValueLabel ValueLabel_sun"
+                               suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Brightness5}"
                                IsEnabled="{Binding Operation.SeparateGrayscalePixels}"
                                Minimum="1"
                                Maximum="255"
@@ -202,7 +203,7 @@
                            Text="Base thickness:"/>
 
                 <NumericUpDown Grid.Row="22" Grid.Column="2"
-                               Classes="ValueLabel ValueLabel_mm"
+                               suki:NumericUpDownExtensions.Unit="mm"
                                Minimum="0"
                                Maximum="255"
                                Increment="1"
@@ -215,7 +216,7 @@
                            Text="Base margin:"/>
 
                 <NumericUpDown Grid.Row="22" Grid.Column="6"
-                               Classes="ValueLabel ValueLabel_px"
+                               suki:NumericUpDownExtensions.Unit="px"
                                Minimum="0"
                                Maximum="65535"
                                Increment="1"
@@ -227,7 +228,7 @@
                            Text="Lithophane height:"/>
 
                 <NumericUpDown Grid.Row="24" Grid.Column="2"
-                               Classes="ValueLabel ValueLabel_mm"
+                               suki:NumericUpDownExtensions.Unit="mm"
                                Minimum="0"
                                Maximum="10000"
                                Increment="1"

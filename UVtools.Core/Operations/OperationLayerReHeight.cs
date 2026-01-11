@@ -58,7 +58,7 @@ public sealed class OperationLayerReHeight : Operation
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override bool CanROI => false;
-    public override string IconClass => "mdi-arrow-split-horizontal";
+    public override string IconClass => "ArrowSplitHorizontal";
     public override string Title => "Adjust layer height";
     public override string Description =>
         "Adjust the layer height of the model or offset layers position by a set value.\n\n" +
@@ -67,12 +67,12 @@ public sealed class OperationLayerReHeight : Operation
         "Different layer thickness will require different exposure times, adjust accordingly.\n\n" +
         "Note: Using dedicated slicer software to re-slice will usually yield better results.";
     public override string ConfirmationText =>
-        _method == OperationLayerReHeightMethod.ReHeight 
+        _method == OperationLayerReHeightMethod.ReHeight
             ? $"adjust layer height to {_selectedItem!.LayerHeight}mm?"
             : $"adjust layers position by a offset of {_positionZOffset}mm?";
 
     public override string ProgressTitle =>
-        _method == OperationLayerReHeightMethod.ReHeight 
+        _method == OperationLayerReHeightMethod.ReHeight
             ? $"Adjusting layer height to {_selectedItem!.LayerHeight}mm"
             : $"Adjusting layers position by a offset of {_positionZOffset}mm";
 
@@ -121,7 +121,7 @@ public sealed class OperationLayerReHeight : Operation
                     sb.AppendLine("Position offset can't be 0, it have no effect.");
                     break;
                 }
-                
+
                 for (var layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
                 {
                     if ((decimal) SlicerFile[layerIndex].PositionZ + _positionZOffset < 0)
@@ -143,7 +143,7 @@ public sealed class OperationLayerReHeight : Operation
     public override string ToString()
     {
         var result = $"[{_method}]" +
-                     (_method == OperationLayerReHeightMethod.ReHeight 
+                     (_method == OperationLayerReHeightMethod.ReHeight
                          ? $"[Layer Count: {_selectedItem!.LayerCount}] " +
                            $"[Layer Height: {_selectedItem!.LayerHeight}] " +
                            $"[Exposure: {_bottomExposure}/{_normalExposure}s]" :

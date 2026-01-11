@@ -24,7 +24,7 @@ public class OperationFlip : Operation
     #endregion
 
     #region Overrides
-    public override string IconClass => "mdi-flip-horizontal";
+    public override string IconClass => "FlipHorizontal";
     public override string Title => "Flip";
     public override string Description =>
         "Flip the layers of the model vertically and/or horizontally.\n" +
@@ -88,7 +88,7 @@ public class OperationFlip : Operation
         if (obj.GetType() != GetType()) return false;
         return Equals((OperationFlip) obj);
     }
-    
+
     #endregion
 
     #region Methods
@@ -103,7 +103,7 @@ public class OperationFlip : Operation
 
             progress.LockAndIncrement();
         });
-            
+
         return !progress.Token.IsCancellationRequested;
     }
 

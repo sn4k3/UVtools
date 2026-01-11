@@ -60,7 +60,7 @@ public sealed class OperationCalibrateTolerance : Operation
     public override bool CanROI => false;
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    public override string IconClass => "fa-solid fa-dot-circle";
+    public override string IconClass => "CircleBox";
     public override string Title => "Tolerance";
     public override string Description =>
         "Generates test models with various strategies and increments to verify the part tolerances.\n" +

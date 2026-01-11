@@ -5,38 +5,25 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
-using UVtools.Core.Objects;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace UVtools.UI.Structures;
 
-public class SlicerProperty : BindableBase
+public partial class SlicerProperty : ObservableObject
 {
-    private string _name;
-    private string? _value;
-    private string? _group;
+    [ObservableProperty]
+    public partial string Name { get; set; }
 
-    public string Name
-    {
-        get => _name;
-        set => RaiseAndSetIfChanged(ref _name, value);
-    }
+    [ObservableProperty]
+    public partial string? Value { get; set; }
 
-    public string? Value
-    {
-        get => _value;
-        set => RaiseAndSetIfChanged(ref _value, value);
-    }
-
-    public string? Group
-    {
-        get => _group;
-        set => RaiseAndSetIfChanged(ref _group, value);
-    }
+    [ObservableProperty]
+    public partial string? Group { get; set; }
 
     public SlicerProperty(string name, string? value, string? group = null)
     {
-        _name = name;
-        _value = value;
-        _group = group;
+        Name = name;
+        Value = value;
+        Group = group;
     }
 }

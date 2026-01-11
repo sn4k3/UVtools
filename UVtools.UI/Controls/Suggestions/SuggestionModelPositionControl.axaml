@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:suggestions="clr-namespace:UVtools.UI.Controls.Suggestions"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Suggestions.SuggestionModelPositionControl"
              x:DataType="suggestions:SuggestionModelPositionControl">
@@ -28,7 +29,7 @@
                    Text="Top/bottom margin:"/>
 
 		<NumericUpDown Grid.Row="2" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_px"
+                       suki:NumericUpDownExtensions.Unit="px"
                        VerticalAlignment="Center"
                        Minimum="0"
                        Maximum="1000"
@@ -41,7 +42,7 @@
                    Text="Left/right margin:"/>
 
         <NumericUpDown Grid.Row="4" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_px"
+                       suki:NumericUpDownExtensions.Unit="px"
                        VerticalAlignment="Center"
                        Minimum="0"
                        Maximum="1000"
@@ -67,7 +68,7 @@
 
 		<NumericUpDown Grid.Row="8" Grid.Column="2"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_px"
+                       suki:NumericUpDownExtensions.Unit="px"
                        Minimum="0"
                        Maximum="1000"
                        Increment="10"
@@ -79,7 +80,7 @@
 
 		<NumericUpDown Grid.Row="8" Grid.Column="6"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_px"
+                       suki:NumericUpDownExtensions.Unit="px"
                        Minimum="0"
                        Maximum="1000"
                        Increment="10"
@@ -92,7 +93,7 @@
 
         <NumericUpDown Grid.Row="10" Grid.Column="2"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_px"
+                       suki:NumericUpDownExtensions.Unit="px"
                        Minimum="0"
                        Maximum="1000"
                        Increment="10"
@@ -104,7 +105,7 @@
 
         <NumericUpDown Grid.Row="10" Grid.Column="6"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_px"
+                       suki:NumericUpDownExtensions.Unit="px"
                        Minimum="0"
                        Maximum="1000"
                        Increment="10"

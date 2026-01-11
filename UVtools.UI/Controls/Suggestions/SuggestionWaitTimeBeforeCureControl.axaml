@@ -3,6 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:suggestions="clr-namespace:UVtools.UI.Controls.Suggestions"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
              x:Class="UVtools.UI.Controls.Suggestions.SuggestionWaitTimeBeforeCureControl"
              x:DataType="suggestions:SuggestionWaitTimeBeforeCureControl">
@@ -34,7 +36,7 @@
 
         <NumericUpDown Grid.Row="4" Grid.Column="2"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Minimum="0"
                        Maximum="1000"
                        FormatString="F2"
@@ -69,7 +71,7 @@
 
 		<NumericUpDown Grid.Row="8" Grid.Column="2"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
                        Maximum="1000"
                        FormatString="F2"
@@ -82,7 +84,7 @@
 
 		<NumericUpDown Grid.Row="8" Grid.Column="6"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
                        Maximum="1000"
                        FormatString="F2"
@@ -103,7 +105,7 @@
 
         <NumericUpDown Grid.Row="10" Grid.Column="2"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_layers"
+                       suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
                        Minimum="0"
                        Maximum="255"
                        Increment="1"
@@ -124,7 +126,7 @@
 
 		<NumericUpDown Grid.Row="10" Grid.Column="2"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
                        Maximum="1000"
                        FormatString="F2"
@@ -134,7 +136,7 @@
 
 		<NumericUpDown Grid.Row="10" Grid.Column="6"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
                        Maximum="1000"
                        FormatString="F2"
@@ -150,7 +152,7 @@
 
         <NumericUpDown Grid.Row="12" Grid.Column="2"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_px"
+                       suki:NumericUpDownExtensions.Unit="px"
                        Minimum="1"
                        Maximum="4294967295"
                        Increment="5000"
@@ -164,7 +166,7 @@
 
 		<NumericUpDown Grid.Row="12" Grid.Column="6"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_px"
+                       suki:NumericUpDownExtensions.Unit="px"
                        Minimum="1"
                        Maximum="4294967295"
                        Increment="5000"
@@ -179,7 +181,7 @@
 
         <NumericUpDown Grid.Row="12" Grid.Column="2"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_mm2"
+                       suki:NumericUpDownExtensions.Unit="mm²"
                        Minimum="1"
                        Maximum="4294967295"
                        Increment="50"
@@ -188,7 +190,7 @@
 
         <NumericUpDown Grid.Row="12" Grid.Column="6"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_mm2"
+                       suki:NumericUpDownExtensions.Unit="mm²"
                        Minimum="1"
                        Maximum="4294967295"
                        Increment="50"
@@ -205,7 +207,7 @@
 
         <NumericUpDown Grid.Row="14" Grid.Column="2"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
                        Maximum="100"
                        FormatString="F2"
@@ -220,7 +222,7 @@
 
 		<NumericUpDown Grid.Row="14" Grid.Column="6"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
                        Maximum="100"
                        FormatString="F2"
@@ -256,7 +258,7 @@
 
         <NumericUpDown Grid.Row="18" Grid.Column="2"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_mm"
+                       suki:NumericUpDownExtensions.Unit="mm"
                        Minimum="0"
                        Maximum="1000"
                        FormatString="F3"
@@ -291,7 +293,7 @@
 
 		<NumericUpDown Grid.Row="22" Grid.Column="2"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
                        Maximum="1000"
                        FormatString="F2"
@@ -304,7 +306,7 @@
 
 		<NumericUpDown Grid.Row="22" Grid.Column="6"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
                        Maximum="1000"
                        FormatString="F2"
@@ -318,7 +320,7 @@
 
 		<NumericUpDown Grid.Row="24" Grid.Column="2"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
                        Maximum="1000"
                        FormatString="F2"
@@ -331,7 +333,7 @@
 
 		<NumericUpDown Grid.Row="24" Grid.Column="6"
                        VerticalAlignment="Center"
-                       Classes="ValueLabel ValueLabel_s"
+                       suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
                        Maximum="1000"
                        FormatString="F2"

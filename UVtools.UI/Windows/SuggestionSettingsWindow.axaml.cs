@@ -1,21 +1,21 @@
 using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using SukiUI.MessageBox;
 using System;
 using System.Threading.Tasks;
-using Avalonia.Platform.Storage;
 using UVtools.Core.Dialogs;
 using UVtools.Core.Extensions;
 using UVtools.Core.Managers;
 using UVtools.Core.Suggestions;
-using UVtools.UI.Controls;
 using UVtools.UI.Controls.Suggestions;
 using UVtools.UI.Extensions;
-using AvaloniaStatic = UVtools.UI.Controls.AvaloniaStatic;
 using ZLinq;
+using AvaloniaStatic = UVtools.UI.Controls.AvaloniaStatic;
 
 namespace UVtools.UI.Windows;
 
-public partial class SuggestionSettingsWindow : WindowEx
+public partial class SuggestionSettingsWindow : GenericWindow
 {
     private Suggestion? _activeSuggestion;
     private Suggestion? _selectedSuggestion;
@@ -39,11 +39,11 @@ public partial class SuggestionSettingsWindow : WindowEx
                                 "Yes: Discard changes\n" +
                                 "No: Save changes\n" +
                                 "Cancel: Continue editing",
-                                "Pending changes", MessageButtons.YesNoCancel))
+                                "Pending changes", SukiMessageBoxButtons.YesNoCancel))
                     {
-                        case MessageButtonResult.Yes:
+                        case SukiMessageBoxResult.Yes:
                             break;
-                        case MessageButtonResult.No:
+                        case SukiMessageBoxResult.No:
                             if (!await SaveSuggestion(false))
                             {
                                 recoverSuggestion = true;
@@ -51,9 +51,9 @@ public partial class SuggestionSettingsWindow : WindowEx
                             }
                             SuggestionManager.SetSuggestion(_activeSuggestion.Clone(), true);
                             break;
-                        case MessageButtonResult.Cancel:
-                        case MessageButtonResult.Abort:
-                        case MessageButtonResult.None:
+                        case SukiMessageBoxResult.Cancel:
+                        case SukiMessageBoxResult.Abort:
+                        case SukiMessageBoxResult.Close:
                             recoverSuggestion = true;
                             break;
                     }
@@ -132,7 +132,7 @@ public partial class SuggestionSettingsWindow : WindowEx
     {
         if (await this.MessageBoxQuestion(
                 "Are you sure you want to reset all suggestions to the default settings?",
-                "Reset all settings?") != MessageButtonResult.Yes) return;
+                "Reset all settings?") != SukiMessageBoxResult.Yes) return;
 
         SuggestionManager.Reset();
 
@@ -156,12 +156,12 @@ public partial class SuggestionSettingsWindow : WindowEx
         if (!string.IsNullOrWhiteSpace(result))
         {
             if (await this.MessageBoxError(result,
-                    $"{_activeSuggestion.Title} - Error") != MessageButtonResult.Yes) return false;
+                    $"{_activeSuggestion.Title} - Error") != SukiMessageBoxResult.Yes) return false;
         }
 
         if (promptBeforeSave && await this.MessageBoxQuestion(
                 "Are you sure you want to save and overwrite previous settings?",
-                "Save suggestion changes?") != MessageButtonResult.Yes) return false;
+                "Save suggestion changes?") != SukiMessageBoxResult.Yes) return false;
 
         SuggestionManager.SetSuggestion(_activeSuggestion.Clone(), true);
         PendingChanges = false;
@@ -179,7 +179,7 @@ public partial class SuggestionSettingsWindow : WindowEx
 
         if (await this.MessageBoxQuestion(
                 "Are you sure you want to discard all changes and return to the last saved state?",
-                "Discard suggestion changes?") != MessageButtonResult.Yes) return;
+                "Discard suggestion changes?") != SukiMessageBoxResult.Yes) return;
 
         ActiveSuggestion = SuggestionManager.GetSuggestion(_activeSuggestion.GetType())?.Clone();
     }
@@ -190,7 +190,7 @@ public partial class SuggestionSettingsWindow : WindowEx
 
         if (await this.MessageBoxQuestion(
                 "Are you sure you want to reset to the default settings?",
-                "Reset suggestion settings?") != MessageButtonResult.Yes) return;
+                "Reset suggestion settings?") != SukiMessageBoxResult.Yes) return;
 
         var suggestion = (Suggestion?)_activeSuggestion.GetType().CreateInstance();
         if (suggestion == null) return;

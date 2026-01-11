@@ -6,16 +6,22 @@
  *  of this license document, but changing it is not allowed.
  */
 using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Reactive;
 using Avalonia.Threading;
+using Material.Icons;
+using Material.Icons.Avalonia;
+using SukiUI.Controls;
+using SukiUI.MessageBox;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -51,10 +57,11 @@ using UVtools.UI.Windows;
 using ZLinq;
 using Path = System.IO.Path;
 using Point = Avalonia.Point;
+using Size = Avalonia.Size;
 
 namespace UVtools.UI;
 
-public partial class MainWindow : WindowEx
+public partial class MainWindow : GenericWindow
 {
     #region Redirects
 
@@ -305,7 +312,17 @@ public partial class MainWindow : WindowEx
             foreach (var menuTool in menuItem)
             {
                 if (menuTool.Tag is not Operation operation) continue;
-                if (!string.IsNullOrWhiteSpace(operation.IconClass)) menuTool.Icon = new Projektanker.Icons.Avalonia.Icon{Value = operation.IconClass};
+                if (!string.IsNullOrWhiteSpace(operation.IconClass))
+                {
+                    if (Enum.TryParse(typeof(MaterialIconKind), operation.IconClass, true, out var kind))
+                    {
+                        menuTool.Icon = new MaterialIcon
+                        {
+                            Kind = (MaterialIconKind)kind
+                        };
+                    }
+
+                }
                 menuTool.Header = operation.Title;
                 menuTool.Click += async (sender, args) => await ShowRunOperation(operation.GetType());
             }
@@ -354,7 +371,7 @@ public partial class MainWindow : WindowEx
                     {
                         Header = header.ReplaceFirst("_", "__"),
                         Tag = drive,
-                        Icon = new Projektanker.Icons.Avalonia.Icon{ Value = "fa-brands fa-usb" }
+                        Icon = new MaterialIcon{ Kind = MaterialIconKind.Usb}
                     };
                     menuItem.Click += FileSendToItemClick;
 
@@ -385,7 +402,7 @@ public partial class MainWindow : WindowEx
                     {
                         Header = location.ToString().ReplaceFirst("_", "__"),
                         Tag = location,
-                        Icon = new Projektanker.Icons.Avalonia.Icon { Value = "fa-solid fa-folder" }
+                        Icon = new MaterialIcon { Kind = MaterialIconKind.Folder }
                     };
                     menuItem.Click += FileSendToItemClick;
 
@@ -416,7 +433,7 @@ public partial class MainWindow : WindowEx
                     {
                         Header = remotePrinter.ToString().ReplaceFirst("_", "__"),
                         Tag = remotePrinter,
-                        Icon = new Projektanker.Icons.Avalonia.Icon { Value = "fa-solid fa-network-wired" }
+                        Icon = new MaterialIcon { Kind = MaterialIconKind.Network }
                     };
                     menuItem.Click += FileSendToItemClick;
 
@@ -447,7 +464,7 @@ public partial class MainWindow : WindowEx
                     {
                         Header = application.Name.ReplaceFirst("_", "__"),
                         Tag = application,
-                        Icon = new Projektanker.Icons.Avalonia.Icon { Value = "fa-solid fa-cog" }
+                        Icon = new MaterialIcon { Kind = MaterialIconKind.Cog }
                     };
                     menuItem.Click += FileSendToItemClick;
 
@@ -472,10 +489,6 @@ public partial class MainWindow : WindowEx
                 UserSettings.Save();
             }
         };
-
-#if DEBUG
-        this.AttachDevTools(new KeyGesture(Key.F12, KeyModifiers.Control));
-#endif
     }
 
     private void AppUpdaterOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -595,12 +608,12 @@ public partial class MainWindow : WindowEx
             switch (await this.MessageBoxQuestion("There are unsaved changes. Do you want to save the current file before copy it over?\n\n" +
                                                   "Yes: Save the current file and copy it over.\n" +
                                                   "No: Copy the file without current modifications.\n" +
-                                                  "Cancel: Abort the operation.", "Send to - Unsaved changes", MessageButtons.YesNoCancel))
+                                                  "Cancel: Abort the operation.", "Send to - Unsaved changes", SukiMessageBoxButtons.YesNoCancel))
             {
-                case MessageButtonResult.Yes:
+                case SukiMessageBoxResult.Yes:
                     await SaveFile(true);
                     break;
-                case MessageButtonResult.No:
+                case SukiMessageBoxResult.No:
                     break;
                 default:
                     return;
@@ -621,7 +634,7 @@ public partial class MainWindow : WindowEx
                             "Keep in mind there is no guarantee that the file will start to print.\n" +
                             "Are you sure you want to continue?\n\n" +
                             "Yes: Print this file name.\n" +
-                            "No: Cancel file print.", "Print the filename?") != MessageButtonResult.Yes) return;
+                            "No: Cancel file print.", "Print the filename?") != SukiMessageBoxResult.Yes) return;
                 }
                 else
                 {
@@ -630,7 +643,7 @@ public partial class MainWindow : WindowEx
                             "Keep in mind there is no guarantee that the file will start to print.\n" +
                             "Are you sure you want to continue?\n\n" +
                             "Yes: Send file and print it.\n" +
-                            "No: Cancel file sending and print.", "Send and print the file?") != MessageButtonResult.Yes) return;
+                            "No: Cancel file sending and print.", "Send and print the file?") != SukiMessageBoxResult.Yes) return;
                 }
 
             }
@@ -736,7 +749,7 @@ public partial class MainWindow : WindowEx
             {
                 if (await this.MessageBoxQuestion(
                         $"File '{SlicerFile.Filename}' has copied successfully into {removableDrive.Name}\n" +
-                        $"Do you want to eject the {removableDrive.Name} drive now?", "Copied ok, eject the drive?") == MessageButtonResult.Yes)
+                        $"Do you want to eject the {removableDrive.Name} drive now?", "Copied ok, eject the drive?") == SukiMessageBoxResult.Yes)
                 {
 
                     Progress.ResetAll($"Ejecting {removableDrive.Name}");
@@ -779,16 +792,14 @@ public partial class MainWindow : WindowEx
         var clientSizeObs = this.GetObservable(ClientSizeProperty);
         clientSizeObs.Subscribe(new AnonymousObserver<Size>(size =>
         {
-            Settings.General._lastWindowBounds.Width = (int)size.Width;
-            Settings.General._lastWindowBounds.Height = (int)size.Height;
+            Settings.General.LastWindowBounds = new Rectangle((int)size.Width, (int)size.Height, Settings.General.LastWindowBounds.X, Settings.General.LastWindowBounds.Y);
             UpdateLayerTrackerHighlightIssues();
         }));
         var windowStateObs = this.GetObservable(WindowStateProperty);
         windowStateObs.Subscribe(new AnonymousObserver<WindowState>(state => UpdateLayerTrackerHighlightIssues()));
         PositionChanged += (sender, args) =>
         {
-            Settings.General._lastWindowBounds.X = Math.Max(0, Position.X);
-            Settings.General._lastWindowBounds.Y = Math.Max(0, Position.Y);
+            Settings.General.LastWindowBounds = new Rectangle(Settings.General.LastWindowBounds.Width, Settings.General.LastWindowBounds.Height, Math.Max(0, Position.X), Math.Max(0, Position.Y));
         };
 
         AddHandler(DragDrop.DropEvent, async (sender, args) =>
@@ -983,7 +994,7 @@ public partial class MainWindow : WindowEx
 
     public async Task ShowBirthdayMessage()
     {
-        await this.MessageBoxGeneric(About.BirthdayMessage, About.BirthdayTitle, About.BirthdayTitle, MessageButtons.Ok, "mdi party-popper");
+        await this.MessageBoxGeneric(About.BirthdayMessage, About.BirthdayTitle, About.BirthdayTitle, SukiMessageBoxButtons.OK, MaterialIconKind.PartyPopper);
         Settings.LastBirthdayYearsOld = About.YearsOld;
         UserSettings.Save();
     }
@@ -1130,7 +1141,7 @@ public partial class MainWindow : WindowEx
         if (CanSave && await this.MessageBoxQuestion("""
                                                      You have unsaved changes. Closing the file will discard them.
                                                      Do you want to close without saving?
-                                                     """, "Close file - Unsaved changes") != MessageButtonResult.Yes)
+                                                     """, "Close file - Unsaved changes") != SukiMessageBoxResult.Yes)
         {
             return;
         }
@@ -1197,33 +1208,13 @@ public partial class MainWindow : WindowEx
         {
             if (oldTheme != Settings.General.Theme)
             {
-                App.ApplyTheme();
+                App.ChangeBaseTheme(Settings.General.Theme);
             }
 
-            App._fluentTheme.DensityStyle = Settings.General.ThemeDensity;
+            //App._fluentTheme.DensityStyle = Settings.General.ThemeDensity;
             CoreSettings.DefaultLayerCompressionLevel = Settings.General.LayerCompressionLevel;
             if (oldLayerCompressionCodec != Settings.General.LayerCompressionCodec && IsFileLoaded)
             {
-                /*IsGUIEnabled = false;
-                ShowProgressWindow($"Changing layers compression codec from {oldLayerCompressionCodec.ToString().ToUpper()} to {Settings.General.LayerCompressionCodec.ToString().ToUpper()}");
-
-                await Task.Run(() =>
-                {
-                    try
-                    {
-                        SlicerFile!.ChangeLayersCompressionMethod(Settings.General.LayerCompressionCodec, Progress);
-                        return true;
-                    }
-                    catch (Exception ex)
-                    {
-                        HandleException(ex, "Error while converting layers");
-                    }
-
-                    return false;
-                });
-
-                IsGUIEnabled = true;*/
-
                 SlicerFile!.ChangeLayersCompressionMethod(Settings.General.LayerCompressionCodec);
             }
 
@@ -1299,7 +1290,7 @@ public partial class MainWindow : WindowEx
                         $"Was looking on: {PSFolder} and {SSFolder}\n\n" +
                         "Click 'Yes' to open the PrusaSlicer webpage for download\n" +
                         "Click 'No' to dismiss",
-                        "Unable to detect PrusaSlicer") == MessageButtonResult.Yes)
+                        "Unable to detect PrusaSlicer") == SukiMessageBoxResult.Yes)
                     SystemAware.OpenBrowser("https://www.prusa3d.com/prusaslicer/");
                 return;
             }
@@ -1351,31 +1342,47 @@ public partial class MainWindow : WindowEx
         var asset = AppUpdater.GetCompatibleReleaseAsset(release);
         if (asset is null) return;
 
-        var autoUpdateButton = MessageWindow.CreateButton("Auto update", MessageWindow.IconButtonDownload);
-        var manualUpdateButton = MessageWindow.CreateButton("Manual update", MessageWindow.IconButtonOpenBrowser);
+        var host = new SukiMessageBoxHost()
+        {
+            Header =
+                $"Do you like to update {About.Software} from v{About.VersionString} to v{AppUpdater.LatestReleaseTagVersionStr}?",
+            Content = new MarkdownViewer.Core.Controls.MarkdownViewer()
+            {
+                MarkdownText = $"""
+                            ## Changelog:
 
-        var messageBox = new MessageWindow($"Update UVtools to v{AppUpdater.LatestReleaseTagVersionStr}?",
-            MessageWindow.IconHeaderQuestion,
-            $"Do you like to update {About.Software} from v{About.VersionString} to v{AppUpdater.LatestReleaseTagVersionStr}?",
-            $"""
-             ## Changelog:
+                            {AppUpdater.GetChangelog()}
+                            """
+            }
+        };
 
-             {AppUpdater.GetChangelog()}
-             """,
-            string.IsNullOrWhiteSpace(release.HtmlUrl) ?
-                [
-                    manualUpdateButton,
-                    MessageWindow.CreateCancelButton()
-                ]
-                :
-                [
-                    autoUpdateButton,
-                    manualUpdateButton,
-                    MessageWindow.CreateCancelButton()
-                ],
-            true);
+        var autoUpdateButton = SukiMessageBoxButtonsFactory.CreateButton(new MaterialIconText {
+            Kind = MessageWindow.IconButtonDownload,
+            Text = "Auto update"
+            }
+        );
 
-        var result = await messageBox.ShowDialog<ButtonWithIcon>(this);
+        var manualUpdateButton = SukiMessageBoxButtonsFactory.CreateButton(new MaterialIconText
+            {
+                Kind = MessageWindow.IconButtonOpenBrowser,
+                Text = "Manual update"
+            }
+        );
+
+        var closeBtn = SukiMessageBoxButtonsFactory.CreateButton(SukiMessageBoxResult.Cancel);
+
+        var buttons = string.IsNullOrWhiteSpace(release.HtmlUrl) ?
+            new AvaloniaList<Button>(manualUpdateButton, closeBtn) :
+            new AvaloniaList<Button>(autoUpdateButton, manualUpdateButton, closeBtn);
+
+        host.ActionButtonsSource = buttons;
+
+        var options = SukiMessageBoxUtilities.GetDefaultOptions();
+        options = options with
+        {
+            Title = $"Update UVtools to v{AppUpdater.LatestReleaseTagVersionStr}?",
+        };
+        var result = await SukiMessageBox.ShowDialog(host, options);
 
         if (ReferenceEquals(result, autoUpdateButton))
         {
@@ -1549,7 +1556,7 @@ public partial class MainWindow : WindowEx
                                              You have unsaved changes. Reloading will discard them.
                                              Do you want to reload without saving?
                                              """,
-                "Reload file - Unsaved changes") != MessageButtonResult.Yes)
+                "Reload file - Unsaved changes") != SukiMessageBoxResult.Yes)
         {
             return;
         }
@@ -1635,8 +1642,8 @@ public partial class MainWindow : WindowEx
                                             $"Your current setting is to {currentSetting}. This option can be changed on \"Settings - Automations\".\n\n" +
                                             "Do you want to rename the file now?",
                     $"File \"{fileNameNoExt}\" have invalid characters",
-                    MessageButtons.YesNo) ==
-                MessageButtonResult.Yes)
+                    SukiMessageBoxButtons.YesNo) ==
+                SukiMessageBoxResult.Yes)
             {
                 await RenameCurrentFile();
             }
@@ -1731,13 +1738,13 @@ public partial class MainWindow : WindowEx
                             "Cancel: Do not auto-convert the file.",
 
                             $"File '{SlicerFile.Filename}' already exists",
-                             MessageButtons.YesNoCancel);
+                             SukiMessageBoxButtons.YesNoCancel);
 
-                        if (result is MessageButtonResult.Cancel or MessageButtonResult.Abort)
+                        if (result is SukiMessageBoxResult.Cancel or SukiMessageBoxResult.Abort)
                         {
                             canConvert = false;
                         }
-                        else if (result == MessageButtonResult.No)
+                        else if (result == SukiMessageBoxResult.No)
                         {
                             using var file = await SaveFilePickerAsync(directory, filenameNoExt,
                                     AvaloniaStatic.CreateFilePickerFileTypes(fileExtension.Description, convertFileExtension!));
@@ -1789,7 +1796,7 @@ public partial class MainWindow : WindowEx
                                     break;
                                 case RemoveSourceFileAction.Prompt:
                                     if (await this.MessageBoxQuestion($"File was successfully converted to: {targetFilename}\n" +
-                                                                      $"Do you want to remove the source file: {oldFileName}", $"Remove source file: {oldFileName}") == MessageButtonResult.Yes) removeSourceFile = true;
+                                                                      $"Do you want to remove the source file: {oldFileName}", $"Remove source file: {oldFileName}") == SukiMessageBoxResult.Yes) removeSourceFile = true;
                                     break;
                             }
 
@@ -1928,8 +1935,8 @@ public partial class MainWindow : WindowEx
                                                          "3) If you used PrusaSlicer to slice this file, you must use it with compatible UVtools printer profiles (Help - Install profiles into PrusaSlicer).\n\n" +
                                                          "Click 'Yes' to auto fix and set the file resolution with the layer resolution, but only use this option if you are sure it's ok to!\n" +
                                                          "Click 'No' to continue as it is and ignore this warning, you can still repair issues and use some of the tools.",
-                    "File and layer resolution mismatch!", MessageButtons.YesNo);
-                if (result == MessageButtonResult.Yes)
+                    "File and layer resolution mismatch!", SukiMessageBoxButtons.YesNo);
+                if (result == SukiMessageBoxResult.Yes)
                 {
                     SlicerFile.Resolution = mat.Size;
                     RaisePropertyChanged(nameof(LayerResolutionStr));
@@ -1966,7 +1973,7 @@ public partial class MainWindow : WindowEx
                         $"Yes: Change to version {lastVersion}. (Highly recommended!)\n" +
                         $"No: Keep the version {SlicerFile.Version} while editing, but a latter full encode of the file will force the version {lastVersion}.",
                         $"File version {SlicerFile.Version} is outside the supported range for your printer");
-                    if (result == MessageButtonResult.Yes)
+                    if (result == SukiMessageBoxResult.Yes)
                     {
                         SlicerFile.Version = lastVersion;
                         CanSave = true;
@@ -2201,10 +2208,10 @@ public partial class MainWindow : WindowEx
             await versionSelectorWindow.ShowDialog(this);
             switch (versionSelectorWindow.DialogResult)
             {
-                case DialogResults.OK:
+                case GenericWindow.DialogResults.OK:
                     version = versionSelectorWindow.Version;
                     break;
-                case DialogResults.Cancel:
+                case GenericWindow.DialogResults.Cancel:
                     return;
             }
         }
@@ -2258,14 +2265,14 @@ public partial class MainWindow : WindowEx
                 "Yes: Open in a new window.\n" +
                 "No: Open in this window.\n" +
                 "Cancel: Do not perform any action.\n",
-                "Conversion complete",  MessageButtons.YesNoCancel);
+                "Conversion complete",  SukiMessageBoxButtons.YesNoCancel);
 
             switch (question)
             {
-                case MessageButtonResult.No:
+                case SukiMessageBoxResult.No:
                     await ProcessFile(filePath, _actualLayer);
                     break;
-                case MessageButtonResult.Yes:
+                case SukiMessageBoxResult.Yes:
                     App.NewInstance(filePath);
                     break;
             }
@@ -2278,7 +2285,7 @@ public partial class MainWindow : WindowEx
                     break;
                 case RemoveSourceFileAction.Prompt:
                     if (await this.MessageBoxQuestion($"File was successfully converted to: {Path.GetFileName(filePath)}\n" +
-                                                      $"Do you want to remove the source file: {oldFileName}", $"Remove source file: {oldFileName}") == MessageButtonResult.Yes) removeSourceFile = true;
+                                                      $"Do you want to remove the source file: {oldFileName}", $"Remove source file: {oldFileName}") == SukiMessageBoxResult.Yes) removeSourceFile = true;
                     break;
             }
 
@@ -2309,7 +2316,7 @@ public partial class MainWindow : WindowEx
                 var result = await this.MessageBoxQuestion(
                     "Original input file will be overwritten.  Do you wish to proceed?", "Overwrite file?");
 
-                if(result != MessageButtonResult.Yes) return false;
+                if(result != SukiMessageBoxResult.Yes) return false;
             }
         }
 
@@ -2453,7 +2460,7 @@ public partial class MainWindow : WindowEx
                 "2. The normal layers will set with the global normal properties.\n" +
                 ((currentModifiers & KeyModifiers.Shift) != 0 ? $"3. Rebuild layers position with the file layer height of {SlicerFile.LayerHeight}mm\n\n" : "\n")+
                 $"This action will undo any modification you or {About.Software} made to layers (properties), reverting its information to the original state.",
-                "Reset layers properties with the global properties of the file?") != MessageButtonResult.Yes) return;
+                "Reset layers properties with the global properties of the file?") != SukiMessageBoxResult.Yes) return;
 
         SlicerFile.RebuildLayersProperties((currentModifiers & KeyModifiers.Shift) != 0);
         RefreshCurrentLayerData();
@@ -2562,7 +2569,7 @@ public partial class MainWindow : WindowEx
         if (await this.MessageBoxQuestion(
                 $"Extraction to {finalPath} completed in ({LastStopWatch.ElapsedMilliseconds / 1000}s)\n\n" +
                 "'Yes' to open target folder, 'No' to continue.",
-                "Extraction complete") == MessageButtonResult.Yes)
+                "Extraction complete") == SukiMessageBoxResult.Yes)
         {
             SystemAware.StartProcess(finalPath);
         }
@@ -2657,7 +2664,7 @@ public partial class MainWindow : WindowEx
                 CanSave = true;
                 return true;
             case OperationIPrintedThisFile operation:
-                operation.Execute();
+                await operation.ExecuteAsync();
                 return true;
             case OperationRepairLayers operation:
                 if (SlicerFile!.IssueManager.Count == 0)
@@ -2805,7 +2812,7 @@ public partial class MainWindow : WindowEx
         if (_globalModifiers == KeyModifiers.Control)
         {
             if (await this.MessageBoxQuestion("Are you sure you want to purge the non-existing files from the recent list?",
-                    "Purge the non-existing files?") == MessageButtonResult.Yes)
+                    "Purge the non-existing files?") == SukiMessageBoxResult.Yes)
             {
                 /*if (_globalModifiers == KeyModifiers.Shift)
                 {
@@ -2823,7 +2830,7 @@ public partial class MainWindow : WindowEx
             (_globalModifiers & KeyModifiers.Shift) != 0)
         {
             if (await this.MessageBoxQuestion($"Are you sure you want to remove the selected file from the recent list?\n{file}",
-                    "Remove the file from recent list?") == MessageButtonResult.Yes)
+                    "Remove the file from recent list?") == SukiMessageBoxResult.Yes)
             {
                 RemoveRecentFile(file);
             }
@@ -2835,7 +2842,7 @@ public partial class MainWindow : WindowEx
         {
             if (await this.MessageBoxQuestion($"The file: {file} does not exists anymore.\n" +
                                               "Do you want to remove this file from recent list?",
-                    "The file does not exists") == MessageButtonResult.Yes)
+                    "The file does not exists") == SukiMessageBoxResult.Yes)
             {
                 RecentFiles.Load();
                 RecentFiles.Instance.Remove(file);
@@ -2854,12 +2861,12 @@ public partial class MainWindow : WindowEx
     #endregion
 
     #region Error Handling
-    public Task<MessageButtonResult> HandleException(Exception ex, string? title = null)
+    public Task<SukiMessageBoxResult> HandleException(Exception ex, string? title = null)
     {
         switch (ex)
         {
             case OperationCanceledException:
-                return Task.FromResult(MessageButtonResult.None);
+                return Task.FromResult(SukiMessageBoxResult.Cancel);
             case MessageException msgEx:
                 return Dispatcher.UIThread.Invoke(() => this.MessageBoxError(msgEx.Message, title));
             case AggregateException aggEx:

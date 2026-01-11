@@ -34,7 +34,7 @@ public class OperationPattern : Operation
 
     #region Overrides
     public override bool CanMask => false;
-    public override string IconClass => "fa-solid fa-th-large";
+    public override string IconClass => "TableLarge";
     public override string Title => "Pattern";
     public override string Description =>
         "Duplicates the model in a rectangular pattern around the build plate.\n" +
@@ -68,7 +68,7 @@ public class OperationPattern : Operation
         {
             sb.AppendLine("Either columns or rows must be greater than 1.");
         }
-            
+
         if (!ValidateBounds())
         {
             sb.AppendLine("Your parameters will put the object outside of the build plate, please adjust the margins.");
@@ -276,7 +276,7 @@ public class OperationPattern : Operation
         var patternVolume = GetPatternVolume;
 
         return new Rectangle(new Point(
-            (int) (col * ROI.Width + col * ColSpacing + (ImageWidth - patternVolume.Width) / 2), 
+            (int) (col * ROI.Width + col * ColSpacing + (ImageWidth - patternVolume.Width) / 2),
             (int) (row * ROI.Height + row * RowSpacing + (ImageHeight - patternVolume.Height) / 2)), ROI.Size);
     }
 

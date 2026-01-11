@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              MinWidth="600"
              x:Class="UVtools.UI.Controls.Tools.ToolRaiseOnPrintFinishControl"
@@ -15,7 +16,7 @@
                Text="Raise to:"/>
 
     <NumericUpDown Grid.Row="0" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_mm"
+                   suki:NumericUpDownExtensions.Unit="mm"
                    VerticalAlignment="Center"
                    VerticalContentAlignment="Center"
                    Increment="1"
@@ -44,7 +45,7 @@
                   ToolTip.Tip="Sets to the maximum position"
                   Command="{Binding Operation.SetToMaximumPosition}"/>
       </StackPanel>
-	  
+
 
 	  <TextBlock Grid.Row="2" Grid.Column="0"
 				 VerticalAlignment="Center"
@@ -55,7 +56,7 @@
 				 Text="Wait time:"/>
 
     <NumericUpDown Grid.Row="2" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_s"
+                   suki:NumericUpDownExtensions.Unit="s"
                    IsEnabled="{Binding SlicerFile.CanUseLayerAnyWaitTimeBeforeCure}"
                    VerticalAlignment="Center"
                    VerticalContentAlignment="Center"
@@ -106,11 +107,11 @@
     </StackPanel>
 
 
-    <CheckBox Grid.Row="4" Grid.Column="2" 
+    <CheckBox Grid.Row="4" Grid.Column="2"
                VerticalAlignment="Center"
                ToolTip.Tip="If enabled, output a dummy pixel inside the layer bound to prevent a empty image and to ensure the correct handle by the firmware. This will also prevent layer being removed by auto-fix issues (Empty Layers)."
                Content="Output a dummy pixel"
               IsChecked="{Binding Operation.OutputDummyPixel}"/>
   </Grid>
-  
+
 </UserControl>

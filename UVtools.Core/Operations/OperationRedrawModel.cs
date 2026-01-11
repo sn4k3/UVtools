@@ -57,18 +57,18 @@ public class OperationRedrawModel : Operation
     private RedrawModelOperators _operator = RedrawModelOperators.Minimum;
 
     #endregion
-        
+
     #region Overrides
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    public override string IconClass => "mdi-puzzle-edit";
+    public override string IconClass => "PuzzleEdit";
     public override string Title => "Redraw model/supports";
 
     public override string Description =>
         "Redraw the model or supports with a set brightness. This requires an extra sliced file from same object but without any supports and raft, straight to the build plate.\n" +
         "Note: Run this tool prior to any made modification. You must find the optimal exposure/brightness combo, or supports can fail.";
 
-    public override string ConfirmationText => "redraw the "+ (_redrawType == RedrawTypes.Supports ? "supports" : "model") + 
+    public override string ConfirmationText => "redraw the "+ (_redrawType == RedrawTypes.Supports ? "supports" : "model") +
                                                " with an"+ (_redrawType == RedrawTypes.Model || !_contactPointsOnly ? $" {_operator}" : string.Empty) + $" brightness of {_brightness}?";
 
     public override string ProgressTitle => "Redrawing " + (_redrawType == RedrawTypes.Supports ? "supports" : "model");
@@ -111,7 +111,7 @@ public class OperationRedrawModel : Operation
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
-        
+
 
     #endregion
 
@@ -192,7 +192,7 @@ public class OperationRedrawModel : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationRedrawModel) obj);
     }
-    
+
     #endregion
 
     #region Methods
@@ -265,7 +265,7 @@ public class OperationRedrawModel : Operation
                             foundContour = true;
                             break;
                         }
-                               
+
                     }
                 }
             }

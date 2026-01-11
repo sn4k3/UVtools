@@ -45,7 +45,7 @@ public class OperationRaftRelief : Operation
         Tabs
     }
     #endregion
-        
+
     #region Members
     private RaftReliefTypes _reliefType = RaftReliefTypes.Relief;
     private uint _maskLayerIndex;
@@ -65,7 +65,7 @@ public class OperationRaftRelief : Operation
     #endregion
 
     #region Overrides
-    public override string IconClass => "fa-solid fa-bowling-ball";
+    public override string IconClass => "Bowling";
     public override string Title => "Raft relief";
     public override string Description =>
         "Relief raft with a strategy to remove mass, reduce FEP suction, spare resin and easier to remove the prints.";
@@ -224,7 +224,7 @@ public class OperationRaftRelief : Operation
         {
             if (!RaiseAndSetIfChanged(ref _tabTriangleHeight, Math.Max((ushort)5, value))) return;
             RaisePropertyChanged(nameof(BrightnessPercent));
-        } 
+        }
     }
 
     #endregion
@@ -243,7 +243,7 @@ public class OperationRaftRelief : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationRaftRelief) obj);
     }
-    
+
     #endregion
 
     #region Methods
@@ -270,7 +270,7 @@ public class OperationRaftRelief : Operation
                 //var circles = CvInvoke.HoughCircles(supportsMat, HoughModes.Gradient, 1, 5, 80, 35, 5, 255); // OLD
                 var circles = CvInvoke.HoughCircles(supportsMat, HoughModes.GradientAlt, 1.5, 25, 300, 0.80, 5, 255);
                 if (circles.Length >= minSupportsRequired) break;
-                    
+
                 supportsMat.Dispose();
                 supportsMat = null;
                 progress++;
@@ -440,7 +440,7 @@ public class OperationRaftRelief : Operation
                             var x = contour.Centroid.X;
                             var y = contour.Centroid.Y;
 
-                            while (!foundPoint 
+                            while (!foundPoint
                                    && x >= minX && x <= maxX && y >= minY && y <= maxY
                                    && contour.BoundingRectangle.Contains(x, y))
                             {
@@ -460,7 +460,7 @@ public class OperationRaftRelief : Operation
                                         break;
                                     }
                                 }
-                                
+
 
                                 x += direction.X;
                                 y += direction.Y;
@@ -498,7 +498,7 @@ public class OperationRaftRelief : Operation
                             using var vec = new VectorOfPoint(polygon);
                             CvInvoke.FillPoly(mat, vec, color);
                         }
-                        
+
                     }
 
                     break;

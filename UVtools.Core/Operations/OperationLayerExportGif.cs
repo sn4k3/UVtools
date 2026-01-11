@@ -45,7 +45,7 @@ public sealed class OperationLayerExportGif : Operation
 
     #region Overrides
 
-    public override string IconClass => "mdi-file-gif-box";
+    public override string IconClass => "FileGifBox";
     public override string Title => "Export layers to GIF";
 
     public override string Description =>

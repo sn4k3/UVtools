@@ -207,7 +207,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
     public override bool CanROI => false;
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    public override string IconClass => "mdi-timer-cog";
+    public override string IconClass => "TimerCog";
     public override string Title => "Exposure time finder";
     public override string Description =>
         "Generates test models with various strategies and increments to verify the best exposure time for a given layer height.\n" +

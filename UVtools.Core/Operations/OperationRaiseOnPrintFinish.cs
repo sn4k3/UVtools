@@ -28,7 +28,7 @@ public class OperationRaiseOnPrintFinish : Operation
     #region Overrides
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    public override string IconClass => "fa-solid fa-level-up-alt";
+    public override string IconClass => "WavesArrowUp";
     public override string Title => "Raise platform on print finish";
     public override string Description =>
         "Raise the build platform to a set position after finish the print.\n\n" +
@@ -82,7 +82,7 @@ public class OperationRaiseOnPrintFinish : Operation
         {
             sb.AppendLine($"Raise to {_positionZ}mm will have no effect because it's the same height as last layer of {SlicerFile.PrintHeight}mm.");
         }
-            
+
         return sb.ToString();
     }
 
@@ -123,16 +123,16 @@ public class OperationRaiseOnPrintFinish : Operation
     /// <summary>
     /// True to output a dummy pixel on bounding rectangle position to avoid empty layer and blank image, otherwise set to false
     /// </summary>
-    public bool OutputDummyPixel 
+    public bool OutputDummyPixel
     {
-        get => _outputDummyPixel; 
-        set => RaiseAndSetIfChanged(ref _outputDummyPixel, value); 
+        get => _outputDummyPixel;
+        set => RaiseAndSetIfChanged(ref _outputDummyPixel, value);
     }
     #endregion
 
     #region Constructor
 
-    public OperationRaiseOnPrintFinish() 
+    public OperationRaiseOnPrintFinish()
     {
         //_outputDummyPixel = !SlicerFile.SupportsGCode;
     }
@@ -161,7 +161,7 @@ public class OperationRaiseOnPrintFinish : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationRaiseOnPrintFinish) obj);
     }
-    
+
     #endregion
 
     #region Methods
@@ -180,10 +180,10 @@ public class OperationRaiseOnPrintFinish : Operation
         layer.ExposureTime = SlicerFile.SupportGCode ? 0 : 0.05f; // Very low exposure time
         layer.LightPWM = 0; // Try to disable light if possible
         layer.SetNoDelays();
-        using var newMat = _outputDummyPixel 
+        using var newMat = _outputDummyPixel
             ? SlicerFile.CreateMatWithDummyPixelFromLayer(SlicerFile.LastLayerIndex)
             : SlicerFile.CreateMat();
-               
+
         layer.LayerMat = newMat;
 
         if(_waitTime > 0) layer.SetWaitTimeBeforeCureOrLightOffDelay((float)_waitTime);

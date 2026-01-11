@@ -46,7 +46,7 @@ public sealed class OperationCalibrateBloomingEffect : Operation
     public override bool CanROI => false;
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    public override string IconClass => "fa-solid fa-sun";
+    public override string IconClass => "LedOn";
     public override string Title => "Blooming effect";
     public override string Description =>
         "Generates test models with various strategies and increments to measure the blooming effect.\n" +

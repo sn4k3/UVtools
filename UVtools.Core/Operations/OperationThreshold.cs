@@ -26,7 +26,7 @@ public class OperationThreshold : Operation
     #endregion
 
     #region Overrides
-    public override string IconClass => "mdi-opacity";
+    public override string IconClass => "Opacity";
     public override string Title => "Threshold pixels";
     public override string Description =>
         "Manipulate pixel values based on a threshold.\n\n" +
@@ -124,6 +124,6 @@ public class OperationThreshold : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationThreshold) obj);
     }
-    
+
     #endregion
 }

@@ -1,12 +1,14 @@
-﻿using System;
+﻿using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.Input;
+using SukiUI.MessageBox;
+using SukiUI.Models;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Avalonia.Platform.Storage;
 using UVtools.Core;
-using UVtools.Core.Dialogs;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
@@ -16,7 +18,7 @@ using ZLinq;
 
 namespace UVtools.UI.Windows;
 
-public partial class SettingsWindow : WindowEx
+public partial class SettingsWindow : GenericWindow
 {
     private double _scrollViewerMaxHeight;
     private int _selectedTabIndex;
@@ -59,7 +61,7 @@ public partial class SettingsWindow : WindowEx
         ZoomRanges = AppSettings.ZoomLevels.AsValueEnumerable().Skip(AppSettings.ZoomLevelSkipCount).Select(
             s => Convert.ToString(s / 100, CultureInfo.InvariantCulture) + "x").ToArray();
 
-        ScrollViewerMaxHeight = this.GetScreenWorkingArea().Height - Settings.General.WindowsVerticalMargin;
+        ScrollViewerMaxHeight = this.GetScreenWorkingArea().Height - Settings.General.WindowsMaxHeightScreenRatio;
 
         DataContext = this;
         InitializeComponent();
@@ -77,6 +79,13 @@ public partial class SettingsWindow : WindowEx
         {
             UserSettings.Save();
         }
+    }
+
+    [RelayCommand]
+    public void SwitchToColorTheme(SukiColorTheme color)
+    {
+        Settings.General.ThemeColor = color.DisplayName;
+        App.Theme.ChangeColorTheme(color);
     }
 
     public void SetMaxDegreeOfParallelism(object toObject)
@@ -189,7 +198,7 @@ public partial class SettingsWindow : WindowEx
 
         if (await this.MessageBoxQuestion(
                 $"Are you sure you want to remove the {SendToCustomLocationsGrid.SelectedItems.Count} selected entries?") !=
-            MessageButtonResult.Yes) return;
+            SukiMessageBoxResult.Yes) return;
 
         Settings.General.SendToCustomLocations.RemoveRange(SendToCustomLocationsGrid.SelectedItems.Cast<MappedDevice>());
     }
@@ -215,7 +224,7 @@ public partial class SettingsWindow : WindowEx
 
         if (await this.MessageBoxQuestion(
                 $"Are you sure you want to remove the {SendToProcessGrid.SelectedItems.Count} selected entries?") !=
-            MessageButtonResult.Yes) return;
+            SukiMessageBoxResult.Yes) return;
 
         Settings.General.SendToProcess.RemoveRange(SendToProcessGrid.SelectedItems.Cast<MappedProcess>());
     }
@@ -223,7 +232,7 @@ public partial class SettingsWindow : WindowEx
     public async Task AddNetworkRemotePrinter()
     {
         var result = await this.MessageBoxQuestion("Are you sure you want to add a new remote printer", "Add new remote printer?");
-        if (result != MessageButtonResult.Yes) return;
+        if (result != SukiMessageBoxResult.Yes) return;
 
         var remotePrinter = new RemotePrinter
         {
@@ -239,7 +248,7 @@ public partial class SettingsWindow : WindowEx
         if (NetworkRemotePrinterComboBox.SelectedItem is not RemotePrinter remotePrinter) return;
         var result = await this.MessageBoxQuestion("Are you sure you want to remove the following remote printer?\n" +
                                                    remotePrinter, "Remove remote printer?");
-        if (result != MessageButtonResult.Yes) return;
+        if (result != SukiMessageBoxResult.Yes) return;
         Settings.Network.RemotePrinters.Remove(remotePrinter);
     }
 
@@ -248,7 +257,7 @@ public partial class SettingsWindow : WindowEx
         if (NetworkRemotePrinterComboBox.SelectedItem is not RemotePrinter remotePrinter) return;
         var result = await this.MessageBoxQuestion("Are you sure you want to duplicate the following remote printer?\n" +
                                                    remotePrinter, "Duplicate remote printer?");
-        if (result != MessageButtonResult.Yes) return;
+        if (result != SukiMessageBoxResult.Yes) return;
         var clone = remotePrinter.Clone();
         clone.Name += " Duplicated";
         Settings.Network.RemotePrinters.Add(clone);
@@ -258,7 +267,7 @@ public partial class SettingsWindow : WindowEx
     public async Task OnClickResetAllDefaults()
     {
         var result = await this.MessageBoxQuestion("Are you sure you want to reset all settings to the default values?", "Reset settings?");
-        if (result != MessageButtonResult.Yes) return;
+        if (result != SukiMessageBoxResult.Yes) return;
         UserSettings.Reset();
         ResetDataContext();
     }

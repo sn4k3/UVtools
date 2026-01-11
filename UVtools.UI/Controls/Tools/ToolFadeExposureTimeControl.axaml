@@ -3,6 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolFadeExposureTimeControl"
              x:DataType="tools:ToolFadeExposureTimeControl">
@@ -13,7 +15,7 @@
                VerticalAlignment="Center"
                Text="Layer count:"/>
     <NumericUpDown Grid.Row="0" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_layers"
+                   suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
                    Minimum="1"
                    Maximum="{Binding Operation.MaximumLayerCount}"
                    Increment="1"
@@ -23,7 +25,7 @@
                VerticalAlignment="Center"
                Text="Exposure time:"/>
     <NumericUpDown Grid.Row="2" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_s"
+                   suki:NumericUpDownExtensions.Unit="s"
                    Minimum="0.1"
                    Maximum="1000"
                    Increment="0.5"
@@ -32,7 +34,7 @@
                VerticalAlignment="Center"
                Text="->"/>
     <NumericUpDown Grid.Row="2" Grid.Column="6"
-                   Classes="ValueLabel ValueLabel_s"
+                   suki:NumericUpDownExtensions.Unit="s"
                    Minimum="0.1"
                    Maximum="1000"
                    Increment="0.5"
@@ -43,7 +45,7 @@
                VerticalAlignment="Center"
                Text="Time increment:"/>
     <NumericUpDown Grid.Row="4" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_s"
+                   suki:NumericUpDownExtensions.Unit="s"
                    IsReadOnly="True"
                    ShowButtonSpinner="False"
                    AllowSpin="False"

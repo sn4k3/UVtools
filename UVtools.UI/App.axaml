@@ -2,6 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:converters="clr-namespace:UVtools.UI.Converters"
              xmlns:core="clr-namespace:UVtools.Core;assembly=UVtools.Core"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
+             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              Name="{Binding Source={x:Static core:About.Software}}"
              x:Class="UVtools.UI.App"
              RequestedThemeVariant="Default">
@@ -20,20 +22,14 @@
                                        Accent="#FF660066"/>
             </FluentTheme.Palettes>
         </FluentTheme>
-        <!--<SimpleTheme x:Key="SimpleTheme"/>!-->
-        <StyleInclude x:Key="DataGridFluent" Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
-        <StyleInclude x:Key="DataGridSimple" Source="avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml" />
-
-        <StyleInclude x:Key="ColorPickerFluent" Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
-        <StyleInclude x:Key="ColorPickerSimple" Source="avares://Avalonia.Controls.ColorPicker/Themes/Simple/Simple.xaml" />
-        <!--
-      <StyleInclude x:Key="AvaloniaEditFluent" Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
-      <StyleInclude x:Key="AvaloniaEditSimple" Source="avares://AvaloniaEdit/Themes/Simple/AvaloniaEdit.xaml" />
-	  -->
     </Application.Resources>
     <Application.Styles>
+        <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
+        <suki:SukiTheme ThemeColor="Blue" />
+        <avalonia:MaterialIconStyles />
         <StyleInclude Source="avares://UVtools.AvaloniaControls/Controls.axaml"/>
         <StyleInclude Source="/Controls/Fragments/PixelEditorProfilesFragment.axaml"/>
         <StyleInclude Source="/Assets/Styles/Styles.axaml"/>
+        <StyleInclude Source="/Assets/Styles/ToggleSwitch.axaml"/>
     </Application.Styles>
 </Application>

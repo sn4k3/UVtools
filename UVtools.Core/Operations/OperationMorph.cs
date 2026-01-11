@@ -35,7 +35,7 @@ public sealed class OperationMorph : Operation
 
         [Description("Gap closing: Closes small holes inside the objects (Dilate -> Erode)")]
         Close = MorphOp.Close,
-            
+
         [Description("Gradient: Removes the interior areas of objects and expand the boundaries by half (Dilate - Erode)")]
         Gradient = MorphOp.Gradient,
 
@@ -66,7 +66,7 @@ public sealed class OperationMorph : Operation
     #endregion
 
     #region Overrides
-    public override string IconClass => "fa-solid fa-dharmachakra";
+    public override string IconClass => "Dharmachakra";
     public override string Title => "Morph";
     public override string Description =>
         $"Morph Model - " +
@@ -100,7 +100,7 @@ public sealed class OperationMorph : Operation
         get => _morphOperation;
         set => RaiseAndSetIfChanged(ref _morphOperation, value);
     }
-        
+
     public uint Iterations
     {
         get => IterationsStart;
@@ -155,7 +155,7 @@ public sealed class OperationMorph : Operation
     {
         return ReferenceEquals(this, obj) || obj is OperationMorph other && Equals(other);
     }
-    
+
     #endregion
 
     #region Methods
@@ -195,7 +195,7 @@ public sealed class OperationMorph : Operation
         {
             iterations = (int) arguments[0];
         }
-            
+
         using var original = mat.Clone();
         using var target = GetRoiOrDefault(mat);
 
@@ -224,7 +224,7 @@ public sealed class OperationMorph : Operation
         }*/
         //}
 
-            
+
         ApplyMask(original, target);
         return true;
     }

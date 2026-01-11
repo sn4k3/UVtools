@@ -55,7 +55,7 @@ public class OperationPixelDimming : Operation
     #endregion
 
     #region Overrides
-    public override string IconClass => "mdi-circle-opacity";
+    public override string IconClass => "CircleOpacity";
     public override string Title => "Pixel dimming";
     public override string Description =>
         "Dim white pixels in a chosen pattern applied over the print area.\n\n" +
@@ -134,7 +134,7 @@ public class OperationPixelDimming : Operation
 
         return sb.ToString();
     }
-        
+
     public override string ToString()
     {
         var result = $"[Border: {_wallThicknessStart}px to {_wallThicknessEnd}px] [Chamfer: {_chamfer}] [Only borders: {_wallsOnly}] [Alternate every: {_alternatePatternPerLayers}] [B: {_brightness}]" + LayerRangeString;
@@ -238,7 +238,7 @@ public class OperationPixelDimming : Operation
             RaisePropertyChanged(nameof(BrightnessPercent));
         }
     }
-        
+
     public float BrightnessPercent => MathF.Round(_brightness * 100 / 255.0f, 2);
 
 
@@ -253,7 +253,7 @@ public class OperationPixelDimming : Operation
         get => _infillGenSpacing;
         set => RaiseAndSetIfChanged(ref _infillGenSpacing, value);
     }
-        
+
     #endregion
 
     #region Equality
@@ -270,7 +270,7 @@ public class OperationPixelDimming : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationPixelDimming)obj);
     }
-    
+
     #endregion
 
     #region Methods
@@ -320,7 +320,7 @@ public class OperationPixelDimming : Operation
         {
             Debug.WriteLine(e);
         }
-            
+
     }
 
 
@@ -678,7 +678,7 @@ public class OperationPixelDimming : Operation
 
 
         CvInvoke.Erode(target, erode, kernel, EmguExtensions.AnchorCenter, wallThickness, BorderType.Reflect101, default);
-           
+
         if (_lighteningPixels)
         {
             CvInvoke.Add(target, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, _wallsOnly ? target : erode);

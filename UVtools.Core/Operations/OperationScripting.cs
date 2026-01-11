@@ -45,7 +45,7 @@ public sealed class OperationScripting : Operation
     public override bool CanRunInPartialMode => true;
 
     //public override bool CanHaveProfiles => false;
-    public override string IconClass => "fa-solid fa-code";
+    public override string IconClass => "CodeTags";
     public override string Title => "Scripting";
 
     public override string Description =>
@@ -154,7 +154,7 @@ public sealed class OperationScripting : Operation
     {
         return ReferenceEquals(this, obj) || obj is OperationScripting other && Equals(other);
     }
-    
+
     #endregion
 
     #region Methods
@@ -181,7 +181,7 @@ public sealed class OperationScripting : Operation
                 .WithAllowUnsafe(true),
             ScriptGlobals).Result;
         var result = _scriptState.ContinueWithAsync("ScriptInit();").Result;
-        
+
         RaisePropertyChanged(nameof(CanExecute));
         _onScriptReloaded?.Invoke(this, EventArgs.Empty);
     }

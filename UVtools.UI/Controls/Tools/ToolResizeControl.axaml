@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="200"
              x:Class="UVtools.UI.Controls.Tools.ToolResizeControl"
              x:DataType="tools:ToolResizeControl">
@@ -11,7 +12,7 @@
       <StackPanel Orientation="Horizontal" Spacing="10">
         <TextBlock VerticalAlignment="Center" Text="X:"/>
         <NumericUpDown
-            Classes="ValueLabel ValueLabel_percent"
+            suki:NumericUpDownExtensions.Unit="%"
             Width="180"
           Minimum="1"
           Maximum="10000"
@@ -25,7 +26,7 @@
           Text="Y:"
           IsEnabled="{Binding !#ConstrainXY.IsChecked}"/>
         <NumericUpDown 
-            Classes="ValueLabel ValueLabel_percent"
+            suki:NumericUpDownExtensions.Unit="%"
             Width="180"
           Minimum="1"
           Maximum="10000"

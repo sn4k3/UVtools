@@ -7,47 +7,33 @@
  */
 
 using System;
-using UVtools.Core.Objects;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace UVtools.UI.Structures;
 
-public sealed class LogItem : BindableBase
+public sealed partial class LogItem : ObservableObject
 {
-    private int _index;
-    private string _startTime;
-    private double _elapsedTime;
-    private string _description;
+    [ObservableProperty]
+    public partial int Index { get; set; }
 
-    public int Index
-    {
-        get => _index;
-        set => RaiseAndSetIfChanged(ref _index, value);
-    }
-
-    public string StartTime
-    {
-        get => _startTime;
-        set => RaiseAndSetIfChanged(ref _startTime, value);
-    }
+    [ObservableProperty]
+    public partial string StartTime { get; set; }
 
     public double ElapsedTime
     {
-        get => _elapsedTime;
-        set => RaiseAndSetIfChanged(ref _elapsedTime, Math.Round(value, 2));
+        get;
+        set => SetProperty(ref field, Math.Round(value, 2));
     }
 
-    public string Description
-    {
-        get => _description;
-        set => RaiseAndSetIfChanged(ref _description, value);
-    }
+    [ObservableProperty]
+    public partial string Description { get; set; }
 
     public LogItem(int index, string description, double elapsedTime = 0)
     {
-        _index = index;
-        _description = description;
+        Index = index;
+        Description = description;
         ElapsedTime = elapsedTime;
-        _startTime = DateTime.Now.ToString("HH:mm:ss");
+        StartTime = DateTime.Now.ToString("HH:mm:ss");
     }
 
     public LogItem(string description = "", uint elapsedTime = 0) : this(0, description, elapsedTime)

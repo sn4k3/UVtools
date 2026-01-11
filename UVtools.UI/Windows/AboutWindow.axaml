@@ -1,38 +1,30 @@
-﻿<controls:WindowEx x:Class="UVtools.UI.Windows.AboutWindow"
-                   xmlns="https://github.com/avaloniaui"
-                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                   xmlns:controls="clr-namespace:UVtools.UI.Controls"
-                   xmlns:core="clr-namespace:UVtools.Core;assembly=UVtools.Core"
-                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                   xmlns:i="https://github.com/projektanker/icons.avalonia"
-                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                   xmlns:windows="clr-namespace:UVtools.UI.Windows"
-                   Title="About UVtools"
-                   Width="960"
-                   Height="710"
-                   MinWidth="640"
-                   MinHeight="550"
-                   d:DesignHeight="700"
-                   d:DesignWidth="960"
-                   x:DataType="windows:AboutWindow"
-                   CanResize="True"
-                   Icon="/Assets/Icons/UVtools.ico"
-                   SizeToContent="Manual"
-                   WindowStartupLocation="CenterOwner"
-                   mc:Ignorable="d">
+﻿<windows:GenericWindow x:Class="UVtools.UI.Windows.AboutWindow"
+                       xmlns="https://github.com/avaloniaui"
+                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                       xmlns:core="clr-namespace:UVtools.Core;assembly=UVtools.Core"
+                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                       xmlns:windows="clr-namespace:UVtools.UI.Windows"
+                       xmlns:suki="https://github.com/kikipoulet/SukiUI"
+                       xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                       Title="{Binding Source={x:Static core:About.SoftwareWithVersion}, StringFormat='About {0}', Mode=OneTime}"
+                       Width="960"
+                       Height="710"
+                       MinWidth="700"
+                       MinHeight="550"
+                       x:DataType="windows:AboutWindow"
+                       mc:Ignorable="d">
 
-    <DockPanel>
-        <Border Classes="FooterActions"
-                DockPanel.Dock="Bottom">
+    <DockPanel HorizontalSpacing="10">
+        <suki:GlassCard Classes="FooterActions"
+                        DockPanel.Dock="Bottom">
             <Grid ColumnDefinitions="Auto,*">
-                <controls:SplitButtonWithIcon Grid.Column="0"
-                                              Padding="10,10,5,10"
-                                              HorizontalAlignment="Right"
-                                              VerticalContentAlignment="Center"
-                                              Command="{Binding CopyEssentialInformation}"
-                                              Icon="fa-regular fa-clipboard"
-                                              Text="Copy information">
-                    <controls:SplitButtonWithIcon.Flyout>
+                <SplitButton Grid.Column="0"
+                             HorizontalAlignment="Right"
+                             VerticalContentAlignment="Center"
+                             Command="{Binding CopyEssentialInformation}"
+                             Content="{icon:MaterialIconTextExt Kind=ClipboardOutline, Text='Copy information'}" >
+                    <SplitButton.Flyout>
                         <MenuFlyout Placement="TopEdgeAlignedLeft">
                             <MenuItem Command="{Binding CopyEssentialInformation}"
                                       Header="Copy the essential information" />
@@ -43,38 +35,18 @@
                             <MenuItem Command="{Binding CopyInformationToClipboard}"
                                       Header="All information" />
                         </MenuFlyout>
-                    </controls:SplitButtonWithIcon.Flyout>
-                </controls:SplitButtonWithIcon>
-                <!--
-                <controls:ButtonWithIcon
-                    Grid.Column="0"
-                    Command="{Binding CopyEssentialInformation}"
-                    Padding="10"
-                    VerticalContentAlignment="Center"
-                    HorizontalAlignment="Right"
-                    Icon="fa-regular fa-clipboard"
-                    Text="Copy information ⮝">
-                    <Button.ContextMenu>
-                        <ContextMenu PlacementAnchor="Top" Placement="Top">
-                            <MenuItem Header="Copy the essential information" Command="{Binding CopyEssentialInformation}"/>
-                            <MenuItem Header="Copy OpenCV build information" Command="{Binding CopyOpenCVInformationToClipboard}"/>
-                            <MenuItem Header="Copy loaded assemblies" Command="{Binding CopyLoadedAssembliesToClipboard}"/>
-                            <MenuItem Header="All information" Command="{Binding CopyInformationToClipboard}"/>
-                        </ContextMenu>
-                    </Button.ContextMenu>
-                </controls:ButtonWithIcon>
-                !-->
+                    </SplitButton.Flyout>
+                </SplitButton>
 
-                <controls:ButtonWithIcon Grid.Column="1"
-                                         Padding="10"
-                                         HorizontalAlignment="Right"
-                                         VerticalContentAlignment="Center"
-                                         Command="{Binding Close}"
-                                         Icon="fa-solid fa-right-from-bracket"
-                                         IsCancel="True"
-                                         Text="Close" />
+                <Button Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        VerticalContentAlignment="Center"
+                        Classes="Flat"
+                        Command="{Binding Close}"
+                        Content="{icon:MaterialIconTextExt Kind=SignOut, Text='Close'}"
+                        IsCancel="True" />
             </Grid>
-        </Border>
+        </suki:GlassCard>
 
         <ScrollViewer DockPanel.Dock="Left"
                       HorizontalScrollBarVisibility="Auto"
@@ -90,65 +62,68 @@
                            VerticalAlignment="Center"
                            Source="/Assets/Icons/UVtools_alt.ico" />
                 </Border>
-                <TextBox Classes="TransparentReadOnly"
+                <TextBox Classes="ReadOnly"
                          Text="{Binding OSDescription}"
                          UseFloatingWatermark="True"
                          Watermark="Operative System:" />
 
-                <TextBox Classes="TransparentReadOnly"
+                <TextBox Classes="ReadOnly"
                          IsVisible="{Binding GraphicCardName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                          Text="{Binding GraphicCardName}"
                          UseFloatingWatermark="True"
                          Watermark="Graphic Card:" />
 
-                <TextBox Classes="TransparentReadOnly"
+                <TextBox Classes="ReadOnly"
                          Text="{Binding ProcessorName}"
                          UseFloatingWatermark="True"
                          Watermark="Processor:" />
 
-                <Grid ColumnDefinitions="*,*">
+                <Grid ColumnDefinitions="*,*"
+                      ColumnSpacing="5">
                     <TextBox Grid.Column="0"
-                             Classes="TransparentReadOnly"
+                             Classes="ReadOnly"
                              Text="{Binding ProcessorCount}"
                              UseFloatingWatermark="True"
                              Watermark="Processor cores:" />
 
                     <TextBox Grid.Column="1"
-                             Classes="TransparentReadOnly"
+                             Classes="ReadOnly"
                              Text="{Binding MemoryRAMDescription}"
                              UseFloatingWatermark="True"
                              Watermark="Memory RAM:" />
                 </Grid>
 
-                <Grid ColumnDefinitions="*,*">
+                <Grid ColumnDefinitions="*,*"
+                      ColumnSpacing="5">
                     <TextBox Grid.Column="0"
-                             Classes="TransparentReadOnly"
+                             Classes="ReadOnly"
                              Text="{Binding RuntimeDescription}"
                              UseFloatingWatermark="True"
                              Watermark="Runtime:" />
 
                     <TextBox Grid.Column="1"
-                             Classes="TransparentReadOnly"
+                             Classes="ReadOnly"
                              Text="{Binding OpenCVVersion}"
                              UseFloatingWatermark="True"
                              Watermark="OpenCV:" />
                 </Grid>
 
-                <Grid ColumnDefinitions="*,*">
+                <Grid ColumnDefinitions="*,*"
+                      ColumnSpacing="5">
                     <TextBox Grid.Column="0"
-                             Classes="TransparentReadOnly"
+                             Classes="ReadOnly"
                              Text="{Binding FrameworkDescription}"
                              UseFloatingWatermark="True"
                              Watermark="Framework:" />
 
                     <TextBox Grid.Column="1"
-                             Classes="TransparentReadOnly"
+                             Classes="ReadOnly"
                              Text="{Binding AvaloniaUIDescription}"
                              UseFloatingWatermark="True"
                              Watermark="AvaloniaUI:" />
                 </Grid>
 
-                <TextBox Classes="TransparentReadOnly"
+                <TextBox Classes="ReadOnly"
                          Text="{Binding ScreensDescription}"
                          UseFloatingWatermark="True"
                          Watermark="Screens, resolution, working area, usable area:" />
@@ -172,15 +147,15 @@
                         Orientation="Horizontal"
                         Spacing="5">
                 <SelectableTextBlock Text="{Binding Source={x:Static core:About.AgeShortStr}, StringFormat='Age: {0}'}" />
-                <i:Icon Foreground="{StaticResource LogoColor}"
-                        IsVisible="{Binding Source={x:Static core:About.IsBirthday}}"
-                        Value="fa-solid fa-cake-candles" />
-                <i:Icon Foreground="{StaticResource LogoColor}"
-                        IsVisible="{Binding Source={x:Static core:About.IsBirthday}}"
-                        Value="mdi party-popper" />
-                <i:Icon Foreground="{StaticResource LogoColor}"
-                        IsVisible="{Binding Source={x:Static core:About.IsBirthday}}"
-                        Value="fa-solid fa-gift" />
+                <icon:MaterialIcon Kind="Cake"
+                                   Classes="Accent"
+                                   IsVisible="{Binding Source={x:Static core:About.IsBirthday}}" />
+                <icon:MaterialIcon Kind="PartyPopper"
+                                   Classes="Accent"
+                                   IsVisible="{Binding Source={x:Static core:About.IsBirthday}}" />
+                <icon:MaterialIcon Kind="Gift"
+                                   Classes="Accent"
+                                   IsVisible="{Binding Source={x:Static core:About.IsBirthday}}" />
             </StackPanel>
             <SelectableTextBlock Grid.Row="4"
                                  Text="{Binding Source={x:Static core:About.AssemblyCopyright}}" />
@@ -189,16 +164,16 @@
             <StackPanel Grid.Row="8"
                         Orientation="Horizontal"
                         Spacing="5">
-                <controls:ButtonWithIcon VerticalAlignment="Center"
-                                         Command="{Binding TermsOfUseClicked}"
-                                         Icon="fa-solid fa-handshake"
-                                         Text="Terms of Use" />
+                <Button VerticalAlignment="Center"
+                        Command="{Binding TermsOfUseClicked}"
+                        Content="{icon:MaterialIconTextExt Kind=Handshake, Text='Terms of Use'}"
+                        Classes="Outlined"/>
 
-                <controls:ButtonWithIcon VerticalAlignment="Center"
-                                         Command="{Binding OpenWebsite}"
-                                         CommandParameter="{Binding Source={x:Static core:About.LicenseUrl}}"
-                                         Icon="fa-solid fa-balance-scale"
-                                         Text="{Binding Source={x:Static core:About.License}}" />
+                <Button VerticalAlignment="Center"
+                        Command="{Binding OpenWebsite}"
+                        CommandParameter="{Binding Source={x:Static core:About.LicenseUrl}}"
+                        Content="{icon:MaterialIconTextExt Kind=ScaleBalance, Text={Binding Source={x:Static core:About.License}}}"
+                        Classes="Outlined" />
             </StackPanel>
 
 
@@ -227,4 +202,4 @@
         </Grid>
     </DockPanel>
 
-</controls:WindowEx>
+</windows:GenericWindow>

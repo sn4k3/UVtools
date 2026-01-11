@@ -92,7 +92,7 @@ public sealed class OperationDynamicLayerHeight : Operation
     #region Overrides
 
     public override bool CanROI => false;
-    public override string IconClass => "mdi-format-line-style";
+    public override string IconClass => "FormatParagraphSpacing";
     public override string Title => "Dynamic layer height";
 
     public override string Description =>
@@ -310,7 +310,7 @@ public sealed class OperationDynamicLayerHeight : Operation
             if(!RaiseAndSetIfChanged(ref _exposureTime, value)) return;
             if (!IsExposureSetTypeManual) RebuildAutoExposureTable();
         }
-            
+
     }
 
     public decimal BottomExposureStep
@@ -450,7 +450,7 @@ public sealed class OperationDynamicLayerHeight : Operation
             //item.Exposure = _exposureTime;
             /*if (layerHeight == (decimal) SlicerFile.LayerHeight)
             {
-                
+
             }*/
             _manualExposureTable.Add(item);
         }
@@ -544,7 +544,7 @@ public sealed class OperationDynamicLayerHeight : Operation
         using Mat matXor = new();
         Mat? matXorSum = null;
         Mat? matSum = null;
-            
+
         //float xyResolutionUm = SlicerFile.PixelSizeMicronsMax;
         //if (xyResolutionUm == 0) xyResolutionUm = 35;
         //const double xyRes = 35;
@@ -689,7 +689,7 @@ public sealed class OperationDynamicLayerHeight : Operation
                         {
                             meetRequirement = true;
                             break;
-                        } 
+                        }
                     }
 
                     //if ((!meetRequirement || erodeCount >= _maximumErodes) && _minimumLayerHeight < (decimal) currentLayerHeight

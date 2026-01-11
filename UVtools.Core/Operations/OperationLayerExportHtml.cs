@@ -38,11 +38,11 @@ public sealed class OperationLayerExportHtml : Operation
     #region Overrides
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    
+
     public override bool CanROI => false;
     public override bool CanMask => false;
 
-    public override string IconClass => "fa-brands fa-html5";
+    public override string IconClass => "LanguageHtml5";
     public override string Title => "Export layers to HTML";
 
     public override string Description =>
@@ -168,14 +168,14 @@ public sealed class OperationLayerExportHtml : Operation
         html.WriteLine($"              <li class=\"nav-item\">");
         html.WriteLine($"                <a class=\"nav-link\" href=\"#Settings\">Settings</a>");
         html.WriteLine($"              </li>");
-        
+
         if (_exportRawData && SlicerFile.Configs.Length > 0)
         {
             html.WriteLine($"              <li class=\"nav-item\">");
             html.WriteLine($"                <a class=\"nav-link\" href=\"#RawData\">Raw data</a>");
             html.WriteLine($"              </li>");
         }
-        
+
         if (_exportLayerSettings && SlicerFile.SupportPerLayerSettings)
         {
             html.WriteLine($"              <li class=\"nav-item\">");
@@ -249,12 +249,12 @@ public sealed class OperationLayerExportHtml : Operation
         html.WriteLine("                  </tr>");
         html.WriteLine("                </thead>");
         html.WriteLine("                <tbody class=\"table-group-divider\">");
-                                      
+
         html.WriteLine("                  <tr>");
         html.WriteLine($"                    <td scope=\"row\">Class</td>");
         html.WriteLine($"                    <td>{SlicerFile.GetType().Name}, Version: {SlicerFile.Version}</td>");
         html.WriteLine("                  </tr>");
-                                      
+
         html.WriteLine("                  <tr>");
         html.WriteLine($"                    <td scope=\"row\">Image resolution</td>");
         html.WriteLine($"                    <td>{SlicerFile.Resolution} px</td>");
@@ -266,12 +266,12 @@ public sealed class OperationLayerExportHtml : Operation
             html.WriteLine($"                    <td scope=\"row\">Display size</td>");
             html.WriteLine($"                    <td>{SlicerFile.Display} mm</td>");
             html.WriteLine("                  </tr>");
-                                          
+
             html.WriteLine("                  <tr>");
             html.WriteLine($"                    <td scope=\"row\">Pixel size</td>");
             html.WriteLine($"                    <td>{SlicerFile.PixelSizeMicrons} µm</td>");
             html.WriteLine("                  </tr>");
-                                          
+
             html.WriteLine("                  <tr>");
             html.WriteLine($"                    <td scope=\"row\">Pixels per millimeters</td>");
             html.WriteLine($"                    <td>{SlicerFile.Ppmm} px</td>");
@@ -436,7 +436,7 @@ public sealed class OperationLayerExportHtml : Operation
                             html.WriteLine($"                    <td>{value}</td>");
                             break;
                     }
-                    
+
                     html.WriteLine("                  </tr>");
                 }
             }
@@ -447,7 +447,7 @@ public sealed class OperationLayerExportHtml : Operation
             html.WriteLine("          </div>");
             html.WriteLine("        </div>");
         }
-        
+
 
         if (_exportLayerSettings && SlicerFile.SupportPerLayerSettings)
         {

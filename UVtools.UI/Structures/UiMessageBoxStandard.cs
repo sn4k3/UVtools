@@ -9,6 +9,7 @@
 using Avalonia.Threading;
 using System;
 using System.Threading.Tasks;
+using SukiUI.MessageBox;
 using UVtools.Core.Dialogs;
 using UVtools.UI.Extensions;
 
@@ -30,10 +31,33 @@ public class UiMessageBoxStandard : AbstractMessageBoxStandard
     #region Methods
     public override Task<MessageButtonResult> ShowDialog(string? title, string message, MessageButtons buttons = MessageButtons.Ok)
     {
+        var sukiButtons = buttons switch
+        {
+            MessageButtons.Ok => SukiMessageBoxButtons.OK,
+            MessageButtons.YesNo => SukiMessageBoxButtons.YesNo,
+            MessageButtons.OkCancel => SukiMessageBoxButtons.OKCancel,
+            MessageButtons.OkAbort => SukiMessageBoxButtons.OKCancel,
+            MessageButtons.YesNoCancel => SukiMessageBoxButtons.YesNoCancel,
+            MessageButtons.YesNoAbort => SukiMessageBoxButtons.YesNoCancel,
+            _ => throw new ArgumentOutOfRangeException(nameof(buttons), buttons, null)
+        };
         return Dispatcher.UIThread.InvokeAsync(async () =>
         {
-            var result = await App.MainWindow.MessageBoxQuestion(message, string.IsNullOrWhiteSpace(title) ? "Question" : title, buttons, false, true);
-            return result;
+            var result = await App.MainWindow.MessageBoxQuestion(message, string.IsNullOrWhiteSpace(title) ? "Question" : title, sukiButtons, false, true);
+            return result switch
+            {
+                SukiMessageBoxResult.OK => MessageButtonResult.Ok,
+                SukiMessageBoxResult.Yes => MessageButtonResult.Yes,
+                SukiMessageBoxResult.No => MessageButtonResult.No,
+                SukiMessageBoxResult.Cancel => MessageButtonResult.Cancel,
+                SukiMessageBoxResult.Close => MessageButtonResult.None,
+                SukiMessageBoxResult.Apply => MessageButtonResult.Ok,
+                SukiMessageBoxResult.Ignore => MessageButtonResult.None,
+                SukiMessageBoxResult.Retry => MessageButtonResult.Yes,
+                SukiMessageBoxResult.Abort => MessageButtonResult.Abort,
+                SukiMessageBoxResult.Continue => MessageButtonResult.Ok,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         });
     }
     #endregion

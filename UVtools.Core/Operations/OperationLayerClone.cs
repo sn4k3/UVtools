@@ -9,7 +9,6 @@
 using System;
 using System.Text;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Layers;
 using ZLinq;
 
 namespace UVtools.Core.Operations;
@@ -28,7 +27,7 @@ public sealed class OperationLayerClone : Operation
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.Current;
     public override bool CanROI => false;
     public override bool PassActualLayerIndex => true;
-    public override string IconClass => "fa-solid fa-clone";
+    public override string IconClass => "LayersPlus";
     public override string Title => "Clone layers";
     public override string Description =>
         "Clone layers.\n\n" +

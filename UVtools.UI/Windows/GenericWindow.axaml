@@ -1,0 +1,21 @@
+<suki:SukiWindow xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:suki="https://github.com/kikipoulet/SukiUI"
+        xmlns:windows="clr-namespace:UVtools.UI.Windows"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="UVtools.UI.Windows.GenericWindow"
+        x:DataType="windows:GenericWindow"
+        Title="UVtools"
+        WindowStartupLocation="CenterOwner"
+        BackgroundAnimationEnabled="{Binding Settings.General.BackgroundAnimations}"
+        BackgroundTransitionsEnabled="{Binding Settings.General.BackgroundTransitions}"
+        BackgroundStyle="{Binding Settings.General.BackgroundStyle}"
+        Icon="/Assets/Icons/UVtools.ico">
+    <suki:SukiWindow.LogoContent>
+        <Svg Width="20"
+             Height="20"
+             Path="/Assets/Icons/UVtools.svg" />
+    </suki:SukiWindow.LogoContent>
+</suki:SukiWindow>

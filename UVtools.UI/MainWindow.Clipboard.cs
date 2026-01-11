@@ -9,6 +9,7 @@
 
 using Avalonia.Input;
 using Avalonia.Threading;
+using SukiUI.MessageBox;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -96,7 +97,7 @@ public partial class MainWindow
     {
         if (await this.MessageBoxQuestion("Are you sure you want to clear the clipboard?\n" +
                                           "Current layers will be placed as original layers\n" +
-                                          "This action is permanent!", "Clear clipboard?") != MessageButtonResult.Yes) return;
+                                          "This action is permanent!", "Clear clipboard?") != SukiMessageBoxResult.Yes) return;
         ClipboardManager.Clear(true);
     }
 }

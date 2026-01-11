@@ -1,24 +1,22 @@
+using SukiUI.MessageBox;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using UVtools.Core.Dialogs;
 using UVtools.Core.Managers;
-using UVtools.Core.Objects;
-using UVtools.UI.Controls;
 using UVtools.UI.Extensions;
 
 namespace UVtools.UI.Windows;
 
-public partial class MaterialManagerWindow : WindowEx
+public partial class MaterialManagerWindow : GenericWindow
 {
-    private Material _material = new();
     public MaterialManager Manager => MaterialManager.Instance;
 
-    public Material Material
+    public Core.Objects.Material Material
     {
-        get => _material;
-        set => RaiseAndSetIfChanged(ref _material, value);
-    }
+        get;
+        set => RaiseAndSetIfChanged(ref field, value);
+    } = new();
 
     public MaterialManagerWindow()
     {
@@ -58,7 +56,7 @@ public partial class MaterialManagerWindow : WindowEx
         Material.BottleRemainingVolume = Material.BottleVolume;
 
         if (await this.MessageBoxQuestion("Are you sure you want to add the following material:\n" +
-                                          $"{Material}") != MessageButtonResult.Yes) return;
+                                          $"{Material}") != SukiMessageBoxResult.Yes) return;
 
         Manager.Add(Material);
         Manager.SortByName();
@@ -69,15 +67,15 @@ public partial class MaterialManagerWindow : WindowEx
     public async Task RemoveSelectedMaterials()
     {
         if (MaterialsTable.SelectedItems.Count <= 0) return;
-        if (await this.MessageBoxQuestion($"Are you sure you want to remove {MaterialsTable.SelectedItems.Count} materials?") != MessageButtonResult.Yes) return;
-        Manager.RemoveRange(MaterialsTable.SelectedItems.Cast<Material>());
+        if (await this.MessageBoxQuestion($"Are you sure you want to remove {MaterialsTable.SelectedItems.Count} materials?") != SukiMessageBoxResult.Yes) return;
+        Manager.RemoveRange(MaterialsTable.SelectedItems.Cast<Core.Objects.Material>());
         MaterialManager.Save();
     }
 
     public async Task ClearMaterials()
     {
         if (Manager.Count == 0) return;
-        if (await this.MessageBoxQuestion($"Are you sure you want to clear {Manager.Count} materials?") != MessageButtonResult.Yes) return;
+        if (await this.MessageBoxQuestion($"Are you sure you want to clear {Manager.Count} materials?") != SukiMessageBoxResult.Yes) return;
         Manager.Clear(true);
     }
 }

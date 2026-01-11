@@ -773,10 +773,17 @@ public sealed class SL1File : FileFormat
         DecodeAllThumbnailsFromZip(inputFile, progress, "thumbnail");
         DecodeLayersFromZip(inputFile, 5, IndexStartNumber.Zero, progress);
 
-
         if (TransitionLayerCount > 0)
         {
             SetTransitionLayers(TransitionLayerCount, false);
+        }
+
+        if (LayerCount > 0)
+        {
+            if (MaterialSettings.InitialLayerHeight > 0 && LayerHeight != MaterialSettings.InitialLayerHeight)
+            {
+                Layers[0].PositionZ = MaterialSettings.InitialLayerHeight;
+            }
         }
 
         Statistics.ExecutionTime.Stop();

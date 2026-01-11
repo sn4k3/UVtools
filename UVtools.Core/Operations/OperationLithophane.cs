@@ -69,7 +69,7 @@ public class OperationLithophane : Operation
     #region Overrides
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    public override string IconClass => "fa-solid fa-portrait";
+    public override string IconClass => "AccountBoxOutline";
     public override string Title => "Lithophane";
     public override string Description =>
         "Generate lithophane from a picture.\n" +
