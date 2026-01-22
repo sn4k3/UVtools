@@ -1911,12 +1911,12 @@
 							   Grid.Column="0"
 							   Margin="{Binding LayerNavigationTooltipMargin}"
 							   HorizontalAlignment="Stretch">
-							<Border Name="LayerNavigationTooltipBorder"
+							<suki:GlassCard Name="LayerNavigationTooltipBorder"
 									VerticalAlignment="Top"
+									Padding="10"
 									Classes="LayerNavigationToolTip">
-								<TextBlock Padding="2"
-										   Text="{Binding ActualLayerTooltip}" />
-							</Border>
+								<TextBlock Text="{Binding ActualLayerTooltip}" />
+							</suki:GlassCard>
 						</Panel>
 
 						<Canvas Name="LayerNavigationIssuesCanvas"

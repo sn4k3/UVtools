@@ -608,7 +608,8 @@ public partial class MainWindow : GenericWindow
             switch (await this.MessageBoxQuestion("There are unsaved changes. Do you want to save the current file before copy it over?\n\n" +
                                                   "Yes: Save the current file and copy it over.\n" +
                                                   "No: Copy the file without current modifications.\n" +
-                                                  "Cancel: Abort the operation.", "Send to - Unsaved changes", SukiMessageBoxButtons.YesNoCancel))
+                                                  "Cancel: Abort the operation.", 
+                        "Send to - Unsaved changes", SukiMessageBoxButtons.YesNoCancel))
             {
                 case SukiMessageBoxResult.Yes:
                     await SaveFile(true);
@@ -634,7 +635,8 @@ public partial class MainWindow : GenericWindow
                             "Keep in mind there is no guarantee that the file will start to print.\n" +
                             "Are you sure you want to continue?\n\n" +
                             "Yes: Print this file name.\n" +
-                            "No: Cancel file print.", "Print the filename?") != SukiMessageBoxResult.Yes) return;
+                            "No: Cancel file print.", 
+                            "Print the filename?") != SukiMessageBoxResult.Yes) return;
                 }
                 else
                 {
@@ -643,7 +645,8 @@ public partial class MainWindow : GenericWindow
                             "Keep in mind there is no guarantee that the file will start to print.\n" +
                             "Are you sure you want to continue?\n\n" +
                             "Yes: Send file and print it.\n" +
-                            "No: Cancel file sending and print.", "Send and print the file?") != SukiMessageBoxResult.Yes) return;
+                            "No: Cancel file sending and print.", 
+                            "Send and print the file?") != SukiMessageBoxResult.Yes) return;
                 }
 
             }
@@ -1141,7 +1144,8 @@ public partial class MainWindow : GenericWindow
         if (CanSave && await this.MessageBoxQuestion("""
                                                      You have unsaved changes. Closing the file will discard them.
                                                      Do you want to close without saving?
-                                                     """, "Close file - Unsaved changes") != SukiMessageBoxResult.Yes)
+                                                     """, 
+                "Close file - Unsaved changes") != SukiMessageBoxResult.Yes)
         {
             return;
         }
@@ -1796,7 +1800,8 @@ public partial class MainWindow : GenericWindow
                                     break;
                                 case RemoveSourceFileAction.Prompt:
                                     if (await this.MessageBoxQuestion($"File was successfully converted to: {targetFilename}\n" +
-                                                                      $"Do you want to remove the source file: {oldFileName}", $"Remove source file: {oldFileName}") == SukiMessageBoxResult.Yes) removeSourceFile = true;
+                                                                      $"Do you want to remove the source file: {oldFileName}", 
+                                            $"Remove source file: {oldFileName}") == SukiMessageBoxResult.Yes) removeSourceFile = true;
                                     break;
                             }
 
@@ -2285,7 +2290,8 @@ public partial class MainWindow : GenericWindow
                     break;
                 case RemoveSourceFileAction.Prompt:
                     if (await this.MessageBoxQuestion($"File was successfully converted to: {Path.GetFileName(filePath)}\n" +
-                                                      $"Do you want to remove the source file: {oldFileName}", $"Remove source file: {oldFileName}") == SukiMessageBoxResult.Yes) removeSourceFile = true;
+                                                      $"Do you want to remove the source file: {oldFileName}", 
+                            $"Remove source file: {oldFileName}") == SukiMessageBoxResult.Yes) removeSourceFile = true;
                     break;
             }
 

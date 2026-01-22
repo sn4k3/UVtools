@@ -700,16 +700,36 @@ public partial class MainWindow
 
         var colorDictionary = GetIssueColors(true);
 
-
-        var issues = SlicerFile.IssueManager.GetIssues().AsValueEnumerable().OrderBy(issue => issue.Parent!.Type).DistinctBy(mainIssue => mainIssue.LayerIndex);
+        var issues = SlicerFile.IssueManager.GetIssues().AsValueEnumerable()
+            .OrderBy(issue => issue.Parent!.Type)
+            .DistinctBy(mainIssue => mainIssue.LayerIndex);
 
         foreach (var issue in issues)
         {
             var color = Brushes.Red;
-
             if (Settings.LayerPreview.UseIssueColorOnTracker) colorDictionary.TryGetValue(issue.Parent!.Type, out color);
 
             var yPos = tickFrequencySize * issue.LayerIndex;
+
+
+            var quadrant = (int)Math.Ceiling((issue.LayerIndex+1) * 4.0 / SlicerFile.LayerCount);
+
+            switch (quadrant)
+            {
+                case 1:
+                    yPos += (SlicerFile.LastLayerIndex - issue.LayerIndex) * 0.0045;
+                    break;
+                case 2:
+                    yPos += (SlicerFile.LastLayerIndex - issue.LayerIndex) * 0.0040;
+                    break;
+                case 3:
+                    yPos += (SlicerFile.LastLayerIndex - issue.LayerIndex) * 0.0005;
+                    break;
+                case 4:
+                    yPos -= (SlicerFile.LastLayerIndex - issue.LayerIndex) * 0.03;
+                    break;
+            }
+
             if (issue.LayerIndex == 0 && stroke > 3)
             {
                 yPos += tickFrequencySize / 2;
@@ -718,6 +738,9 @@ public partial class MainWindow
             {
                 yPos -= tickFrequencySize / 2;
             }
+
+            //yPos = Math.Clamp(yPos, 0, LayerNavigationIssuesCanvas.Bounds.Height);
+
             var line = new Line { StrokeThickness = stroke, Stroke = color, EndPoint = new Avalonia.Point(LayerNavigationIssuesCanvas.Width, 0) };
             LayerNavigationIssuesCanvas.Children.Add(line);
             Canvas.SetBottom(line, yPos);

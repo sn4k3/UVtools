@@ -49,64 +49,61 @@ public static class WindowExtensions
 
     extension(Window window)
     {
-        public async Task<SukiMessageBoxResult> MessageBoxGeneric(string message, string? title = null, string? header = null,
-            SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, MaterialIconKind? headerIcon = null, bool markdown = false, bool topMost = false, WindowStartupLocation location = WindowStartupLocation.CenterOwner)
+        public Task<SukiMessageBoxResult> MessageBoxGeneric(string message, string? title = null, string? header = null,
+            SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, MaterialIconKind? headerIcon = null, bool markdown = false,
+            bool topMost = false, WindowStartupLocation location = WindowStartupLocation.CenterOwner)
         {
             var options = SukiMessageBoxUtilities.GetDefaultOptions();
             options = options with
             {
                 WindowStartupLocation = location,
+                Topmost = topMost,
+                Title = title,
             };
 
             var host = new SukiMessageBoxHost()
             {
                 Header = header,
                 Content = message,
-                ActionButtonsPreset = buttons
+                ActionButtonsPreset = buttons,
             };
 
             if (headerIcon is not null)
             {
-                host.Icon = new MaterialIcon() { Kind = headerIcon.Value, IconSize = 32 };
+                host.Icon = new MaterialIcon { Kind = headerIcon.Value, IconSize = 32 };
             }
 
             if (markdown)
             {
-                host.Content = new MarkdownViewer.Core.Controls.MarkdownViewer() { MarkdownText = message };
+                host.Content = new MarkdownViewer.Core.Controls.MarkdownViewer{ MarkdownText = message };
             }
 
-
-
-            var result = await SukiMessageBox.ShowDialog(window, host, options);
-            if (result is null) return SukiMessageBoxResult.Cancel;
-            if (result is not SukiMessageBoxResult resultButton) throw new NotImplementedException($"Message box interface is not correctly implemented, expecting a button result but got {result}.");
-
-            return resultButton;
+            return SukiMessageBox.ShowDialogResult(window, host, options);
         }
 
-        public async Task<SukiMessageBoxResult> MessageBoxInfo(string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
-            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Information", null, buttons, MessageWindow.IconHeaderInformation, markdown, topMost, WindowStartupLocation.CenterOwner);
+        public Task<SukiMessageBoxResult> MessageBoxInfo(string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
+            => window.MessageBoxGeneric(message, title ?? $"{window.Title} - Information", null, buttons, MessageWindow.IconHeaderInformation, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-        public async Task<SukiMessageBoxResult> MessageBoxError(string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
-            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Error", null, buttons, MessageWindow.IconHeaderError, markdown, topMost, WindowStartupLocation.CenterOwner);
+        public Task<SukiMessageBoxResult> MessageBoxError(string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
+            => window.MessageBoxGeneric(message, title ?? $"{window.Title} - Error", null, buttons, MessageWindow.IconHeaderError, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-        public async Task<SukiMessageBoxResult> MessageBoxQuestion(string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.YesNo, bool markdown = false, bool topMost = false)
-            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", null, buttons, MessageWindow.IconHeaderQuestion, markdown, topMost, WindowStartupLocation.CenterOwner);
+        public Task<SukiMessageBoxResult> MessageBoxQuestion(string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.YesNo, bool markdown = false, bool topMost = false)
+            => window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", null, buttons, MessageWindow.IconHeaderQuestion, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-        public async Task<SukiMessageBoxResult> MessageBoxWaring(string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
-            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", null, buttons, MessageWindow.IconHeaderWarning, markdown, topMost, WindowStartupLocation.CenterOwner);
+        public Task<SukiMessageBoxResult> MessageBoxWaring(string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
+            => window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", null, buttons, MessageWindow.IconHeaderWarning, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-        public async Task<SukiMessageBoxResult> MessageBoxWithHeaderInfo(string header, string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
-            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Information", header, buttons, MessageWindow.IconHeaderInformation, markdown, topMost, WindowStartupLocation.CenterOwner);
+        public Task<SukiMessageBoxResult> MessageBoxWithHeaderInfo(string header, string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
+            => window.MessageBoxGeneric(message, title ?? $"{window.Title} - Information", header, buttons, MessageWindow.IconHeaderInformation, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-        public async Task<SukiMessageBoxResult> MessageBoxWithHeaderError(string header, string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
-            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Error", header, buttons, MessageWindow.IconHeaderError, markdown, topMost, WindowStartupLocation.CenterOwner);
+        public Task<SukiMessageBoxResult> MessageBoxWithHeaderError(string header, string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
+            => window.MessageBoxGeneric(message, title ?? $"{window.Title} - Error", header, buttons, MessageWindow.IconHeaderError, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-        public async Task<SukiMessageBoxResult> MessageBoxWithHeaderQuestion(string header, string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.YesNo, bool markdown = false, bool topMost = false)
-            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", header, buttons, MessageWindow.IconHeaderQuestion, markdown, topMost, WindowStartupLocation.CenterOwner);
+        public Task<SukiMessageBoxResult> MessageBoxWithHeaderQuestion(string header, string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.YesNo, bool markdown = false, bool topMost = false)
+            => window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", header, buttons, MessageWindow.IconHeaderQuestion, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-        public async Task<SukiMessageBoxResult> MessageBoxWithHeaderWaring(string header, string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
-            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", header, buttons, MessageWindow.IconHeaderWarning, markdown, topMost, WindowStartupLocation.CenterOwner);
+        public Task<SukiMessageBoxResult> MessageBoxWithHeaderWaring(string header, string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
+            => window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", header, buttons, MessageWindow.IconHeaderWarning, markdown, topMost, WindowStartupLocation.CenterOwner);
 
         public void ShowDialogSync(Window? parent = null)
         {

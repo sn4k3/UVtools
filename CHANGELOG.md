@@ -9,7 +9,7 @@
 - (Change) Default layer compression codec from `PNG` to `Brotli`
 - (Change) Layer previewer scrollbars are now shown as full bar instead of minimal style when not hovered
 - (Upgrade) .NET from 9.0.9 to 10.0.1
-- (Upgrade) AvaloniaUI from 11.3.6 to 11.3.10
+- (Upgrade) AvaloniaUI from 11.3.6 to 11.3.11
 - (Upgrade) OpenCV from 4.11.0 to 4.12.0
 
   ### Benchmark Results (Compression codecs):

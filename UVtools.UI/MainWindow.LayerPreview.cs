@@ -27,7 +27,6 @@ using Avalonia.Platform.Storage;
 using Avalonia.Reactive;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
-using UVtools.Core.Dialogs;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -38,8 +37,6 @@ using UVtools.UI.Structures;
 using Color = UVtools.UI.Structures.Color;
 using AvaloniaStatic = UVtools.UI.Controls.AvaloniaStatic;
 using Point = System.Drawing.Point;
-using Size = System.Drawing.Size;
-using Emgu.CV.Reg;
 using SukiUI.MessageBox;
 using ZLinq;
 
