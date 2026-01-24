@@ -2127,26 +2127,35 @@
             <returns>Byte array data</returns>
         </member>
         <member name="M:UVtools.Core.Extensions.StringExtensions.FirstCharToUpper(System.String)">
+            <inheritdoc cref="M:UVtools.Core.Extensions.StringExtensions.&lt;G&gt;$34505F560D9EACF86A87F3ED1F85E448.FirstCharToUpper"/>
+        </member>
+        <member name="M:UVtools.Core.Extensions.StringExtensions.Repeat(System.String,System.Int32)">
+            <inheritdoc cref="M:UVtools.Core.Extensions.StringExtensions.&lt;G&gt;$34505F560D9EACF86A87F3ED1F85E448.Repeat(System.Int32)"/>
+        </member>
+        <member name="M:UVtools.Core.Extensions.StringExtensions.Convert``1(System.String)">
+            <inheritdoc cref="M:UVtools.Core.Extensions.StringExtensions.&lt;G&gt;$34505F560D9EACF86A87F3ED1F85E448.Convert``1"/>
+        </member>
+        <member name="T:UVtools.Core.Extensions.StringExtensions.&lt;G&gt;$34505F560D9EACF86A87F3ED1F85E448.&lt;M&gt;$72B78DF49615F4B3A12DAFBA49CDED47">
+            <param name="input">Input string</param>
+        </member>
+        <member name="M:UVtools.Core.Extensions.StringExtensions.&lt;G&gt;$34505F560D9EACF86A87F3ED1F85E448.FirstCharToUpper">
             <summary>
             Upper the first character in a string
             </summary>
-            <param name="input">Input string</param>
             <returns>Modified string with fist character upper</returns>
         </member>
-        <member name="M:UVtools.Core.Extensions.StringExtensions.Repeat(System.String,System.Int32)">
+        <member name="M:UVtools.Core.Extensions.StringExtensions.&lt;G&gt;$34505F560D9EACF86A87F3ED1F85E448.Repeat(System.Int32)">
             <summary>
             Repeat this string <paramref name="count"/> times
             </summary>
-            <param name="str">String to repeat</param>
             <param name="count">Number of times to repeat</param>
-            <returns><paramref name="str"/> repeated <paramref name="count"/> times</returns>
+            <returns><paramref name="input"/> repeated <paramref name="count"/> times</returns>
         </member>
-        <member name="M:UVtools.Core.Extensions.StringExtensions.Convert``1(System.String)">
+        <member name="M:UVtools.Core.Extensions.StringExtensions.&lt;G&gt;$34505F560D9EACF86A87F3ED1F85E448.Convert``1">
             <summary>
             Converts a string into a target type
             </summary>
             <typeparam name="T">Target type to convert into</typeparam>
-            <param name="input">Value</param>
             <returns>Converted value into target type</returns>
         </member>
         <member name="M:UVtools.Core.Extensions.TypeExtensions.CreateInstance(System.Type,System.Object[])">

@@ -14,54 +14,55 @@ namespace UVtools.Core.Extensions;
 
 public static class StringExtensions
 {
-    public static string RemoveFromEnd(this string input, int count)
-    {
-        return input[..^count];
-    }
-
-    public static string ReplaceFirst(this string text, string search, string replace)
-    {
-        var pos = text.IndexOf(search, StringComparison.Ordinal);
-        if (pos < 0) return text;
-        return $"{text[..pos]}{replace}{text[(pos + search.Length)..]}";
-    }
-
-    /// <summary>
-    /// Upper the first character in a string
-    /// </summary>
     /// <param name="input">Input string</param>
-    /// <returns>Modified string with fist character upper</returns>
-    public static string FirstCharToUpper(this string input)
+    extension(string input)
     {
-        return input switch
+        public string RemoveFromEnd(int count)
         {
-            null => throw new ArgumentNullException(nameof(input)),
-            "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
-            _ => $"{char.ToUpper(input[0])}{input[1..]}"
-        };
-    }
+            return input[..^count];
+        }
 
-    /// <summary>
-    /// Repeat this string <paramref name="count"/> times
-    /// </summary>
-    /// <param name="str">String to repeat</param>
-    /// <param name="count">Number of times to repeat</param>
-    /// <returns><paramref name="str"/> repeated <paramref name="count"/> times</returns>
-    public static string Repeat(this string str, int count)
-        => count <= 0 ? string.Empty : new StringBuilder(str.Length * count).Insert(0, str, count).ToString();
+        public string ReplaceFirst(string search, string replace)
+        {
+            var pos = input.IndexOf(search, StringComparison.Ordinal);
+            if (pos < 0) return input;
+            return $"{input[..pos]}{replace}{input[(pos + search.Length)..]}";
+        }
 
-    /// <summary>
-    /// Converts a string into a target type
-    /// </summary>
-    /// <typeparam name="T">Target type to convert into</typeparam>
-    /// <param name="input">Value</param>
-    /// <returns>Converted value into target type</returns>
-    public static T? Convert<T>(this string input)
-    {
-        var converter = TypeDescriptor.GetConverter(typeof(T));
-        //Cast ConvertFromString(string text) : object to (T)
-        var result = converter.ConvertFromString(input);
-        if (result is null) return default;
-        return (T) result;
+        /// <summary>
+        /// Upper the first character in a string
+        /// </summary>
+        /// <returns>Modified string with fist character upper</returns>
+        public string FirstCharToUpper()
+        {
+            return input switch
+            {
+                null => throw new ArgumentNullException(nameof(input)),
+                "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
+                _ => $"{char.ToUpper(input[0])}{input[1..]}"
+            };
+        }
+
+        /// <summary>
+        /// Repeat this string <paramref name="count"/> times
+        /// </summary>
+        /// <param name="count">Number of times to repeat</param>
+        /// <returns><paramref name="input"/> repeated <paramref name="count"/> times</returns>
+        public string Repeat(int count)
+            => count <= 0 ? string.Empty : new StringBuilder(input.Length * count).Insert(0, input, count).ToString();
+
+        /// <summary>
+        /// Converts a string into a target type
+        /// </summary>
+        /// <typeparam name="T">Target type to convert into</typeparam>
+        /// <returns>Converted value into target type</returns>
+        public T? Convert<T>()
+        {
+            var converter = TypeDescriptor.GetConverter(typeof(T));
+            //Cast ConvertFromString(string text) : object to (T)
+            var result = converter.ConvertFromString(input);
+            if (result is null) return default;
+            return (T) result;
+        }
     }
 }

@@ -221,11 +221,13 @@
 									    </MultiBinding>
 								    </ToolTip.Tip>
 
-                                    <PathIcon Data="{DynamicResource UndoPath}"
-                                              VerticalAlignment="Center"
-                                              HorizontalAlignment="Center"
-                                              Height="{DynamicResource ControlContentThemeFontSize}"
-                                              Width="{DynamicResource ControlContentThemeFontSize}"/>
+                                    <Viewbox Height="{DynamicResource ControlContentThemeFontSize}"
+                                             Width="{DynamicResource ControlContentThemeFontSize}">
+                                        <PathIcon Data="{DynamicResource UndoPath}"
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Center"/>
+                                    </Viewbox>
+
                                 </Button>
 							</StackPanel>
 

@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Material.Icons;
 using Material.Icons.Avalonia;
-using UVtools.AvaloniaControls;
+using SukiUI.Theme;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
@@ -29,7 +29,7 @@ public partial class ToolEditParametersControl : ToolControl
         public Control FirstColumn;
 
         public TextBlock Name { get; }
-        public ExtendedNumericUpDown NumericUpDown { get; }
+        public NumericUpDown NumericUpDown { get; }
 
         public RowControl(FileFormat.PrintParameterModifier modifier)
         {
@@ -37,10 +37,10 @@ public partial class ToolEditParametersControl : ToolControl
 
             modifier.NewValue = Math.Clamp(modifier.OldValue, modifier.Minimum, modifier.Maximum);
             var label = ReferenceEquals(modifier, FileFormat.PrintParameterModifier.BottomLayerCount)
-                ? modifier.Name:
-                modifier.Name.Replace("Bottom ", string.Empty, StringComparison.InvariantCultureIgnoreCase).FirstCharToUpper();
+                ? modifier.Name
+                : modifier.Name.Replace("Bottom ", string.Empty, StringComparison.InvariantCultureIgnoreCase).FirstCharToUpper();
 
-            var stackPanel = new StackPanel{ Orientation = Orientation.Horizontal, Spacing = 5 };
+            var stackPanel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 5 };
 
             if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.PositionZ))
             {
@@ -87,7 +87,7 @@ public partial class ToolEditParametersControl : ToolControl
             {
                 Text = $"{label}:",
                 VerticalAlignment = VerticalAlignment.Center,
-                Padding = new Thickness(0,0,10, 0),
+                Padding = new Thickness(0, 0, 10, 0),
                 Tag = this,
             };
 
@@ -99,25 +99,29 @@ public partial class ToolEditParametersControl : ToolControl
 
             if (!string.IsNullOrWhiteSpace(modifier.Description)) ToolTip.SetTip(Name, modifier.Description);
 
-            NumericUpDown = new ExtendedNumericUpDown
+            NumericUpDown = new NumericUpDown
             {
                 //DecimalPlaces = modifier.DecimalPlates,
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
-                Margin = new Thickness(0,2,0,0),
+                Margin = new Thickness(0, 2, 0, 0),
                 Minimum = modifier.Minimum,
                 Maximum = modifier.Maximum,
                 Increment = modifier.Increment,
                 FormatString = modifier.DecimalPlates > 0 ? $"F{modifier.DecimalPlates}" : string.Empty,
                 Value = modifier.NewValue,
-                ValueUnit = modifier.ValueUnit,
-                IsInitialValueVisible = true,
-                ResetVisibility = ExtendedNumericUpDown.ResetVisibilityType.Auto,
                 Tag = this,
                 //Width = 100,
                 MinWidth = 320,
                 ClipValueToMinMax = true
             };
+
+            NumericUpDownExtensions.SetPrefix(NumericUpDown, $"({modifier.NewValue})  ");
+            NumericUpDownExtensions.SetUnit(NumericUpDown, $" {modifier.ValueUnit}");
+            NumericUpDownExtensions.SetResetText(NumericUpDown, modifier.DecimalPlates > 0
+                ? modifier.NewValue.ToString($"F{modifier.DecimalPlates}")
+                : modifier.NewValue
+            );
 
             NumericUpDown.ValueChanged += NewValueOnValueChanged;
         }
@@ -199,12 +203,12 @@ public partial class ToolEditParametersControl : ToolControl
 
             if (!Operation.PerLayerOverride)
             {
-                left.NumericUpDown.ValueUnit = null;
-                left.NumericUpDown.IsInitialValueVisible = false;
                 left.NumericUpDown.Width = 110;
+                NumericUpDownExtensions.SetUnit(left.NumericUpDown, null);
+                NumericUpDownExtensions.SetPrefix(left.NumericUpDown, null);
 
-                right.NumericUpDown.IsInitialValueVisible = false;
                 right.NumericUpDown.Width = 180;
+                NumericUpDownExtensions.SetPrefix(right.NumericUpDown, null);
             }
 
             grid.Children.Add(left.NumericUpDown);
@@ -220,7 +224,7 @@ public partial class ToolEditParametersControl : ToolControl
 
         foreach (var modifier in Operation.Modifiers)
         {
-            if(addedModifiers.Contains(modifier)) continue;
+            if (addedModifiers.Contains(modifier)) continue;
 
             grid.RowDefinitions.Add(new RowDefinition());
 
@@ -239,7 +243,7 @@ public partial class ToolEditParametersControl : ToolControl
             foreach (var modifierPair in TSMCModifierPairs)
             {
                 if (!ReferenceEquals(modifierPair.modifierLeft, modifier)) continue;
-                if(!Operation.Modifiers.AsValueEnumerable().Contains(modifierPair.modifierRight)) break;
+                if (!Operation.Modifiers.AsValueEnumerable().Contains(modifierPair.modifierRight)) break;
 
                 rowControl2 = new RowControl(modifierPair.modifierRight);
                 valueContainer = CreateTSMCfields(rowControl1, rowControl2);
@@ -251,8 +255,8 @@ public partial class ToolEditParametersControl : ToolControl
             {
                 rowControl1.Name.Text = rowControl1.Name.Text?.Replace("2) ", string.Empty).FirstCharToUpper();
                 var rowControlVirtual = new RowControl(FileFormat.PrintParameterModifier.BottomRetractHeight2.Clone())
-                    {
-                        NumericUpDown =
+                {
+                    NumericUpDown =
                         {
                             Value = (decimal)(Operation.PerLayerOverride
                                 ? SlicerFile![Operation.LayerIndexStart].RetractHeight
@@ -260,12 +264,19 @@ public partial class ToolEditParametersControl : ToolControl
                             IsReadOnly = true,
                             IsEnabled = false
                         }
-                    };
+                };
+
                 if (Operation.PerLayerOverride)
                 {
-                    rowControlVirtual.NumericUpDown.IsInitialValueVisible = false;
+                    NumericUpDownExtensions.SetPrefix(rowControlVirtual.NumericUpDown, null);
+                    //rowControlVirtual.NumericUpDown.IsInitialValueVisible = false;
                 }
-                rowControlVirtual.NumericUpDown.RedefineOldValue();
+
+                NumericUpDownExtensions.SetResetText(rowControlVirtual.NumericUpDown,
+                    rowControlVirtual.NumericUpDown.IsEnabled
+                        ? rowControlVirtual.NumericUpDown.Value
+                        : null);
+
                 valueContainer = CreateTSMCfields(rowControlVirtual, rowControl1);
             }
             else if (rowControl2 is null && ReferenceEquals(modifier, FileFormat.PrintParameterModifier.RetractHeight2))
@@ -284,9 +295,13 @@ public partial class ToolEditParametersControl : ToolControl
                 };
                 if (Operation.PerLayerOverride)
                 {
-                    rowControlVirtual.NumericUpDown.IsInitialValueVisible = false;
+                    NumericUpDownExtensions.SetPrefix(rowControlVirtual.NumericUpDown, null);
+                    //rowControlVirtual.NumericUpDown.IsInitialValueVisible = false;
                 }
-                rowControlVirtual.NumericUpDown.RedefineOldValue();
+                NumericUpDownExtensions.SetResetText(rowControlVirtual.NumericUpDown,
+                    rowControlVirtual.NumericUpDown.IsEnabled
+                        ? rowControlVirtual.NumericUpDown.Value
+                        : null);
                 valueContainer = CreateTSMCfields(rowControlVirtual, rowControl1);
             }
 
