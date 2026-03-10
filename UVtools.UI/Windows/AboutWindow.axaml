@@ -8,7 +8,7 @@
                        xmlns:suki="https://github.com/kikipoulet/SukiUI"
                        xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                        Title="{Binding Source={x:Static core:About.SoftwareWithVersion}, StringFormat='About {0}', Mode=OneTime}"
-                       Width="960"
+                       Width="980"
                        Height="710"
                        MinWidth="700"
                        MinHeight="550"

@@ -1395,7 +1395,7 @@
                                     </StackPanel>
 
                                     <CheckBox Content="Show square grid as background"
-                                              IsChecked="{Binding Settings.LayerPreview.ShowBackgroudGrid}" />
+                                              IsChecked="{Binding Settings.LayerPreview.ShowBackgroundGrid}" />
 
                                     <StackPanel Orientation="Horizontal"
                                                 Spacing="10">

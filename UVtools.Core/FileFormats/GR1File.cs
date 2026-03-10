@@ -150,7 +150,7 @@ public sealed class GR1File : FileFormat
 
     public override FileExtension[] FileExtensions { get; } =
     [
-        new (typeof(GR1File), "gr1", "GR1 Workshop")
+        new (typeof(GR1File), "GR1", "GR1 Workshop")
     ];
 
     public override PrintParameterModifier[] PrintParameterModifiers { get; } =

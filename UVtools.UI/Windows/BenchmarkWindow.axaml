@@ -133,7 +133,7 @@
         <suki:GlassCard Grid.Row="3"
                         Classes="Flat">
             <Grid ColumnDefinitions="*,Auto"
-                  ColumnSpacing="15">
+                  ColumnSpacing="10">
                 <ProgressBar Grid.Column="0"
                              IsIndeterminate="{Binding IsRunning}"
                              IsEnabled="{Binding IsRunning}"

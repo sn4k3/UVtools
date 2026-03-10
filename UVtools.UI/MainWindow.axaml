@@ -1912,9 +1912,9 @@
 							   Margin="{Binding LayerNavigationTooltipMargin}"
 							   HorizontalAlignment="Stretch">
 							<suki:GlassCard Name="LayerNavigationTooltipBorder"
-									VerticalAlignment="Top"
-									Padding="10"
-									Classes="LayerNavigationToolTip">
+											VerticalAlignment="Top"
+											Padding="10"
+											Classes="LayerNavigationToolTip">
 								<TextBlock Text="{Binding ActualLayerTooltip}" />
 							</suki:GlassCard>
 						</Panel>
@@ -2227,7 +2227,7 @@
 												 PanRightKey="D"
 												 PanUpKey="W"
 												 PanWithArrows="False"
-												 ShowGrid="{Binding Settings.LayerPreview.ShowBackgroudGrid}"
+												 ShowGrid="{Binding Settings.LayerPreview.ShowBackgroundGrid}"
 												 ScrollViewer.AllowAutoHide="False"
 												 ZoomTo100KeyGestures="{x:Null}"
 												 ZoomToFitKeyGestures="{x:Null}" />

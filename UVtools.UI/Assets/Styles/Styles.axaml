@@ -1,520 +1,631 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:uac="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
-        xmlns:suki="https://github.com/kikipoulet/SukiUI"
-        xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-
-    <Design.PreviewWith>
-        <Border Padding="20" />
-    </Design.PreviewWith>
-
-    <Styles.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.ThemeDictionaries>
-                <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="GroupBoxHeaderBackground"
-                                     Color="LightBlue" />
-                    <SolidColorBrush x:Key="HeaderFooterBackground"
-                                     Color="LightGray" />
-                    <SolidColorBrush x:Key="LightBackground"
-                                     Color="WhiteSmoke" />
-                </ResourceDictionary>
-                <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="GroupBoxHeaderBackground"
-                                     Color="#4f5b62" />
-                    <SolidColorBrush x:Key="HeaderFooterBackground"
-                                     Color="#1E1E1E" />
-                    <SolidColorBrush x:Key="LightBackground"
-                                     Color="#1E1E1E" />
-                </ResourceDictionary>
-            </ResourceDictionary.ThemeDictionaries>
-        </ResourceDictionary>
-        <SolidColorBrush x:Key="LogoColor"
-                         Color="#FF660066" />
-        <Thickness x:Key="GlassCardMarin">20</Thickness>
-    </Styles.Resources>
-
-    <Style Selector="TextBox[AcceptsReturn=True]">
-        <Setter Property="VerticalContentAlignment" Value="Top" />
-    </Style>
-
-    <Style Selector="Button, SplitButton, ToggleButton, DropDownButton">
-        <Setter Property="Padding" Value="10" />
-    </Style>
-
-    <Style Selector="GridSplitter">
-        <Setter Property="Background" Value="{DynamicResource SystemListMediumColor}" />
-    </Style>
-
-    <Style Selector="Canvas.IssuesTrackerCanvas">
-        <Setter Property="Background" Value="{DynamicResource SystemListLowColor}" />
-    </Style>
-
-    <Style Selector="Border.ProgressLoading">
-        <Setter Property="Background" Value="{DynamicResource SystemAltHighColor}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource SystemListMediumColor}" />
-    </Style>
-
-    <Style Selector="Border.LayerNavigationToolTip">
-        <Setter Property="BorderThickness" Value="5" />
-        <Setter Property="CornerRadius" Value="5" />
-        <Setter Property="BorderBrush" Value="{DynamicResource SystemListMediumColor}" />
-    </Style>
-
-    <Style Selector="Border.GroupBox">
-        <Setter Property="BorderThickness" Value="4" />
-        <Setter Property="BorderBrush" Value="{DynamicResource GroupBoxHeaderBackground}" />
-    </Style>
-
-    <Style Selector="Border.Header">
-        <Setter Property="Background" Value="{DynamicResource HeaderFooterBackground}" />
-        <Setter Property="Padding" Value="20" />
-    </Style>
-
-    <Style Selector="suki|GlassCard.Flat">
-        <Setter Property="CornerRadius" Value="0" />
-    </Style>
-
-    <Style Selector="suki|GlassCard.Card">
-        <Setter Property="Margin" Value="20" />
-    </Style>
-
-    <Style Selector="suki|GlassCard.CardNoLeftSide">
-        <Setter Property="Margin" Value="0,20,20,20" />
-    </Style>
-
-    <Style Selector="suki|GlassCard.CardNoTop">
-        <Setter Property="Margin" Value="20,0,20,20" />
-    </Style>
-
-    <Style Selector="suki|GlassCard.CardNoBottom">
-        <Setter Property="Margin" Value="20,20,20,0" />
-    </Style>
-
-    <Style Selector="suki|GlassCard.CardNoTopBottom">
-        <Setter Property="Margin" Value="20,0" />
-    </Style>
-
-    <Style Selector="suki|GlassCard.CardSides">
-        <Setter Property="Margin" Value="20,0,20,0" />
-    </Style>
-
-    <Style Selector="suki|GlassCard.HeaderActions">
-        <Setter Property="CornerRadius" Value="0" />
-        <Setter Property="Margin" Value="0,0,0, 20" />
-    </Style>
-
-    <Style Selector="suki|GlassCard.FooterActions">
-
-        <Setter Property="CornerRadius" Value="0" />
-        <Setter Property="Margin" Value="0,20,0, 0" />
-    </Style>
-
-    <Style Selector="suki|GroupBox /template/ ContentPresenter#PART_HeaderPresenter">
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="FontWeight" Value="Bold" />
-    </Style>
-
-    <Style Selector="TextBox.ReadOnly">
-        <Setter Property="IsReadOnly" Value="True" />
-        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-    </Style>
-
-    <Style Selector="TextBox.ReadOnlyMultiLine">
-        <Setter Property="IsReadOnly" Value="True" />
-        <Setter Property="AcceptsReturn" Value="True" />
-        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-    </Style>
-
-    <Style Selector="TextBox.ReadOnlyMultiLineWrap">
-        <Setter Property="TextWrapping" Value="Wrap" />
-        <Setter Property="IsReadOnly" Value="True" />
-        <Setter Property="AcceptsReturn" Value="True" />
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-    </Style>
-
-    <Style Selector="TextBox.TransparentReadOnly">
-        <Setter Property="IsReadOnly" Value="True" />
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="CaretBrush" Value="Transparent" />
-        <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-    </Style>
-
-    <Style Selector="TextBox.TransparentReadOnlyMultiLine">
-        <Setter Property="TextWrapping" Value="Wrap" />
-        <Setter Property="IsReadOnly" Value="True" />
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="CaretBrush" Value="Transparent" />
-        <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="AcceptsReturn" Value="True" />
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-    </Style>
-
-    <Style Selector="TextBox.TransparentReadOnlyMultiLineNoBorder">
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="TextWrapping" Value="Wrap" />
-        <Setter Property="IsReadOnly" Value="True" />
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="CaretBrush" Value="Transparent" />
-        <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="AcceptsReturn" Value="True" />
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-    </Style>
-
-    <Style Selector="TextBox.TransparentReadOnlyMultiLineNoBorder:pointerover /template/ Border#border">
-        <Setter Property="Background" Value="Transparent" />
-    </Style>
-    <Style Selector="TextBox.TransparentReadOnlyMultiLineNoBorder:pointerover /template/ Border#PART_BorderElement">
-        <Setter Property="Background" Value="Transparent" />
-    </Style>
-    <Style Selector="TextBox.TransparentReadOnlyMultiLineNoBorder:focus /template/ Border#border">
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Background" Value="Transparent" />
-    </Style>
-    <Style Selector="TextBox.TransparentReadOnlyMultiLineNoBorder:focus /template/ Border#PART_BorderElement">
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Background" Value="Transparent" />
-    </Style>
-
-
-    <Style Selector="TextBox.NumericUpDownValueLabel">
-
-        <Setter Property="IsEnabled" Value="False" />
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="CaretBrush" Value="Transparent" />
-        <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="IsReadOnly" Value="True" />
-        <Setter Property="MinWidth" Value="40" />
-
-        <Setter Property="CornerRadius" Value="0" />
-
-        <Setter Property="VerticalAlignment" Value="Stretch" />
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="HorizontalContentAlignment" Value="Center" />
-        <Setter Property="Padding" Value="5,0" />
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_percent">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="%"
-                         ToolTip.Tip="Percent" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_deg">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="º"
-                         ToolTip.Tip="Degree(s)" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_s">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="s"
-                         ToolTip.Tip="Second(s)" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_um">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="µm"
-                         ToolTip.Tip="Micron(s)" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_mm">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="mm"
-                         ToolTip.Tip="Millimeter(s)" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_mm2">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="mm²"
-                         ToolTip.Tip="Square Millimeter(s)" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_mm3">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="mm³"
-                         ToolTip.Tip="Cubic Millimeter(s)" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_diametermm">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="⌀mm"
-                         ToolTip.Tip="Diameter Millimeter(s)" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_mmmin">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="mm/min"
-                         ToolTip.Tip="Millimeters per minute" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_px">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="px"
-                         ToolTip.Tip="Pixel(s)" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_px2">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="px²"
-                         ToolTip.Tip="Squared Pixel(s)" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_px3">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="px³"
-                         ToolTip.Tip="Cubic Pixel(s)" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_diameterpx">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="⌀px"
-                         ToolTip.Tip="Diameter Pixel(s)" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_sun">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="☀"
-                         ToolTip.Tip="Brightness" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_GB">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="GB"
-                         ToolTip.Tip="Gigabyte(s)" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_g">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="g"
-                         ToolTip.Tip="Gram(s)" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_gml">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="g/ml"
-                         ToolTip.Tip="Grams per milliliter" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_ml">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="ml"
-                         ToolTip.Tip="Milliliter(s)" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_times">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="×"
-                         ToolTip.Tip="Times" />
-            </Template>
-        </Setter>
-    </Style>
-
-
-    <Style Selector="NumericUpDown.ValueLabel_layers">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="Ξ"
-                         ToolTip.Tip="Layer(s)" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_ms">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="ms"
-                         ToolTip.Tip="Milliseconds" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_euro">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="€"
-                         ToolTip.Tip="Euros" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel_hz">
-        <Setter Property="InnerRightContent">
-            <Template>
-                <TextBox Classes="NumericUpDownValueLabel"
-                         Text="Hz"
-                         ToolTip.Tip="Hertz" />
-            </Template>
-        </Setter>
-    </Style>
-
-    <!--
-    <Style Selector="NumericUpDown:not(.empty)">
-    <Setter Property="MinWidth" Value="0"/>
-    </Style>
-    -->
-
-    <Style Selector="NumericUpDown, uac|ExtendedNumericUpDown">
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="MinWidth" Value="130" />
-        <Setter Property="Increment" Value="1" />
-        <Setter Property="ClipValueToMinMax" Value="True" />
-    </Style>
-
-    <Style Selector="NumericUpDown.ReadOnly, uac|ExtendedNumericUpDown.ReadOnly">
-        <Setter Property="IsReadOnly" Value="True" />
-        <Setter Property="AllowSpin" Value="False" />
-        <Setter Property="ShowButtonSpinner" Value="False" />
-    </Style>
-
-    <Style Selector="uac|ExtendedNumericUpDown.AutoResettable">
-        <Setter Property="ResetVisibility" Value="Auto" />
-    </Style>
-
-    <Style Selector="uac|ExtendedNumericUpDown.AutoResettableWithInitialValue">
-        <Setter Property="IsInitialValueVisible" Value="True" />
-        <Setter Property="ResetVisibility" Value="Auto" />
-    </Style>
-
-    <Style Selector="NumericUpDown.ValueLabel">
-        <Setter Property="MinWidth" Value="180" />
-    </Style>
-
-
-
-    <Style Selector="Expander /template/ ToggleButton">
-        <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Cursor" Value="Hand" />
-    </Style>
-
-    <!--  TextBlock  -->
-    <Style Selector="TextBlock.bold">
-        <Setter Property="FontWeight" Value="Bold" />
-    </Style>
-
-    <Style Selector="TextBlock.extraBold">
-        <Setter Property="FontWeight" Value="ExtraBold" />
-    </Style>
-
-    <Style Selector="Run.bold">
-        <Setter Property="FontWeight" Value="Bold" />
-    </Style>
-
-    <Style Selector="Run.extraBold">
-        <Setter Property="FontWeight" Value="ExtraBold" />
-    </Style>
-
-    <Style Selector="icon|MaterialIcon.Flat">
-        <Setter Property="Foreground" Value="{DynamicResource SukiPrimaryColor}" />
-    </Style>
-
-    <Style Selector="icon|MaterialIcon.Accent">
-        <Setter Property="Foreground" Value="{DynamicResource SukiAccentColor}" />
-    </Style>
-
-    <Style Selector="icon|MaterialIcon.Success">
-        <Setter Property="Foreground" Value="{DynamicResource SukiSuccessColor}" />
-    </Style>
-    <Style Selector="icon|MaterialIcon.Information">
-        <Setter Property="Foreground" Value="{DynamicResource SukiInformationColor}" />
-    </Style>
-    <Style Selector="icon|MaterialIcon.Warning">
-        <Setter Property="Foreground" Value="{DynamicResource SukiWarningColor}" />
-    </Style>
-    <Style Selector="icon|MaterialIcon.Danger">
-        <Setter Property="Foreground" Value="{DynamicResource SukiDangerColor}" />
-    </Style>
-
-
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:uac="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
+		xmlns:suki="https://github.com/kikipoulet/SukiUI"
+		xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+
+	<Design.PreviewWith>
+		<Border Padding="20" />
+	</Design.PreviewWith>
+
+	<Styles.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.ThemeDictionaries>
+				<ResourceDictionary x:Key="Light">
+					<SolidColorBrush x:Key="GroupBoxHeaderBackground"
+									 Color="LightBlue" />
+					<SolidColorBrush x:Key="HeaderFooterBackground"
+									 Color="LightGray" />
+					<SolidColorBrush x:Key="LightBackground"
+									 Color="WhiteSmoke" />
+				</ResourceDictionary>
+				<ResourceDictionary x:Key="Dark">
+					<SolidColorBrush x:Key="GroupBoxHeaderBackground"
+									 Color="#4f5b62" />
+					<SolidColorBrush x:Key="HeaderFooterBackground"
+									 Color="#1E1E1E" />
+					<SolidColorBrush x:Key="LightBackground"
+									 Color="#1E1E1E" />
+				</ResourceDictionary>
+			</ResourceDictionary.ThemeDictionaries>
+		</ResourceDictionary>
+		<SolidColorBrush x:Key="LogoColor"
+						 Color="#FF660066" />
+		<Thickness x:Key="GlassCardMarin">20</Thickness>
+	</Styles.Resources>
+
+	<Style Selector="TextBox[AcceptsReturn=True]">
+		<Setter Property="VerticalContentAlignment" Value="Top" />
+	</Style>
+
+	<Style Selector="Button, SplitButton, ToggleButton, DropDownButton">
+		<Setter Property="Padding" Value="10" />
+	</Style>
+
+	<Style Selector="GridSplitter">
+		<Setter Property="Background" Value="{DynamicResource SystemListMediumColor}" />
+	</Style>
+
+	<Style Selector="Canvas.IssuesTrackerCanvas">
+		<Setter Property="Background" Value="{DynamicResource SystemListLowColor}" />
+	</Style>
+
+	<Style Selector="Border.ProgressLoading">
+		<Setter Property="Background" Value="{DynamicResource SystemAltHighColor}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource SystemListMediumColor}" />
+	</Style>
+
+	<Style Selector="Border.LayerNavigationToolTip">
+		<Setter Property="BorderThickness" Value="5" />
+		<Setter Property="CornerRadius" Value="5" />
+		<Setter Property="BorderBrush" Value="{DynamicResource SystemListMediumColor}" />
+	</Style>
+
+	<Style Selector="Border.GroupBox">
+		<Setter Property="BorderThickness" Value="4" />
+		<Setter Property="BorderBrush" Value="{DynamicResource GroupBoxHeaderBackground}" />
+	</Style>
+
+	<Style Selector="Border.Header">
+		<Setter Property="Background" Value="{DynamicResource HeaderFooterBackground}" />
+		<Setter Property="Padding" Value="20" />
+	</Style>
+
+	<Style Selector="suki|GlassCard.Flat">
+		<Setter Property="CornerRadius" Value="0" />
+	</Style>
+
+	<Style Selector="suki|GlassCard.Card">
+		<Setter Property="Margin" Value="20" />
+	</Style>
+
+	<Style Selector="suki|GlassCard.CardNoLeftSide">
+		<Setter Property="Margin" Value="0,20,20,20" />
+	</Style>
+
+	<Style Selector="suki|GlassCard.CardNoTop">
+		<Setter Property="Margin" Value="20,0,20,20" />
+	</Style>
+
+	<Style Selector="suki|GlassCard.CardNoBottom">
+		<Setter Property="Margin" Value="20,20,20,0" />
+	</Style>
+
+	<Style Selector="suki|GlassCard.CardNoTopBottom">
+		<Setter Property="Margin" Value="20,0" />
+	</Style>
+
+	<Style Selector="suki|GlassCard.CardSides">
+		<Setter Property="Margin" Value="20,0,20,0" />
+	</Style>
+
+	<Style Selector="suki|GlassCard.HeaderActions">
+		<Setter Property="CornerRadius" Value="0" />
+		<Setter Property="Margin" Value="0,0,0, 20" />
+	</Style>
+
+	<Style Selector="suki|GlassCard.FooterActions">
+
+		<Setter Property="CornerRadius" Value="0" />
+		<Setter Property="Margin" Value="0,20,0, 0" />
+	</Style>
+
+	<Style Selector="suki|GroupBox /template/ ContentPresenter#PART_HeaderPresenter">
+		<Setter Property="FontSize" Value="16" />
+		<Setter Property="FontWeight" Value="Bold" />
+	</Style>
+
+	<Style Selector="TextBox.ReadOnly">
+		<Setter Property="IsReadOnly" Value="True" />
+		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+		<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+	</Style>
+
+	<Style Selector="TextBox.ReadOnlyMultiLine">
+		<Setter Property="IsReadOnly" Value="True" />
+		<Setter Property="AcceptsReturn" Value="True" />
+		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+		<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+	</Style>
+
+	<Style Selector="TextBox.ReadOnlyMultiLineWrap">
+		<Setter Property="TextWrapping" Value="Wrap" />
+		<Setter Property="IsReadOnly" Value="True" />
+		<Setter Property="AcceptsReturn" Value="True" />
+		<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+	</Style>
+
+	<Style Selector="TextBox.TransparentReadOnly">
+		<Setter Property="IsReadOnly" Value="True" />
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="CaretBrush" Value="Transparent" />
+		<Setter Property="BorderBrush" Value="Transparent" />
+		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+		<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+	</Style>
+
+	<Style Selector="TextBox.TransparentReadOnlyMultiLine">
+		<Setter Property="TextWrapping" Value="Wrap" />
+		<Setter Property="IsReadOnly" Value="True" />
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="CaretBrush" Value="Transparent" />
+		<Setter Property="BorderBrush" Value="Transparent" />
+		<Setter Property="AcceptsReturn" Value="True" />
+		<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+	</Style>
+
+	<Style Selector="TextBox.TransparentReadOnlyMultiLineNoBorder">
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="TextWrapping" Value="Wrap" />
+		<Setter Property="IsReadOnly" Value="True" />
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="CaretBrush" Value="Transparent" />
+		<Setter Property="BorderBrush" Value="Transparent" />
+		<Setter Property="AcceptsReturn" Value="True" />
+		<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+	</Style>
+
+	<Style Selector="TextBox.TransparentReadOnlyMultiLineNoBorder:pointerover /template/ Border#border">
+		<Setter Property="Background" Value="Transparent" />
+	</Style>
+	<Style Selector="TextBox.TransparentReadOnlyMultiLineNoBorder:pointerover /template/ Border#PART_BorderElement">
+		<Setter Property="Background" Value="Transparent" />
+	</Style>
+	<Style Selector="TextBox.TransparentReadOnlyMultiLineNoBorder:focus /template/ Border#border">
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="Background" Value="Transparent" />
+	</Style>
+	<Style Selector="TextBox.TransparentReadOnlyMultiLineNoBorder:focus /template/ Border#PART_BorderElement">
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="Background" Value="Transparent" />
+	</Style>
+
+
+	<Style Selector="TextBox.NumericUpDownValueLabel">
+
+		<Setter Property="IsEnabled" Value="False" />
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="CaretBrush" Value="Transparent" />
+		<Setter Property="BorderBrush" Value="Transparent" />
+		<Setter Property="IsReadOnly" Value="True" />
+		<Setter Property="MinWidth" Value="40" />
+
+		<Setter Property="CornerRadius" Value="0" />
+
+		<Setter Property="VerticalAlignment" Value="Stretch" />
+		<Setter Property="HorizontalAlignment" Value="Stretch" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="HorizontalContentAlignment" Value="Center" />
+		<Setter Property="Padding" Value="5,0" />
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_percent">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="%"
+						 ToolTip.Tip="Percent" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_deg">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="º"
+						 ToolTip.Tip="Degree(s)" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_s">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="s"
+						 ToolTip.Tip="Second(s)" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_um">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="µm"
+						 ToolTip.Tip="Micron(s)" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_mm">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="mm"
+						 ToolTip.Tip="Millimeter(s)" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_mm2">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="mm²"
+						 ToolTip.Tip="Square Millimeter(s)" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_mm3">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="mm³"
+						 ToolTip.Tip="Cubic Millimeter(s)" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_diametermm">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="⌀mm"
+						 ToolTip.Tip="Diameter Millimeter(s)" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_mmmin">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="mm/min"
+						 ToolTip.Tip="Millimeters per minute" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_px">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="px"
+						 ToolTip.Tip="Pixel(s)" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_px2">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="px²"
+						 ToolTip.Tip="Squared Pixel(s)" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_px3">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="px³"
+						 ToolTip.Tip="Cubic Pixel(s)" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_diameterpx">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="⌀px"
+						 ToolTip.Tip="Diameter Pixel(s)" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_sun">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="☀"
+						 ToolTip.Tip="Brightness" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_GB">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="GB"
+						 ToolTip.Tip="Gigabyte(s)" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_g">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="g"
+						 ToolTip.Tip="Gram(s)" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_gml">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="g/ml"
+						 ToolTip.Tip="Grams per milliliter" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_ml">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="ml"
+						 ToolTip.Tip="Milliliter(s)" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_times">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="×"
+						 ToolTip.Tip="Times" />
+			</Template>
+		</Setter>
+	</Style>
+
+
+	<Style Selector="NumericUpDown.ValueLabel_layers">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="Ξ"
+						 ToolTip.Tip="Layer(s)" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_ms">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="ms"
+						 ToolTip.Tip="Milliseconds" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_euro">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="€"
+						 ToolTip.Tip="Euros" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel_hz">
+		<Setter Property="InnerRightContent">
+			<Template>
+				<TextBox Classes="NumericUpDownValueLabel"
+						 Text="Hz"
+						 ToolTip.Tip="Hertz" />
+			</Template>
+		</Setter>
+	</Style>
+
+	<!--
+	<Style Selector="NumericUpDown:not(.empty)">
+	<Setter Property="MinWidth" Value="0"/>
+	</Style>
+	-->
+
+	<Style Selector="NumericUpDown, uac|ExtendedNumericUpDown">
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="MinWidth" Value="130" />
+		<Setter Property="Increment" Value="1" />
+		<Setter Property="ClipValueToMinMax" Value="True" />
+	</Style>
+
+	<Style Selector="NumericUpDown.ReadOnly, uac|ExtendedNumericUpDown.ReadOnly">
+		<Setter Property="IsReadOnly" Value="True" />
+		<Setter Property="AllowSpin" Value="False" />
+		<Setter Property="ShowButtonSpinner" Value="False" />
+	</Style>
+
+	<Style Selector="uac|ExtendedNumericUpDown.AutoResettable">
+		<Setter Property="ResetVisibility" Value="Auto" />
+	</Style>
+
+	<Style Selector="uac|ExtendedNumericUpDown.AutoResettableWithInitialValue">
+		<Setter Property="IsInitialValueVisible" Value="True" />
+		<Setter Property="ResetVisibility" Value="Auto" />
+	</Style>
+
+	<Style Selector="NumericUpDown.ValueLabel">
+		<Setter Property="MinWidth" Value="180" />
+	</Style>
+
+
+
+	<Style Selector="Expander /template/ ToggleButton">
+		<Setter Property="FontWeight" Value="Bold" />
+		<Setter Property="Cursor" Value="Hand" />
+	</Style>
+
+	<!--  TextBlock  -->
+	<Style Selector="TextBlock.bold">
+		<Setter Property="FontWeight" Value="Bold" />
+	</Style>
+
+	<Style Selector="TextBlock.extraBold">
+		<Setter Property="FontWeight" Value="ExtraBold" />
+	</Style>
+
+	<Style Selector="Run.bold">
+		<Setter Property="FontWeight" Value="Bold" />
+	</Style>
+
+	<Style Selector="Run.extraBold">
+		<Setter Property="FontWeight" Value="ExtraBold" />
+	</Style>
+
+	<Style Selector="icon|MaterialIcon.Flat">
+		<Setter Property="Foreground" Value="{DynamicResource SukiPrimaryColor}" />
+	</Style>
+
+	<Style Selector="icon|MaterialIcon.Accent">
+		<Setter Property="Foreground" Value="{DynamicResource SukiAccentColor}" />
+	</Style>
+
+	<Style Selector="icon|MaterialIcon.Success">
+		<Setter Property="Foreground" Value="{DynamicResource SukiSuccessColor}" />
+	</Style>
+	<Style Selector="icon|MaterialIcon.Information">
+		<Setter Property="Foreground" Value="{DynamicResource SukiInformationColor}" />
+	</Style>
+	<Style Selector="icon|MaterialIcon.Warning">
+		<Setter Property="Foreground" Value="{DynamicResource SukiWarningColor}" />
+	</Style>
+	<Style Selector="icon|MaterialIcon.Danger">
+		<Setter Property="Foreground" Value="{DynamicResource SukiDangerColor}" />
+	</Style>
+
+
+
+
+	<Style Selector="ScrollBar:vertical">
+		<Setter Property="AllowAutoHide" Value="False"></Setter>
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Border Background="Transparent" UseLayoutRounding="False">
+					<Grid RowDefinitions="Auto,*,Auto">
+
+						<Track Grid.Row="1"
+							   Grid.Column="1"
+							   IsDirectionReversed="True"
+							   Maximum="{TemplateBinding Maximum}"
+							   Minimum="{TemplateBinding Minimum}"
+							   Orientation="{TemplateBinding Orientation}"
+							   ViewportSize="{TemplateBinding ViewportSize}"
+							   Value="{TemplateBinding Value,
+							   Mode=TwoWay}">
+							<Track.DecreaseButton>
+								<RepeatButton Name="PART_PageUpButton"
+											  Background="Transparent"
+											  Classes="repeattrack"
+											  Focusable="False" />
+							</Track.DecreaseButton>
+							<Track.IncreaseButton>
+								<RepeatButton Name="PART_PageDownButton"
+											  Background="Transparent"
+											  Classes="repeattrack"
+											  Focusable="False" />
+							</Track.IncreaseButton>
+							<Thumb Name="thumb">
+
+								<Thumb.Template>
+									<ControlTemplate>
+										<Panel>
+
+											<Border  Name="ThumbBarVertical" Margin="0,3"
+                                                     Width="20"
+													 Background="{DynamicResource SukiMediumBorderBrush}"
+													 CornerRadius="{DynamicResource MediumCornerRadius}" >
+
+												<Border.Transitions>
+													<Transitions>
+														<BrushTransition Property="Background" Duration="0:0:0.15"></BrushTransition>
+														<DoubleTransition Property="Width" Duration="0:0:0.1"></DoubleTransition>
+													</Transitions>
+												</Border.Transitions>
+											</Border>
+										</Panel>
+									</ControlTemplate>
+								</Thumb.Template>
+							</Thumb>
+						</Track>
+
+					</Grid>
+				</Border>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+
+	<Style Selector="ScrollBar:horizontal">
+		<Setter Property="AllowAutoHide" Value="False"></Setter>
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Border Background="Transparent" UseLayoutRounding="False">
+					<Grid >
+						<Track
+						IsDirectionReversed="False"
+						Maximum="{TemplateBinding Maximum}"
+						Minimum="{TemplateBinding Minimum}"
+						Orientation="{TemplateBinding Orientation}"
+						ViewportSize="{TemplateBinding ViewportSize}"
+						Value="{TemplateBinding Value,
+						Mode=TwoWay}">
+							<Track.DecreaseButton>
+								<RepeatButton Name="PART_PageUpButton"
+											  Background="Transparent"
+											  Classes="repeattrack"
+											  Focusable="False" />
+							</Track.DecreaseButton>
+							<Track.IncreaseButton>
+								<RepeatButton Name="PART_PageDownButton"
+											  Background="Transparent"
+											  Classes="repeattrack"
+											  Focusable="False" />
+							</Track.IncreaseButton>
+							<Thumb Name="thumb">
+								<Thumb.Template>
+									<ControlTemplate>
+										<Panel>
+											<Border Height="20" Name="ThumbBarHorizontal"
+													Margin="3,0"
+													Background="{DynamicResource SukiMediumBorderBrush}"
+													CornerRadius="10" >
+												<Border.Transitions>
+													<Transitions>
+														<BrushTransition Property="Background" Duration="0:0:0.15"></BrushTransition>
+														<DoubleTransition Property="Height" Duration="0:0:0.1"></DoubleTransition>
+													</Transitions>
+												</Border.Transitions>
+											</Border>
+										</Panel>
+									</ControlTemplate>
+								</Thumb.Template>
+							</Thumb>
+						</Track>
+					</Grid>
+				</Border>
+			</ControlTemplate>
+		</Setter>
+	</Style>
 
 </Styles>

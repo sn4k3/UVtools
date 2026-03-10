@@ -1999,7 +1999,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public bool RequireFullEncode
     {
         get => _haveModifiedLayers || IsModified;
-        set => RaiseAndSetIfChanged(ref _haveModifiedLayers, value);
+        set =>  RaiseAndSetIfChanged(ref _haveModifiedLayers, value);
     }
 
     /// <summary>
@@ -3735,8 +3735,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _machineName;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _machineName, value)) return;
-            if(FileType == FileFormatType.Binary) RequireFullEncode = true;
+            if (!RaiseAndSetIfChanged(ref _machineName, value)) return;
+            if (FileType == FileFormatType.Binary) RequireFullEncode = true;
         }
 
     }

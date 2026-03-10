@@ -1,15 +1,17 @@
 # Changelog
 
-## /12/2025 - v6.0.0
+## 09/03/2026 - v6.0.0
 - Redesign the UI and UX of the application to be more user friendly and modern
-- (Add) Layer compression level setting: Allow to set different compression levels for compressors (Default: Optimal) 
 - (Add) `UVtoolsCmd benchmark-layer-codecs` command: Benchmarks all available layer codecs and return the metrics
+- (Add) Layer compression level setting: Allow to set different compression levels for compressors (Default: Optimal)
 - (Improvement) Optimize the layer previewer by caching some objects and use pattern rendering for background grid
 - (Improvement) Optimize the layer compressors to use less allocations (memory) and more performant (Tune your value under settings)
 - (Change) Default layer compression codec from `PNG` to `Brotli`
 - (Change) Layer previewer scrollbars are now shown as full bar instead of minimal style when not hovered
-- (Upgrade) .NET from 9.0.9 to 10.0.1
-- (Upgrade) AvaloniaUI from 11.3.6 to 11.3.11
+- (Change) gr1 file extension to GR1, fixes: #1086 (GR1 Workshop files not recognized by printer)
+- (Fix) `Layer.CopyImageTo` was not invalidating the image and not set `RequireFullEncode` causing file to not save with the new images (#1094)
+- (Upgrade) .NET from 9.0.9 to 10.0.3
+- (Upgrade) AvaloniaUI from 11.3.6 to 11.3.12
 - (Upgrade) OpenCV from 4.11.0 to 4.12.0
 
   ### Benchmark Results (Compression codecs):

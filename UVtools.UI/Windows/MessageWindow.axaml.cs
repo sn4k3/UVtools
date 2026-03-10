@@ -217,12 +217,11 @@ public partial class MessageWindow : GenericWindow
 
     public static Button CreateButton(string? text, MaterialIconKind? icon, int padding = 10, object? tag = null)
     {
-        var kind = MaterialIconKind.Check;
         return new Button
         {
-            Content = new MaterialIconTextExt
+            Content = new MaterialIconText
         {
-            Kind = kind,
+            Kind = icon,
             Text = text
         },
         VerticalAlignment = VerticalAlignment.Center,

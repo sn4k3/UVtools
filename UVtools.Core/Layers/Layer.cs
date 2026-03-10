@@ -1798,6 +1798,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         layer.FirstPixelPosition = _firstPixelPosition;
         layer.LastPixelIndex = _lastPixelIndex;
         layer.LastPixelPosition = _lastPixelPosition;
+        layer.InvalidateImage();
     }
 
     public Layer Clone()

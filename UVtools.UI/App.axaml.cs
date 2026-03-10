@@ -22,11 +22,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Material.Icons;
+using SukiUI.MessageBox;
 using Updatum;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
 using UVtools.Core.SystemOS;
+using UVtools.UI.Extensions;
 using UVtools.UI.Structures;
 using UVtools.UI.Windows;
 using ZLinq;
@@ -73,6 +75,7 @@ public partial class App : Application
         //Styles.Add(ThemeStylesContainer);
         AvaloniaXamlLoader.Load(this);
 
+        SetupTheme();
         UserSettings.Load();
         UserSettings.SetVersion();
     }
@@ -83,13 +86,10 @@ public partial class App : Application
         // Without this line you will get duplicate validations from both Avalonia and CT
         //BindingPlugins.DataValidators.RemoveAt(0);
 
-        SetupTheme();
+
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            UserSettings.Load();
-            UserSettings.SetVersion();
-
             if (Program.IsCrashReport)
             {
                 //Program.Args = new[] {"--crash-report", "Debug", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum." };
@@ -230,6 +230,7 @@ public partial class App : Application
 
         message += "Please install or build the dependencies in order to run the software.\n" +
                    "Check the manual page at 'Requirements' section for help.";
+
 
         return new MessageWindow($"{About.SoftwareWithVersion} is unable to run",
             MaterialIconKind.EmojiFrownOutline,

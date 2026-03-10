@@ -50,7 +50,7 @@ public partial class UserSettings : ObservableObject
         public partial DensityStyle ThemeDensity { get; set; } = DensityStyle.Normal;
 
         [ObservableProperty]
-        public partial string ThemeColor { get; set; } = string.Empty;
+        public partial string ThemeColor { get; set; } = "UVtools";
 
         [ObservableProperty]
         public partial bool BackgroundAnimations { get; set; }
@@ -567,7 +567,7 @@ public partial class UserSettings : ObservableObject
         public partial bool LayerZoomToFitOnLoad { get; set; } = true;
 
         [ObservableProperty]
-        public partial bool ShowBackgroudGrid { get; set; }
+        public partial bool ShowBackgroundGrid { get; set; }
 
         [ObservableProperty]
         public partial ushort LayerSliderDebounce { get; set; }
