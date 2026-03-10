@@ -272,10 +272,34 @@ public static class About
         return born.Month == now.Month && (born.Day == now.Day || (now.Day >= born.Day && now.Day <= born.Day + daysOffset));
     }
 
-    public static string BirthdayTitle =>$"\ud83c\udf89\ud83c\udf82 Happy {YearsOld}th Birthday, {Software}! \ud83c\udf82\ud83c\udf89";
-    public static string BirthdayMessage => string.Format(
-        "Dear Resin Printing Enthusiasts,\r\n\r\nToday marks a special milestone as we celebrate the {1}th birthday of {0}, your trusted companion in the world of resin printing! \ud83e\udd73\ud83c\udf89 We're thrilled to have been part of your journey, ensuring smooth and flawless prints every step of the way.\r\n\r\nOver the past {1} years, {0} has been your go-to solution for checking and fixing files, ensuring that your prints are always top-notch. From detecting potential problems to offering solutions with a bunch of powerful tools, {0} has been by your side, making your printing experience more hassle-free and enjoyable.\r\n\r\nAs we commemorate this occasion, we want to express our deepest gratitude to all of you for your unwavering support and feedback. Your passion for resin printing fuels our commitment to innovation and excellence, driving us to continuously improve {0} to meet your evolving needs.\r\n\r\nOn this special day, we celebrate not just the software, but also the vibrant community that surrounds it. Your creativity, expertise, and camaraderie have been instrumental in shaping {0} into the powerful tool it is today.\r\n\r\nAs a token of appreciation, we invite you to consider making a donation to support the ongoing development and maintenance of {0}. Your contributions help ensure that {0} remains free and accessible to resin printing enthusiasts worldwide. You can easily make a donation by accessing the main menu, navigating to \"Help\", and selecting \"Donate\".\r\n\r\nAdditionally, don't forget to join our community forums to share your success stories with {0}! Whether it's showcasing your remarkable prints or sharing how {0} has helped you overcome challenges, we'd love to hear from you. You can find the community forums under the main menu, navigating to \"Help\", and selecting \"Community forums\".\r\n\r\nPlease note that this message will show only once a year on {0}'s birthday, so don't miss this opportunity to show your support and share your achievements!\r\n\r\nHappy {1}th Birthday, {0}! Here's to another year of innovation, creativity, and flawless prints! \ud83d\ude80\ud83c\udf88\r\n\r\nWarm regards,\r\n{0}",
-        Software, YearsOld);
+    public static string BirthdayTitle =>
+        $"""
+        🎉🎂 Happy {YearsOld}th Birthday, {Software}! 🎂🎉
+        """;
+
+    public static string BirthdayMessage =>
+        $"""
+         Dear Resin Printing Enthusiasts,
+
+         Today marks a special milestone as we celebrate the {YearsOld}th birthday of {Software}, your trusted companion in the world of resin printing! 🥳🎉 We're thrilled to have been part of your journey, ensuring smooth and flawless prints every step of the way.
+
+         Over the past {YearsOld} years, {Software} has been your go-to solution for checking and fixing files, ensuring that your prints are always top-notch. From detecting potential problems to offering solutions with a bunch of powerful tools, {Software} has been by your side, making your printing experience more hassle-free and enjoyable.
+
+         As we commemorate this occasion, we want to express our deepest gratitude to all of you for your unwavering support and feedback. Your passion for resin printing fuels our commitment to innovation and excellence, driving us to continuously improve {Software} to meet your evolving needs.
+
+         On this special day, we celebrate not just the software, but also the vibrant community that surrounds it. Your creativity, expertise, and camaraderie have been instrumental in shaping {Software} into the powerful tool it is today.
+
+         As a token of appreciation, we invite you to consider making a donation (Menu -> Help -> Donate) to support the ongoing development and maintenance of {Software}. Your contributions help ensure that {Software} remains free and accessible to resin printing enthusiasts worldwide. You can easily make a donation by accessing the main menu, navigating to "Help", and selecting "Donate".
+
+         Additionally, don't forget to join our community forums to share your success stories with {Software}! Whether it's showcasing your remarkable prints or sharing how {Software} has helped you overcome challenges, we'd love to hear from you. You can find the community forums under the main menu, navigating to "Help", and selecting "Community forums".
+
+         Please note that this message will show only once a year on {Software}'s birthday, so don't miss this opportunity to show your support and share your achievements!
+
+         Happy {YearsOld}th Birthday, {Software}! Here's to another year of innovation, creativity, and flawless prints! 🚀🎈
+
+         Warm regards,
+         {Software}
+         """;
 
     public const string DemoFile = "UVtools_demo_file.sl1s";
 
