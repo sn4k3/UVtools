@@ -7690,6 +7690,20 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
+    /// Offset position Z of layers starting from <paramref name="startingLayerIndex"/> with <paramref name="offset"/> millimeters and rebuild GCode to apply changes
+    /// </summary>
+    /// <param name="startingLayerIndex"></param>
+    /// <param name="offset"></param>
+    public void OffsetLayersPositionZ(uint startingLayerIndex, float offset)
+    {
+        for (uint layerIndex = startingLayerIndex; layerIndex < LayerCount; layerIndex++)
+        {
+            this[layerIndex].PositionZ += offset;
+        }
+        RebuildGCode();
+    }
+
+    /// <summary>
     /// Set LiftHeight to 0 if previous and current have same PositionZ
     /// <param name="zeroLightOffDelay">If true also set light off to 0, otherwise current value will be kept.</param>
     /// </summary>

@@ -5729,6 +5729,13 @@
             Rebuild layer properties based on slice settings
             </summary>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.OffsetLayersPositionZ(System.UInt32,System.Single)">
+            <summary>
+            Offset position Z of layers starting from <paramref name="startingLayerIndex"/> with <paramref name="offset"/> millimeters and rebuild GCode to apply changes
+            </summary>
+            <param name="startingLayerIndex"></param>
+            <param name="offset"></param>
+        </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.SetNoLiftForSamePositionedLayers(System.Boolean)">
             <summary>
             Set LiftHeight to 0 if previous and current have same PositionZ

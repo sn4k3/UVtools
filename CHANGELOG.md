@@ -1,7 +1,14 @@
 # Changelog
 
+## 22/03/2026 - v6.0.1
+- (Fix) SL1: Using initial layer height different from layer height was not offset the other layers, causing position error (#1100)
+- (Fix) macOS Dialog Box regression (#1099)
+- (Fix) Unable to resize tool windows when enabled on settings (#1099)
+- (Upgrade) .NET from 10.0.3 to 10.0.5
+
 ## 09/03/2026 - v6.0.0
 - Redesign the UI and UX of the application to be more user friendly and modern
+- (Add) SL1: Allow the use of "Initial Layer Height" different from the regular layer height
 - (Add) `UVtoolsCmd benchmark-layer-codecs` command: Benchmarks all available layer codecs and return the metrics
 - (Add) Layer compression level setting: Allow to set different compression levels for compressors (Default: Optimal)
 - (Improvement) Optimize the layer previewer by caching some objects and use pattern rendering for background grid

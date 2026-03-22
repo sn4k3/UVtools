@@ -783,6 +783,7 @@ public sealed class SL1File : FileFormat
             if (MaterialSettings.InitialLayerHeight > 0 && LayerHeight != MaterialSettings.InitialLayerHeight)
             {
                 Layers[0].PositionZ = MaterialSettings.InitialLayerHeight;
+                OffsetLayersPositionZ(1, MaterialSettings.InitialLayerHeight - LayerHeight);
             }
         }
 
