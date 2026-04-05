@@ -3684,9 +3684,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     //public float MaterialMillilitersComputed =>
 
 
-        /// <summary>
-        /// Gets the estimate material in grams
-        /// </summary>
+    /// <summary>
+    /// Gets the estimate material in grams
+    /// </summary>
     public virtual float MaterialGrams
     {
         get => _materialGrams;

@@ -1,5 +1,16 @@
 # Changelog
 
+## 05/04/2026 - v6.0.2
+- (Add) Anycubic Photon P1 and P1 Max printer profiles and compatibility
+- (Add) Anycubic Zip new properties, be aware that might not work on your machine/firmware
+  - `BottomWaitTimeBeforeCure`
+  - `BottomWaitTimeAfterCure`
+  - `BottomWaitTimeAfterLift`
+  - `WaitTimeAfterCure`
+  - `WaitTimeAfterLift` 
+- (Fix) Goo: Bottom wait times are not being store nor read correctly from the file (#1102)
+- (Upgrade) AvaloniaUI from 11.3.12 to 11.3.13
+
 ## 22/03/2026 - v6.0.1
 - (Fix) SL1: Using initial layer height different from layer height was not offset the other layers, causing position error (#1100)
 - (Fix) macOS Dialog Box regression (#1099)

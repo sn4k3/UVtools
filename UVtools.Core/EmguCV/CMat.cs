@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,38 +22,34 @@ namespace UVtools.Core.EmguCV;
 /// Represents a compressed <see cref="Mat"/> that can be compressed and decompressed using multiple <see cref="MatCompressor"/>s.<br/>
 /// This allows to have a high count of <see cref="CMat"/>s in memory without using too much memory.
 /// </summary>
-#pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
-#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 public class CMat : IEquatable<CMat>
-#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-#pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 {
     #region Properties
-    /// <summary>
-    /// Gets the compressed bytes that have been compressed with <see cref="Decompressor"/>.
-    /// </summary>
-    private byte[] _compressedBytes = [];
-    private string? _hash;
 
     /// <summary>
     /// Gets the compressed bytes that have been compressed with <see cref="Decompressor"/>.
     /// </summary>
     public byte[] CompressedBytes
     {
-        get => _compressedBytes;
+        get;
         private set
         {
-            _compressedBytes = value;
-            _hash = null;
+            field = value;
+            Hash = null;
             IsInitialized = true;
             IsCompressed = !IsEmpty;
         }
     }
 
     /// <summary>
-    /// Gets the MD5 hash of the <see cref="CompressedBytes"/>.
+    /// Gets the SHA1 hash of the <see cref="CompressedBytes"/>.
     /// </summary>
-    public string Hash => _hash ?? CryptExtensions.ComputeSHA1Hash(_compressedBytes);
+    [AllowNull]
+    public string Hash
+    {
+        get => field ??= CryptExtensions.ComputeSHA1Hash(CompressedBytes);
+        private set;
+    }
 
     /// <summary>
     /// Gets a value indicating whether the <see cref="CompressedBytes"/> have ever been set.
@@ -120,12 +117,12 @@ public class CMat : IEquatable<CMat>
     /// <summary>
     /// Gets a value indicating whether the <see cref="CompressedBytes"/> are empty.
     /// </summary>
-    public bool IsEmpty => _compressedBytes.Length == 0;
+    public bool IsEmpty => CompressedBytes.Length == 0;
 
     /// <summary>
     /// Gets the length of the <see cref="CompressedBytes"/>.
     /// </summary>
-    public int Length => _compressedBytes.Length;
+    public int Length => CompressedBytes.Length;
 
     /// <summary>
     /// Gets the uncompressed length of the <see cref="Mat"/> aka bitmap size.
@@ -140,8 +137,7 @@ public class CMat : IEquatable<CMat>
         get
         {
             var uncompressedLength = UncompressedLength;
-            if (uncompressedLength == 0 || Length == uncompressedLength) return 1;
-            if (Length == 0) return uncompressedLength;
+            if (uncompressedLength == 0 || Length == 0 || Length == uncompressedLength) return 1;
             return MathF.Round((float)uncompressedLength / Length, 2, MidpointRounding.AwayFromZero);
         }
     }
@@ -168,8 +164,7 @@ public class CMat : IEquatable<CMat>
         get
         {
             var uncompressedLength = UncompressedLength;
-            if (uncompressedLength == 0) return 0;
-            if (Length == 0) return uncompressedLength;
+            if (uncompressedLength == 0 || Length == 0) return 0;
             return MathF.Round(uncompressedLength * 100f / Length, 2, MidpointRounding.AwayFromZero);
         }
     }
@@ -296,9 +291,9 @@ public class CMat : IEquatable<CMat>
     /// </summary>
     public void SetEmptyCompressedBytes()
     {
-        if (_compressedBytes.Length == 0) return; // Already empty
-        _compressedBytes = [];
-        _hash = null;
+        if (CompressedBytes.Length == 0) return; // Already empty
+        CompressedBytes = [];
+        Hash = null;
         IsCompressed = false;
         Roi = Rectangle.Empty;
     }
@@ -390,7 +385,7 @@ public class CMat : IEquatable<CMat>
         try
         {
             CompressedBytes = Compressor.Compress(src, argument);
-            if (_compressedBytes.Length < srcLength) // Compressed ok
+            if (CompressedBytes.Length < srcLength) // Compressed ok
             {
                 Decompressor = Compressor;
             }
@@ -478,11 +473,11 @@ public class CMat : IEquatable<CMat>
 
         if (IsCompressed)
         {
-            Decompressor.Decompress(_compressedBytes, mat, argument);
+            Decompressor.Decompress(CompressedBytes, mat, argument);
         }
         else
         {
-            mat.SetBytes(_compressedBytes);
+            mat.SetBytes(CompressedBytes);
         }
 
         return mat;
@@ -508,17 +503,7 @@ public class CMat : IEquatable<CMat>
     {
         if (IsEmpty) return CreateMatZeros();
 
-        var mat = Roi.Size.IsEmpty ? CreateMat() : new Mat(Roi.Size, Depth, Channels);
-
-        if (IsCompressed)
-        {
-            Decompressor.Decompress(_compressedBytes, mat, argument);
-        }
-        else
-        {
-            mat.SetBytes(_compressedBytes);
-        }
-
+        var mat = RawDecompress(argument);
         if (Roi.Size.IsEmpty) return mat;
 
         var fullMat = CreateMatZeros();
@@ -549,8 +534,7 @@ public class CMat : IEquatable<CMat>
     public Mat CreateMat()
     {
         if (Width <= 0 || Height <= 0) return new Mat();
-        var mat = new Mat(Size, Depth, Channels);
-        return mat;
+        return new Mat(Size, Depth, Channels);
     }
 
     /// <summary>
@@ -571,8 +555,8 @@ public class CMat : IEquatable<CMat>
     /// <param name="dst"></param>
     public void CopyTo(CMat dst)
     {
-        dst._compressedBytes = _compressedBytes.AsValueEnumerable().ToArray();
-        dst._hash = _hash;
+        dst.CompressedBytes = CompressedBytes.AsValueEnumerable().ToArray();
+        dst.Hash = Hash;
         dst.IsInitialized = IsInitialized;
         dst.IsCompressed = IsCompressed;
         dst.ThresholdToCompress = ThresholdToCompress;
@@ -592,7 +576,7 @@ public class CMat : IEquatable<CMat>
     public CMat Clone()
     {
         var clone = (CMat)MemberwiseClone();
-        clone._compressedBytes = _compressedBytes.AsValueEnumerable().ToArray();
+        clone.CompressedBytes = CompressedBytes.AsValueEnumerable().ToArray();
         return clone;
     }
     #endregion
@@ -618,8 +602,8 @@ public class CMat : IEquatable<CMat>
                && Depth == other.Depth
                && Channels == other.Channels
                && Roi.Equals(other.Roi)
-               && _compressedBytes.Length == other._compressedBytes.Length
-               && _compressedBytes.AsValueEnumerable().SequenceEqual(other._compressedBytes);
+               && CompressedBytes.Length == other.CompressedBytes.Length
+               && CompressedBytes.AsValueEnumerable().SequenceEqual(other.CompressedBytes);
     }
 
     public override bool Equals(object? obj)
@@ -639,6 +623,8 @@ public class CMat : IEquatable<CMat>
     {
         return !Equals(left, right);
     }
+
+    public override int GetHashCode() => Hash.GetHashCode();
 
     #endregion
 }

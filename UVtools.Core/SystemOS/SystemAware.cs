@@ -164,7 +164,7 @@ public static class SystemAware
                     Console.WriteLine(mo["Name"]);
                 }*/
                 using var key = Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\CentralProcessor\0");
-                return key?.GetValue("ProcessorNameString")?.ToString();
+                return key?.GetValue("ProcessorNameString")?.ToString()?.Trim();
             }
 
             if (OperatingSystem.IsLinux())
@@ -178,12 +178,12 @@ public static class SystemAware
                     return null;
                 }
 
-                return match.Groups[1].ToString();
+                return match.Groups[1].ToString().Trim();
             }
 
             if (OperatingSystem.IsMacOS())
             {
-                return GetProcessOutput("sysctl", "-n machdep.cpu.brand_string")?.TrimEnd('\r', '\n');
+                return GetProcessOutput("sysctl", "-n machdep.cpu.brand_string").TrimEnd(' ', '\r', '\n');
             }
         }
         catch (Exception e)

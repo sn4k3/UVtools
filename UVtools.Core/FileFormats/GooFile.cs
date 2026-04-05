@@ -761,10 +761,10 @@ public sealed class GooFile : FileFormat
 
     public override float BottomWaitTimeBeforeCure
     {
-        get => base.BottomWaitTimeBeforeCure;
+        get => Header.BottomWaitTimeBeforeCure;
         set
         {
-            base.BottomWaitTimeBeforeCure = value;
+            base.BottomWaitTimeBeforeCure = Header.BottomWaitTimeBeforeCure = MathF.Round(value, 2);
             Header.DelayMode = DelayModes.WaitTime;
         }
     }
@@ -793,10 +793,10 @@ public sealed class GooFile : FileFormat
 
     public override float BottomWaitTimeAfterCure
     {
-        get => base.BottomWaitTimeAfterCure;
+        get => Header.BottomWaitTimeAfterCure;
         set
         {
-            base.BottomWaitTimeAfterCure = value;
+            base.BottomWaitTimeAfterCure = Header.BottomWaitTimeAfterCure = MathF.Round(value, 2);
             Header.DelayMode = DelayModes.WaitTime;
         }
     }
@@ -872,10 +872,10 @@ public sealed class GooFile : FileFormat
 
     public override float BottomWaitTimeAfterLift
     {
-        get => base.BottomWaitTimeAfterLift;
+        get => Header.BottomWaitTimeAfterLift;
         set
         {
-            base.BottomWaitTimeAfterLift = value;
+            base.BottomWaitTimeAfterLift = Header.BottomWaitTimeAfterLift = MathF.Round(value, 2);
             Header.DelayMode = DelayModes.WaitTime;
         }
     }

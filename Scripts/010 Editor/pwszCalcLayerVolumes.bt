@@ -1,0 +1,31 @@
+//------------------------------------------------
+//--- 010 Editor v13.0.2 Binary Template
+//
+//      File: pwsz
+//   Authors: Tiago Conceição
+//------------------------------------------------
+// TODO: Unsure on this claculations
+
+LittleEndian();
+
+struct HEADER {
+    uint  Magic;        // observed: 0x20251024
+    float BaseStep;     // observed: 0.2
+    uint  One;          // observed: 1
+    uint  EntryCount;   // observed: 47
+} header;
+
+struct ENTRY {
+    uint  LayerRef;         // likely reference to source slice index
+    float Z;                // layer Z / start Z
+    float Thickness;        // slab thickness
+    uint  Reserved[8];      // zero in this sample
+    float Volume;           // slab volume
+};
+
+struct DATA {
+    local uint i;
+    for (i = 0; i < header.EntryCount; i++) {
+        ENTRY entry;
+    }
+} data;

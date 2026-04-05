@@ -195,11 +195,6 @@
             This allows to have a high count of <see cref="T:UVtools.Core.EmguCV.CMat"/>s in memory without using too much memory.
             </summary>
         </member>
-        <member name="F:UVtools.Core.EmguCV.CMat._compressedBytes">
-            <summary>
-            Gets the compressed bytes that have been compressed with <see cref="P:UVtools.Core.EmguCV.CMat.Decompressor"/>.
-            </summary>
-        </member>
         <member name="P:UVtools.Core.EmguCV.CMat.CompressedBytes">
             <summary>
             Gets the compressed bytes that have been compressed with <see cref="P:UVtools.Core.EmguCV.CMat.Decompressor"/>.
@@ -207,7 +202,7 @@
         </member>
         <member name="P:UVtools.Core.EmguCV.CMat.Hash">
             <summary>
-            Gets the MD5 hash of the <see cref="P:UVtools.Core.EmguCV.CMat.CompressedBytes"/>.
+            Gets the SHA1 hash of the <see cref="P:UVtools.Core.EmguCV.CMat.CompressedBytes"/>.
             </summary>
         </member>
         <member name="P:UVtools.Core.EmguCV.CMat.IsInitialized">

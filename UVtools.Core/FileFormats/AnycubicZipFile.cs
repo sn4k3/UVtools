@@ -114,6 +114,9 @@ public sealed class AnycubicZipFile : FileFormat
         [JsonPropertyName("xy_pixel_y")]
         public float PixelHeightMicrons { get; set; }
 
+        [JsonPropertyName("rotate_z")]
+        public float RotateZ { get; set; }
+
         [JsonPropertyName("max_samples")]
         public byte MaxSamples { get; set; } = 16;
 
@@ -165,10 +168,13 @@ public sealed class AnycubicZipFile : FileFormat
         [JsonPropertyName("cloudprev_imag_size")]
         public int[] CloudImageSize { get; set; } = [800, 600];
 
+        [JsonPropertyName("print_platform_zheights")]
+        public float[] PrintPlatformZHeights { get; set; } = [0];
+
         public override string ToString()
         {
             return
-                $"{nameof(Version)}: {Version}, {nameof(Name)}: {Name}, {nameof(KeySuffix)}: {KeySuffix}, {nameof(KeyImageFormat)}: {KeyImageFormat}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(PixelWidthMicrons)}: {PixelWidthMicrons}, {nameof(PixelHeightMicrons)}: {PixelHeightMicrons}, {nameof(MaxSamples)}: {MaxSamples}, {nameof(Properties)}: {Properties}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(MaxFileVersion)}: {MaxFileVersion}, {nameof(PreviewBackgroundColor)}: {PreviewBackgroundColor}, {nameof(ModelBackgroundColor)}: {ModelBackgroundColor}, {nameof(SupportsBackgroundColor)}: {SupportsBackgroundColor}, {nameof(PreviewImageSize)}: {PreviewImageSize}, {nameof(Preview2BackgroundColor)}: {Preview2BackgroundColor}, {nameof(Preview2ImageSize)}: {Preview2ImageSize}, {nameof(RasterSegmentsCapacity)}: {RasterSegmentsCapacity}, {nameof(RasterAntialiasing)}: {RasterAntialiasing}, {nameof(CloudBackgroundColor)}: {CloudBackgroundColor}, {nameof(CloudImageSize)}: {CloudImageSize}";
+                $"{nameof(Version)}: {Version}, {nameof(Name)}: {Name}, {nameof(KeySuffix)}: {KeySuffix}, {nameof(KeyImageFormat)}: {KeyImageFormat}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(PixelWidthMicrons)}: {PixelWidthMicrons}, {nameof(PixelHeightMicrons)}: {PixelHeightMicrons}, {nameof(RotateZ)}: {RotateZ}, {nameof(MaxSamples)}: {MaxSamples}, {nameof(Properties)}: {Properties}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(MaxFileVersion)}: {MaxFileVersion}, {nameof(PreviewBackgroundColor)}: {PreviewBackgroundColor}, {nameof(ModelBackgroundColor)}: {ModelBackgroundColor}, {nameof(SupportsBackgroundColor)}: {SupportsBackgroundColor}, {nameof(PreviewImageSize)}: {PreviewImageSize}, {nameof(Screens)}: {Screens}, {nameof(Preview2BackgroundColor)}: {Preview2BackgroundColor}, {nameof(Preview2ImageSize)}: {Preview2ImageSize}, {nameof(RasterSegmentsCapacity)}: {RasterSegmentsCapacity}, {nameof(RasterAntialiasing)}: {RasterAntialiasing}, {nameof(CloudBackgroundColor)}: {CloudBackgroundColor}, {nameof(CloudImageSize)}: {CloudImageSize}, {nameof(PrintPlatformZHeights)}: {PrintPlatformZHeights}";
         }
     }
 
@@ -182,9 +188,6 @@ public sealed class AnycubicZipFile : FileFormat
 
         [JsonPropertyName("currency")]
         public string Currency { get; set; } = "€";
-
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = "default_resin";
 
         [JsonPropertyName("price")]
         public float Price { get; set; } = 25;
@@ -204,10 +207,26 @@ public sealed class AnycubicZipFile : FileFormat
         [JsonPropertyName("target_temperature")]
         public float TargetTemperature { get; set; } = 25;
 
+        [JsonPropertyName("brand_name")]
+        public string BrandName { get; set; } = "Unknown";
+
+        [JsonPropertyName("resin_name")]
+        public string ResinName { get; set; } = "Unknown";
+
+        [JsonPropertyName("film_name")]
+        public string FilmName { get; set; } = "NFEP";
+
+        [JsonPropertyName("setting_name")]
+        public string SettingName { get; set; } = "Unknown";
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = "default_resin";
+
+
         public override string ToString()
         {
             return
-                $"{nameof(Version)}: {Version}, {nameof(Code)}: {Code}, {nameof(Currency)}: {Currency}, {nameof(Name)}: {Name}, {nameof(Price)}: {Price}, {nameof(Type)}: {Type}, {nameof(Volume)}: {Volume}, {nameof(SubfuncCode)}: {SubfuncCode}, {nameof(Density)}: {Density}, {nameof(TargetTemperature)}: {TargetTemperature}";
+                $"{nameof(Version)}: {Version}, {nameof(Code)}: {Code}, {nameof(Currency)}: {Currency}, {nameof(Price)}: {Price}, {nameof(Type)}: {Type}, {nameof(Volume)}: {Volume}, {nameof(SubfuncCode)}: {SubfuncCode}, {nameof(Density)}: {Density}, {nameof(TargetTemperature)}: {TargetTemperature}, {nameof(BrandName)}: {BrandName}, {nameof(ResinName)}: {ResinName}, {nameof(FilmName)}: {FilmName}, {nameof(SettingName)}: {SettingName}, {nameof(Name)}: {Name}";
         }
     }
 
@@ -303,6 +322,41 @@ public sealed class AnycubicZipFile : FileFormat
         }
     }
 
+    public sealed class SettingsResinMaterialScaleCoeff
+    {
+        [JsonPropertyName("mesh_box_size_start")]
+        public float MeshBoxSizeStart { get; set; }
+
+        [JsonPropertyName("mesh_box_size_end")]
+        public float MeshBoxSizeEnd { get; set; }
+
+        [JsonPropertyName("compensate_scale")]
+        public float CompensateScale { get; set; }
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(MeshBoxSizeStart)}: {MeshBoxSizeStart}, {nameof(MeshBoxSizeEnd)}: {MeshBoxSizeEnd}, {nameof(CompensateScale)}: {CompensateScale}";
+        }
+    }
+
+    public sealed class SettingsResinMaterialScaleXYZ
+    {
+        [JsonPropertyName("x")]
+        public float X { get; set; } = 1f;
+
+        [JsonPropertyName("y")]
+        public float Y { get; set; } = 1f;
+
+        [JsonPropertyName("z")]
+        public float Z { get; set; } = 1f;
+
+        public override string ToString()
+        {
+            return $"{nameof(X)}: {X}, {nameof(Y)}: {Y}, {nameof(Z)}: {Z}";
+        }
+    }
+
     public sealed class SettingsResinSliceExtPara
     {
         [JsonPropertyName("version")]
@@ -339,10 +393,19 @@ public sealed class AnycubicZipFile : FileFormat
         [JsonPropertyName("separate_support_exposure_delayed")]
         public float SeparateSupportExposureDelayed { get; set; }
 
+        [JsonPropertyName("material_scale_coeffs")]
+        public SettingsResinMaterialScaleCoeff[] MaterialScaleCoeffs { get; set; } = [];
+
+        [JsonPropertyName("material_scale_coeffs_mode")]
+        public int MaterialScaleCoeffsMode { get; set; }
+
+        [JsonPropertyName("material_scale_xyz")]
+        public SettingsResinMaterialScaleXYZ MaterialScaleXYZ { get; set; } = new();
+
         public override string ToString()
         {
             return
-                $"{nameof(Version)}: {Version}, {nameof(MultiStateUsed)}: {MultiStateUsed}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(TransitionType)}: {TransitionType}, {nameof(MultiStateParas)}: {MultiStateParas}, {nameof(ExposureCompensate)}: {ExposureCompensate}, {nameof(IntelligentMode)}: {IntelligentMode}, {nameof(MaxAcceleration)}: {MaxAcceleration}, {nameof(SeparateSupportExposureDelayed)}: {SeparateSupportExposureDelayed}";
+                $"{nameof(Version)}: {Version}, {nameof(MultiStateUsed)}: {MultiStateUsed}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(TransitionType)}: {TransitionType}, {nameof(MultiStateParas)}: {MultiStateParas}, {nameof(ExposureCompensate)}: {ExposureCompensate}, {nameof(IntelligentMode)}: {IntelligentMode}, {nameof(MaxAcceleration)}: {MaxAcceleration}, {nameof(SeparateSupportExposureDelayed)}: {SeparateSupportExposureDelayed}, {nameof(MaterialScaleCoeffs)}: {MaterialScaleCoeffs}, {nameof(MaterialScaleCoeffsMode)}: {MaterialScaleCoeffsMode}, {nameof(MaterialScaleXYZ)}: {MaterialScaleXYZ}";
         }
     }
 
@@ -357,11 +420,23 @@ public sealed class AnycubicZipFile : FileFormat
         [JsonPropertyName("bott_layers")]
         public ushort BottomLayerCount { get; set; } = DefaultBottomLayerCount;
 
+        [JsonPropertyName("bott_off_time")]
+        public float BottomWaitTimeBeforeCure { get; set; }
+
         [JsonPropertyName("bott_time")]
         public float BottomExposureTime { get; set; } = DefaultBottomExposureTime;
 
+        [JsonPropertyName("bott_wait_before_lift")]
+        public float BottomWaitTimeAfterCure { get; set; }
+
+        [JsonPropertyName("bott_time_dual")]
+        public float BottomExposureTimeDual { get; set; } = DefaultBottomExposureTime;
+
         [JsonPropertyName("exposure_time")]
         public float ExposureTime { get; set; } = DefaultExposureTime;
+
+        [JsonPropertyName("wait_before_lift")]
+        public float WaitTimeAfterCure { get; set; }
 
         [JsonPropertyName("gray_level")]
         public byte GrayLevel { get; set; }
@@ -387,10 +462,16 @@ public sealed class AnycubicZipFile : FileFormat
         [JsonPropertyName("zdown_speed")]
         public float RetractSpeed { get; set; } = 6;
 
+        [JsonPropertyName("bott_wait_after_lift")]
+        public float BottomWaitTimeAfterLift { get; set; }
+
+        [JsonPropertyName("wait_after_lift")]
+        public float WaitTimeAfterLift { get; set; }
+
         public override string ToString()
         {
             return
-                $"{nameof(AntiCount)}: {AntiCount}, {nameof(BlurLevel)}: {BlurLevel}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(GrayLevel)}: {GrayLevel}, {nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, {nameof(UseIndividualLayerPara)}: {UseIndividualLayerPara}, {nameof(UseRandomErode)}: {UseRandomErode}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}";
+                $"{nameof(AntiCount)}: {AntiCount}, {nameof(BlurLevel)}: {BlurLevel}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(BottomWaitTimeBeforeCure)}: {BottomWaitTimeBeforeCure}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomWaitTimeAfterCure)}: {BottomWaitTimeAfterCure}, {nameof(BottomExposureTimeDual)}: {BottomExposureTimeDual}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(WaitTimeAfterCure)}: {WaitTimeAfterCure}, {nameof(GrayLevel)}: {GrayLevel}, {nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, {nameof(UseIndividualLayerPara)}: {UseIndividualLayerPara}, {nameof(UseRandomErode)}: {UseRandomErode}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(BottomWaitTimeAfterLift)}: {BottomWaitTimeAfterLift}, {nameof(WaitTimeAfterLift)}: {WaitTimeAfterLift}";
         }
     }
 
@@ -605,8 +686,133 @@ public sealed class AnycubicZipFile : FileFormat
         public LayerManifest[] Layers { get; set; } = [];
     }
 
+    public sealed class LcdRerfFunction
+    {
+        [JsonPropertyName("enable")]
+        public bool Enable { get; set; }
+
+        [JsonPropertyName("model_name")]
+        public string ModelName { get; set; } = string.Empty;
+
+        [JsonPropertyName("model_type")]
+        public int ModelType { get; set; } = 1;
+
+        // TODO: Find this
+        //[JsonPropertyName("partition_exposure_array")]
+        //public int PartitionExposureArray { get; set; }
+
+        [JsonPropertyName("partition_num")]
+        public int PartitionNum { get; set; }
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(Enable)}: {Enable}, {nameof(ModelName)}: {ModelName}, {nameof(ModelType)}: {ModelType}, {nameof(PartitionNum)}: {PartitionNum}";
+        }
+    }
+
+    public sealed class LcdModels
+    {
+        [JsonPropertyName("auto_support")]
+        public int AutoSupport { get; set; }
+
+        [JsonPropertyName("hollow")]
+        public int Hollow { get; set; }
+
+        [JsonPropertyName("makeronline_sourceid")]
+        public int MakerOnlineSourceId { get; set; } = -1;
+
+        [JsonPropertyName("manual_support")]
+        public int ManualSupport { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("punch")]
+        public int Punch { get; set; }
+
+        [JsonPropertyName("source_from")]
+        public int SourceFrom { get; set; }
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(AutoSupport)}: {AutoSupport}, {nameof(Hollow)}: {Hollow}, {nameof(MakerOnlineSourceId)}: {MakerOnlineSourceId}, {nameof(ManualSupport)}: {ManualSupport}, {nameof(Name)}: {Name}, {nameof(Punch)}: {Punch}, {nameof(SourceFrom)}: {SourceFrom}";
+        }
+    }
+
+    public sealed class LcdModelsProcessedInfo
+    {
+        [JsonPropertyName("models")]
+        public LcdModels[] Models { get; set; } = [new()];
+
+        [JsonPropertyName("scene_models_from")]
+        public int SceneModelsFrom { get; set; }
+
+        [JsonPropertyName("slice_paras_process")]
+        public int SliceParasProcess { get; set; }
+
+        [JsonPropertyName("software_version")]
+        public string SoftwareVersion { get; set; } = About.SoftwareWithVersionArch;
+
+        public void Update()
+        {
+            SoftwareVersion = About.SoftwareWithVersionArch;
+        }
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(Models)}: {Models}, {nameof(SceneModelsFrom)}: {SceneModelsFrom}, {nameof(SliceParasProcess)}: {SliceParasProcess}, {nameof(SoftwareVersion)}: {SoftwareVersion}";
+        }
+    }
+
+    public sealed class LcdFunctionManifest
+    {
+        [JsonPropertyName("models_processed_info")]
+        public LcdModelsProcessedInfo ModelsProcessedInfo { get; set; } = new();
+
+        [JsonPropertyName("rerf_function")]
+        public LcdRerfFunction RerfFunction { get; set; } = new();
+
+        public override string ToString()
+        {
+            return $"{nameof(ModelsProcessedInfo)}: {ModelsProcessedInfo}, {nameof(RerfFunction)}: {RerfFunction}";
+        }
+    }
+
+    public sealed class PrintSubEstimatedInfo
+    {
+        [JsonPropertyName("model_layers_count")]
+        public uint ModelLayersCount { get; set; }
+
+        [JsonPropertyName("estimated_cost")]
+        public float Cost { get; set; }
+
+        [JsonPropertyName("estimated_cost_currency")]
+        public string Currency { get; set; } = "€";
+
+        [JsonPropertyName("estimated_time")]
+        public float PrintTime { get; set; }
+
+        [JsonPropertyName("estimated_volume")]
+        public float MaterialMilliliters { get; set; }
+
+        [JsonPropertyName("estimated_weight")]
+        public float MaterialGrams { get; set; }
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(ModelLayersCount)}: {ModelLayersCount}, {nameof(Cost)}: {Cost}, {nameof(Currency)}: {Currency}, {nameof(PrintTime)}: {PrintTime}, {nameof(MaterialMilliliters)}: {MaterialMilliliters}, {nameof(MaterialGrams)}: {MaterialGrams}";
+        }
+    }
+
     public sealed class PrintInfoManifest
     {
+        [JsonPropertyName("model_layers_count")]
+        public uint ModelLayersCount { get; set; }
+
         [JsonPropertyName("cost")]
         public float Cost { get; set; }
 
@@ -619,10 +825,35 @@ public sealed class AnycubicZipFile : FileFormat
         [JsonPropertyName("volume")]
         public float MaterialMilliliters { get; set; }
 
+        [JsonPropertyName("weight")]
+        public float MaterialGrams { get; set; }
+
+        [JsonPropertyName("sub_estimated_infos")]
+        public PrintSubEstimatedInfo[] SubEstimatedInfos { get; set; } = [];
+
+
+        public void UpdateSubEstimatedInfos()
+        {
+            if (SubEstimatedInfos.Length == 0)
+            {
+                SubEstimatedInfos = [new PrintSubEstimatedInfo()];
+            }
+
+            foreach (var printSubEstimatedInfo in SubEstimatedInfos)
+            {
+                printSubEstimatedInfo.ModelLayersCount = ModelLayersCount;
+                printSubEstimatedInfo.Cost = Cost;
+                printSubEstimatedInfo.Currency = Currency;
+                printSubEstimatedInfo.PrintTime = PrintTime;
+                printSubEstimatedInfo.MaterialMilliliters = MaterialMilliliters;
+                printSubEstimatedInfo.MaterialGrams = MaterialGrams;
+            }
+        }
+
         public override string ToString()
         {
             return
-                $"{nameof(Cost)}: {Cost}, {nameof(Currency)}: {Currency}, {nameof(PrintTime)}: {PrintTime}, {nameof(MaterialMilliliters)}: {MaterialMilliliters}";
+                $"{nameof(ModelLayersCount)}: {ModelLayersCount}, {nameof(Cost)}: {Cost}, {nameof(Currency)}: {Currency}, {nameof(PrintTime)}: {PrintTime}, {nameof(MaterialMilliliters)}: {MaterialMilliliters}, {nameof(MaterialGrams)}: {MaterialGrams}, {nameof(SubEstimatedInfos)}: {SubEstimatedInfos}";
         }
     }
 
@@ -765,6 +996,132 @@ public sealed class AnycubicZipFile : FileFormat
                 $"{nameof(Magic)}: {Magic}, {nameof(Software)}: {Software}, {nameof(BinaryType)}: {BinaryType}, {nameof(Version)}: {Version}, {nameof(SliceType)}: {SliceType}, {nameof(ModelUnit)}: {ModelUnit}, {nameof(PointRatio)}: {PointRatio}, {nameof(LayerCount)}: {LayerCount}, {nameof(XStartBoundingRectangleOffsetFromCenter)}: {XStartBoundingRectangleOffsetFromCenter}, {nameof(YStartBoundingRectangleOffsetFromCenter)}: {YStartBoundingRectangleOffsetFromCenter}, {nameof(ZMin)}: {ZMin}, {nameof(XEndBoundingRectangleOffsetFromCenter)}: {XEndBoundingRectangleOffsetFromCenter}, {nameof(YEndBoundingRectangleOffsetFromCenter)}: {YEndBoundingRectangleOffsetFromCenter}, {nameof(ZMax)}: {ZMax}, {nameof(ModelStats)}: {ModelStats}, {nameof(Padding)}: {Padding}, {nameof(Separator)}: {Separator}, {nameof(LayerDefCount)}: {LayerDefCount}, {nameof(LayersDef)}: {LayersDef}, {nameof(EndMarker)}: {EndMarker}";
         }
     }
+
+    public sealed class CalcLayerVolumesEntry
+    {
+        [FieldOrder(0)] public uint LayerRef { get; set; }
+
+        [FieldOrder(1)] public float Z { get; set; }
+
+        [FieldOrder(2)] public float Thickness { get; set; }
+
+        [FieldOrder(3)] [FieldCount(8)] public uint[] Reserved { get; set; } = new uint[8];
+
+        [FieldOrder(4)] public float RawVolume { get; set; }
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(LayerRef)}: {LayerRef}, {nameof(Z)}: {Z}, {nameof(Thickness)}: {Thickness}, {nameof(Reserved)}: {Reserved}, {nameof(RawVolume)}: {RawVolume}";
+        }
+    }
+
+    public sealed class CalcLayerVolumesManifest
+    {
+        public const uint MAGIC = 0x20251024;
+        public const float DEFAULT_BASE_STEP = 0.2f;
+        public const float RAW_VOLUME_TO_MILLILITERS = 0.0011f;
+        public const float RAW_VOLUME_TO_GRAMS = 0.00132f;
+
+        [FieldOrder(0)] public uint Magic { get; set; } = MAGIC;
+
+        [FieldOrder(1)] public float BaseStep { get; set; } = DEFAULT_BASE_STEP;
+
+        [FieldOrder(2)] public uint One { get; set; } = 1;
+
+        [FieldOrder(3)] public uint EntryCount { get; set; }
+
+        [FieldOrder(4)] [FieldCount(nameof(EntryCount))] public CalcLayerVolumesEntry[] Entries { get; set; } = [];
+
+        [Ignore]
+        public float RawVolumeSum => Entries.Sum(entry => entry.RawVolume);
+
+        [Ignore]
+        public float EstimatedMilliliters => MathF.Round(RawVolumeSum * RAW_VOLUME_TO_MILLILITERS, 3, MidpointRounding.AwayFromZero);
+
+        [Ignore]
+        public float EstimatedGrams => MathF.Round(RawVolumeSum * RAW_VOLUME_TO_GRAMS, 3, MidpointRounding.AwayFromZero);
+
+        public void Update(FileFormat slicerFile, float targetMaterialMilliliters = 0, float targetMaterialGrams = 0)
+        {
+            if (slicerFile.LayerCount == 0)
+            {
+                Entries = [];
+                EntryCount = 0;
+                return;
+            }
+
+            BaseStep = DEFAULT_BASE_STEP;
+            One = 1;
+
+            var firstLayerThickness = slicerFile[0].RelativePositionZ > 0
+                ? slicerFile[0].RelativePositionZ
+                : slicerFile.LayerHeight;
+
+            if (firstLayerThickness <= 0)
+            {
+                firstLayerThickness = DEFAULT_BASE_STEP / 2f;
+            }
+
+            var layersPerEntry = Math.Max(1, (int)MathF.Round(BaseStep / firstLayerThickness, MidpointRounding.AwayFromZero));
+            var omittedTopLayerCount = Math.Max(1, (int)MathF.Round((BaseStep / 2f) / firstLayerThickness, MidpointRounding.AwayFromZero));
+            var effectiveLayerCount = Math.Max(1, (int)slicerFile.LayerCount - omittedTopLayerCount);
+
+            var slabEntries = new List<CalcLayerVolumesEntry>(Math.Max(1, effectiveLayerCount / layersPerEntry));
+            float z = 0;
+            for (int startLayerIndex = 0; startLayerIndex < effectiveLayerCount;)
+            {
+                var takeLayerCount = Math.Min(layersPerEntry, effectiveLayerCount - startLayerIndex);
+                float thickness = 0;
+                float rawGeometricVolume = 0;
+
+                for (int offset = 0; offset < takeLayerCount; offset++)
+                {
+                    var layer = slicerFile[startLayerIndex + offset];
+                    thickness += layer.RelativePositionZ;
+                    rawGeometricVolume += (float)layer.Contours.TotalSolidArea * slicerFile.PixelArea * layer.RelativePositionZ;
+                }
+
+                slabEntries.Add(new CalcLayerVolumesEntry
+                {
+                    LayerRef = (uint)Math.Max(0, startLayerIndex == 0 ? 0 : startLayerIndex - 1),
+                    Z = Layer.RoundHeight(z),
+                    Thickness = Layer.RoundHeight(thickness),
+                    RawVolume = rawGeometricVolume
+                });
+
+                z += thickness;
+                startLayerIndex += takeLayerCount;
+            }
+
+            var sourceVolume = slabEntries.Sum(entry => entry.RawVolume);
+            var targetRawVolume = targetMaterialMilliliters > 0
+                ? targetMaterialMilliliters / RAW_VOLUME_TO_MILLILITERS
+                : targetMaterialGrams > 0
+                    ? targetMaterialGrams / RAW_VOLUME_TO_GRAMS
+                    : sourceVolume;
+
+            var scale = sourceVolume > 0 ? targetRawVolume / sourceVolume : 1f;
+            if (!float.IsFinite(scale) || scale <= 0)
+            {
+                scale = 1f;
+            }
+
+            foreach (var entry in slabEntries)
+            {
+                entry.RawVolume = MathF.Round(entry.RawVolume * scale, 4, MidpointRounding.AwayFromZero);
+            }
+
+            Entries = slabEntries.ToArray();
+            EntryCount = (uint)Entries.Length;
+        }
+
+        public override string ToString()
+        {
+            return
+                $"{nameof(Magic)}: {Magic}, {nameof(BaseStep)}: {BaseStep}, {nameof(One)}: {One}, {nameof(EntryCount)}: {EntryCount}, {nameof(Entries)}: {Entries}";
+        }
+    }
     #endregion
 
     #region Enums
@@ -778,17 +1135,22 @@ public sealed class AnycubicZipFile : FileFormat
     #region Constants
     private const string SettingsFileName = "anycubic_photon_resins.pwsp";
     private const string LayersFileName = "layers_controller.conf";
+    private const string LcdFunctionFileName = "lcd_function.json";
     private const string PrintInfoFileName = "print_info.json";
-    private const string SoftwareInfoFileName = "software_info.conf";
     private const string SceneFileName = "scene.slice";
+    private const string SoftwareInfoFileName = "software_info.conf";
+    private const string CalcLayerVolumesFileName = "calc_layer_volumes.data";
+
     #endregion
 
     #region Properties
     public SettingsManifest Settings { get; set; } = new ();
-    public PrintInfoManifest PrintInfoSettings { get; set; } = new ();
     public LayersControllerManifest LayersSettings { get; set; } = new ();
-    public SoftwareInfoManifest SoftwareInfoSettings { get; set; } = new ();
+    public LcdFunctionManifest LcdFunctionSettings { get; set; } = new ();
+    public PrintInfoManifest PrintInfoSettings { get; set; } = new ();
     public SceneManifest SceneSettings { get; set; } = new ();
+    public SoftwareInfoManifest SoftwareInfoSettings { get; set; } = new ();
+    public CalcLayerVolumesManifest CalcLayerVolumesSettings { get; set; } = new();
 
     public override FileFormatType FileType => FileFormatType.Archive;
 
@@ -803,10 +1165,13 @@ public sealed class AnycubicZipFile : FileFormat
                 PrintParameterModifier.BottomLayerCount,
                 PrintParameterModifier.TransitionLayerCount,
 
-                PrintParameterModifier.WaitTimeBeforeCure,
-
+                PrintParameterModifier.BottomWaitTimeBeforeCure,
                 PrintParameterModifier.BottomExposureTime,
+                PrintParameterModifier.BottomWaitTimeAfterCure,
+
+                PrintParameterModifier.WaitTimeBeforeCure,
                 PrintParameterModifier.ExposureTime,
+                PrintParameterModifier.WaitTimeAfterCure,
 
                 PrintParameterModifier.BottomLiftHeight,
                 PrintParameterModifier.BottomLiftSpeed,
@@ -816,6 +1181,9 @@ public sealed class AnycubicZipFile : FileFormat
                 PrintParameterModifier.BottomLiftSpeed2,
                 PrintParameterModifier.LiftHeight2,
                 PrintParameterModifier.LiftSpeed2,
+
+                PrintParameterModifier.BottomWaitTimeAfterLift,
+                PrintParameterModifier.WaitTimeAfterLift,
 
                 PrintParameterModifier.BottomRetractSpeed,
                 PrintParameterModifier.RetractSpeed,
@@ -848,7 +1216,9 @@ public sealed class AnycubicZipFile : FileFormat
         new(typeof(AnycubicZipFile), "pm4u", "Photon Mono 4 Ultra (PM4U)"),
         new(typeof(AnycubicZipFile), "pm7", "Photon Mono M7 (PM7)"),
         new(typeof(AnycubicZipFile), "pm7m", "Photon Mono M7 Max (PM7M)"),
-        new(typeof(AnycubicZipFile), "pwsz", "Photon Mono M7 Pro (PWSZ)")
+        new(typeof(AnycubicZipFile), "pwsz", "Photon Mono M7 Pro (PWSZ)"),
+        new(typeof(AnycubicZipFile), "pp1", "Photon P1 (PP1)"),
+        new(typeof(AnycubicZipFile), "pp1m", "Photon P1 Max (PP1M)"),
 
     ];
 
@@ -933,7 +1303,7 @@ public sealed class AnycubicZipFile : FileFormat
     public override uint LayerCount
     {
         get => base.LayerCount;
-        set => base.LayerCount = SceneSettings.LayerCount = SceneSettings.LayerDefCount = base.LayerCount;
+        set => base.LayerCount = PrintInfoSettings.ModelLayersCount = SceneSettings.LayerCount = SceneSettings.LayerDefCount = base.LayerCount;
     }
 
     public override ushort BottomLayerCount
@@ -962,7 +1332,7 @@ public sealed class AnycubicZipFile : FileFormat
         {
             var resinSettings = GetResinSetting();
             return resinSettings is null
-                ? base.BottomLayerCount
+                ? base.TransitionLayerCount
                 : resinSettings.SliceExtPara.TransitionLayerCount;
         }
         set
@@ -980,7 +1350,27 @@ public sealed class AnycubicZipFile : FileFormat
 
     public override float LightOffDelay => WaitTimeBeforeCure;
 
-    public override float BottomWaitTimeBeforeCure => WaitTimeBeforeCure;
+    public override float BottomWaitTimeBeforeCure
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.BottomWaitTimeBeforeCure
+                : resinSettings.SlicePara.BottomWaitTimeBeforeCure;
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SlicePara.BottomWaitTimeBeforeCure = value;
+            }
+
+            base.BottomWaitTimeBeforeCure = value;
+        }
+    }
 
     public override float WaitTimeBeforeCure
     {
@@ -1019,10 +1409,32 @@ public sealed class AnycubicZipFile : FileFormat
             var resinSettings = GetResinSetting();
             if (resinSettings is not null)
             {
-                resinSettings.SlicePara.BottomExposureTime = value;
+                resinSettings.SlicePara.BottomExposureTime = resinSettings.SlicePara.BottomExposureTimeDual =value;
             }
 
             base.BottomExposureTime = value;
+        }
+    }
+
+    public override float BottomWaitTimeAfterCure
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.BottomWaitTimeAfterCure
+                : resinSettings.SlicePara.BottomWaitTimeAfterCure;
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SlicePara.BottomWaitTimeAfterCure = value;
+            }
+
+            base.BottomWaitTimeAfterCure = value;
         }
     }
 
@@ -1046,6 +1458,28 @@ public sealed class AnycubicZipFile : FileFormat
             }
 
             base.ExposureTime = value;
+        }
+    }
+
+    public override float WaitTimeAfterCure
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.WaitTimeAfterCure
+                : resinSettings.SlicePara.WaitTimeAfterCure;
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SlicePara.WaitTimeAfterCure = value;
+            }
+
+            base.WaitTimeAfterCure = value;
         }
     }
 
@@ -1134,6 +1568,28 @@ public sealed class AnycubicZipFile : FileFormat
             }
 
             base.BottomLiftSpeed2 = value;
+        }
+    }
+
+    public override float BottomWaitTimeAfterLift
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.BottomWaitTimeAfterLift
+                : resinSettings.SlicePara.BottomWaitTimeAfterLift;
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SlicePara.BottomWaitTimeAfterLift = value;
+            }
+
+            base.BottomWaitTimeAfterLift = value;
         }
     }
 
@@ -1273,6 +1729,28 @@ public sealed class AnycubicZipFile : FileFormat
         }
     }
 
+    public override float WaitTimeAfterLift
+    {
+        get
+        {
+            var resinSettings = GetResinSetting();
+            return resinSettings is null
+                ? base.WaitTimeAfterLift
+                : resinSettings.SlicePara.WaitTimeAfterLift;
+        }
+        set
+        {
+            value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+            var resinSettings = GetResinSetting();
+            if (resinSettings is not null)
+            {
+                resinSettings.SlicePara.WaitTimeAfterLift = value;
+            }
+
+            base.WaitTimeAfterLift = value;
+        }
+    }
+
     public override float RetractSpeed
     {
         get
@@ -1337,13 +1815,14 @@ public sealed class AnycubicZipFile : FileFormat
     public override Size[] ThumbnailsOriginalSize { get; } =
     [
         new(224, 168),
-        new(336, 252)
+        new(336, 252),
+        new(800, 600),
     ];
 
 
     public override object[] Configs =>
     [
-        Settings, PrintInfoSettings, SoftwareInfoSettings, SceneSettings
+        Settings, LcdFunctionSettings, PrintInfoSettings, SceneSettings, SoftwareInfoSettings, CalcLayerVolumesSettings
     ];
 
     #endregion
@@ -1605,6 +2084,9 @@ public sealed class AnycubicZipFile : FileFormat
         PrintInfoSettings.Cost = MaterialCost;
         PrintInfoSettings.PrintTime = PrintTime;
         PrintInfoSettings.MaterialMilliliters = MaterialMilliliters;
+        PrintInfoSettings.MaterialGrams = MaterialGrams;
+        PrintInfoSettings.UpdateSubEstimatedInfos();
+        LcdFunctionSettings.ModelsProcessedInfo.Update();
         SoftwareInfoSettings.Update();
 
         var resinSetting = GetResinSetting();
@@ -1643,8 +2125,9 @@ public sealed class AnycubicZipFile : FileFormat
         EncodeAllThumbnailsInZip(outputFile, "preview_images/preview_{0}.png", progress);
 
         outputFile.CreateEntryFromSerializeJson(SettingsFileName, Settings, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);
-        outputFile.CreateEntryFromSerializeJson(PrintInfoFileName, PrintInfoSettings, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);
         outputFile.CreateEntryFromSerializeJson(LayersFileName, LayersSettings, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);
+        outputFile.CreateEntryFromSerializeJson(LcdFunctionFileName, LcdFunctionSettings, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);
+        outputFile.CreateEntryFromSerializeJson(PrintInfoFileName, PrintInfoSettings, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);
         outputFile.CreateEntryFromSerializeJson(SoftwareInfoFileName, SoftwareInfoSettings, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);
 
         SceneSettings.LayersDef = new SceneLayerDef[LayerCount];
@@ -1687,6 +2170,11 @@ public sealed class AnycubicZipFile : FileFormat
                 progress.PauseOrCancelIfRequested();
             }
         }
+
+        CalcLayerVolumesSettings.Update(this, PrintInfoSettings.MaterialMilliliters, PrintInfoSettings.MaterialGrams);
+        using var calcLayerVolumesMemoryStream = new MemoryStream();
+        Helpers.Serializer.Serialize(calcLayerVolumesMemoryStream, CalcLayerVolumesSettings);
+        outputFile.CreateEntryFromContent(CalcLayerVolumesFileName, calcLayerVolumesMemoryStream, ZipArchiveMode.Create);
 
         using var memoryStream = new MemoryStream();
         Helpers.Serializer.Serialize(memoryStream, SceneSettings);
@@ -1736,6 +2224,21 @@ public sealed class AnycubicZipFile : FileFormat
             throw new FileLoadException("Unable to detect layer images in the file", FileFullPath);
         }
 
+        entry = inputFile.GetEntry(LcdFunctionFileName);
+        if (entry is not null)
+        {
+            try
+            {
+                using var stream = entry.Open();
+                LcdFunctionSettings = JsonSerializer.Deserialize<LcdFunctionManifest>(stream)!;
+            }
+            catch (Exception e)
+            {
+                Clear();
+                throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", FileFullPath);
+            }
+        }
+
         entry = inputFile.GetEntry(PrintInfoFileName);
         if (entry is not null)
         {
@@ -1773,6 +2276,21 @@ public sealed class AnycubicZipFile : FileFormat
             {
                 using var stream = entry.Open();
                 SceneSettings = Helpers.Deserialize<SceneManifest>(stream);
+            }
+            catch (Exception e)
+            {
+                Clear();
+                throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", FileFullPath);
+            }
+        }
+
+        entry = inputFile.GetEntry(CalcLayerVolumesFileName);
+        if (entry is not null)
+        {
+            try
+            {
+                using var stream = entry.Open();
+                CalcLayerVolumesSettings = Helpers.Deserialize<CalcLayerVolumesManifest>(stream);
             }
             catch (Exception e)
             {
@@ -1842,8 +2360,9 @@ public sealed class AnycubicZipFile : FileFormat
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
 
         outputFile.CreateEntryFromSerializeJson(SettingsFileName, Settings, ZipArchiveMode.Update, JsonExtensions.SettingsIndent);
-        outputFile.CreateEntryFromSerializeJson(PrintInfoFileName, PrintInfoSettings, ZipArchiveMode.Update, JsonExtensions.SettingsIndent);
         outputFile.CreateEntryFromSerializeJson(LayersFileName, LayersSettings, ZipArchiveMode.Update, JsonExtensions.SettingsIndent);
+        outputFile.CreateEntryFromSerializeJson(LcdFunctionFileName, LcdFunctionSettings, ZipArchiveMode.Update, JsonExtensions.SettingsIndent);
+        outputFile.CreateEntryFromSerializeJson(PrintInfoFileName, PrintInfoSettings, ZipArchiveMode.Update, JsonExtensions.SettingsIndent);
         outputFile.CreateEntryFromSerializeJson(SoftwareInfoFileName, SoftwareInfoSettings, ZipArchiveMode.Update, JsonExtensions.SettingsIndent);
     }
     #endregion

@@ -22,9 +22,7 @@ namespace UVtools.Core.EmguCV;
 /// <summary>
 /// A contour cache for OpenCV
 /// </summary>
-#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComparer<EmguContour>, IDisposable
-#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Constants
 
@@ -256,7 +254,7 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
 
     public IEnumerator<Point> GetEnumerator()
     {
-        return (IEnumerator<Point>) _vector.ToArray().GetEnumerator();
+        return ((IEnumerable<Point>)_vector.ToArray()).GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()
@@ -284,6 +282,12 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
     #endregion
 
     #region Equality
+    public override int GetHashCode()
+    {
+        if (Count == 0) return 0;
+        int lastIndex = Count - 1;
+        return HashCode.Combine(Count, _vector[0], _vector[lastIndex / 2], _vector[lastIndex]);
+    }
 
     protected bool Equals(EmguContour other)
     {
@@ -303,7 +307,7 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
     {
         if (ReferenceEquals(this, other)) return 0;
         if (ReferenceEquals(null, other)) return 1;
-        return _area.CompareTo(other._area);
+        return Area.CompareTo(other.Area);
     }
 
     public int Compare(EmguContour? x, EmguContour? y)
@@ -311,7 +315,7 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
         if (ReferenceEquals(x, y)) return 0;
         if (ReferenceEquals(null, y)) return 1;
         if (ReferenceEquals(null, x)) return -1;
-        return x._area.CompareTo(y._area);
+        return x.Area.CompareTo(y.Area);
     }
     #endregion
 }
