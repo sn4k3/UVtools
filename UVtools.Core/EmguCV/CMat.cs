@@ -39,7 +39,7 @@ public class CMat : IEquatable<CMat>
             IsInitialized = true;
             IsCompressed = !IsEmpty;
         }
-    }
+    } = [];
 
     /// <summary>
     /// Gets the SHA1 hash of the <see cref="CompressedBytes"/>.
@@ -122,7 +122,7 @@ public class CMat : IEquatable<CMat>
     /// <summary>
     /// Gets the length of the <see cref="CompressedBytes"/>.
     /// </summary>
-    public int Length => CompressedBytes.Length;
+    public int CompressedLength => CompressedBytes.Length;
 
     /// <summary>
     /// Gets the uncompressed length of the <see cref="Mat"/> aka bitmap size.
@@ -137,8 +137,9 @@ public class CMat : IEquatable<CMat>
         get
         {
             var uncompressedLength = UncompressedLength;
-            if (uncompressedLength == 0 || Length == 0 || Length == uncompressedLength) return 1;
-            return MathF.Round((float)uncompressedLength / Length, 2, MidpointRounding.AwayFromZero);
+            var compressedLength = CompressedLength;
+            if (uncompressedLength == 0 || compressedLength == 0 || compressedLength == uncompressedLength) return 1;
+            return MathF.Round((float)uncompressedLength / compressedLength, 2, MidpointRounding.AwayFromZero);
         }
     }
 
@@ -150,9 +151,10 @@ public class CMat : IEquatable<CMat>
         get
         {
             var uncompressedLength = UncompressedLength;
-            if (uncompressedLength == 0 || Length == uncompressedLength) return 0;
-            if (Length == 0) return 100f;
-            return MathF.Round(100 - (Length * 100f / uncompressedLength), 2, MidpointRounding.AwayFromZero);
+            var compressedLength = CompressedLength;
+            if (uncompressedLength == 0 || compressedLength == uncompressedLength) return 0;
+            if (compressedLength == 0) return 100f;
+            return MathF.Round(100 - (compressedLength * 100f / uncompressedLength), 2, MidpointRounding.AwayFromZero);
         }
     }
 
@@ -164,15 +166,16 @@ public class CMat : IEquatable<CMat>
         get
         {
             var uncompressedLength = UncompressedLength;
-            if (uncompressedLength == 0 || Length == 0) return 0;
-            return MathF.Round(uncompressedLength * 100f / Length, 2, MidpointRounding.AwayFromZero);
+            var compressedLength = CompressedLength;
+            if (uncompressedLength == 0 || compressedLength == 0) return 0;
+            return MathF.Round(uncompressedLength * 100f / compressedLength, 2, MidpointRounding.AwayFromZero);
         }
     }
 
     /// <summary>
     /// Gets the number of bytes saved by compressing the <see cref="Mat"/>.
     /// </summary>
-    public int SavedBytes => UncompressedLength - Length;
+    public int SavedBytes => UncompressedLength - CompressedLength;
 
     /// <summary>
     /// Gets or sets the <see cref="Mat"/> that will be compressed and decompressed.<br/>
@@ -291,7 +294,7 @@ public class CMat : IEquatable<CMat>
     /// </summary>
     public void SetEmptyCompressedBytes()
     {
-        if (CompressedBytes.Length == 0) return; // Already empty
+        if (IsEmpty) return; // Already empty
         CompressedBytes = [];
         Hash = null;
         IsCompressed = false;
@@ -584,7 +587,7 @@ public class CMat : IEquatable<CMat>
     #region Formaters
     public override string ToString()
     {
-        return $"{nameof(Decompressor)}: {Decompressor}, {nameof(Size)}: {Size}, {nameof(UncompressedLength)}: {UncompressedLength}, {nameof(Length)}: {Length}, {nameof(IsCompressed)}: {IsCompressed}, {nameof(CompressionRatio)}: {CompressionRatio}x, {nameof(CompressionPercentage)}: {CompressionPercentage}%";
+        return $"{nameof(Decompressor)}: {Decompressor}, {nameof(Size)}: {Size}, {nameof(UncompressedLength)}: {UncompressedLength}, {nameof(CompressedLength)}: {CompressedLength}, {nameof(IsCompressed)}: {IsCompressed}, {nameof(CompressionRatio)}: {CompressionRatio}x, {nameof(CompressionPercentage)}: {CompressionPercentage}%";
     }
     #endregion
 

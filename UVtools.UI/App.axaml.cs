@@ -56,8 +56,6 @@ public partial class App : Application
         SimpleDark*/
     }
 
-    private static ApplicationTheme? _prevTheme;
-
     public static MainWindow MainWindow = null!;
     public static FileFormat? SlicerFile;
 

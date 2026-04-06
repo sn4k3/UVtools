@@ -265,7 +265,7 @@
             Gets a value indicating whether the <see cref="P:UVtools.Core.EmguCV.CMat.CompressedBytes"/> are empty.
             </summary>
         </member>
-        <member name="P:UVtools.Core.EmguCV.CMat.Length">
+        <member name="P:UVtools.Core.EmguCV.CMat.CompressedLength">
             <summary>
             Gets the length of the <see cref="P:UVtools.Core.EmguCV.CMat.CompressedBytes"/>.
             </summary>

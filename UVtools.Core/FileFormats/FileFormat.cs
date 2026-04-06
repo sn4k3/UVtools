@@ -1767,7 +1767,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             for (int i = 0; i < LayerCount; i++)
             {
                 if (this[i] is null) continue;
-                size += this[i].CompressedMat.Length;
+                size += this[i].CompressedMat.CompressedLength;
             }
             return size;
         }

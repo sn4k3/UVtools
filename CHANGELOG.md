@@ -1,5 +1,8 @@
 # Changelog
 
+## 06/04/2026 - v6.0.3
+- (Fix) Null reference exception on `CMat`
+
 ## 05/04/2026 - v6.0.2
 - (Add) Anycubic Photon P1 and P1 Max printer profiles and compatibility
 - (Add) Anycubic Zip new properties, be aware that might not work on your machine/firmware
