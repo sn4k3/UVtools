@@ -9,7 +9,7 @@
 - ExtendedNumericUpDown: Initial value with a reset button and value unit label
 - IndexSelector: Allow to choose an index from a collection count and display the selected number
 - GroupBox: Similar to GroupBox of WinForms, it contain an Header and Content</Description>
-        <Version>4.2.0</Version>
+        <Version>5.0.0</Version>
 
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>Advanced image box; NumericUpDown; Index Selector; Group Box; Avalonia</PackageTags>

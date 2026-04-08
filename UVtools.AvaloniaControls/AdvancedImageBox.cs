@@ -10,8 +10,10 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -22,8 +24,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Runtime.CompilerServices;
-using Avalonia.Controls.Presenters;
-using Avalonia.Interactivity;
+using System.Threading.Channels;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using Color = Avalonia.Media.Color;
 using Pen = Avalonia.Media.Pen;
@@ -235,6 +236,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         /// <param name="zoomLevel">The zoom level.</param>
         public int FindNearest(int zoomLevel)
         {
+            if (Count == 0) return zoomLevel;
             int nearestValue = List.Values[0];
             int nearestDifference = Math.Abs(nearestValue - zoomLevel);
             for (int i = 1; i < Count; i++)
@@ -507,6 +509,13 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
     /// <inheritdoc />
     public Size Viewport => ViewPort?.Bounds.Size ?? Bounds.Size;
+
+    /// <inheritdoc />
+    public bool CanHorizontallyScroll => IsHorizontalBarVisible;
+
+    /// <inheritdoc />
+    public bool CanVerticallyScroll => IsVerticalBarVisible;
+
     #endregion
 
     #region Private Members
@@ -515,6 +524,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     protected internal ScrollBar? HorizontalScrollBar;
     protected internal ScrollBar? VerticalScrollBar;
 
+    private bool _imageNeedsDisposal;
     private Point _startMousePosition;
     private Vector _startScrollPosition;
     private bool _isPanning;
@@ -526,6 +536,8 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     private int _oldZoom = 100;
 
     private DrawingBrush? _gridBrush;
+    private Pen? _pixelGridPen;
+    private Pen? _selectionBorderPen;
 
     #endregion
 
@@ -593,21 +605,21 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     public Bitmap? Image
     {
         get => GetValue(ImageProperty);
-        set => SetValue(ImageProperty, value);
+        set
+        {
+            if (_imageNeedsDisposal)
+            {
+                Image?.Dispose();
+                _imageNeedsDisposal = false;
+            }
+            SetValue(ImageProperty, value);
+        }
     }
 
     /// <summary>
     /// Gets the image as a writeable bitmap
     /// </summary>
-    public WriteableBitmap? ImageAsWriteableBitmap
-    {
-        get
-        {
-            var image = Image;
-            if (image is null) return null;
-            return (WriteableBitmap)image;
-        }
-    }
+    public WriteableBitmap? ImageAsWriteableBitmap => Image as WriteableBitmap;
 
     /// <summary>
     /// Returns true if image is loaded, otherwise false.
@@ -723,6 +735,8 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                 Cursor = Cursor.Default;
                 //this.OnPanEnd(EventArgs.Empty);
             }
+
+            PseudoClasses.Set(":panning", value);
         }
     }
 
@@ -737,7 +751,11 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     public bool IsSelecting
     {
         get => _isSelecting;
-        protected set => SetAndRaise(IsSelectingProperty, ref _isSelecting, value);
+        protected set
+        {
+            if (!SetAndRaise(IsSelectingProperty, ref _isSelecting, value)) return;
+            PseudoClasses.Set(":selecting", value);
+        }
     }
 
     /// <summary>
@@ -1155,40 +1173,13 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             var image = Image;
             if (image is null) return 100;
 
-            double zoom;
-            double aspectRatio;
-            var viewportWidth = Bounds.Size.Width;
-            var viewportHeight = Bounds.Size.Height;
-
-            if (image.Size.Width > image.Size.Height)
-            {
-                aspectRatio = viewportWidth / image.Size.Width;
-                zoom = aspectRatio * 100.0;
-
-                if (viewportHeight < image.Size.Height * zoom / 100.0)
-                {
-                    aspectRatio = viewportHeight / image.Size.Height;
-                    zoom = aspectRatio * 100.0;
-                }
-            }
-            else
-            {
-                aspectRatio = viewportHeight / image.Size.Height;
-                zoom = aspectRatio * 100.0;
-
-                if (viewportWidth < image.Size.Width * zoom / 100.0)
-                {
-                    aspectRatio = viewportWidth / image.Size.Width;
-                    zoom = aspectRatio * 100.0;
-                }
-            }
-
-            return zoom <= 0 ? 100 : (int) zoom;
+            var zoom = Math.Min(Bounds.Width / image.Size.Width, Bounds.Height / image.Size.Height) * 100.0;
+            return zoom <= 0 ? 100 : (int)zoom;
         }
     }
 
     public static readonly StyledProperty<bool> AutoZoomToFitProperty =
-        AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(AutoZoomToFitProperty));
+        AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(AutoZoomToFit));
 
     /// <summary>
     /// Gets or sets if the zoom level should be auto set to fit when loading a new image.
@@ -1380,6 +1371,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             GridColorAlternateProperty,
             PixelGridColorProperty,
             //ImageProperty,
+            SelectionColorProperty,
             SelectionRegionProperty
             );
     }
@@ -1409,13 +1401,13 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (HorizontalScrollBar is not null)
         {
-            HorizontalScrollBar.Scroll += ScrollBarOnScroll;
+            HorizontalScrollBar.Scroll -= ScrollBarOnScroll;
         }
 
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (VerticalScrollBar is not null)
         {
-            VerticalScrollBar.Scroll += ScrollBarOnScroll;
+            VerticalScrollBar.Scroll -= ScrollBarOnScroll;
         }
 
         ViewPort = e.NameScope.Find<ScrollContentPresenter>("PART_ContentPresenter")!;
@@ -1533,6 +1525,14 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             RebuildGridBrush();
             TriggerRender();
         }
+        else if (ReferenceEquals(e.Property, PixelGridColorProperty))
+        {
+            _pixelGridPen = null;
+        }
+        else if (ReferenceEquals(e.Property, SelectionColorProperty))
+        {
+            _selectionBorderPen = null;
+        }
     }
 
     #endregion
@@ -1541,6 +1541,18 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     private void RebuildGridBrush()
     {
         _gridBrush = null;
+    }
+
+    private Pen EnsurePixelGridPen()
+    {
+        return _pixelGridPen ??= new Pen(PixelGridColor);
+    }
+
+    private Pen EnsureSelectionBorderPen()
+    {
+        if (_selectionBorderPen is not null) return _selectionBorderPen;
+        var color = SelectionColor.Color;
+        return _selectionBorderPen = new Pen(Color.FromArgb(255, color.R, color.G, color.B).ToUInt32());
     }
 
     private DrawingBrush EnsureGridBrush()
@@ -1642,8 +1654,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             var right = imageViewPort.Right;
             var bottom = imageViewPort.Bottom;
 
-            // NOTE: consider caching this pen as a field; creating it every frame allocates.
-            var pixelGridPen = new Pen(PixelGridColor);
+            var pixelGridPen = EnsurePixelGridPen();
 
             // First vertical line position aligned to zoom steps
             var startX = left + zoomFactor - offsetX;
@@ -1665,11 +1676,10 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         var selectionRegion = SelectionRegion;
         if (selectionRegion != default)
         {
-            var rect = GetOffsetRectangle(selectionRegion);
+            var rect = GetOffsetRectangle(selectionRegion, imageViewPort);
             var selectionColor = SelectionColor;
             context.FillRectangle(selectionColor, rect);
-            var color = Color.FromArgb(255, selectionColor.Color.R, selectionColor.Color.G, selectionColor.Color.B);
-            context.DrawRectangle(new Pen(color.ToUInt32()), rect);
+            context.DrawRectangle(EnsureSelectionBorderPen(), rect);
         }
     }
 
@@ -1883,49 +1893,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         if (location.Y > Viewport.Height) return;
         _startMousePosition = location;
     }
-
-    /*protected override void OnPointerPressed(PointerPressedEventArgs e)
-    {
-        base.OnPointerPressed(e);
-
-        if (e.Handled
-            || _isPanning
-            || _isSelecting
-            || Image is null) return;
-
-        var pointer = e.GetCurrentPoint(this);
-
-        if (SelectionMode != SelectionModes.None)
-        {
-            if (!(
-                    pointer.Properties.IsLeftButtonPressed && (SelectWithMouseButtons & MouseButtons.LeftButton) != 0 ||
-                    pointer.Properties.IsMiddleButtonPressed && (SelectWithMouseButtons & MouseButtons.MiddleButton) != 0 ||
-                    pointer.Properties.IsRightButtonPressed && (SelectWithMouseButtons & MouseButtons.RightButton) != 0
-                )
-               ) return;
-            IsSelecting = true;
-        }
-        else
-        {
-            if (!(
-                    pointer.Properties.IsLeftButtonPressed && (PanWithMouseButtons & MouseButtons.LeftButton) != 0 ||
-                    pointer.Properties.IsMiddleButtonPressed && (PanWithMouseButtons & MouseButtons.MiddleButton) != 0 ||
-                    pointer.Properties.IsRightButtonPressed && (PanWithMouseButtons & MouseButtons.RightButton) != 0
-                )
-                || !AutoPan
-                || SizeMode != SizeModes.Normal
-
-               ) return;
-
-            IsPanning = true;
-        }
-
-        var location = pointer.Position;
-
-        if (location.X > ViewPortSize.Width) return;
-        if (location.Y > ViewPortSize.Height) return;
-        _startMousePosition = location;
-    }*/
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
@@ -2593,7 +2560,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <returns>A <see cref="Point"/> which has been repositioned to match the current zoom level and image offset</returns>
     public Point GetOffsetPoint(int x, int y)
     {
-        return GetOffsetPoint(new System.Drawing.Point(x, y));
+        return GetOffsetPoint(new Point(x, y));
     }
 
     /// <summary>
@@ -2616,8 +2583,8 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     {
         Rect viewport = GetImageViewPort();
         var scaled = GetScaledPoint(source);
-        var offsetX = viewport.Left + Offset.X;
-        var offsetY = viewport.Top + Offset.Y;
+        var offsetX = viewport.Left - Offset.X;
+        var offsetY = viewport.Top - Offset.Y;
 
         return new(scaled.X + offsetX, scaled.Y + offsetY);
     }
@@ -2629,7 +2596,18 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <returns>A <see cref="RectangleF"/> which has been resized and repositioned to match the current zoom level and image offset</returns>
     public Rect GetOffsetRectangle(Rect source)
     {
-        var viewport = GetImageViewPort();
+        return GetOffsetRectangle(source, GetImageViewPort());
+    }
+
+    /// <summary>
+    ///   Returns the source <see cref="T:System.Drawing.RectangleF" /> scaled according to the current zoom level and repositioned to include the current image offset
+    /// </summary>
+    /// <param name="source">The source <see cref="RectangleF"/> to offset.</param>
+    /// <param name="imageViewPort">The image viewport to use for the offset calculation.</param>
+    /// <returns>A <see cref="RectangleF"/> which has been resized and repositioned to match the current zoom level and image offset</returns>
+    private Rect GetOffsetRectangle(Rect source, Rect imageViewPort)
+    {
+        var viewport = imageViewPort;
         var scaled = GetScaledRectangle(source);
         var offsetX = viewport.Left - Offset.X;
         var offsetY = viewport.Top - Offset.Y;
@@ -2672,8 +2650,8 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     {
         var viewport = GetImageViewPort();
         var scaled = GetScaledRectangle(source);
-        var offsetX = viewport.Left + Offset.X;
-        var offsetY = viewport.Top + Offset.Y;
+        var offsetX = viewport.Left - Offset.X;
+        var offsetY = viewport.Top - Offset.Y;
 
         return new(new System.Drawing.Point((int)(scaled.Left + offsetX), (int)(scaled.Top + offsetY)), new System.Drawing.Size((int)scaled.Size.Width, (int)scaled.Size.Height));
     }
@@ -2791,14 +2769,13 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <param name="relativeDisplayPoint">The relative display point to offset scrolling by.</param>
     public void ScrollTo(Point imageLocation, Point relativeDisplayPoint)
     {
-        //CanRender = false;
         var zoomFactor = ZoomFactor;
         var x = imageLocation.X * zoomFactor - relativeDisplayPoint.X;
         var y = imageLocation.Y * zoomFactor - relativeDisplayPoint.Y;
 
 
-        _canRender = true;
         Offset = new Vector(x, y);
+        CanRender = true;
 
         /*Debug.WriteLine(
             $"X/Y: {x},{y} | \n" +
@@ -3143,6 +3120,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     public void LoadImage(string path)
     {
         Image = new Bitmap(path);
+        _imageNeedsDisposal = true;
     }
 
     public Bitmap? GetSelectedBitmap()
@@ -3153,15 +3131,25 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         var selection = SelectionRegionPixel;
 
         using var srcBuffer = image.Lock();
-        var cropBitmap = new WriteableBitmap(selection.Size, image.Dpi, srcBuffer.Format, AlphaFormat.Unpremul);
+
+        // Clamp selection to actual image bounds to prevent buffer overread in unsafe copy.
+        // Math.Ceiling on X/Y in SelectionRegionPixel can push Right/Bottom one pixel past the image edge.
+        var clampedX = Math.Max(0, selection.X);
+        var clampedY = Math.Max(0, selection.Y);
+        var clampedWidth = Math.Min(selection.Right, srcBuffer.Size.Width) - clampedX;
+        var clampedHeight = Math.Min(selection.Bottom, srcBuffer.Size.Height) - clampedY;
+        if (clampedWidth <= 0 || clampedHeight <= 0) return null;
+        var clampedSelection = new PixelRect(clampedX, clampedY, clampedWidth, clampedHeight);
+
+        var cropBitmap = new WriteableBitmap(clampedSelection.Size, image.Dpi, srcBuffer.Format, AlphaFormat.Unpremul);
         using var dstBuffer = cropBitmap.Lock();
 
         unsafe
         {
-            var ySrc = srcBuffer.Address + srcBuffer.RowBytes * selection.Y + selection.X * (srcBuffer.Format.BitsPerPixel / 8);
+            var ySrc = srcBuffer.Address + srcBuffer.RowBytes * clampedSelection.Y + clampedSelection.X * (srcBuffer.Format.BitsPerPixel / 8);
             var yDst = dstBuffer.Address;
 
-            for (int y = selection.Y; y < selection.Bottom; y++)
+            for (int y = clampedSelection.Y; y < clampedSelection.Bottom; y++)
             {
                 Buffer.MemoryCopy(
                     ySrc.ToPointer(),

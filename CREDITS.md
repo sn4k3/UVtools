@@ -110,3 +110,7 @@
 - Jason Simpson
 - Christopher Staples
 - Meri Švragulja
+- James Ibbetson
+- Grzegorz Gajak
+- Carmine DiChiara
+- Xicotencatl Aguilera Herrera
