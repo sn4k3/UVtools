@@ -9,6 +9,8 @@
 using Avalonia.Platform.Storage;
 using System.Collections.Generic;
 using System.Linq;
+using UVtools.Core.Scripting;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UVtools.UI.Controls;
 
@@ -258,6 +260,16 @@ public static class AvaloniaStatic
     {
         var result = new List<FilePickerFileType>(data.Capacity);
         result.AddRange(data.Select(kv => CreateFilePickerFileType(kv.Key, kv.Value.ToArray())));
+        return result;
+    }
+
+    public static List<FilePickerFileType>? ToAvaloniaFileFilter(IEnumerable<ScriptFileDialogInput.ScriptFileDialogFilter>? filters)
+    {
+        if (filters == null) return null;
+
+        var result = new List<FilePickerFileType>();
+        result.AddRange(filters.Select(kv => CreateFilePickerFileType(kv.Name ?? "Unspecified file(s)", kv.Extensions.ToArray())));
+
         return result;
     }
 }

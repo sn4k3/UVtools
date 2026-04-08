@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using Avalonia.Reactive;
@@ -12,6 +14,7 @@ using UVtools.Core.Scripting;
 using UVtools.Core.SystemOS;
 using UVtools.UI.Extensions;
 using UVtools.UI.Windows;
+using ZLinq;
 
 namespace UVtools.UI.Controls.Tools;
 
@@ -121,8 +124,8 @@ public partial class ToolScriptingControl : ToolControl
         {
             IsReadOnly = true,
             Text = $"{Operation.ScriptGlobals!.Script.Name} | Version: {Operation.ScriptGlobals.Script.Version} by {Operation.ScriptGlobals.Script.Author}",
-            UseFloatingWatermark = true,
-            Watermark = "Script name, version and author"
+            UseFloatingPlaceholder = true,
+            PlaceholderText = "Script name, version and author"
         };
 
         TextBox tbScriptDescription = new()
@@ -130,8 +133,8 @@ public partial class ToolScriptingControl : ToolControl
             IsReadOnly = true,
             Text = Operation.ScriptGlobals.Script.Description,
             AcceptsReturn = true,
-            UseFloatingWatermark = true,
-            Watermark = "Script description"
+            UseFloatingPlaceholder = true,
+            PlaceholderText = "Script description"
         };
 
         ScriptConfigurationPanel.Children.Add(tbScriptName);
@@ -613,31 +616,16 @@ public partial class ToolScriptingControl : ToolControl
 
                     button.Click += async (sender, args) =>
                     {
-                        var dialog = new SaveFileDialog
-                        {
-                            Directory = inputSaveFile.Value,
-                            Title = inputSaveFile.Title,
-                            DefaultExtension = inputSaveFile.DefaultExtension,
-                            InitialFileName = inputSaveFile.InitialFilename
-                        };
+                        var result = await App.MainWindow.SaveFilePickerAsync(inputSaveFile.Value, inputSaveFile.InitialFilename,
+                            AvaloniaStatic.ToAvaloniaFileFilter(inputSaveFile.Filters),
+                            inputSaveFile.Title);
 
-                        if (inputSaveFile.Filters is not null)
-                        {
-                            foreach (var filter in inputSaveFile.Filters)
-                            {
-                                dialog.Filters.Add(new FileDialogFilter
-                                {
-                                    Extensions = filter.Extensions,
-                                    Name = filter.Name
-                                });
-                            }
-                        }
 
-                        var result = await dialog.ShowAsync(ParentWindow!);
-                        if (!string.IsNullOrWhiteSpace(result))
+                        var filePath = result.TryGetLocalPath();
+                        if (string.IsNullOrWhiteSpace(filePath))
                         {
-                            inputSaveFile.Value = result;
-                            control.Text = result;
+                            inputSaveFile.Value = filePath;
+                            control.Text = filePath;
                         }
                     };
 
@@ -672,30 +660,10 @@ public partial class ToolScriptingControl : ToolControl
 
                     button.Click += async (sender, args) =>
                     {
-                        var dialog = new OpenFileDialog
-                        {
-                            Directory = inputOpenFile.Value,
-                            Title = inputOpenFile.Title,
-                            AllowMultiple = inputOpenFile.AllowMultiple,
-                            InitialFileName = inputOpenFile.InitialFilename
-                        };
-
-                        if (inputOpenFile.Filters is not null)
-                        {
-                            foreach (var filter in inputOpenFile.Filters)
-                            {
-                                dialog.Filters.Add(new FileDialogFilter
-                                {
-                                    Extensions = filter.Extensions,
-                                    Name = filter.Name
-                                });
-                            }
-                        }
-
-                        var result = await dialog.ShowAsync(ParentWindow!);
-                        if (result is null || result.Length == 0) return;
-                        inputOpenFile.Value = result[0];
-                        inputOpenFile.Files = result;
+                        var result = await App.MainWindow.OpenFilePickerAsync(inputOpenFile.Value, AvaloniaStatic.ToAvaloniaFileFilter(inputOpenFile.Filters), inputOpenFile.Title, inputOpenFile.AllowMultiple);
+                        if (result.Count == 0) return;
+                        inputOpenFile.Value = result[0].TryGetLocalPath();
+                        inputOpenFile.Files = result.AsValueEnumerable().Select(file => file.TryGetLocalPath()).OfType<string>().ToArray();
                         control.Text = string.Join('\n', result);
                     };
 

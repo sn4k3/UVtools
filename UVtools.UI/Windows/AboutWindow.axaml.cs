@@ -4,6 +4,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Input.Platform;
 using Material.Icons;
 using UVtools.Core;
 using UVtools.Core.Extensions;

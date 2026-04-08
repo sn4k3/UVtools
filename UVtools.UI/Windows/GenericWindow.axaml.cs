@@ -115,7 +115,7 @@ public partial class GenericWindow : SukiWindow, INotifyPropertyChanged
 
 
 
-    public async Task<IStorageFile?> SaveFilePickerAsync(string? directory, string? fileName, IReadOnlyList<FilePickerFileType>? filters, bool showOverwritePrompt = true)
+    public async Task<IStorageFile?> SaveFilePickerAsync(string? directory, string? fileName, IReadOnlyList<FilePickerFileType>? filters, string? title = null, bool showOverwritePrompt = true)
     {
         IStorageFolder? storageFolder = null;
         if (directory is not null)
@@ -123,16 +123,16 @@ public partial class GenericWindow : SukiWindow, INotifyPropertyChanged
             storageFolder = await StorageProvider.TryGetFolderFromPathAsync(directory);
         }
 
-        return await SaveFilePickerAsync(storageFolder, fileName, filters, showOverwritePrompt);
+        return await SaveFilePickerAsync(storageFolder, fileName, filters, title, showOverwritePrompt);
     }
 
-    public Task<IStorageFile?> SaveFilePickerAsync(FileFormat slicerFile, IReadOnlyList<FilePickerFileType>? filters, bool showOverwritePrompt = true)
+    public Task<IStorageFile?> SaveFilePickerAsync(FileFormat slicerFile, IReadOnlyList<FilePickerFileType>? filters, string? title = null, bool showOverwritePrompt = true)
     {
-        return SaveFilePickerAsync(slicerFile.DirectoryPath, slicerFile.FilenameNoExt, filters, showOverwritePrompt);
+        return SaveFilePickerAsync(slicerFile.DirectoryPath, slicerFile.FilenameNoExt, filters, title, showOverwritePrompt);
     }
 
 
-    public Task<IStorageFile?> SaveFilePickerAsync(IStorageFolder? directory, string? fileName, IReadOnlyList<FilePickerFileType>? filters, bool showOverwritePrompt = true)
+    public Task<IStorageFile?> SaveFilePickerAsync(IStorageFolder? directory, string? fileName, IReadOnlyList<FilePickerFileType>? filters, string? title = null, bool showOverwritePrompt = true)
     {
         string? defaultExt = null;
         if (filters?.Count > 0 && filters[0].Patterns?.Count > 0)
@@ -146,20 +146,21 @@ public partial class GenericWindow : SukiWindow, INotifyPropertyChanged
             SuggestedFileName = fileName,
             FileTypeChoices = filters,
             DefaultExtension = defaultExt,
-            ShowOverwritePrompt = showOverwritePrompt
+            ShowOverwritePrompt = showOverwritePrompt,
+            Title = title,
         });
     }
 
-    public Task<IStorageFile?> SaveFilePickerAsync(string? fileName, IReadOnlyList<FilePickerFileType>? filters, bool showOverwritePrompt = true)
+    public Task<IStorageFile?> SaveFilePickerAsync(string? fileName, IReadOnlyList<FilePickerFileType>? filters, string? title = null, bool showOverwritePrompt = true)
     {
         IStorageFolder? folder = null;
-        return SaveFilePickerAsync(folder, fileName, filters, showOverwritePrompt);
+        return SaveFilePickerAsync(folder, fileName, filters, title, showOverwritePrompt);
     }
 
-    public Task<IStorageFile?> SaveFilePickerAsync(IReadOnlyList<FilePickerFileType>? filters, bool showOverwritePrompt = true)
+    public Task<IStorageFile?> SaveFilePickerAsync(IReadOnlyList<FilePickerFileType>? filters, string? title = null, bool showOverwritePrompt = true)
     {
         IStorageFolder? folder = null;
-        return SaveFilePickerAsync(folder, null, filters, showOverwritePrompt);
+        return SaveFilePickerAsync(folder, null, filters, title, showOverwritePrompt);
     }
 
     public Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(IStorageFolder? directory = null, IReadOnlyList<FilePickerFileType>? filters = null, string? title = null, bool allowMultiple = false)
@@ -169,7 +170,7 @@ public partial class GenericWindow : SukiWindow, INotifyPropertyChanged
             SuggestedStartLocation = directory,
             Title = title,
             AllowMultiple = allowMultiple,
-            FileTypeFilter = filters
+            FileTypeFilter = filters,
         });
     }
 

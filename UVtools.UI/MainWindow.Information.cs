@@ -19,6 +19,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Input.Platform;
 using UVtools.Core.Dialogs;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;

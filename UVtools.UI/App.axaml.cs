@@ -21,6 +21,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Avalonia.Input.Platform;
 using Material.Icons;
 using SukiUI.MessageBox;
 using Updatum;

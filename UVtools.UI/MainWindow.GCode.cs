@@ -10,6 +10,7 @@ using SukiUI.MessageBox;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Avalonia.Input.Platform;
 using UVtools.Core.Dialogs;
 using UVtools.Core.SystemOS;
 using UVtools.UI.Extensions;
