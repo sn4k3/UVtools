@@ -9,7 +9,7 @@
                                          Maximum="100"
                                          Increment="0.5"
                                          Value="50"
-                                         Watermark="Enter text" />
+                                         PlaceholderText="Enter text" />
 
                 <c:ExtendedNumericUpDown Minimum="0"
                                          Maximum="100"
@@ -17,7 +17,7 @@
                                          Width="300"
                                          Value="50"
                                          ValueUnit="mm"
-                                         Watermark="Enter text" />
+                                         PlaceholderText="Enter text" />
 
                 <c:ExtendedNumericUpDown Minimum="0"
                                          Maximum="100"
@@ -26,7 +26,7 @@
                                          Value="50"
                                          ValueUnit="mm"
                                          IsInitialValueVisible="True"
-                                         Watermark="Enter text"/>
+                                         PlaceholderText="Enter text"/>
 
 				<c:ExtendedNumericUpDown Minimum="0"
                                          Maximum="100"
@@ -37,7 +37,7 @@
                                          ValueUnit="mm"
                                          IsInitialValueVisible="True"
                                          ResetVisibility="Visible"
-                                         Watermark="Enter text"
+                                         PlaceholderText="Enter text"
                                          Height="60"/>
 
                 <c:ExtendedNumericUpDown Minimum="0"
@@ -49,7 +49,7 @@
                                          ValueUnit="mm"
                                          IsInitialValueVisible="True"
                                          ResetVisibility="Auto"
-                                         Watermark="Enter text"/>
+                                         PlaceholderText="Enter text"/>
 
                 <c:ExtendedNumericUpDown Minimum="0"
                                          Maximum="100"
@@ -59,7 +59,7 @@
                                          FormatString="F2"
                                          IsResetVisible="True"
                                          ValueUnit="mm"
-                                         Watermark="Enter text"/>
+                                         PlaceholderText="Enter text"/>
 
                 <c:ExtendedNumericUpDown Minimum="0"
                                          Maximum="100"
@@ -71,7 +71,7 @@
                                          IsInitialValueVisible="True"
                                          ResetVisibility="Visible"
                                          IsReadOnly="True"
-                                         Watermark="Enter text" />
+                                         PlaceholderText="Enter text" />
 
                 <c:ExtendedNumericUpDown Minimum="0"
                                          Maximum="100"
@@ -83,7 +83,7 @@
                                          IsInitialValueVisible="True"
                                          ResetVisibility="Visible"
                                          IsEnabled="False"
-                                         Watermark="Enter text" />
+                                         PlaceholderText="Enter text" />
 
 				<c:ExtendedNumericUpDown Minimum="0"
                                          Maximum="10"
@@ -92,7 +92,7 @@
                                          VerticalContentAlignment="Center"
                                          HorizontalContentAlignment="Center"
                                          ButtonSpinnerLocation="Left"
-                                         Watermark="Enter text"/>
+                                         PlaceholderText="Enter text"/>
             </StackPanel>
         </Border>
     </Design.PreviewWith>
@@ -140,7 +140,7 @@
                              MinWidth="0"
                              Foreground="{TemplateBinding Foreground}"
                              FontSize="{TemplateBinding FontSize}"
-                             Watermark="{TemplateBinding Watermark}"
+                             PlaceholderText="{TemplateBinding PlaceholderText}"
                              IsReadOnly="{TemplateBinding IsReadOnly}"
                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
