@@ -697,9 +697,9 @@ public sealed class AnycubicZipFile : FileFormat
         [JsonPropertyName("model_type")]
         public int ModelType { get; set; } = 1;
 
-        // TODO: Find this
-        //[JsonPropertyName("partition_exposure_array")]
-        //public int PartitionExposureArray { get; set; }
+        // Exposure times for each partition
+        [JsonPropertyName("partition_exposure_array")]
+        public float[] PartitionExposureArray { get; set; } = [];
 
         [JsonPropertyName("partition_num")]
         public int PartitionNum { get; set; }
