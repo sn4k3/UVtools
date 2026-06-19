@@ -243,7 +243,7 @@ public sealed class VDAFile : FileFormat
         set
         {
             ManifestFile.Machines.ZHeight = value;
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 

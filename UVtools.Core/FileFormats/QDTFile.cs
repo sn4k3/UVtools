@@ -14,9 +14,8 @@ using System.IO;
 using System.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
 using Emgu.CV.CvEnum;
-using UVtools.Core.Extensions;
+using EmguExtensions;
 using UVtools.Core.IO;
-using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
@@ -84,7 +83,7 @@ public sealed class QDTFile : FileFormat
 
     /*public override Size[] ThumbnailsOriginalSize { get; } =
     {
-        new(800, 400), 
+        new(800, 400),
     };*/
 
     public override FlipDirection DisplayMirror
@@ -119,7 +118,7 @@ public sealed class QDTFile : FileFormat
         // Header
         outputFile.WriteLine(FileHeader, LayerHeightUm, ResolutionX, ResolutionY);
 
-        var layersLines = new List<GreyLine>[LayerCount, 2];
+        var layersLines = new GreyLine[LayerCount, 2][];
 
         foreach (var batch in BatchLayersIndexes())
         {
@@ -152,7 +151,7 @@ public sealed class QDTFile : FileFormat
                     }
                     else
                     {
-                        layersLines[layerIndex, 0] = matRoiModel.RoiMat.ScanLines(true, 127, matRoiModel.RoiLocation);
+                        layersLines[layerIndex, 0] = matRoiModel.RoiMat.ScanLines(true, 127, matRoiModel.Roi.Location);
                     }
 
                     layersLines[layerIndex, 1] = matResize.ScanLines(true, 127);
@@ -165,7 +164,7 @@ public sealed class QDTFile : FileFormat
             foreach (var layerIndex in batch)
             {
                 progress.PauseOrCancelIfRequested();
-                
+
                 outputFile.WriteLine(layerIndex + 1);
 
                 for (int j = 1; j >= 0; j--)
@@ -177,7 +176,7 @@ public sealed class QDTFile : FileFormat
 
                     var layerLines = layersLines[layerIndex, j];
 
-                    if (layerLines.Count == 0) continue;
+                    if (layerLines.Length == 0) continue;
 
                     var currentLine = layerLines[0];
 
@@ -185,7 +184,7 @@ public sealed class QDTFile : FileFormat
                     outputFile.WriteLine($"{currentLine.StartX},{currentLine.StartY},0");
                     outputFile.WriteLine($"{currentLine.StartX},{currentLine.EndY - currentLine.StartY},1");
 
-                    for (int i = 1; i < layerLines.Count; i++)
+                    for (int i = 1; i < layerLines.Length; i++)
                     {
                         var previousLine = layerLines[i - 1];
                         currentLine = layerLines[i];
@@ -342,11 +341,11 @@ public sealed class QDTFile : FileFormat
                                 CvInvoke.Line(mat,
                                     startPoint with { X = (int)(ResolutionX - startPoint.X + 1) },
                                     endPoint with { X = (int)(ResolutionX - endPoint.X + 1) },
-                                    EmguExtensions.WhiteColor);
+                                    EmguCvExtensions.WhiteColor);
                             }
                             else
                             {
-                                CvInvoke.Line(mat, startPoint, endPoint, EmguExtensions.WhiteColor);
+                                CvInvoke.Line(mat, startPoint, endPoint, EmguCvExtensions.WhiteColor);
                             }
 
                             zerosInRow = 0;
@@ -440,7 +439,7 @@ public sealed class QDTFile : FileFormat
 
                 continue;
             }
-            
+
         }
 
         if (expecting != QDTFileLineExpect.End) throw new FileLoadException($"Error while decoding the file: The file end was expected but got: <{expecting}>");

@@ -1,44 +1,46 @@
 <windows:GenericWindow xmlns="https://github.com/avaloniaui"
-					   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-					   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-					   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-					   xmlns:windows="clr-namespace:UVtools.UI.Windows"
-					   xmlns:suki="https://github.com/kikipoulet/SukiUI"
-					   xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-					   mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="450"
-					   x:Class="UVtools.UI.Windows.VersionSelectorWindow"
-					   x:DataType="windows:VersionSelectorWindow"
-					   CanResize="False"
-					   Title="Version selector"
-					   SizeToContent="Height"
-					   Width="450"
-					   Padding="10"
-					   WindowStartupLocation="CenterOwner">
+                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                       xmlns:windows="clr-namespace:UVtools.UI.Windows"
+                       xmlns:suki="https://github.com/kikipoulet/SukiUI"
+                       xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                       mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="450"
+                       x:Class="UVtools.UI.Windows.VersionSelectorWindow"
+                       x:DataType="windows:VersionSelectorWindow"
+                       CanResize="False"
+                       Title="Version selector"
+                       SizeToContent="Height"
+                       Width="450"
+                       Padding="10"
+                       WindowStartupLocation="CenterOwner">
+    <LayoutTransformControl>
+        <LayoutTransformControl.LayoutTransform>
+            <ScaleTransform ScaleX="{Binding Settings.General.UiScaling}"
+                            ScaleY="{Binding Settings.General.UiScaling}" />
+        </LayoutTransformControl.LayoutTransform>
+        <suki:SukiMessageBoxHost Header="{Binding DescriptionText}"
+                                 UseAlternativeHeaderStyle="True">
+            <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,*"
+                  ColumnSpacing="10">
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Version:" />
+                <ComboBox Grid.Row="0" Grid.Column="1"
+                          HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding AvailableVersions}"
+                          SelectedItem="{Binding Version}" />
+            </Grid>
+            <suki:SukiMessageBoxHost.ActionButtonsSource>
+                <Button Command="{Binding SelectVersion}"
+                        IsDefault="True"
+                        Content="{icon:MaterialIconTextExt Kind=Check, Text='{Binding Version, StringFormat=Select v{0}}'}" />
+                <Button Content="Use the default" Command="{Binding SelectDefault}" />
+                <Button IsCancel="True"
+                        Content="{icon:MaterialIconTextExt Kind=SignOut, Text='Cancel'}"
+                        Command="{Binding Close}" />
+            </suki:SukiMessageBoxHost.ActionButtonsSource>
+        </suki:SukiMessageBoxHost>
 
-	<suki:SukiMessageBoxHost Header="{Binding DescriptionText}"
-                             UseAlternativeHeaderStyle="True">
-		<Grid RowDefinitions="Auto" ColumnDefinitions="Auto,*"
-              ColumnSpacing="10">
-			<TextBlock Grid.Row="0" Grid.Column="0"
-					   VerticalAlignment="Center"
-					   Text="Version:"/>
-			<ComboBox Grid.Row="0" Grid.Column="1"
-					  HorizontalAlignment="Stretch"
-					  ItemsSource="{Binding AvailableVersions}"
-					  SelectedItem="{Binding Version}"/>
-		</Grid>
-		<suki:SukiMessageBoxHost.ActionButtonsSource>
-			<Button Command="{Binding SelectVersion}"
-                    IsDefault="True"
-					Content="{icon:MaterialIconTextExt Kind=Check, Text='{Binding Version, StringFormat=Select v{0}}'}">
-			</Button>
-			<Button Content="Use the default" Command="{Binding SelectDefault}"/>
-			<Button IsCancel="True"
-                    Content="{icon:MaterialIconTextExt Kind=SignOut, Text='Cancel'}"
-					Command="{Binding Close}">
-			</Button>
-		</suki:SukiMessageBoxHost.ActionButtonsSource>
-	</suki:SukiMessageBoxHost>
-
-
+    </LayoutTransformControl>
 </windows:GenericWindow>

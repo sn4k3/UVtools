@@ -14,6 +14,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 
@@ -97,7 +98,7 @@ public class ExcellonDrillFormat
         /// Include right zeros
         /// </summary>
         Trail,
-        
+
     }
 
     #endregion
@@ -326,7 +327,7 @@ public class ExcellonDrillFormat
                         }
                     }
 
-                    
+
                 }
 
                 match = Regex.Match(line, @"Y-?(([0-9]*[.])?[0-9]+)");
@@ -379,7 +380,7 @@ public class ExcellonDrillFormat
             }
         }
     }
-   
+
     public float ValueToCoordinate(float value) =>
         UnitType switch
         {
@@ -438,8 +439,8 @@ public class ExcellonDrillFormat
             var position = document.PositionMmToPx(document.GetMillimeters(drill.Position));
             var radius = document.SizeMmToPx(radiusMillimeters, radiusMillimeters);
             mat.DrawCircle(position, radius,
-                document.InversePolarity ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor,
-                -1, 
+                document.InversePolarity ? EmguCvExtensions.WhiteColor : EmguCvExtensions.BlackColor,
+                -1,
                 enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
         }
     }

@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
@@ -14,6 +15,7 @@ using System.Text;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -23,7 +25,7 @@ namespace UVtools.Core.Operations;
 
 #pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public class OperationStirResin : Operation, IEquatable<OperationStirResin>
+public partial class OperationStirResin : Operation, IEquatable<OperationStirResin>
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 #pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 {
@@ -35,19 +37,6 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
         [Description("Stir and print: Stir the resin and then continue to print the present model on the file")]
         StirAndPrint
     }
-    #endregion
-
-    #region Members
-    private StirMethod _method = StirMethod.StirOnly;
-    private ushort _stirs = 10;
-    private bool _outputDummyPixel = true;
-    private decimal _exposureTime;
-    private decimal _liftHeight = 45;
-    private decimal _liftSpeed;
-    private decimal _retractSpeed;
-    private decimal _waitTimeBeforeStir;
-    private decimal _waitTimeAfterLift;
-
     #endregion
 
     #region Overrides
@@ -64,10 +53,10 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
         "Note: Keep in mind this method will add print time, but also, manual stir with a spatula or in the bottle yields better stirring.";
 
     public override string ConfirmationText =>
-        $"modify the file to stir the resin in the VAT using the method {_method} at print start?";
+        $"modify the file to stir the resin in the VAT using the method {Method} at print start?";
 
     public override string ProgressTitle =>
-        $"Modifying the file to stir the resin in the VAT using the method {_method}";
+        $"Modifying the file to stir the resin in the VAT using the method {Method}";
 
     public override string ProgressAction => "Processed layers";
 
@@ -86,29 +75,29 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
     {
         var sb = new StringBuilder();
 
-        if (_stirs <= 0)
+        if (Stirs <= 0)
         {
             sb.AppendLine("The number of stirs must be greater than 0.");
         }
 
         if (!SlicerFile.CanUseSameLayerPositionZ)
         {
-            var lastStirPosition = Layer.RoundHeight(_stirs * Layer.HeightPrecisionIncrementFloat);
-            if (lastStirPosition >= (float)_liftHeight)
+            var lastStirPosition = Layer.RoundHeight(Stirs * Layer.HeightPrecisionIncrementFloat);
+            if (lastStirPosition >= (float)LiftHeight)
             {
-                var maxStirs = (int)(_liftHeight / Layer.HeightPrecisionIncrement - 1);
+                var maxStirs = (int)(LiftHeight / Layer.HeightPrecisionIncrement - 1);
                 sb.AppendLine($"Your printer and/or file format does not support layers in same position, as so, each stir will increment in height by {Layer.HeightPrecisionIncrementFloat}mm.");
-                sb.AppendLine($"> Your current settings ({_stirs} stirs x {Layer.HeightPrecisionIncrementFloat}mm = {lastStirPosition}mm) is equal or greater than the defined lift height of {_liftHeight}mm.");
+                sb.AppendLine($"> Your current settings ({Stirs} stirs x {Layer.HeightPrecisionIncrementFloat}mm = {lastStirPosition}mm) is equal or greater than the defined lift height of {LiftHeight}mm.");
                 sb.AppendLine($"> As the lift height should be above resin level, all consequent stirs are useless.");
                 sb.AppendLine($"> Please lower your stir number up to {maxStirs} stirs to optimize the process and to be below the lift height.");
             }
         }
 
-        if (_method == StirMethod.StirAndPrint)
+        if (Method == StirMethod.StirAndPrint)
         {
             if (!SlicerFile.CanUseSameLayerPositionZ)
             {
-                sb.AppendLine($"Your printer and/or file format is not compatible with the method {_method}. Please select another method.");
+                sb.AppendLine($"Your printer and/or file format is not compatible with the method {Method}. Please select another method.");
             }
         }
 
@@ -117,7 +106,7 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
 
     public override string ToString()
     {
-        var result = $"[{_method} {_stirs}x] [Wait: {_waitTimeBeforeStir}s/{_waitTimeAfterLift}s] [Lift: {_liftHeight}mm @ {_liftSpeed}mm/min] [Retract: {_retractSpeed}mm/min]";
+        var result = $"[{Method} {Stirs}x] [Wait: {WaitTimeBeforeStir}s/{WaitTimeAfterLift}s] [Lift: {LiftHeight}mm @ {LiftSpeed}mm/min] [Retract: {RetractSpeed}mm/min]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -132,9 +121,9 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
 
     public override void InitWithSlicerFile()
     {
-        if (_exposureTime == 0) _exposureTime = SlicerFile.SupportGCode ? 0 : 0.01m;
-        if (_liftSpeed == 0) _liftSpeed = (decimal)SlicerFile.MaximumSpeed;
-        if (_retractSpeed == 0) _retractSpeed = _liftSpeed;
+        if (ExposureTime == 0) ExposureTime = SlicerFile.SupportGCode ? 0 : 0.01m;
+        if (LiftSpeed == 0) LiftSpeed = (decimal)SlicerFile.MaximumSpeed;
+        if (RetractSpeed == 0) RetractSpeed = LiftSpeed;
     }
 
     #endregion
@@ -144,46 +133,34 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
     /// <summary>
     /// Gets or sets the method to use to stir the resin
     /// </summary>
-    public StirMethod Method
-    {
-        get => _method;
-        set => RaiseAndSetIfChanged(ref _method, value);
-    }
+    [ObservableProperty]
+    public partial StirMethod Method { get; set; } = StirMethod.StirOnly;
 
     /// <summary>
     /// Gets or sets the number of stirs to perform
     /// </summary>
-    public ushort Stirs
-    {
-        get => _stirs;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _stirs, value)) return;
-            RaisePropertyChanged(nameof(StirSeconds));
-            RaisePropertyChanged(nameof(StirTimeString));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(StirSeconds))]
+    [NotifyPropertyChangedFor(nameof(StirTimeString))]
+    public partial ushort Stirs { get; set; } = 10;
 
     /// <summary>
     /// True to output a dummy pixel on bounding rectangle position to avoid empty layer and blank image, otherwise set to false
     /// </summary>
-    public bool OutputDummyPixel
-    {
-        get => _outputDummyPixel;
-        set => RaiseAndSetIfChanged(ref _outputDummyPixel, value);
-    }
+    [ObservableProperty]
+    public partial bool OutputDummyPixel { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the exposure time in seconds (Keep this to very low value)
     /// </summary>
     public decimal ExposureTime
     {
-        get => _exposureTime;
+        get;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _exposureTime, Math.Round(Math.Max(0, value), 3))) return;
-            RaisePropertyChanged(nameof(StirSeconds));
-            RaisePropertyChanged(nameof(StirTimeString));
+            if (!SetProperty(ref field, Math.Round(Math.Max(0, value), 3))) return;
+            OnPropertyChanged(nameof(StirSeconds));
+            OnPropertyChanged(nameof(StirTimeString));
         }
     }
 
@@ -192,26 +169,26 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
     /// </summary>
     public decimal LiftHeight
     {
-        get => _liftHeight;
+        get;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _liftHeight, Math.Round(Math.Max(0, value), 2))) return;
-            RaisePropertyChanged(nameof(StirSeconds));
-            RaisePropertyChanged(nameof(StirTimeString));
+            if (!SetProperty(ref field, Math.Round(Math.Max(0, value), 2))) return;
+            OnPropertyChanged(nameof(StirSeconds));
+            OnPropertyChanged(nameof(StirTimeString));
         }
-    }
+    } = 45;
 
     /// <summary>
     /// Gets or sets the lift speed in mm/min
     /// </summary>
     public decimal LiftSpeed
     {
-        get => _liftSpeed;
+        get;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _liftSpeed, Math.Round(Math.Max(0, value), 2))) return;
-            RaisePropertyChanged(nameof(StirSeconds));
-            RaisePropertyChanged(nameof(StirTimeString));
+            if (!SetProperty(ref field, Math.Round(Math.Max(0, value), 2))) return;
+            OnPropertyChanged(nameof(StirSeconds));
+            OnPropertyChanged(nameof(StirTimeString));
         }
     }
 
@@ -220,12 +197,12 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
     /// </summary>
     public decimal RetractSpeed
     {
-        get => _retractSpeed;
+        get;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _retractSpeed, Math.Round(Math.Max(0, value), 2))) return;
-            RaisePropertyChanged(nameof(StirSeconds));
-            RaisePropertyChanged(nameof(StirTimeString));
+            if (!SetProperty(ref field, Math.Round(Math.Max(0, value), 2))) return;
+            OnPropertyChanged(nameof(StirSeconds));
+            OnPropertyChanged(nameof(StirTimeString));
         }
     }
 
@@ -234,12 +211,12 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
     /// </summary>
     public decimal WaitTimeBeforeStir
     {
-        get => _waitTimeBeforeStir;
+        get;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _waitTimeBeforeStir, Math.Round(Math.Max(0, value), 2))) return;
-            RaisePropertyChanged(nameof(StirSeconds));
-            RaisePropertyChanged(nameof(StirTimeString));
+            if (!SetProperty(ref field, Math.Round(Math.Max(0, value), 2))) return;
+            OnPropertyChanged(nameof(StirSeconds));
+            OnPropertyChanged(nameof(StirTimeString));
         }
     }
 
@@ -248,19 +225,19 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
     /// </summary>
     public decimal WaitTimeAfterLift
     {
-        get => _waitTimeAfterLift;
+        get;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _waitTimeAfterLift, Math.Round(Math.Max(0, value), 2))) return;
-            RaisePropertyChanged(nameof(StirSeconds));
-            RaisePropertyChanged(nameof(StirTimeString));
+            if (!SetProperty(ref field, Math.Round(Math.Max(0, value), 2))) return;
+            OnPropertyChanged(nameof(StirSeconds));
+            OnPropertyChanged(nameof(StirTimeString));
         }
     }
 
     /// <summary>
     /// Gets the total time in seconds to stir the resin
     /// </summary>
-    public decimal StirSeconds => OperationCalculator.LightOffDelayC.CalculateSeconds(_liftHeight, _liftSpeed, _retractSpeed, _exposureTime + _waitTimeBeforeStir + _waitTimeAfterLift) * _stirs;
+    public decimal StirSeconds => OperationCalculator.LightOffDelayC.CalculateSeconds(LiftHeight, LiftSpeed, RetractSpeed, ExposureTime + WaitTimeBeforeStir + WaitTimeAfterLift) * Stirs;
 
     /// <summary>
     /// Gets the total time in readable string to stir the resin
@@ -275,7 +252,10 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
     {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
-        return _method == other._method && _stirs == other._stirs && _outputDummyPixel == other._outputDummyPixel && _exposureTime == other._exposureTime && _liftHeight == other._liftHeight && _liftSpeed == other._liftSpeed && _retractSpeed == other._retractSpeed && _waitTimeBeforeStir == other._waitTimeBeforeStir && _waitTimeAfterLift == other._waitTimeAfterLift;
+        return Method == other.Method && Stirs == other.Stirs && OutputDummyPixel == other.OutputDummyPixel &&
+               ExposureTime == other.ExposureTime && LiftHeight == other.LiftHeight &&
+               LiftSpeed == other.LiftSpeed && RetractSpeed == other.RetractSpeed &&
+               WaitTimeBeforeStir == other.WaitTimeBeforeStir && WaitTimeAfterLift == other.WaitTimeAfterLift;
     }
 
     public override bool Equals(object? obj)
@@ -304,50 +284,50 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
     {
         SlicerFile.SuppressRebuildPropertiesWork(() =>
         {
-            using var mat = _outputDummyPixel ? SlicerFile.CreateMatWithDummyPixelFromLayer(0) : SlicerFile.CreateMat();
+            using var mat = OutputDummyPixel ? SlicerFile.CreateMatWithDummyPixelFromLayer(0) : SlicerFile.CreateMat();
             var layer = new Layer(mat, SlicerFile)
             {
                 PositionZ = Layer.HeightPrecisionIncrementFloat,
-                LiftHeightTotal = (float)_liftHeight,
-                LiftSpeed = (float)_liftSpeed,
-                RetractSpeed = (float)_retractSpeed,
+                LiftHeightTotal = (float)LiftHeight,
+                LiftSpeed = (float)LiftSpeed,
+                RetractSpeed = (float)RetractSpeed,
                 WaitTimeAfterCure = 0,
-                WaitTimeAfterLift = (float)_waitTimeAfterLift,
+                WaitTimeAfterLift = (float)WaitTimeAfterLift,
                 LightPWM = SlicerFile.SupportGCode ? byte.MinValue : (byte)1,
-                ExposureTime = (float)_exposureTime,
+                ExposureTime = (float)ExposureTime,
             };
 
-            layer.SetWaitTimeBeforeCureOrLightOffDelay((float)_waitTimeBeforeStir);
+            layer.SetWaitTimeBeforeCureOrLightOffDelay((float)WaitTimeBeforeStir);
 
-            var stirLayers = layer.Clone(_stirs);
+            var stirLayers = layer.Clone(Stirs);
 
-            switch (_method)
+            switch (Method)
             {
                 case StirMethod.StirOnly:
                 {
                     SlicerFile.LayerHeight = Layer.HeightPrecisionIncrementFloat;
                     SlicerFile.BottomLayerCount = 1;
 
-                    SlicerFile.BottomLiftHeightTotal = (float)_liftHeight;
-                    SlicerFile.LiftHeightTotal = (float)_liftHeight;
+                    SlicerFile.BottomLiftHeightTotal = (float)LiftHeight;
+                    SlicerFile.LiftHeightTotal = (float)LiftHeight;
 
-                    SlicerFile.BottomLiftSpeed = (float)_liftSpeed;
-                    SlicerFile.LiftSpeed = (float)_liftSpeed;
+                    SlicerFile.BottomLiftSpeed = (float)LiftSpeed;
+                    SlicerFile.LiftSpeed = (float)LiftSpeed;
 
-                    SlicerFile.BottomRetractSpeed = (float)_retractSpeed;
-                    SlicerFile.RetractSpeed = (float)_retractSpeed;
+                    SlicerFile.BottomRetractSpeed = (float)RetractSpeed;
+                    SlicerFile.RetractSpeed = (float)RetractSpeed;
 
-                    SlicerFile.SetBottomWaitTimeBeforeCureOrLightOffDelay((float)_waitTimeBeforeStir);
-                    SlicerFile.SetNormalWaitTimeBeforeCureOrLightOffDelay((float)_waitTimeBeforeStir);
+                    SlicerFile.SetBottomWaitTimeBeforeCureOrLightOffDelay((float)WaitTimeBeforeStir);
+                    SlicerFile.SetNormalWaitTimeBeforeCureOrLightOffDelay((float)WaitTimeBeforeStir);
 
                     SlicerFile.BottomWaitTimeAfterCure = 0;
                     SlicerFile.WaitTimeAfterCure = 0;
 
-                    SlicerFile.BottomWaitTimeAfterLift = (float)_waitTimeAfterLift;
-                    SlicerFile.WaitTimeAfterLift = (float)_waitTimeAfterLift;
+                    SlicerFile.BottomWaitTimeAfterLift = (float)WaitTimeAfterLift;
+                    SlicerFile.WaitTimeAfterLift = (float)WaitTimeAfterLift;
 
                     SlicerFile.LightPWM = SlicerFile.BottomLightPWM = SlicerFile.SupportGCode ? byte.MinValue : (byte)1;
-                    SlicerFile.ExposureTime = (float)_exposureTime;
+                    SlicerFile.ExposureTime = (float)ExposureTime;
 
                     if (!SlicerFile.CanUseSameLayerPositionZ)
                     {
@@ -362,7 +342,7 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
 
                     if (SlicerFile.ThumbnailsCount > 0)
                     {
-                        using var thumbnail = EmguExtensions.InitMat(new Size(400, 200), 3);
+                        using var thumbnail = EmguCvExtensions.InitMat(new Size(400, 200), 3);
                         var fontFace = FontFace.HersheyDuplex;
                         var fontScale = 1;
                         var fontThickness = 2;
@@ -373,7 +353,7 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
                         CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
                         CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
                         CvInvoke.PutText(thumbnail, "Stir Resin", new Point(xSpacing, ySpacing * 2 + 20), fontFace, fontScale*2, new MCvScalar(0, 255, 255), fontThickness);
-                        CvInvoke.PutText(thumbnail, $"{Stirs}x", new Point(xSpacing, ySpacing * 4), fontFace, fontScale*2, EmguExtensions.WhiteColor, fontThickness);
+                        CvInvoke.PutText(thumbnail, $"{Stirs}x", new Point(xSpacing, ySpacing * 4), fontFace, fontScale*2, EmguCvExtensions.WhiteColor, fontThickness);
 
                         SlicerFile.SetThumbnails(thumbnail);
                     }
@@ -397,7 +377,7 @@ public class OperationStirResin : Operation, IEquatable<OperationStirResin>
                     break;
                 }
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(Method), _method, null);
+                    throw new ArgumentOutOfRangeException(nameof(Method), Method, null);
             }
         });
 

@@ -5,9 +5,11 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 using ZLinq;
 
@@ -18,6 +20,7 @@ public class OperationSessionManager : IList<Operation>
     #region Settings
 
     //public static string FilePath;
+
     #endregion
 
     #region Singleton
@@ -36,9 +39,11 @@ public class OperationSessionManager : IList<Operation>
     #endregion
 
     #region Constructor
+
     private OperationSessionManager()
     {
     }
+
     #endregion
 
     #region Methods
@@ -48,11 +53,15 @@ public class OperationSessionManager : IList<Operation>
         return this.AsValueEnumerable().FirstOrDefault(operation => operation.GetType() == type);
     }
 
-    public Operation? Find(Operation fromOperation) => Find(fromOperation.GetType());
+    public Operation? Find(Operation fromOperation)
+    {
+        return Find(fromOperation.GetType());
+    }
 
     #endregion
 
     #region List Implementation
+
     public IEnumerator<Operation> GetEnumerator()
     {
         return _operations.GetEnumerator();
@@ -60,7 +69,7 @@ public class OperationSessionManager : IList<Operation>
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        return ((IEnumerable) _operations).GetEnumerator();
+        return ((IEnumerable)_operations).GetEnumerator();
     }
 
     public void Add(Operation item)
@@ -68,7 +77,7 @@ public class OperationSessionManager : IList<Operation>
         if (item is null) return;
         _operations.RemoveAll(operation => operation.GetType() == item.GetType());
         var operation = item.Clone();
-        operation.ClearPropertyChangedListeners();
+        operation.ClearPropertyChangedHandlers();
         operation.ClearROIandMasks();
         operation.ImportedFrom = Operation.OperationImportFrom.Session;
         _operations.Add(operation);
@@ -96,7 +105,7 @@ public class OperationSessionManager : IList<Operation>
 
     public int Count => _operations.Count;
 
-    public bool IsReadOnly => ((ICollection<Operation>) _operations).IsReadOnly;
+    public bool IsReadOnly => ((ICollection<Operation>)_operations).IsReadOnly;
 
     public int IndexOf(Operation item)
     {
@@ -108,7 +117,7 @@ public class OperationSessionManager : IList<Operation>
         if (item is null) return;
         _operations.RemoveAll(operation => operation.GetType() == item.GetType());
         var operation = item.Clone();
-        operation.ClearPropertyChangedListeners();
+        operation.ClearPropertyChangedHandlers();
         operation.ClearROIandMasks();
         operation.ImportedFrom = Operation.OperationImportFrom.Session;
         _operations.Insert(index, operation);
@@ -124,5 +133,6 @@ public class OperationSessionManager : IList<Operation>
         get => _operations[index];
         set => _operations[index] = value;
     }
+
     #endregion
 }

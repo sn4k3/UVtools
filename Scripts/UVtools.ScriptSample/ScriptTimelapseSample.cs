@@ -7,6 +7,7 @@
  */
 
 using System;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Scripting;
@@ -136,7 +137,7 @@ public class ScriptTimelapseSample : ScriptGlobals
     {
         if (InputUseVirtualLayer.Value)
         {
-            using var mat = EmguExtensions.InitMat(SlicerFile.Resolution);
+            using var mat = EmguCvExtensions.InitMat(SlicerFile.Resolution);
             var pixelPos = SlicerFile.BoundingRectangle.Center();
             mat.SetByte(pixelPos.X, pixelPos.Y, 1); // Print a very fade pixel to ignore empty layer detection
             var layer = new Layer(SlicerFile.LayerCount, mat, SlicerFile)
@@ -155,7 +156,7 @@ public class ScriptTimelapseSample : ScriptGlobals
                 }
                 else
                 {
-                    layer.ExposureTime = InputWaitTime.Value; 
+                    layer.ExposureTime = InputWaitTime.Value;
                 }
             }
 
@@ -170,7 +171,7 @@ public class ScriptTimelapseSample : ScriptGlobals
                     Progress.ProcessedItems = layerIndex;
                 }
             });
-                
+
         }
         else
         {

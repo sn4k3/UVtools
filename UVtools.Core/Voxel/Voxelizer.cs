@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Voxel;
@@ -24,14 +25,14 @@ public class Voxelizer
         public Rectangle FaceRect;
         public float LayerHeight;
         /* Doubly linked list of UVFaces, used during Stage 3, collapsing the faces vertically.
-         * instead of modifying properties and having to remove items from lists, we keep all faces 
+         * instead of modifying properties and having to remove items from lists, we keep all faces
          * and just link parents and children together.
          * During STL triangle generation, we only draw the 'roots' (faces with no parent) and we count
          * the chain of children for how "high" the face should be. */
         public UVFace? Parent = null;
         public UVFace? Child = null;
 
-        /* This is used to make a linked list of faces, instead of generating a list which requires resize/reallocation/copies. 
+        /* This is used to make a linked list of faces, instead of generating a list which requires resize/reallocation/copies.
          * Particularly useful when you have a model that consists of 49 million visible faces...*/
         public UVFace? FlatListNext = null;
     }
@@ -50,7 +51,7 @@ public class Voxelizer
 
     public static FaceOrientation GetOpenFaces(Mat layer, int x, int y, Mat? layerBelow = null, Mat? layerAbove = null)
     {
-        var layerSpan = layer.GetDataByteReadOnlySpan();
+        var layerSpan = layer.GetReadOnlySpanOfBytes();
 
         var foundFaces = FaceOrientation.None;
         var pixelPos = layer.GetPixelPos(x, y);
@@ -65,7 +66,7 @@ public class Voxelizer
         }
         else
         {
-            var belowSpan = layerBelow.GetDataByteReadOnlySpan();
+            var belowSpan = layerBelow.GetReadOnlySpanOfBytes();
             if (belowSpan[pixelPos] == 0)
             {
                 foundFaces |= FaceOrientation.Bottom;
@@ -78,7 +79,7 @@ public class Voxelizer
         }
         else
         {
-            var aboveSpan = layerAbove.GetDataByteReadOnlySpan();
+            var aboveSpan = layerAbove.GetReadOnlySpanOfBytes();
             if (aboveSpan[pixelPos] == 0)
             {
                 foundFaces |= FaceOrientation.Top;
@@ -115,7 +116,7 @@ public class Voxelizer
         /* the outer contours of the current layer should always be checked, they by definition should have an exposed face */
         using var contours = curLayer.FindContours(RetrType.Tree, contourCompressionMethod);
         var onlyContours = curLayer.NewZeros();
-        CvInvoke.DrawContours(onlyContours, contours, -1, EmguExtensions.WhiteColor, 1);
+        CvInvoke.DrawContours(onlyContours, contours, -1, EmguCvExtensions.WhiteColor, 1);
 
         bool needAboveDispose = layerAbove is null;
         bool needBelowDispose = layerBelow is null;

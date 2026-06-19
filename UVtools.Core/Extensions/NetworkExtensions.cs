@@ -48,7 +48,7 @@ public static class NetworkExtensions
     public static async Task<HttpResponseMessage> DownloadAsync(this HttpClient client, string requestUri, string destinationFilePath, IProgress<(long total, long bytes)>? progress = null, CancellationToken cancellationToken = default)
     {
         await using var stream = File.Open(destinationFilePath, FileMode.Create, FileAccess.Write);
-        return await DownloadAsync(client, requestUri, stream, progress, cancellationToken).ConfigureAwait(false);
+        return await client.DownloadAsync(requestUri, stream, progress, cancellationToken).ConfigureAwait(false);
     }
 
 

@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using System;
 using System.Collections;
@@ -14,7 +15,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using UVtools.Core.EmguCV;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
@@ -22,16 +23,10 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationLayerExportHtml : Operation
+public sealed partial class OperationLayerExportHtml : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
-    private string _filePath = null!;
-    private bool _exportThumbnails = true;
-    private bool _exportLayerSettings = true;
-    private bool _exportGCode = true;
-    private bool _exportLayerPreview = true;
-    private bool _exportRawData = true;
 
     #endregion
 
@@ -58,11 +53,11 @@ public sealed class OperationLayerExportHtml : Operation
 
     public override string ToString()
     {
-        var result = $"[Thumbnails: {_exportThumbnails}]" +
-                     $" [Raw data: {_exportRawData}]" +
-                     $" [Layers: {_exportLayerSettings}]" +
-                     $" [GCode: {_exportGCode}]" +
-                     $" [Preview: {_exportLayerPreview}]";
+        var result = $"[Thumbnails: {ExportThumbnails}]" +
+                     $" [Raw data: {ExportRawData}]" +
+                     $" [Layers: {ExportLayerSettings}]" +
+                     $" [GCode: {ExportGCode}]" +
+                     $" [Preview: {ExportLayerPreview}]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -71,41 +66,23 @@ public sealed class OperationLayerExportHtml : Operation
 
     #region Properties
 
-    public string FilePath
-    {
-        get => _filePath;
-        set => RaiseAndSetIfChanged(ref _filePath, value);
-    }
+    [ObservableProperty]
+    public partial string FilePath { get; set; } = null!;
 
-    public bool ExportThumbnails
-    {
-        get => _exportThumbnails;
-        set => RaiseAndSetIfChanged(ref _exportThumbnails, value);
-    }
+    [ObservableProperty]
+    public partial bool ExportThumbnails { get; set; } = true;
 
-    public bool ExportRawData
-    {
-        get => _exportRawData;
-        set => RaiseAndSetIfChanged(ref _exportRawData, value);
-    }
+    [ObservableProperty]
+    public partial bool ExportRawData { get; set; } = true;
 
-    public bool ExportLayerSettings
-    {
-        get => _exportLayerSettings;
-        set => RaiseAndSetIfChanged(ref _exportLayerSettings, value);
-    }
+    [ObservableProperty]
+    public partial bool ExportLayerSettings { get; set; } = true;
 
-    public bool ExportGCode
-    {
-        get => _exportGCode;
-        set => RaiseAndSetIfChanged(ref _exportGCode, value);
-    }
+    [ObservableProperty]
+    public partial bool ExportGCode { get; set; } = true;
 
-    public bool ExportLayerPreview
-    {
-        get => _exportLayerPreview;
-        set => RaiseAndSetIfChanged(ref _exportLayerPreview, value);
-    }
+    [ObservableProperty]
+    public partial bool ExportLayerPreview { get; set; } = true;
 
     #endregion
 
@@ -119,7 +96,7 @@ public sealed class OperationLayerExportHtml : Operation
 
     public override void InitWithSlicerFile()
     {
-        _filePath = SlicerFile.FileFullPathNoExt + ".html";
+        FilePath = SlicerFile.FileFullPathNoExt + ".html";
     }
 
     #endregion
@@ -128,7 +105,7 @@ public sealed class OperationLayerExportHtml : Operation
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
-        using TextWriter html = new StreamWriter(_filePath);
+        using TextWriter html = new StreamWriter(FilePath);
         html.WriteLine("<!doctype html>");
         html.WriteLine("<html lang=\"en\" class=\"h-100\">");
         html.WriteLine("  <head>");
@@ -169,28 +146,28 @@ public sealed class OperationLayerExportHtml : Operation
         html.WriteLine($"                <a class=\"nav-link\" href=\"#Settings\">Settings</a>");
         html.WriteLine($"              </li>");
 
-        if (_exportRawData && SlicerFile.Configs.Length > 0)
+        if (ExportRawData && SlicerFile.Configs.Length > 0)
         {
             html.WriteLine($"              <li class=\"nav-item\">");
             html.WriteLine($"                <a class=\"nav-link\" href=\"#RawData\">Raw data</a>");
             html.WriteLine($"              </li>");
         }
 
-        if (_exportLayerSettings && SlicerFile.SupportPerLayerSettings)
+        if (ExportLayerSettings && SlicerFile.SupportPerLayerSettings)
         {
             html.WriteLine($"              <li class=\"nav-item\">");
             html.WriteLine($"                <a class=\"nav-link\" href=\"#Layers\">Layers</a>");
             html.WriteLine($"              </li>");
         }
 
-        if (_exportGCode && SlicerFile.HaveGCode)
+        if (ExportGCode && SlicerFile.HaveGCode)
         {
             html.WriteLine($"              <li class=\"nav-item\">");
             html.WriteLine($"                <a class=\"nav-link\" href=\"#GCode\">GCode</a>");
             html.WriteLine($"              </li>");
         }
 
-        if (_exportLayerPreview)
+        if (ExportLayerPreview)
         {
             html.WriteLine($"              <li class=\"nav-item\">");
             html.WriteLine($"                <a class=\"nav-link\" href=\"#LayerPreview\">Preview</a>");
@@ -211,12 +188,12 @@ public sealed class OperationLayerExportHtml : Operation
         html.WriteLine("      <div class=\"container pt-5\">");
         html.WriteLine($"        <h1 class=\"display-5 fw-bold\">{SlicerFile.Filename}</h1>");
 
-        if (_exportThumbnails)
+        if (ExportThumbnails)
         {
             for (var i = 0; i < SlicerFile.ThumbnailsCount; i++)
             {
                 html.WriteLine(
-                    $"        <img src=\"data:image/png;base64,{Convert.ToBase64String(SlicerFile.Thumbnails[i].GetPngByes())}\" class=\"img-thumbnail\" alt=\"Thumbnail {i}\">");
+                    $"        <img src=\"data:image/png;base64,{Convert.ToBase64String(SlicerFile.Thumbnails[i].GetPngBytes())}\" class=\"img-thumbnail\" alt=\"Thumbnail {i}\">");
             }
         }
 
@@ -392,7 +369,7 @@ public sealed class OperationLayerExportHtml : Operation
         }
 
 
-        if (_exportRawData && SlicerFile.Configs.Length > 0)
+        if (ExportRawData && SlicerFile.Configs.Length > 0)
         {
             html.WriteLine("        <div class=\"accordion-item\">");
             html.WriteLine("          <h2 class=\"accordion-header\" id=\"accordionStructure-RawDataHeader\">");
@@ -449,7 +426,7 @@ public sealed class OperationLayerExportHtml : Operation
         }
 
 
-        if (_exportLayerSettings && SlicerFile.SupportPerLayerSettings)
+        if (ExportLayerSettings && SlicerFile.SupportPerLayerSettings)
         {
             html.WriteLine("        <div class=\"accordion-item\">");
             html.WriteLine("          <h2 class=\"accordion-header\" id=\"accordionStructure-LayersHeader\">");
@@ -498,7 +475,7 @@ public sealed class OperationLayerExportHtml : Operation
             html.WriteLine("        </div>");
         }
 
-        if (_exportGCode && SlicerFile.HaveGCode)
+        if (ExportGCode && SlicerFile.HaveGCode)
         {
             html.WriteLine("        <div class=\"accordion-item\">");
             html.WriteLine("          <h2 class=\"accordion-header\" id=\"accordionStructure-GCodeHeader\">");
@@ -520,7 +497,7 @@ public sealed class OperationLayerExportHtml : Operation
             html.WriteLine("        </div>");
         }
 
-        if(_exportLayerPreview)
+        if(ExportLayerPreview)
         {
             html.WriteLine($"        <a id=\"LayerPreview\"></a>");
             html.WriteLine($"        <h1 class=\"mt-4\">Layer preview</h1>");
@@ -575,7 +552,7 @@ public sealed class OperationLayerExportHtml : Operation
         html.WriteLine("      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))");
 
 
-        if (_exportLayerPreview)
+        if (ExportLayerPreview)
         {
             html.WriteLine("      const layerSvg = {");
 
@@ -657,7 +634,7 @@ public sealed class OperationLayerExportHtml : Operation
 
     private bool Equals(OperationLayerExportHtml other)
     {
-        return _filePath == other._filePath && _exportThumbnails == other._exportThumbnails && _exportLayerSettings == other._exportLayerSettings && _exportGCode == other._exportGCode && _exportLayerPreview == other._exportLayerPreview && _exportRawData == other._exportRawData;
+        return FilePath == other.FilePath && ExportThumbnails == other.ExportThumbnails && ExportLayerSettings == other.ExportLayerSettings && ExportGCode == other.ExportGCode && ExportLayerPreview == other.ExportLayerPreview && ExportRawData == other.ExportRawData;
     }
 
     public override bool Equals(object? obj)

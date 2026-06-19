@@ -4,7 +4,6 @@ using Avalonia.Data;
 using SukiUI.MessageBox;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using UVtools.Core.Dialogs;
 using UVtools.Core.PixelEditor;
 using UVtools.UI.Extensions;
 using UVtools.UI.Structures;

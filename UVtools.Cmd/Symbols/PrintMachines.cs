@@ -6,7 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using SixLabors.ImageSharp.Formats.Bmp;
 using System;
 using System.CommandLine;
 using System.Text.Json;

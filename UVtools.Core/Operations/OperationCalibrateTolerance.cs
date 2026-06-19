@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
@@ -14,7 +15,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
-using UVtools.Core.Extensions;
+using EmguExtensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 
@@ -22,35 +23,20 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationCalibrateTolerance : Operation
+public sealed partial class OperationCalibrateTolerance : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
     private decimal _displayWidth;
     private decimal _displayHeight;
     private decimal _layerHeight;
-    private ushort _bottomLayers;
     private decimal _bottomExposure;
     private decimal _normalExposure;
     private decimal _zSize = 10;
-    private ushort _topBottomMargin = 100;
-    private ushort _leftRightMargin = 100;
-    private byte _chamferLayers = 4;
-    private byte _erodeBottomIterations = 4;
-    private Shapes _shape = Shapes.Circle;
-    private ushort _partMargin = 50;
-    private bool _outputSameDiameterPart = true;
-    private bool _fuseParts;
-    private bool _enableAntiAliasing = true;
-    private bool _mirrorOutput;
-
     private decimal _femaleDiameter = 16;
-    private decimal _femaleHoleDiameter = 10;
 
-    private ushort _maleThinnerModels = 5;
     private decimal _maleThinnerOffset;
     private decimal _maleThinnerStep = -0.1M;
-    private ushort _maleThickerModels;
     private decimal _maleThickerOffset;
     private decimal _maleThickerStep = 0.1M;
     #endregion
@@ -89,7 +75,7 @@ public sealed class OperationCalibrateTolerance : Operation
             sb.AppendLine("Display height must be a positive value.");
         }
 
-        if (_femaleHoleDiameter >= _femaleDiameter)
+        if (FemaleHoleDiameter >= _femaleDiameter)
         {
             sb.AppendLine("Hole diameter must be smaller than female diameter.");
         }
@@ -105,15 +91,15 @@ public sealed class OperationCalibrateTolerance : Operation
     public override string ToString()
     {
         var result = $"[Layer Height: {_layerHeight}] " +
-                     $"[Bottom layers: {_bottomLayers}] " +
+                     $"[Bottom layers: {BottomLayers}] " +
                      $"[Exposure: {_bottomExposure}/{_normalExposure}] " +
                      $"[Z: {_zSize}] " +
-                     $"[TB:{_topBottomMargin} LR:{_leftRightMargin} PM:{_partMargin}] " +
-                     $"[Chamfer: {_chamferLayers}] [Erode: {_erodeBottomIterations}] " +
-                     $"[OSHD: {_outputSameDiameterPart}] [Fuse: {_fuseParts}] [AA: {_enableAntiAliasing}] [Mirror: {_mirrorOutput}]" +
-                     $"[{_shape}, {_femaleDiameter}/{_femaleHoleDiameter}] " +
-                     $"[tM: {_maleThinnerModels} O:{_maleThinnerOffset} S:{_maleThinnerStep}] " +
-                     $"[TM: {_maleThickerModels} O:{_maleThickerOffset} S:{_maleThickerStep}] ";
+                     $"[TB:{TopBottomMargin} LR:{LeftRightMargin} PM:{PartMargin}] " +
+                     $"[Chamfer: {ChamferLayers}] [Erode: {ErodeBottomIterations}] " +
+        $"[OSHD: {OutputSameDiameterPart}] [Fuse: {FuseParts}] [AA: {EnableAntiAliasing}] [Mirror: {MirrorOutput}]" +
+                     $"[{Shape}, {_femaleDiameter}/{FemaleHoleDiameter}] " +
+                     $"[tM: {MaleThinnerModels} O:{_maleThinnerOffset} S:{_maleThinnerStep}] " +
+                     $"[TM: {MaleThickerModels} O:{_maleThickerOffset} S:{_maleThickerStep}] ";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -127,8 +113,8 @@ public sealed class OperationCalibrateTolerance : Operation
         get => _displayWidth;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _displayWidth, FileFormat.RoundDisplaySize(value))) return;
-            RaisePropertyChanged(nameof(Xppmm));
+            if(!SetProperty(ref _displayWidth, FileFormat.RoundDisplaySize(value))) return;
+            OnPropertyChanged(nameof(Xppmm));
         }
     }
 
@@ -137,8 +123,8 @@ public sealed class OperationCalibrateTolerance : Operation
         get => _displayHeight;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _displayHeight, FileFormat.RoundDisplaySize(value))) return;
-            RaisePropertyChanged(nameof(Yppmm));
+            if(!SetProperty(ref _displayHeight, FileFormat.RoundDisplaySize(value))) return;
+            OnPropertyChanged(nameof(Yppmm));
         }
     }
 
@@ -150,38 +136,32 @@ public sealed class OperationCalibrateTolerance : Operation
         get => _layerHeight;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _layerHeight, Layer.RoundHeight(value))) return;
-            RaisePropertyChanged(nameof(BottomLayersMM));
-            RaisePropertyChanged(nameof(LayerCount));
-            RaisePropertyChanged(nameof(RealZSize));
-            //RaisePropertyChanged(nameof(ObservedZSize));
+            if(!SetProperty(ref _layerHeight, Layer.RoundHeight(value))) return;
+            OnPropertyChanged(nameof(BottomLayersMM));
+            OnPropertyChanged(nameof(LayerCount));
+            OnPropertyChanged(nameof(RealZSize));
+            //OnPropertyChanged(nameof(ObservedZSize));
         }
     }
 
     public ushort Microns => (ushort)(LayerHeight * 1000);
 
-    public ushort BottomLayers
-    {
-        get => _bottomLayers;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _bottomLayers, value)) return;
-            RaisePropertyChanged(nameof(BottomLayersMM));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BottomLayersMM))]
+    public partial ushort BottomLayers { get; set; }
 
     public decimal BottomLayersMM => Layer.RoundHeight(LayerHeight * BottomLayers);
 
     public decimal BottomExposure
     {
         get => _bottomExposure;
-        set => RaiseAndSetIfChanged(ref _bottomExposure, Math.Round(value, 2));
+        set => SetProperty(ref _bottomExposure, Math.Round(value, 2));
     }
 
     public decimal NormalExposure
     {
         get => _normalExposure;
-        set => RaiseAndSetIfChanged(ref _normalExposure, Math.Round(value, 2));
+        set => SetProperty(ref _normalExposure, Math.Round(value, 2));
     }
 
     public decimal ZSize
@@ -189,10 +169,10 @@ public sealed class OperationCalibrateTolerance : Operation
         get => _zSize;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _zSize, Math.Round(value, 2))) return;
-            RaisePropertyChanged(nameof(LayerCount));
-            RaisePropertyChanged(nameof(RealZSize));
-            //RaisePropertyChanged(nameof(ObservedZSize));
+            if(!SetProperty(ref _zSize, Math.Round(value, 2))) return;
+            OnPropertyChanged(nameof(LayerCount));
+            OnPropertyChanged(nameof(RealZSize));
+            //OnPropertyChanged(nameof(ObservedZSize));
         }
     }
 
@@ -200,84 +180,53 @@ public sealed class OperationCalibrateTolerance : Operation
 
     public decimal RealZSize => LayerCount * _layerHeight;
 
-    public ushort TopBottomMargin
+    [ObservableProperty]
+    public partial ushort TopBottomMargin { get; set; } = 100;
+
+    [ObservableProperty]
+    public partial ushort LeftRightMargin { get; set; } = 100;
+
+    [ObservableProperty]
+    public partial byte ChamferLayers { get; set; } = 4;
+
+    [ObservableProperty]
+    public partial byte ErodeBottomIterations { get; set; } = 4;
+
+    [ObservableProperty]
+    public partial Shapes Shape { get; set; } = Shapes.Circle;
+
+    [ObservableProperty]
+    public partial ushort PartMargin { get; set; } = 50;
+
+    [ObservableProperty]
+    public partial bool OutputSameDiameterPart { get; set; } = true;
+
+    [ObservableProperty]
+    public partial bool FuseParts { get; set; }
+
+    partial void OnFusePartsChanged(bool value)
     {
-        get => _topBottomMargin;
-        set => RaiseAndSetIfChanged(ref _topBottomMargin, value);
+        if (!value) return;
+        OutputSameDiameterPart = false;
+        MaleThickerModels = 0;
     }
 
-    public ushort LeftRightMargin
-    {
-        get => _leftRightMargin;
-        set => RaiseAndSetIfChanged(ref _leftRightMargin, value);
-    }
+    [ObservableProperty]
+    public partial bool EnableAntiAliasing { get; set; } = true;
 
-    public byte ChamferLayers
-    {
-        get => _chamferLayers;
-        set => RaiseAndSetIfChanged(ref _chamferLayers, value);
-    }
-
-    public byte ErodeBottomIterations
-    {
-        get => _erodeBottomIterations;
-        set => RaiseAndSetIfChanged(ref _erodeBottomIterations, value);
-    }
-
-    public Shapes Shape
-    {
-        get => _shape;
-        set => RaiseAndSetIfChanged(ref _shape, value);
-    }
-
-    public ushort PartMargin
-    {
-        get => _partMargin;
-        set => RaiseAndSetIfChanged(ref _partMargin, value);
-    }
-
-    public bool OutputSameDiameterPart
-    {
-        get => _outputSameDiameterPart;
-        set => RaiseAndSetIfChanged(ref _outputSameDiameterPart, value);
-    }
-
-    public bool FuseParts
-    {
-        get => _fuseParts;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _fuseParts, value)) return;
-            if (value)
-            {
-                OutputSameDiameterPart = false;
-                MaleThickerModels = 0;
-            }
-        }
-    }
-
-    public bool EnableAntiAliasing
-    {
-        get => _enableAntiAliasing;
-        set => RaiseAndSetIfChanged(ref _enableAntiAliasing, value);
-    }
-
-    public bool MirrorOutput
-    {
-        get => _mirrorOutput;
-        set => RaiseAndSetIfChanged(ref _mirrorOutput, value);
-    }
+    [ObservableProperty]
+    public partial bool MirrorOutput { get; set; }
 
     public decimal FemaleDiameter
     {
         get => _femaleDiameter;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _femaleDiameter, Math.Round(value, 2))) return;
-            RaisePropertyChanged(nameof(FemaleDiameterXPixels));
-            RaisePropertyChanged(nameof(FemaleDiameterYPixels));
-            RaisePropertyChanged(nameof(FemaleDiameterRealXSize));
-            RaisePropertyChanged(nameof(FemaleDiameterRealYSize));
+            if(!SetProperty(ref _femaleDiameter, Math.Round(value, 2))) return;
+            OnPropertyChanged(nameof(FemaleDiameterXPixels));
+            OnPropertyChanged(nameof(FemaleDiameterYPixels));
+            OnPropertyChanged(nameof(FemaleDiameterRealXSize));
+            OnPropertyChanged(nameof(FemaleDiameterRealYSize));
         }
     }
 
@@ -302,28 +251,22 @@ public sealed class OperationCalibrateTolerance : Operation
         }
     }
 
-    public decimal FemaleHoleDiameter
-    {
-        get => _femaleHoleDiameter;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _femaleHoleDiameter, value)) return;
-            RaisePropertyChanged(nameof(FemaleHoleDiameterXPixels));
-            RaisePropertyChanged(nameof(FemaleHoleDiameterYPixels));
-            RaisePropertyChanged(nameof(FemaleHoleDiameterRealXSize));
-            RaisePropertyChanged(nameof(FemaleHoleDiameterRealYSize));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FemaleHoleDiameterXPixels))]
+    [NotifyPropertyChangedFor(nameof(FemaleHoleDiameterYPixels))]
+    [NotifyPropertyChangedFor(nameof(FemaleHoleDiameterRealXSize))]
+    [NotifyPropertyChangedFor(nameof(FemaleHoleDiameterRealYSize))]
+    public partial decimal FemaleHoleDiameter { get; set; } = 10;
 
-    public uint FemaleHoleDiameterXPixels => (uint)(_femaleHoleDiameter * Xppmm);
-    public uint FemaleHoleDiameterYPixels => (uint)(_femaleHoleDiameter * Yppmm);
+    public uint FemaleHoleDiameterXPixels => (uint)(FemaleHoleDiameter * Xppmm);
+    public uint FemaleHoleDiameterYPixels => (uint)(FemaleHoleDiameter * Yppmm);
 
     public decimal FemaleHoleDiameterRealXSize
     {
         get
         {
-            decimal pixels = _femaleHoleDiameter * Xppmm;
-            return pixels <= 0 ? 0 : Math.Round(_femaleHoleDiameter - (pixels - Math.Truncate(pixels)) / Xppmm, 2);
+            decimal pixels = FemaleHoleDiameter * Xppmm;
+            return pixels <= 0 ? 0 : Math.Round(FemaleHoleDiameter - (pixels - Math.Truncate(pixels)) / Xppmm, 2);
         }
     }
 
@@ -331,61 +274,55 @@ public sealed class OperationCalibrateTolerance : Operation
     {
         get
         {
-            decimal pixels = _femaleHoleDiameter * Yppmm;
-            return pixels <= 0 ? 0 : Math.Round(_femaleHoleDiameter - (pixels - Math.Truncate(pixels)) / Yppmm, 2);
+            decimal pixels = FemaleHoleDiameter * Yppmm;
+            return pixels <= 0 ? 0 : Math.Round(FemaleHoleDiameter - (pixels - Math.Truncate(pixels)) / Yppmm, 2);
         }
     }
 
-    public ushort MaleThinnerModels
-    {
-        get => _maleThinnerModels;
-        set => RaiseAndSetIfChanged(ref _maleThinnerModels, value);
-    }
+    [ObservableProperty]
+    public partial ushort MaleThinnerModels { get; set; } = 5;
 
     public decimal MaleThinnerOffset
     {
         get => _maleThinnerOffset;
-        set => RaiseAndSetIfChanged(ref _maleThinnerOffset, Math.Round(value, 2));
+        set => SetProperty(ref _maleThinnerOffset, Math.Round(value, 2));
     }
 
     public decimal MaleThinnerStep
     {
         get => _maleThinnerStep;
-        set => RaiseAndSetIfChanged(ref _maleThinnerStep, Math.Round(value, 2));
+        set => SetProperty(ref _maleThinnerStep, Math.Round(value, 2));
     }
 
-    public ushort MaleThickerModels
-    {
-        get => _maleThickerModels;
-        set => RaiseAndSetIfChanged(ref _maleThickerModels, value);
-    }
+    [ObservableProperty]
+    public partial ushort MaleThickerModels { get; set; }
 
     public decimal MaleThickerOffset
     {
         get => _maleThickerOffset;
-        set => RaiseAndSetIfChanged(ref _maleThickerOffset, Math.Round(value, 2));
+        set => SetProperty(ref _maleThickerOffset, Math.Round(value, 2));
     }
 
     public decimal MaleThickerStep
     {
         get => _maleThickerStep;
-        set => RaiseAndSetIfChanged(ref _maleThickerStep, Math.Round(value, 2));
+        set => SetProperty(ref _maleThickerStep, Math.Round(value, 2));
     }
 
 
     public uint OutputObjects =>
-        (_outputSameDiameterPart ? 1u : 0) +
-        _maleThinnerModels +
-        _maleThickerModels +
-        (_fuseParts ? 0 : 1u);
+        (OutputSameDiameterPart ? 1u : 0) +
+        MaleThinnerModels +
+        MaleThickerModels +
+            (FuseParts ? 0 : 1u);
 
     /*public decimal ObservedXSize
     {
         get => _observedXSize;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _observedXSize, Math.Round(value, 2))) return;
-            RaisePropertyChanged(nameof(ScaleXFactor));
+            if(!SetProperty(ref _observedXSize, Math.Round(value, 2))) return;
+            OnPropertyChanged(nameof(ScaleXFactor));
         }
     }
 
@@ -394,8 +331,8 @@ public sealed class OperationCalibrateTolerance : Operation
         get => _observedYSize;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _observedYSize, Math.Round(value, 2))) return;
-            RaisePropertyChanged(nameof(ScaleYFactor));
+            if(!SetProperty(ref _observedYSize, Math.Round(value, 2))) return;
+            OnPropertyChanged(nameof(ScaleYFactor));
         }
     }
 
@@ -404,8 +341,8 @@ public sealed class OperationCalibrateTolerance : Operation
         get => _observedZSize;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _observedZSize, Math.Round(value, 2))) return;
-            RaisePropertyChanged(nameof(ScaleZFactor));
+            if(!SetProperty(ref _observedZSize, Math.Round(value, 2))) return;
+            OnPropertyChanged(nameof(ScaleZFactor));
         }
     }
 
@@ -427,10 +364,10 @@ public sealed class OperationCalibrateTolerance : Operation
     {
         base.InitWithSlicerFile();
         if (_layerHeight <= 0) _layerHeight = (decimal)SlicerFile.LayerHeight;
-        if (_bottomLayers <= 0) _bottomLayers = SlicerFile.BottomLayerCount;
+        if (BottomLayers <= 0) BottomLayers = SlicerFile.BottomLayerCount;
         if (_bottomExposure <= 0) _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
         if (_normalExposure <= 0) _normalExposure = (decimal)SlicerFile.ExposureTime;
-        _mirrorOutput = SlicerFile.DisplayMirror != FlipDirection.None;
+        MirrorOutput = SlicerFile.DisplayMirror != FlipDirection.None;
 
         if (SlicerFile.DisplayWidth > 0)
             DisplayWidth = (decimal)SlicerFile.DisplayWidth;
@@ -455,7 +392,7 @@ public sealed class OperationCalibrateTolerance : Operation
 
     private bool Equals(OperationCalibrateTolerance other)
     {
-        return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _zSize == other._zSize && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _shape == other._shape && _partMargin == other._partMargin && _outputSameDiameterPart == other._outputSameDiameterPart && _fuseParts == other._fuseParts && _enableAntiAliasing == other._enableAntiAliasing && _femaleDiameter == other._femaleDiameter && _femaleHoleDiameter == other._femaleHoleDiameter && _maleThinnerModels == other._maleThinnerModels && _maleThinnerOffset == other._maleThinnerOffset && _maleThinnerStep == other._maleThinnerStep && _maleThickerModels == other._maleThickerModels && _maleThickerOffset == other._maleThickerOffset && _maleThickerStep == other._maleThickerStep && _mirrorOutput == other._mirrorOutput;
+        return _layerHeight == other._layerHeight && BottomLayers == other.BottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _zSize == other._zSize && TopBottomMargin == other.TopBottomMargin && LeftRightMargin == other.LeftRightMargin && ChamferLayers == other.ChamferLayers && ErodeBottomIterations == other.ErodeBottomIterations && Shape == other.Shape && PartMargin == other.PartMargin && OutputSameDiameterPart == other.OutputSameDiameterPart && FuseParts == other.FuseParts && EnableAntiAliasing == other.EnableAntiAliasing && _femaleDiameter == other._femaleDiameter && FemaleHoleDiameter == other.FemaleHoleDiameter && MaleThinnerModels == other.MaleThinnerModels && _maleThinnerOffset == other._maleThinnerOffset && _maleThinnerStep == other._maleThinnerStep && MaleThickerModels == other.MaleThickerModels && _maleThickerOffset == other._maleThickerOffset && _maleThickerStep == other._maleThickerStep && MirrorOutput == other.MirrorOutput;
     }
 
     public override bool Equals(object? obj)
@@ -469,39 +406,39 @@ public sealed class OperationCalibrateTolerance : Operation
     public Mat[] GetLayers()
     {
         var layers = new Mat[LayerCount];
-        var layer = EmguExtensions.InitMat(SlicerFile.Resolution);
+        var layer = EmguCvExtensions.InitMat(SlicerFile.Resolution);
 
-        ushort startX = Math.Max((ushort)2, _leftRightMargin);
-        ushort startY = Math.Max((ushort)2, _topBottomMargin);
+        ushort startX = Math.Max((ushort)2, LeftRightMargin);
+        ushort startY = Math.Max((ushort)2, TopBottomMargin);
         int currentX = startX;
         int currentY = startY;
 
         const FontFace fontFace = FontFace.HersheyDuplex;
         const double fontScale = 1;
         const byte fontThickness = 2;
-        LineType lineType = _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
+        LineType lineType = EnableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
 
-        var kernel = EmguExtensions.Kernel3x3Rectangle;
+        var kernel = EmguCvExtensions.Kernel3X3Rectangle;
 
         var pointTextList = new List<KeyValuePair<Point, string>>();
 
-        if (!_fuseParts)
+        if (!FuseParts)
         {
             switch (Shape)
             {
                 case Shapes.Circle:
                     currentX += (int) FemaleDiameterXPixels / 2;
                     currentY += (int) FemaleDiameterXPixels / 2;
-                    CvInvoke.Circle(layer, new Point(currentX, currentY), (int) (FemaleDiameterXPixels / 2), EmguExtensions.WhiteColor, -1, lineType);
-                    CvInvoke.Circle(layer, new Point(currentX, currentY), (int) (FemaleHoleDiameterXPixels / 2), EmguExtensions.BlackColor, -1, lineType);
+                    CvInvoke.Circle(layer, new Point(currentX, currentY), (int) (FemaleDiameterXPixels / 2), EmguCvExtensions.WhiteColor, -1, lineType);
+                    CvInvoke.Circle(layer, new Point(currentX, currentY), (int) (FemaleHoleDiameterXPixels / 2), EmguCvExtensions.BlackColor, -1, lineType);
                     currentX += (int) FemaleDiameterXPixels / 2 + PartMargin;
 
                     break;
                 case Shapes.Square:
                     int offsetX = (int) ((FemaleDiameterXPixels - FemaleHoleDiameterXPixels) / 2);
                     int offsetY = (int) ((FemaleDiameterYPixels - FemaleHoleDiameterYPixels) / 2);
-                    CvInvoke.Rectangle(layer, new Rectangle(currentX, currentY, (int) FemaleDiameterXPixels, (int) FemaleDiameterXPixels), EmguExtensions.WhiteColor, -1, lineType);
-                    CvInvoke.Rectangle(layer, new Rectangle(currentX + offsetX, currentY + offsetY, (int) FemaleHoleDiameterXPixels, (int) FemaleHoleDiameterYPixels), EmguExtensions.BlackColor, -1, lineType);
+                    CvInvoke.Rectangle(layer, new Rectangle(currentX, currentY, (int) FemaleDiameterXPixels, (int) FemaleDiameterXPixels), EmguCvExtensions.WhiteColor, -1, lineType);
+                    CvInvoke.Rectangle(layer, new Rectangle(currentX + offsetX, currentY + offsetY, (int) FemaleHoleDiameterXPixels, (int) FemaleHoleDiameterYPixels), EmguCvExtensions.BlackColor, -1, lineType);
                     currentX += (int)FemaleDiameterXPixels + PartMargin;
                     currentY = startY + (int) FemaleDiameterYPixels / 2;
                     break;
@@ -510,22 +447,22 @@ public sealed class OperationCalibrateTolerance : Operation
 
         bool addPart(decimal step)
         {
-            decimal millimeters = Math.Round(_femaleHoleDiameter + step, 2);
+            decimal millimeters = Math.Round(FemaleHoleDiameter + step, 2);
             if (millimeters <= 0) return false;
             int xPixels = (int)(millimeters * Xppmm);
             int yPixels = (int)(millimeters * Yppmm);
             Point partCenterText;
 
-            if (_fuseParts)
+        if (FuseParts)
             {
                 if (xPixels >= FemaleHoleDiameterXPixels || yPixels >= FemaleHoleDiameterYPixels) return false;
-                if (currentX + FemaleDiameterXPixels + _leftRightMargin >= SlicerFile.Resolution.Width)
+                if (currentX + FemaleDiameterXPixels + LeftRightMargin >= SlicerFile.Resolution.Width)
                 {
                     currentX = startX;
                     currentY += (int)FemaleDiameterYPixels + PartMargin;
                 }
 
-                if (currentY + FemaleDiameterYPixels + _topBottomMargin >= SlicerFile.Resolution.Height)
+                if (currentY + FemaleDiameterYPixels + TopBottomMargin >= SlicerFile.Resolution.Height)
                 {
                     return false; // Insufficient size
                 }
@@ -536,18 +473,18 @@ public sealed class OperationCalibrateTolerance : Operation
                 switch (Shape)
                 {
                     case Shapes.Circle:
-                        CvInvoke.Circle(layer, new Point(currentX + halfDiameterX, currentY + halfDiameterY), (int)(FemaleDiameterXPixels / 2), EmguExtensions.WhiteColor, -1, lineType);
-                        CvInvoke.Circle(layer, new Point(currentX + halfDiameterX, currentY + halfDiameterY), (int)(FemaleHoleDiameterXPixels / 2), EmguExtensions.BlackColor, -1, lineType);
-                        CvInvoke.Circle(layer, new Point(currentX + halfDiameterX, currentY + halfDiameterY), xPixels / 2, EmguExtensions.WhiteColor, -1, lineType);
+                        CvInvoke.Circle(layer, new Point(currentX + halfDiameterX, currentY + halfDiameterY), (int)(FemaleDiameterXPixels / 2), EmguCvExtensions.WhiteColor, -1, lineType);
+                        CvInvoke.Circle(layer, new Point(currentX + halfDiameterX, currentY + halfDiameterY), (int)(FemaleHoleDiameterXPixels / 2), EmguCvExtensions.BlackColor, -1, lineType);
+                        CvInvoke.Circle(layer, new Point(currentX + halfDiameterX, currentY + halfDiameterY), xPixels / 2, EmguCvExtensions.WhiteColor, -1, lineType);
                         break;
                     case Shapes.Square:
                         int offsetX = (int)((FemaleDiameterXPixels - FemaleHoleDiameterXPixels) / 2);
                         int offsetY = (int)((FemaleDiameterYPixels - FemaleHoleDiameterYPixels) / 2);
-                        CvInvoke.Rectangle(layer, new Rectangle(currentX, currentY, (int)FemaleDiameterXPixels, (int)FemaleDiameterXPixels), EmguExtensions.WhiteColor, -1, lineType);
-                        CvInvoke.Rectangle(layer, new Rectangle(currentX + offsetX, currentY + offsetY, (int)FemaleHoleDiameterXPixels, (int)FemaleHoleDiameterYPixels), EmguExtensions.BlackColor, -1, lineType);
+                        CvInvoke.Rectangle(layer, new Rectangle(currentX, currentY, (int)FemaleDiameterXPixels, (int)FemaleDiameterXPixels), EmguCvExtensions.WhiteColor, -1, lineType);
+                        CvInvoke.Rectangle(layer, new Rectangle(currentX + offsetX, currentY + offsetY, (int)FemaleHoleDiameterXPixels, (int)FemaleHoleDiameterYPixels), EmguCvExtensions.BlackColor, -1, lineType);
                         offsetX = (int)((FemaleDiameterXPixels - xPixels) / 2);
                         offsetY = (int)((FemaleDiameterYPixels - yPixels) / 2);
-                        CvInvoke.Rectangle(layer, new Rectangle(currentX + offsetX, currentY + offsetY, xPixels, yPixels), EmguExtensions.WhiteColor, -1, lineType);
+                        CvInvoke.Rectangle(layer, new Rectangle(currentX + offsetX, currentY + offsetY, xPixels, yPixels), EmguCvExtensions.WhiteColor, -1, lineType);
                         break;
                 }
 
@@ -556,13 +493,13 @@ public sealed class OperationCalibrateTolerance : Operation
             }
             else
             {
-                if (currentX + xPixels + _leftRightMargin >= SlicerFile.Resolution.Width)
+                if (currentX + xPixels + LeftRightMargin >= SlicerFile.Resolution.Width)
                 {
                     currentX = startX;
                     currentY += yPixels + PartMargin;
                 }
 
-                if (currentY + yPixels + _topBottomMargin >= SlicerFile.Resolution.Height)
+                if (currentY + yPixels + TopBottomMargin >= SlicerFile.Resolution.Height)
                 {
                     return false; // Insufficient size
                 }
@@ -573,10 +510,10 @@ public sealed class OperationCalibrateTolerance : Operation
                 switch (Shape)
                 {
                     case Shapes.Circle:
-                        CvInvoke.Circle(layer, new Point(currentX + halfDiameterX, currentY + halfDiameterY), halfDiameterX, EmguExtensions.WhiteColor, -1, lineType);
+                        CvInvoke.Circle(layer, new Point(currentX + halfDiameterX, currentY + halfDiameterY), halfDiameterX, EmguCvExtensions.WhiteColor, -1, lineType);
                         break;
                     case Shapes.Square:
-                        CvInvoke.Rectangle(layer, new Rectangle(currentX, currentY, xPixels, yPixels), EmguExtensions.WhiteColor, -1, lineType);
+                        CvInvoke.Rectangle(layer, new Rectangle(currentX, currentY, xPixels, yPixels), EmguCvExtensions.WhiteColor, -1, lineType);
                         break;
                 }
 
@@ -590,18 +527,18 @@ public sealed class OperationCalibrateTolerance : Operation
             return true;
         }
 
-        if (!_fuseParts && _outputSameDiameterPart)
+        if (!FuseParts && OutputSameDiameterPart)
         {
             addPart(0);
         }
 
-        for (int i = 1; i <= _maleThinnerModels; i++)
+        for (int i = 1; i <= MaleThinnerModels; i++)
         {
             var step = _maleThinnerOffset + _maleThinnerStep * i;
             if (!addPart(step)) break;
         }
 
-        for (int i = 1; i <= _maleThickerModels; i++)
+        for (int i = 1; i <= MaleThickerModels; i++)
         {
             var step = _maleThickerOffset + _maleThickerStep * i;
             if (!addPart(step)) break;
@@ -613,32 +550,32 @@ public sealed class OperationCalibrateTolerance : Operation
             layers[layerIndex] = layer.Clone();
         });
 
-        if (_erodeBottomIterations > 0)
+        if (ErodeBottomIterations > 0)
         {
-            Parallel.For(0, _bottomLayers, CoreSettings.ParallelOptions, layerIndex =>
+            Parallel.For(0, BottomLayers, CoreSettings.ParallelOptions, layerIndex =>
             {
-                CvInvoke.Erode(layers[layerIndex], layers[layerIndex], kernel, EmguExtensions.AnchorCenter, _erodeBottomIterations, BorderType.Reflect101, default);
+                CvInvoke.Erode(layers[layerIndex], layers[layerIndex], kernel, EmguCvExtensions.AnchorCenter, ErodeBottomIterations, BorderType.Reflect101, default);
             });
         }
 
-        if (_chamferLayers > 0)
+        if (ChamferLayers > 0)
         {
-            Parallel.For(0, _chamferLayers, CoreSettings.ParallelOptions, layerIndexOffset =>
+            Parallel.For(0, ChamferLayers, CoreSettings.ParallelOptions, layerIndexOffset =>
             {
-                var iteration = _chamferLayers - layerIndexOffset;
-                CvInvoke.Erode(layers[layerIndexOffset], layers[layerIndexOffset], kernel, EmguExtensions.AnchorCenter, iteration, BorderType.Reflect101, default);
+                var iteration = ChamferLayers - layerIndexOffset;
+                CvInvoke.Erode(layers[layerIndexOffset], layers[layerIndexOffset], kernel, EmguCvExtensions.AnchorCenter, iteration, BorderType.Reflect101, default);
 
                 var layerIndex = layers.Length - 1 - layerIndexOffset;
-                CvInvoke.Erode(layers[layerIndex], layers[layerIndex], kernel, EmguExtensions.AnchorCenter, iteration, BorderType.Reflect101, default);
+                CvInvoke.Erode(layers[layerIndex], layers[layerIndex], kernel, EmguCvExtensions.AnchorCenter, iteration, BorderType.Reflect101, default);
             });
-            /*byte iterations = _chamferLayers;
+            /*byte iterations = ChamferLayers;
             var layerIndex = 0;
             for (; layerIndex < LayerCount && iterations > 0; layerIndex++)
             {
                 CvInvoke.Erode(layers[layerIndex], layers[layerIndex], kernel, anchor, iterations--, BorderType.Reflect101, default);
             }
 
-            iterations = _chamferLayers;
+            iterations = ChamferLayers;
             for (int i = (int) (LayerCount - 1); i >= 0 && i > layerIndex && iterations > 0; i--)
             {
                 CvInvoke.Erode(layers[i], layers[i], kernel, anchor, iterations--, BorderType.Reflect101, default);
@@ -649,11 +586,11 @@ public sealed class OperationCalibrateTolerance : Operation
         {
             foreach (var keyValuePair in pointTextList)
             {
-                CvInvoke.PutText(layers[layerIndex], keyValuePair.Value, keyValuePair.Key, fontFace, fontScale, EmguExtensions.BlackColor, fontThickness, lineType);
+                CvInvoke.PutText(layers[layerIndex], keyValuePair.Value, keyValuePair.Key, fontFace, fontScale, EmguCvExtensions.BlackColor, fontThickness, lineType);
             }
         });
 
-        if (_mirrorOutput)
+        if (MirrorOutput)
         {
             var flip = SlicerFile.DisplayMirror;
             if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
@@ -665,7 +602,7 @@ public sealed class OperationCalibrateTolerance : Operation
 
     public Mat GetThumbnail()
     {
-        Mat thumbnail = EmguExtensions.InitMat(new Size(400, 200), 3);
+        Mat thumbnail = EmguCvExtensions.InitMat(new Size(400, 200), 3);
         var fontFace = FontFace.HersheyDuplex;
         var fontScale = 1;
         var fontThickness = 2;
@@ -676,12 +613,12 @@ public sealed class OperationCalibrateTolerance : Operation
         CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
         CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
         CvInvoke.PutText(thumbnail, "Tolerance Cal.", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
-        CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
-        CvInvoke.PutText(thumbnail, $"Objects: {OutputObjects}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
+        CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguCvExtensions.WhiteColor, fontThickness);
+        CvInvoke.PutText(thumbnail, $"Objects: {OutputObjects}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguCvExtensions.WhiteColor, fontThickness);
 
-        /*thumbnail.SetTo(EmguExtensions.Black3Byte);
+        /*thumbnail.SetTo(EmguCvExtensions.Black3Byte);
 
-            CvInvoke.Circle(thumbnail, new Point(400/2, 200/2), 200/2, EmguExtensions.White3Byte, -1);
+            CvInvoke.Circle(thumbnail, new Point(400/2, 200/2), 200/2, EmguCvExtensions.White3Byte, -1);
             for (int angle = 0; angle < 360; angle+=20)
             {
                 CvInvoke.Line(thumbnail, new Point(400 / 2, 200 / 2), new Point((int)(400 / 2 + 100 * Math.Cos(angle * Math.PI / 180)), (int)(200 / 2 + 100 * Math.Sin(angle * Math.PI / 180))), new MCvScalar(255, 27, 245), 3);

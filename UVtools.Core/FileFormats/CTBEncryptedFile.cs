@@ -9,6 +9,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
@@ -345,7 +346,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
         public Mat DecodeImage(uint layerIndex, bool consumeRle = true)
         {
-            var mat = EmguExtensions.InitMat(Parent!.Resolution);
+            var mat = EmguCvExtensions.InitMat(Parent!.Resolution);
             //var span = mat.GetBytePointer();
 
             if (Parent.Settings.LayerXorKey > 0)
@@ -425,8 +426,7 @@ public sealed class CTBEncryptedFile : FileFormat
             List<byte> rawData = [];
             byte color = byte.MaxValue >> 1;
             uint stride = 0;
-            var span = image.GetBytePointer();
-            var imageLength = image.GetLength();
+            var span = image.GetReadOnlySpanOfBytes();
 
             void AddRep()
             {
@@ -478,7 +478,7 @@ public sealed class CTBEncryptedFile : FileFormat
             }
 
 
-            for (int pixel = 0; pixel < imageLength; pixel++)
+            for (int pixel = 0; pixel < span.Length; pixel++)
             {
                 var grey7 = (byte)(span[pixel] >> 1);
 
@@ -759,7 +759,7 @@ public sealed class CTBEncryptedFile : FileFormat
         set
         {
             Settings.ProjectorType = value == FlipDirection.None ? 0u : 1;
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 

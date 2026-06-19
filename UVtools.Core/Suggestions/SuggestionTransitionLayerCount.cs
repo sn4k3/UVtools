@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Text;
 using UVtools.Core.FileFormats;
@@ -13,13 +14,9 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.Suggestions;
 
-public sealed class SuggestionTransitionLayerCount : Suggestion
+public sealed partial class SuggestionTransitionLayerCount : Suggestion
 {
     #region Members
-
-    private decimal _transitionStepTime = 2;
-    private ushort _minimumTransitionLayerCount = 3;
-    private ushort _maximumTransitionLayerCount = 10;
 
     #endregion
 
@@ -46,8 +43,8 @@ public sealed class SuggestionTransitionLayerCount : Suggestion
                 || SlicerFile.BottomExposureTime <= 0
                 || SlicerFile.ExposureTime <= 0
                 || SlicerFile.BottomExposureTime <= SlicerFile.ExposureTime
-                || SlicerFile.BottomLayerCount + _minimumTransitionLayerCount > SlicerFile.LayerCount 
-                || SlicerFile.MaximumPossibleTransitionLayerCount < _minimumTransitionLayerCount) return true;
+                || SlicerFile.BottomLayerCount + MinimumTransitionLayerCount > SlicerFile.LayerCount
+                || SlicerFile.MaximumPossibleTransitionLayerCount < MinimumTransitionLayerCount) return true;
 
             var actualTransitionLayerCount = SlicerFile.TransitionLayerType == FileFormat.TransitionLayerTypes.Firmware 
                 ? SlicerFile.TransitionLayerCount 
@@ -56,10 +53,10 @@ public sealed class SuggestionTransitionLayerCount : Suggestion
 
             if (actualTransitionLayerCount == suggestedTransitionLayerCount) return true;
             
-            return _applyWhen switch
+            return ApplyWhen switch
             {
-                SuggestionApplyWhen.OutsideLimits => actualTransitionLayerCount >= _minimumTransitionLayerCount &&
-                                                     actualTransitionLayerCount <= _maximumTransitionLayerCount,
+                SuggestionApplyWhen.OutsideLimits => actualTransitionLayerCount >= MinimumTransitionLayerCount &&
+                                                     actualTransitionLayerCount <= MaximumTransitionLayerCount,
                 SuggestionApplyWhen.Different => actualTransitionLayerCount == suggestedTransitionLayerCount,
                     
                 _ => throw new ArgumentOutOfRangeException()
@@ -104,7 +101,7 @@ public sealed class SuggestionTransitionLayerCount : Suggestion
         }
     }
 
-    public override string ToolTip => $"The recommended transition time is ±{_transitionStepTime}s constrained over [{_minimumTransitionLayerCount} to {_maximumTransitionLayerCount}] layers.\n" +
+    public override string ToolTip => $"The recommended transition time is ±{TransitionStepTime}s constrained over [{MinimumTransitionLayerCount} to {MaximumTransitionLayerCount}] layers.\n" +
                                       $"Explanation: {Description}";
 
     public override string? InformationUrl => "https://ameralabs.com/blog/9-settings-to-change-for-faster-resin-3d-printing";
@@ -142,28 +139,22 @@ public sealed class SuggestionTransitionLayerCount : Suggestion
     public ushort TransitionLayerCount =>
         (ushort)Math.Min(
             Math.Clamp(
-                SlicerFile.GetTransitionLayerCountFromLayers((float)_transitionStepTime, false),
-                _minimumTransitionLayerCount,
-                _maximumTransitionLayerCount)
+                SlicerFile.GetTransitionLayerCountFromLayers((float)TransitionStepTime, false),
+                MinimumTransitionLayerCount,
+                MaximumTransitionLayerCount)
             , SlicerFile.MaximumPossibleTransitionLayerCount);
 
     public decimal TransitionStepTime
     {
-        get => _transitionStepTime;
-        set => RaiseAndSetIfChanged(ref _transitionStepTime, Math.Max(0, Math.Round(value, 2)));
-    }
+        get;
+        set => SetProperty(ref field, Math.Max(0, Math.Round(value, 2)));
+    } = 2;
 
-    public ushort MinimumTransitionLayerCount
-    {
-        get => _minimumTransitionLayerCount;
-        set => RaiseAndSetIfChanged(ref _minimumTransitionLayerCount, value);
-    }
+    [ObservableProperty]
+    public partial ushort MinimumTransitionLayerCount { get; set; } = 3;
 
-    public ushort MaximumTransitionLayerCount
-    {
-        get => _maximumTransitionLayerCount;
-        set => RaiseAndSetIfChanged(ref _maximumTransitionLayerCount, value);
-    }
+    [ObservableProperty]
+    public partial ushort MaximumTransitionLayerCount { get; set; } = 10;
 
     #endregion
 
@@ -174,7 +165,7 @@ public sealed class SuggestionTransitionLayerCount : Suggestion
         var sb = new StringBuilder();
 
 
-        if (_transitionStepTime < 0)
+        if (TransitionStepTime < 0)
         {
             sb.AppendLine("Decrement time (s) must be zero or a positive value");
         }
@@ -199,7 +190,7 @@ public sealed class SuggestionTransitionLayerCount : Suggestion
             sb.AppendLine("Minimum limit (layers) must be a positive value");
         }*/
 
-        if (_minimumTransitionLayerCount > _maximumTransitionLayerCount)
+        if (MinimumTransitionLayerCount > MaximumTransitionLayerCount)
         {
             sb.AppendLine("Minimum limit (layers) can't be higher than maximum limit (layers)");
         }
@@ -212,7 +203,7 @@ public sealed class SuggestionTransitionLayerCount : Suggestion
     #region Constructor
     public SuggestionTransitionLayerCount()
     {
-        _applyWhen = SuggestionApplyWhen.Different;
+        ApplyWhen = SuggestionApplyWhen.Different;
     }
     #endregion
 

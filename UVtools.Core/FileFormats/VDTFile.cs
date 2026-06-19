@@ -335,7 +335,7 @@ public sealed class VDTFile : FileFormat
         {
             ManifestFile.Machine.XMirror = value is FlipDirection.Horizontally or FlipDirection.Both;
             ManifestFile.Machine.YMirror = value is FlipDirection.Vertically or FlipDirection.Both;
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 

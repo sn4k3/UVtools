@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Text;
 using UVtools.Core.FileFormats;
 using ZLinq;
@@ -14,11 +15,9 @@ using ZLinq;
 namespace UVtools.Core.Operations;
 
 
-public sealed class OperationLayerClone : Operation
+public sealed partial class OperationLayerClone : Operation
 {
     #region Members
-    private uint _clones = 1;
-    private bool _keepSamePositionZ;
 
     #endregion
 
@@ -67,26 +66,17 @@ public sealed class OperationLayerClone : Operation
     /// <summary>
     /// Gets or sets if cloned layers will keep same position z or get the height rebuilt
     /// </summary>
-    public bool KeepSamePositionZ
-    {
-        get => _keepSamePositionZ;
-        set => RaiseAndSetIfChanged(ref _keepSamePositionZ, value);
-    }
+    [ObservableProperty]
+    public partial bool KeepSamePositionZ { get; set; }
 
     /// <summary>
     /// Gets or sets the number of clones
     /// </summary>
-    public uint Clones
-    {
-        get => _clones;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _clones, value)) return;
-            RaisePropertyChanged(nameof(ExtraLayers));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ExtraLayers))]
+    public partial uint Clones { get; set; } = 1;
 
-    public uint ExtraLayers => (uint)Math.Max(0, ((int)LayerIndexEnd - LayerIndexStart + 1) * _clones);
+    public uint ExtraLayers => (uint)Math.Max(0, ((int)LayerIndexEnd - LayerIndexStart + 1) * Clones);
 
     #endregion
 
@@ -116,7 +106,7 @@ public sealed class OperationLayerClone : Operation
             progress.PauseOrCancelIfRequested();
             SlicerFile[newLayerIndex++] = oldLayers[layerIndex];
 
-            if (!_keepSamePositionZ && incrementedPositionZ > 0)
+            if (!KeepSamePositionZ && incrementedPositionZ > 0)
             {
                 oldLayers[layerIndex].PositionZ += incrementedPositionZ;
             }
@@ -124,11 +114,11 @@ public sealed class OperationLayerClone : Operation
             if (layerIndex < LayerIndexStart || layerIndex > LayerIndexEnd) continue;
             float increment = SlicerFile[layerIndex].RelativePositionZ;
             if (increment == 0) increment = SlicerFile.LayerHeight;
-            for (uint i = 0; i < _clones; i++)
+            for (uint i = 0; i < Clones; i++)
             {
                 SlicerFile[newLayerIndex] = oldLayers[layerIndex].Clone();
 
-                if (!_keepSamePositionZ)
+                if (!KeepSamePositionZ)
                 {
                     incrementedPositionZ += increment;
                     SlicerFile[newLayerIndex].PositionZ += increment * (i + 1);

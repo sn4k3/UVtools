@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,8 +7,8 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
-using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using UVtools.Core.FileFormats;
@@ -18,7 +18,7 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationMorph : Operation
+public sealed partial class OperationMorph : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Enums
@@ -59,10 +59,6 @@ public sealed class OperationMorph : Operation
     #endregion
 
     #region Members
-    private MorphOperations _morphOperation = MorphOperations.Erode;
-    private uint _iterationsStart = 1;
-    private uint _iterationsEnd = 1;
-    private bool _chamfer;
     #endregion
 
     #region Overrides
@@ -87,19 +83,16 @@ public sealed class OperationMorph : Operation
     {
         get
         {
-            return _morphOperation switch
+            return MorphOperation switch
             {
                 MorphOperations.OffsetCrop => MorphOp.Erode,
-                _ => (MorphOp) _morphOperation
+                _ => (MorphOp) MorphOperation
             };
         }
     }
 
-    public MorphOperations MorphOperation
-    {
-        get => _morphOperation;
-        set => RaiseAndSetIfChanged(ref _morphOperation, value);
-    }
+    [ObservableProperty]
+    public partial MorphOperations MorphOperation { get; set; } = MorphOperations.Erode;
 
     public uint Iterations
     {
@@ -107,29 +100,20 @@ public sealed class OperationMorph : Operation
         set => IterationsStart = IterationsEnd = value;
     }
 
-    public uint IterationsStart
-    {
-        get => _iterationsStart;
-        set => RaiseAndSetIfChanged(ref _iterationsStart, value);
-    }
+    [ObservableProperty]
+    public partial uint IterationsStart { get; set; } = 1;
 
-    public uint IterationsEnd
-    {
-        get => _iterationsEnd;
-        set => RaiseAndSetIfChanged(ref _iterationsEnd, value);
-    }
+    [ObservableProperty]
+    public partial uint IterationsEnd { get; set; } = 1;
 
-    public bool Chamfer
-    {
-        get => _chamfer;
-        set => RaiseAndSetIfChanged(ref _chamfer, value);
-    }
+    [ObservableProperty]
+    public partial bool Chamfer { get; set; }
 
     public KernelConfiguration Kernel { get; set; } = new();
 
     public override string ToString()
     {
-        var result = $"[{_morphOperation}] [Iterations: {_iterationsStart}/{_iterationsEnd}] [Chamfer: {_chamfer}]" + LayerRangeString;
+        var result = $"[{MorphOperation}] [Iterations: {IterationsStart}/{IterationsEnd}] [Chamfer: {Chamfer}]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -148,7 +132,7 @@ public sealed class OperationMorph : Operation
 
     private bool Equals(OperationMorph other)
     {
-        return _morphOperation == other._morphOperation && _iterationsStart == other._iterationsStart && _iterationsEnd == other._iterationsEnd && _chamfer == other._chamfer;
+        return MorphOperation == other.MorphOperation && IterationsStart == other.IterationsStart && IterationsEnd == other.IterationsEnd && Chamfer == other.Chamfer;
     }
 
     public override bool Equals(object? obj)
@@ -190,7 +174,7 @@ public sealed class OperationMorph : Operation
 
     public override bool Execute(Mat mat, params object[]? arguments)
     {
-        int iterations = (int) _iterationsStart;
+        int iterations = (int) IterationsStart;
         if (arguments is not null && arguments.Length >= 1)
         {
             iterations = (int) arguments[0];
@@ -212,12 +196,12 @@ public sealed class OperationMorph : Operation
         var kernel = Kernel.GetKernel(ref iterations);
         CvInvoke.MorphologyEx(target, target, MorphOperationOpenCV, kernel, Kernel.Anchor, iterations, BorderType.Reflect101, default);
 
-        if (_morphOperation == MorphOperations.OffsetCrop)
+        if (MorphOperation == MorphOperations.OffsetCrop)
         {
             using var originalRoi = GetRoiOrDefault(original);
             originalRoi.CopyTo(target, target);
         }
-        /*else if (_morphOperation == MorphOperations.IsolateFeatures)
+        /*else if (MorphOperation == MorphOperations.IsolateFeatures)
         {
             var originalRoi = GetRoiOrDefault(original);
             CvInvoke.Subtract(originalRoi, target, target);

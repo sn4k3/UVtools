@@ -1,7 +1,7 @@
 ﻿using Avalonia.Platform;
 using System;
 using System.IO;
-using Updatum;
+using StageKit.Runtime;
 
 namespace UVtools.UI;
 

@@ -1,5 +1,4 @@
-﻿using Avalonia.Controls;
-using Avalonia.Platform.Storage;
+﻿using Avalonia.Platform.Storage;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UVtools.Core.FileFormats;

@@ -7,9 +7,11 @@
  */
 
 using CommunityToolkit.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using EmguExtensions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,6 +24,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,11 +37,13 @@ using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
 using ZLinq;
+using BinarySerialization;
 using Timer = System.Timers.Timer;
 
 namespace UVtools.Core.FileFormats;
 
 #region Global enums
+
 public enum PerLayerSettingsModes : byte
 {
     /// <summary>
@@ -58,14 +63,15 @@ public enum PerLayerSettingsModes : byte
     /// Per-layer settings available and used
     /// </summary>
     [Description("Enabled (When compatible with the file format)")]
-    Enabled,
+    Enabled
 }
+
 #endregion
 
 /// <summary>
 /// Slicer <see cref="FileFormat"/> representation
 /// </summary>
-public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFormat>, IList<Layer>
+public abstract partial class FileFormat : ObservableObject, IDisposable, IEquatable<FileFormat>, IList<Layer>
 {
     #region Constants
 
@@ -145,7 +151,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the default batch count to process layers in parallel
     /// </summary>
-    public static int DefaultParallelBatchCount => (CoreSettings.MaxDegreeOfParallelism > 0 ? CoreSettings.MaxDegreeOfParallelism : Environment.ProcessorCount) * 10;
+    public static int DefaultParallelBatchCount => (CoreSettings.MaxDegreeOfParallelism > 0
+        ? CoreSettings.MaxDegreeOfParallelism
+        : Environment.ProcessorCount) * 10;
 
     #endregion
 
@@ -196,7 +204,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         /// <summary>
         /// Decodes only the information in the file and thumbnails, no layer image is read nor cached, fast
         /// </summary>
-        Partial,
+        Partial
     }
 
     /// <summary>
@@ -222,7 +230,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         /// </summary>
         Png24RgbAA,
 
-        Svg,
+        Svg
     }
 
     #endregion
@@ -234,7 +242,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     public class PrintParameterModifier
     {
-
         #region Instances
 
         public static PrintParameterModifier PositionZ { get; } = new("Position Z", "Layer absolute Z position", "mm",
@@ -297,16 +304,20 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             new("2) Lift height", @"Second lift/peel height between layers", "mm");
 
         public static PrintParameterModifier BottomLiftSpeed2 { get; } =
-            new("2) Bottom lift speed", "Lift speed of bottom layers for the second lift sequence (TSMC)", "mm/min", 0, 5000, 5);
+            new("2) Bottom lift speed", "Lift speed of bottom layers for the second lift sequence (TSMC)", "mm/min", 0,
+                5000, 5);
 
         public static PrintParameterModifier BottomLiftAcceleration2 { get; } =
-            new("2) Bottom lift acceleration", "Lift acceleration of bottom layers for the second lift sequence (TSMC)", "mm/s²", 0, 10000, 5);
+            new("2) Bottom lift acceleration", "Lift acceleration of bottom layers for the second lift sequence (TSMC)",
+                "mm/s²", 0, 10000, 5);
 
         public static PrintParameterModifier LiftSpeed2 { get; } =
-            new("2) Lift speed", "Lift speed of normal layers for the second lift sequence (TSMC)", "mm/min", 0, 5000, 5);
+            new("2) Lift speed", "Lift speed of normal layers for the second lift sequence (TSMC)", "mm/min", 0, 5000,
+                5);
 
         public static PrintParameterModifier LiftAcceleration2 { get; } =
-            new("2) Lift acceleration", "Lift acceleration of normal layers for the second lift sequence (TSMC)", "mm/s²", 0, 10000, 5);
+            new("2) Lift acceleration", "Lift acceleration of normal layers for the second lift sequence (TSMC)",
+                "mm/s²", 0, 10000, 5);
 
         public static PrintParameterModifier BottomWaitTimeAfterLift { get; } = new("Bottom wait after lift",
             "Time to wait/rest after a lift/peel sequence on bottom layers\nChitubox: Rest after lift\nLychee: Wait after lift",
@@ -471,13 +482,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((PrintParameterModifier)obj);
         }
 
         public override int GetHashCode()
         {
-            return (Name.GetHashCode());
+            return Name.GetHashCode();
         }
 
         public override string ToString()
@@ -571,7 +582,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
             return result;
         }
-
     }
 
     public static List<FileExtension> AllFileExtensions
@@ -595,7 +605,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the count of available file extensions
     /// </summary>
-    public static byte FileExtensionsCount => (byte)AvailableFormats.AsValueEnumerable().Sum(format => format.FileExtensions.Length);
+    public static byte FileExtensionsCount =>
+        (byte)AvailableFormats.AsValueEnumerable().Sum(format => format.FileExtensions.Length);
     //AvailableFormats.AsValueEnumerable().Aggregate<FileFormat, byte>(0,
     //(current, fileFormat) => (byte)(current + fileFormat.FileExtensions.Length));
 
@@ -605,8 +616,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="extensionOrFilePath"> name to find</param>
     /// <param name="createNewInstance">True to create a new instance of found file format, otherwise will return a pre created one which should be used for read-only purpose</param>
     /// <returns><see cref="FileFormat"/> object or null if not found</returns>
-    public static FileFormat? FindByExtensionOrFilePath(string extensionOrFilePath, bool createNewInstance = false) =>
-        FindByExtensionOrFilePath(extensionOrFilePath, out _, createNewInstance);
+    public static FileFormat? FindByExtensionOrFilePath(string extensionOrFilePath, bool createNewInstance = false)
+    {
+        return FindByExtensionOrFilePath(extensionOrFilePath, out _, createNewInstance);
+    }
 
     /// <summary>
     /// Find <see cref="FileFormat"/> by an extension
@@ -621,9 +634,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         fileFormatsSharingExt = 0;
         if (string.IsNullOrWhiteSpace(extensionOrFilePath)) return null;
 
-        bool isFilePath = false;
+        var isFilePath = false;
         // Test for ext first
-        var fileFormats = AvailableFormats.AsValueEnumerable().Where(fileFormat => fileFormat.IsExtensionValid(extensionOrFilePath))
+        var fileFormats = AvailableFormats.AsValueEnumerable()
+            .Where(fileFormat => fileFormat.IsExtensionValid(extensionOrFilePath))
             .ToArray();
         fileFormatsSharingExt = (byte)fileFormats.Length;
 
@@ -632,7 +646,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             GetFileNameStripExtensions(extensionOrFilePath, out var extension);
             if (string.IsNullOrWhiteSpace(extension)) return null;
 
-            fileFormats = AvailableFormats.AsValueEnumerable().Where(fileFormat => fileFormat.IsExtensionValid(extension)).ToArray();
+            fileFormats = AvailableFormats.AsValueEnumerable()
+                .Where(fileFormat => fileFormat.IsExtensionValid(extension)).ToArray();
             if (fileFormats.Length == 0) return null;
             isFilePath = true; // Was a file path
         }
@@ -746,19 +761,36 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         return slicerFile;
     }
 
-    public static FileFormat? Open(string fileFullPath, OperationProgress? progress = null) =>
-        Open(fileFullPath, FileDecodeType.Full, progress);
+    public static FileFormat? Open(string fileFullPath, OperationProgress? progress = null)
+    {
+        return Open(fileFullPath, FileDecodeType.Full, progress);
+    }
 
     public static Task<FileFormat?> OpenAsync(string fileFullPath, FileDecodeType decodeType,
         OperationProgress? progress = null)
-        => Task.Run(() => Open(fileFullPath, decodeType, progress), progress?.Token ?? default);
+    {
+        return Task.Run(() => Open(fileFullPath, decodeType, progress), progress?.Token ?? default);
+    }
 
-    public static Task<FileFormat?> OpenAsync(string fileFullPath, OperationProgress? progress = null) =>
-        OpenAsync(fileFullPath, FileDecodeType.Full, progress);
+    public static Task<FileFormat?> OpenAsync(string fileFullPath, OperationProgress? progress = null)
+    {
+        return OpenAsync(fileFullPath, FileDecodeType.Full, progress);
+    }
 
-    public static float RoundDisplaySize(float value) => MathF.Round(value, DisplayFloatPrecision);
-    public static double RoundDisplaySize(double value) => Math.Round(value, DisplayFloatPrecision);
-    public static decimal RoundDisplaySize(decimal value) => Math.Round(value, DisplayFloatPrecision);
+    public static float RoundDisplaySize(float value)
+    {
+        return MathF.Round(value, DisplayFloatPrecision);
+    }
+
+    public static double RoundDisplaySize(double value)
+    {
+        return Math.Round(value, DisplayFloatPrecision);
+    }
+
+    public static decimal RoundDisplaySize(decimal value)
+    {
+        return Math.Round(value, DisplayFloatPrecision);
+    }
 
     /// <summary>
     /// Copy parameters from one file to another
@@ -822,7 +854,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             or DATATYPE_RGB555_BE
             or DATATYPE_RGB565_BE
             or DATATYPE_RGB888
-
             or DATATYPE_BGR555
             or DATATYPE_BGR565
             or DATATYPE_BGR555_BE
@@ -832,11 +863,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             var bytesPerPixel = dataType is "RGB888" or "BGR888" ? 3 : 2;
             var bytes = new byte[mat.Width * mat.Height * bytesPerPixel];
-            int index = 0;
-            var span = mat.GetDataByteReadOnlySpan();
-            for (int i = 0; i < span.Length;)
+            var index = 0;
+            var span = mat.GetReadOnlySpanOfBytes();
+            for (var i = 0; i < span.Length;)
             {
-                byte b = span[i++];
+                var b = span[i++];
                 byte g;
                 byte r;
 
@@ -940,7 +971,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             or DATATYPE_RGB555_BE
             or DATATYPE_RGB565_BE
             or DATATYPE_RGB888
-
             or DATATYPE_BGR555
             or DATATYPE_BGR565
             or DATATYPE_BGR555_BE
@@ -949,15 +979,15 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
            )
         {
             var mat = new Mat(resolution, DepthType.Cv8U, 3);
-            var span = mat.GetDataByteSpan();
+            var span = mat.GetSpanOfBytes(0, 0);
             var pixel = 0;
-            int i = 0;
+            var i = 0;
             while (i < bytes.Length && pixel < span.Length)
             {
                 switch (dataType)
                 {
                     case DATATYPE_RGB555:
-                        ushort rgb555 = BitExtensions.ToUShortLittleEndian(bytes, i);
+                        var rgb555 = BitExtensions.ToUShortLittleEndian(bytes, i);
                         // 0b0rrrrrgggggbbbbb
                         span[pixel++] = (byte)((rgb555 & 0b00000000_00011111) << 3); // b
                         span[pixel++] = (byte)((rgb555 & 0b00000011_11100000) >> 2); // g
@@ -969,21 +999,21 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         break;
                     case DATATYPE_RGB565:
                         // 0brrrrrggggggbbbbb
-                        ushort rgb565 = BitExtensions.ToUShortLittleEndian(bytes, i);
+                        var rgb565 = BitExtensions.ToUShortLittleEndian(bytes, i);
                         span[pixel++] = (byte)((rgb565 & 0b00000000_00011111) << 3); // b
                         span[pixel++] = (byte)((rgb565 & 0b00000111_11100000) >> 3); // g
                         span[pixel++] = (byte)((rgb565 & 0b11111000_00000000) >> 8); // r
                         i += 2;
                         break;
                     case DATATYPE_RGB555_BE:
-                        ushort rgb555Be = BitExtensions.ToUShortBigEndian(bytes, i);
+                        var rgb555Be = BitExtensions.ToUShortBigEndian(bytes, i);
                         span[pixel++] = (byte)((rgb555Be & 0b00000000_00011111) << 3); // b
                         span[pixel++] = (byte)((rgb555Be & 0b00000011_11100000) >> 2); // g
                         span[pixel++] = (byte)((rgb555Be & 0b01111100_00000000) >> 7); // r
                         i += 2;
                         break;
                     case DATATYPE_RGB565_BE:
-                        ushort rgb565Be = BitExtensions.ToUShortBigEndian(bytes, i);
+                        var rgb565Be = BitExtensions.ToUShortBigEndian(bytes, i);
                         span[pixel++] = (byte)((rgb565Be & 0b00000000_00011111) << 3); // b
                         span[pixel++] = (byte)((rgb565Be & 0b00000111_11100000) >> 3); // g
                         span[pixel++] = (byte)((rgb565Be & 0b11111000_00000000) >> 8); // r
@@ -996,28 +1026,28 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         i += 3;
                         break;
                     case DATATYPE_BGR555:
-                        ushort bgr555 = BitExtensions.ToUShortLittleEndian(bytes, i);
+                        var bgr555 = BitExtensions.ToUShortLittleEndian(bytes, i);
                         span[pixel++] = (byte)((bgr555 & 0b01111100_00000000) >> 7); // b
                         span[pixel++] = (byte)((bgr555 & 0b00000011_11100000) >> 2); // g
                         span[pixel++] = (byte)((bgr555 & 0b00000000_00011111) << 3); // r
                         i += 2;
                         break;
                     case DATATYPE_BGR565:
-                        ushort bgr565 = BitExtensions.ToUShortLittleEndian(bytes, i);
+                        var bgr565 = BitExtensions.ToUShortLittleEndian(bytes, i);
                         span[pixel++] = (byte)((bgr565 & 0b11111000_00000000) >> 8); // b
                         span[pixel++] = (byte)((bgr565 & 0b00000111_11100000) >> 3); // g
                         span[pixel++] = (byte)((bgr565 & 0b00000000_00011111) << 3); // r
                         i += 2;
                         break;
                     case DATATYPE_BGR555_BE:
-                        ushort bgr555Be = BitExtensions.ToUShortBigEndian(bytes, i);
+                        var bgr555Be = BitExtensions.ToUShortBigEndian(bytes, i);
                         span[pixel++] = (byte)((bgr555Be & 0b01111100_00000000) >> 7); // b
                         span[pixel++] = (byte)((bgr555Be & 0b00000011_11100000) >> 2); // g
                         span[pixel++] = (byte)((bgr555Be & 0b00000000_00011111) << 3); // r
                         i += 2;
                         break;
                     case DATATYPE_BGR565_BE:
-                        ushort bgr565Be = BitExtensions.ToUShortBigEndian(bytes, i);
+                        var bgr565Be = BitExtensions.ToUShortBigEndian(bytes, i);
                         span[pixel++] = (byte)((bgr565Be & 0b11111000_00000000) >> 8); // b
                         span[pixel++] = (byte)((bgr565Be & 0b00000111_11100000) >> 3); // g
                         span[pixel++] = (byte)((bgr565Be & 0b00000000_00011111) << 3); // r
@@ -1035,7 +1065,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             var diff = span.Length - pixel;
             if (diff > 0) // Fill leftovers
             {
-                mat.GetDataByteSpan(diff, pixel).Clear();
+                mat.GetSpanOfBytes(pixel, diff).Clear();
             }
 
             return mat;
@@ -1045,7 +1075,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     public static Mat DecodeImage(string dataType, byte[] bytes, uint resolutionX, uint resolutionY)
-        => DecodeImage(dataType, bytes, new Size((int)resolutionX, (int)resolutionY));
+    {
+        return DecodeImage(dataType, bytes, new Size((int)resolutionX, (int)resolutionY));
+    }
 
     public static byte[] EncodeChituImageRGB15Rle(Mat image)
     {
@@ -1053,7 +1085,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         const ushort RLE16EncodingLimit = 0xFFF;
 
         var rle = new List<byte>();
-        var span = image.GetDataByteReadOnlySpan();
+        var span = image.GetReadOnlySpanOfBytes();
 
         ushort color15 = 0;
         uint rep = 0;
@@ -1069,7 +1101,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                     rle.Add((byte)((color15 & ~REPEATRGB15MASK) >> 8));
                     return;
                 case 2:
-                    for (int i = 0; i < 2; i++)
+                    for (var i = 0; i < 2; i++)
                     {
                         rle.Add((byte)(color15 & ~REPEATRGB15MASK));
                         rle.Add((byte)((color15 & ~REPEATRGB15MASK) >> 8));
@@ -1085,10 +1117,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             }
         }
 
-        int pixel = 0;
+        var pixel = 0;
         while (pixel < span.Length)
         {
-            byte b = span[pixel++];
+            var b = span[pixel++];
             byte g;
             byte r;
 
@@ -1104,7 +1136,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
             if (image.NumberOfChannels == 4) pixel++; // skip alpha
 
-            ushort ncolor15 = (ushort)((b >> 3) | ((g >> 2) << 5) | ((r >> 3) << 11));
+            var ncolor15 = (ushort)((b >> 3) | ((g >> 2) << 5) | ((r >> 3) << 11));
 
             if (ncolor15 == color15)
             {
@@ -1133,24 +1165,23 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         const ushort REPEATRGB15MASK = 0x20;
 
         var mat = new Mat(resolution, DepthType.Cv8U, 3);
-        var span = mat.GetDataByteSpan();
+        var span = mat.GetSpanOfBytes(0, 0);
 
-        int pixel = 0;
+        var pixel = 0;
         for (uint i = 0; i < rle.Length; i++)
         {
-
-            ushort dot = BitExtensions.ToUShortLittleEndian(rle[i], rle[++i]);
-            byte red = (byte)(((dot >> 11) & 0x1F) << 3);
-            byte green = (byte)(((dot >> 6) & 0x1F) << 3);
-            byte blue = (byte)((dot & 0x1F) << 3);
-            int repeat = 1;
+            var dot = BitExtensions.ToUShortLittleEndian(rle[i], rle[++i]);
+            var red = (byte)(((dot >> 11) & 0x1F) << 3);
+            var green = (byte)(((dot >> 6) & 0x1F) << 3);
+            var blue = (byte)((dot & 0x1F) << 3);
+            var repeat = 1;
             if ((dot & REPEATRGB15MASK) == REPEATRGB15MASK)
             {
-                repeat += rle[++i] & 0xFF | ((rle[++i] & 0x0F) << 8);
+                repeat += (rle[++i] & 0xFF) | ((rle[++i] & 0x0F) << 8);
             }
 
 
-            for (int n = 0; n < repeat; n++)
+            for (var n = 0; n < repeat; n++)
             {
                 span[pixel++] = blue;
                 span[pixel++] = green;
@@ -1161,14 +1192,16 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         var diff = span.Length - pixel;
         if (diff > 0) // Fill leftovers
         {
-            mat.GetDataByteSpan(diff, pixel).Clear();
+            mat.GetSpanOfBytes(diff, pixel).Clear();
         }
 
         return mat;
     }
 
     public static Mat DecodeChituImageRGB15Rle(byte[] rle, uint resolutionX, uint resolutionY)
-        => DecodeChituImageRGB15Rle(rle, new Size((int)resolutionX, (int)resolutionY));
+    {
+        return DecodeChituImageRGB15Rle(rle, new Size((int)resolutionX, (int)resolutionY));
+    }
 
     public static void MutateGetVarsIterationChamfer(uint startLayerIndex, uint endLayerIndex, int iterationsStart,
         int iterationsEnd, ref bool isFade, out float iterationSteps, out int maxIteration)
@@ -1186,7 +1219,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         if (!isFade) return iterationsStart;
         // calculate iterations based on range
-        int iterations = (int)(iterationsStart < iterationsEnd
+        var iterations = (int)(iterationsStart < iterationsEnd
             ? iterationsStart + (layerIndex - startLayerIndex) * iterationSteps
             : iterationsStart - (layerIndex - startLayerIndex) * iterationSteps);
 
@@ -1199,7 +1232,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         int iterationsEnd, bool isFade)
     {
         MutateGetVarsIterationChamfer(startLayerIndex, endLayerIndex, iterationsStart, iterationsEnd, ref isFade,
-            out float iterationSteps, out int maxIteration);
+            out var iterationSteps, out var maxIteration);
         return MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration,
             startLayerIndex, layerIndex);
     }
@@ -1281,7 +1314,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         errorMessage = string.Empty;
 
         var invalidFileNameChars = Path.GetInvalidFileNameChars();
-        var invalidChars = filename.AsValueEnumerable().Where(c => invalidFileNameChars.AsValueEnumerable().Contains(c)).Distinct();
+        var invalidChars = filename.AsValueEnumerable().Where(c => invalidFileNameChars.AsValueEnumerable().Contains(c))
+            .Distinct();
 
         if (invalidChars.Any())
         {
@@ -1320,8 +1354,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     #region Members
 
     public Lock Mutex = new();
-
-    private string? _fileFullPath;
 
     protected ImageFormat _layerImageFormat = ImageFormat.Custom;
 
@@ -1394,8 +1426,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     private string? _materialName;
     private float _materialGrams;
     private float _materialCost;
-    private bool _suppressRebuildGCode;
-
     private Rectangle _boundingRectangle = Rectangle.Empty;
 
     private readonly Timer _queueTimerPrintTime = new(QueueTimerPrintTime) { AutoReset = false };
@@ -1412,6 +1442,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public abstract FileFormatType FileType { get; }
 
     /// <summary>
+    /// Gets the file format endianness
+    /// </summary>
+    /// <returns></returns>
+    public virtual Endianness FileFormatEndianness => Endianness.Little;
+
+    /// <summary>
     /// Gets the manufacturing process this file and printer uses
     /// </summary>
     public virtual PrinterManufacturingProcess ManufacturingProcess =>
@@ -1425,7 +1461,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public ImageFormat LayerImageFormat
     {
         get => _layerImageFormat;
-        set => RaiseAndSetIfChanged(ref _layerImageFormat, value);
+        set => SetProperty(ref _layerImageFormat, value);
     }
 
     /// <summary>
@@ -1458,16 +1494,20 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="modifier"></param>
     /// <returns>True if exists, otherwise false</returns>
-    public bool HavePrintParameterModifier(PrintParameterModifier modifier) =>
-        PrintParameterModifiers.AsValueEnumerable().Contains(modifier);
+    public bool HavePrintParameterModifier(PrintParameterModifier modifier)
+    {
+        return PrintParameterModifiers.AsValueEnumerable().Contains(modifier);
+    }
 
     /// <summary>
     /// Checks if a <see cref="PrintParameterModifier"/> exists on layer parameters
     /// </summary>
     /// <param name="modifier"></param>
     /// <returns>True if exists, otherwise false</returns>
-    public bool HaveLayerParameterModifier(PrintParameterModifier modifier) =>
-        SupportPerLayerSettings && PrintParameterPerLayerModifiers.AsValueEnumerable().Contains(modifier);
+    public bool HaveLayerParameterModifier(PrintParameterModifier modifier)
+    {
+        return SupportPerLayerSettings && PrintParameterPerLayerModifiers.AsValueEnumerable().Contains(modifier);
+    }
 
     /// <summary>
     /// Gets the file filter for open and save dialogs
@@ -1535,25 +1575,19 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets an instance of <see cref="FileInfo"/> with the current loaded file
     /// </summary>
-    public FileInfo? FileInfo => _fileFullPath is not null ? new FileInfo(_fileFullPath) : null;
+    public FileInfo? FileInfo => FileFullPath is not null ? new FileInfo(FileFullPath) : null;
 
     /// <summary>
     /// Gets the input file path loaded into this <see cref="FileFormat"/>
     /// </summary>
-    public string? FileFullPath
-    {
-        get => _fileFullPath;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _fileFullPath, value)) return;
-            RaisePropertyChanged(DirectoryPath);
-            RaisePropertyChanged(Filename);
-            RaisePropertyChanged(FilenameNoExt);
-            RaisePropertyChanged(FilenameStripExtensions);
-            RaisePropertyChanged(FileExtension);
-            RaisePropertyChanged(FileAbsoluteExtension);
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DirectoryPath))]
+    [NotifyPropertyChangedFor(nameof(Filename))]
+    [NotifyPropertyChangedFor(nameof(FilenameNoExt))]
+    [NotifyPropertyChangedFor(nameof(FilenameStripExtensions))]
+    [NotifyPropertyChangedFor(nameof(FileExtension))]
+    [NotifyPropertyChangedFor(nameof(FileAbsoluteExtension))]
+    public partial string? FileFullPath { get; set; }
 
     public string? FileFullPathNoExt => Path.Combine(DirectoryPath!, FilenameNoExt!);
 
@@ -1603,33 +1637,48 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the amount of available versions in this file format
     /// </summary>
-    public virtual byte AvailableVersionsCount => (byte)AvailableVersions.Length;
+    public byte AvailableVersionsCount => (byte)AvailableVersions.Length;
 
     /// <summary>
     /// Gets the available versions to set in this file format given it own extension
     /// </summary>
     /// <returns></returns>
-    public uint[] GetAvailableVersionsForExtension() => GetAvailableVersionsForExtension(FileExtension);
+    public uint[] GetAvailableVersionsForExtension()
+    {
+        return GetAvailableVersionsForExtension(FileExtension);
+    }
 
     /// <summary>
     /// Gets the available versions to set in this file format for the given extension
     /// </summary>
     /// <param name="extension">Extension name, with or without dot (.)</param>
     /// <returns></returns>
-    public virtual uint[] GetAvailableVersionsForExtension(string? extension) => AvailableVersions;
+    public virtual uint[] GetAvailableVersionsForExtension(string? extension)
+    {
+        return AvailableVersions;
+    }
 
     /// <summary>
     /// Gets the available versions to set in this file format for the given file name
     /// </summary>
     /// <param name="fileName"></param>
     /// <returns></returns>
-    public uint[] GetAvailableVersionsForFileName(string? fileName) =>
-        GetAvailableVersionsForExtension(Path.GetExtension(fileName));
+    public uint[] GetAvailableVersionsForFileName(string? fileName)
+    {
+        return GetAvailableVersionsForExtension(Path.GetExtension(fileName));
+    }
 
     /// <summary>
     /// Gets the default version to use in this file when not setting the version
     /// </summary>
-    public virtual uint DefaultVersion => 0;
+    public virtual uint DefaultVersion
+    {
+        get
+        {
+            if (AvailableVersions.Length == 0) return 0;
+            return AvailableVersions[0];
+        }
+    }
 
     /// <summary>
     /// Gets or sets the version of this file format
@@ -1645,7 +1694,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             }
 
             RequireFullEncode = true;
-            RaiseAndSetIfChanged(ref _version, value);
+            SetProperty(ref _version, value);
         }
     }
 
@@ -1725,8 +1774,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         _layers[layerIndex].Index = layerIndex;
                         _layers[layerIndex].SlicerFile = this;
 
-                        if (layerIndex >= oldLayerCount || layerIndex < oldLayerCount &&
-                            !_layers[layerIndex].Equals(oldLayers[layerIndex]))
+                        if (layerIndex >= oldLayerCount || (layerIndex < oldLayerCount &&
+                                                            !_layers[layerIndex].Equals(oldLayers[layerIndex])))
                         {
                             // Marks as modified only if layer image changed on this index
                             _layers[layerIndex].IsModified = true;
@@ -1752,23 +1801,25 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 RebuildGCode();
             }
 
-            RaisePropertyChanged();
-            RaisePropertyChanged(nameof(HaveLayers));
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HaveLayers));
         }
     }
 
     /// <summary>
     /// Gets the layers cache/memory occupation size in bytes
     /// </summary>
-    public long LayersCacheSize {
+    public long LayersCacheSize
+    {
         get
         {
             long size = 0;
-            for (int i = 0; i < LayerCount; i++)
+            for (var i = 0; i < LayerCount; i++)
             {
                 if (this[i] is null) continue;
                 size += this[i].CompressedMat.CompressedLength;
             }
+
             return size;
         }
     }
@@ -1806,7 +1857,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the last transition layer
     /// </summary>
-    public Layer? LastTransitionLayer => TransitionLayerCount == 0 ? null : this[BottomLayerCount + TransitionLayerCount - 1];
+    public Layer? LastTransitionLayer =>
+        TransitionLayerCount == 0 ? null : this[BottomLayerCount + TransitionLayerCount - 1];
 
     /// <summary>
     /// Gets the first normal layer
@@ -1821,27 +1873,32 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the smallest bottom layer using the pixel count
     /// </summary>
-    public Layer? SmallestBottomLayer => this.AsValueEnumerable().Where(layer => layer is {IsBottomLayer: true, IsEmpty: false}).MinBy(layer => layer.NonZeroPixelCount);
+    public Layer? SmallestBottomLayer => this.AsValueEnumerable()
+        .Where(layer => layer is { IsBottomLayer: true, IsEmpty: false }).MinBy(layer => layer.NonZeroPixelCount);
 
     /// <summary>
     /// Gets the largest bottom layer using the pixel count
     /// </summary>
-    public Layer? LargestBottomLayer => this.AsValueEnumerable().Where(layer => layer is {IsBottomLayer: true, IsEmpty: false}).MaxBy(layer => layer.NonZeroPixelCount);
+    public Layer? LargestBottomLayer => this.AsValueEnumerable()
+        .Where(layer => layer is { IsBottomLayer: true, IsEmpty: false }).MaxBy(layer => layer.NonZeroPixelCount);
 
     /// <summary>
     /// Gets the smallest normal layer using the pixel count
     /// </summary>
-    public Layer? SmallestNormalLayer => this.AsValueEnumerable().Where(layer => layer is {IsNormalLayer: true, IsEmpty: false}).MinBy(layer => layer.NonZeroPixelCount);
+    public Layer? SmallestNormalLayer => this.AsValueEnumerable()
+        .Where(layer => layer is { IsNormalLayer: true, IsEmpty: false }).MinBy(layer => layer.NonZeroPixelCount);
 
     /// <summary>
     /// Gets the largest layer using the pixel count
     /// </summary>
-    public Layer? LargestNormalLayer => this.AsValueEnumerable().Where(layer => layer is {IsNormalLayer: true, IsEmpty: false}).MaxBy(layer => layer.NonZeroPixelCount);
+    public Layer? LargestNormalLayer => this.AsValueEnumerable()
+        .Where(layer => layer is { IsNormalLayer: true, IsEmpty: false }).MaxBy(layer => layer.NonZeroPixelCount);
 
     /// <summary>
     /// Gets the smallest normal layer using the pixel count
     /// </summary>
-    public Layer? SmallestLayer => this.AsValueEnumerable().Where(layer => !layer.IsEmpty).MinBy(layer => layer.NonZeroPixelCount);
+    public Layer? SmallestLayer =>
+        this.AsValueEnumerable().Where(layer => !layer.IsEmpty).MinBy(layer => layer.NonZeroPixelCount);
 
     /// <summary>
     /// Gets the largest layer using the pixel count
@@ -1850,12 +1907,16 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     public Layer? GetSmallestLayerBetween(uint layerStartIndex, uint layerEndIndex)
     {
-        return this.AsValueEnumerable().Where((layer, index) => !layer.IsEmpty && index >= layerStartIndex && index <= layerEndIndex).MinBy(layer => layer.NonZeroPixelCount);
+        return this.AsValueEnumerable()
+            .Where((layer, index) => !layer.IsEmpty && index >= layerStartIndex && index <= layerEndIndex)
+            .MinBy(layer => layer.NonZeroPixelCount);
     }
 
     public Layer? GetLargestLayerBetween(uint layerStartIndex, uint layerEndIndex)
     {
-        return this.AsValueEnumerable().Where((layer, index) => !layer.IsEmpty && index >= layerStartIndex && index <= layerEndIndex).MaxBy(layer => layer.NonZeroPixelCount);
+        return this.AsValueEnumerable()
+            .Where((layer, index) => !layer.IsEmpty && index >= layerStartIndex && index <= layerEndIndex)
+            .MaxBy(layer => layer.NonZeroPixelCount);
     }
 
     /// <summary>
@@ -1889,7 +1950,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         get
         {
-            for (int layerIndex = 1; layerIndex < LayerCount; layerIndex++)
+            for (var layerIndex = 1; layerIndex < LayerCount; layerIndex++)
             {
                 var layer = this[layerIndex];
                 if (this[layerIndex - 1].PositionZ != layer.PositionZ) continue;
@@ -1898,14 +1959,17 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         }
     }
 
-    public IEnumerable<Layer> GetDistinctLayersByPositionZ(uint layerIndexStart = 0) =>
-        GetDistinctLayersByPositionZ(layerIndexStart, LastLayerIndex);
+    public IEnumerable<Layer> GetDistinctLayersByPositionZ(uint layerIndexStart = 0)
+    {
+        return GetDistinctLayersByPositionZ(layerIndexStart, LastLayerIndex);
+    }
 
     public IEnumerable<Layer> GetDistinctLayersByPositionZ(uint layerIndexStart, uint layerIndexEnd)
     {
         return layerIndexEnd - layerIndexStart >= LastLayerIndex
             ? this.DistinctBy(layer => layer.PositionZ)
-            : this.Where((_, layerIndex) => layerIndex >= layerIndexStart && layerIndex <= layerIndexEnd).DistinctBy(layer => layer.PositionZ);
+            : this.Where((_, layerIndex) => layerIndex >= layerIndexStart && layerIndex <= layerIndexEnd)
+                .DistinctBy(layer => layer.PositionZ);
     }
 
     public IEnumerable<Layer> GetLayersFromHeightRange(float startPositionZ, float endPositionZ)
@@ -1921,7 +1985,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// True if all layers are using same value parameters as global settings, otherwise false
     /// </summary>
-    public bool AllLayersAreUsingGlobalParameters => this.AsValueEnumerable().All(layer => layer.IsUsingGlobalParameters);
+    public bool AllLayersAreUsingGlobalParameters =>
+        this.AsValueEnumerable().All(layer => layer.IsUsingGlobalParameters);
 
     /// <summary>
     /// True if there are one or more layer(s) using different settings than the global settings, otherwise false
@@ -1937,7 +2002,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// True if the file global property is using TSMC, otherwise false when not using
     /// </summary>
-    public bool IsUsingTSMC => (CanUseAnyLiftHeight2 || CanUseAnyRetractHeight2) && (BottomLiftHeight2 > 0 || BottomRetractHeight2 > 0 || LiftHeight2 > 0 || RetractHeight2 > 0);
+    public bool IsUsingTSMC => (CanUseAnyLiftHeight2 || CanUseAnyRetractHeight2) &&
+                               (BottomLiftHeight2 > 0 || BottomRetractHeight2 > 0 || LiftHeight2 > 0 ||
+                                RetractHeight2 > 0);
 
 
     /// <summary>
@@ -1952,6 +2019,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             {
                 if (this[i].IsModified) return true;
             }
+
             return false;
         }
         set
@@ -1971,8 +2039,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => GetBoundingRectangle();
         set
         {
-            if(!RaiseAndSetIfChanged(ref _boundingRectangle, value)) return;
-            RaisePropertyChanged(nameof(BoundingRectangleMillimeters));
+            if (!SetProperty(ref _boundingRectangle, value)) return;
+            OnPropertyChanged(nameof(BoundingRectangleMillimeters));
         }
     }
 
@@ -1999,7 +2067,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public bool RequireFullEncode
     {
         get => _haveModifiedLayers || IsModified;
-        set =>  RaiseAndSetIfChanged(ref _haveModifiedLayers, value);
+        set => SetProperty(ref _haveModifiedLayers, value);
     }
 
     /// <summary>
@@ -2010,9 +2078,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => new((int)ResolutionX, (int)ResolutionY);
         set
         {
-            ResolutionX = (uint) value.Width;
-            ResolutionY = (uint) value.Height;
-            RaisePropertyChanged();
+            ResolutionX = (uint)value.Width;
+            ResolutionY = (uint)value.Height;
+            OnPropertyChanged();
         }
     }
 
@@ -2024,18 +2092,18 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _resolutionX;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _resolutionX, value)) return;
-            RaisePropertyChanged(nameof(Resolution));
-            RaisePropertyChanged(nameof(ResolutionRectangle));
-            RaisePropertyChanged(nameof(DisplayPixelCount));
-            RaisePropertyChanged(nameof(DisplayAspectRatio));
-            RaisePropertyChanged(nameof(DisplayAspectRatioStr));
-            RaisePropertyChanged(nameof(IsDisplayPortrait));
-            RaisePropertyChanged(nameof(IsDisplayLandscape));
+            if (!SetProperty(ref _resolutionX, value)) return;
+            OnPropertyChanged(nameof(Resolution));
+            OnPropertyChanged(nameof(ResolutionRectangle));
+            OnPropertyChanged(nameof(DisplayPixelCount));
+            OnPropertyChanged(nameof(DisplayAspectRatio));
+            OnPropertyChanged(nameof(DisplayAspectRatioStr));
+            OnPropertyChanged(nameof(IsDisplayPortrait));
+            OnPropertyChanged(nameof(IsDisplayLandscape));
 
-            RaisePropertyChanged(nameof(Xppmm));
-            RaisePropertyChanged(nameof(PixelWidth));
-            RaisePropertyChanged(nameof(PixelWidthMicrons));
+            OnPropertyChanged(nameof(Xppmm));
+            OnPropertyChanged(nameof(PixelWidth));
+            OnPropertyChanged(nameof(PixelWidthMicrons));
 
             NotifyAspectChange();
         }
@@ -2049,18 +2117,18 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _resolutionY;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _resolutionY, value)) return;
-            RaisePropertyChanged(nameof(Resolution));
-            RaisePropertyChanged(nameof(ResolutionRectangle));
-            RaisePropertyChanged(nameof(DisplayPixelCount));
-            RaisePropertyChanged(nameof(DisplayAspectRatio));
-            RaisePropertyChanged(nameof(DisplayAspectRatioStr));
-            RaisePropertyChanged(nameof(IsDisplayPortrait));
-            RaisePropertyChanged(nameof(IsDisplayLandscape));
+            if (!SetProperty(ref _resolutionY, value)) return;
+            OnPropertyChanged(nameof(Resolution));
+            OnPropertyChanged(nameof(ResolutionRectangle));
+            OnPropertyChanged(nameof(DisplayPixelCount));
+            OnPropertyChanged(nameof(DisplayAspectRatio));
+            OnPropertyChanged(nameof(DisplayAspectRatioStr));
+            OnPropertyChanged(nameof(IsDisplayPortrait));
+            OnPropertyChanged(nameof(IsDisplayLandscape));
 
-            RaisePropertyChanged(nameof(Yppmm));
-            RaisePropertyChanged(nameof(PixelHeight));
-            RaisePropertyChanged(nameof(PixelHeightMicrons));
+            OnPropertyChanged(nameof(Yppmm));
+            OnPropertyChanged(nameof(PixelHeight));
+            OnPropertyChanged(nameof(PixelHeightMicrons));
 
             NotifyAspectChange();
         }
@@ -2086,7 +2154,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             DisplayWidth = RoundDisplaySize(value.Width);
             DisplayHeight = RoundDisplaySize(value.Height);
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 
@@ -2098,13 +2166,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _displayWidth;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _displayWidth, RoundDisplaySize(value))) return;
-            RaisePropertyChanged(nameof(Display));
-            RaisePropertyChanged(nameof(DisplayDiagonal));
-            RaisePropertyChanged(nameof(DisplayDiagonalInches));
-            RaisePropertyChanged(nameof(Xppmm));
-            RaisePropertyChanged(nameof(PixelWidth));
-            RaisePropertyChanged(nameof(PixelWidthMicrons));
+            if (!SetProperty(ref _displayWidth, RoundDisplaySize(value))) return;
+            OnPropertyChanged(nameof(Display));
+            OnPropertyChanged(nameof(DisplayDiagonal));
+            OnPropertyChanged(nameof(DisplayDiagonalInches));
+            OnPropertyChanged(nameof(Xppmm));
+            OnPropertyChanged(nameof(PixelWidth));
+            OnPropertyChanged(nameof(PixelWidthMicrons));
             NotifyAspectChange();
         }
     }
@@ -2117,13 +2185,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _displayHeight;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _displayHeight, RoundDisplaySize(value))) return;
-            RaisePropertyChanged(nameof(Display));
-            RaisePropertyChanged(nameof(DisplayDiagonal));
-            RaisePropertyChanged(nameof(DisplayDiagonalInches));
-            RaisePropertyChanged(nameof(Yppmm));
-            RaisePropertyChanged(nameof(PixelHeight));
-            RaisePropertyChanged(nameof(PixelHeightMicrons));
+            if (!SetProperty(ref _displayHeight, RoundDisplaySize(value))) return;
+            OnPropertyChanged(nameof(Display));
+            OnPropertyChanged(nameof(DisplayDiagonal));
+            OnPropertyChanged(nameof(DisplayDiagonalInches));
+            OnPropertyChanged(nameof(Yppmm));
+            OnPropertyChanged(nameof(PixelHeight));
+            OnPropertyChanged(nameof(PixelHeightMicrons));
             NotifyAspectChange();
         }
     }
@@ -2131,12 +2199,16 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the display diagonal in millimeters
     /// </summary>
-    public float DisplayDiagonal => MathF.Round(MathF.Sqrt(MathF.Pow(DisplayWidth, 2) + MathF.Pow(DisplayHeight, 2)), 2, MidpointRounding.AwayFromZero);
+    public float DisplayDiagonal => MathF.Round(MathF.Sqrt(MathF.Pow(DisplayWidth, 2) + MathF.Pow(DisplayHeight, 2)), 2,
+        MidpointRounding.AwayFromZero);
 
     /// <summary>
     /// Gets the display diagonal in inch's
     /// </summary>
-    public float DisplayDiagonalInches => MathF.Round(MathF.Sqrt(MathF.Pow(DisplayWidth, 2) + MathF.Pow(DisplayHeight, 2)) * (float)UnitExtensions.MillimeterToInch, 2, MidpointRounding.AwayFromZero);
+    public float DisplayDiagonalInches =>
+        MathF.Round(
+            MathF.Sqrt(MathF.Pow(DisplayWidth, 2) + MathF.Pow(DisplayHeight, 2)) *
+            (float)UnitExtensions.MillimeterToInch, 2, MidpointRounding.AwayFromZero);
 
     /// <summary>
     /// Gets the display ratio
@@ -2146,7 +2218,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get
         {
             var gcd = MathExtensions.GCD(ResolutionX, ResolutionY);
-            return new((int)(ResolutionX / gcd), (int)(ResolutionY / gcd));
+            return new Size((int)(ResolutionX / gcd), (int)(ResolutionY / gcd));
         }
     }
 
@@ -2180,7 +2252,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual float MachineZ
     {
         get => _machineZ > 0 ? _machineZ : PrintHeight;
-        set => RaiseAndSetIfChanged(ref _machineZ, value);
+        set => SetProperty(ref _machineZ, value);
     }
 
     /// <summary>
@@ -2231,12 +2303,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the pixel width in microns
     /// </summary>
-    public float PixelWidthMicrons => DisplayWidth > 0 && ResolutionX > 0 ? MathF.Round(DisplayWidth / ResolutionX * 1000, 3) : 0;
+    public float PixelWidthMicrons =>
+        DisplayWidth > 0 && ResolutionX > 0 ? MathF.Round(DisplayWidth / ResolutionX * 1000, 3) : 0;
 
     /// <summary>
     /// Gets the pixel height in microns
     /// </summary>
-    public float PixelHeightMicrons => DisplayHeight > 0 && ResolutionY > 0 ? MathF.Round(DisplayHeight / ResolutionY * 1000, 3) : 0;
+    public float PixelHeightMicrons =>
+        DisplayHeight > 0 && ResolutionY > 0 ? MathF.Round(DisplayHeight / ResolutionY * 1000, 3) : 0;
 
     /// <summary>
     /// Gets the pixel size in microns
@@ -2315,6 +2389,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             return new SizeF(size, size);
         }
+
         if (pixelScaleNormalized.Width > PixelScaleNormalized.Height)
         {
             return new SizeF(size * pixelScaleNormalized.Width, size);
@@ -2337,6 +2412,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             return new Size(size, size);
         }
+
         if (pixelScaleNormalized.Width > PixelScaleNormalized.Height)
         {
             return new Size((int)(size * pixelScaleNormalized.Width), size);
@@ -2381,7 +2457,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         set
         {
             if (!SupportAntiAliasing) return;
-            RaiseAndSet(ref _antiAliasing, value);
+            SetPropertyAndNotify(ref _antiAliasing, value);
         }
     }
 
@@ -2393,8 +2469,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _layerHeight;
         set
         {
-            RaiseAndSet(ref _layerHeight, Layer.RoundHeight(value));
-            RaisePropertyChanged(nameof(LayerHeightUm));
+            SetPropertyAndNotify(ref _layerHeight, Layer.RoundHeight(value));
+            OnPropertyChanged(nameof(LayerHeightUm));
         }
     }
 
@@ -2413,7 +2489,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual float PrintHeight
     {
         get => HaveLayers ? LastLayer?.PositionZ ?? LayerCount * LayerHeight : 0;
-        set => RaisePropertyChanged();
+        set => OnPropertyChanged();
     }
 
     /// <summary>
@@ -2455,11 +2531,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual uint LayerCount
     {
         get => (uint)Count;
-        set {
-            RaisePropertyChanged();
-            RaisePropertyChanged(nameof(LastLayerIndex));
-            RaisePropertyChanged(nameof(NormalLayerCount));
-            RaisePropertyChanged(nameof(TransitionLayersRepresentation));
+        set
+        {
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(LastLayerIndex));
+            OnPropertyChanged(nameof(NormalLayerCount));
+            OnPropertyChanged(nameof(TransitionLayersRepresentation));
         }
     }
 
@@ -2487,9 +2564,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomLayerCount;
         set
         {
-            RaiseAndSet(ref _bottomLayerCount, value);
-            RaisePropertyChanged(nameof(NormalLayerCount));
-            RaisePropertyChanged(nameof(TransitionLayersRepresentation));
+            SetPropertyAndNotify(ref _bottomLayerCount, value);
+            OnPropertyChanged(nameof(NormalLayerCount));
+            OnPropertyChanged(nameof(TransitionLayersRepresentation));
         }
     }
 
@@ -2506,9 +2583,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _transitionLayerCount;
         set
         {
-            RaiseAndSet(ref _transitionLayerCount, (ushort)Math.Min(value, MaximumPossibleTransitionLayerCount));
-            RaisePropertyChanged(nameof(HaveTransitionLayers));
-            RaisePropertyChanged(nameof(TransitionLayersRepresentation));
+            SetPropertyAndNotify(ref _transitionLayerCount, (ushort)Math.Min(value, MaximumPossibleTransitionLayerCount));
+            OnPropertyChanged(nameof(HaveTransitionLayers));
+            OnPropertyChanged(nameof(TransitionLayersRepresentation));
         }
     }
 
@@ -2525,7 +2602,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get
         {
             if (BottomLayerCount == 0) return 0;
-            int layerCount = (int)LayerCount - BottomLayerCount - 1;
+            var layerCount = (int)LayerCount - BottomLayerCount - 1;
             if (layerCount <= 0) return 0;
             return (uint)layerCount;
         }
@@ -2544,8 +2621,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomLightOffDelay;
         set
         {
-            RaiseAndSet(ref _bottomLightOffDelay, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(LightOffDelayRepresentation));
+            SetPropertyAndNotify(ref _bottomLightOffDelay, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(LightOffDelayRepresentation));
         }
     }
 
@@ -2557,8 +2634,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _lightOffDelay;
         set
         {
-            RaiseAndSet(ref _lightOffDelay, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(LightOffDelayRepresentation));
+            SetPropertyAndNotify(ref _lightOffDelay, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(LightOffDelayRepresentation));
         }
     }
 
@@ -2570,8 +2647,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomWaitTimeBeforeCure;
         set
         {
-            RaiseAndSet(ref _bottomWaitTimeBeforeCure, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            SetPropertyAndNotify(ref _bottomWaitTimeBeforeCure, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(WaitTimeRepresentation));
         }
     }
 
@@ -2584,8 +2661,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _waitTimeBeforeCure;
         set
         {
-            RaiseAndSet(ref _waitTimeBeforeCure, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            SetPropertyAndNotify(ref _waitTimeBeforeCure, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(WaitTimeRepresentation));
         }
     }
 
@@ -2597,9 +2674,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomExposureTime;
         set
         {
-            RaiseAndSet(ref _bottomExposureTime, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(ExposureRepresentation));
-            RaisePropertyChanged(nameof(TransitionLayersRepresentation));
+            SetPropertyAndNotify(ref _bottomExposureTime, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(ExposureRepresentation));
+            OnPropertyChanged(nameof(TransitionLayersRepresentation));
         }
     }
 
@@ -2611,9 +2688,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _exposureTime;
         set
         {
-            RaiseAndSet(ref _exposureTime, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(ExposureRepresentation));
-            RaisePropertyChanged(nameof(TransitionLayersRepresentation));
+            SetPropertyAndNotify(ref _exposureTime, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(ExposureRepresentation));
+            OnPropertyChanged(nameof(TransitionLayersRepresentation));
         }
     }
 
@@ -2625,8 +2702,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomWaitTimeAfterCure;
         set
         {
-            RaiseAndSet(ref _bottomWaitTimeAfterCure, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            SetPropertyAndNotify(ref _bottomWaitTimeAfterCure, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(WaitTimeRepresentation));
         }
     }
 
@@ -2638,8 +2715,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _waitTimeAfterCure;
         set
         {
-            RaiseAndSet(ref _waitTimeAfterCure, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            SetPropertyAndNotify(ref _waitTimeAfterCure, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(WaitTimeRepresentation));
         }
     }
 
@@ -2679,9 +2756,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomLiftHeight;
         set
         {
-            RaiseAndSet(ref _bottomLiftHeight, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(BottomLiftHeightTotal));
-            RaisePropertyChanged(nameof(LiftRepresentation));
+            SetPropertyAndNotify(ref _bottomLiftHeight, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(BottomLiftHeightTotal));
+            OnPropertyChanged(nameof(LiftRepresentation));
             BottomRetractHeight2 = BottomRetractHeight2; // Sanitize
         }
     }
@@ -2694,8 +2771,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomLiftSpeed;
         set
         {
-            RaiseAndSet(ref _bottomLiftSpeed, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(LiftRepresentation));
+            SetPropertyAndNotify(ref _bottomLiftSpeed, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(LiftRepresentation));
         }
     }
 
@@ -2707,8 +2784,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomLiftAcceleration;
         set
         {
-            RaiseAndSet(ref _bottomLiftAcceleration, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(LiftRepresentation));
+            SetPropertyAndNotify(ref _bottomLiftAcceleration, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(LiftRepresentation));
         }
     }
 
@@ -2720,9 +2797,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _liftHeight;
         set
         {
-            RaiseAndSet(ref _liftHeight, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(LiftHeightTotal));
-            RaisePropertyChanged(nameof(LiftRepresentation));
+            SetPropertyAndNotify(ref _liftHeight, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(LiftHeightTotal));
+            OnPropertyChanged(nameof(LiftRepresentation));
             RetractHeight2 = RetractHeight2; // Sanitize
         }
     }
@@ -2735,8 +2812,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _liftSpeed;
         set
         {
-            RaiseAndSet(ref _liftSpeed, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(LiftRepresentation));
+            SetPropertyAndNotify(ref _liftSpeed, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(LiftRepresentation));
         }
     }
 
@@ -2748,8 +2825,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _liftAcceleration;
         set
         {
-            RaiseAndSet(ref _liftAcceleration, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(LiftRepresentation));
+            SetPropertyAndNotify(ref _liftAcceleration, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(LiftRepresentation));
         }
     }
 
@@ -2761,9 +2838,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomLiftHeight2;
         set
         {
-            RaiseAndSet(ref _bottomLiftHeight2, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(BottomLiftHeightTotal));
-            RaisePropertyChanged(nameof(LiftRepresentation));
+            SetPropertyAndNotify(ref _bottomLiftHeight2, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(BottomLiftHeightTotal));
+            OnPropertyChanged(nameof(LiftRepresentation));
             BottomRetractHeight2 = BottomRetractHeight2; // Sanitize
         }
     }
@@ -2776,8 +2853,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomLiftSpeed2;
         set
         {
-            RaiseAndSet(ref _bottomLiftSpeed2, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(LiftRepresentation));
+            SetPropertyAndNotify(ref _bottomLiftSpeed2, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(LiftRepresentation));
         }
     }
 
@@ -2789,8 +2866,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomLiftAcceleration2;
         set
         {
-            RaiseAndSet(ref _bottomLiftAcceleration2, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(LiftRepresentation));
+            SetPropertyAndNotify(ref _bottomLiftAcceleration2, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(LiftRepresentation));
         }
     }
 
@@ -2802,9 +2879,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _liftHeight2;
         set
         {
-            RaiseAndSet(ref _liftHeight2, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(LiftHeightTotal));
-            RaisePropertyChanged(nameof(LiftRepresentation));
+            SetPropertyAndNotify(ref _liftHeight2, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(LiftHeightTotal));
+            OnPropertyChanged(nameof(LiftRepresentation));
             RetractHeight2 = RetractHeight2; // Sanitize
         }
     }
@@ -2818,8 +2895,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _liftSpeed2;
         set
         {
-            RaiseAndSet(ref _liftSpeed2, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(LiftRepresentation));
+            SetPropertyAndNotify(ref _liftSpeed2, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(LiftRepresentation));
         }
     }
 
@@ -2831,8 +2908,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _liftAcceleration2;
         set
         {
-            RaiseAndSet(ref _liftAcceleration2, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(LiftRepresentation));
+            SetPropertyAndNotify(ref _liftAcceleration2, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(LiftRepresentation));
         }
     }
 
@@ -2844,8 +2921,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomWaitTimeAfterLift;
         set
         {
-            RaiseAndSet(ref _bottomWaitTimeAfterLift, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            SetPropertyAndNotify(ref _bottomWaitTimeAfterLift, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(WaitTimeRepresentation));
         }
     }
 
@@ -2857,8 +2934,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _waitTimeAfterLift;
         set
         {
-            RaiseAndSet(ref _waitTimeAfterLift, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            SetPropertyAndNotify(ref _waitTimeAfterLift, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(WaitTimeRepresentation));
         }
     }
 
@@ -2885,8 +2962,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomRetractSpeed;
         set
         {
-            RaiseAndSet(ref _bottomRetractSpeed, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(RetractRepresentation));
+            SetPropertyAndNotify(ref _bottomRetractSpeed, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(RetractRepresentation));
         }
     }
 
@@ -2898,8 +2975,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomRetractAcceleration;
         set
         {
-            RaiseAndSet(ref _bottomRetractAcceleration, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(RetractRepresentation));
+            SetPropertyAndNotify(ref _bottomRetractAcceleration, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(RetractRepresentation));
         }
     }
 
@@ -2916,8 +2993,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _retractSpeed;
         set
         {
-            RaiseAndSet(ref _retractSpeed, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(RetractRepresentation));
+            SetPropertyAndNotify(ref _retractSpeed, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(RetractRepresentation));
         }
     }
 
@@ -2929,8 +3006,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _retractAcceleration;
         set
         {
-            RaiseAndSet(ref _retractAcceleration, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(RetractRepresentation));
+            SetPropertyAndNotify(ref _retractAcceleration, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(RetractRepresentation));
         }
     }
 
@@ -2943,10 +3020,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         set
         {
             value = Math.Clamp(MathF.Round(value, 2), 0, BottomRetractHeightTotal);
-            RaiseAndSet(ref _bottomRetractHeight2, value);
-            RaisePropertyChanged(nameof(BottomRetractHeight));
-            RaisePropertyChanged(nameof(BottomRetractHeightTotal));
-            RaisePropertyChanged(nameof(RetractRepresentation));
+            SetPropertyAndNotify(ref _bottomRetractHeight2, value);
+            OnPropertyChanged(nameof(BottomRetractHeight));
+            OnPropertyChanged(nameof(BottomRetractHeightTotal));
+            OnPropertyChanged(nameof(RetractRepresentation));
         }
     }
 
@@ -2958,8 +3035,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomRetractSpeed2;
         set
         {
-            RaiseAndSet(ref _bottomRetractSpeed2, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(RetractRepresentation));
+            SetPropertyAndNotify(ref _bottomRetractSpeed2, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(RetractRepresentation));
         }
     }
 
@@ -2971,8 +3048,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _bottomRetractAcceleration2;
         set
         {
-            RaiseAndSet(ref _bottomRetractAcceleration2, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(RetractRepresentation));
+            SetPropertyAndNotify(ref _bottomRetractAcceleration2, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(RetractRepresentation));
         }
     }
 
@@ -2985,10 +3062,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         set
         {
             value = Math.Clamp(MathF.Round(value, 2), 0, RetractHeightTotal);
-            RaiseAndSet(ref _retractHeight2, value);
-            RaisePropertyChanged(nameof(RetractHeight));
-            RaisePropertyChanged(nameof(RetractHeightTotal));
-            RaisePropertyChanged(nameof(RetractRepresentation));
+            SetPropertyAndNotify(ref _retractHeight2, value);
+            OnPropertyChanged(nameof(RetractHeight));
+            OnPropertyChanged(nameof(RetractHeightTotal));
+            OnPropertyChanged(nameof(RetractRepresentation));
         }
     }
 
@@ -3000,8 +3077,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _retractSpeed2;
         set
         {
-            RaiseAndSet(ref _retractSpeed2, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(RetractRepresentation));
+            SetPropertyAndNotify(ref _retractSpeed2, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(RetractRepresentation));
         }
     }
 
@@ -3013,8 +3090,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _retractAcceleration2;
         set
         {
-            RaiseAndSet(ref _retractAcceleration2, MathF.Round(Math.Max(0, value), 2));
-            RaisePropertyChanged(nameof(RetractRepresentation));
+            SetPropertyAndNotify(ref _retractAcceleration2, MathF.Round(Math.Max(0, value), 2));
+            OnPropertyChanged(nameof(RetractRepresentation));
         }
     }
 
@@ -3024,7 +3101,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual byte BottomLightPWM
     {
         get => _bottomLightPwm;
-        set => RaiseAndSet(ref _bottomLightPwm, value);
+        set => SetPropertyAndNotify(ref _bottomLightPwm, value);
     }
 
     /// <summary>
@@ -3033,7 +3110,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual byte LightPWM
     {
         get => _lightPwm;
-        set => RaiseAndSet(ref _lightPwm, value);
+        set => SetPropertyAndNotify(ref _lightPwm, value);
     }
 
     /// <summary>
@@ -3043,7 +3120,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         get
         {
-            float speed = float.MaxValue;
+            var speed = float.MaxValue;
             if (BottomLiftSpeed > 0) speed = Math.Min(speed, BottomLiftSpeed);
             if (CanUseBottomLiftSpeed2 && BottomLiftSpeed2 > 0) speed = Math.Min(speed, BottomLiftSpeed2);
             if (CanUseBottomRetractSpeed && BottomRetractSpeed > 0) speed = Math.Min(speed, BottomRetractSpeed);
@@ -3061,7 +3138,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         get
         {
-            float speed = float.MaxValue;
+            var speed = float.MaxValue;
             if (LiftSpeed > 0) speed = Math.Min(speed, LiftSpeed);
             if (CanUseLiftSpeed2 && LiftSpeed2 > 0) speed = Math.Min(speed, LiftSpeed2);
             if (CanUseRetractSpeed && RetractSpeed > 0) speed = Math.Min(speed, RetractSpeed);
@@ -3095,7 +3172,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         get
         {
-            float speed = BottomLiftSpeed;
+            var speed = BottomLiftSpeed;
             if (CanUseBottomLiftSpeed2) speed = Math.Max(speed, BottomLiftSpeed2);
             if (CanUseBottomRetractSpeed) speed = Math.Max(speed, BottomRetractSpeed);
             if (CanUseBottomRetractSpeed2) speed = Math.Max(speed, BottomRetractSpeed2);
@@ -3111,7 +3188,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         get
         {
-            float speed = LiftSpeed;
+            var speed = LiftSpeed;
             if (CanUseLiftSpeed2) speed = Math.Max(speed, LiftSpeed2);
             if (CanUseRetractSpeed) speed = Math.Max(speed, RetractSpeed);
             if (CanUseRetractSpeed2) speed = Math.Max(speed, RetractSpeed2);
@@ -3132,7 +3209,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public bool CanUseLightOffDelay => HavePrintParameterModifier(PrintParameterModifier.LightOffDelay);
     public bool CanUseAnyLightOffDelay => CanUseBottomLightOffDelay || CanUseLightOffDelay;
 
-    public bool CanUseBottomWaitTimeBeforeCure => HavePrintParameterModifier(PrintParameterModifier.BottomWaitTimeBeforeCure);
+    public bool CanUseBottomWaitTimeBeforeCure =>
+        HavePrintParameterModifier(PrintParameterModifier.BottomWaitTimeBeforeCure);
+
     public bool CanUseWaitTimeBeforeCure => HavePrintParameterModifier(PrintParameterModifier.WaitTimeBeforeCure);
     public bool CanUseAnyWaitTimeBeforeCure => CanUseBottomWaitTimeBeforeCure || CanUseWaitTimeBeforeCure;
 
@@ -3140,7 +3219,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public bool CanUseExposureTime => HavePrintParameterModifier(PrintParameterModifier.ExposureTime);
     public bool CanUseAnyExposureTime => CanUseBottomExposureTime || CanUseExposureTime;
 
-    public bool CanUseBottomWaitTimeAfterCure => HavePrintParameterModifier(PrintParameterModifier.BottomWaitTimeAfterCure);
+    public bool CanUseBottomWaitTimeAfterCure =>
+        HavePrintParameterModifier(PrintParameterModifier.BottomWaitTimeAfterCure);
+
     public bool CanUseWaitTimeAfterCure => HavePrintParameterModifier(PrintParameterModifier.WaitTimeAfterCure);
     public bool CanUseAnyWaitTimeAfterCure => CanUseBottomWaitTimeAfterCure || CanUseWaitTimeAfterCure;
 
@@ -3152,7 +3233,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public bool CanUseLiftSpeed => HavePrintParameterModifier(PrintParameterModifier.LiftSpeed);
     public bool CanUseAnyLiftSpeed => CanUseBottomLiftSpeed || CanUseLiftSpeed;
 
-    public bool CanUseBottomLiftAcceleration => HavePrintParameterModifier(PrintParameterModifier.BottomLiftAcceleration);
+    public bool CanUseBottomLiftAcceleration =>
+        HavePrintParameterModifier(PrintParameterModifier.BottomLiftAcceleration);
+
     public bool CanUseLiftAcceleration => HavePrintParameterModifier(PrintParameterModifier.LiftAcceleration);
     public bool CanUseAnyLiftAcceleration => CanUseBottomLiftAcceleration || CanUseLiftAcceleration;
 
@@ -3164,11 +3247,15 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public bool CanUseLiftSpeed2 => HavePrintParameterModifier(PrintParameterModifier.LiftSpeed2);
     public bool CanUseAnyLiftSpeed2 => CanUseBottomLiftSpeed2 || CanUseLiftSpeed2;
 
-    public bool CanUseBottomLiftAcceleration2 => HavePrintParameterModifier(PrintParameterModifier.BottomLiftAcceleration2);
+    public bool CanUseBottomLiftAcceleration2 =>
+        HavePrintParameterModifier(PrintParameterModifier.BottomLiftAcceleration2);
+
     public bool CanUseLiftAcceleration2 => HavePrintParameterModifier(PrintParameterModifier.LiftAcceleration2);
     public bool CanUseAnyLiftAcceleration2 => CanUseBottomLiftAcceleration2 || CanUseLiftAcceleration2;
 
-    public bool CanUseBottomWaitTimeAfterLift => HavePrintParameterModifier(PrintParameterModifier.BottomWaitTimeAfterLift);
+    public bool CanUseBottomWaitTimeAfterLift =>
+        HavePrintParameterModifier(PrintParameterModifier.BottomWaitTimeAfterLift);
+
     public bool CanUseWaitTimeAfterLift => HavePrintParameterModifier(PrintParameterModifier.WaitTimeAfterLift);
     public bool CanUseAnyWaitTimeAfterLift => CanUseBottomWaitTimeAfterLift || CanUseWaitTimeAfterLift;
 
@@ -3176,7 +3263,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public bool CanUseRetractSpeed => HavePrintParameterModifier(PrintParameterModifier.RetractSpeed);
     public bool CanUseAnyRetractSpeed => CanUseBottomRetractSpeed || CanUseRetractSpeed;
 
-    public bool CanUseBottomRetractAcceleration => HavePrintParameterModifier(PrintParameterModifier.BottomRetractAcceleration);
+    public bool CanUseBottomRetractAcceleration =>
+        HavePrintParameterModifier(PrintParameterModifier.BottomRetractAcceleration);
+
     public bool CanUseRetractAcceleration => HavePrintParameterModifier(PrintParameterModifier.RetractAcceleration);
     public bool CanUseAnyRetractAcceleration => CanUseBottomRetractAcceleration || CanUseRetractAcceleration;
 
@@ -3187,11 +3276,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public bool CanUseRetractSpeed2 => HavePrintParameterModifier(PrintParameterModifier.RetractSpeed2);
     public bool CanUseAnyRetractSpeed2 => CanUseBottomRetractSpeed2 || CanUseRetractSpeed2;
 
-    public bool CanUseBottomRetractAcceleration2 => HavePrintParameterModifier(PrintParameterModifier.BottomRetractAcceleration2);
+    public bool CanUseBottomRetractAcceleration2 =>
+        HavePrintParameterModifier(PrintParameterModifier.BottomRetractAcceleration2);
+
     public bool CanUseRetractAcceleration2 => HavePrintParameterModifier(PrintParameterModifier.RetractAcceleration2);
     public bool CanUseAnyRetractAcceleration2 => CanUseBottomRetractAcceleration2 || CanUseRetractAcceleration2;
 
-    public bool CanUseAnyWaitTime => CanUseBottomWaitTimeBeforeCure || CanUseBottomWaitTimeAfterCure || CanUseBottomWaitTimeAfterLift ||
+    public bool CanUseAnyWaitTime => CanUseBottomWaitTimeBeforeCure || CanUseBottomWaitTimeAfterCure ||
+                                     CanUseBottomWaitTimeAfterLift ||
                                      CanUseWaitTimeBeforeCure || CanUseWaitTimeAfterCure || CanUseWaitTimeAfterLift;
 
     public bool CanUseBottomLightPWM => HavePrintParameterModifier(PrintParameterModifier.BottomLightPWM);
@@ -3211,10 +3303,16 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public bool CanUseLayerLiftAcceleration2 => HaveLayerParameterModifier(PrintParameterModifier.LiftAcceleration2);
     public bool CanUseLayerWaitTimeAfterLift => HaveLayerParameterModifier(PrintParameterModifier.WaitTimeAfterLift);
     public bool CanUseLayerRetractSpeed => HaveLayerParameterModifier(PrintParameterModifier.RetractSpeed);
-    public bool CanUseLayerRetractAcceleration => HaveLayerParameterModifier(PrintParameterModifier.RetractAcceleration);
+
+    public bool CanUseLayerRetractAcceleration =>
+        HaveLayerParameterModifier(PrintParameterModifier.RetractAcceleration);
+
     public bool CanUseLayerRetractHeight2 => HaveLayerParameterModifier(PrintParameterModifier.RetractHeight2);
     public bool CanUseLayerRetractSpeed2 => HaveLayerParameterModifier(PrintParameterModifier.RetractSpeed2);
-    public bool CanUseLayerRetractAcceleration2 => HaveLayerParameterModifier(PrintParameterModifier.RetractAcceleration2);
+
+    public bool CanUseLayerRetractAcceleration2 =>
+        HaveLayerParameterModifier(PrintParameterModifier.RetractAcceleration2);
+
     public bool CanUseLayerLightOffDelay => HaveLayerParameterModifier(PrintParameterModifier.LightOffDelay);
     public bool CanUseLayerAnyWaitTimeBeforeCure => CanUseLayerWaitTimeBeforeCure || CanUseLayerLightOffDelay;
     public bool CanUseLayerLightPWM => HaveLayerParameterModifier(PrintParameterModifier.LightPWM);
@@ -3255,6 +3353,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             {
                 str += BottomExposureTime.ToString(CultureInfo.InvariantCulture);
             }
+
             if (CanUseExposureTime)
             {
                 if (!string.IsNullOrEmpty(str)) str += '/';
@@ -3384,7 +3483,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             var haveBottomRetractSpeed2 = CanUseBottomRetractSpeed2;
             var haveRetractSpeed2 = CanUseRetractSpeed2;
 
-            if (!haveBottomRetractSpeed && !haveRetractSpeed && !haveBottomRetractHeight2 && !haveRetractHeight2) return str;
+            if (!haveBottomRetractSpeed && !haveRetractSpeed && !haveBottomRetractHeight2 &&
+                !haveRetractHeight2) return str;
 
             // Sequence 1
             if (haveBottomRetractHeight)
@@ -3395,6 +3495,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                     str += $"+{BottomRetractHeight2.ToString(CultureInfo.InvariantCulture)}";
                 }
             }
+
             if (haveRetractHeight)
             {
                 if (!string.IsNullOrEmpty(str)) str += '/';
@@ -3418,6 +3519,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                     str += $"+{BottomRetractSpeed2.ToString(CultureInfo.InvariantCulture)}";
                 }
             }
+
             if (haveRetractSpeed)
             {
                 if (haveBottomRetractSpeed) str += '/';
@@ -3444,6 +3546,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             {
                 str += BottomLightOffDelay.ToString(CultureInfo.InvariantCulture);
             }
+
             if (CanUseLightOffDelay)
             {
                 if (!string.IsNullOrEmpty(str)) str += '/';
@@ -3466,6 +3569,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             {
                 str += $"{BottomWaitTimeBeforeCure}/{BottomWaitTimeAfterCure}/{BottomWaitTimeAfterLift}s";
             }
+
             if (!string.IsNullOrEmpty(str)) str += "|";
             if (CanUseWaitTimeBeforeCure || CanUseWaitTimeAfterCure || CanUseWaitTimeAfterLift)
             {
@@ -3479,7 +3583,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public IEnumerable<IEnumerable<int>> BatchLayersIndexes(int batchSize = 0)
     {
         if (batchSize <= 0) batchSize = DefaultParallelBatchCount;
-        return Enumerable.Range(0, (int) LayerCount).Chunk(batchSize);
+        return Enumerable.Range(0, (int)LayerCount).Chunk(batchSize);
     }
 
     public IEnumerable<IEnumerable<Layer>> BatchLayers(int batchSize = 0)
@@ -3501,6 +3605,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             {
                 _printTime = PrintTimeComputed;
             }
+
             return _printTime;
         }
         set
@@ -3509,13 +3614,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             {
                 value = PrintTimeComputed;
             }
-            if(!RaiseAndSetIfChanged(ref _printTime, value)) return;
-            RaisePropertyChanged(nameof(PrintTimeHours));
-            RaisePropertyChanged(nameof(PrintTimeString));
-            RaisePropertyChanged(nameof(DisplayTotalOnTime));
-            RaisePropertyChanged(nameof(DisplayTotalOnTimeString));
-            RaisePropertyChanged(nameof(DisplayTotalOffTime));
-            RaisePropertyChanged(nameof(DisplayTotalOffTimeString));
+
+            if (!SetProperty(ref _printTime, value)) return;
+            OnPropertyChanged(nameof(PrintTimeHours));
+            OnPropertyChanged(nameof(PrintTimeString));
+            OnPropertyChanged(nameof(DisplayTotalOnTime));
+            OnPropertyChanged(nameof(DisplayTotalOnTimeString));
+            OnPropertyChanged(nameof(DisplayTotalOffTime));
+            OnPropertyChanged(nameof(DisplayTotalOffTimeString));
         }
     }
 
@@ -3528,7 +3634,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             if (!HaveLayers) return 0;
             float time = ExtraPrintTime;
-            bool computeGeneral = false;
+            var computeGeneral = false;
             if (!computeGeneral)
             {
                 foreach (var layer in this)
@@ -3573,6 +3679,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                     {
                         time += BottomLightOffDelay * BottomLayerCount;
                     }
+
                     if (WaitTimeBeforeCure <= 0)
                     {
                         time += LightOffDelay * NormalLayerCount;
@@ -3580,7 +3687,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 }
                 else
                 {
-                    time += motorTime > BottomLightOffDelay ? bottomMotorTime * BottomLayerCount : BottomLightOffDelay * BottomLayerCount;
+                    time += motorTime > BottomLightOffDelay
+                        ? bottomMotorTime * BottomLayerCount
+                        : BottomLightOffDelay * BottomLayerCount;
                     time += motorTime > LightOffDelay ? motorTime * NormalLayerCount : LightOffDelay * NormalLayerCount;
                 }
             }
@@ -3602,14 +3711,16 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get
         {
             var printTime = PrintTime;
-            return TimeSpan.FromSeconds(float.IsPositiveInfinity(printTime) || float.IsNaN(printTime) ? 0 : printTime).ToTimeString(false);
+            return TimeSpan.FromSeconds(float.IsPositiveInfinity(printTime) || float.IsNaN(printTime) ? 0 : printTime)
+                .ToTimeString(false);
         }
     }
 
     /// <summary>
     /// Gets the total time in seconds the display will remain on exposing the layers during the print
     /// </summary>
-    public float DisplayTotalOnTime => MathF.Round(this.AsValueEnumerable().Where(layer => layer is not null).Sum(layer => layer.ExposureTime), 2);
+    public float DisplayTotalOnTime =>
+        MathF.Round(this.AsValueEnumerable().Where(layer => layer is not null).Sum(layer => layer.ExposureTime), 2);
 
     /// <summary>
     /// Gets the total time formatted in hours, minutes and seconds the display will remain on exposing the layers during the print
@@ -3652,27 +3763,30 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the estimate used material in ml
     /// </summary>
-    public virtual float MaterialMilliliters {
+    public virtual float MaterialMilliliters
+    {
         get => _materialMilliliters;
         set
         {
             if (value <= 0) // Recalculate
             {
-                value = MathF.Round(this.AsValueEnumerable().Where(layer => layer is not null).Sum(layer => layer.MaterialMilliliters), 3);
+                value = MathF.Round(
+                    this.AsValueEnumerable().Where(layer => layer is not null).Sum(layer => layer.MaterialMilliliters),
+                    3);
             }
             else // Set from value
             {
                 value = MathF.Round(value, 3);
             }
 
-            if(!RaiseAndSetIfChanged(ref _materialMilliliters, value)) return;
-            RaisePropertyChanged(nameof(MaterialMillilitersInteger));
+            if (!SetProperty(ref _materialMilliliters, value)) return;
+            OnPropertyChanged(nameof(MaterialMillilitersInteger));
 
             if (StartingMaterialMilliliters > 0 && StartingMaterialCost > 0)
             {
                 MaterialCost = GetMaterialCostPer(_materialMilliliters);
             }
-            //RaisePropertyChanged(nameof(MaterialCost));
+            //OnPropertyChanged(nameof(MaterialCost));
         }
     }
 
@@ -3690,7 +3804,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual float MaterialGrams
     {
         get => _materialGrams;
-        set => RaiseAndSetIfChanged(ref _materialGrams, MathF.Round(value, 3));
+        set => SetProperty(ref _materialGrams, MathF.Round(value, 3));
     }
 
     /// <summary>
@@ -3704,15 +3818,19 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual float MaterialCost
     {
         get => _materialCost;
-        set => RaiseAndSetIfChanged(ref _materialCost, MathF.Round(value, 3));
+        set => SetProperty(ref _materialCost, MathF.Round(value, 3));
     }
 
     /// <summary>
     /// Gets the material cost per one milliliter
     /// </summary>
-    public float MaterialMilliliterCost => StartingMaterialMilliliters > 0 ? StartingMaterialCost / StartingMaterialMilliliters : 0;
+    public float MaterialMilliliterCost =>
+        StartingMaterialMilliliters > 0 ? StartingMaterialCost / StartingMaterialMilliliters : 0;
 
-    public float GetMaterialCostPer(float milliliters, byte roundDigits = 3) => MathF.Round(MaterialMilliliterCost * milliliters, roundDigits);
+    public float GetMaterialCostPer(float milliliters, byte roundDigits = 3)
+    {
+        return MathF.Round(MaterialMilliliterCost * milliliters, roundDigits);
+    }
 
     /// <summary>
     /// Gets the material name
@@ -3722,7 +3840,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _materialName;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _materialName, value)) return;
+            if (!SetProperty(ref _materialName, value)) return;
             if (FileType == FileFormatType.Binary) RequireFullEncode = true;
         }
     }
@@ -3735,10 +3853,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _machineName;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _machineName, value)) return;
+            if (!SetProperty(ref _machineName, value)) return;
             if (FileType == FileFormatType.Binary) RequireFullEncode = true;
         }
-
     }
 
     /// <summary>
@@ -3760,8 +3877,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             {
                 GCode.Append(value);
             }
-            RaisePropertyChanged();
 
+            OnPropertyChanged();
         }
     }
 
@@ -3778,11 +3895,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Disable or enable the gcode auto rebuild when needed, set this to false to manually write your own gcode
     /// </summary>
-    public bool SuppressRebuildGCode
-    {
-        get => _suppressRebuildGCode;
-        set => RaiseAndSetIfChanged(ref _suppressRebuildGCode, value);
-    }
+    [ObservableProperty]
+    public partial bool SuppressRebuildGCode { get; set; }
 
     /// <summary>
     /// Get all configuration objects with properties and values
@@ -3802,9 +3916,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     #endregion
 
     #region Constructor
+
     protected FileFormat()
     {
-        IssueManager = new(this);
+        IssueManager = new IssueManager(this);
         _queueTimerPrintTime.Elapsed += (sender, e) => UpdatePrintTime();
 
         _layerImageFormat = FileType switch
@@ -3816,74 +3931,81 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         };
     }
 
+    protected void SetPropertyAndNotify<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    {
+        field = value;
+        OnPropertyChanged(propertyName);
+    }
+
     protected override void OnPropertyChanged(PropertyChangedEventArgs e)
     {
-        if (SuppressRebuildProperties) return;
-        if (e.PropertyName
-            is nameof(BottomLayerCount)
-            or nameof(BottomLightOffDelay)
-            or nameof(LightOffDelay)
-            or nameof(BottomWaitTimeBeforeCure)
-            or nameof(WaitTimeBeforeCure)
-            or nameof(BottomExposureTime)
-            or nameof(ExposureTime)
-            or nameof(BottomWaitTimeAfterCure)
-            or nameof(WaitTimeAfterCure)
-            or nameof(BottomLiftHeight)
-            or nameof(BottomLiftSpeed)
-            or nameof(BottomLiftAcceleration)
-            or nameof(LiftHeight)
-            or nameof(LiftSpeed)
-            or nameof(LiftAcceleration)
-            or nameof(BottomLiftHeight2)
-            or nameof(BottomLiftSpeed2)
-            or nameof(BottomLiftAcceleration2)
-            or nameof(LiftHeight2)
-            or nameof(LiftSpeed2)
-            or nameof(LiftAcceleration2)
-            or nameof(BottomWaitTimeAfterLift)
-            or nameof(WaitTimeAfterLift)
-            or nameof(BottomRetractSpeed)
-            or nameof(BottomRetractAcceleration)
-            or nameof(RetractSpeed)
-            or nameof(RetractAcceleration)
-            or nameof(BottomRetractHeight2)
-            or nameof(BottomRetractSpeed2)
-            or nameof(BottomRetractAcceleration2)
-            or nameof(RetractHeight2)
-            or nameof(RetractSpeed2)
-            or nameof(RetractAcceleration2)
-            or nameof(BottomLightPWM)
-            or nameof(LightPWM)
-        )
+        if (!SuppressRebuildProperties)
         {
-            RebuildLayersProperties(false, e.PropertyName);
             if (e.PropertyName
-                   is nameof(BottomLayerCount)
-                   or nameof(BottomExposureTime)
-                   or nameof(ExposureTime)
-               && TransitionLayerType == TransitionLayerTypes.Software
-              ) ResetCurrentTransitionLayers(false);
+                is nameof(BottomLayerCount)
+                or nameof(BottomLightOffDelay)
+                or nameof(LightOffDelay)
+                or nameof(BottomWaitTimeBeforeCure)
+                or nameof(WaitTimeBeforeCure)
+                or nameof(BottomExposureTime)
+                or nameof(ExposureTime)
+                or nameof(BottomWaitTimeAfterCure)
+                or nameof(WaitTimeAfterCure)
+                or nameof(BottomLiftHeight)
+                or nameof(BottomLiftSpeed)
+                or nameof(BottomLiftAcceleration)
+                or nameof(LiftHeight)
+                or nameof(LiftSpeed)
+                or nameof(LiftAcceleration)
+                or nameof(BottomLiftHeight2)
+                or nameof(BottomLiftSpeed2)
+                or nameof(BottomLiftAcceleration2)
+                or nameof(LiftHeight2)
+                or nameof(LiftSpeed2)
+                or nameof(LiftAcceleration2)
+                or nameof(BottomWaitTimeAfterLift)
+                or nameof(WaitTimeAfterLift)
+                or nameof(BottomRetractSpeed)
+                or nameof(BottomRetractAcceleration)
+                or nameof(RetractSpeed)
+                or nameof(RetractAcceleration)
+                or nameof(BottomRetractHeight2)
+                or nameof(BottomRetractSpeed2)
+                or nameof(BottomRetractAcceleration2)
+                or nameof(RetractHeight2)
+                or nameof(RetractSpeed2)
+                or nameof(RetractAcceleration2)
+                or nameof(BottomLightPWM)
+                or nameof(LightPWM)
+               )
+            {
+                RebuildLayersProperties(false, e.PropertyName);
+                if (e.PropertyName
+                        is nameof(BottomLayerCount)
+                        or nameof(BottomExposureTime)
+                        or nameof(ExposureTime)
+                    && TransitionLayerType == TransitionLayerTypes.Software
+                   ) ResetCurrentTransitionLayers(false);
 
-            if (e.PropertyName
-               is not nameof(BottomLightPWM)
-               and not nameof(LightPWM)
-              ) UpdatePrintTimeQueued();
-
-            return;
+                if (e.PropertyName
+                    is not nameof(BottomLightPWM)
+                    and not nameof(LightPWM)
+                   ) UpdatePrintTimeQueued();
+            }
+            // Fix transition layers times in software mode
+            else if (e.PropertyName is nameof(TransitionLayerCount) && TransitionLayerType == TransitionLayerTypes.Software)
+            {
+                ResetCurrentTransitionLayers();
+            }
         }
 
-        // Fix transition layers times in software mode
-        if (e.PropertyName is nameof(TransitionLayerCount) && TransitionLayerType == TransitionLayerTypes.Software)
-        {
-            ResetCurrentTransitionLayers();
-            return;
-        }
+        base.OnPropertyChanged(e);
     }
 
     #endregion
 
     #region Indexers
+
     public Layer this[uint index]
     {
         get => _layers[index];
@@ -3945,6 +4067,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     #endregion
 
     #region Numerators
+
     public IEnumerator<Layer> GetEnumerator()
     {
         return ((IEnumerable<Layer>)Layers).GetEnumerator();
@@ -3954,9 +4077,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         return GetEnumerator();
     }
+
     #endregion
 
     #region Overrides
+
     public override bool Equals(object? obj)
     {
         return Equals(obj as FileFormat);
@@ -3990,18 +4115,20 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     protected void NotifyAspectChange()
     {
-        RaisePropertyChanged(nameof(Ppmm));
-        RaisePropertyChanged(nameof(PpmmMax));
-        RaisePropertyChanged(nameof(PixelSizeMicrons));
-        RaisePropertyChanged(nameof(PixelArea));
-        RaisePropertyChanged(nameof(PixelAreaMicrons));
-        RaisePropertyChanged(nameof(PixelSizeMicronsMax));
-        RaisePropertyChanged(nameof(PixelSize));
-        RaisePropertyChanged(nameof(PixelSizeMax));
+        OnPropertyChanged(nameof(Ppmm));
+        OnPropertyChanged(nameof(PpmmMax));
+        OnPropertyChanged(nameof(PixelSizeMicrons));
+        OnPropertyChanged(nameof(PixelArea));
+        OnPropertyChanged(nameof(PixelAreaMicrons));
+        OnPropertyChanged(nameof(PixelSizeMicronsMax));
+        OnPropertyChanged(nameof(PixelSize));
+        OnPropertyChanged(nameof(PixelSizeMax));
     }
+
     #endregion
 
     #region Methods
+
     /// <summary>
     /// Clears all definitions and properties, it also dispose valid candidates
     /// </summary>
@@ -4024,10 +4151,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         Thumbnails.Clear();
 
-        RaisePropertyChanged(nameof(ThumbnailsCount));
-        RaisePropertyChanged(nameof(HaveThumbnails));
-        RaisePropertyChanged(nameof(ThumbnailEncodeCount));
-        RaisePropertyChanged(nameof(Thumbnails));
+        OnPropertyChanged(nameof(ThumbnailsCount));
+        OnPropertyChanged(nameof(HaveThumbnails));
+        OnPropertyChanged(nameof(ThumbnailEncodeCount));
+        OnPropertyChanged(nameof(Thumbnails));
     }
 
     /// <summary>
@@ -4050,10 +4177,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="fileFullPath">Full file path</param>
     public void FileValidation(string? fileFullPath)
     {
-        if (string.IsNullOrWhiteSpace(fileFullPath)) throw new ArgumentNullException(nameof(FileFullPath), "FileFullPath can't be null nor empty.");
-        if (!File.Exists(fileFullPath)) throw new FileNotFoundException("The specified file does not exists.", fileFullPath);
+        if (string.IsNullOrWhiteSpace(fileFullPath))
+            throw new ArgumentNullException(nameof(FileFullPath), "FileFullPath can't be null nor empty.");
+        if (!File.Exists(fileFullPath))
+            throw new FileNotFoundException("The specified file does not exists.", fileFullPath);
 
-        if (!IsExtensionValid(fileFullPath, true)) throw new FileLoadException("The specified file is not valid.", fileFullPath);
+        if (!IsExtensionValid(fileFullPath, true))
+            throw new FileLoadException("The specified file is not valid.", fileFullPath);
     }
 
     /// <summary>
@@ -4068,7 +4198,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             GetFileNameStripExtensions(extension, out extension);
         }
-        return !string.IsNullOrWhiteSpace(extension) && FileExtensions.AsValueEnumerable().Any(fileExtension => fileExtension.Equals(extension));
+
+        return !string.IsNullOrWhiteSpace(extension) &&
+               FileExtensions.AsValueEnumerable().Any(fileExtension => fileExtension.Equals(extension));
     }
 
     /// <summary>
@@ -4085,6 +4217,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             {
                 result += separator;
             }
+
             result += $"{prepend}{fileExt.Extension}";
         }
 
@@ -4158,7 +4291,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <returns>True if renamed, otherwise false.</returns>
     public bool RenameFile(string newFileName, bool overwrite = false)
     {
-        if(string.IsNullOrWhiteSpace(newFileName)) return false;
+        if (string.IsNullOrWhiteSpace(newFileName)) return false;
         if (!File.Exists(FileFullPath)) return false;
 
         var filename = GetFileNameStripExtensions(FileFullPath, out var ext);
@@ -4189,7 +4322,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <returns></returns>
     public Mat? GetThumbnailByHeight(uint maxHeight = 400)
     {
-        return Thumbnails.AsValueEnumerable().OrderByDescending(mat => mat.Height).FirstOrDefault(thumbnail => !thumbnail.IsEmpty && thumbnail.Height <= maxHeight);
+        return Thumbnails.AsValueEnumerable().OrderByDescending(mat => mat.Height)
+            .FirstOrDefault(thumbnail => !thumbnail.IsEmpty && thumbnail.Height <= maxHeight);
     }
 
     /// <summary>
@@ -4199,7 +4333,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <returns></returns>
     public Mat? GetThumbnailByWidth(int maxWidth)
     {
-        return Thumbnails.AsValueEnumerable().OrderByDescending(mat => mat.Width).FirstOrDefault(thumbnail => !thumbnail.IsEmpty && thumbnail.Width <= maxWidth);
+        return Thumbnails.AsValueEnumerable().OrderByDescending(mat => mat.Width)
+            .FirstOrDefault(thumbnail => !thumbnail.IsEmpty && thumbnail.Width <= maxWidth);
     }
 
     /// <summary>
@@ -4209,7 +4344,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <returns></returns>
     public Mat? GetThumbnailByHeight(int maxHeight)
     {
-        return Thumbnails.AsValueEnumerable().OrderByDescending(mat => mat.Height).FirstOrDefault(thumbnail => !thumbnail.IsEmpty && thumbnail.Height <= maxHeight);
+        return Thumbnails.AsValueEnumerable().OrderByDescending(mat => mat.Height)
+            .FirstOrDefault(thumbnail => !thumbnail.IsEmpty && thumbnail.Height <= maxHeight);
     }
 
     /// <summary>
@@ -4269,9 +4405,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <returns>True if anything changed, otherwise false</returns>
     public bool SanitizeThumbnails(bool trimToFileSpec = false)
     {
-        bool changed = false;
+        var changed = false;
         // Remove empty thumbnails, however this should never happen
-        for (int i = ThumbnailsCount-1; i >= 0; i--)
+        for (var i = ThumbnailsCount - 1; i >= 0; i--)
         {
             if (!Thumbnails[i].IsEmpty) continue;
             Thumbnails.RemoveAt(i);
@@ -4295,7 +4431,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
             if (!validNumberOfChannels.AsValueEnumerable().Contains(numberOfChannels))
             {
-                throw new InvalidDataException($"The thumbnail {i} holds an invalid number of channels ({numberOfChannels}). To be valid should have: <{string.Join(", ", validNumberOfChannels)}>.");
+                throw new InvalidDataException(
+                    $"The thumbnail {i} holds an invalid number of channels ({numberOfChannels}). To be valid should have: <{string.Join(", ", validNumberOfChannels)}>.");
             }
         }
 
@@ -4321,7 +4458,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         // Resize thumbnails to the spec
         if (ThumbnailsCount > 0 && ThumbnailsOriginalSize.Length > 0)
         {
-            int originalThumbnailSize = 0;
+            var originalThumbnailSize = 0;
             for (var i = 0; i < ThumbnailsCount; i++)
             {
                 if (Thumbnails[i].Size != ThumbnailsOriginalSize[originalThumbnailSize])
@@ -4346,11 +4483,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             var bestThumbnail = GetThumbnailByHeight(requestedSize.Height)?.Clone();
             if (bestThumbnail is null)
             {
-                using var matRoi = DecodeType == FileDecodeType.Partial ? null : FirstLayer?.LayerMatModelBoundingRectangle;
+                using var matRoi = DecodeType == FileDecodeType.Partial
+                    ? null
+                    : FirstLayer?.LayerMatModelBoundingRectangle;
                 if (matRoi is null || matRoi.RoiMat.IsEmpty)
                 {
-                    var genMat = EmguExtensions.InitMat(new Size(200, 100), 3);
-                    CvInvoke.PutText(genMat, About.Software, new Point(40, 60), FontFace.HersheyDuplex, 1, EmguExtensions.WhiteColor, 2);
+                    var genMat = EmguCvExtensions.InitMat(new Size(200, 100), 3);
+                    CvInvoke.PutText(genMat, About.Software, new Point(40, 60), FontFace.HersheyDuplex, 1,
+                        EmguCvExtensions.WhiteColor, 2);
                     if (genMat.Size != requestedSize) CvInvoke.Resize(genMat, genMat, requestedSize);
                     Thumbnails.Add(genMat);
                 }
@@ -4369,16 +4509,17 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 {
                     CvInvoke.Resize(bestThumbnail, bestThumbnail, requestedSize);
                 }
+
                 Thumbnails.Add(bestThumbnail);
             }
         }
 
         if (changed)
         {
-            RaisePropertyChanged(nameof(ThumbnailsCount));
-            RaisePropertyChanged(nameof(HaveThumbnails));
-            RaisePropertyChanged(nameof(ThumbnailEncodeCount));
-            RaisePropertyChanged(nameof(Thumbnails));
+            OnPropertyChanged(nameof(ThumbnailsCount));
+            OnPropertyChanged(nameof(HaveThumbnails));
+            OnPropertyChanged(nameof(ThumbnailEncodeCount));
+            OnPropertyChanged(nameof(Thumbnails));
             RequireFullEncode = true;
         }
 
@@ -4409,10 +4550,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         if (!SanitizeThumbnails())
         {
-            RaisePropertyChanged(nameof(ThumbnailsCount));
-            RaisePropertyChanged(nameof(HaveThumbnails));
-            RaisePropertyChanged(nameof(ThumbnailEncodeCount));
-            RaisePropertyChanged(nameof(Thumbnails));
+            OnPropertyChanged(nameof(ThumbnailsCount));
+            OnPropertyChanged(nameof(HaveThumbnails));
+            OnPropertyChanged(nameof(ThumbnailEncodeCount));
+            OnPropertyChanged(nameof(Thumbnails));
             RequireFullEncode = true;
         }
 
@@ -4435,7 +4576,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         if (haveImages)
         {
             var imageIndex = 0;
-            for (int i = 0; i < ThumbnailsCount; i++)
+            for (var i = 0; i < ThumbnailsCount; i++)
             {
                 var image = imageList[Math.Min(imageIndex++, imageList.Count - 1)];
                 SetThumbnail(i, image);
@@ -4444,15 +4585,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         if (!SanitizeThumbnails())
         {
-            RaisePropertyChanged(nameof(ThumbnailsCount));
-            RaisePropertyChanged(nameof(HaveThumbnails));
-            RaisePropertyChanged(nameof(ThumbnailEncodeCount));
-            RaisePropertyChanged(nameof(Thumbnails));
+            OnPropertyChanged(nameof(ThumbnailsCount));
+            OnPropertyChanged(nameof(HaveThumbnails));
+            OnPropertyChanged(nameof(ThumbnailEncodeCount));
+            OnPropertyChanged(nameof(Thumbnails));
             RequireFullEncode = true;
         }
 
         return true;
-
     }
 
     /// <summary>
@@ -4489,11 +4629,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         if (ReferenceEquals(Thumbnails[index], image)) return false;
         Thumbnails[index].Dispose();
         Thumbnails[index] = image.Clone();
-        if (ThumbnailsOriginalSize.Length-1 >= index && Thumbnails[index].Size != ThumbnailsOriginalSize[index])
+        if (ThumbnailsOriginalSize.Length - 1 >= index && Thumbnails[index].Size != ThumbnailsOriginalSize[index])
         {
             CvInvoke.Resize(Thumbnails[index], Thumbnails[index], ThumbnailsOriginalSize[index]);
         }
-        RaisePropertyChanged(nameof(Thumbnails));
+
+        OnPropertyChanged(nameof(Thumbnails));
         RequireFullEncode = true;
         return true;
     }
@@ -4533,15 +4674,31 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
+    /// Serialize a object and write it to the filesystem respecting the <see cref="FileFormatEndianness"/>
+    /// </summary>
+    /// <param name="fs"></param>
+    /// <param name="value"></param>
+    /// <param name="offset"></param>
+    /// <returns></returns>
+    public uint SerializeWriteFileStream(FileStream fs, object value, int offset = 0)
+    {
+        using var stream = Helpers.Serialize(value, FileFormatEndianness);
+        return fs.WriteStream(stream, offset);
+    }
+
+    /// <summary>
     /// Triggers before attempt to save/encode the file
     /// </summary>
     protected virtual void OnBeforeEncode(bool isPartialEncode)
-    { }
+    {
+    }
 
     /// <summary>
     /// Triggers after save/encode the file
     /// </summary>
-    protected virtual void OnAfterEncode(bool isPartialEncode) { }
+    protected virtual void OnAfterEncode(bool isPartialEncode)
+    {
+    }
 
     /// <summary>
     /// Encode to an output file
@@ -4557,7 +4714,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public void Encode(string? fileFullPath, OperationProgress? progress = null)
     {
         fileFullPath ??= FileFullPath ?? throw new ArgumentNullException(nameof(fileFullPath));
-        if (DecodeType == FileDecodeType.Partial) throw new InvalidOperationException("File was partial decoded, a full encode is not possible.");
+        if (DecodeType == FileDecodeType.Partial)
+            throw new InvalidOperationException("File was partial decoded, a full encode is not possible.");
 
         progress ??= new OperationProgress();
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
@@ -4605,12 +4763,20 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         if (success) OnAfterEncode(false);
     }
 
-    public void Encode(OperationProgress progress) => Encode(null, progress);
+    public void Encode(OperationProgress progress)
+    {
+        Encode(null, progress);
+    }
 
-    public Task EncodeAsync(string? fileFullPath, OperationProgress? progress = null) =>
-        Task.Run(() => Encode(fileFullPath, progress), progress?.Token ?? default);
+    public Task EncodeAsync(string? fileFullPath, OperationProgress? progress = null)
+    {
+        return Task.Run(() => Encode(fileFullPath, progress), progress?.Token ?? default);
+    }
 
-    public Task EncodeAsync(OperationProgress progress) => EncodeAsync(null, progress);
+    public Task EncodeAsync(OperationProgress progress)
+    {
+        return EncodeAsync(null, progress);
+    }
 
     /// <summary>
     /// Decode a slicer file
@@ -4623,7 +4789,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="fileFullPath">file path to load, use null to reload file</param>
     /// <param name="progress"></param>
-    public void Decode(string? fileFullPath = null, OperationProgress? progress = null) => Decode(fileFullPath, FileDecodeType.Full, progress);
+    public void Decode(string? fileFullPath = null, OperationProgress? progress = null)
+    {
+        Decode(fileFullPath, FileDecodeType.Full, progress);
+    }
 
     /// <summary>
     /// Decode a slicer file
@@ -4634,7 +4803,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public void Decode(string? fileFullPath, FileDecodeType fileDecodeType, OperationProgress? progress = null)
     {
         Clear();
-        if(!string.IsNullOrWhiteSpace(fileFullPath)) FileFullPath = fileFullPath;
+        if (!string.IsNullOrWhiteSpace(fileFullPath)) FileFullPath = fileFullPath;
         FileValidation(FileFullPath);
 
         DecodeType = fileDecodeType;
@@ -4647,8 +4816,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         var layerHeightDigits = LayerHeight.DecimalDigits();
         if (layerHeightDigits > Layer.HeightPrecision)
         {
-            throw new FileLoadException($"The layer height ({LayerHeight}mm) have more decimal digits than the supported ({Layer.HeightPrecision}) digits.\n" +
-                                        "Lower and fix your layer height on slicer to avoid precision errors.", fileFullPath);
+            throw new FileLoadException(
+                $"The layer height ({LayerHeight}mm) have more decimal digits than the supported ({Layer.HeightPrecision}) digits.\n" +
+                "Lower and fix your layer height on slicer to avoid precision errors.", fileFullPath);
         }
 
         IsModified = false;
@@ -4672,7 +4842,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             });
         }
 
-        bool reSaveFile = Sanitize();
+        var reSaveFile = Sanitize();
         if (reSaveFile)
         {
             Save(progress);
@@ -4683,11 +4853,15 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         GetBoundingRectangle(progress);
     }
 
-    public Task DecodeAsync(string? fileFullPath, FileDecodeType fileDecodeType, OperationProgress? progress = null) =>
-        Task.Run(() => Decode(fileFullPath, fileDecodeType, progress), progress?.Token ?? default);
+    public Task DecodeAsync(string? fileFullPath, FileDecodeType fileDecodeType, OperationProgress? progress = null)
+    {
+        return Task.Run(() => Decode(fileFullPath, fileDecodeType, progress), progress?.Token ?? default);
+    }
 
     public Task DecodeAsync(string? fileFullPath = null, OperationProgress? progress = null)
-        => DecodeAsync(fileFullPath, FileDecodeType.Full, progress);
+    {
+        return DecodeAsync(fileFullPath, FileDecodeType.Full, progress);
+    }
 
 
     /// <summary>
@@ -4695,26 +4869,38 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="fileDecodeType"></param>
     /// <param name="progress"></param>
-    public void Reload(FileDecodeType fileDecodeType, OperationProgress? progress = null) => Decode(null, fileDecodeType, progress);
+    public void Reload(FileDecodeType fileDecodeType, OperationProgress? progress = null)
+    {
+        Decode(null, fileDecodeType, progress);
+    }
 
     /// <summary>
     /// Reloads the file
     /// </summary>
     /// <param name="progress"></param>
-    public void Reload(OperationProgress? progress = null) => Reload(FileDecodeType.Full, progress);
+    public void Reload(OperationProgress? progress = null)
+    {
+        Reload(FileDecodeType.Full, progress);
+    }
 
     /// <summary>
     /// Reloads the file
     /// </summary>
     /// <param name="fileDecodeType"></param>
     /// <param name="progress"></param>
-    public Task ReloadAsync(FileDecodeType fileDecodeType, OperationProgress? progress = null) => DecodeAsync(null, fileDecodeType, progress);
+    public Task ReloadAsync(FileDecodeType fileDecodeType, OperationProgress? progress = null)
+    {
+        return DecodeAsync(null, fileDecodeType, progress);
+    }
 
     /// <summary>
     /// Reloads the file
     /// </summary>
     /// <param name="progress"></param>
-    public Task ReloadAsync(OperationProgress? progress = null) => ReloadAsync(FileDecodeType.Full, progress);
+    public Task ReloadAsync(OperationProgress? progress = null)
+    {
+        return ReloadAsync(FileDecodeType.Full, progress);
+    }
 
     /// <summary>
     /// Calculate  and store layers hash
@@ -4736,13 +4922,16 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <exception cref="MessageException"></exception>
     public ImageFormat FetchImageFormat(Mat mat, ImageFormat png24Variant = ImageFormat.Png24BgrAA)
     {
-        if (mat.Depth != DepthType.Cv8U) throw new MessageException($"Unable to auto detect and/or use image format from {mat.Depth} depth. Was expecting {DepthType.Cv8U}.");
+        if (mat.Depth != DepthType.Cv8U)
+            throw new MessageException(
+                $"Unable to auto detect and/or use image format from {mat.Depth} depth. Was expecting {DepthType.Cv8U}.");
         return mat.NumberOfChannels switch
         {
             1 => ImageFormat.Png8,
             3 => ResolutionX > 0 && ResolutionX == mat.Width * 3 ? png24Variant : ImageFormat.Png24,
             4 => ImageFormat.Png32,
-            _ => throw new MessageException($"Unable to auto detect and/or use image format from {mat.NumberOfChannels} channels. Was expecting 1, 3 or 4.")
+            _ => throw new MessageException(
+                $"Unable to auto detect and/or use image format from {mat.NumberOfChannels} channels. Was expecting 1, 3 or 4.")
         };
     }
 
@@ -4767,7 +4956,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="mathRegex"></param>
     /// <returns></returns>
     /// <exception cref="MessageException"></exception>
-    public ImageFormat FetchImageFormat(ZipArchive archive, ImageFormat png24Variant = ImageFormat.Png24BgrAA, string mathRegex = "([0-9]+)[.]png$")
+    public ImageFormat FetchImageFormat(ZipArchive archive, ImageFormat png24Variant = ImageFormat.Png24BgrAA,
+        string mathRegex = "([0-9]+)[.]png$")
     {
         foreach (var pngEntry in archive.Entries)
         {
@@ -4793,14 +4983,16 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <para>Example: thumbnail/thumbnail{1}x{2}.png</para>
     /// </param>
     /// <param name="progress"></param>
-    public void EncodeAllThumbnailsInZip(ZipArchive zipArchive, string pathFormat = "preview{0}.png", OperationProgress? progress = null)
+    public void EncodeAllThumbnailsInZip(ZipArchive zipArchive, string pathFormat = "preview{0}.png",
+        OperationProgress? progress = null)
     {
         progress ??= new OperationProgress();
         progress.Reset(OperationProgress.StatusEncodePreviews, (uint)ThumbnailsCount);
         for (var i = 0; i < ThumbnailsCount; i++)
         {
             var thumbnail = Thumbnails[i];
-            zipArchive.CreateEntryFromContent(string.Format(pathFormat, i, thumbnail.Width, thumbnail.Height), thumbnail.GetPngByes(), ZipArchiveMode.Create);
+            zipArchive.CreateEntryFromContent(string.Format(pathFormat, i, thumbnail.Width, thumbnail.Height),
+                thumbnail.GetPngBytes(), ZipArchiveMode.Create);
             progress++;
         }
     }
@@ -4811,19 +5003,21 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="zipArchive"></param>
     /// <param name="progress"></param>
     /// <param name="entryPaths"></param>
-    public void EncodeThumbnailsInZip(ZipArchive zipArchive, OperationProgress? progress = null, params string[] entryPaths)
+    public void EncodeThumbnailsInZip(ZipArchive zipArchive, OperationProgress? progress = null,
+        params string[] entryPaths)
     {
         progress ??= new OperationProgress();
         progress.Reset(OperationProgress.StatusEncodePreviews, (uint)entryPaths.Length);
         for (var i = 0; i < ThumbnailsCount && i < entryPaths.Length; i++)
         {
             var thumbnail = Thumbnails[i];
-            zipArchive.CreateEntryFromContent(entryPaths[i], thumbnail.GetPngByes(), ZipArchiveMode.Create);
+            zipArchive.CreateEntryFromContent(entryPaths[i], thumbnail.GetPngBytes(), ZipArchiveMode.Create);
             progress++;
         }
     }
 
-    public void DecodeThumbnailsFromZip(ZipArchive zipArchive, OperationProgress? progress = null, params string[] entryPaths)
+    public void DecodeThumbnailsFromZip(ZipArchive zipArchive, OperationProgress? progress = null,
+        params string[] entryPaths)
     {
         progress ??= new OperationProgress();
         progress.Reset(OperationProgress.StatusDecodePreviews, (uint)entryPaths.Length);
@@ -4838,7 +5032,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         }
     }
 
-    public void DecodeAllThumbnailsFromZip(ZipArchive zipArchive, OperationProgress? progress = null, string entryStartsWith = "preview", string entryEndsWith = ".png")
+    public void DecodeAllThumbnailsFromZip(ZipArchive zipArchive, OperationProgress? progress = null,
+        string entryStartsWith = "preview", string entryEndsWith = ".png")
     {
         progress ??= new OperationProgress();
         progress.Reset(OperationProgress.StatusDecodePreviews, (uint)ThumbnailCountFileShouldHave);
@@ -4853,8 +5048,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         }
     }
 
-    public void EncodeLayersInZip(ZipArchive zipArchive, string prepend, byte padDigits, IndexStartNumber layerIndexStartNumber = default,
-        OperationProgress? progress = null, string path = "", bool useCache = false, Func<uint, Mat, Mat>? matGenFunc = null)
+    public void EncodeLayersInZip(ZipArchive zipArchive, string prepend, byte padDigits,
+        IndexStartNumber layerIndexStartNumber = default,
+        OperationProgress? progress = null, string path = "", bool useCache = false,
+        Func<uint, Mat, Mat>? matGenFunc = null)
     {
         if (DecodeType != FileDecodeType.Full || !HaveLayers) return;
         progress ??= new OperationProgress();
@@ -4884,7 +5081,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         {
                             using var mat = layer.LayerMat;
                             CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgr);
-                            pngLayerBytes[layerIndex] = mat.GetPngByes();
+                            pngLayerBytes[layerIndex] = mat.GetPngBytes();
 
                             break;
                         }
@@ -4892,7 +5089,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         {
                             using var mat = layer.LayerMat;
                             CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgra);
-                            pngLayerBytes[layerIndex] = mat.GetPngByes();
+                            pngLayerBytes[layerIndex] = mat.GetPngBytes();
 
                             break;
                         }
@@ -4900,7 +5097,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         {
                             using var mat = layer.LayerMat;
                             using var outputMat = mat.Reshape(3);
-                            pngLayerBytes[layerIndex] = outputMat.GetPngByes();
+                            pngLayerBytes[layerIndex] = outputMat.GetPngBytes();
 
                             break;
                         }
@@ -4909,7 +5106,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                             using var mat = layer.LayerMat;
                             using var outputMat = mat.Reshape(3);
                             CvInvoke.CvtColor(outputMat, outputMat, ColorConversion.Bgr2Rgb);
-                            pngLayerBytes[layerIndex] = outputMat.GetPngByes();
+                            pngLayerBytes[layerIndex] = outputMat.GetPngBytes();
 
                             break;
                         }
@@ -4922,7 +5119,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 {
                     using var mat = layer.LayerMat;
                     using var newMat = matGenFunc.Invoke(layerIndex, mat);
-                    pngLayerBytes[layerIndex] = newMat.GetPngByes();
+                    pngLayerBytes[layerIndex] = newMat.GetPngBytes();
                 }
 
                 progress.LockAndIncrement();
@@ -4938,20 +5135,37 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         }
     }
 
-    public void EncodeLayersInZip(ZipArchive zipArchive, byte padDigits, IndexStartNumber layerIndexStartNumber = default, OperationProgress? progress = null, string path = "", bool useCache = false, Func<uint, Mat, Mat>? matGenFunc = null)
-        => EncodeLayersInZip(zipArchive, string.Empty, padDigits, layerIndexStartNumber, progress, path, useCache, matGenFunc);
+    public void EncodeLayersInZip(ZipArchive zipArchive, byte padDigits,
+        IndexStartNumber layerIndexStartNumber = default, OperationProgress? progress = null, string path = "",
+        bool useCache = false, Func<uint, Mat, Mat>? matGenFunc = null)
+    {
+        EncodeLayersInZip(zipArchive, string.Empty, padDigits, layerIndexStartNumber, progress, path, useCache,
+            matGenFunc);
+    }
 
-    public void EncodeLayersInZip(ZipArchive zipArchive, string prepend, IndexStartNumber layerIndexStartNumber = default, OperationProgress? progress = null, string path = "", bool useCache = false, Func<uint, Mat, Mat>? matGenFunc = null)
-        => EncodeLayersInZip(zipArchive, prepend, 0, layerIndexStartNumber, progress, path, useCache, matGenFunc);
+    public void EncodeLayersInZip(ZipArchive zipArchive, string prepend,
+        IndexStartNumber layerIndexStartNumber = default, OperationProgress? progress = null, string path = "",
+        bool useCache = false, Func<uint, Mat, Mat>? matGenFunc = null)
+    {
+        EncodeLayersInZip(zipArchive, prepend, 0, layerIndexStartNumber, progress, path, useCache, matGenFunc);
+    }
 
-    public void EncodeLayersInZip(ZipArchive zipArchive, IndexStartNumber layerIndexStartNumber, OperationProgress? progress = null, string path = "", bool useCache = false, Func<uint, Mat, Mat>? matGenFunc = null)
-        => EncodeLayersInZip(zipArchive, string.Empty, 0, layerIndexStartNumber, progress, path, useCache, matGenFunc);
+    public void EncodeLayersInZip(ZipArchive zipArchive, IndexStartNumber layerIndexStartNumber,
+        OperationProgress? progress = null, string path = "", bool useCache = false,
+        Func<uint, Mat, Mat>? matGenFunc = null)
+    {
+        EncodeLayersInZip(zipArchive, string.Empty, 0, layerIndexStartNumber, progress, path, useCache, matGenFunc);
+    }
 
-    public void EncodeLayersInZip(ZipArchive zipArchive, OperationProgress progress, string path = "", bool useCache = false, Func<uint, Mat, Mat>? matGenFunc = null)
-        => EncodeLayersInZip(zipArchive, string.Empty, 0, IndexStartNumber.Zero, progress, path, useCache, matGenFunc);
+    public void EncodeLayersInZip(ZipArchive zipArchive, OperationProgress progress, string path = "",
+        bool useCache = false, Func<uint, Mat, Mat>? matGenFunc = null)
+    {
+        EncodeLayersInZip(zipArchive, string.Empty, 0, IndexStartNumber.Zero, progress, path, useCache, matGenFunc);
+    }
 
 
-    public void DecodeLayersFromZip(ZipArchiveEntry[] layerEntries, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
+    public void DecodeLayersFromZip(ZipArchiveEntry[] layerEntries, OperationProgress? progress = null,
+        Func<uint, byte[], Mat>? matGenFunc = null)
     {
         if (DecodeType != FileDecodeType.Full || !HaveLayers) return;
         progress ??= new OperationProgress();
@@ -5006,7 +5220,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         CvInvoke.Imdecode(pngBytes, ImreadModes.ColorBgr, bgrMat);
                         using var greyMat = bgrMat.Reshape(1);
 
-                        _layers[layerIndex] = new Layer((uint) layerIndex, greyMat, this);
+                        _layers[layerIndex] = new Layer((uint)layerIndex, greyMat, this);
 
                         break;
                     }
@@ -5027,7 +5241,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             }
             else
             {
-                using var mat = matGenFunc.Invoke((uint) layerIndex, pngBytes);
+                using var mat = matGenFunc.Invoke((uint)layerIndex, pngBytes);
                 _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
             }
 
@@ -5035,14 +5249,17 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         });
     }
 
-    public void DecodeLayersFromZipRegex(ZipArchive zipArchive, string regex, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
+    public void DecodeLayersFromZipRegex(ZipArchive zipArchive, string regex,
+        IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null,
+        Func<uint, byte[], Mat>? matGenFunc = null)
     {
         var layerEntries = new ZipArchiveEntry?[LayerCount];
 
         foreach (var entry in zipArchive.Entries)
         {
             var match = Regex.Match(entry.Name, regex);
-            if (!match.Success || match.Groups.Count < 2 || match.Groups[1].Value.Length == 0 || !uint.TryParse(match.Groups[1].Value, out var layerIndex)) continue;
+            if (!match.Success || match.Groups.Count < 2 || match.Groups[1].Value.Length == 0 ||
+                !uint.TryParse(match.Groups[1].Value, out var layerIndex)) continue;
 
 
             if (layerIndexStartNumber == IndexStartNumber.One && layerIndex > 0) layerIndex--;
@@ -5062,25 +5279,48 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         DecodeLayersFromZip(layerEntries!, progress, matGenFunc);
     }
 
-    public void DecodeLayersFromZip(ZipArchive zipArchive, byte padDigits, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
-        => DecodeLayersFromZipRegex(zipArchive, @$"([0-9]{{{padDigits}}})[.]png$", layerIndexStartNumber, progress, matGenFunc);
-
-    public void DecodeLayersFromZip(ZipArchive zipArchive, string prepend, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
-        => DecodeLayersFromZipRegex(zipArchive, @$"^{Regex.Escape(prepend)}([0-9]+)[.]png$", layerIndexStartNumber, progress, matGenFunc);
-
-    public void DecodeLayersFromZip(ZipArchive zipArchive, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
-        => DecodeLayersFromZipRegex(zipArchive, @"^([0-9]+)[.]png$", layerIndexStartNumber, progress, matGenFunc);
-
-    public void DecodeLayersFromZip(ZipArchive zipArchive, OperationProgress progress, Func<uint, byte[], Mat>? matGenFunc = null)
-        => DecodeLayersFromZipRegex(zipArchive, @"^([0-9]+)[.]png$", IndexStartNumber.Zero, progress, matGenFunc);
-
-    public void DecodeLayersFromZipIgnoreFilename(ZipArchive zipArchive, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
+    public void DecodeLayersFromZip(ZipArchive zipArchive, byte padDigits,
+        IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null,
+        Func<uint, byte[], Mat>? matGenFunc = null)
     {
-        DecodeLayersFromZipRegex(zipArchive, @$"([0-9]{{1,{LayerDigits}}})[.]png$", layerIndexStartNumber, progress, matGenFunc);
+        DecodeLayersFromZipRegex(zipArchive, @$"([0-9]{{{padDigits}}})[.]png$", layerIndexStartNumber, progress,
+            matGenFunc);
     }
 
-    public void DecodeLayersFromZipIgnoreFilename(ZipArchive zipArchive, OperationProgress progress, Func<uint, byte[], Mat>? matGenFunc = null)
-        => DecodeLayersFromZipIgnoreFilename(zipArchive, IndexStartNumber.Zero, progress, matGenFunc);
+    public void DecodeLayersFromZip(ZipArchive zipArchive, string prepend,
+        IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null,
+        Func<uint, byte[], Mat>? matGenFunc = null)
+    {
+        DecodeLayersFromZipRegex(zipArchive, @$"^{Regex.Escape(prepend)}([0-9]+)[.]png$", layerIndexStartNumber,
+            progress, matGenFunc);
+    }
+
+    public void DecodeLayersFromZip(ZipArchive zipArchive,
+        IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null,
+        Func<uint, byte[], Mat>? matGenFunc = null)
+    {
+        DecodeLayersFromZipRegex(zipArchive, @"^([0-9]+)[.]png$", layerIndexStartNumber, progress, matGenFunc);
+    }
+
+    public void DecodeLayersFromZip(ZipArchive zipArchive, OperationProgress progress,
+        Func<uint, byte[], Mat>? matGenFunc = null)
+    {
+        DecodeLayersFromZipRegex(zipArchive, @"^([0-9]+)[.]png$", IndexStartNumber.Zero, progress, matGenFunc);
+    }
+
+    public void DecodeLayersFromZipIgnoreFilename(ZipArchive zipArchive,
+        IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null,
+        Func<uint, byte[], Mat>? matGenFunc = null)
+    {
+        DecodeLayersFromZipRegex(zipArchive, @$"([0-9]{{1,{LayerDigits}}})[.]png$", layerIndexStartNumber, progress,
+            matGenFunc);
+    }
+
+    public void DecodeLayersFromZipIgnoreFilename(ZipArchive zipArchive, OperationProgress progress,
+        Func<uint, byte[], Mat>? matGenFunc = null)
+    {
+        DecodeLayersFromZipIgnoreFilename(zipArchive, IndexStartNumber.Zero, progress, matGenFunc);
+    }
 
     /// <summary>
     /// Extract contents to a folder
@@ -5089,7 +5329,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="genericConfigExtract"></param>
     /// <param name="genericLayersExtract"></param>
     /// <param name="progress"></param>
-    public virtual void Extract(string path, bool genericConfigExtract = true, bool genericLayersExtract = true, OperationProgress? progress = null)
+    public virtual void Extract(string path, bool genericConfigExtract = true, bool genericLayersExtract = true,
+        OperationProgress? progress = null)
     {
         progress ??= new OperationProgress();
         progress.ItemName = OperationProgress.StatusExtracting;
@@ -5119,7 +5360,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             if (Configs.Length > 0)
             {
-                using TextWriter tw = new StreamWriter(Path.Combine(path, $"{ExtractConfigFileName}.{ExtractConfigFileExtension}"), false);
+                using TextWriter tw =
+                    new StreamWriter(Path.Combine(path, $"{ExtractConfigFileName}.{ExtractConfigFileExtension}"),
+                        false);
                 foreach (var config in Configs)
                 {
                     var type = config.GetType();
@@ -5142,7 +5385,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             if (HaveLayers)
             {
                 using TextWriter tw = new StreamWriter(Path.Combine(path, "Layers.ini"));
-                for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                for (var layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
                     var layer = this[layerIndex];
                     tw.WriteLine($"[{layerIndex}]");
@@ -5163,20 +5406,27 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
                     if (CanUseLayerLiftHeight) tw.WriteLine($"{nameof(layer.LiftHeight)}: {layer.LiftHeight}");
                     if (CanUseLayerLiftSpeed) tw.WriteLine($"{nameof(layer.LiftSpeed)}: {layer.LiftSpeed}");
-                    if (CanUseLayerLiftAcceleration) tw.WriteLine($"{nameof(layer.LiftAcceleration)}: {layer.LiftAcceleration}");
+                    if (CanUseLayerLiftAcceleration)
+                        tw.WriteLine($"{nameof(layer.LiftAcceleration)}: {layer.LiftAcceleration}");
                     if (CanUseLayerLiftHeight2) tw.WriteLine($"{nameof(layer.LiftHeight2)}: {layer.LiftHeight2}");
                     if (CanUseLayerLiftSpeed2) tw.WriteLine($"{nameof(layer.LiftSpeed2)}: {layer.LiftSpeed2}");
-                    if (CanUseLayerLiftAcceleration2) tw.WriteLine($"{nameof(layer.LiftAcceleration2)}: {layer.LiftAcceleration2}");
-                    if (CanUseLayerWaitTimeAfterLift) tw.WriteLine($"{nameof(layer.WaitTimeAfterLift)}: {layer.WaitTimeAfterLift}");
+                    if (CanUseLayerLiftAcceleration2)
+                        tw.WriteLine($"{nameof(layer.LiftAcceleration2)}: {layer.LiftAcceleration2}");
+                    if (CanUseLayerWaitTimeAfterLift)
+                        tw.WriteLine($"{nameof(layer.WaitTimeAfterLift)}: {layer.WaitTimeAfterLift}");
                     if (CanUseLayerRetractSpeed)
                     {
                         tw.WriteLine($"{nameof(layer.RetractHeight)}: {layer.RetractHeight}");
                         tw.WriteLine($"{nameof(layer.RetractSpeed)}: {layer.RetractSpeed}");
-                        if (CanUseLayerRetractAcceleration) tw.WriteLine($"{nameof(layer.RetractAcceleration)}: {layer.RetractAcceleration}");
+                        if (CanUseLayerRetractAcceleration)
+                            tw.WriteLine($"{nameof(layer.RetractAcceleration)}: {layer.RetractAcceleration}");
                     }
-                    if (CanUseLayerRetractHeight2) tw.WriteLine($"{nameof(layer.RetractHeight2)}: {layer.RetractHeight2}");
+
+                    if (CanUseLayerRetractHeight2)
+                        tw.WriteLine($"{nameof(layer.RetractHeight2)}: {layer.RetractHeight2}");
                     if (CanUseLayerRetractSpeed2) tw.WriteLine($"{nameof(layer.RetractSpeed2)}: {layer.RetractSpeed2}");
-                    if (CanUseLayerRetractAcceleration2) tw.WriteLine($"{nameof(layer.RetractAcceleration2)}: {layer.RetractAcceleration2}");
+                    if (CanUseLayerRetractAcceleration2)
+                        tw.WriteLine($"{nameof(layer.RetractAcceleration2)}: {layer.RetractAcceleration2}");
 
                     if (CanUseLayerLightPWM) tw.WriteLine($"{nameof(layer.LightPWM)}: {layer.LightPWM}");
 
@@ -5186,11 +5436,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                     var materialMillilitersPercent = layer.MaterialMillilitersPercent;
                     if (!float.IsNaN(materialMillilitersPercent))
                     {
-                        tw.WriteLine($"{nameof(layer.MaterialMilliliters)}: {layer.MaterialMilliliters}ml ({materialMillilitersPercent:F2}%)");
+                        tw.WriteLine(
+                            $"{nameof(layer.MaterialMilliliters)}: {layer.MaterialMilliliters}ml ({materialMillilitersPercent:F2}%)");
                     }
 
                     tw.WriteLine();
                 }
+
                 tw.Close();
             }
         }
@@ -5201,7 +5453,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             if (FileFullPath is not null)
             {
                 progress.CanCancel = false;
-                ZipArchiveExtensions.ImprovedExtractToDirectory(FileFullPath, path, ZipArchiveExtensions.Overwrite.Always);
+                ZipArchiveExtensions.ImprovedExtractToDirectory(FileFullPath, path,
+                    ZipArchiveExtensions.Overwrite.Always);
                 return;
             }
         }
@@ -5229,7 +5482,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                     progress.PauseIfRequested();
                     var byteArr = layer.CompressedPngBytes;
                     if (byteArr.Length == 0) return;
-                    using var stream = new FileStream(Path.Combine(path, layer.Filename), FileMode.Create, FileAccess.Write);
+                    using var stream = new FileStream(Path.Combine(path, layer.Filename), FileMode.Create,
+                        FileAccess.Write);
                     stream.Write(byteArr);
                     progress.LockAndIncrement();
                 });
@@ -5246,8 +5500,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         ushort count = 0;
         for (uint layerIndex = BottomLayerCount; layerIndex < LastLayerIndex; layerIndex++)
         {
-            if (this[layerIndex].ExposureTime < this[layerIndex + 1].ExposureTime) break; // Increasing time related to previous layer, we want decreasing time only
-            if (Math.Abs(this[layerIndex].ExposureTime - this[layerIndex + 1].ExposureTime) < 0.009f) break; // First equal layer, transition ended
+            if (this[layerIndex].ExposureTime < this[layerIndex + 1].ExposureTime)
+                break; // Increasing time related to previous layer, we want decreasing time only
+            if (Math.Abs(this[layerIndex].ExposureTime - this[layerIndex + 1].ExposureTime) < 0.009f)
+                break; // First equal layer, transition ended
             count++;
         }
 
@@ -5264,7 +5520,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         var transitionLayerCount = ParseTransitionLayerCountFromLayers();
         return transitionLayerCount == 0
             ? 0
-            : MathF.Round(this[BottomLayerCount].ExposureTime - this[BottomLayerCount + 1].ExposureTime, 2, MidpointRounding.AwayFromZero);
+            : MathF.Round(this[BottomLayerCount].ExposureTime - this[BottomLayerCount + 1].ExposureTime, 2,
+                MidpointRounding.AwayFromZero);
     }
 
     /// <summary>
@@ -5274,11 +5531,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="shortExposureTime">The small exposure time</param>
     /// <param name="transitionLayerCount">Number of transition layers</param>
     /// <returns>Seconds</returns>
-    public static float GetTransitionStepTime(float longExposureTime, float shortExposureTime, ushort transitionLayerCount)
+    public static float GetTransitionStepTime(float longExposureTime, float shortExposureTime,
+        ushort transitionLayerCount)
     {
         return transitionLayerCount == 0 || longExposureTime == shortExposureTime
             ? 0
-            : MathF.Round((longExposureTime - shortExposureTime) / (transitionLayerCount + 1), 2, MidpointRounding.AwayFromZero);
+            : MathF.Round((longExposureTime - shortExposureTime) / (transitionLayerCount + 1), 2,
+                MidpointRounding.AwayFromZero);
     }
 
     /// <summary>
@@ -5311,7 +5570,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Gets the transition step time from <see cref="BottomExposureTime"/> and <see cref="ExposureTime"/>, value is returned as positive from normal perspective and logic (Longer - shorter)
     /// </summary>
     /// <returns>Seconds</returns>
-    public float GetTransitionStepTime() => GetTransitionStepTime(TransitionLayerCount);
+    public float GetTransitionStepTime()
+    {
+        return GetTransitionStepTime(TransitionLayerCount);
+    }
 
     /// <summary>
     /// Gets the transition layer count based on long and short exposure time
@@ -5321,9 +5583,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="decrementTime">Decrement time</param>
     /// <param name="rounding">Midpoint rounding method</param>
     /// <returns></returns>
-    public static ushort GetTransitionLayerCount(float longExposureTime, float shortExposureTime, float decrementTime, MidpointRounding rounding = MidpointRounding.AwayFromZero)
+    public static ushort GetTransitionLayerCount(float longExposureTime, float shortExposureTime, float decrementTime,
+        MidpointRounding rounding = MidpointRounding.AwayFromZero)
     {
-        return decrementTime == 0 ? (ushort)0 : (ushort)Math.Round((longExposureTime - shortExposureTime) / decrementTime - 1, rounding);
+        return decrementTime == 0
+            ? (ushort)0
+            : (ushort)Math.Round((longExposureTime - shortExposureTime) / decrementTime - 1, rounding);
     }
 
     /// <summary>
@@ -5333,7 +5598,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="constrainToLayerCount">True if transition layer count can't be higher than supported by the file, otherwise set to false to not look at possible file layers</param>
     /// <param name="rounding">Midpoint rounding method</param>
     /// <returns>Transition layer count</returns>
-    public ushort GetTransitionLayerCount(float stepDecrementTime, bool constrainToLayerCount = true, MidpointRounding rounding = MidpointRounding.AwayFromZero)
+    public ushort GetTransitionLayerCount(float stepDecrementTime, bool constrainToLayerCount = true,
+        MidpointRounding rounding = MidpointRounding.AwayFromZero)
     {
         var count = GetTransitionLayerCount(BottomExposureTime, ExposureTime, stepDecrementTime, rounding);
         if (constrainToLayerCount) count = (ushort)Math.Min(count, MaximumPossibleTransitionLayerCount);
@@ -5347,7 +5613,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="constrainToLayerCount">True if transition layer count can't be higher than supported by the file, otherwise set false to not look at possible file layers</param>
     /// <param name="rounding">Midpoint rounding method</param>
     /// <returns>Transition layer count</returns>
-    public ushort GetTransitionLayerCountFromLayers(float stepDecrementTime, bool constrainToLayerCount = true, MidpointRounding rounding = MidpointRounding.AwayFromZero)
+    public ushort GetTransitionLayerCountFromLayers(float stepDecrementTime, bool constrainToLayerCount = true,
+        MidpointRounding rounding = MidpointRounding.AwayFromZero)
     {
         if (LayerCount < 3 || BottomLayerCount > LayerCount) return 0;
         var bottomExposureTime = LastBottomLayer?.ExposureTime ?? BottomExposureTime;
@@ -5388,6 +5655,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 exposureTime = this[layerIndex].ExposureTime;
                 break; // First equal layer, transition ended
             }
+
             layersToReset.Add(this[layerIndex]);
         }
 
@@ -5401,14 +5669,17 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         if (transitionLayerCount == 0) return;
 
-        float decrement = GetTransitionStepTime(bottomExposureTime, exposureTime, transitionLayerCount);
+        var decrement = GetTransitionStepTime(bottomExposureTime, exposureTime, transitionLayerCount);
         if (decrement <= 0) return;
 
         uint appliedLayers = 0;
-        for (uint layerIndex = BottomLayerCount; appliedLayers < transitionLayerCount && layerIndex < LayerCount; layerIndex++)
+        for (uint layerIndex = BottomLayerCount;
+             appliedLayers < transitionLayerCount && layerIndex < LayerCount;
+             layerIndex++)
         {
             appliedLayers++;
-            this[layerIndex].ExposureTime = Math.Clamp(bottomExposureTime - (decrement * appliedLayers), exposureTime, bottomExposureTime);
+            this[layerIndex].ExposureTime = Math.Clamp(bottomExposureTime - decrement * appliedLayers, exposureTime,
+                bottomExposureTime);
         }
     }
 
@@ -5422,14 +5693,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         if (usePreviousLayer)
         {
-            int previousLayerIndex = (int)layerIndex - 1;
+            var previousLayerIndex = (int)layerIndex - 1;
             if (ContainsLayerAndValid(previousLayerIndex) && this[previousLayerIndex].PositionZ > 0)
             {
                 return Layer.RoundHeight(this[previousLayerIndex].PositionZ + LayerHeight);
             }
         }
 
-        return Layer.RoundHeight((layerIndex+1) * LayerHeight);
+        return Layer.RoundHeight((layerIndex + 1) * LayerHeight);
     }
 
     /// <summary>
@@ -5499,7 +5770,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         if (enumerable.Contains(PrintParameterModifier.BottomExposureTime))
         {
-            PrintParameterModifier.BottomExposureTime.Value = (decimal) BottomExposureTime;
+            PrintParameterModifier.BottomExposureTime.Value = (decimal)BottomExposureTime;
         }
 
         if (enumerable.Contains(PrintParameterModifier.ExposureTime))
@@ -5883,6 +6154,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             BottomLightOffDelay = (float)value;
             return true;
         }
+
         if (ReferenceEquals(modifier, PrintParameterModifier.LightOffDelay))
         {
             LightOffDelay = (float)value;
@@ -5894,6 +6166,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             BottomWaitTimeBeforeCure = (float)value;
             return true;
         }
+
         if (ReferenceEquals(modifier, PrintParameterModifier.WaitTimeBeforeCure))
         {
             WaitTimeBeforeCure = (float)value;
@@ -5902,12 +6175,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         if (ReferenceEquals(modifier, PrintParameterModifier.BottomExposureTime))
         {
-            BottomExposureTime = (float) value;
+            BottomExposureTime = (float)value;
             return true;
         }
+
         if (ReferenceEquals(modifier, PrintParameterModifier.ExposureTime))
         {
-            ExposureTime = (float) value;
+            ExposureTime = (float)value;
             return true;
         }
 
@@ -5916,6 +6190,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             BottomWaitTimeAfterCure = (float)value;
             return true;
         }
+
         if (ReferenceEquals(modifier, PrintParameterModifier.WaitTimeAfterCure))
         {
             WaitTimeAfterCure = (float)value;
@@ -5924,14 +6199,16 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftHeight))
         {
-            BottomLiftHeight = (float) value;
+            BottomLiftHeight = (float)value;
             return true;
         }
+
         if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftSpeed))
         {
             BottomLiftSpeed = (float)value;
             return true;
         }
+
         if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftAcceleration))
         {
             BottomLiftAcceleration = (float)value;
@@ -5940,14 +6217,16 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight))
         {
-            LiftHeight = (float) value;
+            LiftHeight = (float)value;
             return true;
         }
+
         if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
         {
-            LiftSpeed = (float) value;
+            LiftSpeed = (float)value;
             return true;
         }
+
         if (ReferenceEquals(modifier, PrintParameterModifier.LiftAcceleration))
         {
             LiftAcceleration = (float)value;
@@ -5959,11 +6238,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             BottomLiftHeight2 = (float)value;
             return true;
         }
+
         if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftSpeed2))
         {
             BottomLiftSpeed2 = (float)value;
             return true;
         }
+
         if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftAcceleration2))
         {
             BottomLiftAcceleration2 = (float)value;
@@ -5975,11 +6256,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             LiftHeight2 = (float)value;
             return true;
         }
+
         if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed2))
         {
             LiftSpeed2 = (float)value;
             return true;
         }
+
         if (ReferenceEquals(modifier, PrintParameterModifier.LiftAcceleration2))
         {
             LiftAcceleration2 = (float)value;
@@ -5991,6 +6274,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             BottomWaitTimeAfterLift = (float)value;
             return true;
         }
+
         if (ReferenceEquals(modifier, PrintParameterModifier.WaitTimeAfterLift))
         {
             WaitTimeAfterLift = (float)value;
@@ -6011,7 +6295,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
         {
-            RetractSpeed = (float) value;
+            RetractSpeed = (float)value;
             return true;
         }
 
@@ -6026,6 +6310,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             BottomRetractHeight2 = (float)value;
             return true;
         }
+
         if (ReferenceEquals(modifier, PrintParameterModifier.BottomRetractSpeed2))
         {
             BottomRetractSpeed2 = (float)value;
@@ -6061,6 +6346,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             BottomLightPWM = (byte)value;
             return true;
         }
+
         if (ReferenceEquals(modifier, PrintParameterModifier.LightPWM))
         {
             LightPWM = (byte)value;
@@ -6080,7 +6366,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         byte changed = 0;
         foreach (var modifier in PrintParameterModifiers)
         {
-            if(!modifier.HasChanged) continue;
+            if (!modifier.HasChanged) continue;
             modifier.OldValue = modifier.NewValue;
             SetValueFromPrintParameterModifier(modifier, modifier.NewValue);
             changed++;
@@ -6101,19 +6387,33 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         WaitTimeAfterLift = 0;
     }
 
-    public float CalculateBottomLightOffDelay(float extraTime = 0) => CalculateLightOffDelay(LayerGroup.Bottom, extraTime);
+    public float CalculateBottomLightOffDelay(float extraTime = 0)
+    {
+        return CalculateLightOffDelay(LayerGroup.Bottom, extraTime);
+    }
 
-    public bool SetBottomLightOffDelay(float extraTime = 0) => SetLightOffDelay(LayerGroup.Bottom, extraTime);
+    public bool SetBottomLightOffDelay(float extraTime = 0)
+    {
+        return SetLightOffDelay(LayerGroup.Bottom, extraTime);
+    }
 
-    public float CalculateNormalLightOffDelay(float extraTime = 0) => CalculateLightOffDelay(LayerGroup.Normal, extraTime);
+    public float CalculateNormalLightOffDelay(float extraTime = 0)
+    {
+        return CalculateLightOffDelay(LayerGroup.Normal, extraTime);
+    }
 
-    public bool SetNormalLightOffDelay(float extraTime = 0) => SetLightOffDelay(LayerGroup.Normal, extraTime);
+    public bool SetNormalLightOffDelay(float extraTime = 0)
+    {
+        return SetLightOffDelay(LayerGroup.Normal, extraTime);
+    }
 
     public float CalculateMotorMovementTime(LayerGroup layerGroup, float extraTime = 0)
     {
         return layerGroup == LayerGroup.Bottom
-            ? OperationCalculator.LightOffDelayC.CalculateSeconds(BottomLiftHeight, BottomLiftSpeed, BottomRetractSpeed, extraTime, BottomLiftHeight2, BottomLiftSpeed2, BottomRetractHeight2, BottomRetractSpeed2)
-            : OperationCalculator.LightOffDelayC.CalculateSeconds(LiftHeight, LiftSpeed, RetractSpeed, extraTime, LiftHeight2, LiftSpeed2, RetractHeight2, RetractSpeed2);
+            ? OperationCalculator.LightOffDelayC.CalculateSeconds(BottomLiftHeight, BottomLiftSpeed, BottomRetractSpeed,
+                extraTime, BottomLiftHeight2, BottomLiftSpeed2, BottomRetractHeight2, BottomRetractSpeed2)
+            : OperationCalculator.LightOffDelayC.CalculateSeconds(LiftHeight, LiftSpeed, RetractSpeed, extraTime,
+                LiftHeight2, LiftSpeed2, RetractHeight2, RetractSpeed2);
     }
 
     public float CalculateLightOffDelay(LayerGroup layerGroup, float extraTime = 0)
@@ -6125,7 +6425,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     public bool SetLightOffDelay(LayerGroup layerGroup, float extraTime = 0)
     {
-        float lightOff = CalculateLightOffDelay(layerGroup, extraTime);
+        var lightOff = CalculateLightOffDelay(layerGroup, extraTime);
         if (layerGroup == LayerGroup.Bottom)
         {
             if (BottomLightOffDelay != lightOff)
@@ -6205,7 +6505,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="layerGroup">Choose the layer group to set the wait time.</param>
     /// <param name="time">The time to set</param>
     /// <param name="zeroLightOffDelayCalculateBase">When true and time is zero, it will calculate light-off delay without extra time, otherwise false to set light-off delay to 0 when time is 0</param>
-    public void SetWaitTimeBeforeCureOrLightOffDelay(LayerGroup layerGroup, float time = 0, bool zeroLightOffDelayCalculateBase = false)
+    public void SetWaitTimeBeforeCureOrLightOffDelay(LayerGroup layerGroup, float time = 0,
+        bool zeroLightOffDelayCalculateBase = false)
     {
         if (layerGroup == LayerGroup.Bottom)
         {
@@ -6260,9 +6561,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     public virtual void RebuildGCode()
     {
-        if (!SupportGCode || _suppressRebuildGCode) return;
+        if (!SupportGCode || SuppressRebuildGCode) return;
         GCode!.RebuildGCode(this);
-        RaisePropertyChanged(nameof(GCodeStr));
+        OnPropertyChanged(nameof(GCodeStr));
     }
 
     /// <summary>
@@ -6288,13 +6589,16 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             {
                 FileFullPath = filePath;
             }
+
             Encode(FileFullPath, progress);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(FileFullPath))
         {
-            if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentNullException(nameof(FileFullPath), "Not encoded yet and both source and output files are null");
+            if (string.IsNullOrWhiteSpace(filePath))
+                throw new ArgumentNullException(nameof(FileFullPath),
+                    "Not encoded yet and both source and output files are null");
             Encode(filePath, progress);
             return;
         }
@@ -6304,7 +6608,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         // Backup old file name and prepare the temporary file to be written next
         var oldFilePath = FileFullPath!;
-        if(!string.IsNullOrWhiteSpace(filePath)) FileFullPath = filePath;
+        if (!string.IsNullOrWhiteSpace(filePath)) FileFullPath = filePath;
         var tempFile = TemporaryOutputFileFullPath;
 
         try
@@ -6325,7 +6629,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             if (File.Exists(tempFile)) File.Delete(tempFile);
             throw;
         }
-
     }
 
     /// <summary>
@@ -6340,28 +6643,40 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="source">Source file format</param>
     /// <returns>True to continue the conversion, otherwise false to stop</returns>
-    protected virtual bool OnBeforeConvertFrom(FileFormat source) => true;
+    protected virtual bool OnBeforeConvertFrom(FileFormat source)
+    {
+        return true;
+    }
 
     /// <summary>
     /// Triggers when a conversion is valid and before start converting values
     /// </summary>
     /// <param name="output">Target file format</param>
     /// <returns>True to continue the conversion, otherwise false to stop</returns>
-    protected virtual bool OnBeforeConvertTo(FileFormat output) => true;
+    protected virtual bool OnBeforeConvertTo(FileFormat output)
+    {
+        return true;
+    }
 
     /// <summary>
     /// Triggers when the conversion is made but before encoding
     /// </summary>
     /// <param name="source">Source file format</param>
     /// <returns>True to continue the conversion, otherwise false to stop</returns>
-    protected virtual bool OnAfterConvertFrom(FileFormat source) => true;
+    protected virtual bool OnAfterConvertFrom(FileFormat source)
+    {
+        return true;
+    }
 
     /// <summary>
     /// Triggers when the conversion is made but before encoding
     /// </summary>
     /// <param name="output">Output file format</param>
     /// <returns>True to continue the conversion, otherwise false to stop</returns>
-    protected virtual bool OnAfterConvertTo(FileFormat output) => true;
+    protected virtual bool OnAfterConvertTo(FileFormat output)
+    {
+        return true;
+    }
 
     /// <summary>
     /// Converts this file type to another file type
@@ -6371,7 +6686,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="version">File version to use</param>
     /// <param name="progress"></param>
     /// <returns>The converted file if successful, otherwise null</returns>
-    public virtual FileFormat? Convert(Type to, string fileFullPath, uint version = 0, OperationProgress? progress = null)
+    public virtual FileFormat? Convert(Type to, string fileFullPath, uint version = 0,
+        OperationProgress? progress = null)
     {
         var found = AvailableFormats.AsValueEnumerable().Any(format => to == format.GetType());
         if (!found) return null;
@@ -6435,7 +6751,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             convertSlicerFile.RetractAcceleration2 = RetractAcceleration2;
 
 
-            if (convertSlicerFile.CanUseAnyLiftHeight2 && (CanUseAnyLiftHeight2 || GetType() == typeof(SL1File))) // Both are TSMC compatible
+            if (convertSlicerFile.CanUseAnyLiftHeight2 &&
+                (CanUseAnyLiftHeight2 || GetType() == typeof(SL1File))) // Both are TSMC compatible
             {
                 convertSlicerFile.BottomLiftHeight2 = BottomLiftHeight2;
                 convertSlicerFile.LiftHeight2 = LiftHeight2;
@@ -6459,7 +6776,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                     convertSlicerFile.BottomRetractSpeed = BottomRetractSpeed2;
                 }
 
-                if (BottomRetractAcceleration > 0 && BottomRetractAcceleration2 > 0 && BottomRetractAcceleration > BottomRetractAcceleration2)
+                if (BottomRetractAcceleration > 0 && BottomRetractAcceleration2 > 0 &&
+                    BottomRetractAcceleration > BottomRetractAcceleration2)
                 {
                     convertSlicerFile.BottomRetractAcceleration = BottomRetractAcceleration2;
                 }
@@ -6522,17 +6840,21 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="progress"></param>
     /// <returns>TThe converted file if successful, otherwise null</returns>
     public FileFormat? Convert(FileFormat to, string fileFullPath, uint version = 0, OperationProgress? progress = null)
-        => Convert(to.GetType(), fileFullPath, version, progress);
+    {
+        return Convert(to.GetType(), fileFullPath, version, progress);
+    }
 
     /// <summary>
     /// Changes the compression method of all layers to a new method
     /// </summary>
     /// <param name="newCodec">The new method to change to</param>
-    public void ChangeLayersCompressionMethod(LayerCompressionCodec newCodec)
+    /// <param name="level">The new compression level to change to</param>
+    public void ChangeLayersCompressionMethod(LayerCompressionCodec newCodec, LayerCompressionLevel level)
     {
-        for (int i = 0; i < LayerCount; i++)
+        for (var i = 0; i < LayerCount; i++)
         {
             this[i].CompressionCodec = newCodec;
+            this[i].CompressionLevel = level;
         }
         /*progress ??= new OperationProgress($"Changing layers compression codec to {newCodec}");
         progress.Reset("Layers", LayerCount);
@@ -6565,8 +6887,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             if (ResolutionX % 3 != 0)
             {
-                throw new InvalidOperationException($"Resolution width of {ResolutionX}px is invalid. Width must be in multiples of 3.\n" +
-                                                    "Fix your printer slicing settings with the correct width that is multiple of 3.");
+                throw new InvalidOperationException(
+                    $"Resolution width of {ResolutionX}px is invalid. Width must be in multiples of 3.\n" +
+                    "Fix your printer slicing settings with the correct width that is multiple of 3.");
             }
         }
     }
@@ -6578,7 +6901,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="callRebuildOnEnd">True to force rebuild the layer properties after the work and before reset to false</param>
     /// <param name="recalculateZPos">True to recalculate z position of each layer (requires <paramref name="callRebuildOnEnd"/> = true), otherwise false</param>
     /// <param name="property">Property name to change for each layer, use null to update all properties (requires <paramref name="callRebuildOnEnd"/> = true)</param>
-    public void SuppressRebuildPropertiesWork(Action action, bool callRebuildOnEnd = false, bool recalculateZPos = true, string? property = null)
+    public void SuppressRebuildPropertiesWork(Action action, bool callRebuildOnEnd = false, bool recalculateZPos = true,
+        string? property = null)
     {
         /*SuppressRebuildProperties = true;
         action.Invoke();
@@ -6598,7 +6922,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="callRebuildOnEnd">True to force rebuild the layer properties after the work and before reset to false</param>
     /// <param name="recalculateZPos">True to recalculate z position of each layer (requires <paramref name="callRebuildOnEnd"/> = true), otherwise false</param>
     /// <param name="property">Property name to change for each layer, use null to update all properties (requires <paramref name="callRebuildOnEnd"/> = true)</param>
-    public bool SuppressRebuildPropertiesWork(Func<bool> action, bool callRebuildOnEnd = false, bool recalculateZPos = true, string? property = null)
+    public bool SuppressRebuildPropertiesWork(Func<bool> action, bool callRebuildOnEnd = false,
+        bool recalculateZPos = true, string? property = null)
     {
         bool result;
         try
@@ -6629,7 +6954,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         if (!HaveLayers) return;
         SuppressRebuildPropertiesWork(() =>
         {
-            LayerHeight = Layer.RoundHeight(this.AsValueEnumerable().FirstOrDefault(layer => !layer.IsDummy && layer.LayerHeight > 0)?.LayerHeight ?? 0);
+            LayerHeight = Layer.RoundHeight(this.AsValueEnumerable()
+                .FirstOrDefault(layer => !layer.IsDummy && layer.LayerHeight > 0)?.LayerHeight ?? 0);
 
             BottomLayerCount = 0;
             float lastExposureTime = 0;
@@ -6646,26 +6972,81 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
             var enumerator = this.AsValueEnumerable();
 
-            if (CanUseLayerLiftHeight) LiftHeight = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.LiftHeight > 0)?.LiftHeight ?? DefaultLiftHeight;
-            if (CanUseLayerLiftSpeed) LiftSpeed = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.LiftSpeed > 0)?.LiftSpeed ?? DefaultLiftSpeed;
-            if (CanUseLayerLiftAcceleration) LiftAcceleration = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.LiftAcceleration > 0)?.LiftAcceleration ?? 0;
-            if (CanUseLayerLiftHeight2) LiftHeight2 = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.LiftHeight2 > 0)?.LiftHeight2 ?? 0;
-            if (CanUseLayerLiftSpeed2) LiftSpeed2 = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.LiftSpeed2 > 0)?.LiftSpeed2 ?? DefaultLiftSpeed2;
-            if (CanUseLayerLiftAcceleration2) LiftAcceleration2 = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.LiftAcceleration2 > 0)?.LiftAcceleration2 ?? 0;
+            if (CanUseLayerLiftHeight)
+                LiftHeight =
+                    enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.LiftHeight > 0)
+                        ?.LiftHeight ?? DefaultLiftHeight;
+            if (CanUseLayerLiftSpeed)
+                LiftSpeed = enumerator
+                                .LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.LiftSpeed > 0)
+                                ?.LiftSpeed ??
+                            DefaultLiftSpeed;
+            if (CanUseLayerLiftAcceleration)
+                LiftAcceleration =
+                    enumerator.LastOrDefault(layer =>
+                        layer.IsNormalLayer && !layer.IsDummy && layer.LiftAcceleration > 0)?.LiftAcceleration ?? 0;
+            if (CanUseLayerLiftHeight2)
+                LiftHeight2 =
+                    enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.LiftHeight2 > 0)
+                        ?.LiftHeight2 ?? 0;
+            if (CanUseLayerLiftSpeed2)
+                LiftSpeed2 =
+                    enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.LiftSpeed2 > 0)
+                        ?.LiftSpeed2 ?? DefaultLiftSpeed2;
+            if (CanUseLayerLiftAcceleration2)
+                LiftAcceleration2 =
+                    enumerator.LastOrDefault(layer =>
+                        layer.IsNormalLayer && !layer.IsDummy && layer.LiftAcceleration2 > 0)?.LiftAcceleration2 ?? 0;
 
-            if (CanUseLayerWaitTimeAfterLift) WaitTimeAfterLift = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.WaitTimeAfterLift > 0)?.WaitTimeAfterLift ?? 0;
+            if (CanUseLayerWaitTimeAfterLift)
+                WaitTimeAfterLift =
+                    enumerator.LastOrDefault(layer =>
+                        layer.IsNormalLayer && !layer.IsDummy && layer.WaitTimeAfterLift > 0)?.WaitTimeAfterLift ?? 0;
 
-            if (CanUseLayerRetractSpeed) RetractSpeed = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.RetractSpeed > 0)?.RetractSpeed ?? DefaultRetractSpeed;
-            if (CanUseLayerRetractAcceleration) RetractAcceleration = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.RetractAcceleration > 0)?.RetractAcceleration ?? 0;
-            if (CanUseLayerRetractHeight2) RetractHeight2 = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.RetractHeight2 > 0)?.RetractHeight2 ?? 0;
-            if (CanUseLayerRetractSpeed2) RetractSpeed2 = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.RetractSpeed2 > 0)?.RetractSpeed2 ?? DefaultRetractSpeed2;
-            if (CanUseLayerRetractAcceleration2) RetractAcceleration2 = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.RetractAcceleration2 > 0)?.RetractAcceleration2 ?? 0;
+            if (CanUseLayerRetractSpeed)
+                RetractSpeed =
+                    enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.RetractSpeed > 0)
+                        ?.RetractSpeed ?? DefaultRetractSpeed;
+            if (CanUseLayerRetractAcceleration)
+                RetractAcceleration =
+                    enumerator.LastOrDefault(layer =>
+                        layer.IsNormalLayer && !layer.IsDummy && layer.RetractAcceleration > 0)?.RetractAcceleration ??
+                    0;
+            if (CanUseLayerRetractHeight2)
+                RetractHeight2 =
+                    enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.RetractHeight2 > 0)
+                        ?.RetractHeight2 ?? 0;
+            if (CanUseLayerRetractSpeed2)
+                RetractSpeed2 =
+                    enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.RetractSpeed2 > 0)
+                        ?.RetractSpeed2 ?? DefaultRetractSpeed2;
+            if (CanUseLayerRetractAcceleration2)
+                RetractAcceleration2 =
+                    enumerator.LastOrDefault(layer =>
+                            layer.IsNormalLayer && !layer.IsDummy && layer.RetractAcceleration2 > 0)
+                        ?.RetractAcceleration2 ?? 0;
 
-            if (CanUseLayerLightOffDelay) LightOffDelay = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.LightOffDelay > 0)?.LightOffDelay ?? 0;
-            if (CanUseLayerWaitTimeBeforeCure) WaitTimeBeforeCure = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.WaitTimeBeforeCure > 0)?.WaitTimeBeforeCure ?? 0;
-            if (CanUseLayerExposureTime) ExposureTime = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.ExposureTime > 0)?.ExposureTime ?? DefaultExposureTime;
-            if (CanUseLayerLightPWM) LightPWM = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.LightPWM > 0)?.LightPWM ?? DefaultLightPWM;
-            if (CanUseLayerWaitTimeAfterCure) WaitTimeAfterCure = enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.WaitTimeAfterCure > 0)?.WaitTimeAfterCure ?? 0;
+            if (CanUseLayerLightOffDelay)
+                LightOffDelay =
+                    enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.LightOffDelay > 0)
+                        ?.LightOffDelay ?? 0;
+            if (CanUseLayerWaitTimeBeforeCure)
+                WaitTimeBeforeCure =
+                    enumerator.LastOrDefault(layer =>
+                        layer.IsNormalLayer && !layer.IsDummy && layer.WaitTimeBeforeCure > 0)?.WaitTimeBeforeCure ?? 0;
+            if (CanUseLayerExposureTime)
+                ExposureTime =
+                    enumerator.LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.ExposureTime > 0)
+                        ?.ExposureTime ?? DefaultExposureTime;
+            if (CanUseLayerLightPWM)
+                LightPWM = enumerator
+                               .LastOrDefault(layer => layer.IsNormalLayer && !layer.IsDummy && layer.LightPWM > 0)
+                               ?.LightPWM ??
+                           DefaultLightPWM;
+            if (CanUseLayerWaitTimeAfterCure)
+                WaitTimeAfterCure =
+                    enumerator.LastOrDefault(layer =>
+                        layer.IsNormalLayer && !layer.IsDummy && layer.WaitTimeAfterCure > 0)?.WaitTimeAfterCure ?? 0;
 
 
             if (BottomLayerCount == 0)
@@ -6693,26 +7074,74 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             }
             else
             {
-                if (CanUseLayerLiftHeight) BottomLiftHeight = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.LiftHeight > 0)?.LiftHeight ?? DefaultBottomLiftHeight;
-                if (CanUseLayerLiftSpeed) BottomLiftSpeed = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.LiftSpeed > 0)?.LiftSpeed ?? DefaultBottomLiftSpeed;
-                if (CanUseLayerLiftAcceleration) BottomLiftAcceleration = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.LiftAcceleration > 0)?.LiftAcceleration ?? 0;
-                if (CanUseLayerLiftHeight2) BottomLiftHeight2 = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.LiftHeight2 > 0)?.LiftHeight2 ?? 0;
-                if (CanUseLayerLiftSpeed2) BottomLiftSpeed2 = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.LiftSpeed2 > 0)?.LiftSpeed2 ?? DefaultBottomLiftSpeed2;
-                if (CanUseLayerLiftAcceleration2) BottomLiftAcceleration2 = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.LiftAcceleration2 > 0)?.LiftAcceleration2 ?? 0;
+                if (CanUseLayerLiftHeight)
+                    BottomLiftHeight =
+                        enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.LiftHeight > 0)?.LiftHeight ??
+                        DefaultBottomLiftHeight;
+                if (CanUseLayerLiftSpeed)
+                    BottomLiftSpeed =
+                        enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.LiftSpeed > 0)?.LiftSpeed ??
+                        DefaultBottomLiftSpeed;
+                if (CanUseLayerLiftAcceleration)
+                    BottomLiftAcceleration =
+                        enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.LiftAcceleration > 0)
+                            ?.LiftAcceleration ?? 0;
+                if (CanUseLayerLiftHeight2)
+                    BottomLiftHeight2 = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.LiftHeight2 > 0)
+                        ?.LiftHeight2 ?? 0;
+                if (CanUseLayerLiftSpeed2)
+                    BottomLiftSpeed2 =
+                        enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.LiftSpeed2 > 0)?.LiftSpeed2 ??
+                        DefaultBottomLiftSpeed2;
+                if (CanUseLayerLiftAcceleration2)
+                    BottomLiftAcceleration2 =
+                        enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.LiftAcceleration2 > 0)
+                            ?.LiftAcceleration2 ?? 0;
 
-                if (CanUseLayerWaitTimeAfterLift) BottomWaitTimeAfterLift = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.WaitTimeAfterLift > 0)?.WaitTimeAfterLift ?? 0;
+                if (CanUseLayerWaitTimeAfterLift)
+                    BottomWaitTimeAfterLift =
+                        enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.WaitTimeAfterLift > 0)
+                            ?.WaitTimeAfterLift ?? 0;
 
-                if (CanUseLayerRetractSpeed) BottomRetractSpeed = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.RetractSpeed > 0)?.RetractSpeed ?? DefaultBottomRetractSpeed;
-                if (CanUseLayerRetractAcceleration) BottomRetractAcceleration = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.RetractAcceleration > 0)?.RetractAcceleration ?? 0;
-                if (CanUseLayerRetractHeight2) BottomRetractHeight2 = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.RetractHeight2 > 0)?.RetractHeight2 ?? 0;
-                if (CanUseLayerRetractSpeed2) BottomRetractSpeed2 = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.RetractSpeed2 > 0)?.RetractSpeed2 ?? DefaultBottomRetractSpeed2;
-                if (CanUseLayerRetractAcceleration2) BottomRetractAcceleration2 = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.RetractAcceleration2 > 0)?.RetractAcceleration2 ?? 0;
+                if (CanUseLayerRetractSpeed)
+                    BottomRetractSpeed =
+                        enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.RetractSpeed > 0)?.RetractSpeed ??
+                        DefaultBottomRetractSpeed;
+                if (CanUseLayerRetractAcceleration)
+                    BottomRetractAcceleration =
+                        enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.RetractAcceleration > 0)
+                            ?.RetractAcceleration ?? 0;
+                if (CanUseLayerRetractHeight2)
+                    BottomRetractHeight2 =
+                        enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.RetractHeight2 > 0)
+                            ?.RetractHeight2 ?? 0;
+                if (CanUseLayerRetractSpeed2)
+                    BottomRetractSpeed2 =
+                        enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.RetractSpeed2 > 0)?.RetractSpeed2 ??
+                        DefaultBottomRetractSpeed2;
+                if (CanUseLayerRetractAcceleration2)
+                    BottomRetractAcceleration2 =
+                        enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.RetractAcceleration2 > 0)
+                            ?.RetractAcceleration2 ?? 0;
 
-                if (CanUseLayerLightOffDelay) BottomLightOffDelay = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.LightOffDelay > 0)?.LightOffDelay ?? 0;
-                if (CanUseLayerWaitTimeBeforeCure) BottomWaitTimeBeforeCure = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.WaitTimeBeforeCure > 0)?.WaitTimeBeforeCure ?? 0;
-                if (CanUseLayerExposureTime) BottomExposureTime = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.ExposureTime > 0)?.ExposureTime ?? DefaultBottomExposureTime;
-                if (CanUseLayerLightPWM) BottomLightPWM = enumerator.FirstOrDefault(layer => layer.LightPWM > 0)?.LightPWM ?? DefaultBottomLightPWM;
-                if (CanUseLayerWaitTimeAfterCure) BottomWaitTimeAfterCure = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.WaitTimeAfterCure > 0)?.WaitTimeAfterCure ?? 0;
+                if (CanUseLayerLightOffDelay)
+                    BottomLightOffDelay = enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.LightOffDelay > 0)
+                        ?.LightOffDelay ?? 0;
+                if (CanUseLayerWaitTimeBeforeCure)
+                    BottomWaitTimeBeforeCure =
+                        enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.WaitTimeBeforeCure > 0)
+                            ?.WaitTimeBeforeCure ?? 0;
+                if (CanUseLayerExposureTime)
+                    BottomExposureTime =
+                        enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.ExposureTime > 0)?.ExposureTime ??
+                        DefaultBottomExposureTime;
+                if (CanUseLayerLightPWM)
+                    BottomLightPWM = enumerator.FirstOrDefault(layer => layer.LightPWM > 0)?.LightPWM ??
+                                     DefaultBottomLightPWM;
+                if (CanUseLayerWaitTimeAfterCure)
+                    BottomWaitTimeAfterCure =
+                        enumerator.FirstOrDefault(layer => !layer.IsDummy && layer.WaitTimeAfterCure > 0)
+                            ?.WaitTimeAfterCure ?? 0;
             }
         });
 
@@ -6839,7 +7268,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="x">X position in pixels</param>
     /// <param name="precision">Decimal precision</param>
     /// <returns>Display position in millimeters</returns>
-    public float PixelToDisplayPositionX(int x, byte precision = DisplayFloatPrecision) => MathF.Round(PixelWidth * x, precision);
+    public float PixelToDisplayPositionX(int x, byte precision = DisplayFloatPrecision)
+    {
+        return MathF.Round(PixelWidth * x, precision);
+    }
 
     /// <summary>
     /// From a pixel position get the equivalent position on the display
@@ -6847,7 +7279,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="y">Y position in pixels</param>
     /// <param name="precision">Decimal precision</param>
     /// <returns>Display position in millimeters</returns>
-    public float PixelToDisplayPositionY(int y, byte precision = DisplayFloatPrecision) => MathF.Round(PixelHeight * y, precision);
+    public float PixelToDisplayPositionY(int y, byte precision = DisplayFloatPrecision)
+    {
+        return MathF.Round(PixelHeight * y, precision);
+    }
 
     /// <summary>
     /// From a pixel position get the equivalent position on the display
@@ -6856,22 +7291,35 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="y">Y position in pixels</param>
     /// <param name="precision">Decimal precision</param>
     /// <returns>Resolution position in pixels</returns>
-    public PointF PixelToDisplayPosition(int x, int y, byte precision = DisplayFloatPrecision) =>new(PixelToDisplayPositionX(x, precision), PixelToDisplayPositionY(y, precision));
-    public PointF PixelToDisplayPosition(Point point, byte precision = DisplayFloatPrecision) => new(PixelToDisplayPositionX(point.X, precision), PixelToDisplayPositionY(point.Y, precision));
+    public PointF PixelToDisplayPosition(int x, int y, byte precision = DisplayFloatPrecision)
+    {
+        return new PointF(PixelToDisplayPositionX(x, precision), PixelToDisplayPositionY(y, precision));
+    }
+
+    public PointF PixelToDisplayPosition(Point point, byte precision = DisplayFloatPrecision)
+    {
+        return new PointF(PixelToDisplayPositionX(point.X, precision), PixelToDisplayPositionY(point.Y, precision));
+    }
 
     /// <summary>
     /// From a pixel position get the equivalent position on the display
     /// </summary>
     /// <param name="x">X position in millimeters</param>
     /// <returns>Resolution position in pixels</returns>
-    public int DisplayToPixelPositionX(float x) => (int)(x * Xppmm);
+    public int DisplayToPixelPositionX(float x)
+    {
+        return (int)(x * Xppmm);
+    }
 
     /// <summary>
     /// From a pixel position get the equivalent position on the display
     /// </summary>
     /// <param name="y">Y position in millimeters</param>
     /// <returns>Resolution position in pixels</returns>
-    public int DisplayToPixelPositionY(float y) => (int)(y * Yppmm);
+    public int DisplayToPixelPositionY(float y)
+    {
+        return (int)(y * Yppmm);
+    }
 
     /// <summary>
     /// From a display position get the equivalent position on the pixel
@@ -6879,13 +7327,20 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="x">X position in millimeters</param>
     /// <param name="y">Y position in millimeters</param>
     /// <returns>Resolution position in pixels</returns>
-    public Point DisplayToPixelPosition(float x, float y) => new(DisplayToPixelPositionX(x), DisplayToPixelPositionY(y));
+    public Point DisplayToPixelPosition(float x, float y)
+    {
+        return new Point(DisplayToPixelPositionX(x), DisplayToPixelPositionY(y));
+    }
+
     /// <summary>
     /// From a display position get the equivalent position on the pixel
     /// </summary>
     /// <param name="point"></param>
     /// <returns></returns>
-    public Point DisplayToPixelPosition(PointF point) => new(DisplayToPixelPositionX(point.X), DisplayToPixelPositionY(point.Y));
+    public Point DisplayToPixelPosition(PointF point)
+    {
+        return new Point(DisplayToPixelPositionX(point.X), DisplayToPixelPositionY(point.Y));
+    }
 
     public bool SanitizeBoundingRectangle(ref Rectangle rectangle)
     {
@@ -6897,7 +7352,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public Rectangle GetBoundingRectangle(OperationProgress? progress = null)
     {
         var firstLayer = FirstLayer;
-        if (!_boundingRectangle.IsEmpty || !HaveLayers || firstLayer is null || !firstLayer.HaveImage) return _boundingRectangle;
+        if (!_boundingRectangle.IsEmpty || !HaveLayers || firstLayer is null || !firstLayer.HaveImage)
+            return _boundingRectangle;
         progress ??= new OperationProgress(OperationProgress.StatusOptimizingBounds, LayerCount - 1);
         var boundingRectangle = Rectangle.Empty;
         uint firstValidLayerBounds = 0;
@@ -6955,8 +7411,15 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         return rect;
     }
 
-    public Rectangle GetBoundingRectangle(int margin, OperationProgress? progress = null) => GetBoundingRectangle(margin, margin, progress);
-    public Rectangle GetBoundingRectangle(Size margin, OperationProgress? progress = null) => GetBoundingRectangle(margin.Width, margin.Height, progress);
+    public Rectangle GetBoundingRectangle(int margin, OperationProgress? progress = null)
+    {
+        return GetBoundingRectangle(margin, margin, progress);
+    }
+
+    public Rectangle GetBoundingRectangle(Size margin, OperationProgress? progress = null)
+    {
+        return GetBoundingRectangle(margin.Width, margin.Height, progress);
+    }
 
 
     /// <summary>
@@ -6967,7 +7430,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <returns></returns>
     public Mat CreateMatWithDummyPixel(Point dummyPixelLocation, byte dummyPixelBrightness)
     {
-        var newMat = EmguExtensions.InitMat(Resolution);
+        var newMat = EmguCvExtensions.InitMat(Resolution);
         if (dummyPixelBrightness > 0)
         {
             if (dummyPixelLocation.IsAnyNegative()) dummyPixelLocation = BoundingRectangle.Center();
@@ -6982,20 +7445,29 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="dummyPixelLocation">Location to set the dummy pixel, use a negative value (-1,-1) to set to the bounding center</param>
     /// <returns></returns>
-    public Mat CreateMatWithDummyPixel(Point dummyPixelLocation) => CreateMatWithDummyPixel(dummyPixelLocation, SupportGCode ? (byte) 1 : (byte) 128);
+    public Mat CreateMatWithDummyPixel(Point dummyPixelLocation)
+    {
+        return CreateMatWithDummyPixel(dummyPixelLocation, SupportGCode ? (byte)1 : (byte)128);
+    }
 
     /// <summary>
     /// Creates an empty mat of file <see cref="Resolution"/> size
     /// </summary>
     /// <param name="dummyPixelBrightness">Dummy pixel brightness</param>
     /// <returns></returns>
-    public Mat CreateMatWithDummyPixel(byte dummyPixelBrightness) => CreateMatWithDummyPixel(BoundingRectangle.Center(), dummyPixelBrightness);
+    public Mat CreateMatWithDummyPixel(byte dummyPixelBrightness)
+    {
+        return CreateMatWithDummyPixel(BoundingRectangle.Center(), dummyPixelBrightness);
+    }
 
     /// <summary>
     /// Creates an empty mat of file <see cref="Resolution"/> size
     /// </summary>
     /// <returns></returns>
-    public Mat CreateMatWithDummyPixel() => CreateMatWithDummyPixel(SupportGCode ? (byte)1 : (byte)128);
+    public Mat CreateMatWithDummyPixel()
+    {
+        return CreateMatWithDummyPixel(SupportGCode ? (byte)1 : (byte)128);
+    }
 
     /// <summary>
     /// Creates an empty mat of file <see cref="Resolution"/> size and create a dummy pixel on optimal position from layer information to prevent an empty layer detection
@@ -7025,13 +7497,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public Mat CreateMat(bool initMat = true)
     {
         return initMat
-            ? EmguExtensions.InitMat(Resolution)
+            ? EmguCvExtensions.InitMat(Resolution)
             : new Mat(Resolution, DepthType.Cv8U, 1);
     }
 
     #endregion
 
     #region Layer collection methods
+
     public void Init(Layer[] layers)
     {
         var oldLayerCount = LayerCount;
@@ -7150,7 +7623,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     public int IndexOf(Layer layer)
     {
-        for (int layerIndex = 0; layerIndex < Count; layerIndex++)
+        for (var layerIndex = 0; layerIndex < Count; layerIndex++)
         {
             if (_layers[layerIndex].Equals(layer)) return layerIndex;
         }
@@ -7158,10 +7631,25 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         return -1;
     }
 
-    public void Prepend(Layer layer) => Insert(0, layer);
-    public void Prepend(IEnumerable<Layer> layers) => InsertRange(0, layers);
-    public void Append(Layer layer) => Add(layer);
-    public void AppendRange(IEnumerable<Layer> layers) => Add(layers);
+    public void Prepend(Layer layer)
+    {
+        Insert(0, layer);
+    }
+
+    public void Prepend(IEnumerable<Layer> layers)
+    {
+        InsertRange(0, layers);
+    }
+
+    public void Append(Layer layer)
+    {
+        Add(layer);
+    }
+
+    public void AppendRange(IEnumerable<Layer> layers)
+    {
+        Add(layers);
+    }
 
     public void Insert(int index, Layer layer)
     {
@@ -7253,22 +7741,20 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="resetLayerProperties"></param>
     public void Reallocate(uint newLayerCount, bool resetLayerProperties = false)
     {
-        int differenceLayerCount = (int)newLayerCount - Count;
+        var differenceLayerCount = (int)newLayerCount - Count;
         if (differenceLayerCount == 0) return;
 
         Array.Resize(ref _layers, (int)newLayerCount);
 
-        SuppressRebuildPropertiesWork(() =>
-        {
-            Layers = _layers;
-        }, resetLayerProperties, resetLayerProperties);
+        SuppressRebuildPropertiesWork(() => { Layers = _layers; }, resetLayerProperties, resetLayerProperties);
     }
 
     /// <summary>
     /// Reallocate at given index
     /// </summary>
     /// <returns></returns>
-    public void ReallocateInsert(uint insertAtLayerIndex, uint layerCount, bool resetLayerProperties = false, bool fixPositionZ = false)
+    public void ReallocateInsert(uint insertAtLayerIndex, uint layerCount, bool resetLayerProperties = false,
+        bool fixPositionZ = false)
     {
         if (layerCount == 0) return;
         insertAtLayerIndex = Math.Min(insertAtLayerIndex, LayerCount);
@@ -7288,14 +7774,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 newLayers, rightDestinationIndex,
                 LayerCount - insertAtLayerIndex);
 
-        SuppressRebuildPropertiesWork(() =>
-        {
-            Layers = newLayers;
-        }, resetLayerProperties, resetLayerProperties);
+        SuppressRebuildPropertiesWork(() => { Layers = newLayers; }, resetLayerProperties, resetLayerProperties);
 
         if (!resetLayerProperties && fixPositionZ)
         {
-            var addedDistance = LayerHeight + this[rightDestinationIndex-1].PositionZ - this[insertAtLayerIndex].PositionZ;
+            var addedDistance = LayerHeight + this[rightDestinationIndex - 1].PositionZ -
+                                this[insertAtLayerIndex].PositionZ;
             for (var layerIndex = rightDestinationIndex; layerIndex < newLayerCount; layerIndex++)
             {
                 this[layerIndex].PositionZ += addedDistance;
@@ -7305,7 +7789,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             PrintHeight = PrintHeight;
 #pragma warning restore CA2245
         }
-
     }
 
     /// <summary>
@@ -7321,23 +7804,26 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         Array.Copy(_layers, startLayerIndex, newLayers, 0, newLayers.Length);
 
-        SuppressRebuildPropertiesWork(() =>
-        {
-            Layers = newLayers;
-        }, resetLayerProperties, resetLayerProperties);
+        SuppressRebuildPropertiesWork(() => { Layers = newLayers; }, resetLayerProperties, resetLayerProperties);
     }
 
     /// <summary>
     /// Reallocate at start
     /// </summary>
     /// <returns></returns>
-    public void ReallocateStart(uint layerCount, bool resetLayerProperties = false, bool fixPositionZ = false) => ReallocateInsert(0, layerCount, resetLayerProperties, fixPositionZ);
+    public void ReallocateStart(uint layerCount, bool resetLayerProperties = false, bool fixPositionZ = false)
+    {
+        ReallocateInsert(0, layerCount, resetLayerProperties, fixPositionZ);
+    }
 
     /// <summary>
     /// Reallocate at end
     /// </summary>
     /// <returns></returns>
-    public void ReallocateEnd(uint layerCount, bool resetLayerProperties = false) => ReallocateInsert(LayerCount, layerCount, resetLayerProperties);
+    public void ReallocateEnd(uint layerCount, bool resetLayerProperties = false)
+    {
+        ReallocateInsert(LayerCount, layerCount, resetLayerProperties);
+    }
 
     /// <summary>
     /// Allocate layers from a Mat array
@@ -7370,6 +7856,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         Layers = layers;
         return layers;
     }
+
     #endregion
 
     #region Layer methods
@@ -7392,11 +7879,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         if (split[0] != string.Empty)
         {
-            if(split[0].Equals("FIRST", StringComparison.OrdinalIgnoreCase)) layerIndexStart = 0;
-            else if(split[0].Equals("LB", StringComparison.OrdinalIgnoreCase)) layerIndexStart = LastBottomLayer?.Index ?? 0;
-            else if(split[0].Equals("FN", StringComparison.OrdinalIgnoreCase)) layerIndexStart = FirstNormalLayer?.Index ?? 0;
-            else if(split[0].Equals("LAST", StringComparison.OrdinalIgnoreCase)) layerIndexStart = LastLayerIndex;
-            else if(!uint.TryParse(split[0], out layerIndexStart)) return false;
+            if (split[0].Equals("FIRST", StringComparison.OrdinalIgnoreCase)) layerIndexStart = 0;
+            else if (split[0].Equals("LB", StringComparison.OrdinalIgnoreCase))
+                layerIndexStart = LastBottomLayer?.Index ?? 0;
+            else if (split[0].Equals("FN", StringComparison.OrdinalIgnoreCase))
+                layerIndexStart = FirstNormalLayer?.Index ?? 0;
+            else if (split[0].Equals("LAST", StringComparison.OrdinalIgnoreCase)) layerIndexStart = LastLayerIndex;
+            else if (!uint.TryParse(split[0], out layerIndexStart)) return false;
             SanitizeLayerIndex(ref layerIndexStart);
         }
 
@@ -7409,8 +7898,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         if (split[1] != string.Empty)
         {
             if (split[1].Equals("FIRST", StringComparison.OrdinalIgnoreCase)) layerIndexEnd = 0;
-            else if (split[1].Equals("LB", StringComparison.OrdinalIgnoreCase)) layerIndexEnd = LastBottomLayer?.Index ?? 0;
-            else if (split[1].Equals("FN", StringComparison.OrdinalIgnoreCase)) layerIndexEnd = FirstNormalLayer?.Index ?? 0;
+            else if (split[1].Equals("LB", StringComparison.OrdinalIgnoreCase))
+                layerIndexEnd = LastBottomLayer?.Index ?? 0;
+            else if (split[1].Equals("FN", StringComparison.OrdinalIgnoreCase))
+                layerIndexEnd = FirstNormalLayer?.Index ?? 0;
             else if (split[1].Equals("LAST", StringComparison.OrdinalIgnoreCase)) layerIndexEnd = LastLayerIndex;
             else if (!uint.TryParse(split[1], out layerIndexEnd)) return false;
             SanitizeLayerIndex(ref layerIndexEnd);
@@ -7469,7 +7960,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
         {
-            if(this[layerIndex] is null) continue;
+            if (this[layerIndex] is null) continue;
             this[layerIndex].Index = layerIndex;
             this[layerIndex].SlicerFile = this;
         }
@@ -7481,16 +7972,19 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <returns>True if one or more corrections has been applied, otherwise false</returns>
     public bool Sanitize()
     {
-        bool appliedCorrections = false;
+        var appliedCorrections = false;
 
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
         {
             // Check for null layers
-            if (this[layerIndex] is null) throw new InvalidDataException($"Layer {layerIndex} was defined but doesn't contain a valid image.");
+            if (this[layerIndex] is null)
+                throw new InvalidDataException($"Layer {layerIndex} was defined but doesn't contain a valid image.");
             if (layerIndex <= 0) continue;
             // Check for bigger position z than it successor
-            if (this[layerIndex - 1].PositionZ > this[layerIndex].PositionZ && this[layerIndex - 1].NonZeroPixelCount > 1)
-                throw new InvalidDataException($"Layer {layerIndex - 1} ({this[layerIndex - 1].PositionZ}mm) have a higher Z position than the successor layer {layerIndex} ({this[layerIndex].PositionZ}mm).\n");
+            if (this[layerIndex - 1].PositionZ > this[layerIndex].PositionZ &&
+                this[layerIndex - 1].NonZeroPixelCount > 1)
+                throw new InvalidDataException(
+                    $"Layer {layerIndex - 1} ({this[layerIndex - 1].PositionZ}mm) have a higher Z position than the successor layer {layerIndex} ({this[layerIndex].PositionZ}mm).\n");
         }
 
         if ((ResolutionX == 0 || ResolutionY == 0) && DecodeType == FileDecodeType.Full)
@@ -7502,7 +7996,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
                 if (mat.Size.HaveZero())
                 {
-                    throw new FileLoadException($"File resolution ({Resolution}) is invalid and can't be auto fixed due invalid layers with same problem ({mat.Size}).", FileFullPath);
+                    throw new FileLoadException(
+                        $"File resolution ({Resolution}) is invalid and can't be auto fixed due invalid layers with same problem ({mat.Size}).",
+                        FileFullPath);
                 }
 
                 Resolution = mat.Size;
@@ -7527,6 +8023,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             LightPWM = DefaultLightPWM;
             appliedCorrections = true;
         }
+
         if (BottomLightPWM == 0)
         {
             BottomLightPWM = DefaultBottomLightPWM;
@@ -7534,6 +8031,22 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         }
 
         return appliedCorrections;
+    }
+
+    /// <summary>
+    /// Throws an FileLoadException if version is above the known versions
+    /// </summary>
+    /// <exception cref="FileLoadException"></exception>
+    public void ThrowIfVersionOutOfRange()
+    {
+        if (AvailableVersionsCount == 0) return;
+        var fileVersion = Version;
+        if (fileVersion > AvailableVersions[^1])
+        {
+            throw new FileLoadException(
+                $"File version <{fileVersion}> is not known by decoder. Can not open file as structure is not known.",
+                FileFullPath);
+        }
     }
 
     /// <summary>
@@ -7548,7 +8061,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             var possibleVersions = GetAvailableVersionsForExtension(FileExtension);
             if (possibleVersions.Length > 0)
             {
-                if (!possibleVersions.AsValueEnumerable().Contains(Version)) // Version not found on possible versions, set to last
+                if (!possibleVersions.AsValueEnumerable()
+                        .Contains(Version)) // Version not found on possible versions, set to last
                 {
                     Version = possibleVersions[^1];
                     return true;
@@ -7581,10 +8095,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 if (property is null or nameof(BottomLayerCount))
                 {
                     layer.LightOffDelay = GetBottomOrNormalValue(layer, BottomLightOffDelay, LightOffDelay);
-                    layer.WaitTimeBeforeCure = GetBottomOrNormalValue(layer, BottomWaitTimeBeforeCure, WaitTimeBeforeCure);
+                    layer.WaitTimeBeforeCure =
+                        GetBottomOrNormalValue(layer, BottomWaitTimeBeforeCure, WaitTimeBeforeCure);
                     layer.ExposureTime = GetBottomOrNormalValue(layer, BottomExposureTime, ExposureTime);
                     layer.WaitTimeAfterCure = GetBottomOrNormalValue(layer, BottomWaitTimeAfterCure, WaitTimeAfterCure);
-                    if ((layer.IsBottomLayer && CanUseBottomLiftHeight2 && !CanUseLayerLiftHeight2) || (layer.IsNormalLayer && CanUseLiftHeight2 && !CanUseLayerLiftHeight2))
+                    if ((layer.IsBottomLayer && CanUseBottomLiftHeight2 && !CanUseLayerLiftHeight2) ||
+                        (layer.IsNormalLayer && CanUseLiftHeight2 && !CanUseLayerLiftHeight2))
                         layer.LiftHeight = GetBottomOrNormalValue(layer, BottomLiftHeightTotal, LiftHeightTotal);
                     else
                         layer.LiftHeight = GetBottomOrNormalValue(layer, BottomLiftHeight, LiftHeight);
@@ -7595,10 +8111,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                     layer.LiftAcceleration2 = GetBottomOrNormalValue(layer, BottomLiftAcceleration2, LiftAcceleration2);
                     layer.WaitTimeAfterLift = GetBottomOrNormalValue(layer, BottomWaitTimeAfterLift, WaitTimeAfterLift);
                     layer.RetractSpeed = GetBottomOrNormalValue(layer, BottomRetractSpeed, RetractSpeed);
-                    layer.RetractAcceleration = GetBottomOrNormalValue(layer, BottomRetractAcceleration, RetractAcceleration);
+                    layer.RetractAcceleration =
+                        GetBottomOrNormalValue(layer, BottomRetractAcceleration, RetractAcceleration);
                     layer.RetractHeight2 = GetBottomOrNormalValue(layer, BottomRetractHeight2, RetractHeight2);
                     layer.RetractSpeed2 = GetBottomOrNormalValue(layer, BottomRetractSpeed2, RetractSpeed2);
-                    layer.RetractAcceleration2 = GetBottomOrNormalValue(layer, BottomRetractAcceleration2, RetractAcceleration2);
+                    layer.RetractAcceleration2 =
+                        GetBottomOrNormalValue(layer, BottomRetractAcceleration2, RetractAcceleration2);
                     layer.LightPWM = GetBottomOrNormalValue(layer, BottomLightPWM, LightPWM);
                 }
                 else
@@ -7606,9 +8124,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                     if (layer.IsBottomLayer)
                     {
                         if (property == nameof(BottomLightOffDelay)) layer.LightOffDelay = BottomLightOffDelay;
-                        else if (property == nameof(BottomWaitTimeBeforeCure)) layer.WaitTimeBeforeCure = BottomWaitTimeBeforeCure;
+                        else if (property == nameof(BottomWaitTimeBeforeCure))
+                            layer.WaitTimeBeforeCure = BottomWaitTimeBeforeCure;
                         else if (property == nameof(BottomExposureTime)) layer.ExposureTime = BottomExposureTime;
-                        else if (property == nameof(BottomWaitTimeAfterCure)) layer.WaitTimeAfterCure = BottomWaitTimeAfterCure;
+                        else if (property == nameof(BottomWaitTimeAfterCure))
+                            layer.WaitTimeAfterCure = BottomWaitTimeAfterCure;
                         else if (property == nameof(BottomLiftHeight))
                         {
                             if (CanUseBottomLiftHeight2 && !CanUseLayerLiftHeight2)
@@ -7617,23 +8137,32 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                                 layer.LiftHeight = BottomLiftHeight;
                         }
                         else if (property == nameof(BottomLiftSpeed)) layer.LiftSpeed = BottomLiftSpeed;
-                        else if (property == nameof(BottomLiftAcceleration)) layer.LiftAcceleration = BottomLiftAcceleration;
+                        else if (property == nameof(BottomLiftAcceleration))
+                            layer.LiftAcceleration = BottomLiftAcceleration;
                         else if (property == nameof(BottomLiftHeight2)) layer.LiftHeight2 = BottomLiftHeight2;
                         else if (property == nameof(BottomLiftSpeed2)) layer.LiftSpeed2 = BottomLiftSpeed2;
-                        else if (property == nameof(BottomLiftAcceleration2)) layer.LiftAcceleration2 = BottomLiftAcceleration2;
-                        else if (property == nameof(BottomWaitTimeAfterLift)) layer.WaitTimeAfterLift = BottomWaitTimeAfterLift;
+                        else if (property == nameof(BottomLiftAcceleration2))
+                            layer.LiftAcceleration2 = BottomLiftAcceleration2;
+                        else if (property == nameof(BottomWaitTimeAfterLift))
+                            layer.WaitTimeAfterLift = BottomWaitTimeAfterLift;
                         else if (property == nameof(BottomRetractSpeed)) layer.RetractSpeed = BottomRetractSpeed;
-                        else if (property == nameof(BottomRetractAcceleration)) layer.RetractAcceleration = BottomRetractAcceleration;
+                        else if (property == nameof(BottomRetractAcceleration))
+                            layer.RetractAcceleration = BottomRetractAcceleration;
                         else if (property == nameof(BottomRetractHeight2)) layer.RetractHeight2 = BottomRetractHeight2;
                         else if (property == nameof(BottomRetractSpeed2)) layer.RetractSpeed2 = BottomRetractSpeed2;
-                        else if (property == nameof(BottomRetractAcceleration2)) layer.RetractAcceleration2 = BottomRetractAcceleration2;
+                        else if (property == nameof(BottomRetractAcceleration2))
+                            layer.RetractAcceleration2 = BottomRetractAcceleration2;
                         else if (property == nameof(BottomLightPWM)) layer.LightPWM = BottomLightPWM;
 
                         // Propagate value to layer when bottom property does not exists
-                        else if (property == nameof(LightOffDelay) && !CanUseBottomLightOffDelay) layer.LightOffDelay = LightOffDelay;
-                        else if (property == nameof(WaitTimeBeforeCure) && !CanUseBottomWaitTimeBeforeCure) layer.WaitTimeBeforeCure = WaitTimeBeforeCure;
-                        else if (property == nameof(ExposureTime) && !CanUseBottomExposureTime) layer.ExposureTime = ExposureTime;
-                        else if (property == nameof(WaitTimeAfterCure) && !CanUseBottomWaitTimeAfterCure) layer.WaitTimeAfterCure = WaitTimeAfterCure;
+                        else if (property == nameof(LightOffDelay) && !CanUseBottomLightOffDelay)
+                            layer.LightOffDelay = LightOffDelay;
+                        else if (property == nameof(WaitTimeBeforeCure) && !CanUseBottomWaitTimeBeforeCure)
+                            layer.WaitTimeBeforeCure = WaitTimeBeforeCure;
+                        else if (property == nameof(ExposureTime) && !CanUseBottomExposureTime)
+                            layer.ExposureTime = ExposureTime;
+                        else if (property == nameof(WaitTimeAfterCure) && !CanUseBottomWaitTimeAfterCure)
+                            layer.WaitTimeAfterCure = WaitTimeAfterCure;
                         else if (property == nameof(LiftHeight) && !CanUseBottomLiftHeight)
                         {
                             if (CanUseLiftHeight2 && !CanUseLayerLiftHeight2)
@@ -7642,16 +8171,26 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                                 layer.LiftHeight = LiftHeight;
                         }
                         else if (property == nameof(LiftSpeed) && !CanUseBottomLiftSpeed) layer.LiftSpeed = LiftSpeed;
-                        else if (property == nameof(LiftAcceleration) && !CanUseBottomLiftAcceleration) layer.LiftAcceleration = LiftAcceleration;
-                        else if (property == nameof(LiftHeight2) && !CanUseBottomLiftHeight2) layer.LiftHeight2 = LiftHeight2;
-                        else if (property == nameof(LiftSpeed2) && !CanUseBottomLiftSpeed2) layer.LiftSpeed2 = LiftSpeed2;
-                        else if (property == nameof(LiftAcceleration2) && !CanUseBottomLiftAcceleration2) layer.LiftAcceleration2 = LiftAcceleration2;
-                        else if (property == nameof(WaitTimeAfterLift) && !CanUseBottomWaitTimeAfterLift) layer.WaitTimeAfterLift = WaitTimeAfterLift;
-                        else if (property == nameof(RetractSpeed) && !CanUseBottomRetractSpeed) layer.RetractSpeed = RetractSpeed;
-                        else if (property == nameof(RetractAcceleration) && !CanUseBottomRetractAcceleration) layer.RetractAcceleration = RetractAcceleration;
-                        else if (property == nameof(RetractHeight2) && !CanUseBottomRetractHeight2) layer.RetractHeight2 = RetractHeight2;
-                        else if (property == nameof(RetractSpeed2) && !CanUseRetractSpeed2) layer.RetractSpeed2 = RetractSpeed2;
-                        else if (property == nameof(RetractAcceleration2) && !CanUseBottomRetractAcceleration2) layer.RetractAcceleration2 = RetractAcceleration2;
+                        else if (property == nameof(LiftAcceleration) && !CanUseBottomLiftAcceleration)
+                            layer.LiftAcceleration = LiftAcceleration;
+                        else if (property == nameof(LiftHeight2) && !CanUseBottomLiftHeight2)
+                            layer.LiftHeight2 = LiftHeight2;
+                        else if (property == nameof(LiftSpeed2) && !CanUseBottomLiftSpeed2)
+                            layer.LiftSpeed2 = LiftSpeed2;
+                        else if (property == nameof(LiftAcceleration2) && !CanUseBottomLiftAcceleration2)
+                            layer.LiftAcceleration2 = LiftAcceleration2;
+                        else if (property == nameof(WaitTimeAfterLift) && !CanUseBottomWaitTimeAfterLift)
+                            layer.WaitTimeAfterLift = WaitTimeAfterLift;
+                        else if (property == nameof(RetractSpeed) && !CanUseBottomRetractSpeed)
+                            layer.RetractSpeed = RetractSpeed;
+                        else if (property == nameof(RetractAcceleration) && !CanUseBottomRetractAcceleration)
+                            layer.RetractAcceleration = RetractAcceleration;
+                        else if (property == nameof(RetractHeight2) && !CanUseBottomRetractHeight2)
+                            layer.RetractHeight2 = RetractHeight2;
+                        else if (property == nameof(RetractSpeed2) && !CanUseRetractSpeed2)
+                            layer.RetractSpeed2 = RetractSpeed2;
+                        else if (property == nameof(RetractAcceleration2) && !CanUseBottomRetractAcceleration2)
+                            layer.RetractAcceleration2 = RetractAcceleration2;
                         else if (property == nameof(LightPWM) && !CanUseBottomLightPWM) layer.LightPWM = LightPWM;
                     }
                     else // Normal layers
@@ -7674,10 +8213,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         else if (property == nameof(LiftAcceleration2)) layer.LiftAcceleration2 = LiftAcceleration2;
                         else if (property == nameof(WaitTimeAfterLift)) layer.WaitTimeAfterLift = WaitTimeAfterLift;
                         else if (property == nameof(RetractSpeed)) layer.RetractSpeed = RetractSpeed;
-                        else if (property == nameof(RetractAcceleration)) layer.RetractAcceleration = RetractAcceleration;
+                        else if (property == nameof(RetractAcceleration))
+                            layer.RetractAcceleration = RetractAcceleration;
                         else if (property == nameof(RetractHeight2)) layer.RetractHeight2 = RetractHeight2;
                         else if (property == nameof(RetractSpeed2)) layer.RetractSpeed2 = RetractSpeed2;
-                        else if (property == nameof(RetractAcceleration2)) layer.RetractAcceleration2 = RetractAcceleration2;
+                        else if (property == nameof(RetractAcceleration2))
+                            layer.RetractAcceleration2 = RetractAcceleration2;
                         else if (property == nameof(LightPWM)) layer.LightPWM = LightPWM;
                     }
                 }
@@ -7696,10 +8237,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="offset"></param>
     public void OffsetLayersPositionZ(uint startingLayerIndex, float offset)
     {
-        for (uint layerIndex = startingLayerIndex; layerIndex < LayerCount; layerIndex++)
+        for (var layerIndex = startingLayerIndex; layerIndex < LayerCount; layerIndex++)
         {
             this[layerIndex].PositionZ += offset;
         }
+
         RebuildGCode();
     }
 
@@ -7708,11 +8250,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="zeroLightOffDelay">If true also set light off to 0, otherwise current value will be kept.</param>
     /// </summary>
     public void SetNoLiftForSamePositionedLayers(bool zeroLightOffDelay = false)
-        => SetLiftForSamePositionedLayers(0, zeroLightOffDelay);
+    {
+        SetLiftForSamePositionedLayers(0, zeroLightOffDelay);
+    }
 
     public void SetLiftForSamePositionedLayers(float liftHeight = 0, bool zeroLightOffDelay = false)
     {
-        for (int layerIndex = 1; layerIndex < LayerCount; layerIndex++)
+        for (var layerIndex = 1; layerIndex < LayerCount; layerIndex++)
         {
             var layer = this[layerIndex];
             if (this[layerIndex - 1].PositionZ != layer.PositionZ) continue;
@@ -7725,16 +8269,20 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 layer.WaitTimeAfterCure = 0;
             }
         }
+
         RebuildGCode();
     }
 
-    public Mat GetMergedMatForSequentialPositionedLayers(uint layerIndex, MatCacheManager cacheManager, out uint lastLayerIndex)
+    public Mat GetMergedMatForSequentialPositionedLayers(uint layerIndex, MatCacheManager cacheManager,
+        out uint lastLayerIndex)
     {
         var startLayerPositionZ = this[layerIndex].PositionZ;
         lastLayerIndex = layerIndex;
         var layerMat = cacheManager.Get1(layerIndex).Clone();
 
-        for (var curIndex = layerIndex + 1; curIndex < LayerCount && this[curIndex].PositionZ == startLayerPositionZ; curIndex++)
+        for (var curIndex = layerIndex + 1;
+             curIndex < LayerCount && this[curIndex].PositionZ == startLayerPositionZ;
+             curIndex++)
         {
             CvInvoke.Max(layerMat, cacheManager.Get1(curIndex), layerMat);
             lastLayerIndex = curIndex;
@@ -7744,7 +8292,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     public Mat GetMergedMatForSequentialPositionedLayers(uint layerIndex, MatCacheManager cacheManager)
-        => GetMergedMatForSequentialPositionedLayers(layerIndex, cacheManager, out _);
+    {
+        return GetMergedMatForSequentialPositionedLayers(layerIndex, cacheManager, out _);
+    }
 
     public Mat GetMergedMatForSequentialPositionedLayers(uint layerIndex, out uint lastLayerIndex)
     {
@@ -7752,7 +8302,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         lastLayerIndex = layerIndex;
         var layerMat = startLayer.LayerMat;
 
-        for (var curIndex = layerIndex + 1; curIndex < LayerCount && this[curIndex].PositionZ == startLayer.PositionZ; curIndex++)
+        for (var curIndex = layerIndex + 1;
+             curIndex < LayerCount && this[curIndex].PositionZ == startLayer.PositionZ;
+             curIndex++)
         {
             using var nextLayer = this[curIndex].LayerMat;
             CvInvoke.Max(nextLayer, layerMat, layerMat);
@@ -7763,10 +8315,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     public Mat GetMergedMatForSequentialPositionedLayers(uint layerIndex)
-        => GetMergedMatForSequentialPositionedLayers(layerIndex, out _);
+    {
+        return GetMergedMatForSequentialPositionedLayers(layerIndex, out _);
+    }
+
     #endregion
 
     #region Draw Modifications
+
     public void DrawModifications(IList<PixelOperation> drawings, OperationProgress? progress = null)
     {
         progress ??= new OperationProgress();
@@ -7863,38 +8419,43 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 var toProcess = layerOperationGroup.ToList();
                 var drawnSupportLayers = 0;
                 var drawnDrainHoleLayers = 0;
-                for (int operationLayer = (int)layerOperationGroup.Key - 1; operationLayer >= 0 && toProcess.Count > 0; operationLayer--)
+                for (var operationLayer = (int)layerOperationGroup.Key - 1;
+                     operationLayer >= 0 && toProcess.Count > 0;
+                     operationLayer--)
                 {
                     var layer = this[operationLayer];
-                    var mat = matCache.Get1((uint) operationLayer);
+                    var mat = matCache.Get1((uint)operationLayer);
                     var isMatModified = false;
 
-                    for (var i = toProcess.Count-1; i >= 0; i--)
+                    for (var i = toProcess.Count - 1; i >= 0; i--)
                     {
                         progress.PauseOrCancelIfRequested();
                         var operation = toProcess[i];
                         if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
                         {
-                            var operationSupport = (PixelSupport) operation;
+                            var operationSupport = (PixelSupport)operation;
 
-                            int radius = (operationLayer > 10
-                                ? Math.Min(operationSupport.TipDiameter + drawnSupportLayers, operationSupport.PillarDiameter)
+                            var radius = (operationLayer > 10
+                                ? Math.Min(operationSupport.TipDiameter + drawnSupportLayers,
+                                    operationSupport.PillarDiameter)
                                 : operationSupport.BaseDiameter) / 2;
                             uint whitePixels;
 
-                            int yStart = Math.Max(0, operation.Location.Y - operationSupport.TipDiameter / 2);
-                            int xStart = Math.Max(0, operation.Location.X - operationSupport.TipDiameter / 2);
+                            var yStart = Math.Max(0, operation.Location.Y - operationSupport.TipDiameter / 2);
+                            var xStart = Math.Max(0, operation.Location.X - operationSupport.TipDiameter / 2);
 
                             var tipDiameter = PixelsToNormalizedPitch(operationSupport.TipDiameter);
                             var tipRadius = PixelsToNormalizedPitch(operationSupport.TipDiameter / 2);
                             var pillarDiameter = PixelsToNormalizedPitch(operationSupport.PillarDiameter);
 
-                            using (var matCircleRoi = new Mat(mat, new Rectangle(xStart, yStart, tipDiameter.Width, tipDiameter.Height)))
+                            using (var matCircleRoi = new Mat(mat,
+                                       new Rectangle(xStart, yStart, tipDiameter.Width, tipDiameter.Height)))
                             {
                                 using var matCircleMask = matCircleRoi.NewZeros();
-                                matCircleMask.DrawCircle(tipRadius.ToPoint(), tipRadius, new MCvScalar(operation.PixelBrightness), -1);
+                                matCircleMask.DrawCircle(tipRadius.ToPoint(), tipRadius,
+                                    new MCvScalar(operation.PixelBrightness), -1);
                                 CvInvoke.BitwiseAnd(matCircleRoi, matCircleMask, matCircleMask);
-                                whitePixels = (uint) CvInvoke.CountNonZero(matCircleMask);
+                                whitePixels = (uint)CvInvoke.CountNonZero(matCircleMask);
                             }
 
                             if (whitePixels >= Math.Pow(operationSupport.TipDiameter, 2) / 3)
@@ -7905,29 +8466,31 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                                 continue; // White area end supporting
                             }
 
-                            mat.DrawCircle(operation.Location, PixelsToNormalizedPitch(radius), new MCvScalar(operation.PixelBrightness), -1, operationSupport.LineType);
+                            mat.DrawCircle(operation.Location, PixelsToNormalizedPitch(radius),
+                                new MCvScalar(operation.PixelBrightness), -1, operationSupport.LineType);
                             isMatModified = true;
                             drawnSupportLayers++;
                         }
                         else if (operation.OperationType == PixelOperation.PixelOperationType.DrainHole)
                         {
-                            var operationDrainHole = (PixelDrainHole) operation;
+                            var operationDrainHole = (PixelDrainHole)operation;
 
                             var diameterPitched = PixelsToNormalizedPitch(operationDrainHole.Diameter);
                             var radius = PixelsToNormalizedPitch(operationDrainHole.Diameter / 2);
                             uint blackPixels;
 
-                            int xStart = Math.Max(0, operation.Location.X - radius.Width);
-                            int yStart = Math.Max(0, operation.Location.Y - radius.Height);
+                            var xStart = Math.Max(0, operation.Location.X - radius.Width);
+                            var yStart = Math.Max(0, operation.Location.Y - radius.Height);
 
-                            using (var matCircleRoi = new Mat(mat, new Rectangle(xStart, yStart, diameterPitched.Width, diameterPitched.Height)))
+                            using (var matCircleRoi = new Mat(mat,
+                                       new Rectangle(xStart, yStart, diameterPitched.Width, diameterPitched.Height)))
                             {
                                 using var matCircleRoiInv = new Mat();
                                 CvInvoke.Threshold(matCircleRoi, matCircleRoiInv, 100, 255, ThresholdType.BinaryInv);
                                 using var matCircleMask = matCircleRoi.NewZeros();
-                                matCircleMask.DrawCircle(radius.ToPoint(), radius, EmguExtensions.WhiteColor, -1);
+                                matCircleMask.DrawCircle(radius.ToPoint(), radius, EmguCvExtensions.WhiteColor, -1);
                                 CvInvoke.BitwiseAnd(matCircleRoiInv, matCircleMask, matCircleMask);
-                                blackPixels = (uint) CvInvoke.CountNonZero(matCircleMask);
+                                blackPixels = (uint)CvInvoke.CountNonZero(matCircleMask);
                             }
 
                             if (blackPixels >= Math.Pow(operationDrainHole.Diameter, 2) / 3) // Enough area to drain?
@@ -7937,7 +8500,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                                 continue; // Stop drill drain found!
                             }
 
-                            mat.DrawCircle(operation.Location, radius, EmguExtensions.BlackColor, -1, operationDrainHole.LineType);
+                            mat.DrawCircle(operation.Location, radius, EmguCvExtensions.BlackColor, -1,
+                                operationDrainHole.LineType);
                             isMatModified = true;
                             drawnDrainHoleLayers++;
                         }
@@ -7953,6 +8517,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             }
         }
     }
+
     #endregion
 
     #region Generators methods
@@ -7965,7 +8530,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="roi">Region of interest</param>
     /// <param name="progress"></param>
     /// <returns>Heatmap grayscale Mat</returns>
-    public Mat GenerateHeatmap(uint layerIndexStart = 0, uint layerIndexEnd = uint.MaxValue, Rectangle roi = default, OperationProgress? progress = null)
+    public Mat GenerateHeatmap(uint layerIndexStart = 0, uint layerIndexEnd = uint.MaxValue, Rectangle roi = default,
+        OperationProgress? progress = null)
     {
         SanitizeLayerIndex(ref layerIndexEnd);
 
@@ -7975,7 +8541,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         if (roi.IsEmpty) roi = ResolutionRectangle;
 
-        var resultMat = EmguExtensions.InitMat(roi.Size, 1, DepthType.Cv32S);
+        var resultMat = EmguCvExtensions.InitMat(roi.Size, 1, DepthType.Cv32S);
         var layerRange = GetDistinctLayersByPositionZ(layerIndexStart, layerIndexEnd).AsValueEnumerable().ToArray();
 
         progress.ItemCount = (uint)layerRange.Length;
@@ -8007,13 +8573,22 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="roi">Region of interest</param>
     /// <param name="progress"></param>
     /// <returns>Heatmap grayscale Mat</returns>
-    public Mat GenerateHeatmap(Rectangle roi, OperationProgress? progress = null) => GenerateHeatmap(0, uint.MaxValue, roi, progress);
+    public Mat GenerateHeatmap(Rectangle roi, OperationProgress? progress = null)
+    {
+        return GenerateHeatmap(0, uint.MaxValue, roi, progress);
+    }
 
-    public Task<Mat> GenerateHeatmapAsync(uint layerIndexStart = 0, uint layerIndexEnd = uint.MaxValue, Rectangle roi = default, OperationProgress? progress = null)
-        => Task.Run(() => GenerateHeatmap(layerIndexStart, layerIndexEnd, roi, progress), progress?.Token ?? default);
+    public Task<Mat> GenerateHeatmapAsync(uint layerIndexStart = 0, uint layerIndexEnd = uint.MaxValue,
+        Rectangle roi = default, OperationProgress? progress = null)
+    {
+        return Task.Run(() => GenerateHeatmap(layerIndexStart, layerIndexEnd, roi, progress),
+            progress?.Token ?? default);
+    }
 
     public Task<Mat> GenerateHeatmapAsync(Rectangle roi, OperationProgress? progress = null)
-        => Task.Run(() => GenerateHeatmap(0, uint.MaxValue, roi, progress), progress?.Token ?? default);
+    {
+        return Task.Run(() => GenerateHeatmap(0, uint.MaxValue, roi, progress), progress?.Token ?? default);
+    }
 
     #endregion
 }

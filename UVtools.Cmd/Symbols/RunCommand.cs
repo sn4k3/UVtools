@@ -26,7 +26,7 @@ internal static class RunCommand
 
         var propertiesOption = new Option<string[]>("-p", "--property")
         {
-            Description = "Set a property with a new value (Compatible with operations only)",
+            Description = "Set a property with a new value; repeat the property name to populate a string array (Compatible with operations only)",
             HelpName = "property=value",
             AllowMultipleArgumentsPerToken = true,
         };

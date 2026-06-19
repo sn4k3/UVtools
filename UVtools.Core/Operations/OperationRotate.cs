@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,8 +7,10 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
@@ -16,11 +18,10 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public class OperationRotate : Operation
+public partial class OperationRotate : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
-    private decimal _angleDegrees = 90;
     #endregion
 
     #region Overrides
@@ -39,7 +40,7 @@ public class OperationRotate : Operation
 
     public override string? ValidateInternally()
     {
-        if (_angleDegrees == 0)
+        if (AngleDegrees == 0)
         {
             return "An angle of 0 will have no effect";
         }
@@ -49,7 +50,7 @@ public class OperationRotate : Operation
 
     public override string ToString()
     {
-        var result = $"[Angle: {Math.Abs(_angleDegrees)}º {(AngleDegrees < 0 ? "CCW" : "CW")}]" + LayerRangeString;
+        var result = $"[Angle: {Math.Abs(AngleDegrees)}º {(AngleDegrees < 0 ? "CCW" : "CW")}]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -64,18 +65,15 @@ public class OperationRotate : Operation
     #endregion
 
     #region Properties
-    public decimal AngleDegrees
-    {
-        get => _angleDegrees;
-        set => RaiseAndSetIfChanged(ref _angleDegrees, value);
-    }
+    [ObservableProperty]
+    public partial decimal AngleDegrees { get; set; } = 90;
     #endregion
 
     #region Equality
 
     protected bool Equals(OperationRotate other)
     {
-        return _angleDegrees == other._angleDegrees;
+        return AngleDegrees == other.AngleDegrees;
     }
 
     public override bool Equals(object? obj)
@@ -108,7 +106,7 @@ public class OperationRotate : Operation
     {
         using var original = mat.Clone();
         using var target = GetRoiOrDefault(mat);
-        target.Rotate((double)AngleDegrees);
+        target.RotateFromCenter((double)AngleDegrees);
         ApplyMask(original, target);
         return true;
     }

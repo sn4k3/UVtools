@@ -9,25 +9,18 @@
 using System;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace UVtools.Core.Objects;
 
-public class ValueDescription : BindableBase, IEquatable<ValueDescription>
+public partial class ValueDescription : ObservableObject, IEquatable<ValueDescription>
 {
-    private object? _value;
-    private string? _description;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ValueAsString))]
+    public partial object? Value { get; set; }
 
-    public object? Value
-    {
-        get => _value;
-        set => RaiseAndSetIfChanged(ref _value, value);
-    }
-
-    public string? Description
-    {
-        get => _description;
-        set => RaiseAndSetIfChanged(ref _description, value);
-    }
+    [ObservableProperty]
+    public partial string? Description { get; set; }
 
     [XmlIgnore]
     [JsonIgnore]
@@ -56,7 +49,7 @@ public class ValueDescription : BindableBase, IEquatable<ValueDescription>
     {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
-        return Equals(_value, other._value) && _description == other._description;
+        return Equals(Value, other.Value) && Description == other.Description;
     }
 
     public override bool Equals(object? obj)
@@ -69,7 +62,7 @@ public class ValueDescription : BindableBase, IEquatable<ValueDescription>
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(_value, _description);
+        return HashCode.Combine(Value, Description);
     }
 
     public override string? ToString()

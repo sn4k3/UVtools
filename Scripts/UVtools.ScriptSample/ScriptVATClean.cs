@@ -11,7 +11,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
 using System.Drawing;
-using UVtools.Core.Extensions;
+using EmguExtensions;
 using UVtools.Core.Scripting;
 
 namespace UVtools.ScriptSample;
@@ -88,17 +88,17 @@ public class ScriptVATClean : ScriptGlobals
         var layer = SlicerFile[0];
         layer.PositionZ = SlicerFile.MachineZ;          // Send head to top if possible
 
-        using var mat = EmguExtensions.InitMat(SlicerFile.Resolution);
+        using var mat = EmguCvExtensions.InitMat(SlicerFile.Resolution);
         CvInvoke.Rectangle(mat, new Rectangle(
             new Point(InputInset.Value, InputInset.Value),
             new Size((int) (SlicerFile.ResolutionX - InputInset.Value*2)-1, (int) (SlicerFile.ResolutionY - InputInset.Value*2)-1)
-        ), EmguExtensions.WhiteColor, -1, LineType.FourConnected);
+        ), EmguCvExtensions.WhiteColor, -1, LineType.FourConnected);
         layer.LayerMat = mat;
 
         SlicerFile.SuppressRebuildPropertiesWork(() =>
         {
             SlicerFile.BottomLayerCount = 1;
-                
+
             SlicerFile.Layers = [layer];
         });
 
@@ -126,7 +126,7 @@ public class ScriptVATClean : ScriptGlobals
 
     public Mat GetThumbnail()
     {
-        Mat thumbnail = EmguExtensions.InitMat(new Size(400, 200), 3);
+        Mat thumbnail = EmguCvExtensions.InitMat(new Size(400, 200), 3);
         var fontFace = FontFace.HersheyDuplex;
         var fontScale = 1;
         var fontThickness = 2;
@@ -137,8 +137,8 @@ public class ScriptVATClean : ScriptGlobals
         CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
         CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
         CvInvoke.PutText(thumbnail, "VAT Clean Utility", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
-        CvInvoke.PutText(thumbnail, $"Exposure time: {SlicerFile.ExposureTime}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
-        CvInvoke.PutText(thumbnail, $"Use the spatula in!", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
+        CvInvoke.PutText(thumbnail, $"Exposure time: {SlicerFile.ExposureTime}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguCvExtensions.WhiteColor, fontThickness);
+        CvInvoke.PutText(thumbnail, $"Use the spatula in!", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguCvExtensions.WhiteColor, fontThickness);
 
         return thumbnail;
     }

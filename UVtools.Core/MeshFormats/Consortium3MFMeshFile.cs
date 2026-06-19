@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Numerics;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
@@ -131,7 +132,7 @@ public class Consortium3MFMeshFile : MeshFile
             if (haveThumbnail)
             {
                 var mat = SlicerFile!.GetLargestThumbnail();
-                zip.CreateEntryFromContent("Metadata/thumbnail.png", mat!.GetPngByes(), ZipArchiveMode.Create);
+                zip.CreateEntryFromContent("Metadata/thumbnail.png", mat!.GetPngBytes(), ZipArchiveMode.Create);
             }
         }
         MeshStream.Dispose();

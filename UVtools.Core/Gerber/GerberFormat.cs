@@ -17,6 +17,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.Gerber.Apertures;
 using UVtools.Core.Operations;
@@ -446,7 +447,7 @@ public partial class GerberFormat
                                         document.PositionMmToPx(nowX + xOffset, nowY + yOffset),
                                         document.SizeMmToPx(Math.Abs(xOffset), Math.Abs(xOffset)),
                                         0, 0, 360.0, document.PolarityColor,
-                                        combiningWithG0x ? -1 : EmguExtensions.CorrectThickness(document.SizeMmToPx(circleAperture.Diameter)),
+                                        combiningWithG0x ? -1 : EmguCvExtensions.CorrectThickness(document.SizeMmToPx(circleAperture.Diameter)),
                                         enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected
                                     );
                                 }
@@ -485,7 +486,7 @@ public partial class GerberFormat
                                     CvInvoke.Ellipse(mat, document.PositionMmToPx(realCenterX, realCenterY),
                                         document.SizeMmToPx(radius, radius),
                                         0, document.MoveType == GerberMoveType.ArcCounterClockwise ? angleStart : -angleStart, document.MoveType == GerberMoveType.ArcCounterClockwise ? angleSpan : -angleSpan, document.PolarityColor,
-                                        combiningWithG0x ? -1 : EmguExtensions.CorrectThickness(document.SizeMmToPx(circleAperture.Diameter)),
+                                        combiningWithG0x ? -1 : EmguCvExtensions.CorrectThickness(document.SizeMmToPx(circleAperture.Diameter)),
                                         enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected
                                     );
 
@@ -515,7 +516,7 @@ public partial class GerberFormat
                                     document.PositionMmToPx(currentX, currentY),
                                     document.PositionMmToPx(nowX, nowY),
                                     document.PolarityColor,
-                                    EmguExtensions.CorrectThickness(document.SizeMmToPx(circleAperture.Diameter)),
+                                    EmguCvExtensions.CorrectThickness(document.SizeMmToPx(circleAperture.Diameter)),
                                     enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                                 /*mat.DrawLineAccurate(PositionMmToPx(currentX, currentY, xyPpmm),
                                     PositionMmToPx(nowX, nowY, xyPpmm),
@@ -587,16 +588,16 @@ public partial class GerberFormat
     }
 
     public MCvScalar GetPolarityColor(GerberPolarityType polarity) => polarity == GerberPolarityType.Dark
-        ? !InversePolarity ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor
-        : !InversePolarity ? EmguExtensions.BlackColor : EmguExtensions.WhiteColor;
+        ? !InversePolarity ? EmguCvExtensions.WhiteColor : EmguCvExtensions.BlackColor
+        : !InversePolarity ? EmguCvExtensions.BlackColor : EmguCvExtensions.WhiteColor;
 
     public MCvScalar GetPolarityColor(bool polarity) => polarity
-        ? !InversePolarity ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor
-        : !InversePolarity ? EmguExtensions.BlackColor : EmguExtensions.WhiteColor;
+        ? !InversePolarity ? EmguCvExtensions.WhiteColor : EmguCvExtensions.BlackColor
+        : !InversePolarity ? EmguCvExtensions.BlackColor : EmguCvExtensions.WhiteColor;
 
     public MCvScalar GetPolarityColor(int polarity) => polarity > 0
-        ? !InversePolarity ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor
-        : !InversePolarity ? EmguExtensions.BlackColor : EmguExtensions.WhiteColor;
+        ? !InversePolarity ? EmguCvExtensions.WhiteColor : EmguCvExtensions.BlackColor
+        : !InversePolarity ? EmguCvExtensions.BlackColor : EmguCvExtensions.WhiteColor;
 
     public float GetMillimeters(float size)
     {
@@ -661,7 +662,7 @@ public partial class GerberFormat
         var document = File.ReadAllLines(@"D:\Tiago\Desktop\kisample\kisample.kicad_pcb");
         System.Drawing.PointF location = PointF.Empty;
 
-        using var mat = EmguExtensions.InitMat(new System.Drawing.Size(2440, 1440));
+        using var mat = EmguCvExtensions.InitMat(new System.Drawing.Size(2440, 1440));
         const byte pixelsPerMm = 20;
 
         var drillPoints = new List<KeyValuePair<Point, int>>();
@@ -703,7 +704,7 @@ public partial class GerberFormat
                 var endX = new System.Drawing.Point((int)(endXf.X * pixelsPerMm), (int)(endXf.Y * pixelsPerMm));
                 var width = (int) (widthf * pixelsPerMm);
 
-                CvInvoke.Line(mat, startX, endX, EmguExtensions.WhiteColor, width);
+                CvInvoke.Line(mat, startX, endX, EmguCvExtensions.WhiteColor, width);
 
                 continue;
             }
@@ -727,7 +728,7 @@ public partial class GerberFormat
                 var drillf = float.Parse(drillMatch.Groups[1].Value, CultureInfo.InvariantCulture);
                 var drill = (int) (drillf * pixelsPerMm / 2);
 
-                CvInvoke.Circle(mat, at, drill, EmguExtensions.WhiteColor, -1);
+                CvInvoke.Circle(mat, at, drill, EmguCvExtensions.WhiteColor, -1);
 
 
                 continue;
@@ -754,10 +755,10 @@ public partial class GerberFormat
                 var widthf = float.Parse(widthMatch.Groups[1].Value, CultureInfo.InvariantCulture);
                 var width = (int)(widthf * pixelsPerMm);
 
-                CvInvoke.Circle(mat, at, radius, EmguExtensions.WhiteColor, width);
+                CvInvoke.Circle(mat, at, radius, EmguCvExtensions.WhiteColor, width);
                 if (parseLine.Contains("fill solid"))
                 {
-                    CvInvoke.Circle(mat, at, radius, EmguExtensions.WhiteColor, -1);
+                    CvInvoke.Circle(mat, at, radius, EmguCvExtensions.WhiteColor, -1);
                 }
 
 
@@ -785,10 +786,10 @@ public partial class GerberFormat
                 var end = new System.Drawing.Point((int)(endf.X * pixelsPerMm), (int)(endf.Y * pixelsPerMm));
                 var width = (int)(widthf * pixelsPerMm);
 
-                CvInvoke.Rectangle(mat, new Rectangle(start, new System.Drawing.Size(end.X - start.X, end.Y - start.Y)), EmguExtensions.WhiteColor, width);
+                CvInvoke.Rectangle(mat, new Rectangle(start, new System.Drawing.Size(end.X - start.X, end.Y - start.Y)), EmguCvExtensions.WhiteColor, width);
                 if (parseLine.Contains("fill solid"))
                 {
-                    CvInvoke.Rectangle(mat, new Rectangle(start, new System.Drawing.Size(end.X - start.X, end.Y - start.Y)), EmguExtensions.WhiteColor, -1);
+                    CvInvoke.Rectangle(mat, new Rectangle(start, new System.Drawing.Size(end.X - start.X, end.Y - start.Y)), EmguCvExtensions.WhiteColor, -1);
                 }
 
                 continue;
@@ -820,12 +821,12 @@ public partial class GerberFormat
                     var size = new System.Drawing.Size((int)(sizef.Width * pixelsPerMm), (int)(sizef.Height * pixelsPerMm));
                     var rect = new Rectangle(at, size);
                     rect.Offset(-size.Width / 2, -size.Height / 2);
-                    CvInvoke.Rectangle(mat, rect, EmguExtensions.WhiteColor, -1);
+                    CvInvoke.Rectangle(mat, rect, EmguCvExtensions.WhiteColor, -1);
                 }
                 else if (parseLine.Contains(" oval ") || parseLine.Contains(" circle "))
                 {
                     var size = new System.Drawing.Size((int)(sizef.Width / 2 * pixelsPerMm), (int)(sizef.Height / 2 * pixelsPerMm));
-                    CvInvoke.Ellipse(mat, at, size, 0, 0, 360, EmguExtensions.WhiteColor, -1);
+                    CvInvoke.Ellipse(mat, at, size, 0, 0, 360, EmguCvExtensions.WhiteColor, -1);
                 }
 
                 if (drillMatch.Success && drillMatch.Groups.Count >= 2)
@@ -843,7 +844,7 @@ public partial class GerberFormat
 
         foreach (var pair in drillPoints)
         {
-            CvInvoke.Circle(mat, pair.Key, pair.Value, EmguExtensions.BlackColor, -1);
+            CvInvoke.Circle(mat, pair.Key, pair.Value, EmguCvExtensions.BlackColor, -1);
         }
 
         CvInvoke.Imshow("asd", mat);

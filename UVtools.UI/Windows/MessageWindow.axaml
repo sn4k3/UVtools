@@ -1,112 +1,118 @@
 <windows:GenericWindow xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:windows="clr-namespace:UVtools.UI.Windows"
-             xmlns:suki="https://github.com/kikipoulet/SukiUI"
-             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="UVtools.UI.Windows.MessageWindow"
-             x:DataType="windows:MessageWindow"
-             Icon="/Assets/Icons/UVtools.ico"
-             WindowStartupLocation="CenterScreen"
-             SizeToContent="WidthAndHeight"
-             MinWidth="300"
-             MinHeight="140"
-             MaxWidthScreenRatio="{Binding Settings.General.WindowsMaxWidthScreenRatio}"
-             MaxHeightScreenRatio="{Binding Settings.General.WindowsMaxHeightScreenRatio}"
-             Title="UVtools Message">
-    <Grid RowDefinitions="Auto,*,Auto">
-        <suki:GlassCard Grid.Row="0"
-                IsVisible="{Binding HeaderIsVisible}"
-                Classes="HeaderActions">
+                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                       xmlns:windows="clr-namespace:UVtools.UI.Windows"
+                       xmlns:suki="https://github.com/kikipoulet/SukiUI"
+                       xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                       mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                       x:Class="UVtools.UI.Windows.MessageWindow"
+                       x:DataType="windows:MessageWindow"
+                       Icon="/Assets/Icons/UVtools.ico"
+                       WindowStartupLocation="CenterScreen"
+                       SizeToContent="WidthAndHeight"
+                       MinWidth="300"
+                       MinHeight="140"
+                       MaxWidthScreenRatio="{Binding Settings.General.WindowsMaxWidthScreenRatio}"
+                       MaxHeightScreenRatio="{Binding Settings.General.WindowsMaxHeightScreenRatio}"
+                       Title="UVtools Message">
+    <LayoutTransformControl>
+        <LayoutTransformControl.LayoutTransform>
+            <ScaleTransform ScaleX="{Binding Settings.General.UiScaling}"
+                            ScaleY="{Binding Settings.General.UiScaling}" />
+        </LayoutTransformControl.LayoutTransform>
+        <Grid RowDefinitions="Auto,*,Auto">
+            <suki:GlassCard Grid.Row="0"
+                            IsVisible="{Binding HeaderIsVisible}"
+                            Classes="HeaderActions">
 
-            <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,*">
+                <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,*">
+                    <icon:MaterialIcon Grid.Column="0"
+                                       FontSize="{Binding HeaderIconSize}"
+                                       FontWeight="Bold"
+                                       Kind="{Binding HeaderIcon}"
+                                       Foreground="{StaticResource LogoColor}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,20,0"
+                                       IsVisible="{Binding HeaderIcon, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                    <SelectableTextBlock Grid.Column="1"
+                                         Name="HeaderTextBox"
+                                         FontSize="16"
+                                         FontWeight="Bold"
+                                         Padding="0"
+                                         TextWrapping="{Binding TextWrap}"
+                                         VerticalAlignment="Center"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                         IsVisible="{Binding HeaderText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                         Text="{Binding HeaderText}" />
+                </Grid>
+            </suki:GlassCard>
+
+            <Grid Grid.Row="1" RowDefinitions="*" ColumnDefinitions="Auto,*" Margin="40,20">
                 <icon:MaterialIcon Grid.Column="0"
-                        FontSize="{Binding HeaderIconSize}"
-                        FontWeight="Bold"
-                        Kind="{Binding HeaderIcon}"
-                        Foreground="{StaticResource LogoColor}"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
-                        Margin="0,0,20,0"
-                        IsVisible="{Binding HeaderIcon, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                   FontSize="{Binding HeaderIconSize}"
+                                   FontWeight="Bold"
+                                   Kind="{Binding HeaderIcon}"
+                                   Foreground="{StaticResource LogoColor}"
+                                   Margin="-20,0,20,0"
+                                   VerticalAlignment="Top"
+                                   HorizontalAlignment="Center">
+                    <icon:MaterialIcon.IsVisible>
+                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                            <Binding Path="HeaderIcon" Converter="{x:Static StringConverters.IsNotNullOrEmpty}" />
+                            <Binding Path="HeaderText" Converter="{x:Static StringConverters.IsNullOrEmpty}" />
+                        </MultiBinding>
+                    </icon:MaterialIcon.IsVisible>
+                </icon:MaterialIcon>
 
-                <SelectableTextBlock Grid.Column="1"
-                         Name="HeaderTextBox"
-                         FontSize="16"
-                         FontWeight="Bold"
-                         Padding="0"
-                         TextWrapping="{Binding TextWrap}"
-                         VerticalAlignment="Center"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                         ScrollViewer.VerticalScrollBarVisibility="Auto"
-                         IsVisible="{Binding HeaderText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                         Text="{Binding HeaderText}"/>
+                <SelectableTextBlock Grid.Row="0" Grid.Column="1"
+                                     Name="MessageTextBox"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                     Padding="0"
+                                     VerticalAlignment="Center"
+                                     TextWrapping="{Binding TextWrap}"
+                                     Text="{Binding MessageText}"
+                                     IsVisible="{Binding !RenderMarkdown}" />
+
+                <ContentPresenter Grid.Row="0" Grid.Column="1"
+                                  Name="MarkdownBorder"
+                                  IsVisible="{Binding RenderMarkdown}" />
+
             </Grid>
-        </suki:GlassCard>
 
-        <Grid Grid.Row="1" RowDefinitions="*" ColumnDefinitions="Auto,*" Margin="40,20">
-            <icon:MaterialIcon Grid.Column="0"
-                    FontSize="{Binding HeaderIconSize}"
-                    FontWeight="Bold"
-                    Kind="{Binding HeaderIcon}"
-                    Foreground="{StaticResource LogoColor}"
-                    Margin="-20,0,20,0"
-                    VerticalAlignment="Top"
-                    HorizontalAlignment="Center">
-                <icon:MaterialIcon.IsVisible>
-                    <MultiBinding Converter="{x:Static BoolConverters.And}">
-                        <Binding Path="HeaderIcon" Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
-                        <Binding Path="HeaderText" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
-                    </MultiBinding>
-                </icon:MaterialIcon.IsVisible>
-            </icon:MaterialIcon>
+            <suki:GlassCard Grid.Row="2"
+                            Classes="FooterActions">
 
-            <SelectableTextBlock Grid.Row="0" Grid.Column="1"
-                     Name="MessageTextBox"
-                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                     ScrollViewer.VerticalScrollBarVisibility="Auto"
-                     Padding="0"
-                     VerticalAlignment="Center"
-                     TextWrapping="{Binding TextWrap}"
-                     Text="{Binding MessageText}"
-                     IsVisible="{Binding !RenderMarkdown}"/>
+                <Grid ColumnDefinitions="Auto,*">
+                    <Button Grid.Column="0"
+                            IsVisible="{Binding AboutButtonIsVisible}"
+                            Command="{Binding OpenAboutWindow}">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Image Source="/Assets/Icons/UVtools.ico"
+                                   Height="26" />
 
-            <ContentPresenter Grid.Row="0" Grid.Column="1"
-                    Name="MarkdownBorder"
-                    IsVisible="{Binding RenderMarkdown}"/>
+                            <TextBlock VerticalAlignment="Center"
+                                       Text="About" />
+                        </StackPanel>
+                    </Button>
 
-        </Grid>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                Name="ButtonsRightPanel"
+                                Spacing="10"
+                                HorizontalAlignment="Right">
 
-        <suki:GlassCard Grid.Row="2"
-                Classes="FooterActions">
-
-            <Grid ColumnDefinitions="Auto,*">
-                <Button Grid.Column="0"
-                        IsVisible="{Binding AboutButtonIsVisible}"
-                        Command="{Binding OpenAboutWindow}">
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Image Source="/Assets/Icons/UVtools.ico"
-                               Height="26"/>
-
-                        <TextBlock VerticalAlignment="Center"
-                                   Text="About"/>
+                        <Button Command="{Binding Close}"
+                                IsCancel="True"
+                                Padding="10"
+                                VerticalContentAlignment="Center"
+                                Content="{icon:MaterialIconTextExt Kind=SignOut, Text='Close'}" />
                     </StackPanel>
-                </Button>
-
-                <StackPanel Grid.Column="1" Orientation="Horizontal"
-                            Name="ButtonsRightPanel"
-                            Spacing="10"
-                            HorizontalAlignment="Right">
-
-                    <Button Command="{Binding Close}"
-                                       IsCancel="True"
-                                       Padding="10"
-                                       VerticalContentAlignment="Center"
-                                       Content="{icon:MaterialIconTextExt Kind=SignOut, Text='Close'}" />
-                </StackPanel>
-            </Grid>
-        </suki:GlassCard>
-    </Grid>
+                </Grid>
+            </suki:GlassCard>
+        </Grid>
+    </LayoutTransformControl>
 </windows:GenericWindow>

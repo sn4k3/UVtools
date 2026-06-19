@@ -12,8 +12,6 @@ using System.IO;
 using System.Linq;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
-using static Emgu.CV.Dai.OpenVino;
-using static UVtools.Core.Extensions.ZipArchiveExtensions;
 
 namespace UVtools.Cmd.Symbols;
 

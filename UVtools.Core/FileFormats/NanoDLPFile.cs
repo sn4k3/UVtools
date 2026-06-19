@@ -556,7 +556,7 @@ public sealed class NanoDLPFile : FileFormat
         set
         {
             MetaManifest.MachineZ = value;
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }*/
 
@@ -566,7 +566,7 @@ public sealed class NanoDLPFile : FileFormat
         set
         {
             SlicerManifest.ImageMirror = value == FlipDirection.None ? byte.MinValue : (byte)1;
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 

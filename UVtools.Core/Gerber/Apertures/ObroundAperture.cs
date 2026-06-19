@@ -11,7 +11,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System.Drawing;
-using UVtools.Core.Extensions;
+using EmguExtensions;
 
 namespace UVtools.Core.Gerber.Apertures;
 
@@ -96,7 +96,7 @@ public class ObroundAperture : Aperture
         // hole (unchanged)
         if (HoleDiameter > 0)
         {
-            var invertColor = color.Equals(EmguExtensions.BlackColor) ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor;
+            var invertColor = color.Equals(EmguCvExtensions.BlackColor) ? EmguCvExtensions.WhiteColor : EmguCvExtensions.BlackColor;
             CvInvoke.Ellipse(mat,
                 location,
                 Document.SizeMmToPx(HoleDiameter / 2.0, HoleDiameter / 2.0),
@@ -132,7 +132,7 @@ public class ObroundAperture : Aperture
 
         if (HoleDiameter > 0)
         {
-            var invertColor = color.Equals(EmguExtensions.BlackColor) ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor;
+            var invertColor = color.Equals(EmguCvExtensions.BlackColor) ? EmguCvExtensions.WhiteColor : EmguCvExtensions.BlackColor;
             CvInvoke.Ellipse(mat,
                 location,
                 Document.SizeMmToPx(HoleDiameter / 2.0, HoleDiameter / 2.0),

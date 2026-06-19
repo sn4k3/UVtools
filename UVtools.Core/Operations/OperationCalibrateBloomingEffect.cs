@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,8 +7,10 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using EmguExtensions;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -21,23 +23,17 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationCalibrateBloomingEffect : Operation
+public sealed partial class OperationCalibrateBloomingEffect : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
     private decimal _layerHeight;
-    private ushort _bottomLayers = 3;
     private decimal _bottomExposure;
     private decimal _normalExposure;
-    private ushort _leftRightMargin = 200;
-    private ushort _topBottomMargin = 200;
     private decimal _waitTimeBeforeCureStart;
     private decimal _waitTimeBeforeCureIncrement = 1;
     private byte _objectCount = 15;
     private ushort _objectDiameter = 400;
-    private decimal _objectHeight = 5;
-    private ushort _objectMargin = 20;
-    private bool _mirrorOutput;
 
     #endregion
 
@@ -81,16 +77,16 @@ public sealed class OperationCalibrateBloomingEffect : Operation
     {
         var sb = new StringBuilder();
 
-        if (SlicerFile.ResolutionX - _leftRightMargin * 2 <= 0)
+        if (SlicerFile.ResolutionX - LeftRightMargin * 2 <= 0)
             sb.AppendLine("The top/bottom margin is too big, it overlaps the screen resolution.");
 
-        if (SlicerFile.ResolutionY - _topBottomMargin * 2 <= 0)
+        if (SlicerFile.ResolutionY - TopBottomMargin * 2 <= 0)
             sb.AppendLine("The top/bottom margin is too big, it overlaps the screen resolution.");
 
-        if (_leftRightMargin + _objectDiameter > SlicerFile.ResolutionX - _leftRightMargin)
+        if (LeftRightMargin + _objectDiameter > SlicerFile.ResolutionX - LeftRightMargin)
             sb.AppendLine("The top/bottom margin or object diameter is too big, it overlaps the screen resolution.");
 
-        if (_topBottomMargin + _objectDiameter > SlicerFile.ResolutionY - _topBottomMargin)
+        if (TopBottomMargin + _objectDiameter > SlicerFile.ResolutionY - TopBottomMargin)
             sb.AppendLine("The top/bottom margin or object diameter is too big, it overlaps the screen resolution.");
 
         return sb.ToString();
@@ -99,10 +95,10 @@ public sealed class OperationCalibrateBloomingEffect : Operation
     public override string ToString()
     {
         var result = $"[Layer Height: {_layerHeight}] " +
-                     $"[Bottom layers: {_bottomLayers}] " +
+                     $"[Bottom layers: {BottomLayers}] " +
                      $"[Exposure: {_bottomExposure}/{_normalExposure}s]" +
                      $"[Wait time: {_waitTimeBeforeCureStart}s] [Increment: {_waitTimeBeforeCureIncrement}s] " +
-                     $"[Objects: {_objectCount}] [Height: {_objectHeight}mm] [Diameter: {_objectDiameter}px]";
+                     $"[Objects: {_objectCount}] [Height: {ObjectHeight}mm] [Diameter: {_objectDiameter}px]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -116,65 +112,56 @@ public sealed class OperationCalibrateBloomingEffect : Operation
         get => _layerHeight;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _layerHeight, Layer.RoundHeight(value))) return;
-            RaisePropertyChanged(nameof(BottomHeight));
+            if(!SetProperty(ref _layerHeight, Layer.RoundHeight(value))) return;
+            OnPropertyChanged(nameof(BottomHeight));
         }
     }
 
-    public ushort BottomLayers
-    {
-        get => _bottomLayers;
-        set => RaiseAndSetIfChanged(ref _bottomLayers, value);
-    }
+    [ObservableProperty]
+    public partial ushort BottomLayers { get; set; } = 3;
 
     public ushort Microns => (ushort) (LayerHeight * 1000);
 
-    public decimal BottomHeight => Layer.RoundHeight(_layerHeight * _bottomLayers);
+    public decimal BottomHeight => Layer.RoundHeight(_layerHeight * BottomLayers);
 
     public decimal BottomExposure
     {
         get => _bottomExposure;
-        set => RaiseAndSetIfChanged(ref _bottomExposure, Math.Round(value, 2));
+        set => SetProperty(ref _bottomExposure, Math.Round(value, 2));
     }
 
     public decimal NormalExposure
     {
         get => _normalExposure;
-        set => RaiseAndSetIfChanged(ref _normalExposure, Math.Round(value, 2));
+        set => SetProperty(ref _normalExposure, Math.Round(value, 2));
     }
 
-    public ushort LeftRightMargin
-    {
-        get => _leftRightMargin;
-        set => RaiseAndSetIfChanged(ref _leftRightMargin, value);
-    }
+    [ObservableProperty]
+    public partial ushort LeftRightMargin { get; set; } = 200;
 
     public ushort MaxLeftRightMargin => (ushort)((SlicerFile.ResolutionX - 100) / 2);
 
-    public ushort TopBottomMargin
-    {
-        get => _topBottomMargin;
-        set => RaiseAndSetIfChanged(ref _topBottomMargin, value);
-    }
+    [ObservableProperty]
+    public partial ushort TopBottomMargin { get; set; } = 200;
 
     public ushort MaxTopBottomMargin => (ushort) ((SlicerFile.ResolutionY - 100) / 2);
 
     public decimal WaitTimeBeforeCureStart
     {
         get => _waitTimeBeforeCureStart;
-        set => RaiseAndSetIfChanged(ref _waitTimeBeforeCureStart, Math.Round(Math.Max(0, value), 2));
+        set => SetProperty(ref _waitTimeBeforeCureStart, Math.Round(Math.Max(0, value), 2));
     }
 
     public decimal WaitTimeBeforeCureIncrement
     {
         get => _waitTimeBeforeCureIncrement;
-        set => RaiseAndSetIfChanged(ref _waitTimeBeforeCureIncrement, Math.Round(Math.Max(0.05m, value), 2));
+        set => SetProperty(ref _waitTimeBeforeCureIncrement, Math.Round(Math.Max(0.05m, value), 2));
     }
 
     public byte ObjectCount
     {
         get => _objectCount;
-        set => RaiseAndSetIfChanged(ref _objectCount, Math.Max((byte)1, value));
+        set => SetProperty(ref _objectCount, Math.Max((byte)1, value));
     }
 
     public decimal MaximumWaiTimeBeforeCure => Math.Round(_waitTimeBeforeCureStart + _waitTimeBeforeCureIncrement * _objectCount, 2);
@@ -182,26 +169,17 @@ public sealed class OperationCalibrateBloomingEffect : Operation
     public ushort ObjectDiameter
     {
         get => _objectDiameter;
-        set => RaiseAndSetIfChanged(ref _objectDiameter, Math.Max((ushort)20, value));
+        set => SetProperty(ref _objectDiameter, Math.Max((ushort)20, value));
     }
 
-    public decimal ObjectHeight
-    {
-        get => _objectHeight;
-        set => RaiseAndSetIfChanged(ref _objectHeight, value);
-    }
+    [ObservableProperty]
+    public partial decimal ObjectHeight { get; set; } = 5;
 
-    public ushort ObjectMargin
-    {
-        get => _objectMargin;
-        set => RaiseAndSetIfChanged(ref _objectMargin, value);
-    }
+    [ObservableProperty]
+    public partial ushort ObjectMargin { get; set; } = 20;
 
-    public bool MirrorOutput
-    {
-        get => _mirrorOutput;
-        set => RaiseAndSetIfChanged(ref _mirrorOutput, value);
-    }
+    [ObservableProperty]
+    public partial bool MirrorOutput { get; set; }
 
     #endregion
 
@@ -218,7 +196,7 @@ public sealed class OperationCalibrateBloomingEffect : Operation
         if(_layerHeight <= 0) _layerHeight = (decimal)SlicerFile.LayerHeight;
         if(_bottomExposure <= 0) _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
         if(_normalExposure <= 0) _normalExposure = (decimal)SlicerFile.ExposureTime;
-        _mirrorOutput = SlicerFile.DisplayMirror != FlipDirection.None;
+        MirrorOutput = SlicerFile.DisplayMirror != FlipDirection.None;
     }
 
     #endregion
@@ -228,7 +206,7 @@ public sealed class OperationCalibrateBloomingEffect : Operation
 
     private bool Equals(OperationCalibrateBloomingEffect other)
     {
-        return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _leftRightMargin == other._leftRightMargin && _topBottomMargin == other._topBottomMargin && _waitTimeBeforeCureStart == other._waitTimeBeforeCureStart && _waitTimeBeforeCureIncrement == other._waitTimeBeforeCureIncrement && _objectCount == other._objectCount && _objectDiameter == other._objectDiameter && _objectHeight == other._objectHeight && _objectMargin == other._objectMargin && _mirrorOutput == other._mirrorOutput;
+        return _layerHeight == other._layerHeight && BottomLayers == other.BottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && LeftRightMargin == other.LeftRightMargin && TopBottomMargin == other.TopBottomMargin && _waitTimeBeforeCureStart == other._waitTimeBeforeCureStart && _waitTimeBeforeCureIncrement == other._waitTimeBeforeCureIncrement && _objectCount == other._objectCount && _objectDiameter == other._objectDiameter && ObjectHeight == other.ObjectHeight && ObjectMargin == other.ObjectMargin && MirrorOutput == other.MirrorOutput;
     }
 
     public override bool Equals(object? obj)
@@ -248,26 +226,26 @@ public sealed class OperationCalibrateBloomingEffect : Operation
     {
         var mat = SlicerFile.CreateMat();
 
-        uint currentX = _leftRightMargin;
-        uint currentY = _topBottomMargin;
-        uint maxWidth = SlicerFile.ResolutionX - _leftRightMargin;
-        uint maxHeight = SlicerFile.ResolutionY - _topBottomMargin;
+        uint currentX = LeftRightMargin;
+        uint currentY = TopBottomMargin;
+        uint maxWidth = SlicerFile.ResolutionX - LeftRightMargin;
+        uint maxHeight = SlicerFile.ResolutionY - TopBottomMargin;
         var maxWaitTime = MaximumWaiTimeBeforeCure;
 
         for (decimal waitTime = _waitTimeBeforeCureStart; waitTime <= maxWaitTime; waitTime += _waitTimeBeforeCureIncrement)
         {
             if (currentX + _objectDiameter > maxWidth)
             {
-                currentX = _leftRightMargin;
-                currentY += (uint)(_objectDiameter + _objectMargin);
+                currentX = LeftRightMargin;
+                currentY += (uint)(_objectDiameter + ObjectMargin);
                 if (currentY + _objectDiameter > maxHeight) break;
             }
 
             waitTime = Math.Round(waitTime, 2);
 
-            CvInvoke.Rectangle(mat, new Rectangle((int)currentX, (int)currentY, _objectDiameter, _objectDiameter), EmguExtensions.WhiteColor, -1);
-            mat.PutTextExtended($"E: {_bottomExposure}s/{_normalExposure}s\nW: {waitTime}s", new Point((int) currentX+20, (int) currentY + _objectDiameter / 2), FontFace.HersheyDuplex, 2.0, EmguExtensions.BlackColor, 2, 10);
-            currentX += (uint)(_objectDiameter + _objectMargin);
+            CvInvoke.Rectangle(mat, new Rectangle((int)currentX, (int)currentY, _objectDiameter, _objectDiameter), EmguCvExtensions.WhiteColor, -1);
+            mat.PutTextExtended($"E: {_bottomExposure}s/{_normalExposure}s\nW: {waitTime}s", new Point((int) currentX+20, (int) currentY + _objectDiameter / 2), FontFace.HersheyDuplex, 2.0, EmguCvExtensions.BlackColor, 2, 10);
+            currentX += (uint)(_objectDiameter + ObjectMargin);
         }
 
         return mat;
@@ -275,7 +253,7 @@ public sealed class OperationCalibrateBloomingEffect : Operation
 
     public Mat GetThumbnail()
     {
-        Mat thumbnail = EmguExtensions.InitMat(new Size(400, 200), 3);
+        Mat thumbnail = EmguCvExtensions.InitMat(new Size(400, 200), 3);
         var fontFace = FontFace.HersheyDuplex;
         var fontScale = 1;
         var fontThickness = 2;
@@ -286,8 +264,8 @@ public sealed class OperationCalibrateBloomingEffect : Operation
         CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
         CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
         CvInvoke.PutText(thumbnail, "Bloom Effect Cal.", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
-        CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
-        CvInvoke.PutText(thumbnail, $"Wait: {_waitTimeBeforeCureStart}s/+{_waitTimeBeforeCureIncrement}s", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
+        CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguCvExtensions.WhiteColor, fontThickness);
+        CvInvoke.PutText(thumbnail, $"Wait: {_waitTimeBeforeCureStart}s/+{_waitTimeBeforeCureIncrement}s", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguCvExtensions.WhiteColor, fontThickness);
 
         return thumbnail;
     }
@@ -314,7 +292,7 @@ public sealed class OperationCalibrateBloomingEffect : Operation
             SlicerFile.LayerHeight = currentPosition;
             SlicerFile.BottomExposureTime = (float)_bottomExposure;
             SlicerFile.ExposureTime = (float)_normalExposure;
-            SlicerFile.BottomLayerCount = _bottomLayers;
+            SlicerFile.BottomLayerCount = BottomLayers;
             SlicerFile.TransitionLayerCount = 0;
             SlicerFile.BottomLightOffDelay = 0;
             SlicerFile.LightOffDelay = 0;
@@ -322,26 +300,26 @@ public sealed class OperationCalibrateBloomingEffect : Operation
             SlicerFile.SetNormalWaitTimeBeforeCureOrLightOffDelay((float)(_waitTimeBeforeCureStart + _waitTimeBeforeCureIncrement * _objectCount));
 
 
-            uint currentX = _leftRightMargin;
-            uint currentY = _topBottomMargin;
-            uint maxWidth = SlicerFile.ResolutionX - _leftRightMargin;
-            uint maxHeight = SlicerFile.ResolutionY - _topBottomMargin;
+            uint currentX = LeftRightMargin;
+            uint currentY = TopBottomMargin;
+            uint maxWidth = SlicerFile.ResolutionX - LeftRightMargin;
+            uint maxHeight = SlicerFile.ResolutionY - TopBottomMargin;
 
             for (decimal waitTime = _waitTimeBeforeCureStart; waitTime <= maxWaitTime; waitTime += _waitTimeBeforeCureIncrement)
             {
                 progress.PauseOrCancelIfRequested();
                 if (currentX + _objectDiameter > maxWidth)
                 {
-                    currentX = _leftRightMargin;
-                    currentY += (uint)(_objectDiameter + _objectMargin);
+                    currentX = LeftRightMargin;
+                    currentY += (uint)(_objectDiameter + ObjectMargin);
                     if(currentY + _objectDiameter > maxHeight) break;
                 }
 
                 waitTime = Math.Round(waitTime, 2);
 
                 using var mat = SlicerFile.CreateMat();
-                CvInvoke.Rectangle(mat, new Rectangle((int)currentX, (int)currentY, _objectDiameter, _objectDiameter), EmguExtensions.WhiteColor, -1);
-                if (_mirrorOutput) CvInvoke.Flip(mat, mat, (FlipType)flip);
+                CvInvoke.Rectangle(mat, new Rectangle((int)currentX, (int)currentY, _objectDiameter, _objectDiameter), EmguCvExtensions.WhiteColor, -1);
+                if (MirrorOutput) CvInvoke.Flip(mat, mat, (FlipType)flip);
                 var layer = new Layer(mat, SlicerFile)
                 {
                     PositionZ = currentPosition
@@ -349,11 +327,11 @@ public sealed class OperationCalibrateBloomingEffect : Operation
                 layer.SetWaitTimeBeforeCureOrLightOffDelay((float) waitTime);
                 newLayers.Add(layer);
 
-                currentX += (uint)(_objectDiameter + _objectMargin);
+                currentX += (uint)(_objectDiameter + ObjectMargin);
             }
 
             var objects = newLayers.Count;
-            int heightLayers = (int)Math.Ceiling(_objectHeight / (decimal)SlicerFile.LayerHeight);
+            int heightLayers = (int)Math.Ceiling(ObjectHeight / (decimal)SlicerFile.LayerHeight);
 
             for (int h = 0; h < heightLayers; h++)
             {
@@ -367,26 +345,26 @@ public sealed class OperationCalibrateBloomingEffect : Operation
             }
 
             using var textMat = SlicerFile.CreateMat();
-            currentX = _leftRightMargin;
-            currentY = _topBottomMargin;
+            currentX = LeftRightMargin;
+            currentY = TopBottomMargin;
             for (decimal waitTime = _waitTimeBeforeCureStart; waitTime <= maxWaitTime; waitTime += _waitTimeBeforeCureIncrement)
             {
                 progress.PauseOrCancelIfRequested();
                 if (currentX + _objectDiameter > maxWidth)
                 {
-                    currentX = _leftRightMargin;
-                    currentY += (uint)(_objectDiameter + _objectMargin);
+                    currentX = LeftRightMargin;
+                    currentY += (uint)(_objectDiameter + ObjectMargin);
                     if (currentY > maxHeight) break;
                 }
 
                 waitTime = Math.Round(waitTime, 2);
 
                 textMat.PutTextExtended($"E: {_bottomExposure}s/{_normalExposure}s\nW: {waitTime}s", new Point((int)currentX + 20, (int)currentY + _objectDiameter / 2),
-                    FontFace.HersheyDuplex, 2.0, EmguExtensions.WhiteColor, 2, 10);
-                currentX += (uint)(_objectDiameter + _objectMargin);
+                    FontFace.HersheyDuplex, 2.0, EmguCvExtensions.WhiteColor, 2, 10);
+                currentX += (uint)(_objectDiameter + ObjectMargin);
             }
 
-            if (_mirrorOutput) CvInvoke.Flip(textMat, textMat, (FlipType) flip);
+            if (MirrorOutput) CvInvoke.Flip(textMat, textMat, (FlipType) flip);
 
             var textLayerCount = 1 / _layerHeight;
             for (int i = 0; i < textLayerCount; i++)

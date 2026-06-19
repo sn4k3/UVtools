@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using EmguExtensions;
+using EmguExtensions.Avalonia;
 using UVtools.Core.Excellon;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
@@ -129,7 +131,7 @@ public partial class ToolPCBExposureControl : ToolControl
 
             if (_cropPreview)
             {
-                using var matCropped = mat.CropByBounds(20);
+                using var matCropped = mat.RoiFromBoundingRectangle(out _, 20);
                 PreviewImage = matCropped.ToBitmap();
             }
             else

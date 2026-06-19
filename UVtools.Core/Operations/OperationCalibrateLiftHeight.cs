@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,11 +7,13 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
 using System.Drawing;
 using System.Text;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -20,25 +22,13 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationCalibrateLiftHeight : Operation
+public sealed partial class OperationCalibrateLiftHeight : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
     private decimal _layerHeight;
-    private ushort _bottomLayers = 3;
-    private ushort _normalLayers = 2;
     private decimal _bottomExposure;
     private decimal _normalExposure;
-    private decimal _bottomLiftHeight;
-    private decimal _liftHeight;
-    private decimal _bottomLiftSpeed;
-    private decimal _liftSpeed;
-    private decimal _retractSpeed;
-    private ushort _leftRightMargin = 200;
-    private ushort _topBottomMargin = 200;
-    private bool _decreaseImage = true;
-    private byte _decreaseImageFactor = 10;
-    private byte _minimumImageFactor = 10;
 
     #endregion
 
@@ -68,18 +58,18 @@ public sealed class OperationCalibrateLiftHeight : Operation
     {
         var sb = new StringBuilder();
 
-        if (SlicerFile.ResolutionX - _leftRightMargin * 2 <= 0)
+        if (SlicerFile.ResolutionX - LeftRightMargin * 2 <= 0)
             sb.AppendLine("The top/bottom margin is too big, it overlaps the screen resolution.");
 
-        if (SlicerFile.ResolutionY - _topBottomMargin * 2 <= 0)
+        if (SlicerFile.ResolutionY - TopBottomMargin * 2 <= 0)
             sb.AppendLine("The top/bottom margin is too big, it overlaps the screen resolution.");
 
-        if (_decreaseImage)
+        if (DecreaseImage)
         {
-            if(_decreaseImageFactor is 0 or >= 100)
+            if(DecreaseImageFactor is 0 or >= 100)
                 sb.AppendLine("The image decrease factor must be between 1 and 99%");
 
-            if(_minimumImageFactor is 0 or >= 100)
+            if(MinimumImageFactor is 0 or >= 100)
                 sb.AppendLine("The minimum image decrease factor must be between 1 and 99%");
         }
 
@@ -89,11 +79,11 @@ public sealed class OperationCalibrateLiftHeight : Operation
     public override string ToString()
     {
         var result = $"[Layer Height: {_layerHeight}] " +
-                     $"[Layers: {_bottomLayers}/{_normalLayers}] " +
+                     $"[Layers: {BottomLayers}/{NormalLayers}] " +
                      $"[Exposure: {_bottomExposure}/{_normalExposure}s] " +
-                     $"[Lift: {_bottomLiftHeight}/{_liftHeight}mm @ {_bottomLiftSpeed}/{_liftSpeed}mm/min]" +
-                     $"[Retract speed: {_retractSpeed}mm/min]" +
-                     $"[Decrease image: {_decreaseImage} @ {_decreaseImageFactor}-{_minimumImageFactor}%]";
+                     $"[Lift: {BottomLiftHeight}/{LiftHeight}mm @ {BottomLiftSpeed}/{LiftSpeed}mm/min]" +
+                     $"[Retract speed: {RetractSpeed}mm/min]" +
+                     $"[Decrease image: {DecreaseImage} @ {DecreaseImageFactor}-{MinimumImageFactor}%]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -107,157 +97,106 @@ public sealed class OperationCalibrateLiftHeight : Operation
         get => _layerHeight;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _layerHeight, Layer.RoundHeight(value))) return;
-            RaisePropertyChanged(nameof(BottomHeight));
-            RaisePropertyChanged(nameof(NormalHeight));
-            RaisePropertyChanged(nameof(TotalHeight));
+            if(!SetProperty(ref _layerHeight, Layer.RoundHeight(value))) return;
+            OnPropertyChanged(nameof(BottomHeight));
+            OnPropertyChanged(nameof(NormalHeight));
+            OnPropertyChanged(nameof(TotalHeight));
         }
     }
 
     public ushort Microns => (ushort) (LayerHeight * 1000);
 
-    public ushort BottomLayers
-    {
-        get => _bottomLayers;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _bottomLayers, value)) return;
-            RaisePropertyChanged(nameof(BottomHeight));
-            RaisePropertyChanged(nameof(TotalHeight));
-            RaisePropertyChanged(nameof(LayerCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BottomHeight))]
+    [NotifyPropertyChangedFor(nameof(TotalHeight))]
+    [NotifyPropertyChangedFor(nameof(LayerCount))]
+    public partial ushort BottomLayers { get; set; } = 3;
 
-    public ushort NormalLayers
-    {
-        get => _normalLayers;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _normalLayers, value)) return;
-            RaisePropertyChanged(nameof(NormalHeight));
-            RaisePropertyChanged(nameof(TotalHeight));
-            RaisePropertyChanged(nameof(LayerCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NormalHeight))]
+    [NotifyPropertyChangedFor(nameof(TotalHeight))]
+    [NotifyPropertyChangedFor(nameof(LayerCount))]
+    public partial ushort NormalLayers { get; set; } = 2;
 
     public uint LayerCount
     {
         get
         {
-            uint layerCount = (uint)(_bottomLayers + _normalLayers);
-            if (_decreaseImage)
+            uint layerCount = (uint)(BottomLayers + NormalLayers);
+            if (DecreaseImage)
             {
-                layerCount += (100u - _minimumImageFactor) / _decreaseImageFactor;
-                //layerCount += (uint)Math.Ceiling((100.0 - _minimumImageFactor - _decreaseImageFactor) / _decreaseImageFactor);
-                //for (int factor = 100 - _decreaseImageFactor; factor >= _minimumImageFactor; factor -= _decreaseImageFactor)
+                layerCount += (100u - MinimumImageFactor) / DecreaseImageFactor;
+                //layerCount += (uint)Math.Ceiling((100.0 - MinimumImageFactor - DecreaseImageFactor) / DecreaseImageFactor);
+                //for (int factor = 100 - DecreaseImageFactor; factor >= MinimumImageFactor; factor -= DecreaseImageFactor)
                 //    layerCount++;
             }
             return layerCount;
         }
     }
 
-    public decimal BottomHeight => Layer.RoundHeight(_layerHeight * _bottomLayers);
-    public decimal NormalHeight => Layer.RoundHeight(_layerHeight * (LayerCount - _bottomLayers));
+    public decimal BottomHeight => Layer.RoundHeight(_layerHeight * BottomLayers);
+    public decimal NormalHeight => Layer.RoundHeight(_layerHeight * (LayerCount - BottomLayers));
 
     public decimal TotalHeight => BottomHeight + NormalHeight;
 
     public decimal BottomExposure
     {
         get => _bottomExposure;
-        set => RaiseAndSetIfChanged(ref _bottomExposure, Math.Round(value, 2));
+        set => SetProperty(ref _bottomExposure, Math.Round(value, 2));
     }
 
     public decimal NormalExposure
     {
         get => _normalExposure;
-        set => RaiseAndSetIfChanged(ref _normalExposure, Math.Round(value, 2));
+        set => SetProperty(ref _normalExposure, Math.Round(value, 2));
     }
 
-    public decimal BottomLiftHeight
-    {
-        get => _bottomLiftHeight;
-        set => RaiseAndSetIfChanged(ref _bottomLiftHeight, value);
-    }
+    [ObservableProperty]
+    public partial decimal BottomLiftHeight { get; set; }
 
-    public decimal LiftHeight
-    {
-        get => _liftHeight;
-        set => RaiseAndSetIfChanged(ref _liftHeight, value);
-    }
+    [ObservableProperty]
+    public partial decimal LiftHeight { get; set; }
 
-    public decimal BottomLiftSpeed
-    {
-        get => _bottomLiftSpeed;
-        set => RaiseAndSetIfChanged(ref _bottomLiftSpeed, value);
-    }
+    [ObservableProperty]
+    public partial decimal BottomLiftSpeed { get; set; }
 
-    public decimal LiftSpeed
-    {
-        get => _liftSpeed;
-        set => RaiseAndSetIfChanged(ref _liftSpeed, value);
-    }
+    [ObservableProperty]
+    public partial decimal LiftSpeed { get; set; }
 
-    public decimal RetractSpeed
-    {
-        get => _retractSpeed;
-        set => RaiseAndSetIfChanged(ref _retractSpeed, value);
-    }
+    [ObservableProperty]
+    public partial decimal RetractSpeed { get; set; }
 
-    public ushort LeftRightMargin
-    {
-        get => _leftRightMargin;
-        set => RaiseAndSetIfChanged(ref _leftRightMargin, value);
-    }
+    [ObservableProperty]
+    public partial ushort LeftRightMargin { get; set; } = 200;
 
     public ushort MaxLeftRightMargin => (ushort)((SlicerFile.ResolutionX - 100) / 2);
 
-    public ushort TopBottomMargin
-    {
-        get => _topBottomMargin;
-        set => RaiseAndSetIfChanged(ref _topBottomMargin, value);
-    }
+    [ObservableProperty]
+    public partial ushort TopBottomMargin { get; set; } = 200;
 
     public ushort MaxTopBottomMargin => (ushort) ((SlicerFile.ResolutionY - 100) / 2);
 
-    public bool DecreaseImage
-    {
-        get => _decreaseImage;
-        set
-        {
-            RaiseAndSetIfChanged(ref _decreaseImage, value);
-            RaisePropertyChanged(nameof(TotalHeight));
-            RaisePropertyChanged(nameof(LayerCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TotalHeight))]
+    [NotifyPropertyChangedFor(nameof(LayerCount))]
+    public partial bool DecreaseImage { get; set; } = true;
 
-    public byte DecreaseImageFactor
-    {
-        get => _decreaseImageFactor;
-        set
-        {
-            RaiseAndSetIfChanged(ref _decreaseImageFactor, value);
-            RaisePropertyChanged(nameof(TotalHeight));
-            RaisePropertyChanged(nameof(LayerCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TotalHeight))]
+    [NotifyPropertyChangedFor(nameof(LayerCount))]
+    public partial byte DecreaseImageFactor { get; set; } = 10;
 
-    public byte MinimumImageFactor
-    {
-        get => _minimumImageFactor;
-        set
-        {
-            RaiseAndSetIfChanged(ref _minimumImageFactor, value);
-            RaisePropertyChanged(nameof(TotalHeight));
-            RaisePropertyChanged(nameof(LayerCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TotalHeight))]
+    [NotifyPropertyChangedFor(nameof(LayerCount))]
+    public partial byte MinimumImageFactor { get; set; } = 10;
 
     public Rectangle WhiteBlock
     {
         get
         {
-            int width = (int) (SlicerFile.ResolutionX - _leftRightMargin * 2);
-            int height = (int) (SlicerFile.ResolutionY - _topBottomMargin * 2);
+            int width = (int) (SlicerFile.ResolutionX - LeftRightMargin * 2);
+            int height = (int) (SlicerFile.ResolutionY - TopBottomMargin * 2);
             int x = (int) (SlicerFile.ResolutionX - width) / 2;
             int y = (int) (SlicerFile.ResolutionY - height) / 2;
 
@@ -280,11 +219,11 @@ public sealed class OperationCalibrateLiftHeight : Operation
         if(_layerHeight <= 0) _layerHeight = (decimal)SlicerFile.LayerHeight;
         if(_bottomExposure <= 0) _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
         if(_normalExposure <= 0) _normalExposure = (decimal)SlicerFile.ExposureTime;
-        if (_bottomLiftHeight <= 0) _bottomLiftHeight = (decimal)SlicerFile.BottomLiftHeight;
-        if (_liftHeight <= 0) _liftHeight = (decimal)SlicerFile.LiftHeight;
-        if (_bottomLiftSpeed <= 0) _bottomLiftSpeed = (decimal) SlicerFile.BottomLiftSpeed;
-        if (_liftSpeed <= 0) _liftSpeed = (decimal) SlicerFile.LiftSpeed;
-        if (_retractSpeed <= 0) _retractSpeed = (decimal) SlicerFile.RetractSpeed;
+        if (BottomLiftHeight <= 0) BottomLiftHeight = (decimal)SlicerFile.BottomLiftHeight;
+        if (LiftHeight <= 0) LiftHeight = (decimal)SlicerFile.LiftHeight;
+        if (BottomLiftSpeed <= 0) BottomLiftSpeed = (decimal) SlicerFile.BottomLiftSpeed;
+        if (LiftSpeed <= 0) LiftSpeed = (decimal) SlicerFile.LiftSpeed;
+        if (RetractSpeed <= 0) RetractSpeed = (decimal) SlicerFile.RetractSpeed;
     }
 
     #endregion
@@ -293,7 +232,7 @@ public sealed class OperationCalibrateLiftHeight : Operation
 
     private bool Equals(OperationCalibrateLiftHeight other)
     {
-        return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _normalLayers == other._normalLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _bottomLiftHeight == other._bottomLiftHeight && _liftHeight == other._liftHeight && _bottomLiftSpeed == other._bottomLiftSpeed && _liftSpeed == other._liftSpeed && _retractSpeed == other._retractSpeed && _leftRightMargin == other._leftRightMargin && _topBottomMargin == other._topBottomMargin && _decreaseImage == other._decreaseImage && _decreaseImageFactor == other._decreaseImageFactor && _minimumImageFactor == other._minimumImageFactor;
+        return _layerHeight == other._layerHeight && BottomLayers == other.BottomLayers && NormalLayers == other.NormalLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && BottomLiftHeight == other.BottomLiftHeight && LiftHeight == other.LiftHeight && BottomLiftSpeed == other.BottomLiftSpeed && LiftSpeed == other.LiftSpeed && RetractSpeed == other.RetractSpeed && LeftRightMargin == other.LeftRightMargin && TopBottomMargin == other.TopBottomMargin && DecreaseImage == other.DecreaseImage && DecreaseImageFactor == other.DecreaseImageFactor && MinimumImageFactor == other.MinimumImageFactor;
     }
 
     public override bool Equals(object? obj)
@@ -314,15 +253,15 @@ public sealed class OperationCalibrateLiftHeight : Operation
     {
         var layers = new Mat[1];
 
-        layers[0] = EmguExtensions.InitMat(SlicerFile.Resolution);
-        CvInvoke.Rectangle(layers[0], WhiteBlock, EmguExtensions.WhiteColor, -1);
+        layers[0] = EmguCvExtensions.InitMat(SlicerFile.Resolution);
+        CvInvoke.Rectangle(layers[0], WhiteBlock, EmguCvExtensions.WhiteColor, -1);
 
         return layers;
     }
 
     public Mat GetThumbnail()
     {
-        Mat thumbnail = EmguExtensions.InitMat(new Size(400, 200), 3);
+        Mat thumbnail = EmguCvExtensions.InitMat(new Size(400, 200), 3);
         var fontFace = FontFace.HersheyDuplex;
         var fontScale = 1;
         var fontThickness = 2;
@@ -333,8 +272,8 @@ public sealed class OperationCalibrateLiftHeight : Operation
         CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
         CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
         CvInvoke.PutText(thumbnail, "Lift Height Cal.", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
-        CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
-        //CvInvoke.PutText(thumbnail, $"{ObjectCount} Objects", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
+        CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguCvExtensions.WhiteColor, fontThickness);
+        //CvInvoke.PutText(thumbnail, $"{ObjectCount} Objects", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguCvExtensions.WhiteColor, fontThickness);
 
         return thumbnail;
     }
@@ -354,17 +293,17 @@ public sealed class OperationCalibrateLiftHeight : Operation
         };
 
         uint layerIndex = 0;
-        for (; layerIndex < _bottomLayers + _normalLayers; layerIndex++)
+        for (; layerIndex < BottomLayers + NormalLayers; layerIndex++)
         {
             progress.PauseOrCancelIfRequested();
             newLayers[layerIndex] = layer.Clone();
             progress++;
         }
 
-        if (_decreaseImage)
+        if (DecreaseImage)
         {
             var rect = WhiteBlock;
-            for (int factor = 100 - _decreaseImageFactor; factor >= _minimumImageFactor; factor -= _decreaseImageFactor)
+            for (int factor = 100 - DecreaseImageFactor; factor >= MinimumImageFactor; factor -= DecreaseImageFactor)
             {
                 using var mat = layers[0].NewZeros();
 
@@ -378,7 +317,7 @@ public sealed class OperationCalibrateLiftHeight : Operation
 
                 CvInvoke.Rectangle(mat,
                     new Rectangle(x, y, width, height),
-                    EmguExtensions.WhiteColor, -1);
+                    EmguCvExtensions.WhiteColor, -1);
 
                 newLayers[layerIndex] = new Layer(0, mat, SlicerFile)
                 {
@@ -409,12 +348,12 @@ public sealed class OperationCalibrateLiftHeight : Operation
             SlicerFile.LayerHeight = (float)_layerHeight;
             SlicerFile.BottomExposureTime = (float)_bottomExposure;
             SlicerFile.ExposureTime = (float)_normalExposure;
-            SlicerFile.BottomLiftHeight = (float)_bottomLiftHeight;
-            SlicerFile.LiftHeight = (float)_liftHeight;
-            SlicerFile.BottomLiftSpeed = (float)_bottomLiftSpeed;
-            SlicerFile.LiftSpeed = (float)_liftSpeed;
-            SlicerFile.RetractSpeed = (float)_retractSpeed;
-            SlicerFile.BottomLayerCount = _bottomLayers;
+            SlicerFile.BottomLiftHeight = (float)BottomLiftHeight;
+            SlicerFile.LiftHeight = (float)LiftHeight;
+            SlicerFile.BottomLiftSpeed = (float)BottomLiftSpeed;
+            SlicerFile.LiftSpeed = (float)LiftSpeed;
+            SlicerFile.RetractSpeed = (float)RetractSpeed;
+            SlicerFile.BottomLayerCount = BottomLayers;
             SlicerFile.TransitionLayerCount = 0;
 
             SlicerFile.Layers = newLayers;

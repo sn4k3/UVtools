@@ -1,7 +1,6 @@
 ﻿using Emgu.CV;
 using Emgu.CV.CvEnum;
 using System;
-using System.Collections.Generic;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 using Size = System.Drawing.Size;

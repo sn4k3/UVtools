@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,13 +7,14 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.Structure;
+using EmguExtensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
-using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using ZLinq;
 
@@ -21,7 +22,7 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0660, CS0661
-public class OperationLightBleedCompensation : Operation
+public partial class OperationLightBleedCompensation : Operation
 #pragma warning restore CS0660, CS0661
 {
     #region Enums
@@ -54,9 +55,6 @@ public class OperationLightBleedCompensation : Operation
 
     #region Members
 
-    private LightBleedCompensationLookupMode _lookupMode = LightBleedCompensationLookupMode.Next;
-    private string _dimBy = "25,15,10,5";
-    private LightBleedCompensationSubject _subject;
 
     #endregion
 
@@ -99,9 +97,9 @@ public class OperationLightBleedCompensation : Operation
 
     public override string ToString()
     {
-        var result = $"[Subject: {_subject}]" +
-                     $" [Lookup: {_lookupMode}]" +
-                     $" [Dim by: {_dimBy}]" + LayerRangeString;
+        var result = $"[Subject: {Subject}]" +
+                     $" [Lookup: {LookupMode}]" +
+                     $" [Dim by: {DimBy}]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -117,29 +115,17 @@ public class OperationLightBleedCompensation : Operation
 
     #region Properties
 
-    public LightBleedCompensationSubject Subject
-    {
-        get => _subject;
-        set => RaiseAndSetIfChanged(ref _subject, value);
-    }
+    [ObservableProperty]
+    public partial LightBleedCompensationSubject Subject { get; set; }
 
-    public LightBleedCompensationLookupMode LookupMode
-    {
-        get => _lookupMode;
-        set => RaiseAndSetIfChanged(ref _lookupMode, value);
-    }
+    [ObservableProperty]
+    public partial LightBleedCompensationLookupMode LookupMode { get; set; } = LightBleedCompensationLookupMode.Next;
 
-    public string DimBy
-    {
-        get => _dimBy;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _dimBy, value)) return;
-            RaisePropertyChanged(nameof(MinimumBrightness));
-            RaisePropertyChanged(nameof(MinimumBrightnessPercentage));
-            RaisePropertyChanged(nameof(MaximumSubtraction));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MinimumBrightness))]
+    [NotifyPropertyChangedFor(nameof(MinimumBrightnessPercentage))]
+    [NotifyPropertyChangedFor(nameof(MaximumSubtraction))]
+    public partial string DimBy { get; set; } = "25,15,10,5";
 
     public int MinimumBrightness => 255 - MaximumSubtraction;
     public float MinimumBrightnessPercentage => MathF.Round(MinimumBrightness * 100 / 255.0f, 2);
@@ -150,7 +136,7 @@ public class OperationLightBleedCompensation : Operation
         get
         {
             List<byte> levels = [];
-            var split = _dimBy.Split(',', StringSplitOptions.TrimEntries);
+            var split = DimBy.Split(',', StringSplitOptions.TrimEntries);
             foreach (var str in split)
             {
                 if (!byte.TryParse(str, out var brightness)) continue;
@@ -167,7 +153,7 @@ public class OperationLightBleedCompensation : Operation
         get
         {
             List<MCvScalar> levels = [];
-            var split = _dimBy.Split(',', StringSplitOptions.TrimEntries);
+            var split = DimBy.Split(',', StringSplitOptions.TrimEntries);
             foreach (var str in split)
             {
                 if (!byte.TryParse(str, out var brightness)) continue;
@@ -185,7 +171,7 @@ public class OperationLightBleedCompensation : Operation
 
     protected bool Equals(OperationLightBleedCompensation other)
     {
-        return _lookupMode == other._lookupMode && _dimBy == other._dimBy && _subject == other._subject;
+        return LookupMode == other.LookupMode && DimBy == other.DimBy && Subject == other.Subject;
     }
 
     public override bool Equals(object? obj)
@@ -222,7 +208,7 @@ public class OperationLightBleedCompensation : Operation
         var matSize = GetRoiSizeOrDefault();
         for (var i = 0; i < mats.Length; i++)
         {
-            mats[i] = EmguExtensions.InitMat(matSize, dimLevels[i]);
+            mats[i] = EmguCvExtensions.InitMat(matSize, dimLevels[i]);
         }
 
         return mats;
@@ -249,7 +235,7 @@ public class OperationLightBleedCompensation : Operation
                 Mat? nextMatRoi = null;
 
 
-                if (_lookupMode is LightBleedCompensationLookupMode.Previous or LightBleedCompensationLookupMode.Both)
+                if (LookupMode is LightBleedCompensationLookupMode.Previous or LightBleedCompensationLookupMode.Both)
                 {
                     int layerPreviousIndex = (int)layerIndex - i - 1;
                     if (layerPreviousIndex >= LayerIndexStart)
@@ -258,7 +244,7 @@ public class OperationLightBleedCompensation : Operation
                         mask = previousMatRoi = GetRoiOrDefault(previousMat);
                     }
                 }
-                if (_lookupMode is LightBleedCompensationLookupMode.Next or LightBleedCompensationLookupMode.Both)
+                if (LookupMode is LightBleedCompensationLookupMode.Next or LightBleedCompensationLookupMode.Both)
                 {
                     uint layerIndexNext = (uint) (layerIndex + i + 1);
                     if (layerIndexNext <= LayerIndexEnd)
@@ -275,24 +261,24 @@ public class OperationLightBleedCompensation : Operation
                     mask = previousMatRoi;
                 }
 
-                switch (_subject)
+                switch (Subject)
                 {
                     case LightBleedCompensationSubject.Similarities:
                         CvInvoke.Subtract(target, dimMats[i], target, mask);
                         break;
                     case LightBleedCompensationSubject.Bridges:
-                        mask!.SetTo(EmguExtensions.WhiteColor, mask);
+                        mask!.SetTo(EmguCvExtensions.WhiteColor, mask);
                         CvInvoke.BitwiseNot(mask, mask);
                         CvInvoke.Subtract(target, dimMats[i], target, mask);
                         break;
                     case LightBleedCompensationSubject.Both:
                         CvInvoke.Subtract(target, dimMats[i], target, mask);
-                        mask!.SetTo(EmguExtensions.WhiteColor, mask);
+                        mask!.SetTo(EmguCvExtensions.WhiteColor, mask);
                         CvInvoke.BitwiseNot(mask, mask);
                         CvInvoke.Subtract(target, dimMats[i], target, mask);
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException(nameof(Subject), _subject, null);
+                        throw new ArgumentOutOfRangeException(nameof(Subject), Subject, null);
                 }
 
                 previousMat?.Dispose();

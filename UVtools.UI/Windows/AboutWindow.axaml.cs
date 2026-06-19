@@ -9,7 +9,6 @@ using Material.Icons;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.SystemOS;
-using UVtools.UI.Controls;
 
 namespace UVtools.UI.Windows;
 

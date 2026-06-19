@@ -1,8 +1,8 @@
 ﻿using Emgu.CV;
 using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.Scripting;
@@ -32,8 +32,8 @@ public class ScriptCompensateCrossBleeding : ScriptGlobals
 
     public string? ScriptValidate()
     {
-        return SlicerFile.LayerCount < 2 
-            ? "This script requires at least 2 layers in order to run." 
+        return SlicerFile.LayerCount < 2
+            ? "This script requires at least 2 layers in order to run."
             : null;
     }
 
@@ -50,13 +50,13 @@ public class ScriptCompensateCrossBleeding : ScriptGlobals
                 var layersBelowCount = layerIndex > LayerBleed.Value ? LayerBleed.Value : layerIndex;
 
                 using var sourceMat = originalLayers[layerIndex].LayerMat;
-                var source = sourceMat.GetDataByteReadOnlySpan();
+                var source = sourceMat.GetReadOnlySpanOfBytes();
 
                 using var targetMat = sourceMat.NewZeros();
-                var target = targetMat.GetDataByteSpan();
+                var target = targetMat.GetSpanOfBytes();
 
                 using var occupancyMat = sourceMat.NewZeros();
-                var occupancy = occupancyMat.GetDataByteReadOnlySpan();
+                var occupancy = occupancyMat.GetReadOnlySpanOfBytes();
 
                 var sumRectangle = Rectangle.Empty;
                 for (int i = 0; i < layersBelowCount; i++)
@@ -64,8 +64,8 @@ public class ScriptCompensateCrossBleeding : ScriptGlobals
                     using var mat = originalLayers[layerIndex - i - 1].LayerMat;
                     CvInvoke.Threshold(mat, mat, 1, 1, Emgu.CV.CvEnum.ThresholdType.Binary);
                     CvInvoke.Add(mat, occupancyMat, occupancyMat);
-                    sumRectangle = sumRectangle.IsEmpty 
-                        ? originalLayers[layerIndex - i - 1].BoundingRectangle 
+                    sumRectangle = sumRectangle.IsEmpty
+                        ? originalLayers[layerIndex - i - 1].BoundingRectangle
                         : Rectangle.Union(sumRectangle, originalLayers[layerIndex - i - 1].BoundingRectangle);
                 }
 

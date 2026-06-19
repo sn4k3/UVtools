@@ -20,7 +20,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
-using UVtools.Core.EmguCV;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
@@ -625,7 +625,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
         {
             progress.PauseIfRequested();
 
-            using (var mat = EmguExtensions.InitMat(Resolution))
+            using (var mat = EmguCvExtensions.InitMat(Resolution))
             {
                 var group = SVGDocument.Groups.AsValueEnumerable().FirstOrDefault(g => g.Id == $"layer-{layerIndex}");
 
@@ -694,7 +694,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
                     if (pointsOfPoints.Count > 0)
                     {
                         using var vecPoints = new VectorOfVectorOfPoint(pointsOfPoints.ToArray());
-                        CvInvoke.DrawContours(mat, vecPoints, -1, EmguExtensions.WhiteColor, -1);
+                        CvInvoke.DrawContours(mat, vecPoints, -1, EmguCvExtensions.WhiteColor, -1);
                     }
 
                 }

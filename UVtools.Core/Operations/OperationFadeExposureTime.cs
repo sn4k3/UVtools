@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.ComponentModel;
 using System.Text;
 using UVtools.Core.FileFormats;
@@ -15,7 +16,7 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public class OperationFadeExposureTime : Operation
+public partial class OperationFadeExposureTime : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
@@ -23,7 +24,6 @@ public class OperationFadeExposureTime : Operation
     private uint _layerCount = 10;
     private decimal _fromExposureTime;
     private decimal _toExposureTime;
-    private bool _disableFirmwareTransitionLayers = true;
 
     #endregion
 
@@ -78,13 +78,13 @@ public class OperationFadeExposureTime : Operation
         {
             LayerCount = _layerCount; // Sanitize
             LayerIndexEnd = LayerIndexStart + _layerCount - 1 ; // Sync
-            RaisePropertyChanged(nameof(MaximumLayerCount));
-            RaisePropertyChanged(nameof(IncrementValue));
+            OnPropertyChanged(nameof(MaximumLayerCount));
+            OnPropertyChanged(nameof(IncrementValue));
         }
         /*else if (e.PropertyName == nameof(LayerIndexEnd))
         {
             LayerCount = LayerRangeCount;
-            RaisePropertyChanged(nameof(IncrementValue));
+            OnPropertyChanged(nameof(IncrementValue));
         }*/
 
         base.OnPropertyChanged(e);
@@ -99,10 +99,10 @@ public class OperationFadeExposureTime : Operation
         get => _layerCount;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _layerCount, Math.Min(value, SlicerFile.LayerCount - LayerIndexStart))) return;
+            if (!SetProperty(ref _layerCount, Math.Min(value, SlicerFile.LayerCount - LayerIndexStart))) return;
             LayerIndexEnd = LayerIndexStart + _layerCount - 1;
-            RaisePropertyChanged(nameof(MaximumLayerCount));
-            RaisePropertyChanged(nameof(IncrementValue));
+            OnPropertyChanged(nameof(MaximumLayerCount));
+            OnPropertyChanged(nameof(IncrementValue));
         }
     }
 
@@ -113,8 +113,8 @@ public class OperationFadeExposureTime : Operation
         get => _fromExposureTime;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _fromExposureTime, Math.Round(value, 2))) return;
-            RaisePropertyChanged(nameof(IncrementValue));
+            if(!SetProperty(ref _fromExposureTime, Math.Round(value, 2))) return;
+            OnPropertyChanged(nameof(IncrementValue));
         }
     }
 
@@ -123,16 +123,13 @@ public class OperationFadeExposureTime : Operation
         get => _toExposureTime;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _toExposureTime, Math.Round(value, 2))) return;
-            RaisePropertyChanged(nameof(IncrementValue));
+            if(!SetProperty(ref _toExposureTime, Math.Round(value, 2))) return;
+            OnPropertyChanged(nameof(IncrementValue));
         }
     }
 
-    public bool DisableFirmwareTransitionLayers
-    {
-        get => _disableFirmwareTransitionLayers;
-        set => RaiseAndSetIfChanged(ref _disableFirmwareTransitionLayers, value);
-    }
+    [ObservableProperty]
+    public partial bool DisableFirmwareTransitionLayers { get; set; } = true;
 
     public decimal IncrementValue => Math.Round(IncrementValueRaw, 2);
     public decimal IncrementValueRaw => (decimal)FileFormat.GetTransitionStepTime((float) _toExposureTime, (float)_fromExposureTime, (ushort) LayerRangeCount);
@@ -160,7 +157,7 @@ public class OperationFadeExposureTime : Operation
 
     protected bool Equals(OperationFadeExposureTime other)
     {
-        return _layerCount == other._layerCount && _fromExposureTime == other._fromExposureTime && _toExposureTime == other._toExposureTime && _disableFirmwareTransitionLayers == other._disableFirmwareTransitionLayers;
+        return _layerCount == other._layerCount && _fromExposureTime == other._fromExposureTime && _toExposureTime == other._toExposureTime && DisableFirmwareTransitionLayers == other.DisableFirmwareTransitionLayers;
     }
 
     public override bool Equals(object? obj)
@@ -180,7 +177,7 @@ public class OperationFadeExposureTime : Operation
     {
         LayerIndexEnd = LayerIndexStart + _layerCount - 1; // Sanitize
 
-        if (SlicerFile.TransitionLayerType == FileFormat.TransitionLayerTypes.Firmware && _disableFirmwareTransitionLayers)
+        if (SlicerFile.TransitionLayerType == FileFormat.TransitionLayerTypes.Firmware && DisableFirmwareTransitionLayers)
         {
             SlicerFile.TransitionLayerCount = 0;
         }

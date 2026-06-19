@@ -21,13 +21,13 @@
                     MaxHeight="300"
                     MaxWidth="700"
                     AcceptsReturn="True"
-                    Watermark="Kernel matrix"
-                    UseFloatingWatermark="True"
+                    PlaceholderText="Kernel matrix"
+                    UseFloatingPlaceholder="True"
                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
                     ScrollViewer.VerticalScrollBarVisibility="Auto"
                     TextWrapping="NoWrap"
                     Text="{Binding Kernel.MatrixText}"/>
-            
+
           <Grid Grid.Column="2"
                 RowDefinitions="Auto,10,Auto,10,Auto,20,Auto"
                 ColumnDefinitions="Auto,10,Auto,10,Auto,10,Auto">
@@ -84,7 +84,7 @@
                     Content="Reset"
                     Command="{Binding Kernel.ResetKernel}"/>
       </Grid>
-        
+
     </Grid>
     </StackPanel>
 </UserControl>

@@ -6,7 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using System.Threading;

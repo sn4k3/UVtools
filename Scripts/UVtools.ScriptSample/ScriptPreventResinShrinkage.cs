@@ -4,6 +4,7 @@ using System;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -65,7 +66,7 @@ public class ScriptPreventResinShrinkage : ScriptGlobals
             for (int x = 0; x < pattern.Size.Width; x += xStep) {
                 pattern.DrawCircle(new Point(x + (evenRow ? xStep / 2 : 0), y),
                     SlicerFile.PixelsToNormalizedPitch(GrainSize.Value / 2),
-                    EmguExtensions.WhiteColor,
+                    EmguCvExtensions.WhiteColor,
                     -1, LineType.FourConnected);
             }
             evenRow = !evenRow;
@@ -85,21 +86,21 @@ public class ScriptPreventResinShrinkage : ScriptGlobals
             CvInvoke.Line(pattern,
                 new Point(x, 0),
                 new Point(x + pattern.Size.Height, pattern.Size.Height),
-                EmguExtensions.WhiteColor, width, LineType.FourConnected);
+                EmguCvExtensions.WhiteColor, width, LineType.FourConnected);
             CvInvoke.Line(pattern,
                 new Point(x, pattern.Size.Height),
                 new Point(x + pattern.Size.Height, 0),
-                EmguExtensions.WhiteColor, width, LineType.FourConnected);
+                EmguCvExtensions.WhiteColor, width, LineType.FourConnected);
         }
         for (int y = 0; y < pattern.Size.Height; y += step) {
             CvInvoke.Line(pattern,
                 new Point(0, y),
                 new Point(pattern.Size.Height, y + pattern.Size.Height),
-                EmguExtensions.WhiteColor, width, LineType.FourConnected);
+                EmguCvExtensions.WhiteColor, width, LineType.FourConnected);
             CvInvoke.Line(pattern,
                 new Point(0, y),
                 new Point(pattern.Size.Height, y - pattern.Size.Height),
-                EmguExtensions.WhiteColor, width, LineType.FourConnected);
+                EmguCvExtensions.WhiteColor, width, LineType.FourConnected);
         }
         return pattern;
     }
@@ -121,7 +122,7 @@ public class ScriptPreventResinShrinkage : ScriptGlobals
         using var dotLinePattern = new Mat();
 
         CvInvoke.BitwiseNot(dotPattern, inverseDotPattern);
-        CvInvoke.Dilate(inverseDotPattern, inverseDotPattern, EmguExtensions.Kernel3x3Rectangle,
+        CvInvoke.Dilate(inverseDotPattern, inverseDotPattern, EmguCvExtensions.Kernel3X3Rectangle,
             new Point(-1, -1), 1, BorderType.Reflect101, default);
 
         CvInvoke.BitwiseAnd(inverseDotPattern, linePattern, dotLinePattern);

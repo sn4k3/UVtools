@@ -5,6 +5,7 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Drawing;
 
@@ -12,20 +13,16 @@ namespace UVtools.Core.PixelEditor;
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 #pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
-public class PixelDrainHole : PixelOperation, IEquatable<PixelDrainHole>
+public partial class PixelDrainHole : PixelOperation, IEquatable<PixelDrainHole>
 #pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
-    private ushort _diameter = 50;
     public override PixelOperationType OperationType => PixelOperationType.DrainHole;
 
-    public ushort Diameter
-    {
-        get => _diameter;
-        set => RaiseAndSetIfChanged(ref _diameter, value);
-    }
+    [ObservableProperty]
+    public partial ushort Diameter { get; set; } = 50;
 
-    public PixelDrainHole(){ _pixelBrightness = 0; }
+    public PixelDrainHole(){ PixelBrightness = 0; }
 
     public PixelDrainHole(uint layerIndex, Point location, ushort diameter) : base(layerIndex, location)
     {
@@ -42,14 +39,14 @@ public class PixelDrainHole : PixelOperation, IEquatable<PixelDrainHole>
 
     public override string ToString()
     {
-        return $"{_diameter}px";
+        return $"{Diameter}px";
     }
 
     public bool Equals(PixelDrainHole? other)
     {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
-        return base.Equals(other) && _diameter == other._diameter;
+        return base.Equals(other) && Diameter == other.Diameter;
     }
 
     public override bool Equals(object? obj)

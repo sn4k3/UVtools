@@ -13,7 +13,7 @@ using System.Data;
 using System.Drawing;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using UVtools.Core.Extensions;
+using EmguExtensions;
 
 namespace UVtools.Core.Gerber.Primitives;
 
@@ -109,7 +109,7 @@ public class VectorLinePrimitive : Primitive
 
         var pt1 = Document.PositionMmToPx(at.X + StartX, at.Y + StartY);
         var pt2 = Document.PositionMmToPx(at.X + EndX, at.Y + EndY);
-        CvInvoke.Line(mat, pt1, pt2, Document.GetPolarityColor(Exposure), EmguExtensions.CorrectThickness(Document.SizeMmToPxOverride(LineWidth, Document.XYppmm.Height)), lineType);
+        CvInvoke.Line(mat, pt1, pt2, Document.GetPolarityColor(Exposure), EmguCvExtensions.CorrectThickness(Document.SizeMmToPxOverride(LineWidth, Document.XYppmm.Height)), lineType);
         //CvInvoke.Rectangle(mat, rectangle, color, -1, lineType);
     }
 

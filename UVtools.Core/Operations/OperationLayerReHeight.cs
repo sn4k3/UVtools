@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
@@ -21,7 +22,7 @@ using UVtools.Core.Layers;
 namespace UVtools.Core.Operations;
 
 
-public sealed class OperationLayerReHeight : Operation
+public sealed partial class OperationLayerReHeight : Operation
 {
     #region Enums
 
@@ -45,10 +46,6 @@ public sealed class OperationLayerReHeight : Operation
 
     #region Members
 
-    private OperationLayerReHeightMethod _method;
-    private decimal _positionZOffset = 0.01m;
-    private OperationLayerReHeightItem? _selectedItem;
-    private OperationLayerReHeightAntiAliasingType _antiAliasingType;
     private decimal _bottomExposure;
     private decimal _normalExposure;
 
@@ -67,14 +64,14 @@ public sealed class OperationLayerReHeight : Operation
         "Different layer thickness will require different exposure times, adjust accordingly.\n\n" +
         "Note: Using dedicated slicer software to re-slice will usually yield better results.";
     public override string ConfirmationText =>
-        _method == OperationLayerReHeightMethod.ReHeight
-            ? $"adjust layer height to {_selectedItem!.LayerHeight}mm?"
-            : $"adjust layers position by a offset of {_positionZOffset}mm?";
+        Method == OperationLayerReHeightMethod.ReHeight
+            ? $"adjust layer height to {SelectedItem!.LayerHeight}mm?"
+            : $"adjust layers position by a offset of {PositionZOffset}mm?";
 
     public override string ProgressTitle =>
-        _method == OperationLayerReHeightMethod.ReHeight
-            ? $"Adjusting layer height to {_selectedItem!.LayerHeight}mm"
-            : $"Adjusting layers position by a offset of {_positionZOffset}mm";
+        Method == OperationLayerReHeightMethod.ReHeight
+            ? $"Adjusting layer height to {SelectedItem!.LayerHeight}mm"
+            : $"Adjusting layers position by a offset of {PositionZOffset}mm";
 
     public override string ProgressAction => "Height adjusted layers";
 
@@ -95,7 +92,7 @@ public sealed class OperationLayerReHeight : Operation
     {
         var sb = new StringBuilder();
 
-        switch (_method)
+        switch (Method)
         {
             case OperationLayerReHeightMethod.ReHeight:
                 if (Presets.Length == 0)
@@ -103,7 +100,7 @@ public sealed class OperationLayerReHeight : Operation
                     sb.AppendLine("No valid configurations, unable to proceed.");
                 }
 
-                if (_selectedItem is null)
+                if (SelectedItem is null)
                 {
                     sb.AppendLine("No new height was selected.");
                 }
@@ -112,11 +109,11 @@ public sealed class OperationLayerReHeight : Operation
             case OperationLayerReHeightMethod.OffsetPositionZ:
                 if (!SlicerFile.CanUseLayerPositionZ)
                 {
-                    sb.AppendLine($"This file format / printer is unable to use the {_method} method.");
+                    sb.AppendLine($"This file format / printer is unable to use the {Method} method.");
                     break;
                 }
 
-                if (_positionZOffset == 0)
+                if (PositionZOffset == 0)
                 {
                     sb.AppendLine("Position offset can't be 0, it have no effect.");
                     break;
@@ -124,9 +121,9 @@ public sealed class OperationLayerReHeight : Operation
 
                 for (var layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
                 {
-                    if ((decimal) SlicerFile[layerIndex].PositionZ + _positionZOffset < 0)
+                    if ((decimal) SlicerFile[layerIndex].PositionZ + PositionZOffset < 0)
                     {
-                        sb.AppendLine($"Offset position by {_positionZOffset}mm will put layer {layerIndex} under 0mm.");
+                        sb.AppendLine($"Offset position by {PositionZOffset}mm will put layer {layerIndex} under 0mm.");
                         break;
                     }
                 }
@@ -142,12 +139,12 @@ public sealed class OperationLayerReHeight : Operation
 
     public override string ToString()
     {
-        var result = $"[{_method}]" +
-                     (_method == OperationLayerReHeightMethod.ReHeight
-                         ? $"[Layer Count: {_selectedItem!.LayerCount}] " +
-                           $"[Layer Height: {_selectedItem!.LayerHeight}] " +
+        var result = $"[{Method}]" +
+                     (Method == OperationLayerReHeightMethod.ReHeight
+                         ? $"[Layer Count: {SelectedItem!.LayerCount}] " +
+                           $"[Layer Height: {SelectedItem!.LayerHeight}] " +
                            $"[Exposure: {_bottomExposure}/{_normalExposure}s]" :
-                         $"[Offset: {_positionZOffset}mm]")
+                         $"[Offset: {PositionZOffset}mm]")
                      + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
@@ -156,56 +153,38 @@ public sealed class OperationLayerReHeight : Operation
 
     #region Properties
 
-    public OperationLayerReHeightMethod Method
-    {
-        get => _method;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _method, value)) return;
-            RaisePropertyChanged(nameof(IsReHeightMethod));
-            RaisePropertyChanged(nameof(IsOffsetPositionZMethod));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsReHeightMethod))]
+    [NotifyPropertyChangedFor(nameof(IsOffsetPositionZMethod))]
+    public partial OperationLayerReHeightMethod Method { get; set; }
 
-    public bool IsReHeightMethod => _method is OperationLayerReHeightMethod.ReHeight;
-    public bool IsOffsetPositionZMethod => _method is OperationLayerReHeightMethod.OffsetPositionZ;
+    public bool IsReHeightMethod => Method is OperationLayerReHeightMethod.ReHeight;
+    public bool IsOffsetPositionZMethod => Method is OperationLayerReHeightMethod.OffsetPositionZ;
 
-    public decimal PositionZOffset
-    {
-        get => _positionZOffset;
-        set => RaiseAndSetIfChanged(ref _positionZOffset, value);
-    }
+    [ObservableProperty]
+    public partial decimal PositionZOffset { get; set; } = 0.01m;
 
     public OperationLayerReHeightItem[] Presets { get; set; } = null!;
 
-    public OperationLayerReHeightItem? SelectedItem
-    {
-        get => _selectedItem;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _selectedItem, value)) return;
-            RaisePropertyChanged(nameof(CanAntiAliasing));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanAntiAliasing))]
+    public partial OperationLayerReHeightItem? SelectedItem { get; set; }
 
-    public bool CanAntiAliasing => _selectedItem?.IsMultiply ?? false;
+    public bool CanAntiAliasing => SelectedItem?.IsMultiply ?? false;
 
-    public OperationLayerReHeightAntiAliasingType AntiAliasingType
-    {
-        get => _antiAliasingType;
-        set => RaiseAndSetIfChanged(ref _antiAliasingType, value);
-    }
+    [ObservableProperty]
+    public partial OperationLayerReHeightAntiAliasingType AntiAliasingType { get; set; }
 
     public decimal BottomExposure
     {
         get => _bottomExposure;
-        set => RaiseAndSetIfChanged(ref _bottomExposure, Math.Round(value, 2));
+        set => SetProperty(ref _bottomExposure, Math.Round(value, 2));
     }
 
     public decimal NormalExposure
     {
         get => _normalExposure;
-        set => RaiseAndSetIfChanged(ref _normalExposure, Math.Round(value, 2));
+        set => SetProperty(ref _normalExposure, Math.Round(value, 2));
     }
 
 
@@ -249,7 +228,7 @@ public sealed class OperationLayerReHeight : Operation
         Presets = GetItems(SlicerFile.LayerCount, (decimal)SlicerFile.LayerHeight);
         if (Presets.Length > 0)
         {
-            _selectedItem = Presets[0];
+            SelectedItem = Presets[0];
         }
 
         if (_bottomExposure <= 0) _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
@@ -285,13 +264,13 @@ public sealed class OperationLayerReHeight : Operation
     #region Methods
     protected override bool ExecuteInternally(OperationProgress progress)
     {
-        if (_method == OperationLayerReHeightMethod.ReHeight)
+        if (Method == OperationLayerReHeightMethod.ReHeight)
         {
-            progress.ItemCount = _selectedItem!.LayerCount;
+            progress.ItemCount = SelectedItem!.LayerCount;
 
-            var layers = new Layer[_selectedItem.LayerCount];
+            var layers = new Layer[SelectedItem.LayerCount];
 
-            if (_selectedItem.IsDivision)
+            if (SelectedItem.IsDivision)
             {
                 uint newLayerIndex = 0;
                 for (uint layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
@@ -299,7 +278,7 @@ public sealed class OperationLayerReHeight : Operation
                     progress.PauseOrCancelIfRequested();
 
                     var oldLayer = SlicerFile[layerIndex];
-                    for (byte i = 0; i < _selectedItem.Modifier; i++)
+                    for (byte i = 0; i < SelectedItem.Modifier; i++)
                     {
                         var newLayer = oldLayer.Clone();
                         //newLayer.Index = newLayerIndex;
@@ -312,10 +291,10 @@ public sealed class OperationLayerReHeight : Operation
             }
             else
             {
-                var layerIndexes = new uint[SlicerFile.LayerCount / _selectedItem.Modifier];
+                var layerIndexes = new uint[SlicerFile.LayerCount / SelectedItem.Modifier];
                 for (uint i = 0; i < layerIndexes.Length; i++)
                 {
-                    layerIndexes[i] = i * _selectedItem.Modifier;
+                    layerIndexes[i] = i * SelectedItem.Modifier;
                 }
 
                 Parallel.ForEach(layerIndexes, CoreSettings.GetParallelOptions(progress), layerIndex =>
@@ -326,16 +305,16 @@ public sealed class OperationLayerReHeight : Operation
                     Mat? matXorSum = null;
                     using Mat aaAverageSum = new();
 
-                    if (_antiAliasingType == OperationLayerReHeightAntiAliasingType.Average)
+                    if (AntiAliasingType == OperationLayerReHeightAntiAliasingType.Average)
                     {
                         matSum.ConvertTo(aaAverageSum, DepthType.Cv16U);
                     }
 
-                    for (byte i = 1; i < _selectedItem.Modifier; i++)
+                    for (byte i = 1; i < SelectedItem.Modifier; i++)
                     {
                         using var nextMat = SlicerFile[layerIndex + i].LayerMat;
 
-                        switch (_antiAliasingType)
+                        switch (AntiAliasingType)
                         {
                             case OperationLayerReHeightAntiAliasingType.None:
                                 CvInvoke.Add(matSum, nextMat, matSum);
@@ -347,7 +326,7 @@ public sealed class OperationLayerReHeight : Operation
                                 //CvInvoke.Threshold(previousMat, previousMat, 127, 255, ThresholdType.Binary);
                                 //CvInvoke.Threshold(nextMat, nextMat, 127, 255, ThresholdType.Binary);
                                 CvInvoke.BitwiseXor(previousMat, nextMat, matXor);
-                                matXor.SetTo(new MCvScalar((byte) (byte.MaxValue / _selectedItem.Modifier)),
+                                matXor.SetTo(new MCvScalar((byte) (byte.MaxValue / SelectedItem.Modifier)),
                                     matXor);
                                 if (matXorSum is null)
                                 {
@@ -370,7 +349,7 @@ public sealed class OperationLayerReHeight : Operation
                         }
                     }
 
-                    switch (_antiAliasingType)
+                    switch (AntiAliasingType)
                     {
                         case OperationLayerReHeightAntiAliasingType.Difference:
                             CvInvoke.Add(matSum, matXorSum, matSum);
@@ -379,7 +358,7 @@ public sealed class OperationLayerReHeight : Operation
                             matXorSum!.Dispose();
                             break;
                         case OperationLayerReHeightAntiAliasingType.Average:
-                            aaAverageSum.ConvertTo(matSum, DepthType.Cv8U, 1.0 / _selectedItem.Modifier);
+                            aaAverageSum.ConvertTo(matSum, DepthType.Cv8U, 1.0 / SelectedItem.Modifier);
                             CvInvoke.PyrDown(matSum, matSum);
                             CvInvoke.PyrUp(matSum, matSum);
                             break;
@@ -389,7 +368,7 @@ public sealed class OperationLayerReHeight : Operation
                     //newLayer.Index = newLayerIndex;
                     //newLayer.PositionZ = (float)(Item.LayerHeight * (newLayerIndex + 1));
                     newLayer.LayerMat = matSum;
-                    layers[layerIndex / _selectedItem.Modifier] = newLayer;
+                    layers[layerIndex / SelectedItem.Modifier] = newLayer;
 
                     progress.LockAndIncrement();
                 });
@@ -397,17 +376,17 @@ public sealed class OperationLayerReHeight : Operation
 
             SlicerFile.SuppressRebuildPropertiesWork(() =>
             {
-                SlicerFile.LayerHeight = (float)_selectedItem!.LayerHeight;
+                SlicerFile.LayerHeight = (float)SelectedItem!.LayerHeight;
                 SlicerFile.BottomExposureTime = (float) _bottomExposure;
                 SlicerFile.ExposureTime = (float) _normalExposure;
                 SlicerFile.Layers = layers;
             }, true);
         }
-        else if (_method == OperationLayerReHeightMethod.OffsetPositionZ)
+        else if (Method == OperationLayerReHeightMethod.OffsetPositionZ)
         {
             for (var layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
             {
-                SlicerFile[layerIndex].PositionZ += (float)_positionZOffset;
+                SlicerFile[layerIndex].PositionZ += (float)PositionZOffset;
                 progress++;
             }
         }

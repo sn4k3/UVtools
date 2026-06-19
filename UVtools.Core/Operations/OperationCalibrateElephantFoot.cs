@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,9 +7,11 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
+using EmguExtensions;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -24,32 +26,14 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationCalibrateElephantFoot : Operation
+public sealed partial class OperationCalibrateElephantFoot : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
     private decimal _layerHeight;
-    private bool _syncLayers;
-    private ushort _bottomLayers;
-    private ushort _normalLayers;
     private decimal _bottomExposure;
     private decimal _normalExposure;
     private decimal _partScale = 1;
-    private byte _margin = 30;
-    private bool _extrudeText = true;
-    private decimal _textHeight = 1;
-    private bool _enableAntiAliasing = true;
-    private bool _mirrorOutput;
-    private bool _isErodeEnabled = true;
-    private byte _erodeStartIteration = 2;
-    private byte _erodeEndIteration = 6;
-    private byte _erodeIterationSteps = 1;
-    private bool _isDimmingEnabled = true;
-    private byte _dimmingWallThickness = 20;
-    private byte _dimmingStartBrightness = 140;
-    private byte _dimmingEndBrightness = 200;
-    private byte _dimmingBrightnessSteps = 20;
-    private bool _outputOriginalPart = true;
 
     #endregion
 
@@ -78,14 +62,14 @@ public sealed class OperationCalibrateElephantFoot : Operation
     {
         var sb = new StringBuilder();
 
-        if (_isErodeEnabled && _erodeStartIteration > _erodeEndIteration)
+        if (IsErodeEnabled && ErodeStartIteration > ErodeEndIteration)
         {
             sb.AppendLine("Erode start iterations can't be higher than end iterations.");
         }
 
-        if (_isDimmingEnabled)
+        if (IsDimmingEnabled)
         {
-            if (_dimmingStartBrightness > _dimmingEndBrightness)
+            if (DimmingStartBrightness > DimmingEndBrightness)
             {
                 sb.AppendLine("Wall dimming start brightness can't be higher than end brightness.");
             }
@@ -109,13 +93,13 @@ public sealed class OperationCalibrateElephantFoot : Operation
     public override string ToString()
     {
         var result = $"[Layer Height: {_layerHeight}] " +
-                     $"[Layers: {_bottomLayers}/{_normalLayers}] " +
+                     $"[Layers: {BottomLayers}/{NormalLayers}] " +
                      $"[Exposure: {_bottomExposure}/{_normalExposure}] " +
-                     $"[Extrude: {_extrudeText} {_textHeight}mm]" +
-                     $"[Scale: {_partScale}] [Margin: {_margin}] [ORI: {_outputOriginalPart}]" +
-                     $"[E: {_erodeStartIteration}-{_erodeEndIteration} S{_erodeIterationSteps}] " +
-                     $"[D: W{_dimmingWallThickness} B{_dimmingStartBrightness}-{_dimmingEndBrightness} S{_dimmingBrightnessSteps}] " +
-                     $"[AA: {_enableAntiAliasing}] [Mirror: {_mirrorOutput}]";
+                     $"[Extrude: {ExtrudeText} {TextHeight}mm]" +
+                     $"[Scale: {_partScale}] [Margin: {Margin}] [ORI: {OutputOriginalPart}]" +
+                     $"[E: {ErodeStartIteration}-{ErodeEndIteration} S{ErodeIterationSteps}] " +
+                     $"[D: W{DimmingWallThickness} B{DimmingStartBrightness}-{DimmingEndBrightness} S{DimmingBrightnessSteps}] " +
+                     $"[AA: {EnableAntiAliasing}] [Mirror: {MirrorOutput}]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -129,61 +113,46 @@ public sealed class OperationCalibrateElephantFoot : Operation
         get => _layerHeight;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _layerHeight, Layer.RoundHeight(value))) return;
-            RaisePropertyChanged(nameof(BottomHeight));
-            RaisePropertyChanged(nameof(NormalHeight));
-            RaisePropertyChanged(nameof(TotalHeight));
+            if(!SetProperty(ref _layerHeight, Layer.RoundHeight(value))) return;
+            OnPropertyChanged(nameof(BottomHeight));
+            OnPropertyChanged(nameof(NormalHeight));
+            OnPropertyChanged(nameof(TotalHeight));
         }
     }
 
     public ushort Microns => (ushort) (LayerHeight * 1000);
 
-    public bool SyncLayers
+    [ObservableProperty]
+    public partial bool SyncLayers { get; set; }
+
+    partial void OnSyncLayersChanged(bool value)
     {
-        get => _syncLayers;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _syncLayers, value)) return;
-            if (_syncLayers)
-            {
-                NormalLayers = _bottomLayers;
-            }
-        }
+        if (value) NormalLayers = BottomLayers;
     }
 
-    public ushort BottomLayers
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BottomHeight))]
+    [NotifyPropertyChangedFor(nameof(TotalHeight))]
+    [NotifyPropertyChangedFor(nameof(LayerCount))]
+    public partial ushort BottomLayers { get; set; }
+
+    partial void OnBottomLayersChanged(ushort value)
     {
-        get => _bottomLayers;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _bottomLayers, value)) return;
-            if (_syncLayers)
-            {
-                NormalLayers = _bottomLayers;
-            }
-            RaisePropertyChanged(nameof(BottomHeight));
-            RaisePropertyChanged(nameof(TotalHeight));
-            RaisePropertyChanged(nameof(LayerCount));
-        }
+        if (SyncLayers) NormalLayers = value;
     }
 
-    public ushort NormalLayers
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NormalHeight))]
+    [NotifyPropertyChangedFor(nameof(TotalHeight))]
+    [NotifyPropertyChangedFor(nameof(LayerCount))]
+    public partial ushort NormalLayers { get; set; }
+
+    partial void OnNormalLayersChanged(ushort value)
     {
-        get => _normalLayers;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _normalLayers, value)) return;
-            if (_syncLayers)
-            {
-                BottomLayers = _normalLayers;
-            }
-            RaisePropertyChanged(nameof(NormalHeight));
-            RaisePropertyChanged(nameof(TotalHeight));
-            RaisePropertyChanged(nameof(LayerCount));
-        }
+        if (SyncLayers) BottomLayers = value;
     }
 
-    public uint LayerCount => (uint)(_bottomLayers + _normalLayers + (_extrudeText ? Math.Floor(_textHeight / _layerHeight) : 0));
+    public uint LayerCount => (uint)(BottomLayers + NormalLayers + (ExtrudeText ? Math.Floor(TextHeight / _layerHeight) : 0));
 
     public decimal BottomHeight => Layer.RoundHeight(LayerHeight * BottomLayers);
     public decimal NormalHeight => Layer.RoundHeight(LayerHeight * NormalLayers);
@@ -193,174 +162,102 @@ public sealed class OperationCalibrateElephantFoot : Operation
     public decimal BottomExposure
     {
         get => _bottomExposure;
-        set => RaiseAndSetIfChanged(ref _bottomExposure, Math.Round(value, 2));
+        set => SetProperty(ref _bottomExposure, Math.Round(value, 2));
     }
 
     public decimal NormalExposure
     {
         get => _normalExposure;
-        set => RaiseAndSetIfChanged(ref _normalExposure, Math.Round(value, 2));
+        set => SetProperty(ref _normalExposure, Math.Round(value, 2));
     }
 
     public decimal PartScale
     {
         get => _partScale;
-        set => RaiseAndSetIfChanged(ref _partScale, Math.Round(value, 2));
+        set => SetProperty(ref _partScale, Math.Round(value, 2));
     }
 
-    public byte Margin
-    {
-        get => _margin;
-        set => RaiseAndSetIfChanged(ref _margin, value);
-    }
+    [ObservableProperty]
+    public partial byte Margin { get; set; } = 30;
 
-    public bool ExtrudeText
-    {
-        get => _extrudeText;
-        set => RaiseAndSetIfChanged(ref _extrudeText, value);
-    }
+    [ObservableProperty]
+    public partial bool ExtrudeText { get; set; } = true;
 
-    public decimal TextHeight
-    {
-        get => _textHeight;
-        set => RaiseAndSetIfChanged(ref _textHeight, value);
-    }
+    [ObservableProperty]
+    public partial decimal TextHeight { get; set; } = 1;
 
-    public bool OutputOriginalPart
-    {
-        get => _outputOriginalPart;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _outputOriginalPart, value)) return;
-            RaisePropertyChanged(nameof(ObjectCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ObjectCount))]
+    public partial bool OutputOriginalPart { get; set; } = true;
 
-    public bool EnableAntiAliasing
-    {
-        get => _enableAntiAliasing;
-        set => RaiseAndSetIfChanged(ref _enableAntiAliasing, value);
-    }
+    [ObservableProperty]
+    public partial bool EnableAntiAliasing { get; set; } = true;
 
-    public bool MirrorOutput
-    {
-        get => _mirrorOutput;
-        set => RaiseAndSetIfChanged(ref _mirrorOutput, value);
-    }
+    [ObservableProperty]
+    public partial bool MirrorOutput { get; set; }
 
-    public bool IsErodeEnabled
-    {
-        get => _isErodeEnabled;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _isErodeEnabled, value)) return;
-            RaisePropertyChanged(nameof(ErodeObjects));
-            RaisePropertyChanged(nameof(ObjectCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ErodeObjects))]
+    [NotifyPropertyChangedFor(nameof(ObjectCount))]
+    public partial bool IsErodeEnabled { get; set; } = true;
 
-    public byte ErodeStartIteration
-    {
-        get => _erodeStartIteration;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _erodeStartIteration, value)) return;
-            RaisePropertyChanged(nameof(ErodeObjects));
-            RaisePropertyChanged(nameof(ObjectCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ErodeObjects))]
+    [NotifyPropertyChangedFor(nameof(ObjectCount))]
+    public partial byte ErodeStartIteration { get; set; } = 2;
 
-    public byte ErodeEndIteration
-    {
-        get => _erodeEndIteration;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _erodeEndIteration, value)) return;
-            RaisePropertyChanged(nameof(ErodeObjects));
-            RaisePropertyChanged(nameof(ObjectCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ErodeObjects))]
+    [NotifyPropertyChangedFor(nameof(ObjectCount))]
+    public partial byte ErodeEndIteration { get; set; } = 6;
 
-    public byte ErodeIterationSteps
-    {
-        get => _erodeIterationSteps;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _erodeIterationSteps, value)) return;
-            RaisePropertyChanged(nameof(ErodeObjects));
-            RaisePropertyChanged(nameof(ObjectCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ErodeObjects))]
+    [NotifyPropertyChangedFor(nameof(ObjectCount))]
+    public partial byte ErodeIterationSteps { get; set; } = 1;
 
     public KernelConfiguration ErodeKernel { get; set; } = new();
 
-    public bool IsDimmingEnabled
-    {
-        get => _isDimmingEnabled;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _isDimmingEnabled, value)) return;
-            RaisePropertyChanged(nameof(DimmingObjects));
-            RaisePropertyChanged(nameof(ObjectCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DimmingObjects))]
+    [NotifyPropertyChangedFor(nameof(ObjectCount))]
+    public partial bool IsDimmingEnabled { get; set; } = true;
 
-    public byte DimmingWallThickness
-    {
-        get => _dimmingWallThickness;
-        set => RaiseAndSetIfChanged(ref _dimmingWallThickness, value);
-    }
+    [ObservableProperty]
+    public partial byte DimmingWallThickness { get; set; } = 20;
 
-    public byte DimmingStartBrightness
-    {
-        get => _dimmingStartBrightness;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _dimmingStartBrightness, value)) return;
-            RaisePropertyChanged(nameof(DimmingStartBrightnessPercent));
-            RaisePropertyChanged(nameof(DimmingObjects));
-            RaisePropertyChanged(nameof(ObjectCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DimmingStartBrightnessPercent))]
+    [NotifyPropertyChangedFor(nameof(DimmingObjects))]
+    [NotifyPropertyChangedFor(nameof(ObjectCount))]
+    public partial byte DimmingStartBrightness { get; set; } = 140;
 
-    public float DimmingStartBrightnessPercent => MathF.Round(_dimmingStartBrightness * 100 / 255.0f, 2);
+    public float DimmingStartBrightnessPercent => MathF.Round(DimmingStartBrightness * 100 / 255.0f, 2);
 
-    public byte DimmingEndBrightness
-    {
-        get => _dimmingEndBrightness;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _dimmingEndBrightness, value)) return;
-            RaisePropertyChanged(nameof(DimmingEndBrightnessPercent));
-            RaisePropertyChanged(nameof(DimmingObjects));
-            RaisePropertyChanged(nameof(ObjectCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DimmingEndBrightnessPercent))]
+    [NotifyPropertyChangedFor(nameof(DimmingObjects))]
+    [NotifyPropertyChangedFor(nameof(ObjectCount))]
+    public partial byte DimmingEndBrightness { get; set; } = 200;
 
-    public float DimmingEndBrightnessPercent => MathF.Round(_dimmingEndBrightness * 100 / 255.0f, 2);
+    public float DimmingEndBrightnessPercent => MathF.Round(DimmingEndBrightness * 100 / 255.0f, 2);
 
-    public byte DimmingBrightnessSteps
-    {
-        get => _dimmingBrightnessSteps;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _dimmingBrightnessSteps, value)) return;
-            RaisePropertyChanged(nameof(DimmingObjects));
-            RaisePropertyChanged(nameof(ObjectCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DimmingObjects))]
+    [NotifyPropertyChangedFor(nameof(ObjectCount))]
+    public partial byte DimmingBrightnessSteps { get; set; } = 20;
 
     public KernelConfiguration DimmingKernel { get; set; } = new();
 
-    public uint ErodeObjects => _isErodeEnabled ?
-        (uint)((_erodeEndIteration - _erodeStartIteration) / (decimal)_erodeIterationSteps) + 1
+    public uint ErodeObjects => IsErodeEnabled ?
+        (uint)((ErodeEndIteration - ErodeStartIteration) / (decimal)ErodeIterationSteps) + 1
         : 0;
 
-    public uint DimmingObjects => _isDimmingEnabled ?
-        (uint)((_dimmingEndBrightness - _dimmingStartBrightness) / (decimal) _dimmingBrightnessSteps) + 1
+    public uint DimmingObjects => IsDimmingEnabled ?
+        (uint)((DimmingEndBrightness - DimmingStartBrightness) / (decimal) DimmingBrightnessSteps) + 1
         : 0;
 
-    public uint ObjectCount => (_outputOriginalPart ? 1u : 0) + ErodeObjects + DimmingObjects;
+    public uint ObjectCount => (OutputOriginalPart ? 1u : 0) + ErodeObjects + DimmingObjects;
 
     #endregion
 
@@ -377,10 +274,10 @@ public sealed class OperationCalibrateElephantFoot : Operation
         if(_layerHeight <= 0) _layerHeight = (decimal)SlicerFile.LayerHeight;
         if(_bottomExposure <= 0) _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
         if(_normalExposure <= 0) _normalExposure = (decimal)SlicerFile.ExposureTime;
-        if (_bottomLayers <= 0) _bottomLayers = (ushort) Slicer.Slicer.MillimetersToLayers(1M, _layerHeight);
-        if (_normalLayers <= 0) _normalLayers = (ushort) Slicer.Slicer.MillimetersToLayers(3.5M, _layerHeight);
+        if (BottomLayers <= 0) BottomLayers = (ushort) Slicer.Slicer.MillimetersToLayers(1M, _layerHeight);
+        if (NormalLayers <= 0) NormalLayers = (ushort) Slicer.Slicer.MillimetersToLayers(3.5M, _layerHeight);
 
-        _mirrorOutput = SlicerFile.DisplayMirror != FlipDirection.None;
+        MirrorOutput = SlicerFile.DisplayMirror != FlipDirection.None;
     }
 
     #endregion
@@ -389,7 +286,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
 
     private bool Equals(OperationCalibrateElephantFoot other)
     {
-        return _layerHeight == other._layerHeight && _syncLayers == other._syncLayers && _bottomLayers == other._bottomLayers && _normalLayers == other._normalLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _partScale == other._partScale && _margin == other._margin && _extrudeText == other._extrudeText && _textHeight == other._textHeight && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _isErodeEnabled == other._isErodeEnabled && _erodeStartIteration == other._erodeStartIteration && _erodeEndIteration == other._erodeEndIteration && _erodeIterationSteps == other._erodeIterationSteps && _isDimmingEnabled == other._isDimmingEnabled && _dimmingWallThickness == other._dimmingWallThickness && _dimmingStartBrightness == other._dimmingStartBrightness && _dimmingEndBrightness == other._dimmingEndBrightness && _dimmingBrightnessSteps == other._dimmingBrightnessSteps && _outputOriginalPart == other._outputOriginalPart;
+        return _layerHeight == other._layerHeight && SyncLayers == other.SyncLayers && BottomLayers == other.BottomLayers && NormalLayers == other.NormalLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _partScale == other._partScale && Margin == other.Margin && ExtrudeText == other.ExtrudeText && TextHeight == other.TextHeight && EnableAntiAliasing == other.EnableAntiAliasing && MirrorOutput == other.MirrorOutput && IsErodeEnabled == other.IsErodeEnabled && ErodeStartIteration == other.ErodeStartIteration && ErodeEndIteration == other.ErodeEndIteration && ErodeIterationSteps == other.ErodeIterationSteps && IsDimmingEnabled == other.IsDimmingEnabled && DimmingWallThickness == other.DimmingWallThickness && DimmingStartBrightness == other.DimmingStartBrightness && DimmingEndBrightness == other.DimmingEndBrightness && DimmingBrightnessSteps == other.DimmingBrightnessSteps && OutputOriginalPart == other.OutputOriginalPart;
     }
 
     public override bool Equals(object? obj)
@@ -409,9 +306,9 @@ public sealed class OperationCalibrateElephantFoot : Operation
     {
         var layers = new Mat[3];
 
-        layers[0] = EmguExtensions.InitMat(SlicerFile.Resolution);
+        layers[0] = EmguCvExtensions.InitMat(SlicerFile.Resolution);
         layers[2] = layers[0].Clone();
-        LineType lineType = _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
+        LineType lineType = EnableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
         int length = (int) (250 * _partScale);
         int triangleLength = (int) (50 * _partScale);
         const byte startX = 2;
@@ -470,12 +367,12 @@ public sealed class OperationCalibrateElephantFoot : Operation
         int ellipseHeight = (int) (50 * _partScale);
 
         maxY += ellipseHeight;
-        using Mat shape = EmguExtensions.InitMat(new Size(maxX + startX, maxY + startY));
-        CvInvoke.FillPoly(shape, new VectorOfPoint(pointList.ToArray()), EmguExtensions.WhiteColor, lineType);
-        shape.DrawCircle(new Point(0, 0), SlicerFile.PixelsToNormalizedPitch(length / 4), EmguExtensions.BlackColor, -1, lineType);
+        using Mat shape = EmguCvExtensions.InitMat(new Size(maxX + startX, maxY + startY));
+        CvInvoke.FillPoly(shape, new VectorOfPoint(pointList.ToArray()), EmguCvExtensions.WhiteColor, lineType);
+        shape.DrawCircle(new Point(0, 0), SlicerFile.PixelsToNormalizedPitch(length / 4), EmguCvExtensions.BlackColor, -1, lineType);
         CvInvoke.Ellipse(shape, new Point(maxX / 2, maxY - ellipseHeight), new Size(maxX / 3, ellipseHeight), 0, 0, 360,
-            EmguExtensions.WhiteColor, -1, lineType);
-        shape.DrawCircle(new Point(length / 2, (int) (maxY - 100 * _partScale)), SlicerFile.PixelsToNormalizedPitch(length / 5), EmguExtensions.BlackColor, -1, lineType);
+            EmguCvExtensions.WhiteColor, -1, lineType);
+        shape.DrawCircle(new Point(length / 2, (int) (maxY - 100 * _partScale)), SlicerFile.PixelsToNormalizedPitch(length / 5), EmguCvExtensions.BlackColor, -1, lineType);
 
         int currentX = 0;
         int currentY = 0;
@@ -492,7 +389,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
 
         void addText(Mat mat, ushort number, params string[]? text)
         {
-            var color = _extrudeText ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor;
+            var color = ExtrudeText ? EmguCvExtensions.WhiteColor : EmguCvExtensions.BlackColor;
             CvInvoke.PutText(mat, number.ToString(), new Point((int) (100 * _partScale), (int) (55 * _partScale)), font, 1.5 * (double) _partScale, color, (int) (4 * _partScale), lineType);
             CvInvoke.PutText(mat, "UVtools EP", new Point(fontStartX, fontStartY), font, 0.8 * (double) _partScale, color, (int) (2 * _partScale), lineType);
             CvInvoke.PutText(mat, $"{Microns}um", new Point(fontStartX, fontStartY + fontMargin), font, fontScale, color, fontThickness, lineType);
@@ -518,7 +415,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
             using var roi1 = new Mat(layers[1], new Rectangle(new Point(currentX, currentY), shape.Size));
             shape.CopyTo(roi1);
 
-            if (_extrudeText)
+            if (ExtrudeText)
             {
                 using var roi2 = new Mat(layers[2], new Rectangle(new Point(currentX, currentY), shape.Size));
                 addText(roi2, ++count, "ORI");
@@ -560,7 +457,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
                 using (var roi = new Mat(layers[1], new Rectangle(new Point(currentX, currentY), shape.Size)))
                 {
                     shape.CopyTo(roi);
-                    if (_extrudeText)
+                    if (ExtrudeText)
                     {
                         using var roi1 = new Mat(layers[2], new Rectangle(new Point(currentX, currentY), shape.Size));
                         addText(roi1, count, $"E: {iteration}i");
@@ -607,7 +504,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
                 using (var roi = layers[1].Roi(new Rectangle(new Point(currentX, currentY), shape.Size)))
                 {
                     shape.CopyTo(roi);
-                    if (_extrudeText)
+                    if (ExtrudeText)
                     {
                         using var roi1 = new Mat(layers[2], new Rectangle(new Point(currentX, currentY), shape.Size));
                         addText(roi1, count, $"W: {DimmingWallThickness}", $"B: {brightness}");
@@ -626,7 +523,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
                     mask.SetTo(new MCvScalar(byte.MaxValue-brightness));
                     int tempIterations = DimmingWallThickness;
                     var kernel = DimmingKernel.GetKernel(ref tempIterations);
-                    CvInvoke.Erode(shape, erode, kernel, EmguExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
+                    CvInvoke.Erode(shape, erode, kernel, EmguCvExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
                     //CvInvoke.Subtract(shape, erode, diff);
                     //CvInvoke.BitwiseAnd(diff, mask, target);
                     //CvInvoke.Add(erode, target, target);
@@ -638,7 +535,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
             }
         }
 
-        if (_mirrorOutput)
+        if (MirrorOutput)
         {
             var flip = SlicerFile.DisplayMirror;
             if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
@@ -653,7 +550,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
 
     public Mat GetThumbnail()
     {
-        Mat thumbnail = EmguExtensions.InitMat(new Size(400, 200), 3);
+        Mat thumbnail = EmguCvExtensions.InitMat(new Size(400, 200), 3);
         var fontFace = FontFace.HersheyDuplex;
         var fontScale = 1;
         var fontThickness = 2;
@@ -664,12 +561,12 @@ public sealed class OperationCalibrateElephantFoot : Operation
         CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
         CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
         CvInvoke.PutText(thumbnail, "Elephant Foot Cal.", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
-        CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
-        CvInvoke.PutText(thumbnail, $"{ObjectCount} Objects", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
+        CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguCvExtensions.WhiteColor, fontThickness);
+        CvInvoke.PutText(thumbnail, $"{ObjectCount} Objects", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguCvExtensions.WhiteColor, fontThickness);
 
-        /*thumbnail.SetTo(EmguExtensions.Black3Byte);
+        /*thumbnail.SetTo(EmguCvExtensions.Black3Byte);
 
-            CvInvoke.Circle(thumbnail, new Point(400/2, 200/2), 200/2, EmguExtensions.White3Byte, -1);
+            CvInvoke.Circle(thumbnail, new Point(400/2, 200/2), 200/2, EmguCvExtensions.White3Byte, -1);
             for (int angle = 0; angle < 360; angle+=20)
             {
                 CvInvoke.Line(thumbnail, new Point(400 / 2, 200 / 2), new Point((int)(400 / 2 + 100 * Math.Cos(angle * Math.PI / 180)), (int)(200 / 2 + 100 * Math.Sin(angle * Math.PI / 180))), new MCvScalar(255, 27, 245), 3);
@@ -701,7 +598,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
             IsModified = true
         };
 
-        if (_extrudeText)
+        if (ExtrudeText)
         {
             moveOp.Execute(layers[2]);
             extrudeLayer = new Layer(0, layers[2], SlicerFile)
@@ -715,16 +612,16 @@ public sealed class OperationCalibrateElephantFoot : Operation
         progress++;
 
         for (uint layerIndex = 0;
-             layerIndex < _bottomLayers + _normalLayers;
+            layerIndex < BottomLayers + NormalLayers;
              layerIndex++)
         {
             progress.PauseOrCancelIfRequested();
             newLayers[layerIndex] = SlicerFile.GetBottomOrNormalValue(layerIndex, bottomLayer.Clone(), layer.Clone());
         }
 
-        if (_extrudeText)
+        if (ExtrudeText)
         {
-            for (uint layerIndex = (uint) (_bottomLayers + _normalLayers); layerIndex < LayerCount; layerIndex++)
+        for (uint layerIndex = (uint) (BottomLayers + NormalLayers); layerIndex < LayerCount; layerIndex++)
             {
                 newLayers[layerIndex] = extrudeLayer!.Clone();
             }

@@ -2,8 +2,6 @@
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using System.Threading.Tasks;
-using Emgu.CV;
-using System.Runtime.InteropServices;
 
 namespace UVtools.Core.Scripting;
 

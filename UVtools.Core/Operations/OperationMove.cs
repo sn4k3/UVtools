@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.Structure;
 using System;
 using System.Drawing;
@@ -16,7 +17,7 @@ using UVtools.Core.FileFormats;
 namespace UVtools.Core.Operations;
 
 
-public class OperationMove : Operation
+public partial class OperationMove : Operation
 {
     #region Overrides
 
@@ -61,15 +62,6 @@ public class OperationMove : Operation
 
     #region Members
     private Rectangle _dstRoi = Rectangle.Empty;
-    private uint _imageWidth;
-    private uint _imageHeight;
-    private Anchor _anchor = Anchor.MiddleCenter;
-    private int _marginLeft;
-    private int _marginTop;
-    private int _marginRight;
-    private int _marginBottom;
-    private bool _isCutMove = true;
-    private bool _isWithinBoundary;
     #endregion
 
     #region Properties
@@ -84,73 +76,35 @@ public class OperationMove : Operation
         }
     }
 
-    public uint ImageWidth
-    {
-        get => _imageWidth;
-        set => RaiseAndSetIfChanged(ref _imageWidth, value);
-    }
+    [ObservableProperty]
+    public partial uint ImageWidth { get; set; }
 
-    public uint ImageHeight
-    {
-        get => _imageHeight;
-        set => RaiseAndSetIfChanged(ref _imageHeight, value);
-    }
+    [ObservableProperty]
+    public partial uint ImageHeight { get; set; }
 
-    public Anchor Anchor
-    {
-        get => _anchor;
-        set
-        {
-            RaiseAndSetIfChanged(ref _anchor, value);
-            CalculateDstRoi();
-        }
-    }
+    [ObservableProperty]
+    public partial Anchor Anchor { get; set; } = Anchor.MiddleCenter;
 
-    public int MarginLeft
-    {
-        get => _marginLeft;
-        set
-        {
-            RaiseAndSetIfChanged(ref _marginLeft, value);
-            CalculateDstRoi();
-        }
-    }
+    [ObservableProperty]
+    public partial int MarginLeft { get; set; }
 
-    public int MarginTop
-    {
-        get => _marginTop;
-        set
-        {
-            RaiseAndSetIfChanged(ref _marginTop, value);
-            CalculateDstRoi();
-        }
-    }
+    [ObservableProperty]
+    public partial int MarginTop { get; set; }
 
-    public int MarginRight
-    {
-        get => _marginRight;
-        set
-        {
-            RaiseAndSetIfChanged(ref _marginRight, value);
-            CalculateDstRoi();
-        }
-    }
+    [ObservableProperty]
+    public partial int MarginRight { get; set; }
 
-    public int MarginBottom
-    {
-        get => _marginBottom;
-        set
-        {
-            RaiseAndSetIfChanged(ref _marginBottom, value);
-            CalculateDstRoi();
-        }
-    }
+    [ObservableProperty]
+    public partial int MarginBottom { get; set; }
 
-    public bool IsCutMove
-    {
-        get => _isCutMove;
-        set => RaiseAndSetIfChanged(ref _isCutMove, value);
-    }
+    partial void OnAnchorChanged(Anchor value) => CalculateDstRoi();
+    partial void OnMarginLeftChanged(int value) => CalculateDstRoi();
+    partial void OnMarginTopChanged(int value) => CalculateDstRoi();
+    partial void OnMarginRightChanged(int value) => CalculateDstRoi();
+    partial void OnMarginBottomChanged(int value) => CalculateDstRoi();
+
+    [ObservableProperty]
+    public partial bool IsCutMove { get; set; } = true;
 
     public string LocationXString => $"X: {DstRoi.X} / {ImageWidth - ROI.Width}";
     public string LocationYString => $"Y: {DstRoi.Y} / {ImageHeight - ROI.Height}";
@@ -158,17 +112,11 @@ public class OperationMove : Operation
     public string LocationWidthString => $"Width: {ROI.Width} / {ImageWidth}";
     public string LocationHeightString => $"Height: {ROI.Height} / {ImageHeight}";
 
-    public bool IsWithinBoundary
-    {
-        get => _isWithinBoundary;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _isWithinBoundary, value)) return;
-            RaisePropertyChanged(nameof(IsWithinBoundaryString));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsWithinBoundaryString))]
+    public partial bool IsWithinBoundary { get; set; }
 
-    public string IsWithinBoundaryString => "Model within boundary: " + (_isWithinBoundary ? "Yes" : "No");
+    public string IsWithinBoundaryString => "Model within boundary: " + (IsWithinBoundary ? "Yes" : "No");
 
     #endregion
 
@@ -181,7 +129,7 @@ public class OperationMove : Operation
 
     public OperationMove(FileFormat slicerFile, Anchor anchor) : base(slicerFile)
     {
-        _anchor = anchor;
+        Anchor = anchor;
     }
 
     public OperationMove(FileFormat slicerFile, Rectangle srcRoi, Anchor anchor = Anchor.MiddleCenter) : this(slicerFile, anchor)
@@ -193,8 +141,8 @@ public class OperationMove : Operation
     {
         base.InitWithSlicerFile();
         ROI = SlicerFile.BoundingRectangle;
-        _imageWidth = SlicerFile.ResolutionX;
-        _imageHeight = SlicerFile.ResolutionY;
+        ImageWidth = SlicerFile.ResolutionX;
+        ImageHeight = SlicerFile.ResolutionY;
     }
 
     /*public OperationMove(FileFormat slicerFile, Rectangle srcRoi, Mat mat, Anchor anchor = Anchor.MiddleCenter) : this(slicerFile, srcRoi, anchor)
@@ -233,9 +181,9 @@ public class OperationMove : Operation
                              _dstRoi.Width == 0 || _dstRoi.Right > ImageWidth ||
                              _dstRoi.Height == 0 || _dstRoi.Bottom > ImageHeight);
 
-        RaisePropertyChanged(nameof(DstRoi));
-        RaisePropertyChanged(nameof(LocationXString));
-        RaisePropertyChanged(nameof(LocationYString));
+        OnPropertyChanged(nameof(DstRoi));
+        OnPropertyChanged(nameof(LocationXString));
+        OnPropertyChanged(nameof(LocationYString));
     }
 
 
@@ -288,8 +236,8 @@ public class OperationMove : Operation
 
     public override bool Execute(Mat mat, params object[]? arguments)
     {
-        if (_imageWidth == 0) _imageWidth = (uint) mat.Width;
-        if (_imageHeight == 0) _imageHeight = (uint) mat.Height;
+        if (ImageWidth == 0) ImageWidth = (uint) mat.Width;
+        if (ImageHeight == 0) ImageHeight = (uint) mat.Height;
 
         using var srcRoi = new Mat(mat, ROI);
         using var dstRoi = new Mat(mat, DstRoi);

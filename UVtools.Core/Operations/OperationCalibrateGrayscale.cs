@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
@@ -14,39 +15,23 @@ using System;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
+using PointExtensions = UVtools.Core.Extensions.PointExtensions;
 
 namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationCalibrateGrayscale : Operation
+public sealed partial class OperationCalibrateGrayscale : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
     private decimal _layerHeight;
-    private ushort _bottomLayers;
-    private ushort _interfaceLayers = 20;
-    private ushort _normalLayers = 20;
     private decimal _bottomExposure;
     private decimal _normalExposure;
-    private ushort _outerMargin = 200;
-    private ushort _innerMargin = 50;
-    private bool _enableAntiAliasing = false;
-    private bool _mirrorOutput;
-    private byte _startBrightness = 175;
-    private byte _endBrightness = 255;
-    private byte _brightnessSteps = 10;
-    private bool _enableCenterHoleRelief = true;
-    private ushort _centerHoleDiameter = 200;
-    private bool _textEnabled = true;
-    private bool _convertBrightnessToExposureTime;
-    private bool _enableLineDivisions = true;
-    private byte _lineDivisionThickness = 30;
-    private byte _lineDivisionBrightness = 255;
-    private short _textXOffset;
 
     #endregion
 
@@ -74,7 +59,7 @@ public sealed class OperationCalibrateGrayscale : Operation
     {
         var sb = new StringBuilder();
 
-        if (_startBrightness > _endBrightness)
+        if (StartBrightness > EndBrightness)
         {
             sb.AppendLine("Start brightness must be lower or equal to end brightness.");
         }
@@ -89,11 +74,11 @@ public sealed class OperationCalibrateGrayscale : Operation
     public override string ToString()
     {
         var result = $"[Layer Height: {_layerHeight}] " +
-                     $"[Layers: {_bottomLayers}/{_interfaceLayers}/{_normalLayers}] " +
+                     $"[Layers: {BottomLayers}/{InterfaceLayers}/{NormalLayers}] " +
                      $"[Exposure: {_bottomExposure}/{_normalExposure}] " +
-                     $"[Margin: {_outerMargin}/{_innerMargin}] " +
-                     $"[B: {_startBrightness}-{_endBrightness} S{_brightnessSteps}] " +
-                     $"[AA: {_enableAntiAliasing}] [Mirror: {_mirrorOutput}]";
+                     $"[Margin: {OuterMargin}/{InnerMargin}] " +
+                     $"[B: {StartBrightness}-{EndBrightness} S{BrightnessSteps}] " +
+                     $"[AA: {EnableAntiAliasing}] [Mirror: {MirrorOutput}]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -111,10 +96,10 @@ public sealed class OperationCalibrateGrayscale : Operation
     {
         base.InitWithSlicerFile();
         if(_layerHeight <= 0) _layerHeight = (decimal)SlicerFile.LayerHeight;
-        if(_bottomLayers <= 0) _bottomLayers = SlicerFile.BottomLayerCount;
+        if(BottomLayers <= 0) BottomLayers = SlicerFile.BottomLayerCount;
         if(_bottomExposure <= 0) _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
         if(_normalExposure <= 0) _normalExposure = (decimal)SlicerFile.ExposureTime;
-        _mirrorOutput = SlicerFile.DisplayMirror != FlipDirection.None;
+        MirrorOutput = SlicerFile.DisplayMirror != FlipDirection.None;
     }
 
     #endregion
@@ -126,191 +111,116 @@ public sealed class OperationCalibrateGrayscale : Operation
         get => _layerHeight;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _layerHeight, Layer.RoundHeight(value))) return;
-            RaisePropertyChanged(nameof(BottomHeight));
-            RaisePropertyChanged(nameof(InterfaceHeight));
-            RaisePropertyChanged(nameof(NormalHeight));
-            RaisePropertyChanged(nameof(TotalHeight));
+            if(!SetProperty(ref _layerHeight, Layer.RoundHeight(value))) return;
+            OnPropertyChanged(nameof(BottomHeight));
+            OnPropertyChanged(nameof(InterfaceHeight));
+            OnPropertyChanged(nameof(NormalHeight));
+            OnPropertyChanged(nameof(TotalHeight));
         }
     }
 
     public ushort Microns => (ushort) (LayerHeight * 1000);
 
-    public ushort BottomLayers
-    {
-        get => _bottomLayers;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _bottomLayers, value)) return;
-            RaisePropertyChanged(nameof(BottomHeight));
-            RaisePropertyChanged(nameof(TotalHeight));
-            RaisePropertyChanged(nameof(LayerCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BottomHeight))]
+    [NotifyPropertyChangedFor(nameof(TotalHeight))]
+    [NotifyPropertyChangedFor(nameof(LayerCount))]
+    public partial ushort BottomLayers { get; set; }
 
-    public ushort InterfaceLayers
-    {
-        get => _interfaceLayers;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _interfaceLayers, value)) return;
-            RaisePropertyChanged(nameof(InterfaceHeight));
-            RaisePropertyChanged(nameof(TotalHeight));
-            RaisePropertyChanged(nameof(LayerCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InterfaceHeight))]
+    [NotifyPropertyChangedFor(nameof(TotalHeight))]
+    [NotifyPropertyChangedFor(nameof(LayerCount))]
+    public partial ushort InterfaceLayers { get; set; } = 20;
 
-    public ushort NormalLayers
-    {
-        get => _normalLayers;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _normalLayers, value)) return;
-            RaisePropertyChanged(nameof(NormalHeight));
-            RaisePropertyChanged(nameof(TotalHeight));
-            RaisePropertyChanged(nameof(LayerCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NormalHeight))]
+    [NotifyPropertyChangedFor(nameof(TotalHeight))]
+    [NotifyPropertyChangedFor(nameof(LayerCount))]
+    public partial ushort NormalLayers { get; set; } = 20;
 
-    public uint LayerCount => (uint) (_bottomLayers + _interfaceLayers + _normalLayers);
+    public uint LayerCount => (uint) (BottomLayers + InterfaceLayers + NormalLayers);
 
-    public decimal BottomHeight => Layer.RoundHeight(LayerHeight * _bottomLayers);
-    public decimal InterfaceHeight => Layer.RoundHeight(LayerHeight * _interfaceLayers);
-    public decimal NormalHeight => Layer.RoundHeight(LayerHeight * _normalLayers);
+    public decimal BottomHeight => Layer.RoundHeight(LayerHeight * BottomLayers);
+    public decimal InterfaceHeight => Layer.RoundHeight(LayerHeight * InterfaceLayers);
+    public decimal NormalHeight => Layer.RoundHeight(LayerHeight * NormalLayers);
 
     public decimal TotalHeight => BottomHeight + InterfaceHeight + NormalHeight;
 
     public decimal BottomExposure
     {
         get => _bottomExposure;
-        set => RaiseAndSetIfChanged(ref _bottomExposure, Math.Round(value, 2));
+        set => SetProperty(ref _bottomExposure, Math.Round(value, 2));
     }
 
     public decimal NormalExposure
     {
         get => _normalExposure;
-        set => RaiseAndSetIfChanged(ref _normalExposure, Math.Round(value, 2));
+        set => SetProperty(ref _normalExposure, Math.Round(value, 2));
     }
 
-    public ushort OuterMargin
-    {
-        get => _outerMargin;
-        set => RaiseAndSetIfChanged(ref _outerMargin, value);
-    }
+    [ObservableProperty]
+    public partial ushort OuterMargin { get; set; } = 200;
 
-    public ushort InnerMargin
-    {
-        get => _innerMargin;
-        set => RaiseAndSetIfChanged(ref _innerMargin, value);
-    }
+    [ObservableProperty]
+    public partial ushort InnerMargin { get; set; } = 50;
 
-    public bool EnableAntiAliasing
-    {
-        get => _enableAntiAliasing;
-        set => RaiseAndSetIfChanged(ref _enableAntiAliasing, value);
-    }
+    [ObservableProperty]
+    public partial bool EnableAntiAliasing { get; set; } = false;
 
-    public bool MirrorOutput
-    {
-        get => _mirrorOutput;
-        set => RaiseAndSetIfChanged(ref _mirrorOutput, value);
-    }
+    [ObservableProperty]
+    public partial bool MirrorOutput { get; set; }
 
-    public byte StartBrightness
-    {
-        get => _startBrightness;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _startBrightness, value)) return;
-            RaisePropertyChanged(nameof(StartBrightnessPercent));
-            RaisePropertyChanged(nameof(Divisions));
-            RaisePropertyChanged(nameof(AngleStep));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(StartBrightnessPercent))]
+    [NotifyPropertyChangedFor(nameof(Divisions))]
+    [NotifyPropertyChangedFor(nameof(AngleStep))]
+    public partial byte StartBrightness { get; set; } = 175;
 
-    public float StartBrightnessPercent => MathF.Round(_startBrightness * 100 / 255.0f, 2);
+    public float StartBrightnessPercent => MathF.Round(StartBrightness * 100 / 255.0f, 2);
 
-    public byte EndBrightness
-    {
-        get => _endBrightness;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _endBrightness, value)) return;
-            RaisePropertyChanged(nameof(EndBrightnessPercent));
-            RaisePropertyChanged(nameof(Divisions));
-            RaisePropertyChanged(nameof(AngleStep));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(EndBrightnessPercent))]
+    [NotifyPropertyChangedFor(nameof(Divisions))]
+    [NotifyPropertyChangedFor(nameof(AngleStep))]
+    public partial byte EndBrightness { get; set; } = 255;
 
-    public float EndBrightnessPercent => MathF.Round(_endBrightness * 100 / 255.0f, 2);
+    public float EndBrightnessPercent => MathF.Round(EndBrightness * 100 / 255.0f, 2);
 
-    public byte BrightnessSteps
-    {
-        get => _brightnessSteps;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _brightnessSteps, value)) return;
-            RaisePropertyChanged(nameof(Divisions));
-            RaisePropertyChanged(nameof(AngleStep));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Divisions))]
+    [NotifyPropertyChangedFor(nameof(AngleStep))]
+    public partial byte BrightnessSteps { get; set; } = 10;
 
-    public int Divisions => (int)((_endBrightness - _startBrightness) / (decimal)_brightnessSteps) + 1;
+    public int Divisions => (int)((EndBrightness - StartBrightness) / (decimal)BrightnessSteps) + 1;
     public float AngleStep => 360f / Divisions;
 
-    public bool EnableCenterHoleRelief
-    {
-        get => _enableCenterHoleRelief;
-        set => RaiseAndSetIfChanged(ref _enableCenterHoleRelief, value);
-    }
+    [ObservableProperty]
+    public partial bool EnableCenterHoleRelief { get; set; } = true;
 
-    public ushort CenterHoleDiameter
-    {
-        get => _centerHoleDiameter;
-        set => RaiseAndSetIfChanged(ref _centerHoleDiameter, value);
-    }
+    [ObservableProperty]
+    public partial ushort CenterHoleDiameter { get; set; } = 200;
 
-    public bool TextEnabled
-    {
-        get => _textEnabled;
-        set => RaiseAndSetIfChanged(ref _textEnabled, value);
-    }
+    [ObservableProperty]
+    public partial bool TextEnabled { get; set; } = true;
 
-    public bool ConvertBrightnessToExposureTime
-    {
-        get => _convertBrightnessToExposureTime;
-        set => RaiseAndSetIfChanged(ref _convertBrightnessToExposureTime, value);
-    }
+    [ObservableProperty]
+    public partial bool ConvertBrightnessToExposureTime { get; set; }
 
-    public bool EnableLineDivisions
-    {
-        get => _enableLineDivisions;
-        set => RaiseAndSetIfChanged(ref _enableLineDivisions, value);
-    }
+    [ObservableProperty]
+    public partial bool EnableLineDivisions { get; set; } = true;
 
-    public byte LineDivisionThickness
-    {
-        get => _lineDivisionThickness;
-        set => RaiseAndSetIfChanged(ref _lineDivisionThickness, value);
-    }
+    [ObservableProperty]
+    public partial byte LineDivisionThickness { get; set; } = 30;
 
-    public byte LineDivisionBrightness
-    {
-        get => _lineDivisionBrightness;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _lineDivisionBrightness, value)) return;
-            RaisePropertyChanged(nameof(LineDivisionBrightnessPercent));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LineDivisionBrightnessPercent))]
+    public partial byte LineDivisionBrightness { get; set; } = 255;
 
-    public float LineDivisionBrightnessPercent => MathF.Round(_lineDivisionBrightness * 100 / 255.0f, 2);
+    public float LineDivisionBrightnessPercent => MathF.Round(LineDivisionBrightness * 100 / 255.0f, 2);
 
-    public short TextXOffset
-    {
-        get => _textXOffset;
-        set => RaiseAndSetIfChanged(ref _textXOffset, value);
-    }
+    [ObservableProperty]
+    public partial short TextXOffset { get; set; }
 
     #endregion
 
@@ -318,7 +228,7 @@ public sealed class OperationCalibrateGrayscale : Operation
 
     private bool Equals(OperationCalibrateGrayscale other)
     {
-        return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _interfaceLayers == other._interfaceLayers && _normalLayers == other._normalLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _outerMargin == other._outerMargin && _innerMargin == other._innerMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _startBrightness == other._startBrightness && _endBrightness == other._endBrightness && _brightnessSteps == other._brightnessSteps && _enableCenterHoleRelief == other._enableCenterHoleRelief && _centerHoleDiameter == other._centerHoleDiameter && _textEnabled == other._textEnabled && _convertBrightnessToExposureTime == other._convertBrightnessToExposureTime && _enableLineDivisions == other._enableLineDivisions && _lineDivisionThickness == other._lineDivisionThickness && _lineDivisionBrightness == other._lineDivisionBrightness && _textXOffset == other._textXOffset;
+        return _layerHeight == other._layerHeight && BottomLayers == other.BottomLayers && InterfaceLayers == other.InterfaceLayers && NormalLayers == other.NormalLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && OuterMargin == other.OuterMargin && InnerMargin == other.InnerMargin && EnableAntiAliasing == other.EnableAntiAliasing && MirrorOutput == other.MirrorOutput && StartBrightness == other.StartBrightness && EndBrightness == other.EndBrightness && BrightnessSteps == other.BrightnessSteps && EnableCenterHoleRelief == other.EnableCenterHoleRelief && CenterHoleDiameter == other.CenterHoleDiameter && TextEnabled == other.TextEnabled && ConvertBrightnessToExposureTime == other.ConvertBrightnessToExposureTime && EnableLineDivisions == other.EnableLineDivisions && LineDivisionThickness == other.LineDivisionThickness && LineDivisionBrightness == other.LineDivisionBrightness && TextXOffset == other.TextXOffset;
     }
 
     public override bool Equals(object? obj)
@@ -338,23 +248,23 @@ public sealed class OperationCalibrateGrayscale : Operation
     {
         Mat[] layers = new Mat[3];
 
-        layers[0] = EmguExtensions.InitMat(SlicerFile.Resolution);
+        layers[0] = EmguCvExtensions.InitMat(SlicerFile.Resolution);
 
-        int radius = Math.Max(100, Math.Min(SlicerFile.Resolution.Width, SlicerFile.Resolution.Height) - _outerMargin * 2) / 2 ;
+        int radius = Math.Max(100, Math.Min(SlicerFile.Resolution.Width, SlicerFile.Resolution.Height) - OuterMargin * 2) / 2 ;
         Point center = new(SlicerFile.Resolution.Width / 2, SlicerFile.Resolution.Height / 2);
-        int innerRadius = Math.Max(100, radius - _innerMargin);
+        int innerRadius = Math.Max(100, radius - InnerMargin);
         double topLineLength = 0;
 
-        LineType lineType = _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
+        LineType lineType = EnableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
 
-        CvInvoke.Circle(layers[0], center, radius, EmguExtensions.WhiteColor, -1, lineType);
+        CvInvoke.Circle(layers[0], center, radius, EmguCvExtensions.WhiteColor, -1, lineType);
         layers[1] = layers[0].Clone();
         layers[2] = layers[0].Clone();
 
 
 
         int i = 0;
-        for (ushort brightness = _startBrightness; brightness <= _endBrightness; brightness += _brightnessSteps)
+        for (ushort brightness = StartBrightness; brightness <= EndBrightness; brightness += BrightnessSteps)
         {
             var radians = new float[2];
             var degrees = new SizeF[2];
@@ -374,9 +284,9 @@ public sealed class OperationCalibrateGrayscale : Operation
 
             CvInvoke.FillPoly(layers[2], vec, new MCvScalar(brightness), lineType);
 
-            if (_enableLineDivisions && _lineDivisionThickness > 0)
+            if (EnableLineDivisions && LineDivisionThickness > 0)
             {
-                CvInvoke.Polylines(layers[2], vec, false, new MCvScalar(_lineDivisionBrightness), _lineDivisionThickness, lineType);
+                CvInvoke.Polylines(layers[2], vec, false, new MCvScalar(LineDivisionBrightness), LineDivisionThickness, lineType);
             }
 
             i++;
@@ -387,42 +297,42 @@ public sealed class OperationCalibrateGrayscale : Operation
         double fontScale = 2;
         int fontThickness = 5;
 
-        if (_textEnabled)
+        if (TextEnabled)
         {
-            Point fontPoint = new((int)(center.X + radius / 2.5f + _textXOffset), (int)(center.Y + AngleStep / 1.5));
+            Point fontPoint = new((int)(center.X + radius / 2.5f + TextXOffset), (int)(center.Y + AngleStep / 1.5));
 
             var halfAngleStep = AngleStep / 2;
             var rotatedAngle = halfAngleStep;
 
 
-            layers[2].Rotate(halfAngleStep);
-            for (ushort brightness = _startBrightness; brightness <= _endBrightness; brightness += _brightnessSteps)
+            layers[2].RotateFromCenter(halfAngleStep);
+            for (ushort brightness = StartBrightness; brightness <= EndBrightness; brightness += BrightnessSteps)
             {
                 var text = brightness.ToString();
-                if (_convertBrightnessToExposureTime)
+                if (ConvertBrightnessToExposureTime)
                 {
                     text = $"{Math.Round(brightness * _normalExposure / byte.MaxValue, 2)}s";
                 }
 
-                CvInvoke.PutText(layers[2], text, fontPoint, fontFace, fontScale, EmguExtensions.BlackColor, fontThickness, lineType);
+                CvInvoke.PutText(layers[2], text, fontPoint, fontFace, fontScale, EmguCvExtensions.BlackColor, fontThickness, lineType);
                 rotatedAngle += AngleStep;
-                layers[2].Rotate(AngleStep);
+                layers[2].RotateFromCenter(AngleStep);
             }
 
-            layers[2].Rotate(-rotatedAngle);
+            layers[2].RotateFromCenter(-rotatedAngle);
         }
 
-        if (_enableCenterHoleRelief && _centerHoleDiameter > 1)
+        if (EnableCenterHoleRelief && CenterHoleDiameter > 1)
         {
-            var holeRadius = Math.Min(radius, _centerHoleDiameter) / 2;
-            if (_innerMargin > 0)
+            var holeRadius = Math.Min(radius, CenterHoleDiameter) / 2;
+            if (InnerMargin > 0)
             {
-                CvInvoke.Circle(layers[2], center, holeRadius + _innerMargin, EmguExtensions.WhiteColor, -1, lineType);
+                CvInvoke.Circle(layers[2], center, holeRadius + InnerMargin, EmguCvExtensions.WhiteColor, -1, lineType);
             }
 
             foreach (var layer in layers)
             {
-                CvInvoke.Circle(layer, center, holeRadius, EmguExtensions.BlackColor, -1, lineType);
+                CvInvoke.Circle(layer, center, holeRadius, EmguCvExtensions.BlackColor, -1, lineType);
             }
         }
 
@@ -430,13 +340,13 @@ public sealed class OperationCalibrateGrayscale : Operation
         fontThickness = 3;
         CvInvoke.PutText(layers[0], $"{Microns}um at {_bottomExposure}s/{_normalExposure}s",
             new Point(center.X - radius / 2, center.Y + radius / 2 +40),
-            fontFace, fontScale, EmguExtensions.BlackColor, fontThickness, lineType, true);
+            fontFace, fontScale, EmguCvExtensions.BlackColor, fontThickness, lineType, true);
 
-        CvInvoke.PutText(layers[0], $"{_startBrightness}-{_endBrightness} S:{_brightnessSteps}",
+        CvInvoke.PutText(layers[0], $"{StartBrightness}-{EndBrightness} S:{BrightnessSteps}",
             new Point(center.X - radius / 2, center.Y + radius / 2 - 40),
-            fontFace, fontScale, EmguExtensions.BlackColor, fontThickness, lineType, true);
+            fontFace, fontScale, EmguCvExtensions.BlackColor, fontThickness, lineType, true);
 
-        if (_mirrorOutput)
+        if (MirrorOutput)
         {
             var flip = SlicerFile.DisplayMirror;
             if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
@@ -448,7 +358,7 @@ public sealed class OperationCalibrateGrayscale : Operation
 
     public Mat GetThumbnail()
     {
-        Mat thumbnail = EmguExtensions.InitMat(new Size(400, 200), 3);
+        Mat thumbnail = EmguCvExtensions.InitMat(new Size(400, 200), 3);
         var fontFace = FontFace.HersheyDuplex;
         var fontScale = 1;
         var fontThickness = 2;
@@ -459,8 +369,8 @@ public sealed class OperationCalibrateGrayscale : Operation
         CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
         CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
         CvInvoke.PutText(thumbnail, "Grayscale Cal.", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
-        CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
-        CvInvoke.PutText(thumbnail, $"Divs:{Divisions} Angle:{AngleStep}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
+        CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguCvExtensions.WhiteColor, fontThickness);
+        CvInvoke.PutText(thumbnail, $"Divs:{Divisions} Angle:{AngleStep}", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguCvExtensions.WhiteColor, fontThickness);
 
         return thumbnail;
     }

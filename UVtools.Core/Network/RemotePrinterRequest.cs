@@ -7,6 +7,7 @@
  */
 
 using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.ComponentModel;
 using System.IO;
 using System.Net;
@@ -22,7 +23,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.Network;
 
-public class RemotePrinterRequest : BindableBase
+public partial class RemotePrinterRequest : ObservableObject
 {
     #region Enums
 
@@ -60,9 +61,6 @@ public class RemotePrinterRequest : BindableBase
     #endregion
 
     #region Members
-    private RequestType _type;
-    private RequestMethod _method;
-    private string _path = string.Empty;
     #endregion
 
     #region Properties
@@ -70,28 +68,22 @@ public class RemotePrinterRequest : BindableBase
     /// <summary>
     /// Gets or sets this request type
     /// </summary>
-    public RequestType Type
-    {
-        get => _type;
-        set => RaiseAndSetIfChanged(ref _type, value);
-    }
+    [ObservableProperty]
+    public partial RequestType Type { get; set; }
 
 
     /// <summary>
     /// Gets or sets this request method
     /// </summary>
-    public RequestMethod Method
-    {
-        get => _method;
-        set => RaiseAndSetIfChanged(ref _method, value);
-    }
+    [ObservableProperty]
+    public partial RequestMethod Method { get; set; }
 
     /// <summary>
     /// Gets or sets the request path, eg: print/file/{0}
     /// </summary>
     public string Path
     {
-        get => _path;
+        get;
         set
         {
             if (!string.IsNullOrWhiteSpace(value))
@@ -101,12 +93,12 @@ public class RemotePrinterRequest : BindableBase
                 if (value[^1] == '/') value = value[..^2];
                 value = value.Trim();
             }
-            if(!RaiseAndSetIfChanged(ref _path, value)) return;
-            RaisePropertyChanged(nameof(IsValid));
+            if(!SetProperty(ref field, value)) return;
+            OnPropertyChanged(nameof(IsValid));
         }
-    }
+    } = string.Empty;
 
-    public bool IsValid => !string.IsNullOrWhiteSpace(_path);
+    public bool IsValid => !string.IsNullOrWhiteSpace(Path);
 
     #endregion
 
@@ -116,8 +108,8 @@ public class RemotePrinterRequest : BindableBase
 
     public RemotePrinterRequest(RequestType type, RequestMethod method, string path = "")
     {
-        _type = type;
-        _method = method;
+        Type = type;
+        Method = method;
         Path = path;
     }
 
@@ -130,7 +122,7 @@ public class RemotePrinterRequest : BindableBase
     /// </summary>
     /// <param name="parameters"></param>
     /// <returns></returns>
-    public string GetFormattedPath(params object?[] parameters) => string.Format(_path, parameters);
+    public string GetFormattedPath(params object?[] parameters) => string.Format(Path, parameters);
 
     public async Task<HttpResponseMessage> SendRequest(string host, ushort port = 0, OperationProgress? progress = null, string? param1 = null, string? uploadFilePath = null)
     {
@@ -138,20 +130,20 @@ public class RemotePrinterRequest : BindableBase
         if (port > 0) url += $":{port}";
 
         progress ??= new OperationProgress();
-        progress.Title = $"Sending {_method} request to: {url}";
+        progress.Title = $"Sending {Method} request to: {url}";
         progress.ItemName = "Megabyte(s)";
         progress.CanCancel = true;
 
-        if(_path == "{0}") return new HttpResponseMessage(HttpStatusCode.OK);
+        if(Path == "{0}") return new HttpResponseMessage(HttpStatusCode.OK);
 
         string? formattedPathWithParameter = null;
-        if (!string.IsNullOrWhiteSpace(_path))
+        if (!string.IsNullOrWhiteSpace(Path))
         {
-            if (_path.StartsWith("<$") && _path.EndsWith("$>"))
+            if (Path.StartsWith("<$") && Path.EndsWith("$>"))
             {
-                var newPath = _path[2..^2].Trim();
+                var newPath = Path[2..^2].Trim();
                 var split = newPath.Split('>', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                if (split.Length < 3) throw new ArgumentException($"Path '{_path}' is malformed", nameof(Path));
+                if (split.Length < 3) throw new ArgumentException($"Path '{Path}' is malformed", nameof(Path));
 
                 var firstRequest = Clone();
                 firstRequest.Path = split[0];
@@ -179,9 +171,9 @@ public class RemotePrinterRequest : BindableBase
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(_path) && !string.IsNullOrWhiteSpace(formattedPathWithParameter)) url += $"/{formattedPathWithParameter}";
+        if (!string.IsNullOrWhiteSpace(Path) && !string.IsNullOrWhiteSpace(formattedPathWithParameter)) url += $"/{formattedPathWithParameter}";
 
-        switch (_method)
+        switch (Method)
         {
             case RequestMethod.GET:
             {
@@ -252,7 +244,7 @@ public class RemotePrinterRequest : BindableBase
             case RequestMethod.TCP:
             case RequestMethod.UDP:
             {
-                using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, _method == RequestMethod.TCP ? ProtocolType.Tcp : ProtocolType.Udp)
+                using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, Method == RequestMethod.TCP ? ProtocolType.Tcp : ProtocolType.Udp)
                 {
                     ReceiveTimeout = 10
                 };
@@ -321,12 +313,12 @@ public class RemotePrinterRequest : BindableBase
 
     public override string ToString()
     {
-        return _path;
+        return Path;
     }
 
     protected bool Equals(RemotePrinterRequest other)
     {
-        return _path == other._path;
+        return Path == other.Path;
     }
 
     public override bool Equals(object? obj)
@@ -339,7 +331,7 @@ public class RemotePrinterRequest : BindableBase
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(_path);
+        return HashCode.Combine(Path);
     }
 
     #endregion

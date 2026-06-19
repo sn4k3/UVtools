@@ -7,18 +7,14 @@
  */
 
 using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Network;
 
-public class MappedDevice : BindableBase
+public partial class MappedDevice : ObservableObject
 {
     #region Members
-
-    private bool _isEnabled = true;
-    private string _path = null!;
-    private string? _name;
-    private string? _compatibleExtensions;
 
     #endregion
 
@@ -27,39 +23,27 @@ public class MappedDevice : BindableBase
     /// <summary>
     /// Gets or sets if this device is enabled
     /// </summary>
-    public bool IsEnabled
-    {
-        get => _isEnabled;
-        set => RaiseAndSetIfChanged(ref _isEnabled, value);
-    }
+    [ObservableProperty]
+    public partial bool IsEnabled { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the full path for the location
     /// </summary>
-    public string Path
-    {
-        get => _path;
-        set => RaiseAndSetIfChanged(ref _path, value);
-    }
+    [ObservableProperty]
+    public partial string Path { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the path name alias
     /// </summary>
-    public string? Name
-    {
-        get => _name;
-        set => RaiseAndSetIfChanged(ref _name, value);
-    }
+    [ObservableProperty]
+    public partial string? Name { get; set; }
 
     /// <summary>
     /// Gets or sets the compatible extensions with this device.
     /// Empty or null to be compatible with everything
     /// </summary>
-    public string? CompatibleExtensions
-    {
-        get => _compatibleExtensions;
-        set => RaiseAndSetIfChanged(ref _compatibleExtensions, value);
-    }
+    [ObservableProperty]
+    public partial string? CompatibleExtensions { get; set; }
 
     #endregion
 
@@ -69,8 +53,8 @@ public class MappedDevice : BindableBase
 
     public MappedDevice(string path, string? name = null)
     {
-        _path = path;
-        _name = name;
+        Path = path;
+        Name = name;
     }
 
     #endregion
@@ -79,13 +63,13 @@ public class MappedDevice : BindableBase
 
     public override string ToString()
     {
-        if (!string.IsNullOrWhiteSpace(_name)) return $"{_path}  ({_name})";
-        return _path;
+        if (!string.IsNullOrWhiteSpace(Name)) return $"{Path}  ({Name})";
+        return Path;
     }
 
     protected bool Equals(MappedDevice other)
     {
-        return _path == other._path;
+        return Path == other.Path;
     }
 
     public override bool Equals(object? obj)
@@ -98,7 +82,7 @@ public class MappedDevice : BindableBase
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(_path);
+        return HashCode.Combine(Path);
     }
 
     public MappedDevice Clone()

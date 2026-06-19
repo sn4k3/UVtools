@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,17 +7,18 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
+using EmguExtensions;
 using System;
 using System.Threading.Tasks;
-using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations;
 
 
-public sealed class OperationSolidify : Operation
+public sealed partial class OperationSolidify : Operation
 {
     #region Enums
     public enum AreaCheckTypes
@@ -29,7 +30,6 @@ public sealed class OperationSolidify : Operation
 
     #region Members
     private uint _minimumArea = 1;
-    private AreaCheckTypes _areaCheckType = AreaCheckTypes.More;
     #endregion
 
     #region Overrides
@@ -55,20 +55,17 @@ public sealed class OperationSolidify : Operation
     public uint MinimumArea
     {
         get => _minimumArea;
-        set => RaiseAndSetIfChanged(ref _minimumArea, Math.Max(1, value));
+        set => SetProperty(ref _minimumArea, Math.Max(1, value));
     }
 
-    public AreaCheckTypes AreaCheckType
-    {
-        get => _areaCheckType;
-        set => RaiseAndSetIfChanged(ref _areaCheckType, value);
-    }
+    [ObservableProperty]
+    public partial AreaCheckTypes AreaCheckType { get; set; } = AreaCheckTypes.More;
 
     public static Array AreaCheckTypeItems => Enum.GetValues(typeof(AreaCheckTypes));
 
     public override string ToString()
     {
-        var result = $"[Area: {_areaCheckType} than {_minimumArea}px²]" + LayerRangeString;
+        var result = $"[Area: {AreaCheckType} than {_minimumArea}px²]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -124,7 +121,7 @@ public sealed class OperationSolidify : Operation
 
             }
 
-            CvInvoke.DrawContours(target, contours, i, EmguExtensions.WhiteColor, -1);
+            CvInvoke.DrawContours(target, contours, i, EmguCvExtensions.WhiteColor, -1);
         }
 
         ApplyMask(original, target);

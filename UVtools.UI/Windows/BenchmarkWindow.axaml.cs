@@ -10,8 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media;
+using EmguExtensions;
 using UVtools.Core;
-using UVtools.Core.EmguCV;
+using UVtools.Core.Compressors;
 using UVtools.Core.Extensions;
 using UVtools.UI.Extensions;
 using UVtools.UI.Structures;
@@ -420,7 +421,7 @@ public partial class BenchmarkWindow : GenericWindow
     public byte[] EncodeCbddlpImage(Mat image, byte bit = 0)
     {
         List<byte> rawData = [];
-        var span = image.GetDataByteReadOnlySpan();
+        var span = image.GetReadOnlySpanOfBytes();
 
         bool obit = false;
         int rep = 0;
@@ -482,7 +483,7 @@ public partial class BenchmarkWindow : GenericWindow
         List<byte> rawData = [];
         byte color = byte.MaxValue >> 1;
         uint stride = 0;
-        var span = image.GetDataByteReadOnlySpan();
+        var span = image.GetReadOnlySpanOfBytes();
 
         void AddRep()
         {
@@ -560,7 +561,7 @@ public partial class BenchmarkWindow : GenericWindow
     public byte[] EncodePW0Image(Mat image)
     {
         List<byte> rawData = [];
-        var span = image.GetDataByteReadOnlySpan();
+        var span = image.GetReadOnlySpanOfBytes();
 
         int lastColor = -1;
         int reps = 0;
@@ -623,7 +624,7 @@ public partial class BenchmarkWindow : GenericWindow
     public static Mat RandomMat(int width, int height)
     {
         Mat mat = new(new Size(width, height), DepthType.Cv8U, 1);
-        CvInvoke.Randu(mat, EmguExtensions.BlackColor, EmguExtensions.WhiteColor);
+        CvInvoke.Randu(mat, EmguCvExtensions.BlackColor, EmguCvExtensions.WhiteColor);
         return mat;
     }
 
@@ -700,7 +701,7 @@ public partial class BenchmarkWindow : GenericWindow
     public void TestPNGCompress(BenchmarkResolution resolution)
     {
         //Layer.CompressMat(Mats[resolution], LayerCompressionCodec.Png);
-        MatCompressorPngGreyScale.Instance.Compress(Mats[resolution]);
+        MatCompressorPng.Instance.Compress(Mats[resolution]);
     }
 
     public void TestPNGDecompress(BenchmarkResolution resolution)
@@ -740,12 +741,12 @@ public partial class BenchmarkWindow : GenericWindow
 
     public void TestGCMemoryCopy(BenchmarkResolution resolution)
     {
-        var bytes = Mats[resolution].GetBytes();
+        var bytes = Mats[resolution].ToArray();
     }
 
     public void TestPooledMemoryCopy(BenchmarkResolution resolution)
     {
-        var spanSrc = Mats[resolution].GetDataByteReadOnlySpan();
+        var spanSrc = Mats[resolution].GetReadOnlySpanOfBytes();
         var bytes = ArrayPool<byte>.Shared.Rent(spanSrc.Length);
         spanSrc.CopyTo(bytes.AsSpan());
         ArrayPool<byte>.Shared.Return(bytes);

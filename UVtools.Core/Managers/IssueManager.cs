@@ -9,7 +9,7 @@ using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
-using UVtools.Core.EmguCV;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -161,7 +161,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
         {
             CvInvoke.BitwiseNot(input, output);
             if (externals is null || externals.Size == 0) return;
-            CvInvoke.DrawContours(output, externals, -1, EmguExtensions.BlackColor, -1);
+            CvInvoke.DrawContours(output, externals, -1, EmguCvExtensions.BlackColor, -1);
         }
 
         if (printHeightConfig.Enabled && SlicerFile.MachineZ > 0)
@@ -233,7 +233,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
             var firstLayer = SlicerFile.FirstLayer;
 
             int overhangsIterations = overhangConfig.ErodeIterations;
-            using var overhangsKernel = EmguExtensions.GetDynamicKernel(ref overhangsIterations, MorphShapes.Cross);
+            using var overhangsKernel = EmguCvExtensions.CreateDynamicKernel(ref overhangsIterations, MorphShapes.Cross);
 
             // Detect contours
             Parallel.For(0, SlicerFile.LayerCount, CoreSettings.ParallelOptions, layerIndexInt =>
@@ -265,8 +265,8 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                 using (var image = layer.GetLayerMat(layerIndex == 0 ? SlicerFile.BoundingRectangle : Layer.GetBoundingRectangleUnion(SlicerFile[layerIndex - 1], layer)))
                 {
-                    var sourceSpan = image.SourceMat.GetDataByteReadOnlySpan2D();
-                    var roiSpan = image.RoiMat.GetDataByteReadOnlySpan2D();
+                    var sourceSpan = image.SourceMat.GetReadOnlySpan2DOfBytes();
+                    var roiSpan = image.RoiMat.GetReadOnlySpan2DOfBytes();
 
                     if (touchBoundConfig.Enabled)
                     {
@@ -402,12 +402,12 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                 CvInvoke.Threshold(overhangImage, overhangImage, 127, 255, ThresholdType.Binary);
 
                                 CvInvoke.Erode(overhangImage, overhangImage, overhangsKernel,
-                                    EmguExtensions.AnchorCenter, overhangsIterations, BorderType.Default, default);
+                                    EmguCvExtensions.AnchorCenter, overhangsIterations, BorderType.Default, default);
 
-                                //CvInvoke.MorphologyEx(subtractedImage, subtractedImage, MorphOp.Open, EmguExtensions.Kernel3x3Rectangle,
-                                //    EmguExtensions.AnchorCenter, 2, BorderType.Reflect101, default);
+                                //CvInvoke.MorphologyEx(subtractedImage, subtractedImage, MorphOp.Open, EmguCvExtensions.Kernel3X3Rectangle,
+                                //    EmguCvExtensions.AnchorCenter, 2, BorderType.Reflect101, default);
 
-                                using var contours = overhangImage.FindContours(out var hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple, image.RoiLocation);
+                                using var contours = overhangImage.FindContours(out var hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple, image.Roi.Location);
                                 var contoursInGroups = EmguContours.GetPositiveContoursInGroups(contours, hierarchy);
 
                                 foreach (var contourGroup in contoursInGroups)
@@ -472,8 +472,8 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                 //stats[i][2]: Width of Connected Component
                                 //stats[i][3]: Height of Connected Component
                                 //stats[i][4]: Total Area (in pixels) in Connected Component
-                                var ccStats = stats.GetDataReadOnlySpan<int>();
-                                var labelSpan = labels.GetDataSpan2D<int>();
+                                var ccStats = stats.GetSpan<int>();
+                                var labelSpan = labels.GetReadOnlySpan2D<int>();
 
                                 for (int i = 1; i < numLabels; i++)
                                 {
@@ -496,7 +496,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                                     if (previousSpan == null)
                                     {
-                                        previousSpan = previousImage.RoiMat.GetDataByteReadOnlySpan2D();
+                                        previousSpan = previousImage.RoiMat.GetReadOnlySpan2DOfBytes();
                                     }
 
                                     List<Point> points = [];
@@ -531,7 +531,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                                     if (pixelsSupportingIsland >= requiredSupportingPixels) continue;
 
-                                    var islandBoundingRectangle = rect.OffsetBy(image.RoiLocation);
+                                    var islandBoundingRectangle = rect.OffsetBy(image.Roi.Location);
 
                                     // Check for overhangs in islands
                                     if (islandConfig.EnhancedDetection && pixelsSupportingIsland >= 10 && pixelsSupportingIsland >= requiredSupportingPixels / 4)
@@ -556,13 +556,13 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                             CvInvoke.Threshold(islandOverhangMat, islandOverhangMat, 127, 255, ThresholdType.Binary);
 
                                             CvInvoke.Erode(islandOverhangMat, islandOverhangMat, overhangsKernel,
-                                                EmguExtensions.AnchorCenter, overhangsIterations, BorderType.Default, default);
+                                                EmguCvExtensions.AnchorCenter, overhangsIterations, BorderType.Default, default);
                                         }
 
-                                        using var subtractedImage = islandOverhangMat.Roi(wasNull ? Rectangle.Empty : rect, EmptyRoiBehaviour.CaptureSource);
+                                        using var subtractedImage = islandOverhangMat.Roi(wasNull ? Rectangle.Empty : rect);
 
-                                        var subtractedSpan = subtractedImage.GetDataByteReadOnlySpan2D();
-                                        var subtractedStep = subtractedImage.GetRealStep();
+                                        var subtractedSpan = subtractedImage.GetReadOnlySpan2DOfBytes();
+                                        var subtractedStep = subtractedImage.RealStep;
 
                                         int overhangPixels = 0;
 
@@ -723,7 +723,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                         /* intersect current contour, with the current airmap. */
                         using var currentContour = curLayer.NewZeros();
                         using var airOverlap = new Mat();
-                        CvInvoke.DrawContours(currentContour, hollows[layerIndex][i], -1, EmguExtensions.WhiteColor, -1);
+                        CvInvoke.DrawContours(currentContour, hollows[layerIndex][i], -1, EmguCvExtensions.WhiteColor, -1);
                         CvInvoke.BitwiseAnd(currentAirMap, currentContour, airOverlap);
                         var overlapCount = CvInvoke.CountNonZero(airOverlap);
 
@@ -801,7 +801,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                     Parallel.ForEach(airContours[layerIndex], CoreSettings.ParallelOptions, vec =>
                         {
                             progress.PauseIfRequested();
-                            CvInvoke.DrawContours(layerAirMap, vec, -1, EmguExtensions.WhiteColor, -1);
+                            CvInvoke.DrawContours(layerAirMap, vec, -1, EmguCvExtensions.WhiteColor, -1);
                         }
                     );
                 }
@@ -825,7 +825,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                         /* check if each contour overlaps known air */
                         using var currentContour = curLayer.NewZeros();
                         using var airOverlap = new Mat();
-                        CvInvoke.DrawContours(currentContour, resinTraps[layerIndex][x], -1, EmguExtensions.WhiteColor, -1);
+                        CvInvoke.DrawContours(currentContour, resinTraps[layerIndex][x], -1, EmguCvExtensions.WhiteColor, -1);
 
                         CvInvoke.BitwiseAnd(currentAirMap, currentContour, airOverlap);
                         var overlapCount = CvInvoke.CountNonZero(airOverlap);
@@ -1178,13 +1178,13 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
         using var vecCentroid = new VectorOfPoint(issue.Contours[0]);
         var centroid = EmguContour.GetCentroid(vecCentroid);
         if (centroid.IsAnyNegative()) return centroid;
-        using var circleCheck = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
-        using var contourMat = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
+        using var circleCheck = EmguCvExtensions.InitMat(issue.BoundingRectangle.Size);
+        using var contourMat = EmguCvExtensions.InitMat(issue.BoundingRectangle.Size);
 
         var inverseOffset = new Point(issue.BoundingRectangle.X * -1, issue.BoundingRectangle.Y * -1);
         using var vec = new VectorOfVectorOfPoint(issue.Contours);
-        CvInvoke.DrawContours(contourMat, vec, -1, EmguExtensions.WhiteColor, -1, LineType.EightConnected, null, int.MaxValue, inverseOffset);
-        circleCheck.DrawCircle(new(centroid.X + inverseOffset.X, centroid.Y + inverseOffset.Y), radius, EmguExtensions.WhiteColor, -1);
+        CvInvoke.DrawContours(contourMat, vec, -1, EmguCvExtensions.WhiteColor, -1, LineType.EightConnected, null, int.MaxValue, inverseOffset);
+        circleCheck.DrawCircle(new(centroid.X + inverseOffset.X, centroid.Y + inverseOffset.Y), radius, EmguCvExtensions.WhiteColor, -1);
         CvInvoke.BitwiseAnd(circleCheck, contourMat, circleCheck);
 
         return CvInvoke.HasNonZero(circleCheck)

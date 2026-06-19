@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,12 +7,13 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
+using EmguExtensions;
 using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
-using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
@@ -20,14 +21,9 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationBlur : Operation
+public sealed partial class OperationBlur : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
-    #region Members
-    private BlurAlgorithm _blurOperation;
-    private uint _size = 1;
-    #endregion
-
     #region Overrides
 
     public override string IconClass => "WaterOpacity";
@@ -90,22 +86,13 @@ public sealed class OperationBlur : Operation
 
     #region Properties
 
-    public BlurAlgorithm BlurOperation
-    {
-        get => _blurOperation;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _blurOperation, value)) return;
-            RaisePropertyChanged(nameof(IsSizeEnabled));
-            RaisePropertyChanged(nameof(IsKernelVisible));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSizeEnabled))]
+    [NotifyPropertyChangedFor(nameof(IsKernelVisible))]
+    public partial BlurAlgorithm BlurOperation { get; set; }
 
-    public uint Size
-    {
-        get => _size;
-        set => RaiseAndSetIfChanged(ref _size, value);
-    }
+    [ObservableProperty]
+    public partial uint Size { get; set; } = 1;
 
     public bool IsSizeEnabled => BlurOperation != BlurAlgorithm.Pyramid &&
                                  BlurOperation != BlurAlgorithm.Filter2D;
@@ -116,7 +103,7 @@ public sealed class OperationBlur : Operation
 
     public override string ToString()
     {
-        var result = $"[{_blurOperation}] [Size: {_size}]" + LayerRangeString;
+        var result = $"[{BlurOperation}] [Size: {Size}]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -153,9 +140,9 @@ public sealed class OperationBlur : Operation
     {
         Size size = new((int)Size, (int)Size);
         Point anchor = Kernel.Anchor;
-        if (anchor.IsEmpty) anchor = EmguExtensions.AnchorCenter;
+        if (anchor.IsEmpty) anchor = EmguCvExtensions.AnchorCenter;
         //if (size.IsEmpty) size = new Size(3, 3);
-        //if (anchor.IsEmpty) anchor = EmguExtensions.AnchorCenter;
+        //if (anchor.IsEmpty) anchor = EmguCvExtensions.AnchorCenter;
         using var target = GetRoiOrDefault(mat);
         using var original = mat.Clone();
         switch (BlurOperation)
@@ -194,7 +181,7 @@ public sealed class OperationBlur : Operation
     #region Equality
     private bool Equals(OperationBlur other)
     {
-        return _blurOperation == other._blurOperation && _size == other._size;
+        return BlurOperation == other.BlurOperation && Size == other.Size;
     }
 
     public override bool Equals(object? obj)

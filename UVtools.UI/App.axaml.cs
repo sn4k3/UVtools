@@ -16,6 +16,7 @@ using Emgu.CV;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Threading;
@@ -23,17 +24,18 @@ using System.Threading.Tasks;
 using System.Web;
 using Avalonia.Input.Platform;
 using Material.Icons;
-using SukiUI.MessageBox;
+using StageKit;
+using StageKit.Runtime;
 using Updatum;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
 using UVtools.Core.SystemOS;
-using UVtools.UI.Extensions;
 using UVtools.UI.Structures;
 using UVtools.UI.Windows;
 using ZLinq;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
+using Size = System.Drawing.Size;
 
 namespace UVtools.UI;
 
@@ -41,13 +43,10 @@ public partial class App : Application
 {
     public enum ApplicationTheme
     {
-        [Description("Fluent system")]
-        FluentSystem,
+        [Description("Fluent system")] FluentSystem,
 
-        [Description("Fluent light")]
-        FluentLight,
-        [Description("Fluent dark")]
-        FluentDark,
+        [Description("Fluent light")] FluentLight,
+        [Description("Fluent dark")] FluentDark
 
         /*[Description("Simple system")]
         SimpleSystem,
@@ -86,23 +85,13 @@ public partial class App : Application
         //BindingPlugins.DataValidators.RemoveAt(0);
 
 
-
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            if (Program.IsCrashReport)
+            if (ApplicationKit.HasCrashReportFlag && ApplicationKit.CrashReport is not null)
             {
                 //Program.Args = new[] {"--crash-report", "Debug", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum." };
-                if (Program.Args.Length < 3) return;
-                if (string.IsNullOrWhiteSpace(Program.Args[1])) return;
-                if (string.IsNullOrWhiteSpace(Program.Args[2])) return;
-                var category = Program.Args[1];
-                var bugDescription = $"{Program.Args[2]}\nCategory: {category}";
+                var bugDescription = ApplicationKit.CrashReport.FormattedMessage;
                 var system = string.Empty;
-                if (Program.Args.Length >= 4 && !string.IsNullOrWhiteSpace(Program.Args[3]))
-                {
-                    bugDescription += $"\nFile: {Program.Args[3]}";
-                }
-                bugDescription += $"\n\nMachine date time: {DateTime.Now}\n       UTC date time: {DateTime.UtcNow}";
 
                 try
                 {
@@ -117,13 +106,18 @@ public partial class App : Application
                 MessageWindow window = null!;
                 window = new MessageWindow($"{About.SoftwareWithVersion} - Crash report",
                     MaterialIconKind.EmojiFrownOutline,
-                    $"{About.Software} crashed due an unexpected {category.ToLowerInvariant()} error.\nYou can report this error if you find necessary.\nFind more details below:\n",
+                    $"{About.Software} crashed due an unexpected error.\nYou can report this error if you find necessary.\nFind more details below:\n",
                     bugDescription,
                     TextWrapping.Wrap,
                     [
-                        MessageWindow.CreateLinkButtonAction("Report", MaterialIconKind.Bug, $"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title={HttpUtility.UrlEncode($"[Crash] {reader.ReadLine()}")}&system={HttpUtility.UrlEncode(system)}&bug_description={HttpUtility.UrlEncode($"```\n{bugDescription}\n```")}", () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
-                        MessageWindow.CreateLinkButtonAction("Help", MaterialIconKind.QuestionMark, "https://github.com/sn4k3/UVtools/discussions/categories/q-a", () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
-                        MessageWindow.CreateButtonAction("Restart", MaterialIconKind.Restart, () => SystemAware.StartThisApplication()),
+                        MessageWindow.CreateLinkButtonAction("Report", MaterialIconKind.Bug,
+                            $"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title={HttpUtility.UrlEncode($"[Crash] {reader.ReadLine()}")}&system={HttpUtility.UrlEncode(system)}&bug_description={HttpUtility.UrlEncode($"```\n{bugDescription}\n```")}",
+                            () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
+                        MessageWindow.CreateLinkButtonAction("Help", MaterialIconKind.QuestionMark,
+                            "https://github.com/sn4k3/UVtools/discussions/categories/q-a",
+                            () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
+                        MessageWindow.CreateButtonAction("Restart", MaterialIconKind.Restart,
+                            () => SystemAware.StartThisApplication()),
                         MessageWindow.CreateCloseButton(MaterialIconKind.SignOut)
                     ])
                 {
@@ -163,8 +157,8 @@ public partial class App : Application
                         SlicerFile = new ChituboxFile
                         {
                             LayerHeight = 0.05f,
-                            Resolution = new(1440, 2560),
-                            Display = new(68.04f, 120.96f),
+                            Resolution = new Size(1440, 2560),
+                            Display = new SizeF(68.04f, 120.96f),
                             DisplayMirror = FlipDirection.Horizontally,
                             MachineZ = 155,
                             BottomLayerCount = 3,
@@ -200,7 +194,8 @@ public partial class App : Application
         {
             try
             {
-                var result = SystemAware.GetProcessOutput("bash", $"-c \"ldd '{Path.Combine(ApplicationPath, "libcvextern.so")}' | grep not\"");
+                var result = SystemAware.GetProcessOutput("bash",
+                    $"-c \"ldd '{Path.Combine(ApplicationPath, "libcvextern.so")}' | grep not\"");
                 if (!string.IsNullOrWhiteSpace(result))
                 {
                     message += $"Missing dependencies:\n{result}\n";
@@ -215,7 +210,8 @@ public partial class App : Application
         {
             try
             {
-                var result = SystemAware.GetProcessOutput("otool", $"-L '{Path.Combine(ApplicationPath, "libcvextern.dylib")}'");
+                var result = SystemAware.GetProcessOutput("otool",
+                    $"-L '{Path.Combine(ApplicationPath, "libcvextern.dylib")}'");
                 if (!string.IsNullOrWhiteSpace(result))
                 {
                     message += $"Dependencies:\n{result}\n";
@@ -237,8 +233,10 @@ public partial class App : Application
             message,
             TextWrapping.Wrap,
             [
-                MessageWindow.CreateLinkButton("Open manual", MaterialIconKind.MicrosoftEdge, "https://github.com/sn4k3/UVtools#requirements"),
-                MessageWindow.CreateLinkButton("Ask for help", MaterialIconKind.QuestionMark, "https://github.com/sn4k3/UVtools/discussions/categories/q-a"),
+                MessageWindow.CreateLinkButton("Open manual", MaterialIconKind.MicrosoftEdge,
+                    "https://github.com/sn4k3/UVtools#requirements"),
+                MessageWindow.CreateLinkButton("Ask for help", MaterialIconKind.QuestionMark,
+                    "https://github.com/sn4k3/UVtools/discussions/categories/q-a"),
                 MessageWindow.CreateCloseButton(MaterialIconKind.SignOut)
             ])
         {
@@ -247,9 +245,11 @@ public partial class App : Application
     }
 
     #region Utilities
+
     public static string ApplicationPath => AppContext.BaseDirectory;
     public static string AppExecutable => Environment.ProcessPath!;
     public static string AppExecutableQuoted => $"\"{AppExecutable}\"";
+
     public static void NewInstance(string filePath)
     {
         try
@@ -274,8 +274,8 @@ public partial class App : Application
         var uri =
             // Allow for assembly overrides
             url.StartsWith("avares://")
-            ? new Uri(url)
-            : new Uri($"avares://{AssemblyName}{url}");
+                ? new Uri(url)
+                : new Uri($"avares://{AssemblyName}{url}");
 
         return uri;
     }
@@ -285,7 +285,10 @@ public partial class App : Application
         return AssetLoader.Open(CreateAssemblyUri(url));
     }
 
-    public static Bitmap GetBitmapFromAsset(string url) => new(GetAsset(url));
+    public static Bitmap GetBitmapFromAsset(string url)
+    {
+        return new Bitmap(GetAsset(url));
+    }
 
 
     public static string? GetPrusaSlicerDirectory(bool isSuperSlicer = false, bool isAlpha = false)
@@ -335,24 +338,25 @@ public partial class App : Application
 
     public static void BeepIfAble()
     {
-        if (!UserSettings.Instance.General.NotificationBeep || UserSettings.Instance.General.NotificationBeepCount == 0) return;
+        if (!UserSettings.Instance.General.NotificationBeep ||
+            UserSettings.Instance.General.NotificationBeepCount == 0) return;
         Task.Run(() =>
         {
             int frequency = UserSettings.Instance.General.NotificationBeepFrequency;
 
-            for (int i = 0; i < UserSettings.Instance.General.NotificationBeepCount; i++)
+            for (var i = 0; i < UserSettings.Instance.General.NotificationBeepCount; i++)
             {
                 SystemAware.Beep(frequency, UserSettings.Instance.General.NotificationBeepDuration, true);
                 frequency += UserSettings.Instance.General.NotificationBeepRepeatFrequencyOffset;
                 Thread.Sleep(UserSettings.Instance.General.NotificationBeepRepeatDelay);
             }
-
         });
     }
 
-#endregion
+    #endregion
 
     #region Assembly properties
+
     public static Assembly MyAssembly => Assembly.GetExecutingAssembly();
 
     public static string AssemblyVersion => MyAssembly.GetName().Version?.ToString()!;
@@ -372,6 +376,7 @@ public partial class App : Application
                     return titleAttribute.Title;
                 }
             }
+
             return Path.GetFileNameWithoutExtension(MyAssembly.Location);
         }
     }
@@ -386,9 +391,13 @@ public partial class App : Application
                 return string.Empty;
             }
 
-            var description = ((AssemblyDescriptionAttribute)attributes[0]).Description + $"{Environment.NewLine}{Environment.NewLine}Available File Formats:";
+            var description = ((AssemblyDescriptionAttribute)attributes[0]).Description +
+                              $"{Environment.NewLine}{Environment.NewLine}Available File Formats:";
 
-            return FileFormat.AvailableFormats.AsValueEnumerable().SelectMany(fileFormat => fileFormat.FileExtensions).Aggregate(description, (current, fileExtension) => current + $"{Environment.NewLine}- {fileExtension.Description} (.{fileExtension.Extension})");
+            return FileFormat.AvailableFormats.AsValueEnumerable().SelectMany(fileFormat => fileFormat.FileExtensions)
+                .Aggregate(description,
+                    (current, fileExtension) =>
+                        current + $"{Environment.NewLine}- {fileExtension.Description} (.{fileExtension.Extension})");
         }
     }
 

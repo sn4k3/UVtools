@@ -360,8 +360,8 @@
                              AcceptsReturn="True"
                              Text="{Binding Operation.PatternText}"
                              TextWrapping="NoWrap"
-                             UseFloatingWatermark="True"
-                             Watermark="Pattern" />
+                             UseFloatingPlaceholder="True"
+                             PlaceholderText="Pattern" />
 
                     <Button Grid.Row="0"
                             Grid.Column="2"
@@ -375,8 +375,8 @@
                              AcceptsReturn="True"
                              Text="{Binding Operation.PatternTextAlternate}"
                              TextWrapping="NoWrap"
-                             UseFloatingWatermark="True"
-                             Watermark="Alternate pattern (Optional)" />
+                             UseFloatingPlaceholder="True"
+                             PlaceholderText="Alternate pattern (Optional)" />
 
                     <Border Grid.Row="3"
                             Grid.Column="0"

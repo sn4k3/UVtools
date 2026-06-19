@@ -8,6 +8,8 @@
 
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using EmguExtensions;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -20,76 +22,46 @@ using UVtools.Core.Managers;
 namespace UVtools.Core.Objects;
 
 
-public sealed class KernelConfiguration : BindableBase, IDisposable
+public sealed partial class KernelConfiguration : ObservableObject, IDisposable
 {
     #region Members
-    private bool _useDynamicKernel;
     private readonly KernelCacheManager _kernelCache = new();
-    private MorphShapes _kernelShape = MorphShapes.Rectangle;
-    private uint _matrixWidth = 3;
-    private uint _matrixHeight = 3;
-    private string _matrixText = "1 1 1\n1 1 1\n1 1 1";
-    private int _anchorX = -1;
-    private int _anchorY = -1;
     private Mat? _kernelMat;
     private readonly Lock _mutex = new();
-    private MorphShapes _dynamicKernelShape = MorphShapes.Ellipse;
 
     #endregion
 
     #region Properties
-    public bool UseDynamicKernel
-    {
-        get => _useDynamicKernel;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _useDynamicKernel, value)) return;
-            _kernelCache.UseDynamicKernel = value;
-        }
-    }
+    [ObservableProperty]
+    public partial bool UseDynamicKernel { get; set; }
 
-    public MorphShapes DynamicKernelShape
-    {
-        get => _dynamicKernelShape;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _dynamicKernelShape, value)) return;
-            _kernelCache.DynamicKernelShape = value;
-        }
-    }
+    partial void OnUseDynamicKernelChanged(bool value) => _kernelCache.UseDynamicKernel = value;
 
-    public int AnchorX
-    {
-        get => _anchorX;
-        set => RaiseAndSetIfChanged(ref _anchorX, value);
-    }
+    [ObservableProperty]
+    public partial MorphShapes DynamicKernelShape { get; set; } = MorphShapes.Ellipse;
 
-    public int AnchorY
-    {
-        get => _anchorY;
-        set => RaiseAndSetIfChanged(ref _anchorY, value);
-    }
+    partial void OnDynamicKernelShapeChanged(MorphShapes value) => _kernelCache.DynamicKernelShape = value;
 
-    public string MatrixText
-    {
-        get => _matrixText;
-        set => RaiseAndSetIfChanged(ref _matrixText, value);
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Anchor))]
+    public partial int AnchorX { get; set; } = -1;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Anchor))]
+    public partial int AnchorY { get; set; } = -1;
 
-    public uint MatrixWidth
-    {
-        get => _matrixWidth;
-        set => RaiseAndSetIfChanged(ref _matrixWidth, value);
-    }
+    [ObservableProperty]
+    public partial string MatrixText { get; set; } = "1 1 1\n1 1 1\n1 1 1";
 
-    public uint MatrixHeight
-    {
-        get => _matrixHeight;
-        set => RaiseAndSetIfChanged(ref _matrixHeight, value);
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MatrixSize))]
+    public partial uint MatrixWidth { get; set; } = 3;
 
-    public Size MatrixSize => new((int)_matrixWidth, (int)_matrixHeight);
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MatrixSize))]
+    public partial uint MatrixHeight { get; set; } = 3;
+
+    public Size MatrixSize => new((int)MatrixWidth, (int)MatrixHeight);
 
     [XmlIgnore]
     public Mat? KernelMat
@@ -101,7 +73,7 @@ public sealed class KernelConfiguration : BindableBase, IDisposable
                 if (_kernelMat is null)
                 {
 
-                    if (!string.IsNullOrWhiteSpace(_matrixText))
+                    if (!string.IsNullOrWhiteSpace(MatrixText))
                     {
                         GenerateKernelFromText();
                     }
@@ -117,21 +89,18 @@ public sealed class KernelConfiguration : BindableBase, IDisposable
         set => _kernelMat = value;
     }
 
-    public MorphShapes KernelShape
-    {
-        get => _kernelShape;
-        set => RaiseAndSetIfChanged(ref _kernelShape, value);
-    }
+    [ObservableProperty]
+    public partial MorphShapes KernelShape { get; set; } = MorphShapes.Rectangle;
 
     public IEnumerable<MorphShapes> KernelShapes => ((MorphShapes[])Enum.GetValues(typeof(MorphShapes))).Where(element => element != MorphShapes.Custom);
 
     public Point Anchor
     {
-        get => new(_anchorX, _anchorY);
+        get => new(AnchorX, AnchorY);
         set
         {
-            _anchorX = value.X;
-            _anchorY = value.Y;
+            AnchorX = value.X;
+            AnchorY = value.Y;
         }
     }
     #endregion
@@ -159,7 +128,7 @@ public sealed class KernelConfiguration : BindableBase, IDisposable
         string text = string.Empty;
         for (int y = 0; y < kernel.Height; y++)
         {
-            var span = kernel.GetRowByteSpan(y);
+            var span = kernel.GetReadOnlyRowSpanOfBytes(y);
             var line = string.Empty;
             for (int x = 0; x < span.Length; x++)
             {
@@ -179,12 +148,12 @@ public sealed class KernelConfiguration : BindableBase, IDisposable
 
     public void GenerateKernelFromText()
     {
-        if (string.IsNullOrEmpty(_matrixText))
+        if (string.IsNullOrEmpty(MatrixText))
         {
             throw new InvalidOperationException("Invalid kernel: Kernel can't be empty.");
         }
         Matrix<byte> matrix = null!;
-        var lines = _matrixText.Split('\n');
+        var lines = MatrixText.Split('\n');
         for (var row = 0; row < lines.Length; row++)
         {
             var bytes = lines[row].Trim().Split(' ');
@@ -214,7 +183,7 @@ public sealed class KernelConfiguration : BindableBase, IDisposable
                 }
             }
         }
-        if (matrix.Cols <= _anchorX || matrix.Rows <= _anchorY)
+        if (matrix.Cols <= AnchorX || matrix.Rows <= AnchorY)
         {
             matrix.Dispose();
             throw new InvalidOperationException("Invalid kernel: Anchor position X/Y can't be higher or equal than kernel columns/rows\nPlease fix the values.");
@@ -230,8 +199,8 @@ public sealed class KernelConfiguration : BindableBase, IDisposable
         KernelMat = CvInvoke.GetStructuringElement(shape, size, anchor);
     }
 
-    public void SetKernel(MorphShapes shape, Size size) => SetKernel(shape, size, EmguExtensions.AnchorCenter);
-    public void SetKernel(MorphShapes shape) => SetKernel(shape, new Size(3, 3), EmguExtensions.AnchorCenter);
+    public void SetKernel(MorphShapes shape, Size size) => SetKernel(shape, size, EmguCvExtensions.AnchorCenter);
+    public void SetKernel(MorphShapes shape) => SetKernel(shape, new Size(3, 3), EmguCvExtensions.AnchorCenter);
 
     public Mat? GetKernel()
     {
@@ -240,7 +209,7 @@ public sealed class KernelConfiguration : BindableBase, IDisposable
 
     public Mat? GetKernel(ref int iterations)
     {
-        if (!_useDynamicKernel) return KernelMat;
+        if (!UseDynamicKernel) return KernelMat;
         return _kernelCache.Get(ref iterations);
     }
 

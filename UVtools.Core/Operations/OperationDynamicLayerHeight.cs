@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,7 +7,9 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
+using EmguExtensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -25,7 +27,7 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationDynamicLayerHeight : Operation
+public sealed partial class OperationDynamicLayerHeight : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Sub Classes
@@ -74,18 +76,8 @@ public sealed class OperationDynamicLayerHeight : Operation
     private decimal _cacheRamSize = 1.5m;
     private decimal _minimumLayerHeight = 0.03m;
     private decimal _maximumLayerHeight = 0.10m;
-    private bool _stripAntiAliasing;
-    private bool _reconstructAntiAliasing;
-    private byte _maximumErodes = 10;
 
-    private ExposureSetTypes _exposureSetType = ExposureSetTypes.Linear;
-    private bool _iterateBottomExposureTime;
-    private decimal _bottomExposureTime;
-    private decimal _exposureTime;
-    private decimal _bottomExposureStep = 0.5m;
-    private decimal _exposureStep = 0.2m;
     private RangeObservableCollection<ExposureItem> _automaticExposureTable = [];
-    private RangeObservableCollection<ExposureItem> _manualExposureTable = [];
 
     #endregion
 
@@ -188,10 +180,10 @@ public sealed class OperationDynamicLayerHeight : Operation
     {
         var result = $"[RAM: {_cacheRamSize}Gb] " +
                      $"[Layer Height: Min: {_minimumLayerHeight}mm Max: {_maximumLayerHeight}mm] " +
-                     $"[Strip AA: {_stripAntiAliasing} Reconstruct AA: {_reconstructAntiAliasing}] " +
-                     $"[Difference: {_maximumErodes}px] " +
-                     $"[Bottom Exposure: {_bottomExposureTime}s Normal Exposure: {_exposureTime}s] " +
-                     $"[Exposure type: {_exposureSetType}, Steps: {_bottomExposureStep}s/{_exposureStep}s]" + LayerRangeString;
+                     $"[Strip AA: {StripAntiAliasing} Reconstruct AA: {ReconstructAntiAliasing}] " +
+                     $"[Difference: {MaximumErodes}px] " +
+                     $"[Bottom Exposure: {BottomExposureTime}s Normal Exposure: {ExposureTime}s] " +
+                     $"[Exposure type: {ExposureSetType}, Steps: {BottomExposureStep}s/{ExposureStep}s]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -219,8 +211,8 @@ public sealed class OperationDynamicLayerHeight : Operation
         get => _cacheRamSize;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _cacheRamSize, Math.Round(value, 2))) return;
-            RaisePropertyChanged(nameof(CacheObjectCount));
+            if (!SetProperty(ref _cacheRamSize, Math.Round(value, 2))) return;
+            OnPropertyChanged(nameof(CacheObjectCount));
         }
     }
 
@@ -231,8 +223,8 @@ public sealed class OperationDynamicLayerHeight : Operation
         get => _minimumLayerHeight;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _minimumLayerHeight, Layer.RoundHeight(value))) return;
-            //RaisePropertyChanged(nameof(ExposureData));
+            if (!SetProperty(ref _minimumLayerHeight, Layer.RoundHeight(value))) return;
+            //OnPropertyChanged(nameof(ExposureData));
             //if (!IsExposureSetTypeManual) RebuildAutoExposureTable();
         }
     }
@@ -242,97 +234,54 @@ public sealed class OperationDynamicLayerHeight : Operation
         get => _maximumLayerHeight;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _maximumLayerHeight, Layer.RoundHeight(value))) return;
-            //RaisePropertyChanged(nameof(ExposureData));
+            if(!SetProperty(ref _maximumLayerHeight, Layer.RoundHeight(value))) return;
+            //OnPropertyChanged(nameof(ExposureData));
             if(!IsExposureSetTypeManual) RebuildAutoExposureTable();
         }
     }
 
-    public bool StripAntiAliasing
+    [ObservableProperty]
+    public partial bool StripAntiAliasing { get; set; }
+
+    [ObservableProperty]
+    public partial bool ReconstructAntiAliasing { get; set; }
+
+    [ObservableProperty]
+    public partial byte MaximumErodes { get; set; } = 10;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsExposureSetTypeManual))]
+    [NotifyPropertyChangedFor(nameof(ExposureTable))]
+    [NotifyPropertyChangedFor(nameof(ExposureTableDictionary))]
+    public partial ExposureSetTypes ExposureSetType { get; set; } = ExposureSetTypes.Linear;
+
+    public bool IsExposureSetTypeManual => ExposureSetType == ExposureSetTypes.Manual;
+
+    [ObservableProperty]
+    public partial bool IterateBottomExposureTime { get; set; }
+
+    [ObservableProperty]
+    public partial decimal BottomExposureTime { get; set; }
+
+    [ObservableProperty]
+    public partial decimal ExposureTime { get; set; }
+
+    [ObservableProperty]
+    public partial decimal BottomExposureStep { get; set; } = 0.5m;
+
+    [ObservableProperty]
+    public partial decimal ExposureStep { get; set; } = 0.2m;
+
+    partial void OnExposureSetTypeChanged(ExposureSetTypes value) => RebuildAutoExposureTableIfRequired();
+    partial void OnIterateBottomExposureTimeChanged(bool value) => RebuildAutoExposureTableIfRequired();
+    partial void OnBottomExposureTimeChanged(decimal value) => RebuildAutoExposureTableIfRequired();
+    partial void OnExposureTimeChanged(decimal value) => RebuildAutoExposureTableIfRequired();
+    partial void OnBottomExposureStepChanged(decimal value) => RebuildAutoExposureTableIfRequired();
+    partial void OnExposureStepChanged(decimal value) => RebuildAutoExposureTableIfRequired();
+
+    private void RebuildAutoExposureTableIfRequired()
     {
-        get => _stripAntiAliasing;
-        set => RaiseAndSetIfChanged(ref _stripAntiAliasing, value);
-    }
-
-    public bool ReconstructAntiAliasing
-    {
-        get => _reconstructAntiAliasing;
-        set => RaiseAndSetIfChanged(ref _reconstructAntiAliasing, value);
-    }
-
-    public byte MaximumErodes
-    {
-        get => _maximumErodes;
-        set => RaiseAndSetIfChanged(ref _maximumErodes, value);
-    }
-
-    public ExposureSetTypes ExposureSetType
-    {
-        get => _exposureSetType;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _exposureSetType, value)) return;
-            RaisePropertyChanged(nameof(IsExposureSetTypeManual));
-            RaisePropertyChanged(nameof(ExposureTable));
-            RaisePropertyChanged(nameof(ExposureTableDictionary));
-            //RaisePropertyChanged(nameof(ExposureData));
-            if (!IsExposureSetTypeManual) RebuildAutoExposureTable();
-        }
-    }
-
-    public bool IsExposureSetTypeManual => _exposureSetType == ExposureSetTypes.Manual;
-
-    public bool IterateBottomExposureTime
-    {
-        get => _iterateBottomExposureTime;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _iterateBottomExposureTime, value)) return;
-            if (!IsExposureSetTypeManual) RebuildAutoExposureTable();
-        }
-    }
-
-    public decimal BottomExposureTime
-    {
-        get => _bottomExposureTime;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _bottomExposureTime, value)) return;
-            if (!IsExposureSetTypeManual) RebuildAutoExposureTable();
-        }
-    }
-
-    public decimal ExposureTime
-    {
-        get => _exposureTime;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _exposureTime, value)) return;
-            if (!IsExposureSetTypeManual) RebuildAutoExposureTable();
-        }
-
-    }
-
-    public decimal BottomExposureStep
-    {
-        get => _bottomExposureStep;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _bottomExposureStep, value)) return;
-            //RaisePropertyChanged(nameof(ExposureData));
-            if (!IsExposureSetTypeManual) RebuildAutoExposureTable();
-        }
-    }
-
-    public decimal ExposureStep
-    {
-        get => _exposureStep;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _exposureStep, value)) return;
-            //RaisePropertyChanged(nameof(ExposureData));
-            if (!IsExposureSetTypeManual) RebuildAutoExposureTable();
-        }
+        if (!IsExposureSetTypeManual) RebuildAutoExposureTable();
     }
 
     [XmlIgnore]
@@ -343,17 +292,14 @@ public sealed class OperationDynamicLayerHeight : Operation
             if(_automaticExposureTable.Count == 0) RebuildAutoExposureTable();
             return _automaticExposureTable;
         }
-        set => RaiseAndSetIfChanged(ref _automaticExposureTable, value);
+        set => SetProperty(ref _automaticExposureTable, value);
     }
 
-    public RangeObservableCollection<ExposureItem> ManualExposureTable
-    {
-        get => _manualExposureTable;
-        set => RaiseAndSetIfChanged(ref _manualExposureTable, value);
-    }
+    [ObservableProperty]
+    public partial RangeObservableCollection<ExposureItem> ManualExposureTable { get; set; } = [];
 
     [XmlIgnore]
-    public RangeObservableCollection<ExposureItem> ExposureTable => IsExposureSetTypeManual ? _manualExposureTable : AutomaticExposureTable;
+    public RangeObservableCollection<ExposureItem> ExposureTable => IsExposureSetTypeManual ? ManualExposureTable : AutomaticExposureTable;
 
     /// <summary>
     /// Gets the exposure table into a dictionary where key is the layer height
@@ -383,15 +329,15 @@ public sealed class OperationDynamicLayerHeight : Operation
             {
                 decimal bottomExposure = 0;
                 decimal exposure = 0;
-                switch (_exposureSetType)
+                switch (ExposureSetType)
                 {
                     case ExposureSetTypes.Linear:
-                        bottomExposure = _iterateBottomExposureTime ? _bottomExposureTime + count * _bottomExposureStep : _bottomExposureTime;
-                        exposure = _exposureTime + count * _exposureStep;
+                        bottomExposure = IterateBottomExposureTime ? BottomExposureTime + count * BottomExposureStep : BottomExposureTime;
+                        exposure = ExposureTime + count * ExposureStep;
                         break;
                     case ExposureSetTypes.Multiplier:
-                        bottomExposure = _iterateBottomExposureTime ? _bottomExposureTime + _bottomExposureTime * count * layerHeight * _bottomExposureStep : _bottomExposureTime;
-                        exposure = _exposureTime + _exposureTime * count * layerHeight * _exposureStep;
+                        bottomExposure = IterateBottomExposureTime ? BottomExposureTime + BottomExposureTime * count * layerHeight * BottomExposureStep : BottomExposureTime;
+                        exposure = ExposureTime + ExposureTime * count * layerHeight * ExposureStep;
                         break;
                     case ExposureSetTypes.Manual:
                         break;
@@ -432,10 +378,10 @@ public sealed class OperationDynamicLayerHeight : Operation
         {
             _maximumLayerHeight = Math.Min(Layer.MaximumHeight, _maximumLayerHeight*2);
         }
-        if (_bottomExposureTime <= 0)
-            _bottomExposureTime = (decimal)SlicerFile.BottomExposureTime;
-        if (_exposureTime <= 0)
-            _exposureTime = (decimal)SlicerFile.ExposureTime;
+        if (BottomExposureTime <= 0)
+            BottomExposureTime = (decimal)SlicerFile.BottomExposureTime;
+        if (ExposureTime <= 0)
+            ExposureTime = (decimal)SlicerFile.ExposureTime;
 
     }
 
@@ -445,14 +391,14 @@ public sealed class OperationDynamicLayerHeight : Operation
              layerHeight <= Layer.MaximumHeight;
              layerHeight += Layer.MinimumHeight)
         {
-            var item = new ExposureItem(layerHeight, _bottomExposureTime, _exposureTime);
-            //item.BottomExposure = _bottomExposureTime;
-            //item.Exposure = _exposureTime;
+            var item = new ExposureItem(layerHeight, BottomExposureTime, ExposureTime);
+            //item.BottomExposure = BottomExposureTime;
+            //item.Exposure = ExposureTime;
             /*if (layerHeight == (decimal) SlicerFile.LayerHeight)
             {
 
             }*/
-            _manualExposureTable.Add(item);
+            ManualExposureTable.Add(item);
         }
     }
 
@@ -462,7 +408,7 @@ public sealed class OperationDynamicLayerHeight : Operation
 
     private bool Equals(OperationDynamicLayerHeight other)
     {
-        return _cacheRamSize == other._cacheRamSize && _minimumLayerHeight == other._minimumLayerHeight && _maximumLayerHeight == other._maximumLayerHeight && _stripAntiAliasing == other._stripAntiAliasing && _reconstructAntiAliasing == other._reconstructAntiAliasing && _maximumErodes == other._maximumErodes && _exposureSetType == other._exposureSetType && _iterateBottomExposureTime == other._iterateBottomExposureTime && _bottomExposureTime == other._bottomExposureTime && _exposureTime == other._exposureTime && _bottomExposureStep == other._bottomExposureStep && _exposureStep == other._exposureStep && Equals(_manualExposureTable, other._manualExposureTable);
+        return _cacheRamSize == other._cacheRamSize && _minimumLayerHeight == other._minimumLayerHeight && _maximumLayerHeight == other._maximumLayerHeight && StripAntiAliasing == other.StripAntiAliasing && ReconstructAntiAliasing == other.ReconstructAntiAliasing && MaximumErodes == other.MaximumErodes && ExposureSetType == other.ExposureSetType && IterateBottomExposureTime == other.IterateBottomExposureTime && BottomExposureTime == other.BottomExposureTime && ExposureTime == other.ExposureTime && BottomExposureStep == other.BottomExposureStep && ExposureStep == other.ExposureStep && Equals(ManualExposureTable, other.ManualExposureTable);
     }
 
     public override bool Equals(object? obj)
@@ -484,15 +430,15 @@ public sealed class OperationDynamicLayerHeight : Operation
         {
             decimal bottomExposure = 0;
             decimal exposure = 0;
-            switch (_exposureSetType)
+            switch (ExposureSetType)
             {
                 case ExposureSetTypes.Linear:
-                    bottomExposure = _iterateBottomExposureTime ? _bottomExposureTime + count * _bottomExposureStep : _bottomExposureTime;
-                    exposure = _exposureTime + count * _exposureStep;
+                    bottomExposure = IterateBottomExposureTime ? BottomExposureTime + count * BottomExposureStep : BottomExposureTime;
+                    exposure = ExposureTime + count * ExposureStep;
                     break;
                 case ExposureSetTypes.Multiplier:
-                    bottomExposure = _iterateBottomExposureTime ? _bottomExposureTime + _bottomExposureTime * count * layerHeight * _bottomExposureStep : _bottomExposureTime;
-                    exposure = _exposureTime + _exposureTime * count * layerHeight * _exposureStep;
+                    bottomExposure = IterateBottomExposureTime ? BottomExposureTime + BottomExposureTime * count * layerHeight * BottomExposureStep : BottomExposureTime;
+                    exposure = ExposureTime + ExposureTime * count * layerHeight * ExposureStep;
                     break;
                 case ExposureSetTypes.Manual:
                     break;
@@ -519,7 +465,7 @@ public sealed class OperationDynamicLayerHeight : Operation
             OldPrintTime = SlicerFile.PrintTime
         };
 
-        var kernel = EmguExtensions.Kernel3x3Rectangle;
+        var kernel = EmguCvExtensions.Kernel3X3Rectangle;
 
         var matCache = new MatCacheManager(this, (ushort)CacheObjectCount, ObjectsPerCache)
         {
@@ -531,7 +477,7 @@ public sealed class OperationDynamicLayerHeight : Operation
                 // Clean AA
                 CvInvoke.Threshold(mats[0], mats[1], 127, 255, ThresholdType.Binary);
 
-                if (_stripAntiAliasing)
+                if (StripAntiAliasing)
                 {
                     mats[0].Dispose();
                     mats[0] = mats[1];
@@ -555,7 +501,7 @@ public sealed class OperationDynamicLayerHeight : Operation
 
         void AddNewLayer(Mat mat, float layerHeight)
         {
-            if (_stripAntiAliasing && _reconstructAntiAliasing)
+            if (StripAntiAliasing && ReconstructAntiAliasing)
             {
                 CvInvoke.GaussianBlur(mat, mat, new Size(3, 3), 0);
             }
@@ -577,10 +523,10 @@ public sealed class OperationDynamicLayerHeight : Operation
             layer.PositionZ = GetLastPositionZ(SlicerFile.LayerHeight);
             layer.Index = (uint) layers.Count;
             layer.IsModified = true;
-            if (_stripAntiAliasing)
+            if (StripAntiAliasing)
             {
                 var matThreshold = matCache.Get(layerIndex, 1);
-                if (_reconstructAntiAliasing)
+                if (ReconstructAntiAliasing)
                 {
                     var blurMat = new Mat();
                     CvInvoke.GaussianBlur(matThreshold, blurMat, new Size(3, 3), 0);
@@ -666,7 +612,7 @@ public sealed class OperationDynamicLayerHeight : Operation
                     //Debug.WriteLine($"\n\n{layerIndex} - 0");
                     //CvInvoke.Imshow("Render", erodeMatXor.Roi(SlicerFile.BoundingRectangle));
                     //CvInvoke.WaitKey();
-                    while (erodeCount < _maximumErodes)
+                    while (erodeCount < MaximumErodes)
                     {
                         //innerErodeCount++;
                         erodeCount++;
@@ -681,7 +627,7 @@ public sealed class OperationDynamicLayerHeight : Operation
                             break;
                         }*/
                         //Debug.WriteLine($"{layerIndex} - {erodeCount}");
-                        CvInvoke.Erode(matXorSum, matXor, kernel, EmguExtensions.AnchorCenter, 1, BorderType.Reflect101, default);
+                        CvInvoke.Erode(matXorSum, matXor, kernel, EmguCvExtensions.AnchorCenter, 1, BorderType.Reflect101, default);
                         //CvInvoke.Imshow("Render", erodeMatXor.Roi(SlicerFile.BoundingRectangle));
                         //CvInvoke.WaitKey();
                         if (!CvInvoke.HasNonZero(matXor))
@@ -692,7 +638,7 @@ public sealed class OperationDynamicLayerHeight : Operation
                         }
                     }
 
-                    //if ((!meetRequirement || erodeCount >= _maximumErodes) && _minimumLayerHeight < (decimal) currentLayerHeight
+                    //if ((!meetRequirement || erodeCount >= MaximumErodes) && _minimumLayerHeight < (decimal) currentLayerHeight
                     // To many pixels, image still not blank, pack the previous group and start again from current height
                     if (!meetRequirement && _minimumLayerHeight < (decimal) currentLayerHeight)
                     {
@@ -738,8 +684,8 @@ public sealed class OperationDynamicLayerHeight : Operation
 
         SlicerFile.SuppressRebuildPropertiesWork(() =>
         {
-            SlicerFile.BottomExposureTime = (float)_bottomExposureTime;
-            SlicerFile.ExposureTime = (float)_exposureTime;
+            SlicerFile.BottomExposureTime = (float)BottomExposureTime;
+            SlicerFile.ExposureTime = (float)ExposureTime;
             SlicerFile.Layers = layers.ToArray();
         }, true, false);
 
@@ -748,8 +694,8 @@ public sealed class OperationDynamicLayerHeight : Operation
         for (uint layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
         {
             var layer = SlicerFile[layerIndex];
-            var bottomExposure = _bottomExposureTime;
-            var exposure = _exposureTime;
+            var bottomExposure = BottomExposureTime;
+            var exposure = ExposureTime;
             if(exposureDictionary.TryGetValue((decimal)layer.LayerHeight, out var item))
             {
                 bottomExposure = item.BottomExposure;

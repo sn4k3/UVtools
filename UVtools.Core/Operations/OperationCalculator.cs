@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,15 +7,15 @@
  */
 
 using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Drawing;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
-using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations;
 
 
-public class OperationCalculator : Operation
+public partial class OperationCalculator : Operation
 {
     #region Overrides
 
@@ -65,88 +65,45 @@ public class OperationCalculator : Operation
 
     #endregion
 
-    public abstract class Calculation : BindableBase
+    public abstract partial class Calculation : ObservableObject
     {
         public abstract string Description { get; }
         public abstract string Formula { get; }
     }
 
-    public sealed class MillimetersToPixels : Calculation
+    public sealed partial class MillimetersToPixels : Calculation
     {
-        private uint _resolutionX;
-        private uint _resolutionY;
-        private decimal _displayWidth;
-        private decimal _displayHeight;
-        private decimal _millimeters = 1;
-
         public override string Description => "Converts from Millimeters to Pixels";
         public override string Formula => "Pixels = Resolution / Display * Millimeters";
 
         public MillimetersToPixels(Size resolution, SizeF display, decimal millimeters = 1)
         {
-            _resolutionX = (uint) resolution.Width;
-            _resolutionY = (uint) resolution.Height;
-
-            _displayWidth = (decimal) display.Width;
-            _displayHeight = (decimal) display.Height;
-
-            _millimeters = millimeters;
+            ResolutionX = (uint) resolution.Width;
+            ResolutionY = (uint) resolution.Height;
+            DisplayWidth = (decimal) display.Width;
+            DisplayHeight = (decimal) display.Height;
+            Millimeters = millimeters;
         }
 
-        public uint ResolutionX
-        {
-            get => _resolutionX;
-            set
-            {
-                if(!RaiseAndSetIfChanged(ref _resolutionX, value)) return;
-                RaisePropertyChanged(nameof(PixelsPerMillimeterX));
-                RaisePropertyChanged(nameof(PixelsX));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(PixelsPerMillimeterX), nameof(PixelsX))]
+        public partial uint ResolutionX { get; set; }
 
-        public uint ResolutionY
-        {
-            get => _resolutionY;
-            set
-            {
-                if(!RaiseAndSetIfChanged(ref _resolutionY, value)) return;
-                RaisePropertyChanged(nameof(PixelsPerMillimeterY));
-                RaisePropertyChanged(nameof(PixelsY));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(PixelsPerMillimeterY), nameof(PixelsY))]
+        public partial uint ResolutionY { get; set; }
 
-        public decimal DisplayWidth
-        {
-            get => _displayWidth;
-            set
-            {
-                if(!RaiseAndSetIfChanged(ref _displayWidth, value)) return;
-                RaisePropertyChanged(nameof(PixelsPerMillimeterX));
-                RaisePropertyChanged(nameof(PixelsX));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(PixelsPerMillimeterX), nameof(PixelsX))]
+        public partial decimal DisplayWidth { get; set; }
 
-        public decimal DisplayHeight
-        {
-            get => _displayHeight;
-            set
-            {
-                if(!RaiseAndSetIfChanged(ref _displayHeight, value)) return;
-                RaisePropertyChanged(nameof(PixelsPerMillimeterY));
-                RaisePropertyChanged(nameof(PixelsY));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(PixelsPerMillimeterY), nameof(PixelsY))]
+        public partial decimal DisplayHeight { get; set; }
 
-        public decimal Millimeters
-        {
-            get => _millimeters;
-            set
-            {
-                if(!RaiseAndSetIfChanged(ref _millimeters, value)) return;
-                RaisePropertyChanged(nameof(PixelsX));
-                RaisePropertyChanged(nameof(PixelsY));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(PixelsX), nameof(PixelsY))]
+        public partial decimal Millimeters { get; set; } = 1;
 
         public decimal PixelsPerMillimeterX => DisplayWidth > 0 ? Math.Round(ResolutionX / DisplayWidth, 2) : 0;
         public decimal PixelsPerMillimeterY => DisplayHeight > 0 ? Math.Round(ResolutionY / DisplayHeight, 2) : 0;
@@ -157,17 +114,8 @@ public class OperationCalculator : Operation
 
     }
 
-    public sealed class LightOffDelayC : Calculation
+    public sealed partial class LightOffDelayC : Calculation
     {
-        private decimal _liftHeight;
-        private decimal _bottomLiftHeight;
-        private decimal _liftSpeed;
-        private decimal _bottomLiftSpeed;
-        private decimal _retractSpeed;
-        private decimal _bottomRetractSpeed;
-        private decimal _waitTime = 2.5m;
-        private decimal _bottomWaitTime = 3m;
-
         public override string Description =>
             "Calculates the required light-off delay (Moving time from the build plate + additional time for resin to stabilize) given the lifting height, speed and retract to wait x seconds before cure a new layer.\n" +
             "Light-off delay is crucial for gaining higher-resolution and sharper prints.\n" +
@@ -175,91 +123,43 @@ public class OperationCalculator : Operation
 
         public override string Formula => "Light-off delay = Lifting height / (Lifting speed / 60) + Lifting height / (Retract speed / 60) + Desired wait seconds";
 
-        public decimal LiftHeight
-        {
-            get => _liftHeight;
-            set
-            {
-                if(!RaiseAndSetIfChanged(ref _liftHeight, value)) return;
-                RaisePropertyChanged(nameof(LightOffDelay));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(LightOffDelay))]
+        public partial decimal LiftHeight { get; set; }
 
-        public decimal BottomLiftHeight
-        {
-            get => _bottomLiftHeight;
-            set
-            {
-                if(!RaiseAndSetIfChanged(ref _bottomLiftHeight, value)) return;
-                RaisePropertyChanged(nameof(BottomLightOffDelay));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(BottomLightOffDelay))]
+        public partial decimal BottomLiftHeight { get; set; }
 
-        public decimal LiftSpeed
-        {
-            get => _liftSpeed;
-            set
-            {
-                if(!RaiseAndSetIfChanged(ref _liftSpeed, value)) return;
-                RaisePropertyChanged(nameof(LightOffDelay));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(LightOffDelay))]
+        public partial decimal LiftSpeed { get; set; }
 
-        public decimal BottomLiftSpeed
-        {
-            get => _bottomLiftSpeed;
-            set
-            {
-                if(!RaiseAndSetIfChanged(ref _bottomLiftSpeed, value)) return;
-                RaisePropertyChanged(nameof(BottomLightOffDelay));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(BottomLightOffDelay))]
+        public partial decimal BottomLiftSpeed { get; set; }
 
-        public decimal RetractSpeed
-        {
-            get => _retractSpeed;
-            set
-            {
-                if(!RaiseAndSetIfChanged(ref _retractSpeed, value)) return;
-                RaisePropertyChanged(nameof(LightOffDelay));
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(LightOffDelay))]
+        public partial decimal RetractSpeed { get; set; }
 
-                BottomRetractSpeed = _retractSpeed;
-            }
-        }
+        partial void OnRetractSpeedChanged(decimal value) => BottomRetractSpeed = value;
 
-        public decimal BottomRetractSpeed
-        {
-            get => _bottomRetractSpeed;
-            set
-            {
-                if (!RaiseAndSetIfChanged(ref _bottomRetractSpeed, value)) return;
-                RaisePropertyChanged(nameof(BottomLightOffDelay));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(BottomLightOffDelay))]
+        public partial decimal BottomRetractSpeed { get; set; }
 
-        public decimal WaitTime
-        {
-            get => _waitTime;
-            set
-            {
-                if(!RaiseAndSetIfChanged(ref _waitTime, value)) return;
-                RaisePropertyChanged(nameof(LightOffDelay));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(LightOffDelay))]
+        public partial decimal WaitTime { get; set; } = 2.5m;
 
-        public decimal BottomWaitTime
-        {
-            get => _bottomWaitTime;
-            set
-            {
-                if (!RaiseAndSetIfChanged(ref _bottomWaitTime, value)) return;
-                RaisePropertyChanged(nameof(BottomLightOffDelay));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(BottomLightOffDelay))]
+        public partial decimal BottomWaitTime { get; set; } = 3m;
 
-        public decimal LightOffDelay => CalculateSeconds(_liftHeight, _liftSpeed, _retractSpeed, _waitTime);
+        public decimal LightOffDelay => CalculateSeconds(LiftHeight, LiftSpeed, RetractSpeed, WaitTime);
 
-        public decimal BottomLightOffDelay => CalculateSeconds(_bottomLiftHeight, _bottomLiftSpeed, _bottomRetractSpeed, _bottomWaitTime);
+        public decimal BottomLightOffDelay => CalculateSeconds(BottomLiftHeight, BottomLiftSpeed, BottomRetractSpeed, BottomWaitTime);
 
         public LightOffDelayC()
         {
@@ -267,14 +167,14 @@ public class OperationCalculator : Operation
 
         public LightOffDelayC(decimal liftHeight, decimal bottomLiftHeight, decimal liftSpeed, decimal bottomLiftSpeed, decimal retractSpeed, decimal bottomRetractSpeed, decimal waitTime = 2.5m, decimal bottomWaitTime = 3m)
         {
-            _liftHeight = liftHeight;
-            _bottomLiftHeight = bottomLiftHeight;
-            _liftSpeed = liftSpeed;
-            _bottomLiftSpeed = bottomLiftSpeed;
-            _retractSpeed = retractSpeed;
-            _bottomRetractSpeed = bottomRetractSpeed;
-            _waitTime = waitTime;
-            _bottomWaitTime = bottomWaitTime;
+            LiftHeight = liftHeight;
+            BottomLiftHeight = bottomLiftHeight;
+            LiftSpeed = liftSpeed;
+            BottomLiftSpeed = bottomLiftSpeed;
+            RetractSpeed = retractSpeed;
+            BottomRetractSpeed = bottomRetractSpeed;
+            WaitTime = waitTime;
+            BottomWaitTime = bottomWaitTime;
         }
 
         public static decimal CalculateSeconds(decimal liftHeight, decimal liftSpeed, decimal retractSpeed, decimal extraWaitTime = 0)
@@ -347,87 +247,47 @@ public class OperationCalculator : Operation
 
     }
 
-    public sealed class OptimalModelTilt : Calculation
+    public sealed partial class OptimalModelTilt : Calculation
     {
-        private uint _resolutionX;
-        private uint _resolutionY;
-        private decimal _displayWidth;
-        private decimal _displayHeight;
-        private decimal _layerHeight = 0.05m;
-
         public override string Description => "Calculates the optimal model tilt angle for printing and to minimize the visual layer effect.";
         public override string Formula => "Angleº = arctan(Layer height / XYResolution) * (180 / PI)";
 
         public OptimalModelTilt(Size resolution, SizeF display, decimal layerHeight = 0.05m)
         {
-            _resolutionX = (uint)resolution.Width;
-            _resolutionY = (uint)resolution.Height;
-
-            _displayWidth = (decimal)display.Width;
-            _displayHeight = (decimal)display.Height;
-
-            _layerHeight = layerHeight;
+            ResolutionX = (uint)resolution.Width;
+            ResolutionY = (uint)resolution.Height;
+            DisplayWidth = (decimal)display.Width;
+            DisplayHeight = (decimal)display.Height;
+            LayerHeight = layerHeight;
         }
 
-        public uint ResolutionX
-        {
-            get => _resolutionX;
-            set
-            {
-                if (!RaiseAndSetIfChanged(ref _resolutionX, value)) return;
-                RaisePropertyChanged(nameof(XYResolution));
-                RaisePropertyChanged(nameof(XYResolutionUm));
-                RaisePropertyChanged(nameof(TiltAngleDegrees));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(XYResolution), nameof(XYResolutionUm), nameof(TiltAngleDegrees))]
+        public partial uint ResolutionX { get; set; }
 
-        public uint ResolutionY
-        {
-            get => _resolutionY;
-            set
-            {
-                if (!RaiseAndSetIfChanged(ref _resolutionY, value)) return;
-                RaisePropertyChanged(nameof(XYResolution));
-                RaisePropertyChanged(nameof(XYResolutionUm));
-                RaisePropertyChanged(nameof(TiltAngleDegrees));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(XYResolution), nameof(XYResolutionUm), nameof(TiltAngleDegrees))]
+        public partial uint ResolutionY { get; set; }
 
-        public decimal DisplayWidth
-        {
-            get => _displayWidth;
-            set
-            {
-                if (!RaiseAndSetIfChanged(ref _displayWidth, value)) return;
-                RaisePropertyChanged(nameof(XYResolution));
-                RaisePropertyChanged(nameof(XYResolutionUm));
-                RaisePropertyChanged(nameof(TiltAngleDegrees));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(XYResolution), nameof(XYResolutionUm), nameof(TiltAngleDegrees))]
+        public partial decimal DisplayWidth { get; set; }
 
-        public decimal DisplayHeight
-        {
-            get => _displayHeight;
-            set
-            {
-                if (!RaiseAndSetIfChanged(ref _displayHeight, value)) return;
-                RaisePropertyChanged(nameof(XYResolution));
-                RaisePropertyChanged(nameof(XYResolutionUm));
-                RaisePropertyChanged(nameof(TiltAngleDegrees));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(XYResolution), nameof(XYResolutionUm), nameof(TiltAngleDegrees))]
+        public partial decimal DisplayHeight { get; set; }
 
         public decimal LayerHeight
         {
-            get => _layerHeight;
+            get;
             set
             {
-                if (!RaiseAndSetIfChanged(ref _layerHeight, Layer.RoundHeight(value))) return;
-                RaisePropertyChanged(nameof(XYResolution));
-                RaisePropertyChanged(nameof(XYResolutionUm));
-                RaisePropertyChanged(nameof(TiltAngleDegrees));
+                if (!SetProperty(ref field, Layer.RoundHeight(value))) return;
+                OnPropertyChanged(nameof(XYResolution));
+                OnPropertyChanged(nameof(XYResolutionUm));
+                OnPropertyChanged(nameof(TiltAngleDegrees));
             }
-        }
+        } = 0.05m;
 
         public decimal XYResolution => DisplayWidth > 0 || DisplayHeight > 0 ?
             Math.Max(
@@ -439,7 +299,7 @@ public class OperationCalculator : Operation
         public decimal XYResolutionUm => Math.Round(XYResolution * 1000, 2);
 
         public decimal TiltAngleDegrees =>
-            XYResolution > 0 ? (decimal) Math.Round(Math.Atan((double) (_layerHeight / XYResolution)) * (180 / Math.PI), 3) : 0;
+            XYResolution > 0 ? (decimal) Math.Round(Math.Atan((double) (LayerHeight / XYResolution)) * (180 / Math.PI), 3) : 0;
 
     }
 }

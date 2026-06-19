@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,8 +7,10 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
+using EmguExtensions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -20,28 +22,15 @@ using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Managers;
-using ZLinq;
 
 namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public class OperationRepairLayers : Operation
+public partial class OperationRepairLayers : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
-    private bool _detectIssues;
-    private bool _repairIslands = true;
-    private bool _repairResinTraps = true;
-    private bool _repairSuctionCups;
-    private bool _removeEmptyLayers = true;
-    private ushort _removeIslandsBelowEqualPixelCount = 5;
-    private ushort _removeIslandsRecursiveIterations = 4;
-    private ushort _attachIslandsBelowLayers = 2;
-    private byte _resinTrapsOverlapBy = 5;
-    private byte _suctionCupsVentHole = 16;
-    private uint _gapClosingIterations = 1;
-    private uint _noiseRemovalIterations;
 
     #endregion
 
@@ -62,12 +51,12 @@ public class OperationRepairLayers : Operation
     {
         var sb = new StringBuilder();
 
-        if (!_repairIslands && !_repairResinTraps && !_repairSuctionCups && !_removeEmptyLayers)
+        if (!RepairIslands && !RepairResinTraps && !RepairSuctionCups && !RemoveEmptyLayers)
         {
             sb.AppendLine("You must select at least one repair operation.");
         }
 
-        if (!_detectIssues && SlicerFile.IssueManager.Count == 0)
+        if (!DetectIssues && SlicerFile.IssueManager.Count == 0)
         {
             sb.AppendLine("There are no present issues on the current session to repair.");
             sb.AppendLine("Please detect issues before run this tool or check the option: \"Re-detect the selected issues before repair\" to force a detect and repair.");
@@ -79,13 +68,13 @@ public class OperationRepairLayers : Operation
     public override string ToString()
     {
         var repair = new List<string>();
-        if(_repairIslands) repair.Add("Islands");
-        if(_repairResinTraps) repair.Add("Resin traps");
-        if(_repairSuctionCups) repair.Add("Suction cups");
-        if(_removeEmptyLayers) repair.Add("Empty layers");
-        var result = $"[Repair: {string.Join('/', repair)}] [Detect: {_detectIssues}]" +
-                     $"[Gap closing: {_gapClosingIterations}px] " +
-                     $"[Noise removal: {_noiseRemovalIterations}px]" + LayerRangeString;
+        if(RepairIslands) repair.Add("Islands");
+        if(RepairResinTraps) repair.Add("Resin traps");
+        if(RepairSuctionCups) repair.Add("Suction cups");
+        if(RemoveEmptyLayers) repair.Add("Empty layers");
+        var result = $"[Repair: {string.Join('/', repair)}] [Detect: {DetectIssues}]" +
+                     $"[Gap closing: {GapClosingIterations}px] " +
+                     $"[Noise removal: {NoiseRemovalIterations}px]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -104,77 +93,41 @@ public class OperationRepairLayers : Operation
     /// <summary>
     /// IF true it will re-detect the selected issues before repair, otherwise uses and repair the previous detected issues
     /// </summary>
-    public bool DetectIssues
-    {
-        get => _detectIssues;
-        set => RaiseAndSetIfChanged(ref _detectIssues, value);
-    }
+    [ObservableProperty]
+    public partial bool DetectIssues { get; set; }
 
-    public bool RepairIslands
-    {
-        get => _repairIslands;
-        set => RaiseAndSetIfChanged(ref _repairIslands, value);
-    }
+    [ObservableProperty]
+    public partial bool RepairIslands { get; set; } = true;
 
-    public bool RepairResinTraps
-    {
-        get => _repairResinTraps;
-        set => RaiseAndSetIfChanged(ref _repairResinTraps, value);
-    }
+    [ObservableProperty]
+    public partial bool RepairResinTraps { get; set; } = true;
 
-    public bool RepairSuctionCups
-    {
-        get => _repairSuctionCups;
-        set => RaiseAndSetIfChanged(ref _repairSuctionCups, value);
-    }
+    [ObservableProperty]
+    public partial bool RepairSuctionCups { get; set; }
 
-    public bool RemoveEmptyLayers
-    {
-        get => _removeEmptyLayers;
-        set => RaiseAndSetIfChanged(ref _removeEmptyLayers, value);
-    }
+    [ObservableProperty]
+    public partial bool RemoveEmptyLayers { get; set; } = true;
 
-    public ushort RemoveIslandsBelowEqualPixelCount
-    {
-        get => _removeIslandsBelowEqualPixelCount;
-        set => RaiseAndSetIfChanged(ref _removeIslandsBelowEqualPixelCount, value);
-    }
+    [ObservableProperty]
+    public partial ushort RemoveIslandsBelowEqualPixelCount { get; set; } = 5;
 
-    public ushort RemoveIslandsRecursiveIterations
-    {
-        get => _removeIslandsRecursiveIterations;
-        set => RaiseAndSetIfChanged(ref _removeIslandsRecursiveIterations, value);
-    }
+    [ObservableProperty]
+    public partial ushort RemoveIslandsRecursiveIterations { get; set; } = 4;
 
-    public ushort AttachIslandsBelowLayers
-    {
-        get => _attachIslandsBelowLayers;
-        set => RaiseAndSetIfChanged(ref _attachIslandsBelowLayers, value);
-    }
+    [ObservableProperty]
+    public partial ushort AttachIslandsBelowLayers { get; set; } = 2;
 
-    public byte ResinTrapsOverlapBy
-    {
-        get => _resinTrapsOverlapBy;
-        set => RaiseAndSetIfChanged(ref _resinTrapsOverlapBy, value);
-    }
+    [ObservableProperty]
+    public partial byte ResinTrapsOverlapBy { get; set; } = 5;
 
-    public byte SuctionCupsVentHole
-    {
-        get => _suctionCupsVentHole;
-        set => RaiseAndSetIfChanged(ref _suctionCupsVentHole, value);
-    }
+    [ObservableProperty]
+    public partial byte SuctionCupsVentHole { get; set; } = 16;
 
-    public uint GapClosingIterations
-    {
-        get => _gapClosingIterations;
-        set => RaiseAndSetIfChanged(ref _gapClosingIterations, value);
-    }
+    [ObservableProperty]
+    public partial uint GapClosingIterations { get; set; } = 1;
 
-    public uint NoiseRemovalIterations
-    {
-        get => _noiseRemovalIterations;
-        set => RaiseAndSetIfChanged(ref _noiseRemovalIterations, value);
-    }
+    [ObservableProperty]
+    public partial uint NoiseRemovalIterations { get; set; }
 
     public IssuesDetectionConfiguration IssuesDetectionConfig { get; set; } = new();
 
@@ -184,7 +137,7 @@ public class OperationRepairLayers : Operation
 
     protected bool Equals(OperationRepairLayers other)
     {
-        return _detectIssues == other._detectIssues && _repairIslands == other._repairIslands && _repairResinTraps == other._repairResinTraps && _repairSuctionCups == other._repairSuctionCups && _removeEmptyLayers == other._removeEmptyLayers && _removeIslandsBelowEqualPixelCount == other._removeIslandsBelowEqualPixelCount && _removeIslandsRecursiveIterations == other._removeIslandsRecursiveIterations && _attachIslandsBelowLayers == other._attachIslandsBelowLayers && _resinTrapsOverlapBy == other._resinTrapsOverlapBy && _suctionCupsVentHole == other._suctionCupsVentHole && _gapClosingIterations == other._gapClosingIterations && _noiseRemovalIterations == other._noiseRemovalIterations;
+        return DetectIssues == other.DetectIssues && RepairIslands == other.RepairIslands && RepairResinTraps == other.RepairResinTraps && RepairSuctionCups == other.RepairSuctionCups && RemoveEmptyLayers == other.RemoveEmptyLayers && RemoveIslandsBelowEqualPixelCount == other.RemoveIslandsBelowEqualPixelCount && RemoveIslandsRecursiveIterations == other.RemoveIslandsRecursiveIterations && AttachIslandsBelowLayers == other.AttachIslandsBelowLayers && ResinTrapsOverlapBy == other.ResinTrapsOverlapBy && SuctionCupsVentHole == other.SuctionCupsVentHole && GapClosingIterations == other.GapClosingIterations && NoiseRemovalIterations == other.NoiseRemovalIterations;
     }
 
     public override bool Equals(object? obj)
@@ -203,16 +156,16 @@ public class OperationRepairLayers : Operation
     {
         List<MainIssue> issues;
 
-        if (_detectIssues)
+        if (DetectIssues)
         {
             var config = IssuesDetectionConfig.Clone();
             config.DisableAll();
             config.IslandConfig.Enabled =
-                (_repairIslands && _removeIslandsBelowEqualPixelCount > 0 && _removeIslandsRecursiveIterations != 1) ||
-                _repairIslands && _attachIslandsBelowLayers > 0;
-            config.ResinTrapConfig.Enabled = _repairResinTraps;
-            config.ResinTrapConfig.DetectSuctionCups = _repairSuctionCups;
-            config.EmptyLayerConfig.Enabled = _removeEmptyLayers;
+                (RepairIslands && RemoveIslandsBelowEqualPixelCount > 0 && RemoveIslandsRecursiveIterations != 1) ||
+                RepairIslands && AttachIslandsBelowLayers > 0;
+            config.ResinTrapConfig.Enabled = RepairResinTraps;
+            config.ResinTrapConfig.DetectSuctionCups = RepairSuctionCups;
+            config.EmptyLayerConfig.Enabled = RemoveEmptyLayers;
 
             issues = SlicerFile.IssueManager.DetectIssues(config, progress).ToList();
             issues.RemoveAll(mainIssue => SlicerFile.IssueManager.IgnoredIssues.Contains(mainIssue));
@@ -227,21 +180,21 @@ public class OperationRepairLayers : Operation
         // Remove islands
         if (//Issues is not null
             //IslandDetectionConfig is not null
-            _repairIslands
-            && _removeIslandsBelowEqualPixelCount > 0
-            && _removeIslandsRecursiveIterations != 1)
+            RepairIslands
+            && RemoveIslandsBelowEqualPixelCount > 0
+            && RemoveIslandsRecursiveIterations != 1)
         {
             progress.Reset("Removed recursive islands");
-            ushort limit = _removeIslandsRecursiveIterations == 0
+            ushort limit = RemoveIslandsRecursiveIterations == 0
                 ? ushort.MaxValue
-                : _removeIslandsRecursiveIterations;
+                : RemoveIslandsRecursiveIterations;
 
             var recursiveIssues = issues;
             var islandsToRecompute = new ConcurrentBag<uint>();
             var config = IssuesDetectionConfig.Clone();
             config.DisableAll();
             config.IslandConfig.Enable();
-            //islandConfig.RequiredAreaToProcessCheck = (ushort)(_removeIslandsBelowEqualPixelCount / 2);
+            //islandConfig.RequiredAreaToProcessCheck = (ushort)(RemoveIslandsBelowEqualPixelCount / 2);
 
             for (uint i = 0; i < limit; i++)
             {
@@ -268,7 +221,7 @@ public class OperationRepairLayers : Operation
                     progress.PauseIfRequested();
                     var layer = SlicerFile[group.Key];
                     var image = layer.LayerMat;
-                    var span = image.GetDataByteSpan();
+                    var span = image.GetSpanOfBytes(0, 0);
                     foreach (IssueOfPoints issue in group)
                     {
                         foreach (var issuePixel in issue.Points)
@@ -293,7 +246,7 @@ public class OperationRepairLayers : Operation
             }
         }
 
-        if (_repairIslands && _attachIslandsBelowLayers > 0)
+        if (RepairIslands && AttachIslandsBelowLayers > 0)
         {
             var islandsToProcess = issues;
 
@@ -314,11 +267,11 @@ public class OperationRepairLayers : Operation
             {
                 progress.PauseIfRequested();
                 using var mat = SlicerFile[group.Key].LayerMat;
-                var matSpan = mat.GetDataByteReadOnlySpan();
+                var matSpan = mat.GetReadOnlySpanOfBytes();
                 var matCache = new Dictionary<uint, Mat>();
                 var matCacheModified = new Dictionary<uint, bool>();
                 var startLayer = Math.Max(0, (int)group.Key - 2);
-                var lowestPossibleLayer = (uint)Math.Max(0, (int)group.Key - 1 - _attachIslandsBelowLayers);
+                var lowestPossibleLayer = (uint)Math.Max(0, (int)group.Key - 1 - AttachIslandsBelowLayers);
 
                 for (var layerIndex = startLayer+1; layerIndex >= lowestPossibleLayer; layerIndex--)
                 {
@@ -339,7 +292,7 @@ public class OperationRepairLayers : Operation
 
                         unsafe
                         {
-                            var span = matCache[(uint) layerIndex].GetBytePointer();
+                            var span = matCache[(uint) layerIndex].BytePointer;
 
                             foreach (var point in issue.Points)
                             {
@@ -366,7 +319,7 @@ public class OperationRepairLayers : Operation
                             matCacheModified[(uint) layerIndex] = true;
                             unsafe
                             {
-                                var span = matCache[(uint) layerIndex].GetBytePointer();
+                                var span = matCache[(uint) layerIndex].BytePointer;
 
                                 foreach (var point in issue.Points)
                                 {
@@ -399,7 +352,7 @@ public class OperationRepairLayers : Operation
         }
 
         progress.Reset(ProgressAction, LayerRangeCount);
-        if (_repairIslands || _repairResinTraps)
+        if (RepairIslands || RepairResinTraps)
         {
             Parallel.For(LayerIndexStart, LayerIndexEnd, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
@@ -414,15 +367,15 @@ public class OperationRepairLayers : Operation
 
                 if (issues.Count > 0)
                 {
-                    if (_repairIslands && _removeIslandsBelowEqualPixelCount > 0 && _removeIslandsRecursiveIterations == 1)
+                    if (RepairIslands && RemoveIslandsBelowEqualPixelCount > 0 && RemoveIslandsRecursiveIterations == 1)
                     {
                         var bytes = Span<byte>.Empty;
                         foreach (IssueOfPoints issue in IssueManager.GetIssuesBy(issues, MainIssue.IssueType.Island, (uint)layerIndex))
                         {
-                            if (issue.PixelsCount > _removeIslandsBelowEqualPixelCount) continue;
+                            if (issue.PixelsCount > RemoveIslandsBelowEqualPixelCount) continue;
 
                             InitImage();
-                            if (bytes.IsEmpty) bytes = image!.GetDataByteSpan();
+                            if (bytes.IsEmpty) bytes = image!.GetSpanOfBytes(0, 0);
 
                             foreach (var issuePixel in issue.Points)
                             {
@@ -431,35 +384,35 @@ public class OperationRepairLayers : Operation
                         }
                     }
 
-                    if (_repairResinTraps)
+                    if (RepairResinTraps)
                     {
                         foreach (IssueOfContours issue in IssueManager.GetIssuesBy(issues, MainIssue.IssueType.ResinTrap, (uint)layerIndex))
                         {
                             InitImage();
                             using var vec = new VectorOfVectorOfPoint(issue.Contours);
-                            CvInvoke.DrawContours(image, vec, -1, EmguExtensions.WhiteColor, -1);
-                            if (_resinTrapsOverlapBy > 0)
+                            CvInvoke.DrawContours(image, vec, -1, EmguCvExtensions.WhiteColor, -1);
+                            if (ResinTrapsOverlapBy > 0)
                             {
-                                CvInvoke.DrawContours(image, vec, -1, EmguExtensions.WhiteColor, _resinTrapsOverlapBy * 2 + 1);
+                                CvInvoke.DrawContours(image, vec, -1, EmguCvExtensions.WhiteColor, ResinTrapsOverlapBy * 2 + 1);
                             }
                         }
                     }
                 }
 
-                if (_repairIslands && (_gapClosingIterations > 0 || _noiseRemovalIterations > 0))
+                if (RepairIslands && (GapClosingIterations > 0 || NoiseRemovalIterations > 0))
                 {
                     InitImage();
 
-                    if (_gapClosingIterations > 0)
+                    if (GapClosingIterations > 0)
                     {
-                        CvInvoke.MorphologyEx(image, image, MorphOp.Close, EmguExtensions.Kernel3x3Rectangle, EmguExtensions.AnchorCenter,
-                            (int)_gapClosingIterations, BorderType.Default, default);
+                        CvInvoke.MorphologyEx(image, image, MorphOp.Close, EmguCvExtensions.Kernel3X3Rectangle, EmguCvExtensions.AnchorCenter,
+                            (int)GapClosingIterations, BorderType.Default, default);
                     }
 
-                    if (_noiseRemovalIterations > 0)
+                    if (NoiseRemovalIterations > 0)
                     {
-                        CvInvoke.MorphologyEx(image, image, MorphOp.Open, EmguExtensions.Kernel3x3Rectangle, EmguExtensions.AnchorCenter,
-                            (int)_noiseRemovalIterations, BorderType.Default, default);
+                        CvInvoke.MorphologyEx(image, image, MorphOp.Open, EmguCvExtensions.Kernel3X3Rectangle, EmguCvExtensions.AnchorCenter,
+                            (int)NoiseRemovalIterations, BorderType.Default, default);
                     }
                 }
 
@@ -474,12 +427,12 @@ public class OperationRepairLayers : Operation
         }
 
 
-        if (_repairSuctionCups && issues.Count > 0)
+        if (RepairSuctionCups && issues.Count > 0)
         {
-            SlicerFile.IssueManager.DrillSuctionCupsForIssues(issues.Where(mainIssue => mainIssue.Type == MainIssue.IssueType.SuctionCup), _suctionCupsVentHole, progress);
+            SlicerFile.IssueManager.DrillSuctionCupsForIssues(issues.Where(mainIssue => mainIssue.Type == MainIssue.IssueType.SuctionCup), SuctionCupsVentHole, progress);
         }
 
-        if (_removeEmptyLayers)
+        if (RemoveEmptyLayers)
         {
             var removeLayers = new List<uint>();
             for (var layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)

@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,8 +7,10 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using EmguExtensions;
 using System;
 using System.Drawing;
 using System.Text;
@@ -21,38 +23,22 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationCalibrateXYZAccuracy : Operation
+public sealed partial class OperationCalibrateXYZAccuracy : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
     private decimal _layerHeight;
-    private ushort _bottomLayers;
     private decimal _bottomExposure;
     private decimal _normalExposure;
-    private ushort _topBottomMargin = 100;
-    private ushort _leftRightMargin = 100;
     private decimal _displayWidth;
     private decimal _displayHeight;
     private decimal _xSize = 15;
     private decimal _ySize = 15;
     private decimal _zSize = 15;
-    private bool _centerHoleRelief = true;
-    private bool _hollowModel = true;
-    private bool _mirrorOutput;
     private decimal _wallThickness = 3.0M;
     private decimal _observedXSize;
     private decimal _observedYSize;
     private decimal _observedZSize;
-    private bool _outputTLObject;
-    private bool _outputTCObject;
-    private bool _outputTRObject;
-    private bool _outputMLObject;
-    private bool _outputMCObject = true;
-    private bool _outputMRObject;
-    private bool _outputBLObject;
-    private bool _outputBCObject;
-    private bool _outputBRObject;
-    private decimal _drainHoleArea = 3;
 
     #endregion
 
@@ -102,14 +88,14 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
     public override string ToString()
     {
         var result = $"[Layer Height: {_layerHeight}] " +
-                     $"[Bottom layers: {_bottomLayers}] " +
+                     $"[Bottom layers: {BottomLayers}] " +
                      $"[Exposure: {_bottomExposure}/{_normalExposure}] " +
                      $"[X: {_xSize} Y:{_ySize} Z:{_zSize}] " +
-                     $"[TB:{_topBottomMargin} LR:{_leftRightMargin}] " +
-                     $"[Model: {_outputTLObject.ToByte()}{_outputTCObject.ToByte()}{_outputTRObject.ToByte()}" +
-                     $"|{_outputMLObject.ToByte()}{_outputMCObject.ToByte()}{_outputMRObject.ToByte()}" +
-                     $"|{_outputBLObject.ToByte()}{_outputBCObject.ToByte()}{_outputBRObject.ToByte()}] " +
-                     $"[Hollow: {_hollowModel} @ {_wallThickness}mm] [Relief: {_centerHoleRelief}] [Mirror: {_mirrorOutput}]";
+                     $"[TB:{TopBottomMargin} LR:{LeftRightMargin}] " +
+                     $"[Model: {OutputTLObject.ToByte()}{OutputTCObject.ToByte()}{OutputTRObject.ToByte()}" +
+                     $"|{OutputMLObject.ToByte()}{OutputMCObject.ToByte()}{OutputMRObject.ToByte()}" +
+                     $"|{OutputBLObject.ToByte()}{OutputBCObject.ToByte()}{OutputBRObject.ToByte()}] " +
+                     $"[Hollow: {HollowModel} @ {_wallThickness}mm] [Relief: {CenterHoleRelief}] [Mirror: {MirrorOutput}]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -123,8 +109,8 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
         get => _displayWidth;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _displayWidth, FileFormat.RoundDisplaySize(value))) return;
-            RaisePropertyChanged(nameof(Xppmm));
+            if(!SetProperty(ref _displayWidth, FileFormat.RoundDisplaySize(value))) return;
+            OnPropertyChanged(nameof(Xppmm));
         }
     }
 
@@ -133,8 +119,8 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
         get => _displayHeight;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _displayHeight, FileFormat.RoundDisplaySize(value))) return;
-            RaisePropertyChanged(nameof(Yppmm));
+            if(!SetProperty(ref _displayHeight, FileFormat.RoundDisplaySize(value))) return;
+            OnPropertyChanged(nameof(Yppmm));
         }
     }
 
@@ -146,60 +132,48 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
         get => _layerHeight;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _layerHeight, Layer.RoundHeight(value))) return;
-            RaisePropertyChanged(nameof(BottomLayersMM));
-            RaisePropertyChanged(nameof(LayerCount));
-            RaisePropertyChanged(nameof(RealZSize));
-            RaisePropertyChanged(nameof(ObservedZSize));
+            if(!SetProperty(ref _layerHeight, Layer.RoundHeight(value))) return;
+            OnPropertyChanged(nameof(BottomLayersMM));
+            OnPropertyChanged(nameof(LayerCount));
+            OnPropertyChanged(nameof(RealZSize));
+            OnPropertyChanged(nameof(ObservedZSize));
         }
     }
 
     public ushort Microns => (ushort)(LayerHeight * 1000);
 
-    public ushort BottomLayers
-    {
-        get => _bottomLayers;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _bottomLayers, value)) return;
-            RaisePropertyChanged(nameof(BottomLayersMM));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BottomLayersMM))]
+    public partial ushort BottomLayers { get; set; }
 
     public decimal BottomLayersMM => Layer.RoundHeight(LayerHeight * BottomLayers);
 
     public decimal BottomExposure
     {
         get => _bottomExposure;
-        set => RaiseAndSetIfChanged(ref _bottomExposure, Math.Round(value, 2));
+        set => SetProperty(ref _bottomExposure, Math.Round(value, 2));
     }
 
     public decimal NormalExposure
     {
         get => _normalExposure;
-        set => RaiseAndSetIfChanged(ref _normalExposure, Math.Round(value, 2));
+        set => SetProperty(ref _normalExposure, Math.Round(value, 2));
     }
 
-    public ushort TopBottomMargin
-    {
-        get => _topBottomMargin;
-        set => RaiseAndSetIfChanged(ref _topBottomMargin, value);
-    }
+    [ObservableProperty]
+    public partial ushort TopBottomMargin { get; set; } = 100;
 
-    public ushort LeftRightMargin
-    {
-        get => _leftRightMargin;
-        set => RaiseAndSetIfChanged(ref _leftRightMargin, value);
-    }
+    [ObservableProperty]
+    public partial ushort LeftRightMargin { get; set; } = 100;
 
     public decimal XSize
     {
         get => _xSize;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _xSize, Math.Round(value, 2))) return;
-            RaisePropertyChanged(nameof(RealXSize));
-            RaisePropertyChanged(nameof(ObservedXSize));
+            if(!SetProperty(ref _xSize, Math.Round(value, 2))) return;
+            OnPropertyChanged(nameof(RealXSize));
+            OnPropertyChanged(nameof(ObservedXSize));
         }
     }
 
@@ -208,9 +182,9 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
         get => _ySize;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _ySize, Math.Round(value, 2))) return;
-            RaisePropertyChanged(nameof(RealYSize));
-            RaisePropertyChanged(nameof(ObservedYSize));
+            if(!SetProperty(ref _ySize, Math.Round(value, 2))) return;
+            OnPropertyChanged(nameof(RealYSize));
+            OnPropertyChanged(nameof(ObservedYSize));
         }
     }
 
@@ -219,10 +193,10 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
         get => _zSize;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _zSize, Math.Round(value, 2))) return;
-            RaisePropertyChanged(nameof(LayerCount));
-            RaisePropertyChanged(nameof(RealZSize));
-            RaisePropertyChanged(nameof(ObservedZSize));
+            if(!SetProperty(ref _zSize, Math.Round(value, 2))) return;
+            OnPropertyChanged(nameof(LayerCount));
+            OnPropertyChanged(nameof(RealZSize));
+            OnPropertyChanged(nameof(ObservedZSize));
         }
     }
 
@@ -254,38 +228,26 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
 
     public uint LayerCount => (uint)(ZSize / LayerHeight);
 
-    public decimal DrainHoleArea
-    {
-        get => _drainHoleArea;
-        set => RaiseAndSetIfChanged(ref _drainHoleArea, value);
-    }
+    [ObservableProperty]
+    public partial decimal DrainHoleArea { get; set; } = 3;
 
-    public bool CenterHoleRelief
-    {
-        get => _centerHoleRelief;
-        set => RaiseAndSetIfChanged(ref _centerHoleRelief, value);
-    }
+    [ObservableProperty]
+    public partial bool CenterHoleRelief { get; set; } = true;
 
-    public bool HollowModel
-    {
-        get => _hollowModel;
-        set => RaiseAndSetIfChanged(ref _hollowModel, value);
-    }
+    [ObservableProperty]
+    public partial bool HollowModel { get; set; } = true;
 
-    public bool MirrorOutput
-    {
-        get => _mirrorOutput;
-        set => RaiseAndSetIfChanged(ref _mirrorOutput, value);
-    }
+    [ObservableProperty]
+    public partial bool MirrorOutput { get; set; }
 
     public decimal WallThickness
     {
         get => _wallThickness;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _wallThickness, Math.Round(value, 2))) return;
-            RaisePropertyChanged(nameof(WallThicknessRealXSize));
-            RaisePropertyChanged(nameof(WallThicknessRealYSize));
+            if(!SetProperty(ref _wallThickness, Math.Round(value, 2))) return;
+            OnPropertyChanged(nameof(WallThicknessRealXSize));
+            OnPropertyChanged(nameof(WallThicknessRealYSize));
         }
     }
 
@@ -312,113 +274,59 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
     public uint WallThicknessXPixels => (uint)(WallThickness * Xppmm);
     public uint WallThicknessYPixels => (uint)(WallThickness * Yppmm);
 
-    public bool OutputTLObject
-    {
-        get => _outputTLObject;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _outputTLObject, value)) return;
-            RaisePropertyChanged(nameof(OutputObjects));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(OutputObjects))]
+    public partial bool OutputTLObject { get; set; }
 
-    public bool OutputTCObject
-    {
-        get => _outputTCObject;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _outputTCObject, value)) return;
-            RaisePropertyChanged(nameof(OutputObjects));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(OutputObjects))]
+    public partial bool OutputTCObject { get; set; }
 
-    public bool OutputTRObject
-    {
-        get => _outputTRObject;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _outputTRObject, value)) return;
-            RaisePropertyChanged(nameof(OutputObjects));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(OutputObjects))]
+    public partial bool OutputTRObject { get; set; }
 
-    public bool OutputMLObject
-    {
-        get => _outputMLObject;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _outputMLObject, value)) return;
-            RaisePropertyChanged(nameof(OutputObjects));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(OutputObjects))]
+    public partial bool OutputMLObject { get; set; }
 
-    public bool OutputMCObject
-    {
-        get => _outputMCObject;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _outputMCObject, value)) return;
-            RaisePropertyChanged(nameof(OutputObjects));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(OutputObjects))]
+    public partial bool OutputMCObject { get; set; } = true;
 
-    public bool OutputMRObject
-    {
-        get => _outputMRObject;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _outputMRObject, value)) return;
-            RaisePropertyChanged(nameof(OutputObjects));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(OutputObjects))]
+    public partial bool OutputMRObject { get; set; }
 
-    public bool OutputBLObject
-    {
-        get => _outputBLObject;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _outputBLObject, value)) return;
-            RaisePropertyChanged(nameof(OutputObjects));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(OutputObjects))]
+    public partial bool OutputBLObject { get; set; }
 
-    public bool OutputBCObject
-    {
-        get => _outputBCObject;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _outputBCObject, value)) return;
-            RaisePropertyChanged(nameof(OutputObjects));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(OutputObjects))]
+    public partial bool OutputBCObject { get; set; }
 
-    public bool OutputBRObject
-    {
-        get => _outputBRObject;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _outputBRObject, value)) return;
-            RaisePropertyChanged(nameof(OutputObjects));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(OutputObjects))]
+    public partial bool OutputBRObject { get; set; }
 
-    public byte OutputObjects => (byte) (_outputTLObject.ToByte() +
-                                         _outputTCObject.ToByte() +
-                                         _outputTRObject.ToByte() +
-                                         _outputMLObject.ToByte() +
-                                         _outputMCObject.ToByte() +
-                                         _outputMRObject.ToByte() +
-                                         _outputBLObject.ToByte() +
-                                         _outputBCObject.ToByte() +
-                                         _outputBRObject.ToByte());
+    public byte OutputObjects => (byte) (OutputTLObject.ToByte() +
+                                         OutputTCObject.ToByte() +
+                                         OutputTRObject.ToByte() +
+                                         OutputMLObject.ToByte() +
+                                         OutputMCObject.ToByte() +
+                                         OutputMRObject.ToByte() +
+                                         OutputBLObject.ToByte() +
+                                         OutputBCObject.ToByte() +
+                                         OutputBRObject.ToByte());
 
     public decimal ObservedXSize
     {
         get => _observedXSize;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _observedXSize, Math.Round(value, 2))) return;
-            RaisePropertyChanged(nameof(ScaleXFactor));
+            if(!SetProperty(ref _observedXSize, Math.Round(value, 2))) return;
+            OnPropertyChanged(nameof(ScaleXFactor));
         }
     }
 
@@ -427,8 +335,8 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
         get => _observedYSize;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _observedYSize, Math.Round(value, 2))) return;
-            RaisePropertyChanged(nameof(ScaleYFactor));
+            if(!SetProperty(ref _observedYSize, Math.Round(value, 2))) return;
+            OnPropertyChanged(nameof(ScaleYFactor));
         }
     }
 
@@ -437,8 +345,8 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
         get => _observedZSize;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _observedZSize, Math.Round(value, 2))) return;
-            RaisePropertyChanged(nameof(ScaleZFactor));
+            if(!SetProperty(ref _observedZSize, Math.Round(value, 2))) return;
+            OnPropertyChanged(nameof(ScaleZFactor));
         }
     }
 
@@ -461,10 +369,10 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
     {
         base.InitWithSlicerFile();
         if (_layerHeight <= 0) _layerHeight = (decimal)SlicerFile.LayerHeight;
-        if (_bottomLayers <= 0) _bottomLayers = SlicerFile.BottomLayerCount;
+        if (BottomLayers <= 0) BottomLayers = SlicerFile.BottomLayerCount;
         if (_bottomExposure <= 0) _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
         if (_normalExposure <= 0) _normalExposure = (decimal)SlicerFile.ExposureTime;
-        _mirrorOutput = SlicerFile.DisplayMirror != FlipDirection.None;
+        MirrorOutput = SlicerFile.DisplayMirror != FlipDirection.None;
 
         if (SlicerFile.DisplayWidth > 0)
             DisplayWidth = (decimal)SlicerFile.DisplayWidth;
@@ -495,7 +403,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
 
     private bool Equals(OperationCalibrateXYZAccuracy other)
     {
-        return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _xSize == other._xSize && _ySize == other._ySize && _zSize == other._zSize && _centerHoleRelief == other._centerHoleRelief && _hollowModel == other._hollowModel && _wallThickness == other._wallThickness && _observedXSize == other._observedXSize && _observedYSize == other._observedYSize && _observedZSize == other._observedZSize && _outputTLObject == other._outputTLObject && _outputTCObject == other._outputTCObject && _outputTRObject == other._outputTRObject && _outputMLObject == other._outputMLObject && _outputMCObject == other._outputMCObject && _outputMRObject == other._outputMRObject && _outputBLObject == other._outputBLObject && _outputBCObject == other._outputBCObject && _outputBRObject == other._outputBRObject && _mirrorOutput == other._mirrorOutput;
+        return _layerHeight == other._layerHeight && BottomLayers == other.BottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && TopBottomMargin == other.TopBottomMargin && LeftRightMargin == other.LeftRightMargin && _xSize == other._xSize && _ySize == other._ySize && _zSize == other._zSize && CenterHoleRelief == other.CenterHoleRelief && HollowModel == other.HollowModel && _wallThickness == other._wallThickness && _observedXSize == other._observedXSize && _observedYSize == other._observedYSize && _observedZSize == other._observedZSize && OutputTLObject == other.OutputTLObject && OutputTCObject == other.OutputTCObject && OutputTRObject == other.OutputTRObject && OutputMLObject == other.OutputMLObject && OutputMCObject == other.OutputMCObject && OutputMRObject == other.OutputMRObject && OutputBLObject == other.OutputBLObject && OutputBCObject == other.OutputBCObject && OutputBRObject == other.OutputBRObject && MirrorOutput == other.MirrorOutput;
     }
 
     public override bool Equals(object? obj)
@@ -582,7 +490,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
         var layers = new Mat[3];
         for (byte i = 0; i < layers.Length; i++)
         {
-            layers[i] = EmguExtensions.InitMat(SlicerFile.Resolution);
+            layers[i] = EmguCvExtensions.InitMat(SlicerFile.Resolution);
         }
 
 
@@ -605,7 +513,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
             switch (y)
             {
                 case 0:
-                    currentY = _topBottomMargin;
+                    currentY = TopBottomMargin;
                     positionYString = "T";
                     break;
                 case 1:
@@ -613,7 +521,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
                     positionYString = "M";
                     break;
                 case 2:
-                    currentY = (int)(SlicerFile.Resolution.Height - yPixels - _topBottomMargin);
+                    currentY = (int)(SlicerFile.Resolution.Height - yPixels - TopBottomMargin);
                     positionYString = "B";
                     break;
             }
@@ -622,7 +530,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
                 switch (x)
                 {
                     case 0:
-                        currentX = _leftRightMargin;
+                        currentX = LeftRightMargin;
                         positionString = $"{positionYString}L";
                         break;
                     case 1:
@@ -630,7 +538,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
                         positionString = $"{positionYString}C";
                         break;
                     case 2:
-                        currentX = (int)(SlicerFile.Resolution.Width - xPixels - _leftRightMargin);
+                        currentX = (int)(SlicerFile.Resolution.Width - xPixels - LeftRightMargin);
                         positionString = $"{positionYString}R";
                         break;
                 }
@@ -638,55 +546,55 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
 
                 for (var i = 0; i < layers.Length; i++)
                 {
-                    if(y == 0 && x == 0 && !_outputTLObject) continue;
-                    if(y == 0 && x == 1 && !_outputTCObject) continue;
-                    if(y == 0 && x == 2 && !_outputTRObject) continue;
-                    if(y == 1 && x == 0 && !_outputMLObject) continue;
-                    if(y == 1 && x == 1 && !_outputMCObject) continue;
-                    if(y == 1 && x == 2 && !_outputMRObject) continue;
-                    if(y == 2 && x == 0 && !_outputBLObject) continue;
-                    if(y == 2 && x == 1 && !_outputBCObject) continue;
-                    if(y == 2 && x == 2 && !_outputBRObject) continue;
+                    if(y == 0 && x == 0 && !OutputTLObject) continue;
+                    if(y == 0 && x == 1 && !OutputTCObject) continue;
+                    if(y == 0 && x == 2 && !OutputTRObject) continue;
+                    if(y == 1 && x == 0 && !OutputMLObject) continue;
+                    if(y == 1 && x == 1 && !OutputMCObject) continue;
+                    if(y == 1 && x == 2 && !OutputMRObject) continue;
+                    if(y == 2 && x == 0 && !OutputBLObject) continue;
+                    if(y == 2 && x == 1 && !OutputBCObject) continue;
+                    if(y == 2 && x == 2 && !OutputBRObject) continue;
                     var layer = layers[i];
                     CvInvoke.Rectangle(layer,
                         new Rectangle(currentX, currentY, (int)xPixels, (int) yPixels),
-                        EmguExtensions.WhiteColor, -1);
+                        EmguCvExtensions.WhiteColor, -1);
 
                     CvInvoke.PutText(layer, positionString,
                         new Point(currentX + fontStartX, currentY + fontStartY), fontFace, fontScale,
-                        EmguExtensions.BlackColor, fontThickness);
+                        EmguCvExtensions.BlackColor, fontThickness);
 
                     CvInvoke.PutText(layer, $"{XSize},{YSize},{ZSize}",
                         new Point(currentX + fontStartX, (int) (currentY + yPixels - fontStartY + 25)), fontFace, fontScale,
-                        EmguExtensions.BlackColor, fontThickness);
+                        EmguCvExtensions.BlackColor, fontThickness);
 
                     if (CenterHoleRelief)
                     {
                         layer.DrawCircle(new Point((int) (currentX + xPixels / 2), (int) (currentY + yPixels / 2)),
                             SlicerFile.PixelsToNormalizedPitch((int) (Math.Min(xPixels, yPixels) / 4)),
-                            EmguExtensions.BlackColor, -1);
+                            EmguCvExtensions.BlackColor, -1);
                     }
 
-                    if (_hollowModel && i > 0 && _wallThickness > 0)
+                    if (HollowModel && i > 0 && _wallThickness > 0)
                     {
                         Size rectSize = new((int) (xPixels - WallThicknessXPixels * 2), (int) (yPixels - WallThicknessYPixels * 2));
                         Point rectLocation = new((int) (currentX + WallThicknessXPixels), (int) (currentY + WallThicknessYPixels));
                         CvInvoke.Rectangle(layers[i], new Rectangle(rectLocation, rectSize),
-                            EmguExtensions.BlackColor, -1);
+                            EmguCvExtensions.BlackColor, -1);
                     }
 
-                    if (i == 2 && _drainHoleArea > 0)
+                    if (i == 2 && DrainHoleArea > 0)
                     {
-                        Size rectSize = new((int)xPixels, (int)(Yppmm * _drainHoleArea));
+                        Size rectSize = new((int)xPixels, (int)(Yppmm * DrainHoleArea));
                         Point rectLocation = new(currentX, (int)(currentY + xPixels / 2 - rectSize.Height / 2));
                         CvInvoke.Rectangle(layers[i], new Rectangle(rectLocation, rectSize),
-                            EmguExtensions.BlackColor, -1);
+                            EmguCvExtensions.BlackColor, -1);
                     }
                 }
             }
         }
 
-        if (_mirrorOutput)
+        if (MirrorOutput)
         {
             var flip = SlicerFile.DisplayMirror;
             if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
@@ -698,7 +606,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
 
     public Mat GetThumbnail()
     {
-        Mat thumbnail = EmguExtensions.InitMat(new Size(400, 200), 3);
+        Mat thumbnail = EmguCvExtensions.InitMat(new Size(400, 200), 3);
         var fontFace = FontFace.HersheyDuplex;
         var fontScale = 1;
         var fontThickness = 2;
@@ -709,12 +617,12 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
         CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
         CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
         CvInvoke.PutText(thumbnail, "XYZ Accuracy Cal.", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
-        CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
-        CvInvoke.PutText(thumbnail, $"{XSize} x {YSize} x {ZSize} mm", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
+        CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguCvExtensions.WhiteColor, fontThickness);
+        CvInvoke.PutText(thumbnail, $"{XSize} x {YSize} x {ZSize} mm", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguCvExtensions.WhiteColor, fontThickness);
 
-        /*thumbnail.SetTo(EmguExtensions.Black3Byte);
+        /*thumbnail.SetTo(EmguCvExtensions.Black3Byte);
 
-            CvInvoke.Circle(thumbnail, new Point(400/2, 200/2), 200/2, EmguExtensions.White3Byte, -1);
+            CvInvoke.Circle(thumbnail, new Point(400/2, 200/2), 200/2, EmguCvExtensions.White3Byte, -1);
             for (int angle = 0; angle < 360; angle+=20)
             {
                 CvInvoke.Line(thumbnail, new Point(400 / 2, 200 / 2), new Point((int)(400 / 2 + 100 * Math.Cos(angle * Math.PI / 180)), (int)(200 / 2 + 100 * Math.Sin(angle * Math.PI / 180))), new MCvScalar(255, 27, 245), 3);
@@ -751,7 +659,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
         {
             progress.PauseOrCancelIfRequested();
             newLayers[layerIndex] = SlicerFile.GetBottomOrNormalValue(layerIndex, bottomLayer.Clone(),
-                (_hollowModel || _centerHoleRelief) && _drainHoleArea > 0 && layerIndex <= _bottomLayers + (int)(_drainHoleArea / _layerHeight)
+                (HollowModel || CenterHoleRelief) && DrainHoleArea > 0 && layerIndex <= BottomLayers + (int)(DrainHoleArea / _layerHeight)
                     ? ventLayer.Clone() : layer.Clone());
 
             progress++;

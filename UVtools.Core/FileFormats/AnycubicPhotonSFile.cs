@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
@@ -23,6 +24,7 @@ namespace UVtools.Core.FileFormats;
 public sealed class AnycubicPhotonSFile : FileFormat
 {
     #region Constants
+
     public const byte RLEEncodingLimit = 128;
 
     public const ushort RESOLUTION_X = 1440;
@@ -44,32 +46,82 @@ public sealed class AnycubicPhotonSFile : FileFormat
         public const ushort TAG2 = 49;
 
 
-        [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public uint Tag1 { get; set; } = TAG1; // 2
-        [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public ushort Tag2 { get; set; } = TAG2; // 49
-        [FieldOrder(2)] [FieldEndianness(Endianness.Big)] public double XYPixelSize { get; set; } = 0.04725; // 0.04725
-        [FieldOrder(3)] [FieldEndianness(Endianness.Big)] public double LayerHeight { get; set; }
-        [FieldOrder(4)] [FieldEndianness(Endianness.Big)] public double ExposureSeconds { get; set; }
-        [FieldOrder(5)] [FieldEndianness(Endianness.Big)] public double LightOffDelay { get; set; }
-        [FieldOrder(6)] [FieldEndianness(Endianness.Big)] public double BottomExposureSeconds { get; set; }
-        [FieldOrder(7)] [FieldEndianness(Endianness.Big)] public uint BottomLayerCount { get; set; }
-        [FieldOrder(8)] [FieldEndianness(Endianness.Big)] public double LiftHeight { get; set; } // mm
-        [FieldOrder(9)] [FieldEndianness(Endianness.Big)] public double LiftSpeed { get; set; } // mm/s
-        [FieldOrder(10)] [FieldEndianness(Endianness.Big)] public double RetractSpeed { get; set; } // mm/s
-        [FieldOrder(11)] [FieldEndianness(Endianness.Big)] public double VolumeMl { get; set; } // ml
-        [FieldOrder(12)] [FieldEndianness(Endianness.Big)] public uint PreviewResolutionX { get; set; } = 224;
-        [FieldOrder(13)] [FieldEndianness(Endianness.Big)] public uint Unknown2 { get; set; } = 42;
-        [FieldOrder(14)] [FieldEndianness(Endianness.Big)] public uint PreviewResolutionY { get; set; } = 168;
-        [FieldOrder(15)] [FieldEndianness(Endianness.Big)] public uint Unknown4 { get; set; } = 10;
+        [FieldOrder(0)]
+        [FieldEndianness(Endianness.Big)]
+        public uint Tag1 { get; set; } = TAG1; // 2
+
+        [FieldOrder(1)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort Tag2 { get; set; } = TAG2; // 49
+
+        [FieldOrder(2)]
+        [FieldEndianness(Endianness.Big)]
+        public double XYPixelSize { get; set; } = 0.04725; // 0.04725
+
+        [FieldOrder(3)]
+        [FieldEndianness(Endianness.Big)]
+        public double LayerHeight { get; set; }
+
+        [FieldOrder(4)]
+        [FieldEndianness(Endianness.Big)]
+        public double ExposureSeconds { get; set; }
+
+        [FieldOrder(5)]
+        [FieldEndianness(Endianness.Big)]
+        public double LightOffDelay { get; set; }
+
+        [FieldOrder(6)]
+        [FieldEndianness(Endianness.Big)]
+        public double BottomExposureSeconds { get; set; }
+
+        [FieldOrder(7)]
+        [FieldEndianness(Endianness.Big)]
+        public uint BottomLayerCount { get; set; }
+
+        [FieldOrder(8)]
+        [FieldEndianness(Endianness.Big)]
+        public double LiftHeight { get; set; } // mm
+
+        [FieldOrder(9)]
+        [FieldEndianness(Endianness.Big)]
+        public double LiftSpeed { get; set; } // mm/s
+
+        [FieldOrder(10)]
+        [FieldEndianness(Endianness.Big)]
+        public double RetractSpeed { get; set; } // mm/s
+
+        [FieldOrder(11)]
+        [FieldEndianness(Endianness.Big)]
+        public double VolumeMl { get; set; } // ml
+
+        [FieldOrder(12)]
+        [FieldEndianness(Endianness.Big)]
+        public uint PreviewResolutionX { get; set; } = 224;
+
+        [FieldOrder(13)]
+        [FieldEndianness(Endianness.Big)]
+        public uint Unknown2 { get; set; } = 42;
+
+        [FieldOrder(14)]
+        [FieldEndianness(Endianness.Big)]
+        public uint PreviewResolutionY { get; set; } = 168;
+
+        [FieldOrder(15)]
+        [FieldEndianness(Endianness.Big)]
+        public uint Unknown4 { get; set; } = 10;
 
         public override string ToString()
         {
-            return $"{nameof(Tag1)}: {Tag1}, {nameof(Tag2)}: {Tag2}, {nameof(XYPixelSize)}: {XYPixelSize}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureSeconds)}: {ExposureSeconds}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(PreviewResolutionX)}: {PreviewResolutionX}, {nameof(Unknown2)}: {Unknown2}, {nameof(PreviewResolutionY)}: {PreviewResolutionY}, {nameof(Unknown4)}: {Unknown4}";
+            return
+                $"{nameof(Tag1)}: {Tag1}, {nameof(Tag2)}: {Tag2}, {nameof(XYPixelSize)}: {XYPixelSize}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureSeconds)}: {ExposureSeconds}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(PreviewResolutionX)}: {PreviewResolutionX}, {nameof(Unknown2)}: {Unknown2}, {nameof(PreviewResolutionY)}: {PreviewResolutionY}, {nameof(Unknown4)}: {Unknown4}";
         }
     }
 
     public class LayerHeader
     {
-        [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public uint LayerCount { get; set; }
+        [FieldOrder(0)]
+        [FieldEndianness(Endianness.Big)]
+        public uint LayerCount { get; set; }
 
         public override string ToString()
         {
@@ -83,13 +135,32 @@ public sealed class AnycubicPhotonSFile : FileFormat
 
     public class LayerDef
     {
-        [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public uint Unknown1 { get; set; } = 44944;
-        [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public uint Unknown2 { get; set; } = 0;
-        [FieldOrder(2)] [FieldEndianness(Endianness.Big)] public uint Unknown3 { get; set; } = 0;
-        [FieldOrder(3)] [FieldEndianness(Endianness.Big)] public uint ResolutionX { get; set; } = RESOLUTION_X;
-        [FieldOrder(4)] [FieldEndianness(Endianness.Big)] public uint ResolutionY { get; set; } = RESOLUTION_Y;
-        [FieldOrder(5)] [FieldEndianness(Endianness.Big)] public uint DataSize { get; set; }
-        [Ignore] public uint RleDataSize
+        [FieldOrder(0)]
+        [FieldEndianness(Endianness.Big)]
+        public uint Unknown1 { get; set; } = 44944;
+
+        [FieldOrder(1)]
+        [FieldEndianness(Endianness.Big)]
+        public uint Unknown2 { get; set; } = 0;
+
+        [FieldOrder(2)]
+        [FieldEndianness(Endianness.Big)]
+        public uint Unknown3 { get; set; } = 0;
+
+        [FieldOrder(3)]
+        [FieldEndianness(Endianness.Big)]
+        public uint ResolutionX { get; set; } = RESOLUTION_X;
+
+        [FieldOrder(4)]
+        [FieldEndianness(Endianness.Big)]
+        public uint ResolutionY { get; set; } = RESOLUTION_Y;
+
+        [FieldOrder(5)]
+        [FieldEndianness(Endianness.Big)]
+        public uint DataSize { get; set; }
+
+        [Ignore]
+        public uint RleDataSize
         {
             get => (DataSize >> 3) - 4;
             set => DataSize = (value + 4) << 3;
@@ -97,7 +168,9 @@ public sealed class AnycubicPhotonSFile : FileFormat
             //set => DataSize = (value + 4) * 8;
         }
 
-        [FieldOrder(6)] [FieldEndianness(Endianness.Big)] public uint Unknown5 { get; set; } = 2684702720;
+        [FieldOrder(6)]
+        [FieldEndianness(Endianness.Big)]
+        public uint Unknown5 { get; set; } = 2684702720;
 
         [Ignore] public byte[] EncodedRle { get; set; } = null!;
 
@@ -113,18 +186,18 @@ public sealed class AnycubicPhotonSFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(DataSize)}: {DataSize}, {nameof(RleDataSize)}: {RleDataSize}, {nameof(Unknown5)}: {Unknown5}, {nameof(EncodedRle)}: {EncodedRle?.Length}";
+            return
+                $"{nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(DataSize)}: {DataSize}, {nameof(RleDataSize)}: {RleDataSize}, {nameof(Unknown5)}: {Unknown5}, {nameof(EncodedRle)}: {EncodedRle?.Length}";
         }
 
         public unsafe byte[] Encode(Mat mat)
         {
             List<byte> rawData = [];
-            var spanMat = mat.GetBytePointer();
-            var imageLength = mat.GetLength();
+            var span = mat.GetReadOnlySpanOfBytes();
 
-            int rep = 0;
+            var rep = 0;
             byte color = 0;
-            int totalPixels = 0;
+            var totalPixels = 0;
 
             void AddRep()
             {
@@ -132,20 +205,20 @@ public sealed class AnycubicPhotonSFile : FileFormat
 
                 totalPixels += rep;
                 rep--;
-                byte rle = (byte) (((rep & 1) > 0 ? 128 : 0) |
-                                   ((rep & 2) > 0 ? 64 : 0) |
-                                   ((rep & 4) > 0 ? 32 : 0) |
-                                   ((rep & 8) > 0 ? 16 : 0) |
-                                   ((rep & 16) > 0 ? 8 : 0) |
-                                   ((rep & 32) > 0 ? 4 : 0) |
-                                   ((rep & 64) > 0 ? 2 : 0) | color);
+                var rle = (byte)(((rep & 1) > 0 ? 128 : 0) |
+                                 ((rep & 2) > 0 ? 64 : 0) |
+                                 ((rep & 4) > 0 ? 32 : 0) |
+                                 ((rep & 8) > 0 ? 16 : 0) |
+                                 ((rep & 16) > 0 ? 8 : 0) |
+                                 ((rep & 32) > 0 ? 4 : 0) |
+                                 ((rep & 64) > 0 ? 2 : 0) | color);
 
                 rawData.Add(rle);
             }
 
-            for (int i = 0; i < imageLength; i++)
+            for (var i = 0; i < span.Length; i++)
             {
-                byte thisColor = spanMat[i] <= 127 ? byte.MinValue : (byte)1; // Sanitize no AA
+                var thisColor = span[i] <= 127 ? byte.MinValue : (byte)1; // Sanitize no AA
                 if (thisColor != color)
                 {
                     AddRep();
@@ -165,23 +238,24 @@ public sealed class AnycubicPhotonSFile : FileFormat
 
             AddRep();
 
-            if (totalPixels != imageLength)
+            if (totalPixels != span.Length)
             {
-                throw new FileLoadException($"Error image ran shortly or off the end, expecting {imageLength} pixels, got {totalPixels} pixels.");
+                throw new FileLoadException(
+                    $"Error image ran shortly or off the end, expecting {span.Length} pixels, got {totalPixels} pixels.");
             }
 
             EncodedRle = rawData.ToArray();
-            RleDataSize = (uint) EncodedRle.Length;
+            RleDataSize = (uint)EncodedRle.Length;
             return EncodedRle;
         }
 
         public Mat Decode(bool consumeRle = true)
         {
-            var mat = EmguExtensions.InitMat(new Size((int) ResolutionX, (int) ResolutionY));
+            var mat = EmguCvExtensions.InitMat(new Size((int)ResolutionX, (int)ResolutionY));
             //var matSpan = mat.GetBytePointer();
-            var imageLength = mat.GetLength();
+            var imageLength = mat.ByteCountInt32;
 
-            int pixelPos = 0;
+            var pixelPos = 0;
             foreach (var run in EncodedRle)
             {
                 if (pixelPos > imageLength)
@@ -190,16 +264,16 @@ public sealed class AnycubicPhotonSFile : FileFormat
                     throw new FileLoadException($"Error image ran off the end, expecting {imageLength} pixels.");
                 }
 
-                byte brightness = (byte) ((run & 0x01) * 255);
+                var brightness = (byte)((run & 0x01) * 255);
 
-                int numPixelsInRun =
+                var numPixelsInRun =
                     (((run & 128) > 0 ? 1 : 0) |
                      ((run & 64) > 0 ? 2 : 0) |
                      ((run & 32) > 0 ? 4 : 0) |
                      ((run & 16) > 0 ? 8 : 0) |
-                     ((run &  8) > 0 ? 16 : 0) |
-                     ((run &  4) > 0 ? 32 : 0) |
-                     ((run &  2) > 0 ? 64 : 0)) + 1;
+                     ((run & 8) > 0 ? 16 : 0) |
+                     ((run & 4) > 0 ? 32 : 0) |
+                     ((run & 2) > 0 ? 64 : 0)) + 1;
 
                 mat.FillSpan(ref pixelPos, numPixelsInRun, brightness);
 
@@ -237,6 +311,7 @@ public sealed class AnycubicPhotonSFile : FileFormat
             return mat;
         }
     }
+
     #endregion
 
     #endregion
@@ -246,6 +321,8 @@ public sealed class AnycubicPhotonSFile : FileFormat
     public Header HeaderSettings { get; private set; } = new();
     public LayerHeader LayerSettings { get; private set; } = new();
     public override FileFormatType FileType => FileFormatType.Binary;
+
+    public override Endianness FileFormatEndianness => Endianness.Big;
 
     public override string ConvertMenuGroup => "Chitubox";
 
@@ -285,7 +362,7 @@ public sealed class AnycubicPhotonSFile : FileFormat
 
     public override float LayerHeight
     {
-        get => (float) Layer.RoundHeight(HeaderSettings.LayerHeight);
+        get => (float)Layer.RoundHeight(HeaderSettings.LayerHeight);
         set
         {
             HeaderSettings.LayerHeight = Layer.RoundHeight(value);
@@ -301,8 +378,8 @@ public sealed class AnycubicPhotonSFile : FileFormat
 
     public override ushort BottomLayerCount
     {
-        get => (ushort) HeaderSettings.BottomLayerCount;
-        set => base.BottomLayerCount = (ushort) (HeaderSettings.BottomLayerCount = value);
+        get => (ushort)HeaderSettings.BottomLayerCount;
+        set => base.BottomLayerCount = (ushort)(HeaderSettings.BottomLayerCount = value);
     }
 
     public override float BottomLightOffDelay => LightOffDelay;
@@ -335,22 +412,22 @@ public sealed class AnycubicPhotonSFile : FileFormat
 
     public override float BottomExposureTime
     {
-        get => (float) HeaderSettings.BottomExposureSeconds;
-        set => base.BottomExposureTime = (float) (HeaderSettings.BottomExposureSeconds = Math.Round(value, 2));
+        get => (float)HeaderSettings.BottomExposureSeconds;
+        set => base.BottomExposureTime = (float)(HeaderSettings.BottomExposureSeconds = Math.Round(value, 2));
     }
 
     public override float ExposureTime
     {
-        get => (float) HeaderSettings.ExposureSeconds;
-        set => base.ExposureTime = (float) (HeaderSettings.ExposureSeconds = Math.Round(value, 2));
+        get => (float)HeaderSettings.ExposureSeconds;
+        set => base.ExposureTime = (float)(HeaderSettings.ExposureSeconds = Math.Round(value, 2));
     }
 
     public override float BottomLiftHeight => LiftHeight;
 
     public override float LiftHeight
     {
-        get => (float) HeaderSettings.LiftHeight;
-        set => base.LiftHeight = (float) (HeaderSettings.LiftHeight = Math.Round(value, 2));
+        get => (float)HeaderSettings.LiftHeight;
+        set => base.LiftHeight = (float)(HeaderSettings.LiftHeight = Math.Round(value, 2));
     }
 
     public override float BottomLiftSpeed => LiftSpeed;
@@ -358,7 +435,8 @@ public sealed class AnycubicPhotonSFile : FileFormat
     public override float LiftSpeed
     {
         get => MathF.Round((float)HeaderSettings.LiftSpeed * 60.0f, 2, MidpointRounding.AwayFromZero);
-        set => base.LiftSpeed = (float) (HeaderSettings.LiftSpeed = Math.Round(value / 60.0, 2, MidpointRounding.AwayFromZero));
+        set => base.LiftSpeed =
+            (float)(HeaderSettings.LiftSpeed = Math.Round(value / 60.0, 2, MidpointRounding.AwayFromZero));
     }
 
     public override float BottomRetractSpeed => RetractSpeed;
@@ -366,7 +444,8 @@ public sealed class AnycubicPhotonSFile : FileFormat
     public override float RetractSpeed
     {
         get => MathF.Round((float)HeaderSettings.RetractSpeed * 60.0f, 2, MidpointRounding.AwayFromZero);
-        set => base.RetractSpeed = (float) (HeaderSettings.RetractSpeed = Math.Round(value / 60.0, 2, MidpointRounding.AwayFromZero));
+        set => base.RetractSpeed =
+            (float)(HeaderSettings.RetractSpeed = Math.Round(value / 60.0, 2, MidpointRounding.AwayFromZero));
     }
 
 
@@ -385,6 +464,7 @@ public sealed class AnycubicPhotonSFile : FileFormat
     #endregion
 
     #region Constructors
+
     public AnycubicPhotonSFile()
     {
         ResolutionX = RESOLUTION_X;
@@ -394,6 +474,7 @@ public sealed class AnycubicPhotonSFile : FileFormat
         MachineZ = MACHINE_Z;
         MachineName = "Anycubic Photon S";
     }
+
     #endregion
 
     #region Methods
@@ -424,6 +505,7 @@ public sealed class AnycubicPhotonSFile : FileFormat
                     layerData[layerIndex] = new LayerDef(mat);
                     layerData[layerIndex].Encode(mat);
                 }
+
                 progress.LockAndIncrement();
             });
 
@@ -452,10 +534,11 @@ public sealed class AnycubicPhotonSFile : FileFormat
             throw new FileLoadException("Not a valid PHOTONS file! TAGs doesn't match", FileFullPath);
         }
 
-        int previewSize = (int) (HeaderSettings.PreviewResolutionX * HeaderSettings.PreviewResolutionY * 2);
-        byte[] previewData = GC.AllocateUninitializedArray<byte>(previewSize);
+        var previewSize = (int)(HeaderSettings.PreviewResolutionX * HeaderSettings.PreviewResolutionY * 2);
+        var previewData = GC.AllocateUninitializedArray<byte>(previewSize);
         inputFile.ReadExactly(previewData);
-        Thumbnails.Add(DecodeImage(DATATYPE_BGR565, previewData, HeaderSettings.PreviewResolutionX, HeaderSettings.PreviewResolutionY));
+        Thumbnails.Add(DecodeImage(DATATYPE_BGR565, previewData, HeaderSettings.PreviewResolutionX,
+            HeaderSettings.PreviewResolutionY));
 
         LayerSettings = Helpers.Deserialize<LayerHeader>(inputFile);
 

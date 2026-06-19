@@ -22,9 +22,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
+using EmguExtensions;
 using SukiUI.MessageBox;
 using UVtools.Core;
-using UVtools.Core.Dialogs;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -230,7 +230,7 @@ public partial class MainWindow
                     Progress.PauseIfRequested();
                     using (var image = SlicerFile![layerIssues.Key].LayerMat)
                     {
-                        var bytes = image.GetDataByteSpan();
+                        var bytes = image.GetSpanOfBytes(0, 0);
 
                         bool edited = false;
                         foreach (var issue in layerIssues.Value)
@@ -249,10 +249,10 @@ public partial class MainWindow
                             {
                                 var issueOfContours = (IssueOfContours)issue;
                                 using var contours = new VectorOfVectorOfPoint(issueOfContours.Contours);
-                                CvInvoke.DrawContours(image, contours, -1, EmguExtensions.WhiteColor, -1);
+                                CvInvoke.DrawContours(image, contours, -1, EmguCvExtensions.WhiteColor, -1);
                                 if (Settings.LayerRepair.ResinTrapsOverlapBy > 0)
                                 {
-                                    CvInvoke.DrawContours(image, contours, -1, EmguExtensions.WhiteColor, Settings.LayerRepair.ResinTrapsOverlapBy * 2 + 1);
+                                    CvInvoke.DrawContours(image, contours, -1, EmguCvExtensions.WhiteColor, Settings.LayerRepair.ResinTrapsOverlapBy * 2 + 1);
                                 }
                                 edited = true;
                             }

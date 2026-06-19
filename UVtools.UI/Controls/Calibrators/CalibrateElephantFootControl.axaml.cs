@@ -1,6 +1,7 @@
 ﻿using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using System.Timers;
+using EmguExtensions.Avalonia;
 using UVtools.Core.Operations;
 using UVtools.UI.Controls.Tools;
 using UVtools.UI.Extensions;

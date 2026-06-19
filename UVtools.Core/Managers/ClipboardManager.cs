@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -88,7 +89,7 @@ public sealed class ClipboardItem : List<Layer>
     #endregion
 }
 
-public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
+public sealed partial class ClipboardManager : ObservableObject, IList<ClipboardItem>
 {
     #region Properties
 
@@ -97,10 +98,6 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
     public FileFormat SlicerFile { get; set; } = null!;
 
     private int _currentIndex = -1;
-    private Layer[]? _snapshotLayers;
-    private bool _reallocatedLayerCount;
-    private bool _suppressRestore;
-
     /// <summary>
     /// Gets the index of current item
     /// </summary>
@@ -112,8 +109,6 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
             value = Math.Clamp(value, -1, Count - 1);
             var oldIndex = _currentIndex;
             _currentIndex = value;
-            //if (!RaiseAndSetIfChanged(ref _currentIndex, value)) return;
-
             if (value >= 0 && !SuppressRestore)
             {
                 ReallocatedLayerCount = false;
@@ -126,7 +121,7 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
                     Layer[] layers;
                     if (clip.IsFullBackup)
                     {
-                        if(!_reallocatedLayerCount && SlicerFile.LayerCount != clip.Count) ReallocatedLayerCount = true;
+                        if(!ReallocatedLayerCount && SlicerFile.LayerCount != clip.Count) ReallocatedLayerCount = true;
                         layers = clip.ToArray();
                     }
                     else
@@ -165,33 +160,24 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
                 }
             }
 
-            RaisePropertyChanged();
-            RaisePropertyChanged(nameof(CurrentIndexCountString));
-            RaisePropertyChanged(nameof(CanUndo));
-            RaisePropertyChanged(nameof(CanRedo));
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(CurrentIndexCountString));
+            OnPropertyChanged(nameof(CanUndo));
+            OnPropertyChanged(nameof(CanRedo));
             return;
         }
     }
 
     public string CurrentIndexCountString => string.Format($"{{0:D{Count.DigitCount()}}}", CurrentIndex + 1);
 
-    public bool SuppressRestore
-    {
-        get => _suppressRestore;
-        set => RaiseAndSetIfChanged(ref _suppressRestore, value);
-    }
+    [ObservableProperty]
+    public partial bool SuppressRestore { get; set; }
 
-    public bool ReallocatedLayerCount
-    {
-        get => _reallocatedLayerCount;
-        set => RaiseAndSetIfChanged(ref _reallocatedLayerCount, value);
-    }
+    [ObservableProperty]
+    public partial bool ReallocatedLayerCount { get; set; }
 
-    public Layer[]? SnapshotLayers
-    {
-        get => _snapshotLayers;
-        private set => RaiseAndSetIfChanged(ref _snapshotLayers, value);
-    }
+    [ObservableProperty]
+    public partial Layer[]? SnapshotLayers { get; private set; }
 
     public ClipboardItem? CurrentClip => _currentIndex < 0 || _currentIndex >= Count ? null : this[_currentIndex];
 
@@ -313,8 +299,8 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
 
     public void RestoreSnapshot()
     {
-        if (_snapshotLayers is null) return;
-        SlicerFile.Layers = _snapshotLayers;
+        if (SnapshotLayers is null) return;
+        SlicerFile.Layers = SnapshotLayers;
         SnapshotLayers = null;
     }
 
@@ -327,15 +313,15 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
         if (!doFullBackup)
         {
             if (layers is not null) Snapshot(layers);
-            if (_snapshotLayers is null) throw new InvalidOperationException("A snapshot is required before perform a clip");
+            if (SnapshotLayers is null) throw new InvalidOperationException("A snapshot is required before perform a clip");
 
-            if (_snapshotLayers.Length != SlicerFile.LayerCount)
+            if (SnapshotLayers.Length != SlicerFile.LayerCount)
             {
                 doFullBackup = true; // Force full backup when layer count changes
                 if (Count > 0 && !this[0].IsFullBackup)
                 {
                     safeClip = new ClipboardItem(SlicerFile, "Fail-safe full backup", true);
-                    safeClip.AddRange(_snapshotLayers);
+                    safeClip.AddRange(SnapshotLayers);
                 }
 
                 //Insert(0, safeClip);
@@ -353,11 +339,11 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
             int layerIndex = 0;
             for (;
                  layerIndex < SlicerFile.LayerCount
-                 && layerIndex < _snapshotLayers!.Length;
+                 && layerIndex < SnapshotLayers!.Length;
                  layerIndex++)
             {
                 //if(SnapshotLayers.Count - 1 < layerIndex) break;
-                if (_snapshotLayers[layerIndex].Equals(SlicerFile[layerIndex])) continue;
+                if (SnapshotLayers[layerIndex].Equals(SlicerFile[layerIndex])) continue;
                 clip.Add(SlicerFile[layerIndex].Clone());
             }
 

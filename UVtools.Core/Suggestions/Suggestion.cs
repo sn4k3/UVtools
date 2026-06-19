@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.ComponentModel;
 using System.IO;
@@ -13,12 +14,11 @@ using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.Suggestions;
 
-public abstract class Suggestion : BindableBase
+public abstract partial class Suggestion : ObservableObject
 {
     #region Enums
     public enum SuggestionApplyWhen : byte
@@ -33,11 +33,6 @@ public abstract class Suggestion : BindableBase
 
     #region Members
 
-    protected FileFormat _slicerFile = null!;
-    protected bool _enabled = true;
-    protected bool _autoApply;
-    protected SuggestionApplyWhen _applyWhen = SuggestionApplyWhen.OutsideLimits;
-
     #endregion
 
     #region Properties
@@ -48,45 +43,28 @@ public abstract class Suggestion : BindableBase
     /// Gets or sets the <see cref="FileFormat"/>
     /// </summary>
     [XmlIgnore]
-    public FileFormat SlicerFile
-    {
-        get => _slicerFile;
-        set
-        {
-            if (ReferenceEquals(_slicerFile, value)) return;
-            _slicerFile = value;
-            RaisePropertyChanged();
-            RaisePropertyChanged(nameof(IsAvailable));
-            RaisePropertyChanged(nameof(IsApplied));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsAvailable))]
+    [NotifyPropertyChangedFor(nameof(IsApplied))]
+    public partial FileFormat SlicerFile { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets if this suggestion is enabled
     /// </summary>
-    public bool Enabled
-    {
-        get => _enabled;
-        set => RaiseAndSetIfChanged(ref _enabled, value);
-    }
+    [ObservableProperty]
+    public partial bool Enabled { get; set; } = true;
 
     /// <summary>
     /// Gets or sets if this suggestion can be auto applied once file load
     /// </summary>
-    public bool AutoApply
-    {
-        get => _autoApply;
-        set => RaiseAndSetIfChanged(ref _autoApply, value);
-    }
+    [ObservableProperty]
+    public partial bool AutoApply { get; set; }
 
     /// <summary>
     /// Gets or sets when to apply the suggestion
     /// </summary>
-    public SuggestionApplyWhen ApplyWhen
-    {
-        get => _applyWhen;
-        set => RaiseAndSetIfChanged(ref _applyWhen, value);
-    }
+    [ObservableProperty]
+    public partial SuggestionApplyWhen ApplyWhen { get; set; } = SuggestionApplyWhen.OutsideLimits;
 
     /// <summary>
     /// Gets if this suggestion is informative only and contain no actions to execute
@@ -137,15 +115,15 @@ public abstract class Suggestion : BindableBase
 
     public void RefreshNotifyAll()
     {
-        RaisePropertyChanged(nameof(IsAvailable));
-        RaisePropertyChanged(nameof(IsApplied));
+        OnPropertyChanged(nameof(IsAvailable));
+        OnPropertyChanged(nameof(IsApplied));
         RefreshNotifyMessage();
     }
 
     public void RefreshNotifyMessage()
     {
-        RaisePropertyChanged(nameof(Message));
-        RaisePropertyChanged(nameof(ToolTip));
+        OnPropertyChanged(nameof(Message));
+        OnPropertyChanged(nameof(ToolTip));
     }
 
     /// <summary>
@@ -172,7 +150,7 @@ public abstract class Suggestion : BindableBase
     /// <exception cref="InvalidOperationException"></exception>
     public bool Execute(OperationProgress? progress = null)
     {
-        if (_slicerFile is null) throw new InvalidOperationException($"The suggestion '{Title}' can't execute due the lacking of a file parent.");
+        if (SlicerFile is null) throw new InvalidOperationException($"The suggestion '{Title}' can't execute due the lacking of a file parent.");
         if (!Enabled || !IsAvailable || IsApplied || IsInformativeOnly || !SlicerFile.HaveLayers) return false;
 
         progress ??= new OperationProgress();
@@ -180,7 +158,7 @@ public abstract class Suggestion : BindableBase
 
         var result = ExecuteInternally(progress);
 
-        RaisePropertyChanged(nameof(IsApplied));
+        OnPropertyChanged(nameof(IsApplied));
         RefreshNotifyMessage();
 
         return result;
@@ -192,7 +170,7 @@ public abstract class Suggestion : BindableBase
     /// <returns></returns>
     public bool ExecuteIfAutoApply()
     {
-        return _autoApply && Execute();
+        return AutoApply && Execute();
     }
 
     /// <summary>

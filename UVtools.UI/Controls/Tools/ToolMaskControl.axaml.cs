@@ -1,11 +1,12 @@
-﻿using Avalonia.Controls;
-using Avalonia.Platform.Storage;
+﻿using Avalonia.Platform.Storage;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
 using System.Drawing;
 using System.Threading.Tasks;
+using EmguExtensions;
+using EmguExtensions.Avalonia;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 using UVtools.UI.Extensions;

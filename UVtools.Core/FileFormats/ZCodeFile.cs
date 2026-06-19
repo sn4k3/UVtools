@@ -253,13 +253,13 @@ public sealed class ZCodeFile : FileFormat
     public override float DisplayWidth
     {
         get => MathF.Round(ManifestFile.Device.ResolutionX * ManifestFile.Device.PixelSize / 1000, 2);
-        set => RaisePropertyChanged();
+        set => OnPropertyChanged();
     }
 
     public override float DisplayHeight
     {
         get => MathF.Round(ManifestFile.Device.ResolutionY * ManifestFile.Device.PixelSize / 1000, 2);
-        set => RaisePropertyChanged();
+        set => OnPropertyChanged();
     }
 
     public override float MachineZ
@@ -268,7 +268,7 @@ public sealed class ZCodeFile : FileFormat
         set
         {
             ManifestFile.Device.MachineZ = value;
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 
@@ -381,7 +381,7 @@ public sealed class ZCodeFile : FileFormat
         {
             ManifestFile.Profile.Slice.LedPower = (ushort)(MaxLEDPower * value / byte.MaxValue);
             base.LightPWM = value;
-            RaisePropertyChanged(nameof(BottomLightPWM));
+            OnPropertyChanged(nameof(BottomLightPWM));
         }
     }
 
@@ -423,7 +423,7 @@ public sealed class ZCodeFile : FileFormat
         set
         {
             HeaderSettings.Resin = value;
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }*/
 

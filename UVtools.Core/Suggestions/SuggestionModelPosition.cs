@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -14,7 +15,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.Suggestions;
 
-public sealed class SuggestionModelPosition : Suggestion
+public sealed partial class SuggestionModelPosition : Suggestion
 {
     #region Enums
     public enum SuggestionModelAnchor : byte
@@ -34,14 +35,6 @@ public sealed class SuggestionModelPosition : Suggestion
 
     #region Members
 
-    private ushort _targetTopBottomMargin = 100;
-    private ushort _targetLeftRightMargin = 100;
-    private ushort _minimumTopBottomMargin = 50;
-    private ushort _maximumTopBottomMargin = 300;
-    private ushort _minimumLeftRightMargin = 50;
-    private ushort _maximumLeftRightMargin = 300;
-    private SuggestionModelAnchor _anchorType = SuggestionModelAnchor.Random;
-
     #endregion
 
     #region Properties
@@ -59,9 +52,9 @@ public sealed class SuggestionModelPosition : Suggestion
             var bottomRight = new Point((int)SlicerFile.ResolutionX - LeftRightMargin, (int)SlicerFile.ResolutionY - TopBottomMargin);
             var bottomLeft  = new Point(LeftRightMargin, (int)SlicerFile.ResolutionY - TopBottomMargin);
 
-            var applyWhen = _applyWhen;
-            if (SlicerFile.ResolutionX - SlicerFile.BoundingRectangle.Size.Width < _minimumLeftRightMargin * 2
-                || SlicerFile.ResolutionY - SlicerFile.BoundingRectangle.Size.Height < _minimumTopBottomMargin * 2)
+            var applyWhen = ApplyWhen;
+            if (SlicerFile.ResolutionX - SlicerFile.BoundingRectangle.Size.Width < MinimumLeftRightMargin * 2
+                || SlicerFile.ResolutionY - SlicerFile.BoundingRectangle.Size.Height < MinimumTopBottomMargin * 2)
             {
                 applyWhen = SuggestionApplyWhen.Different;
             }
@@ -69,10 +62,10 @@ public sealed class SuggestionModelPosition : Suggestion
             return applyWhen switch
             {
                 SuggestionApplyWhen.OutsideLimits => 
-                /*TL*/    (SlicerFile.BoundingRectangle.X >= _minimumLeftRightMargin && SlicerFile.BoundingRectangle.X <= _maximumLeftRightMargin && SlicerFile.BoundingRectangle.Y >= _minimumTopBottomMargin && SlicerFile.BoundingRectangle.Y <= _maximumTopBottomMargin)
-                /*TR*/ || (SlicerFile.BoundingRectangle.Right <= (int)SlicerFile.ResolutionX - _minimumLeftRightMargin && SlicerFile.BoundingRectangle.Right >= (int)SlicerFile.ResolutionX - _maximumLeftRightMargin && SlicerFile.BoundingRectangle.Y >= _minimumTopBottomMargin && SlicerFile.BoundingRectangle.Y <= _maximumTopBottomMargin)
-                /*BR*/ || (SlicerFile.BoundingRectangle.Right <= (int)SlicerFile.ResolutionX - _minimumLeftRightMargin && SlicerFile.BoundingRectangle.Right >= (int)SlicerFile.ResolutionX - _maximumLeftRightMargin && SlicerFile.BoundingRectangle.Bottom <= (int)SlicerFile.ResolutionY - _minimumTopBottomMargin && SlicerFile.BoundingRectangle.Bottom >= (int)SlicerFile.ResolutionY - _maximumTopBottomMargin)
-                /*BL*/ || (SlicerFile.BoundingRectangle.X >= _minimumLeftRightMargin && SlicerFile.BoundingRectangle.X <= _maximumLeftRightMargin && SlicerFile.BoundingRectangle.Bottom <= (int)SlicerFile.ResolutionY - _minimumTopBottomMargin && SlicerFile.BoundingRectangle.Bottom >= (int)SlicerFile.ResolutionY - _maximumTopBottomMargin)
+                /*TL*/    (SlicerFile.BoundingRectangle.X >= MinimumLeftRightMargin && SlicerFile.BoundingRectangle.X <= MaximumLeftRightMargin && SlicerFile.BoundingRectangle.Y >= MinimumTopBottomMargin && SlicerFile.BoundingRectangle.Y <= MaximumTopBottomMargin)
+                /*TR*/ || (SlicerFile.BoundingRectangle.Right <= (int)SlicerFile.ResolutionX - MinimumLeftRightMargin && SlicerFile.BoundingRectangle.Right >= (int)SlicerFile.ResolutionX - MaximumLeftRightMargin && SlicerFile.BoundingRectangle.Y >= MinimumTopBottomMargin && SlicerFile.BoundingRectangle.Y <= MaximumTopBottomMargin)
+                /*BR*/ || (SlicerFile.BoundingRectangle.Right <= (int)SlicerFile.ResolutionX - MinimumLeftRightMargin && SlicerFile.BoundingRectangle.Right >= (int)SlicerFile.ResolutionX - MaximumLeftRightMargin && SlicerFile.BoundingRectangle.Bottom <= (int)SlicerFile.ResolutionY - MinimumTopBottomMargin && SlicerFile.BoundingRectangle.Bottom >= (int)SlicerFile.ResolutionY - MaximumTopBottomMargin)
+                /*BL*/ || (SlicerFile.BoundingRectangle.X >= MinimumLeftRightMargin && SlicerFile.BoundingRectangle.X <= MaximumLeftRightMargin && SlicerFile.BoundingRectangle.Bottom <= (int)SlicerFile.ResolutionY - MinimumTopBottomMargin && SlicerFile.BoundingRectangle.Bottom >= (int)SlicerFile.ResolutionY - MaximumTopBottomMargin)
                 ,
                 SuggestionApplyWhen.Different =>
                 /*TL*/    (SlicerFile.BoundingRectangle.Location == topLeft)
@@ -95,30 +88,24 @@ public sealed class SuggestionModelPosition : Suggestion
         ? $"{GlobalAppliedMessage}: {SlicerFile.BoundingRectangle.ToString().Replace(",", ", ")}" 
         : $"{GlobalNotAppliedMessage}: {SlicerFile.BoundingRectangle.Location} is out of the recommended {AnchorPosition}";
 
-    public override string ToolTip => $"The recommended model position must be at a corner and between a top/bottom margin of [{_minimumTopBottomMargin}px to {_maximumTopBottomMargin}px] and left/right margin of [{_minimumLeftRightMargin}px to {_maximumLeftRightMargin}px].\n" +
+    public override string ToolTip => $"The recommended model position must be at a corner and between a top/bottom margin of [{MinimumTopBottomMargin}px to {MaximumTopBottomMargin}px] and left/right margin of [{MinimumLeftRightMargin}px to {MaximumLeftRightMargin}px].\n" +
                                       $"Explanation: {Description}";
 
     public override string? InformationUrl => "https://ameralabs.com/blog/9-settings-to-change-for-faster-resin-3d-printing";
 
     public override string? ConfirmationMessage => $"{Title}: {SlicerFile.BoundingRectangle.Location} » {AnchorPosition} ({AnchorType})";
 
-    public SuggestionModelAnchor AnchorType
-    {
-        get => _anchorType;
-        set => RaiseAndSetIfChanged(ref _anchorType, value);
-    }
+    [ObservableProperty]
+    public partial SuggestionModelAnchor AnchorType { get; set; } = SuggestionModelAnchor.Random;
 
-    public ushort TargetTopBottomMargin
-    {
-        get => _targetTopBottomMargin;
-        set => RaiseAndSetIfChanged(ref _targetTopBottomMargin, value);
-    }
+    [ObservableProperty]
+    public partial ushort TargetTopBottomMargin { get; set; } = 100;
 
     public ushort TopBottomMargin
     {
         get
         {
-            var margin = Math.Clamp(_targetTopBottomMargin, _minimumTopBottomMargin, _maximumTopBottomMargin);
+            var margin = Math.Clamp(TargetTopBottomMargin, MinimumTopBottomMargin, MaximumTopBottomMargin);
             return SlicerFile.ResolutionY - SlicerFile.BoundingRectangle.Size.Height < margin * 2
                 ? (ushort) Math.Round((SlicerFile.ResolutionY - SlicerFile.BoundingRectangle.Size.Height) / 2f,
                     MidpointRounding.AwayFromZero)
@@ -127,17 +114,14 @@ public sealed class SuggestionModelPosition : Suggestion
     }
 
 
-    public ushort TargetLeftRightMargin
-    {
-        get => _targetLeftRightMargin;
-        set => RaiseAndSetIfChanged(ref _targetLeftRightMargin, value);
-    }
+    [ObservableProperty]
+    public partial ushort TargetLeftRightMargin { get; set; } = 100;
 
     public ushort LeftRightMargin
     {
         get
         {
-            var margin = Math.Clamp(_targetLeftRightMargin, _minimumLeftRightMargin, _maximumLeftRightMargin);
+            var margin = Math.Clamp(TargetLeftRightMargin, MinimumLeftRightMargin, MaximumLeftRightMargin);
             return SlicerFile.ResolutionX - SlicerFile.BoundingRectangle.Size.Width < margin * 2
                 ? (ushort) Math.Round((SlicerFile.ResolutionX - SlicerFile.BoundingRectangle.Size.Width) / 2f,
                     MidpointRounding.AwayFromZero)
@@ -145,35 +129,23 @@ public sealed class SuggestionModelPosition : Suggestion
         }
     }
 
-    public ushort MinimumTopBottomMargin
-    {
-        get => _minimumTopBottomMargin;
-        set => RaiseAndSetIfChanged(ref _minimumTopBottomMargin, value);
-    }
+    [ObservableProperty]
+    public partial ushort MinimumTopBottomMargin { get; set; } = 50;
 
-    public ushort MaximumTopBottomMargin
-    {
-        get => _maximumTopBottomMargin;
-        set => RaiseAndSetIfChanged(ref _maximumTopBottomMargin, value);
-    }
+    [ObservableProperty]
+    public partial ushort MaximumTopBottomMargin { get; set; } = 300;
 
-    public ushort MinimumLeftRightMargin
-    {
-        get => _minimumLeftRightMargin;
-        set => RaiseAndSetIfChanged(ref _minimumLeftRightMargin, value);
-    }
+    [ObservableProperty]
+    public partial ushort MinimumLeftRightMargin { get; set; } = 50;
 
-    public ushort MaximumLeftRightMargin
-    {
-        get => _maximumLeftRightMargin;
-        set => RaiseAndSetIfChanged(ref _maximumLeftRightMargin, value);
-    }
+    [ObservableProperty]
+    public partial ushort MaximumLeftRightMargin { get; set; } = 300;
 
     public Anchor ToolMoveAnchor
     {
         get
         {
-            switch (_anchorType)
+            switch (AnchorType)
             {
                 case SuggestionModelAnchor.TopLeft:
                     return Anchor.TopLeft;
@@ -232,12 +204,12 @@ public sealed class SuggestionModelPosition : Suggestion
     {
         var sb = new StringBuilder();
 
-        if (_minimumTopBottomMargin > _maximumTopBottomMargin)
+        if (MinimumTopBottomMargin > MaximumTopBottomMargin)
         {
             sb.AppendLine("Minimum top/bottom margin limit (px) can't be higher than maximum limit (px)");
         }
 
-        if (_minimumLeftRightMargin > _maximumLeftRightMargin)
+        if (MinimumLeftRightMargin > MaximumLeftRightMargin)
         {
             sb.AppendLine("Minimum left/right margin limit (px) can't be higher than maximum limit (px)");
         }
@@ -250,7 +222,7 @@ public sealed class SuggestionModelPosition : Suggestion
     #region Constructor
     public SuggestionModelPosition()
     {
-        _applyWhen = SuggestionApplyWhen.OutsideLimits;
+        ApplyWhen = SuggestionApplyWhen.OutsideLimits;
     }
     #endregion
 

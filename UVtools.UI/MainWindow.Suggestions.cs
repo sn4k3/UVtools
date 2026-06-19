@@ -14,7 +14,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UVtools.Core.Dialogs;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
 using UVtools.Core.Suggestions;

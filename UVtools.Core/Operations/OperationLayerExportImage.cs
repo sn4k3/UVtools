@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,11 +7,13 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using System;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
@@ -19,7 +21,7 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationLayerExportImage : Operation
+public sealed partial class OperationLayerExportImage : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Enums
@@ -57,13 +59,6 @@ public sealed class OperationLayerExportImage : Operation
 
     #region Members
 
-    private string _outputFolder = null!;
-    private string _filename = "layer";
-    private LayerExportImageTypes _imageType = LayerExportImageTypes.PNG;
-    private RotateDirection _rotateDirection = RotateDirection.None;
-    private FlipDirection _flipDirection = FlipDirection.None;
-    private bool _padLayerIndex = true;
-    private bool _cropByRoi = true;
 
     #endregion
 
@@ -78,12 +73,12 @@ public sealed class OperationLayerExportImage : Operation
         "Export a layer range to images.";
 
     public override string ConfirmationText =>
-        $"export {_imageType} images from layers {LayerIndexStart} through {LayerIndexEnd}?";
+        $"export {ImageType} images from layers {LayerIndexStart} through {LayerIndexEnd}?";
 
     public override string ProgressTitle =>
-        $"Exporting {_imageType} images from layers {LayerIndexStart} through {LayerIndexEnd}";
+        $"Exporting {ImageType} images from layers {LayerIndexStart} through {LayerIndexEnd}";
 
-    public override string ProgressAction => $"Exported {_imageType} images";
+    public override string ProgressAction => $"Exported {ImageType} images";
 
     /*public override string ValidateInternally()
     {
@@ -99,7 +94,7 @@ public sealed class OperationLayerExportImage : Operation
 
     public override string ToString()
     {
-        var result = $"[Crop by ROI: {_cropByRoi}] [Pad index: {_padLayerIndex}]" +
+        var result = $"[Crop by ROI: {CropByROI}] [Pad index: {PadLayerIndex}]" +
                      LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
@@ -109,47 +104,26 @@ public sealed class OperationLayerExportImage : Operation
 
     #region Properties
 
-    public string OutputFolder
-    {
-        get => _outputFolder;
-        set => RaiseAndSetIfChanged(ref _outputFolder, value);
-    }
+    [ObservableProperty]
+    public partial string OutputFolder { get; set; } = null!;
 
-    public string Filename
-    {
-        get => _filename;
-        set => RaiseAndSetIfChanged(ref _filename, value);
-    }
+    [ObservableProperty]
+    public partial string Filename { get; set; } = "layer";
 
-    public LayerExportImageTypes ImageType
-    {
-        get => _imageType;
-        set => RaiseAndSetIfChanged(ref _imageType, value);
-    }
+    [ObservableProperty]
+    public partial LayerExportImageTypes ImageType { get; set; } = LayerExportImageTypes.PNG;
 
-    public RotateDirection RotateDirection
-    {
-        get => _rotateDirection;
-        set => RaiseAndSetIfChanged(ref _rotateDirection, value);
-    }
+    [ObservableProperty]
+    public partial RotateDirection RotateDirection { get; set; } = RotateDirection.None;
 
-    public FlipDirection FlipDirection
-    {
-        get => _flipDirection;
-        set => RaiseAndSetIfChanged(ref _flipDirection, value);
-    }
+    [ObservableProperty]
+    public partial FlipDirection FlipDirection { get; set; } = FlipDirection.None;
 
-    public bool PadLayerIndex
-    {
-        get => _padLayerIndex;
-        set => RaiseAndSetIfChanged(ref _padLayerIndex, value);
-    }
+    [ObservableProperty]
+    public partial bool PadLayerIndex { get; set; } = true;
 
-    public bool CropByROI
-    {
-        get => _cropByRoi;
-        set => RaiseAndSetIfChanged(ref _cropByRoi, value);
-    }
+    [ObservableProperty]
+    public partial bool CropByROI { get; set; } = true;
 
     #endregion
 
@@ -160,12 +134,12 @@ public sealed class OperationLayerExportImage : Operation
 
     public OperationLayerExportImage(FileFormat slicerFile) : base(slicerFile)
     {
-        _flipDirection = SlicerFile.DisplayMirror;
+        FlipDirection = SlicerFile.DisplayMirror;
     }
 
     public override void InitWithSlicerFile()
     {
-        _outputFolder = Path.Combine(Path.GetDirectoryName(SlicerFile.FileFullPath) ?? string.Empty, FileFormat.GetFileNameStripExtensions(SlicerFile.FileFullPath) ?? string.Empty);
+        OutputFolder = Path.Combine(Path.GetDirectoryName(SlicerFile.FileFullPath) ?? string.Empty, FileFormat.GetFileNameStripExtensions(SlicerFile.FileFullPath) ?? string.Empty);
     }
 
     #endregion
@@ -174,9 +148,9 @@ public sealed class OperationLayerExportImage : Operation
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
-        if (!Directory.Exists(_outputFolder))
+        if (!Directory.Exists(OutputFolder))
         {
-            Directory.CreateDirectory(_outputFolder);
+            Directory.CreateDirectory(OutputFolder);
         }
 
         var slicedFileNameNoExt = SlicerFile.FilenameNoExt;
@@ -187,26 +161,26 @@ public sealed class OperationLayerExportImage : Operation
             using var mat = SlicerFile[layerIndex].LayerMat;
             var matRoi = mat;
             bool needDispose = false;
-            if (_cropByRoi && HaveROI)
+            if (CropByROI && HaveROI)
             {
                 matRoi = GetRoiOrDefault(mat);
                 needDispose = true;
             }
 
-            if (_flipDirection != FlipDirection.None)
+            if (FlipDirection != FlipDirection.None)
             {
-                CvInvoke.Flip(matRoi, matRoi, (FlipType)_flipDirection);
+                CvInvoke.Flip(matRoi, matRoi, (FlipType)FlipDirection);
             }
 
-            if (_rotateDirection != RotateDirection.None)
+            if (RotateDirection != RotateDirection.None)
             {
-                CvInvoke.Rotate(matRoi, matRoi, (RotateFlags)_rotateDirection);
+                CvInvoke.Rotate(matRoi, matRoi, (RotateFlags)RotateDirection);
             }
 
-            var filename = SlicerFile[layerIndex].FormatFileName(_filename, _padLayerIndex ? SlicerFile.LayerDigits : byte.MinValue, IndexStartNumber.Zero, string.Empty);
-            var fileFullPath = Path.Combine(_outputFolder, $"{filename}.{_imageType.ToString().ToLower()}");
+            var filename = SlicerFile[layerIndex].FormatFileName(Filename, PadLayerIndex ? SlicerFile.LayerDigits : byte.MinValue, IndexStartNumber.Zero, string.Empty);
+            var fileFullPath = Path.Combine(OutputFolder, $"{filename}.{ImageType.ToString().ToLower()}");
 
-            if (_imageType != LayerExportImageTypes.SVG)
+            if (ImageType != LayerExportImageTypes.SVG)
             {
                 matRoi.Save(fileFullPath);
             }
@@ -302,7 +276,7 @@ public sealed class OperationLayerExportImage : Operation
 
     private bool Equals(OperationLayerExportImage other)
     {
-        return _outputFolder == other._outputFolder && _filename == other._filename && _imageType == other._imageType && _rotateDirection == other._rotateDirection && _flipDirection == other._flipDirection && _padLayerIndex == other._padLayerIndex && _cropByRoi == other._cropByRoi;
+        return OutputFolder == other.OutputFolder && Filename == other.Filename && ImageType == other.ImageType && RotateDirection == other.RotateDirection && FlipDirection == other.FlipDirection && PadLayerIndex == other.PadLayerIndex && CropByROI == other.CropByROI;
     }
 
     public override bool Equals(object? obj)

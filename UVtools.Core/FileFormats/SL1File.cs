@@ -455,7 +455,7 @@ public sealed class SL1File : FileFormat
         {
             PrinterSettings.DisplayMirrorX = (byte)(value is FlipDirection.Horizontally or FlipDirection.Both ? 1 : 0);
             PrinterSettings.DisplayMirrorY = (byte)(value is FlipDirection.Vertically or FlipDirection.Both ? 1 : 0);
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 

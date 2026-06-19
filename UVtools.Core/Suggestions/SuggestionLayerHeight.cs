@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Text;
 using UVtools.Core.Extensions;
@@ -13,13 +14,9 @@ using Layer = UVtools.Core.Layers.Layer;
 
 namespace UVtools.Core.Suggestions;
 
-public sealed class SuggestionLayerHeight : Suggestion
+public sealed partial class SuggestionLayerHeight : Suggestion
 {
     #region Members
-
-    private decimal _minimumLayerHeight = 0.03m;
-    private decimal _maximumLayerHeight = 0.10m;
-    private byte _maximumLayerHeightDecimalPlates = 2;
 
     #endregion
 
@@ -30,13 +27,13 @@ public sealed class SuggestionLayerHeight : Suggestion
         get
         {
             if (SlicerFile is null) return false;
-            if ((decimal)SlicerFile.LayerHeight < _minimumLayerHeight || (decimal)SlicerFile.LayerHeight > _maximumLayerHeight) return false;
-            if (SlicerFile.LayerHeight.DecimalDigits() > _maximumLayerHeightDecimalPlates) return false;
+            if ((decimal)SlicerFile.LayerHeight < MinimumLayerHeight || (decimal)SlicerFile.LayerHeight > MaximumLayerHeight) return false;
+            if (SlicerFile.LayerHeight.DecimalDigits() > MaximumLayerHeightDecimalPlates) return false;
 
             foreach (var layer in SlicerFile)
             {
-                if ((decimal)layer.LayerHeight < _minimumLayerHeight || (decimal)layer.LayerHeight > _maximumLayerHeight) return false;
-                if (layer.LayerHeight.DecimalDigits() > _maximumLayerHeightDecimalPlates) return false;
+                if ((decimal)layer.LayerHeight < MinimumLayerHeight || (decimal)layer.LayerHeight > MaximumLayerHeight) return false;
+                if (layer.LayerHeight.DecimalDigits() > MaximumLayerHeightDecimalPlates) return false;
             }
 
             return true;
@@ -55,30 +52,30 @@ public sealed class SuggestionLayerHeight : Suggestion
 
     public override string Message => IsApplied 
         ? $"{GlobalAppliedMessage}: {SlicerFile.LayerHeight}mm" 
-        : $"{GlobalNotAppliedMessage} is out of the recommended {_minimumLayerHeight}mm » {_maximumLayerHeight}mm, up to {_maximumLayerHeightDecimalPlates} decimal digit(s)";
+        : $"{GlobalNotAppliedMessage} is out of the recommended {MinimumLayerHeight}mm » {MaximumLayerHeight}mm, up to {MaximumLayerHeightDecimalPlates} decimal digit(s)";
 
-    public override string ToolTip => $"The recommended layer height is between [{_minimumLayerHeight}mm to {_maximumLayerHeight}mm] up to {_maximumLayerHeightDecimalPlates} digit(s) precision.\n" +
+    public override string ToolTip => $"The recommended layer height is between [{MinimumLayerHeight}mm to {MaximumLayerHeight}mm] up to {MaximumLayerHeightDecimalPlates} digit(s) precision.\n" +
                                       $"Explanation: {Description}";
 
     public override string? ConfirmationMessage => $"{Title}: Re-slice the model with proper layer height";
 
     public decimal MinimumLayerHeight
     {
-        get => _minimumLayerHeight;
-        set => RaiseAndSetIfChanged(ref _minimumLayerHeight, Layer.RoundHeight(Math.Clamp(value, Layer.MinimumHeight, Layer.MaximumHeight)));
-    }
+        get;
+        set => SetProperty(ref field, Layer.RoundHeight(Math.Clamp(value, Layer.MinimumHeight, Layer.MaximumHeight)));
+    } = 0.03m;
 
     public decimal MaximumLayerHeight
     {
-        get => _maximumLayerHeight;
-        set => RaiseAndSetIfChanged(ref _maximumLayerHeight, Layer.RoundHeight(Math.Clamp(value, Layer.MinimumHeight, Layer.MaximumHeight)));
-    }
+        get;
+        set => SetProperty(ref field, Layer.RoundHeight(Math.Clamp(value, Layer.MinimumHeight, Layer.MaximumHeight)));
+    } = 0.10m;
 
     public byte MaximumLayerHeightDecimalPlates
     {
-        get => _maximumLayerHeightDecimalPlates;
-        set => RaiseAndSetIfChanged(ref _maximumLayerHeightDecimalPlates, Math.Clamp(value, (byte)2, (byte)4));
-    }
+        get;
+        set => SetProperty(ref field, Math.Clamp(value, (byte)2, (byte)4));
+    } = 2;
 
     #endregion
 
@@ -88,22 +85,22 @@ public sealed class SuggestionLayerHeight : Suggestion
     {
         var sb = new StringBuilder();
 
-        if (_maximumLayerHeightDecimalPlates is < 2 or > 10)
+        if (MaximumLayerHeightDecimalPlates is < 2 or > 10)
         {
             sb.AppendLine("Layer height digits must be between 2 and 10");
         }
 
-        if (_minimumLayerHeight <= 0)
+        if (MinimumLayerHeight <= 0)
         {
             sb.AppendLine("Minimum layer height must be higher than 0mm");
         }
 
-        if (_maximumLayerHeight <= 0)
+        if (MaximumLayerHeight <= 0)
         {
             sb.AppendLine("Maximum layer height must be higher than 0mm");
         }
 
-        if (_minimumLayerHeight > _maximumLayerHeight)
+        if (MinimumLayerHeight > MaximumLayerHeight)
         {
             sb.AppendLine("Minimum layer height can't be higher than maximum layer height");
         }

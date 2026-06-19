@@ -17,7 +17,7 @@
             <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" Spacing="1">
                 <TextBox ToolTip.Tip="Select the sliced file without supports and raft. (Model B)"
                          IsReadOnly="True"
-                         Watermark="Select the sliced file without supports and raft. (Model B)"
+                         PlaceholderText="Select the sliced file without supports and raft. (Model B)"
                          HorizontalAlignment="Stretch"
                          Width="505"
                          Text="{Binding Operation.FilePath}"/>

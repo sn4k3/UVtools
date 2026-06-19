@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,12 +17,10 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationLayerRemove : Operation
+public sealed partial class OperationLayerRemove : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
-    private bool _useThreshold;
-    private uint _pixelThreshold;
     #endregion
 
     #region Overrides
@@ -37,12 +36,12 @@ public sealed class OperationLayerRemove : Operation
 
     public override string ConfirmationText =>
         $"remove layers {LayerIndexStart} through {LayerIndexEnd}"+
-        (_useThreshold ? $" with an pixel threshold of {_pixelThreshold}px" : string.Empty)
+        (UseThreshold ? $" with an pixel threshold of {PixelThreshold}px" : string.Empty)
         +"?";
 
     public override string ProgressTitle =>
         $"Removing layers {LayerIndexStart} through {LayerIndexEnd}" +
-        (_useThreshold ? $" with an pixel threshold of {_pixelThreshold}px" : string.Empty);
+        (UseThreshold ? $" with an pixel threshold of {PixelThreshold}px" : string.Empty);
 
     public override string ProgressAction => "Removed layers";
 
@@ -72,35 +71,23 @@ public sealed class OperationLayerRemove : Operation
 
     #region Properties
 
-    public bool UseThreshold
-    {
-        get => _useThreshold;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _useThreshold, value)) return;
-            RaisePropertyChanged(nameof(LayerRemoveCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LayerRemoveCount))]
+    public partial bool UseThreshold { get; set; }
 
-    public uint PixelThreshold
-    {
-        get => _pixelThreshold;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _pixelThreshold, value)) return;
-            RaisePropertyChanged(nameof(LayerRemoveCount));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LayerRemoveCount))]
+    public partial uint PixelThreshold { get; set; }
 
     public uint LayerRemoveCount
     {
         get
         {
-            if (!_useThreshold) return LayerRangeCount;
+            if (!UseThreshold) return LayerRangeCount;
             uint layers = 0;
             for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
             {
-                if (SlicerFile[layerIndex].NonZeroPixelCount > _pixelThreshold) continue;
+                if (SlicerFile[layerIndex].NonZeroPixelCount > PixelThreshold) continue;
                 layers++;
             }
 
@@ -121,7 +108,7 @@ public sealed class OperationLayerRemove : Operation
     #region Equality
     private bool Equals(OperationLayerRemove other)
     {
-        return _useThreshold == other._useThreshold && _pixelThreshold == other._pixelThreshold;
+        return UseThreshold == other.UseThreshold && PixelThreshold == other.PixelThreshold;
     }
 
     public override bool Equals(object? obj)
@@ -139,7 +126,7 @@ public sealed class OperationLayerRemove : Operation
         var layersRemove = new List<uint>();
         for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
         {
-            if(_useThreshold && SlicerFile[layerIndex].NonZeroPixelCount > _pixelThreshold) continue;
+            if(UseThreshold && SlicerFile[layerIndex].NonZeroPixelCount > PixelThreshold) continue;
             layersRemove.Add(layerIndex);
         }
 

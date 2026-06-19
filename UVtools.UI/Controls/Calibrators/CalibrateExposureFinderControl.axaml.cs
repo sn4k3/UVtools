@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
-using UVtools.Core.Dialogs;
+using EmguExtensions.Avalonia;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.UI.Controls.Tools;

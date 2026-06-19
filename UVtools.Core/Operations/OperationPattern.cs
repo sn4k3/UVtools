@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,29 +7,21 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations;
 
 
-public class OperationPattern : Operation
+public partial class OperationPattern : Operation
 {
     #region Members
-    private Anchor _anchor = Anchor.None;
-    private ushort _colSpacing;
-    private ushort _rowSpacing;
-    private ushort _maxColSpacing;
-    private ushort _maxRowSpacing;
-    private ushort _cols = 1;
-    private ushort _rows = 1;
-    private ushort _maxCols;
-    private ushort _maxRows;
-    private bool _isWithinBoundary = true;
     #endregion
 
     #region Overrides
@@ -80,98 +72,54 @@ public class OperationPattern : Operation
     #endregion
 
     #region Properties
-    public Anchor Anchor
-    {
-        get => _anchor;
-        set => RaiseAndSetIfChanged(ref _anchor, value);
-    }
+    [ObservableProperty]
+    public partial Anchor Anchor { get; set; } = Anchor.None;
 
     public uint ImageWidth { get; private set; }
     public uint ImageHeight { get; private set; }
 
-    public ushort Cols
-    {
-        get => _cols;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _cols, value)) return;
-            RaisePropertyChanged(nameof(InfoCols));
-            RaisePropertyChanged(nameof(InfoWidthString));
-            RaisePropertyChanged(nameof(InfoModelWithinBoundaryString));
-            ValidateBounds();
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InfoCols))]
+    [NotifyPropertyChangedFor(nameof(InfoWidthString))]
+    [NotifyPropertyChangedFor(nameof(InfoModelWithinBoundaryString))]
+    public partial ushort Cols { get; set; } = 1;
 
-    public ushort Rows
-    {
-        get => _rows;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _rows, value)) return;
-            RaisePropertyChanged(nameof(InfoRows));
-            RaisePropertyChanged(nameof(InfoHeightString));
-            RaisePropertyChanged(nameof(InfoModelWithinBoundaryString));
-            ValidateBounds();
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InfoRows))]
+    [NotifyPropertyChangedFor(nameof(InfoHeightString))]
+    [NotifyPropertyChangedFor(nameof(InfoModelWithinBoundaryString))]
+    public partial ushort Rows { get; set; } = 1;
 
-    public ushort MaxCols
-    {
-        get => _maxCols;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _maxCols, value)) return;
-            RaisePropertyChanged(nameof(InfoCols));
-            ValidateBounds();
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InfoCols))]
+    public partial ushort MaxCols { get; set; }
 
-    public ushort MaxRows
-    {
-        get => _maxRows;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _maxRows, value)) return;
-            RaisePropertyChanged(nameof(InfoRows));
-            ValidateBounds();
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InfoRows))]
+    public partial ushort MaxRows { get; set; }
 
-    public ushort ColSpacing
-    {
-        get => _colSpacing;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _colSpacing, value)) return;
-            RaisePropertyChanged(nameof(InfoWidthString));
-            RaisePropertyChanged(nameof(InfoModelWithinBoundaryString));
-            ValidateBounds();
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InfoWidthString))]
+    [NotifyPropertyChangedFor(nameof(InfoModelWithinBoundaryString))]
+    public partial ushort ColSpacing { get; set; }
 
-    public ushort RowSpacing
-    {
-        get => _rowSpacing;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _rowSpacing, value)) return;
-            RaisePropertyChanged(nameof(InfoHeightString));
-            RaisePropertyChanged(nameof(InfoModelWithinBoundaryString));
-            ValidateBounds();
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InfoHeightString))]
+    [NotifyPropertyChangedFor(nameof(InfoModelWithinBoundaryString))]
+    public partial ushort RowSpacing { get; set; }
 
-    public ushort MaxColSpacing
-    {
-        get => _maxColSpacing;
-        set => RaiseAndSetIfChanged(ref _maxColSpacing, value);
-    }
+    partial void OnColsChanged(ushort value) => ValidateBounds();
+    partial void OnRowsChanged(ushort value) => ValidateBounds();
+    partial void OnMaxColsChanged(ushort value) => ValidateBounds();
+    partial void OnMaxRowsChanged(ushort value) => ValidateBounds();
+    partial void OnColSpacingChanged(ushort value) => ValidateBounds();
+    partial void OnRowSpacingChanged(ushort value) => ValidateBounds();
 
-    public ushort MaxRowSpacing
-    {
-        get => _maxRowSpacing;
-        set => RaiseAndSetIfChanged(ref _maxRowSpacing, value);
-    }
+    [ObservableProperty]
+    public partial ushort MaxColSpacing { get; set; }
+
+    [ObservableProperty]
+    public partial ushort MaxRowSpacing { get; set; }
 
     public string InfoCols => $"Columns: {Cols} / {MaxCols}";
     public string InfoRows => $"Rows: {Rows} / {MaxRows}";
@@ -182,17 +130,11 @@ public class OperationPattern : Operation
     public string InfoHeightString =>
         $"Width: {GetPatternVolume.Height} (Min: {ROI.Height}, Max: {ImageHeight})";
 
-    public bool IsWithinBoundary
-    {
-        get => _isWithinBoundary;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _isWithinBoundary, value)) return;
-            RaisePropertyChanged(nameof(InfoModelWithinBoundaryString));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InfoModelWithinBoundaryString))]
+    public partial bool IsWithinBoundary { get; set; } = true;
 
-    public string InfoModelWithinBoundaryString => "Model within boundary: " + (_isWithinBoundary ? "Yes" : "No");
+    public string InfoModelWithinBoundaryString => "Model within boundary: " + (IsWithinBoundary ? "Yes" : "No");
 
     public Size GetPatternVolume => new(Cols * ROI.Width + (Cols - 1) * ColSpacing, Rows * ROI.Height + (Rows - 1) * RowSpacing);
     #endregion
@@ -282,12 +224,12 @@ public class OperationPattern : Operation
 
     public void FillColumnSpacing()
     {
-        ColSpacing = CalculateAutoColSpacing(_cols);
+        ColSpacing = CalculateAutoColSpacing(Cols);
     }
 
     public void FillRowSpacing()
     {
-        RowSpacing = CalculateAutoRowSpacing(_rows);
+        RowSpacing = CalculateAutoRowSpacing(Rows);
     }
 
     public bool ValidateBounds()

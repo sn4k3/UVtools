@@ -13,8 +13,8 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core;
-using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.Scripting;
 
@@ -82,14 +82,14 @@ public class ScriptChangeLayesrPropertiesSample : ScriptGlobals
                     if (!tuple.rect.IntersectsWith(nextTuple.rect)) continue;
                     if (thisContourMat is null)
                     {
-                        thisContourMat = EmguExtensions.InitMat(SlicerFile.Resolution);
+                        thisContourMat = EmguCvExtensions.InitMat(SlicerFile.Resolution);
                         using var vec = new VectorOfPoint(tuple.points);
-                        CvInvoke.DrawContours(thisContourMat, vec, -1, EmguExtensions.WhiteColor, -1);
+                        CvInvoke.DrawContours(thisContourMat, vec, -1, EmguCvExtensions.WhiteColor, -1);
                     }
 
                     using var nextContourMat = thisContourMat.NewZeros();
                     using var vecNext = new VectorOfPoint(nextTuple.points);
-                    CvInvoke.DrawContours(nextContourMat, vecNext, -1, EmguExtensions.WhiteColor, -1);
+                    CvInvoke.DrawContours(nextContourMat, vecNext, -1, EmguCvExtensions.WhiteColor, -1);
 
                     CvInvoke.BitwiseAnd(thisContourMat, nextContourMat, nextContourMat);
                     if (!CvInvoke.HasNonZero(nextContourMat)) continue; // Does not intersect!

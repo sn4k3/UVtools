@@ -12,8 +12,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core;
-using UVtools.Core.Extensions;
 using UVtools.Core.Scripting;
 
 namespace UVtools.ScriptSample;
@@ -100,7 +100,7 @@ public class ScriptLightBleedCompensationSample : ScriptGlobals
             {
                 uint layerIndexNext = (uint) (layerIndex + i + 1);
                 if (layerIndexNext > Operation.LayerIndexEnd) break;
-                using var subtractMat = EmguExtensions.InitMat(target.Size, new MCvScalar(brightnesses[i]));
+                using var subtractMat = EmguCvExtensions.InitMat(target.Size, new MCvScalar(brightnesses[i]));
 
                 using var nextMat = SlicerFile[layerIndexNext].LayerMat;
                 using var nextMatRoi = Operation.GetRoiOrDefault(nextMat);

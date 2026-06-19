@@ -407,7 +407,7 @@ public partial class ToolWindow : GenericWindow
             if (ToolControl is null) return;
             var operation = _selectedProfileItem!.Clone();
             operation.ProfileName = null;
-            operation.ClearPropertyChangedListeners();
+            operation.ClearPropertyChangedHandlers();
             operation.ImportedFrom = Operation.OperationImportFrom.Profile;
             ToolControl.BaseOperation = operation;
             switch (operation.LayerRangeSelection)
@@ -453,7 +453,7 @@ public partial class ToolWindow : GenericWindow
 
         var toAdd = ToolControl.BaseOperation.Clone();
         toAdd.ProfileName = string.IsNullOrWhiteSpace(_profileText) ? null : _profileText.Trim();
-        toAdd.ClearPropertyChangedListeners();
+        toAdd.ClearPropertyChangedHandlers();
         OperationProfiles.AddProfile(toAdd);
         Profiles.Insert(0, toAdd);
 

@@ -7,5 +7,5 @@
                        x:Class="UVtools.UI.Windows.ShortcutsWindow"
                        WindowStartupLocation="CenterOwner"
                        Title="ShortcutsWindow">
-  Welcome to Avalonia!
+    <Button Content="Welcome to Avalonia!"/>
 </windows:GenericWindow>

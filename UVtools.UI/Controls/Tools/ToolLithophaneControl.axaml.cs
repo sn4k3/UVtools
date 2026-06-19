@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
-using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using System.Timers;
 using Avalonia.Platform.Storage;
+using EmguExtensions.Avalonia;
 using UVtools.Core.Operations;
 using UVtools.UI.Extensions;
 using UVtools.UI.Windows;

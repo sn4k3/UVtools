@@ -2,7 +2,6 @@ using SukiUI.MessageBox;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using UVtools.Core.Dialogs;
 using UVtools.Core.Managers;
 using UVtools.UI.Extensions;
 

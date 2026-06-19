@@ -1,18 +1,22 @@
 ﻿using Avalonia;
+using StageKit;
 using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using UVtools.Core;
+using UVtools.Core.Extensions;
 using UVtools.Core.SystemOS;
+using ZLinq;
 
 namespace UVtools.UI;
 
 public static class Program
 {
     private static bool _isDebug;
-
-    public static string[] Args = [];
 
     public static bool IsDebug
     {
@@ -27,9 +31,6 @@ public static class Program
         set => _isDebug = value;
     }
 
-    public static bool IsCrashReport;
-
-    public static Stopwatch ProgramStartupTime = null!;
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
@@ -37,9 +38,33 @@ public static class Program
     public static void Main(string[] args)
     {
         CultureInfo.DefaultThreadCurrentUICulture =
-        CultureInfo.DefaultThreadCurrentCulture = CoreSettings.OptimalCultureInfo;
-        ProgramStartupTime = Stopwatch.StartNew();
-        Args = args;
+            CultureInfo.DefaultThreadCurrentCulture = CoreSettings.OptimalCultureInfo;
+
+        ApplicationKit.JsonSerializerOptions = JsonExtensions.SettingsIndent;
+        ApplicationKit.ApplicationArgs = args;
+        ApplicationKit.UiFrameworkInfo = $"Avalonia {typeof(AvaloniaObject).Assembly.GetName().Version?.ToString(3)}";
+        ApplicationKit.ProfilePath = CoreSettings.DefaultSettingsFolderAndEnsureCreation;
+
+        UnhandledExceptions.RegisterAppDomainUnhandledException();
+        UnhandledExceptions.RegisterTaskSchedulerUnobservedTaskException();
+        UnhandledExceptions.IgnoreAvaloniaSafeExceptions();
+        UnhandledExceptions.ExceptionThrown += (sender, e) =>
+        {
+            if (App.SlicerFile is not null)
+            {
+                e.CustomData = new Dictionary<string, object?>
+                {
+                    ["SlicerFile.Class"] = App.SlicerFile.GetType().Name,
+                    ["SlicerFile.Version"] = App.SlicerFile.Version,
+                    ["SlicerFile.Filename"] = App.SlicerFile.Filename
+                };
+            }
+        };
+
+        CrashReportsFile.CrashReportsDirectoryPath = ApplicationKit.ProfilePath;
+        CrashReportsFile.IsEnabled = true;
+
+
         try
         {
             if (ConsoleArguments.ParseArgs(args)) return;
@@ -50,15 +75,12 @@ public static class Program
             return;
         }
 
-        if (Args.Length >= 1)
+        if (ApplicationKit.ApplicationArgs.Length >= 1)
         {
-            switch (Args[0])
+            switch (ApplicationKit.ApplicationArgs[0])
             {
                 case "--debug":
                     IsDebug = true;
-                    break;
-                case "--crash-report" when Args.Length >= 3:
-                    IsCrashReport = true;
                     break;
             }
         }
@@ -119,7 +141,6 @@ public static class Program
                 }*/
 
 
-
         //z++;
         /* }
 
@@ -150,10 +171,10 @@ public static class Program
 
         foreach (var slice in slices)
         {
-            using var mat = EmguExtensions.InitMat(new Size(1000, 1000));
+            using var mat = EmguCvExtensions.InitMat(new Size(1000, 1000));
             var contour = slice.Value.ToContour();
             using var vec = new VectorOfPoint(contour);
-            CvInvoke.FillPoly(mat, vec, EmguExtensions.WhiteColor, LineType.AntiAlias);
+            CvInvoke.FillPoly(mat, vec, EmguCvExtensions.WhiteColor, LineType.AntiAlias);
             mat.Save(@$"D:\SLICE\{slice.Key}.png");
         }*/
 
@@ -161,74 +182,63 @@ public static class Program
         //var machines = Machine.GetMachinesFromPrusaSlicer();
         //var machinesText = Machine.GenerateMachinePresetsFromPrusaSlicer();
 
+
+        /*
+        var allowedExceptions =
+            SearchValues.Create(
+                new[] { "org.freedesktop.DBus.Error.ServiceUnknown", "org.freedesktop.DBus.Error.UnknownMethod" },
+                StringComparison.OrdinalIgnoreCase);
+
         // Add the event handler for handling non-UI thread exceptions to the event.
-        AppDomain.CurrentDomain.UnhandledException += (sender, e) => HandleUnhandledException("Non-UI", (Exception)e.ExceptionObject);
-        TaskScheduler.UnobservedTaskException += (sender, e) => HandleUnhandledException("Task", e.Exception);
+        AppDomain.CurrentDomain.UnhandledException +=
+            (sender, e) => HandleUnhandledException("Non-UI", (Exception)e.ExceptionObject);
+        TaskScheduler.UnobservedTaskException += (sender, e) =>
+        {
+            var exception = e.Exception;
+            if (exception.Message.ContainsAny(allowedExceptions) ||
+                exception.InnerExceptions.AsValueEnumerable().Any(x => x.Message.ContainsAny(allowedExceptions)))
+            {
+                e.SetObserved();
+                return;
+            }
+
+            HandleUnhandledException("Task", e.Exception);
+        };
+        */
+
         //Dispatcher.UIThread.UnhandledException += (sender, e) => HandleUnhandledException("Dispatcher", e.Exception);
         //AppDomain.CurrentDomain.FirstChanceException += CurrentDomainOnFirstChanceException;
 
-        try
+        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+
+        /*try
         {
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
         catch (Exception e)
         {
             HandleUnhandledException("Application", e);
-        }
+        }*/
 
 
         // Closing
-    }
-
-    private static void HandleUnhandledException(string category, Exception ex)
-    {
-        ErrorLog.AppendLine($"Fatal {category} Error", ex.ToString());
-
-        if (category == "Task")
-        {
-            if (ex.Message.Contains("org.freedesktop.DBus.Error.ServiceUnknown")
-                || ex.Message.Contains("org.freedesktop.DBus.Error.UnknownMethod")
-                ) return;
-        }
-
-        if (!IsCrashReport)
-        {
-            try
-            {
-                string? file = null;
-                if (App.SlicerFile is not null)
-                {
-                    file = $"{App.SlicerFile.Filename}  [Version: {App.SlicerFile.Version}] [Class: {App.SlicerFile.GetType().Name}]";
-                }
-                SystemAware.StartThisApplication($"--crash-report \"{category}\" \"{ex}\" \"{file}\"");
-                //var errorMsg = $"An application error occurred. Please contact the administrator with the following information:\n\n{ex}";
-                //await App.MainWindow.MessageBoxError(errorMsg, "Fatal Non-UI Error");
-            }
-            catch (Exception exception)
-            {
-                Debug.WriteLine(exception);
-                Console.WriteLine(exception);
-            }
-        }
-
-        Environment.Exit(-1);
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
     {
         return AppBuilder.Configure<App>()
-            .UsePlatformDetect()
-            .WithInterFont()
-            .With(new SkiaOptions { MaxGpuResourceSizeBytes = 256_000_000 })
-            .With(new Win32PlatformOptions())
-            .With(new X11PlatformOptions())
-            .With(new MacOSPlatformOptions { ShowInDock = true })
-            .With(new AvaloniaNativePlatformOptions())
-            //.UseSkia()
-            .LogToTrace()
+                .UsePlatformDetect()
+                .WithInterFont()
+                .With(new SkiaOptions { MaxGpuResourceSizeBytes = 256_000_000 })
+                .With(new Win32PlatformOptions())
+                .With(new X11PlatformOptions())
+                .With(new MacOSPlatformOptions { ShowInDock = true })
+                .With(new AvaloniaNativePlatformOptions())
+                //.UseSkia()
+                .LogToTrace()
 #if DEBUG
-            .WithDeveloperTools()
+                .WithDeveloperTools()
 #endif
             ;
     }

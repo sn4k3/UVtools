@@ -10,7 +10,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System.Drawing;
-using UVtools.Core.Extensions;
+using EmguExtensions;
 
 namespace UVtools.Core.Gerber.Apertures;
 
@@ -37,7 +37,7 @@ public class CircleAperture : Aperture
         CvInvoke.Ellipse(mat, location, Document.SizeMmToPx(Diameter / 2.0, Diameter / 2.0), 0, 0, 360, color, -1, lineType);
         if (HoleDiameter > 0)
         {
-            var invertColor = color.Equals(EmguExtensions.BlackColor) ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor;
+            var invertColor = color.Equals(EmguCvExtensions.BlackColor) ? EmguCvExtensions.WhiteColor : EmguCvExtensions.BlackColor;
             CvInvoke.Ellipse(mat,
                 location,
                 Document.SizeMmToPx(HoleDiameter / 2.0, HoleDiameter / 2.0),

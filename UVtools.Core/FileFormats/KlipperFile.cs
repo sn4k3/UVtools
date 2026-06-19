@@ -235,7 +235,7 @@ public sealed class KlipperFile : FileFormat
                 _ => throw new ArgumentOutOfRangeException(nameof(value), value, null)
             };
 
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 
@@ -754,7 +754,7 @@ public sealed class KlipperFile : FileFormat
     {
         if (!SupportGCode || SuppressRebuildGCode) return;
         GCode?.RebuildGCode(this, [HeaderSettings]);
-        RaisePropertyChanged(nameof(GCodeStr));
+        OnPropertyChanged(nameof(GCodeStr));
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)

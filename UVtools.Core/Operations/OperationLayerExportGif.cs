@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using SixLabors.ImageSharp.PixelFormats;
@@ -16,30 +17,23 @@ using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using EmguExtensions;
+using SixLabors.ImageSharp.Formats;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using Point = System.Drawing.Point;
 using Size = System.Drawing.Size;
-using SixLabors.ImageSharp.Formats.Gif;
 using ZLinq;
 
 namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationLayerExportGif : Operation
+public sealed partial class OperationLayerExportGif : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
-    private string _filePath = null!;
-    private bool _clipByVolumeBounds;
-    private bool _renderLayerCount = true;
-    private byte _fps = 30;
-    private ushort _repeats;
-    private ushort _skip;
     private decimal _scale = 50;
-    private RotateDirection _rotateDirection = RotateDirection.None;
-    private FlipDirection _flipDirection = FlipDirection.None;
 
     #endregion
 
@@ -80,14 +74,14 @@ public sealed class OperationLayerExportGif : Operation
 
     public override string ToString()
     {
-        var result = $"[Clip bounds: {_clipByVolumeBounds}]" +
-                     $" [Render count: {_renderLayerCount}]" +
-                     $" [FPS: {_fps}]" +
-                     $" [Repeats: {_repeats}]" +
-                     $" [Skip: {_skip}]" +
+        var result = $"[Clip bounds: {ClipByVolumeBounds}]" +
+                     $" [Render count: {RenderLayerCount}]" +
+                     $" [FPS: {FPS}]" +
+                     $" [Repeats: {Repeats}]" +
+                     $" [Skip: {Skip}]" +
                      $" [Scale: {_scale}%]" +
-                     $" [Rotate: {_rotateDirection}]" +
-                     $" [Flip: {_flipDirection}]" +
+                     $" [Rotate: {RotateDirection}]" +
+                     $" [Flip: {FlipDirection}]" +
                      LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
@@ -97,9 +91,9 @@ public sealed class OperationLayerExportGif : Operation
     {
         if (e.PropertyName is nameof(LayerRangeCount))
         {
-            RaisePropertyChanged(nameof(TotalLayers));
-            RaisePropertyChanged(nameof(GifDurationMilliseconds));
-            RaisePropertyChanged(nameof(GifDurationSeconds));
+            OnPropertyChanged(nameof(TotalLayers));
+            OnPropertyChanged(nameof(GifDurationMilliseconds));
+            OnPropertyChanged(nameof(GifDurationSeconds));
         }
         base.OnPropertyChanged(e);
     }
@@ -108,57 +102,33 @@ public sealed class OperationLayerExportGif : Operation
 
     #region Properties
 
-    public string FilePath
-    {
-        get => _filePath;
-        set => RaiseAndSetIfChanged(ref _filePath, value);
-    }
+    [ObservableProperty]
+    public partial string FilePath { get; set; } = null!;
 
-    public bool ClipByVolumeBounds
-    {
-        get => _clipByVolumeBounds;
-        set => RaiseAndSetIfChanged(ref _clipByVolumeBounds, value);
-    }
+    [ObservableProperty]
+    public partial bool ClipByVolumeBounds { get; set; }
 
-    public bool RenderLayerCount
-    {
-        get => _renderLayerCount;
-        set => RaiseAndSetIfChanged(ref _renderLayerCount, value);
-    }
+    [ObservableProperty]
+    public partial bool RenderLayerCount { get; set; } = true;
 
-    public byte FPS
-    {
-        get => _fps;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _fps, value)) return;
-            RaisePropertyChanged(nameof(FPSToMilliseconds));
-            RaisePropertyChanged(nameof(GifDurationMilliseconds));
-            RaisePropertyChanged(nameof(GifDurationSeconds));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FPSToMilliseconds))]
+    [NotifyPropertyChangedFor(nameof(GifDurationMilliseconds))]
+    [NotifyPropertyChangedFor(nameof(GifDurationSeconds))]
+    public partial byte FPS { get; set; } = 30;
 
-    public int FPSToMilliseconds => 1000 / _fps;
+    public int FPSToMilliseconds => 1000 / FPS;
 
-    public ushort Repeats
-    {
-        get => _repeats;
-        set => RaiseAndSetIfChanged(ref _repeats, value);
-    }
+    [ObservableProperty]
+    public partial ushort Repeats { get; set; }
 
-    public ushort Skip
-    {
-        get => _skip;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _skip, value)) return;
-            RaisePropertyChanged(nameof(TotalLayers));
-            RaisePropertyChanged(nameof(GifDurationMilliseconds));
-            RaisePropertyChanged(nameof(GifDurationSeconds));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TotalLayers))]
+    [NotifyPropertyChangedFor(nameof(GifDurationMilliseconds))]
+    [NotifyPropertyChangedFor(nameof(GifDurationSeconds))]
+    public partial ushort Skip { get; set; }
 
-    public uint TotalLayers => (uint)(LayerRangeCount / (float) (_skip + 1));
+    public uint TotalLayers => (uint)(LayerRangeCount / (float) (Skip + 1));
 
     public uint GifDurationMilliseconds => (uint)(TotalLayers * FPSToMilliseconds);
     public float GifDurationSeconds => MathF.Round(GifDurationMilliseconds / 1000.0f, 2);
@@ -166,22 +136,16 @@ public sealed class OperationLayerExportGif : Operation
     public decimal Scale
     {
         get => _scale;
-        set => RaiseAndSetIfChanged(ref _scale, Math.Round(value, 2));
+        set => SetProperty(ref _scale, Math.Round(value, 2));
     }
 
     public float ScaleFactor => (float)_scale / 100f;
 
-    public RotateDirection RotateDirection
-    {
-        get => _rotateDirection;
-        set => RaiseAndSetIfChanged(ref _rotateDirection, value);
-    }
+    [ObservableProperty]
+    public partial RotateDirection RotateDirection { get; set; } = RotateDirection.None;
 
-    public FlipDirection FlipDirection
-    {
-        get => _flipDirection;
-        set => RaiseAndSetIfChanged(ref _flipDirection, value);
-    }
+    [ObservableProperty]
+    public partial FlipDirection FlipDirection { get; set; } = FlipDirection.None;
 
     #endregion
 
@@ -192,22 +156,22 @@ public sealed class OperationLayerExportGif : Operation
 
     public OperationLayerExportGif(FileFormat slicerFile) : base(slicerFile)
     {
-        _flipDirection = SlicerFile.DisplayMirror;
-        _skip = TotalLayers switch
+        FlipDirection = SlicerFile.DisplayMirror;
+        Skip = TotalLayers switch
         {
             > 5000 => 2,
             > 1000 => 1,
-            _ => _skip
+            _ => Skip
         };
         /*while (TotalLayers > 500)
         {
-            _skip++;
+            Skip++;
         }*/
     }
 
     public override void InitWithSlicerFile()
     {
-        _filePath = SlicerFile.FileFullPathNoExt + ".gif";
+        FilePath = SlicerFile.FileFullPathNoExt + ".gif";
     }
 
     #endregion
@@ -217,7 +181,7 @@ public sealed class OperationLayerExportGif : Operation
     protected override bool ExecuteInternally(OperationProgress progress)
     {
 
-        //using var gif = AnimatedGif.AnimatedGif.Create(_filePath, FPSToMilliseconds, _repeats);
+        //using var gif = AnimatedGif.AnimatedGif.Create(FilePath, FPSToMilliseconds, Repeats);
         // Set animation loop repeat count to 5.
 
         progress.Reset("Packed layers", TotalLayers);
@@ -227,7 +191,7 @@ public sealed class OperationLayerExportGif : Operation
         int fontThickness = 2;
         MCvScalar textColor = new(200);
 
-        if (_clipByVolumeBounds)
+        if (ClipByVolumeBounds)
         {
             ROI = SlicerFile.BoundingRectangle;
         }
@@ -246,7 +210,7 @@ public sealed class OperationLayerExportGif : Operation
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), i =>
             {
                 progress.PauseIfRequested();
-                uint layerIndex = (uint)(LayerIndexStart + i * (_skip + 1));
+                uint layerIndex = (uint)(LayerIndexStart + i * (Skip + 1));
                 var layer = SlicerFile[layerIndex];
                 using var mat = layer.LayerMat;
                 using var matRoi = GetRoiOrDefault(mat);
@@ -256,17 +220,17 @@ public sealed class OperationLayerExportGif : Operation
                     CvInvoke.Resize(matRoi, matRoi, imgSize);
                 }
 
-                if (_flipDirection != FlipDirection.None)
+                if (FlipDirection != FlipDirection.None)
                 {
-                    CvInvoke.Flip(matRoi, matRoi, (FlipType)_flipDirection);
+                    CvInvoke.Flip(matRoi, matRoi, (FlipType)FlipDirection);
                 }
 
-                if (_rotateDirection != RotateDirection.None)
+                if (RotateDirection != RotateDirection.None)
                 {
-                    CvInvoke.Rotate(matRoi, matRoi, (RotateFlags)_rotateDirection);
+                    CvInvoke.Rotate(matRoi, matRoi, (RotateFlags)RotateDirection);
                 }
 
-                if (_renderLayerCount)
+                if (RenderLayerCount)
                 {
                     int baseLine = 0;
                     var text = string.Format($"{{0:D{SlicerFile.LayerDigits}}}/{{1}}",
@@ -287,7 +251,7 @@ public sealed class OperationLayerExportGif : Operation
                     finalSize = matRoi.Size;
                 }
 
-                layerBuffer[i] = matRoi.GetBytes();
+                layerBuffer[i] = matRoi.ToArray();
                 progress.LockAndIncrement();
             });
 
@@ -295,7 +259,7 @@ public sealed class OperationLayerExportGif : Operation
             {
                 gif = new Image<L8>(imgSize.Width, imgSize.Height);
                 var gifMetaData = gif.Metadata.GetGifMetadata();
-                gifMetaData.RepeatCount = _repeats;
+                gifMetaData.RepeatCount = Repeats;
 
                 var metadata = gif.Frames.RootFrame.Metadata.GetGifMetadata();
                 metadata.FrameDelay = delay;
@@ -310,7 +274,7 @@ public sealed class OperationLayerExportGif : Operation
                 // Set the delay until the next image is displayed.
                 var metadata = image.Frames.RootFrame.Metadata.GetGifMetadata();
                 metadata.FrameDelay = delay;
-                metadata.DisposalMethod = GifDisposalMethod.RestoreToBackground;
+                metadata.DisposalMode = FrameDisposalMode.RestoreToBackground;
 
                 // Add the color image to the gif.
                 gif.Frames.AddFrame(image.Frames.RootFrame);
@@ -322,7 +286,7 @@ public sealed class OperationLayerExportGif : Operation
         /*Parallel.For(0, TotalLayers, CoreSettings.GetParallelOptions(progress), i =>
         {
             progress.PauseIfRequested();
-            uint layerIndex = (uint) (LayerIndexStart + i * (_skip + 1));
+            uint layerIndex = (uint) (LayerIndexStart + i * (Skip + 1));
             var layer = SlicerFile[layerIndex];
             using var mat = layer.LayerMat;
             //using var matOriginal = mat.Clone();
@@ -333,17 +297,17 @@ public sealed class OperationLayerExportGif : Operation
                 CvInvoke.Resize(matRoi, matRoi, imgSize);
             }
 
-            if (_flipDirection != FlipDirection.None)
+            if (FlipDirection != FlipDirection.None)
             {
-                CvInvoke.Flip(matRoi, matRoi, (FlipType)_flipDirection);
+                CvInvoke.Flip(matRoi, matRoi, (FlipType)FlipDirection);
             }
 
-            if (_rotateDirection != RotateDirection.None)
+            if (RotateDirection != RotateDirection.None)
             {
-                CvInvoke.Rotate(matRoi, matRoi, (RotateFlags)_rotateDirection);
+                CvInvoke.Rotate(matRoi, matRoi, (RotateFlags)RotateDirection);
             }
 
-            if (_renderLayerCount)
+            if (RenderLayerCount)
             {
                 int baseLine = 0;
                 var text = string.Format($"{{0:D{SlicerFile.LayerDigits}}}/{{1}}",
@@ -364,7 +328,7 @@ public sealed class OperationLayerExportGif : Operation
                 finalSize = matRoi.Size;
             }
 
-            layerBuffer[i] = matRoi.GetPngByes();
+            layerBuffer[i] = matRoi.GetPngBytes();
 
             progress.LockAndIncrement();
         });
@@ -401,11 +365,11 @@ public sealed class OperationLayerExportGif : Operation
             try
             {
                 gif.Frames.RemoveFrame(0);
-                gif.SaveAsGif(_filePath);
+                gif.SaveAsGif(FilePath);
             }
             catch (Exception)
             {
-                File.Delete(_filePath);
+                File.Delete(FilePath);
             }
             finally
             {
@@ -424,7 +388,7 @@ public sealed class OperationLayerExportGif : Operation
 
     private bool Equals(OperationLayerExportGif other)
     {
-        return _clipByVolumeBounds == other._clipByVolumeBounds && _renderLayerCount == other._renderLayerCount && _fps == other._fps && _skip == other._skip && _scale == other._scale && _rotateDirection == other._rotateDirection && _flipDirection == other._flipDirection && _repeats == other._repeats;
+        return ClipByVolumeBounds == other.ClipByVolumeBounds && RenderLayerCount == other.RenderLayerCount && FPS == other.FPS && Skip == other.Skip && _scale == other._scale && RotateDirection == other.RotateDirection && FlipDirection == other.FlipDirection && Repeats == other.Repeats;
     }
 
     public override bool Equals(object? obj)

@@ -6,28 +6,20 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using System;
 using System.Drawing;
 using System.Xml.Serialization;
-using UVtools.Core.Objects;
 
 namespace UVtools.Core.PixelEditor;
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 #pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
-public abstract class PixelOperation : BindableBase, IEquatable<PixelOperation>
+public abstract partial class PixelOperation : ObservableObject, IEquatable<PixelOperation>
 #pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
-    private string? _profileName;
-    private bool _profileIsDefault;
-
-    private protected LineType _lineType = LineType.AntiAlias;
-    private protected byte _pixelBrightness = 255;
-    private protected uint _layersBelow;
-    private protected uint _layersAbove;
-
     public enum PixelOperationType : byte
     {
         Drawing,
@@ -37,17 +29,11 @@ public abstract class PixelOperation : BindableBase, IEquatable<PixelOperation>
         DrainHole,
     }
 
-    public string? ProfileName
-    {
-        get => _profileName;
-        set => RaiseAndSetIfChanged(ref _profileName, value);
-    }
+    [ObservableProperty]
+    public partial string? ProfileName { get; set; }
 
-    public bool ProfileIsDefault
-    {
-        get => _profileIsDefault;
-        set => RaiseAndSetIfChanged(ref _profileIsDefault, value);
-    }
+    [ObservableProperty]
+    public partial bool ProfileIsDefault { get; set; }
 
     /// <summary>
     /// Gets the <see cref="PixelOperationType"/>
@@ -69,11 +55,8 @@ public abstract class PixelOperation : BindableBase, IEquatable<PixelOperation>
     /// <summary>
     /// Gets the <see cref="LineType"/> for the draw operation
     /// </summary>
-    public LineType LineType
-    {
-        get => _lineType;
-        set => RaiseAndSetIfChanged(ref _lineType, value);
-    }
+    [ObservableProperty]
+    public partial LineType LineType { get; set; } = LineType.AntiAlias;
 
     public LineType[] LineTypes =>
     [
@@ -82,29 +65,17 @@ public abstract class PixelOperation : BindableBase, IEquatable<PixelOperation>
         LineType.AntiAlias
     ];
 
-    public byte PixelBrightness
-    {
-        get => _pixelBrightness;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _pixelBrightness, value)) return;
-            RaisePropertyChanged(nameof(PixelBrightnessPercent));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PixelBrightnessPercent))]
+    public partial byte PixelBrightness { get; set; } = byte.MaxValue;
 
-    public decimal PixelBrightnessPercent => Math.Round(_pixelBrightness * 100M / 255M, 2, MidpointRounding.AwayFromZero);
+    public decimal PixelBrightnessPercent => Math.Round(PixelBrightness * 100M / 255M, 2, MidpointRounding.AwayFromZero);
 
-    public uint LayersBelow
-    {
-        get => _layersBelow;
-        set => RaiseAndSetIfChanged(ref _layersBelow, value);
-    }
+    [ObservableProperty]
+    public partial uint LayersBelow { get; set; }
 
-    public uint LayersAbove
-    {
-        get => _layersAbove;
-        set => RaiseAndSetIfChanged(ref _layersAbove, value);
-    }
+    [ObservableProperty]
+    public partial uint LayersAbove { get; set; }
 
     /// <summary>
     /// Gets the total size of the operation
@@ -119,15 +90,15 @@ public abstract class PixelOperation : BindableBase, IEquatable<PixelOperation>
         Location = location;
         LayerIndex = layerIndex;
         LineType = lineType;
-        if (pixelBrightness > -1) _pixelBrightness = (byte) pixelBrightness;
+        if (pixelBrightness > -1) PixelBrightness = (byte) pixelBrightness;
     }
 
     public virtual void CopyTo(PixelOperation operation)
     {
-        operation.LineType = _lineType;
-        operation.PixelBrightness = _pixelBrightness;
-        operation.LayersBelow = _layersBelow;
-        operation.LayersAbove = _layersAbove;
+        operation.LineType = LineType;
+        operation.PixelBrightness = PixelBrightness;
+        operation.LayersBelow = LayersBelow;
+        operation.LayersAbove = LayersAbove;
 
         operation.LayerIndex = LayerIndex;
         operation.Location = Location;
@@ -148,7 +119,7 @@ public abstract class PixelOperation : BindableBase, IEquatable<PixelOperation>
     {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
-        return _lineType == other._lineType && _pixelBrightness == other._pixelBrightness && _layersBelow == other._layersBelow && _layersAbove == other._layersAbove && OperationType == other.OperationType && LayerIndex == other.LayerIndex && Location.Equals(other.Location) && Size.Equals(other.Size);
+        return LineType == other.LineType && PixelBrightness == other.PixelBrightness && LayersBelow == other.LayersBelow && LayersAbove == other.LayersAbove && OperationType == other.OperationType && LayerIndex == other.LayerIndex && Location.Equals(other.Location) && Size.Equals(other.Size);
     }
 
     public override bool Equals(object? obj)

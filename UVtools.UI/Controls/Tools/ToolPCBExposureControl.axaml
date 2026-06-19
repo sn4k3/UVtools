@@ -92,8 +92,7 @@
                                            Minimum="0.01"
                                            Maximum="100"
                                            FormatString="F2"
-                                           Value="{Binding SizeScale}">
-                            </NumericUpDown>
+                                           Value="{Binding SizeScale}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn>
 

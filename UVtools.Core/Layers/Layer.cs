@@ -6,16 +6,19 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO.Compression;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Xml.Serialization;
-using UVtools.Core.EmguCV;
+using EmguExtensions;
+using UVtools.Core.Compressors;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
@@ -37,6 +40,8 @@ public enum LayerCompressionCodec : byte
     Brotli,
     [Description("LZ4: Compression=Low | Speed=VeryFast (Use with high RAM)")]
     Lz4,
+    [Description("Zstd: Compression=Good | Speed=Fast (Optimal)")]
+    Zstd,
     //[Description("None: Compression=None | Speed=Fastest (Your soul belongs to RAM)")]
     //None
 
@@ -57,7 +62,7 @@ public enum LayerCompressionLevel : byte
 /// <summary>
 /// Represent a Layer
 /// </summary>
-public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
+public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uint>
 {
     #region Constants
     public const byte HeightPrecision = 3;
@@ -74,13 +79,9 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 
     public Lock Mutex = new();
     private LayerCompressionCodec _compressionCodec;
+    private LayerCompressionLevel _compressionLevel;
     private CMat _compressedMat;
     private uint _nonZeroPixelCount;
-    private Rectangle _boundingRectangle = Rectangle.Empty;
-    private uint _firstPixelIndex;
-    private uint _lastPixelIndex;
-    private Point _firstPixelPosition;
-    private Point _lastPixelPosition;
     private bool _isModified;
     private uint _index;
     private float _positionZ;
@@ -101,9 +102,6 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     private float _retractSpeed2 = FileFormat.DefaultRetractSpeed2;
     private float _retractAcceleration2;
     private byte _lightPWM = FileFormat.DefaultLightPWM;
-    private bool _pause;
-    private bool _changeResin;
-
     private float _materialMilliliters;
     private EmguContours? _contours;
 
@@ -139,11 +137,11 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         get => _nonZeroPixelCount;
         internal set
         {
-            if (!RaiseAndSetIfChanged(ref _nonZeroPixelCount, value)) return;
-            RaisePropertyChanged(nameof(NonZeroPixelRatio));
-            RaisePropertyChanged(nameof(NonZeroPixelPercentage));
-            RaisePropertyChanged(nameof(Area));
-            RaisePropertyChanged(nameof(Volume));
+            if (!SetProperty(ref _nonZeroPixelCount, value)) return;
+            OnPropertyChanged(nameof(NonZeroPixelRatio));
+            OnPropertyChanged(nameof(NonZeroPixelPercentage));
+            OnPropertyChanged(nameof(Area));
+            OnPropertyChanged(nameof(Volume));
             MaterialMilliliters = -1; // Recalculate
         }
     }
@@ -199,15 +197,9 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Gets the bounding rectangle for the image area
     /// </summary>
-    public Rectangle BoundingRectangle
-    {
-        get => _boundingRectangle;
-        internal set
-        {
-            if (!RaiseAndSetIfChanged(ref _boundingRectangle, value)) return;
-            RaisePropertyChanged(nameof(BoundingRectangleMillimeters));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BoundingRectangleMillimeters))]
+    public partial Rectangle BoundingRectangle { get; internal set; } = Rectangle.Empty;
 
     /// <summary>
     /// Gets the bounding rectangle for the image area in millimeters
@@ -218,68 +210,56 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         {
             var pixelSize = SlicerFile.PixelSize;
             return new RectangleF(
-                MathF.Round(_boundingRectangle.X * pixelSize.Width, 2),
-                MathF.Round(_boundingRectangle.Y * pixelSize.Height, 2),
-                MathF.Round(_boundingRectangle.Width * pixelSize.Width, 2),
-                MathF.Round(_boundingRectangle.Height * pixelSize.Height, 2));
+                MathF.Round(BoundingRectangle.X * pixelSize.Width, 2),
+                MathF.Round(BoundingRectangle.Y * pixelSize.Height, 2),
+                MathF.Round(BoundingRectangle.Width * pixelSize.Width, 2),
+                MathF.Round(BoundingRectangle.Height * pixelSize.Height, 2));
         }
     }
 
     /// <summary>
     /// Gets the first pixel index on the <see cref="BoundingRectangle"/>
     /// </summary>
-    public uint BoundingRectangleFirstPixelIndex => (uint)(_boundingRectangle.Y * ResolutionX + _boundingRectangle.X);
+    public uint BoundingRectangleFirstPixelIndex => (uint)(BoundingRectangle.Y * ResolutionX + BoundingRectangle.X);
 
     /// <summary>
     /// Gets the last pixel index on the <see cref="BoundingRectangle"/>
     /// </summary>
-    public uint BoundingRectangleLastPixelIndex => (uint)(_boundingRectangle.Bottom * ResolutionX + _boundingRectangle.Right);
+    public uint BoundingRectangleLastPixelIndex => (uint)(BoundingRectangle.Bottom * ResolutionX + BoundingRectangle.Right);
 
     /// <summary>
     /// Gets the first pixel <see cref="Point"/> on the <see cref="BoundingRectangle"/>
     /// </summary>
-    public Point BoundingRectangleFirstPixelPosition => _boundingRectangle.Location;
+    public Point BoundingRectangleFirstPixelPosition => BoundingRectangle.Location;
 
     /// <summary>
     /// Gets the last pixel <see cref="Point"/> on the <see cref="BoundingRectangle"/>
     /// </summary>
-    public Point BoundingRectangleLastPixelPosition => new (_boundingRectangle.Right, _boundingRectangle.Bottom);
+    public Point BoundingRectangleLastPixelPosition => new (BoundingRectangle.Right, BoundingRectangle.Bottom);
 
     /// <summary>
     /// Gets the first pixel index on this layer
     /// </summary>
-    public uint FirstPixelIndex
-    {
-        get => _firstPixelIndex;
-        private set => RaiseAndSetIfChanged(ref _firstPixelIndex, value);
-    }
+    [ObservableProperty]
+    public partial uint FirstPixelIndex { get; private set; }
 
     /// <summary>
     /// Gets the last pixel index on this layer
     /// </summary>
-    public uint LastPixelIndex
-    {
-        get => _lastPixelIndex;
-        private set => RaiseAndSetIfChanged(ref _lastPixelIndex, value);
-    }
+    [ObservableProperty]
+    public partial uint LastPixelIndex { get; private set; }
 
     /// <summary>
     /// Gets the first pixel <see cref="Point"/> on this layer
     /// </summary>
-    public Point FirstPixelPosition
-    {
-        get => _firstPixelPosition;
-        private set => RaiseAndSetIfChanged(ref _firstPixelPosition, value);
-    }
+    [ObservableProperty]
+    public partial Point FirstPixelPosition { get; private set; }
 
     /// <summary>
     /// Gets the last pixel <see cref="Point"/> on this layer
     /// </summary>
-    public Point LastPixelPosition
-    {
-        get => _lastPixelPosition;
-        private set => RaiseAndSetIfChanged(ref _lastPixelPosition, value);
-    }
+    [ObservableProperty]
+    public partial Point LastPixelPosition { get; private set; }
 
 
     /// <summary>
@@ -444,7 +424,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Gets the layer hash
     /// </summary>
-    public string Hash => _compressedMat.Hash;
+    public ulong Hash => _compressedMat.Hash;
 
     /// <summary>
     /// Gets the layer index
@@ -454,8 +434,8 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         get => _index;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _index, value)) return;
-            RaisePropertyChanged(nameof(Number));
+            if(!SetProperty(ref _index, value)) return;
+            OnPropertyChanged(nameof(Number));
         }
     }
 
@@ -473,9 +453,9 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         set
         {
             //if (value < 0) throw new ArgumentOutOfRangeException(nameof(PositionZ), "Value can't be negative");
-            if (!RaiseAndSetIfChanged(ref _positionZ, RoundHeight(value))) return;
-            RaisePropertyChanged(nameof(RelativePositionZ));
-            RaisePropertyChanged(nameof(LayerHeight));
+            if (!SetProperty(ref _positionZ, RoundHeight(value))) return;
+            OnPropertyChanged(nameof(RelativePositionZ));
+            OnPropertyChanged(nameof(LayerHeight));
             //MaterialMilliliters = -1; // Recalculate
         }
     }
@@ -506,7 +486,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         {
             value = MathF.Round(value, 2);
             if (value < 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomWaitTimeBeforeCure, SlicerFile.WaitTimeBeforeCure);
-            if (!RaiseAndSetIfChanged(ref _waitTimeBeforeCure, value)) return;
+            if (!SetProperty(ref _waitTimeBeforeCure, value)) return;
             SlicerFile.UpdatePrintTimeQueued();
         }
     }
@@ -521,7 +501,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         {
             value = MathF.Round(value, 2);
             if (value < 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
-            if(!RaiseAndSetIfChanged(ref _exposureTime, value)) return;
+            if(!SetProperty(ref _exposureTime, value)) return;
             SlicerFile.UpdatePrintTimeQueued();
         }
     }
@@ -538,7 +518,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         {
             value = MathF.Round(value, 2);
             if (value < 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomWaitTimeAfterCure, SlicerFile.WaitTimeAfterCure);
-            if (!RaiseAndSetIfChanged(ref _waitTimeAfterCure, value)) return;
+            if (!SetProperty(ref _waitTimeAfterCure, value)) return;
             SlicerFile.UpdatePrintTimeQueued();
         }
     }
@@ -553,7 +533,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         {
             value = MathF.Round(value, 2);
             if (value < 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
-            if(!RaiseAndSetIfChanged(ref _lightOffDelay, value)) return;
+            if(!SetProperty(ref _lightOffDelay, value)) return;
             SlicerFile.UpdatePrintTimeQueued();
         }
     }
@@ -582,8 +562,8 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         {
             value = MathF.Round(value, 2);
             if (value < 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
-            if(!RaiseAndSetIfChanged(ref _liftHeight, value)) return;
-            RaisePropertyChanged(nameof(LiftHeightTotal));
+            if(!SetProperty(ref _liftHeight, value)) return;
+            OnPropertyChanged(nameof(LiftHeightTotal));
             RetractHeight2 = _retractHeight2; // Sanitize
             SlicerFile.UpdatePrintTimeQueued();
         }
@@ -599,7 +579,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         {
             value = MathF.Round(value, 2);
             if (value <= 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
-            if(!RaiseAndSetIfChanged(ref _liftSpeed, value)) return;
+            if(!SetProperty(ref _liftSpeed, value)) return;
             SlicerFile.UpdatePrintTimeQueued();
         }
     }
@@ -610,7 +590,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public float LiftAcceleration
     {
         get => _liftAcceleration;
-        set => RaiseAndSetIfChanged(ref _liftAcceleration, MathF.Round(Math.Max(value, 0), 2));
+        set => SetProperty(ref _liftAcceleration, MathF.Round(Math.Max(value, 0), 2));
     }
 
     /// <summary>
@@ -623,8 +603,8 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         {
             value = MathF.Round(value, 2);
             if (value < 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftHeight2, SlicerFile.LiftHeight2);
-            if (!RaiseAndSetIfChanged(ref _liftHeight2, value)) return;
-            RaisePropertyChanged(nameof(LiftHeightTotal));
+            if (!SetProperty(ref _liftHeight2, value)) return;
+            OnPropertyChanged(nameof(LiftHeightTotal));
             RetractHeight2 = _retractHeight2; // Sanitize
             SlicerFile.UpdatePrintTimeQueued();
         }
@@ -640,7 +620,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         {
             value = MathF.Round(value, 2);
             if (value <= 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftSpeed2, SlicerFile.LiftSpeed2);
-            if (!RaiseAndSetIfChanged(ref _liftSpeed2, value)) return;
+            if (!SetProperty(ref _liftSpeed2, value)) return;
             SlicerFile.UpdatePrintTimeQueued();
         }
     }
@@ -651,7 +631,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public float LiftAcceleration2
     {
         get => _liftAcceleration2;
-        set => RaiseAndSetIfChanged(ref _liftAcceleration2, MathF.Round(Math.Max(value, 0), 2));
+        set => SetProperty(ref _liftAcceleration2, MathF.Round(Math.Max(value, 0), 2));
     }
 
     public float WaitTimeAfterLift
@@ -661,7 +641,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         {
             value = MathF.Round(value, 2);
             if (value < 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomWaitTimeAfterLift, SlicerFile.WaitTimeAfterLift);
-            if (!RaiseAndSetIfChanged(ref _waitTimeAfterLift, value)) return;
+            if (!SetProperty(ref _waitTimeAfterLift, value)) return;
             SlicerFile.UpdatePrintTimeQueued();
         }
     }
@@ -686,7 +666,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         {
             value = MathF.Round(value, 2);
             if (value <= 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomRetractSpeed, SlicerFile.RetractSpeed);
-            if (!RaiseAndSetIfChanged(ref _retractSpeed, value)) return;
+            if (!SetProperty(ref _retractSpeed, value)) return;
             SlicerFile.UpdatePrintTimeQueued();
         }
     }
@@ -697,7 +677,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public float RetractAcceleration
     {
         get => _retractAcceleration;
-        set => RaiseAndSetIfChanged(ref _retractAcceleration, MathF.Round(Math.Max(value, 0), 2));
+        set => SetProperty(ref _retractAcceleration, MathF.Round(Math.Max(value, 0), 2));
     }
 
     /// <summary>
@@ -709,9 +689,9 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         set
         {
             value = Math.Clamp(MathF.Round(value, 2), 0, RetractHeightTotal);
-            RaiseAndSetIfChanged(ref _retractHeight2, value);
-            RaisePropertyChanged(nameof(RetractHeight));
-            RaisePropertyChanged(nameof(RetractHeightTotal));
+            SetProperty(ref _retractHeight2, value);
+            OnPropertyChanged(nameof(RetractHeight));
+            OnPropertyChanged(nameof(RetractHeightTotal));
             SlicerFile.UpdatePrintTimeQueued();
         }
     }
@@ -726,7 +706,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         {
             value = MathF.Round(value, 2);
             if (value <= 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomRetractSpeed2, SlicerFile.RetractSpeed2);
-            if (!RaiseAndSetIfChanged(ref _retractSpeed2, value)) return;
+            if (!SetProperty(ref _retractSpeed2, value)) return;
             SlicerFile.UpdatePrintTimeQueued();
         }
     }
@@ -737,7 +717,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public float RetractAcceleration2
     {
         get => _retractAcceleration2;
-        set => RaiseAndSetIfChanged(ref _retractAcceleration2, MathF.Round(Math.Max(value, 0), 2));
+        set => SetProperty(ref _retractAcceleration2, MathF.Round(Math.Max(value, 0), 2));
     }
 
     /// <summary>
@@ -749,26 +729,20 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         set =>
             //if (value == 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
             //if (value == 0) value = FileFormat.DefaultLightPWM;
-            RaiseAndSetIfChanged(ref _lightPWM, value);
+            SetProperty(ref _lightPWM, value);
     }
 
     /// <summary>
     /// Gets or sets if this layer should be paused before printing
     /// </summary>
-    public bool Pause
-    {
-        get => _pause;
-        set => RaiseAndSetIfChanged(ref _pause, value);
-    }
+    [ObservableProperty]
+    public partial bool Pause { get; set; }
 
     /// <summary>
     /// Gets or sets if printer should be paused to change resin before printing this layer
     /// </summary>
-    public bool ChangeResin
-    {
-        get => _changeResin;
-        set => RaiseAndSetIfChanged(ref _changeResin, value);
-    }
+    [ObservableProperty]
+    public partial bool ChangeResin { get; set; }
 
     /// <summary>
     /// Gets the minimum used speed in mm/min
@@ -852,8 +826,8 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                 value = MathF.Round(GetVolume() / 1000f, 4);
             }
 
-            if(!RaiseAndSetIfChanged(ref _materialMilliliters, value)) return;
-            RaisePropertyChanged(nameof(MaterialMillilitersPercent));
+            if(!SetProperty(ref _materialMilliliters, value)) return;
+            OnPropertyChanged(nameof(MaterialMillilitersPercent));
             SlicerFile.MaterialMilliliters = -1; // Recalculate global
             //ParentLayerManager.MaterialMillilitersTimer.Stop();
             //if(!ParentLayerManager.MaterialMillilitersTimer.Enabled)
@@ -904,17 +878,29 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         _contours = null;
     }
 
-    private static MatCompressor LayerCompressionCodecToMatCompressor(LayerCompressionCodec compressionCodec)
+    public static MatCompressor LayerCompressionCodecToMatCompressor(LayerCompressionCodec compressionCodec)
     {
         return compressionCodec switch
         {
-            LayerCompressionCodec.Png => MatCompressorPngGreyScale.Instance,
+            LayerCompressionCodec.Png => MatCompressorPng.Instance,
             LayerCompressionCodec.GZip => MatCompressorGZip.Instance,
             LayerCompressionCodec.Deflate => MatCompressorDeflate.Instance,
             LayerCompressionCodec.Brotli => MatCompressorBrotli.Instance,
             LayerCompressionCodec.Lz4 => MatCompressorLz4.Instance,
+            LayerCompressionCodec.Zstd => MatCompressorZstd.Instance,
             //LayerCompressionCodec.None => MatCompressorNone.Instance,
             _ => throw new ArgumentOutOfRangeException(nameof(compressionCodec), compressionCodec, null)
+        };
+    }
+
+    public static CompressionLevel LayerCompressionLevelToMatCompressionLevel(LayerCompressionLevel compressionLevel)
+    {
+        return compressionLevel switch
+        {
+            LayerCompressionLevel.Lowest => System.IO.Compression.CompressionLevel.Fastest,
+            LayerCompressionLevel.Optimal => System.IO.Compression.CompressionLevel.Optimal,
+            LayerCompressionLevel.Highest => System.IO.Compression.CompressionLevel.SmallestSize,
+            _ => throw new ArgumentOutOfRangeException(nameof(compressionLevel), compressionLevel, null)
         };
     }
 
@@ -927,7 +913,18 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         set
         {
             CompressedMat.Compressor = LayerCompressionCodecToMatCompressor(value);
-            RaiseAndSetIfChanged(ref _compressionCodec, value);
+            SetProperty(ref _compressionCodec, value);
+        }
+    }
+
+    public LayerCompressionLevel CompressionLevel
+    {
+        get => _compressionLevel;
+        set
+        {
+            CompressedMat.CompressionLevel = LayerCompressionLevelToMatCompressionLevel(value);
+
+            SetProperty(ref _compressionLevel, value);
         }
     }
 
@@ -938,9 +935,9 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         {
             _compressedMat = value;
             InvalidateImage();
-            RaisePropertyChanged();
-            RaisePropertyChanged(nameof(CompressedPngBytes));
-            RaisePropertyChanged(nameof(HaveImage));
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(CompressedPngBytes));
+            OnPropertyChanged(nameof(HaveImage));
         }
     }
 
@@ -952,7 +949,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                 (_compressionCodec == LayerCompressionCodec.Png && _compressedMat.Roi.IsEmpty)) return _compressedMat.CompressedBytes;
 
             using var mat = LayerMat;
-            return mat.GetPngByes();
+            return mat.GetPngBytes();
         }
         set
         {
@@ -996,41 +993,40 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             }
             else
             {
-                using var matRoi = new MatRoi(value, _boundingRectangle);
+                using var matRoi = new MatRoi(value, BoundingRectangle);
                 _compressedMat.Compress(matRoi);
             }
 
             InvalidateImage();
-            RaisePropertyChanged();
-            RaisePropertyChanged(nameof(CompressedPngBytes));
-            RaisePropertyChanged(nameof(HaveImage));
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(CompressedPngBytes));
+            OnPropertyChanged(nameof(HaveImage));
         }
     }
 
     /// <summary>
     /// Gets the layer mat with roi of it bounding rectangle
     /// </summary>
-    public MatRoi LayerMatBoundingRectangle => new(LayerMat, BoundingRectangle, true);
+    public MatRoi LayerMatBoundingRectangle => new(LayerMat, BoundingRectangle, false);
 
     /// <summary>
     /// Gets the layer mat with roi of model bounding rectangle
     /// </summary>
-    public MatRoi LayerMatModelBoundingRectangle => new(LayerMat, SlicerFile.BoundingRectangle, true);
+    public MatRoi LayerMatModelBoundingRectangle => new(LayerMat, SlicerFile.BoundingRectangle, false);
 
     /// <summary>
     /// Gets the layer mat with a specified roi
     /// </summary>
     /// <param name="roi">Region of interest</param>
-    /// <param name="emptyRoiBehaviour"></param>
     /// <returns></returns>
-    public MatRoi GetLayerMat(Rectangle roi, EmptyRoiBehaviour emptyRoiBehaviour = EmptyRoiBehaviour.Continue) => new(LayerMat, roi, emptyRoiBehaviour, true);
+    public MatRoi GetLayerMat(Rectangle roi) => new(LayerMat, roi, false);
 
     /// <summary>
     /// Gets the layer mat with bounding rectangle mat
     /// </summary>
     /// <param name="margin">Margin from bounding rectangle</param>
     /// <returns></returns>
-    public MatRoi GetLayerMatBoundingRectangle(int margin) => new(LayerMat, GetBoundingRectangle(margin), true);
+    public MatRoi GetLayerMatBoundingRectangle(int margin) => new(LayerMat, GetBoundingRectangle(margin), false);
 
     /// <summary>
     /// Gets the layer mat with bounding rectangle mat
@@ -1038,14 +1034,14 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <param name="marginX">X margin from bounding rectangle</param>
     /// <param name="marginY">Y margin from bounding rectangle</param>
     /// <returns></returns>
-    public MatRoi GetLayerMatBoundingRectangle(int marginX, int marginY) => new(LayerMat, GetBoundingRectangle(marginX, marginY), true);
+    public MatRoi GetLayerMatBoundingRectangle(int marginX, int marginY) => new(LayerMat, GetBoundingRectangle(marginX, marginY), false);
 
     /// <summary>
     /// Gets the layer mat with bounding rectangle mat
     /// </summary>
     /// <param name="margin">Margin from bounding rectangle</param>
     /// <returns></returns>
-    public MatRoi GetLayerMatBoundingRectangle(Size margin) => new(LayerMat, GetBoundingRectangle(margin), true);
+    public MatRoi GetLayerMatBoundingRectangle(Size margin) => new(LayerMat, GetBoundingRectangle(margin), false);
 
     /// <summary>
     /// Gets a new Brg image instance
@@ -1074,7 +1070,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public bool IsModified
     {
         get => _isModified;
-        set => RaiseAndSetIfChanged(ref _isModified, value);
+        set => SetProperty(ref _isModified, value);
     }
 
     /// <summary>
@@ -1343,7 +1339,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public Mat CreateMat(bool initMat = true)
     {
         return initMat
-            ? EmguExtensions.InitMat(Resolution)
+            ? EmguCvExtensions.InitMat(Resolution)
             : new Mat(Resolution, DepthType.Cv8U, 1);
     }
 
@@ -1545,7 +1541,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     {
         if (_nonZeroPixelCount > 0 && !reCalculate)
         {
-            return _boundingRectangle;
+            return BoundingRectangle;
         }
         bool needDispose = false;
         if (mat is null)
@@ -1563,18 +1559,18 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         //NonZeroPixelCount = (uint)CvInvoke.CountNonZero(mat);
         //BoundingRectangle = _nonZeroPixelCount > 0 ? CvInvoke.BoundingRectangle(mat) : Rectangle.Empty;
         BoundingRectangle = CvInvoke.BoundingRectangle(mat);
-        if (_boundingRectangle.IsEmpty)
+        if (BoundingRectangle.IsEmpty)
         {
             NonZeroPixelCount = 0;
         }
         else
         {
-            using var roiMat = mat.Roi(_boundingRectangle);
+            using var roiMat = mat.Roi(BoundingRectangle);
             NonZeroPixelCount = (uint)CvInvoke.CountNonZero(roiMat);
 
             // Compute first and last pixel
-            var span = roiMat.GetRowByteReadOnlySpan(0);
-            var step = mat.GetRealStep();
+            var span = roiMat.GetReadOnlyRowSpanOfBytes(0);
+            var step = mat.RealStep;
             var yOffset = step * BoundingRectangle.Y;
             for (var i = 0; i < span.Length; i++)
             {
@@ -1585,7 +1581,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                 break;
             }
 
-            span = roiMat.GetRowByteReadOnlySpan(roiMat.Height - 1);
+            span = roiMat.GetReadOnlyRowSpanOfBytes(roiMat.Height - 1);
             yOffset = step * BoundingRectangle.Bottom;
             for (var i = span.Length - 1; i >= 0; i--)
             {
@@ -1792,12 +1788,12 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     {
         _compressedMat.CopyTo(layer._compressedMat);
         layer._contours = _contours?.Clone();
-        layer.BoundingRectangle = _boundingRectangle;
+        layer.BoundingRectangle = BoundingRectangle;
         layer.NonZeroPixelCount = _nonZeroPixelCount;
-        layer.FirstPixelIndex = _firstPixelIndex;
-        layer.FirstPixelPosition = _firstPixelPosition;
-        layer.LastPixelIndex = _lastPixelIndex;
-        layer.LastPixelPosition = _lastPixelPosition;
+        layer.FirstPixelIndex = FirstPixelIndex;
+        layer.FirstPixelPosition = FirstPixelPosition;
+        layer.LastPixelIndex = LastPixelIndex;
+        layer.LastPixelPosition = LastPixelPosition;
         layer.InvalidateImage();
     }
 

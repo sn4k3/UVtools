@@ -16,6 +16,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
@@ -25,12 +26,16 @@ namespace UVtools.Core.FileFormats;
 public sealed class CrealityCXDLPv1File : FileFormat
 {
     #region Constants
+
     private const byte HEADER_SIZE = 9; // CXSW3DV2
     private const string HEADER_VALUE = "CXSW3DV2";
+
     #endregion
 
     #region Sub Classes
+
     #region Header
+
     public sealed class Header
     {
         /// <summary>
@@ -79,13 +84,15 @@ public sealed class CrealityCXDLPv1File : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(HeaderSize)}: {HeaderSize}, {nameof(HeaderValue)}: {HeaderValue}, {nameof(LayerCount)}: {LayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}";
+            return
+                $"{nameof(HeaderSize)}: {HeaderSize}, {nameof(HeaderValue)}: {HeaderValue}, {nameof(LayerCount)}: {LayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}";
         }
     }
 
     #endregion
 
     #region SlicerInfo
+
     // Address: 363407
     public sealed class SlicerInfo
     {
@@ -162,9 +169,11 @@ public sealed class CrealityCXDLPv1File : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(DisplayWidthLength)}: {DisplayWidthLength}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeightLength)}: {DisplayHeightLength}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(LayerHeightLength)}: {LayerHeightLength}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LightPWM)}: {LightPWM}";
+            return
+                $"{nameof(DisplayWidthLength)}: {DisplayWidthLength}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeightLength)}: {DisplayHeightLength}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(LayerHeightLength)}: {LayerHeightLength}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LightPWM)}: {LightPWM}";
         }
     }
+
     #endregion
 
     #region Layer Def
@@ -195,12 +204,23 @@ public sealed class CrealityCXDLPv1File : FileFormat
             return bytes;
         }
 
-        [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public uint Unknown { get; set; }
-        [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public uint LineCount { get; set; }
-        [FieldOrder(2)] [FieldCount(nameof(LineCount))] public LayerLine[] Lines { get; set; } = [];
+        [FieldOrder(0)]
+        [FieldEndianness(Endianness.Big)]
+        public uint Unknown { get; set; }
+
+        [FieldOrder(1)]
+        [FieldEndianness(Endianness.Big)]
+        public uint LineCount { get; set; }
+
+        [FieldOrder(2)]
+        [FieldCount(nameof(LineCount))]
+        public LayerLine[] Lines { get; set; } = [];
+
         [FieldOrder(3)] public PageBreak PageBreak { get; set; } = new();
 
-        public LayerDef() { }
+        public LayerDef()
+        {
+        }
 
         public LayerDef(uint unknown, uint lineCount, LayerLine[] lines)
         {
@@ -213,7 +233,11 @@ public sealed class CrealityCXDLPv1File : FileFormat
     public sealed class LayerLine
     {
         public const byte CoordinateCount = 5;
-        [FieldOrder(0)] [FieldCount(CoordinateCount)] public byte[] Coordinates { get; set; } = new byte[CoordinateCount];
+
+        [FieldOrder(0)]
+        [FieldCount(CoordinateCount)]
+        public byte[] Coordinates { get; set; } = new byte[CoordinateCount];
+
         //[FieldOrder(0)] [FieldEndianness(Endianness.Big)] [FieldBitLength(13)] public ushort StartY { get; set; }
         //[FieldOrder(1)] [FieldEndianness(Endianness.Big)] [FieldBitLength(13)] public ushort EndY { get; set; }
         //[FieldOrder(2)] [FieldEndianness(Endianness.Big)] [FieldBitLength(14)] public ushort StartX { get; set; }
@@ -221,7 +245,9 @@ public sealed class CrealityCXDLPv1File : FileFormat
 
         [Ignore] public ushort StartY => (ushort)((((Coordinates[0] << 8) + Coordinates[1]) >> 3) & 0x1FFF); // 13 bits
 
-        [Ignore] public ushort EndY => (ushort)((((Coordinates[1] << 16) + (Coordinates[2] << 8) + Coordinates[3]) >> 6) & 0x1FFF); // 13 bits
+        [Ignore]
+        public ushort EndY =>
+            (ushort)((((Coordinates[1] << 16) + (Coordinates[2] << 8) + Coordinates[3]) >> 6) & 0x1FFF); // 13 bits
 
         [Ignore] public ushort StartX => (ushort)(((Coordinates[3] << 8) + Coordinates[4]) & 0x3FFF); // 14 bits
         [Ignore] public ushort Length => (ushort)(EndY - StartY);
@@ -238,7 +264,9 @@ public sealed class CrealityCXDLPv1File : FileFormat
             return bytes;
         }
 
-        public LayerLine() { }
+        public LayerLine()
+        {
+        }
 
         public LayerLine(ushort startY, ushort endY, ushort startX, byte gray)
         {
@@ -255,7 +283,8 @@ public sealed class CrealityCXDLPv1File : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(Gray)}: {Gray}, {nameof(StartY)}: {StartY}, {nameof(EndY)}: {EndY}, {nameof(StartX)}: {StartX}, {nameof(Length)}: {Length}";
+            return
+                $"{nameof(Gray)}: {Gray}, {nameof(StartY)}: {StartY}, {nameof(EndY)}: {EndY}, {nameof(StartX)}: {StartX}, {nameof(Length)}: {Length}";
         }
     }
 
@@ -270,6 +299,7 @@ public sealed class CrealityCXDLPv1File : FileFormat
     #endregion
 
     #region Footer
+
     public sealed class Footer
     {
         /// <summary>
@@ -299,6 +329,7 @@ public sealed class CrealityCXDLPv1File : FileFormat
             }
         }
     }
+
     #endregion
 
     #endregion
@@ -310,6 +341,8 @@ public sealed class CrealityCXDLPv1File : FileFormat
     public Footer FooterSettings { get; private set; } = new();
 
     public override FileFormatType FileType => FileFormatType.Binary;
+
+    public override Endianness FileFormatEndianness => Endianness.Big;
 
     public override string ConvertMenuGroup => "Creality CXDLP";
 
@@ -469,6 +502,7 @@ public sealed class CrealityCXDLPv1File : FileFormat
     #endregion
 
     #region Constructors
+
     #endregion
 
     #region Methods
@@ -480,10 +514,12 @@ public sealed class CrealityCXDLPv1File : FileFormat
         {
             WaitTimeBeforeCure = 1;
         }
+
         if (BottomLiftHeight <= 0)
         {
             BottomLiftHeight = DefaultBottomLiftHeight;
         }
+
         if (LiftHeight <= 0)
         {
             LiftHeight = DefaultLiftHeight;
@@ -519,25 +555,28 @@ public sealed class CrealityCXDLPv1File : FileFormat
 
             if (encodeLength != previews[previewIndex].Length)
             {
-                throw new FileLoadException($"Preview encode incomplete encode, expected: {previews[previewIndex].Length}, encoded: {encodeLength}");
+                throw new FileLoadException(
+                    $"Preview encode incomplete encode, expected: {previews[previewIndex].Length}, encoded: {encodeLength}");
             }
         });
 
-        for (int i = 0; i < previews.Length; i++)
+        for (var i = 0; i < previews.Length; i++)
         {
             outputFile.WriteSerialize(previews[i]);
             outputFile.WriteBytes(pageBreak);
             previews[i] = null!;
         }
+
         outputFile.WriteSerialize(SlicerInfoSettings);
 
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
 
 
-        for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+        for (var layerIndex = 0; layerIndex < LayerCount; layerIndex++)
         {
             outputFile.WriteBytes(BitExtensions.ToBytesBigEndian(this[layerIndex].NonZeroPixelCount));
         }
+
         outputFile.WriteBytes(pageBreak);
 
         var layerBytes = new List<byte>[LayerCount];
@@ -549,21 +588,21 @@ public sealed class CrealityCXDLPv1File : FileFormat
                 var layer = this[layerIndex];
                 using (var mat = layer.LayerMat)
                 {
-                    var span = mat.GetDataByteReadOnlySpan();
+                    var span = mat.GetReadOnlySpanOfBytes();
 
                     layerBytes[layerIndex] = [];
 
                     uint lineCount = 0;
 
-                    for (int x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++)
+                    for (var x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++)
                     {
-                        int y = layer.BoundingRectangle.Y;
-                        int startY = -1;
+                        var y = layer.BoundingRectangle.Y;
+                        var startY = -1;
                         byte lastColor = 0;
                         for (; y < layer.BoundingRectangle.Bottom; y++)
                         {
-                            int pos = mat.GetPixelPos(x, y);
-                            byte color = span[pos];
+                            var pos = mat.GetPixelPos(x, y);
+                            var color = span[pos];
 
                             if (lastColor == color && color != 0) continue;
 
@@ -618,7 +657,7 @@ public sealed class CrealityCXDLPv1File : FileFormat
 
         Debug.WriteLine(HeaderSettings);
 
-        for (int i = 0; i < ThumbnailCountFileShouldHave; i++)
+        for (var i = 0; i < ThumbnailCountFileShouldHave; i++)
         {
             progress.PauseOrCancelIfRequested();
             var bytes = inputFile.ReadBytes(ThumbnailsOriginalSize[i].Area() * 2);
@@ -650,15 +689,14 @@ public sealed class CrealityCXDLPv1File : FileFormat
                     linesBytes[layerIndex] = GC.AllocateUninitializedArray<byte>((int)lineCount * 6);
                     inputFile.ReadBytes(linesBytes[layerIndex]);
                     inputFile.Seek(2, SeekOrigin.Current);
-
                 }
 
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    using (var mat = EmguExtensions.InitMat(Resolution))
+                    using (var mat = EmguCvExtensions.InitMat(Resolution))
                     {
-                        for (int i = 0; i < linesBytes[layerIndex].Length; i++)
+                        for (var i = 0; i < linesBytes[layerIndex].Length; i++)
                         {
                             LayerLine line = new()
                             {

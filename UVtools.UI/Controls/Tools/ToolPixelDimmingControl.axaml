@@ -74,8 +74,8 @@
         <TextBox
           Grid.Row="1" Grid.Column="0"
           AcceptsReturn="True"
-          Watermark="Pattern"
-          UseFloatingWatermark="True"
+          PlaceholderText="Pattern"
+          UseFloatingPlaceholder="True"
            TextWrapping="NoWrap"
           Text="{Binding Operation.PatternText}"/>
 
@@ -88,8 +88,8 @@
       <TextBox
           Grid.Row="1" Grid.Column="2"
           AcceptsReturn="True"
-          Watermark="Alternate pattern (Optional)"
-          UseFloatingWatermark="True"
+          PlaceholderText="Alternate pattern (Optional)"
+          UseFloatingPlaceholder="True"
            TextWrapping="NoWrap"
         Text="{Binding Operation.AlternatePatternText}"/>
 

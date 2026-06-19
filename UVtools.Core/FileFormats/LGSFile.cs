@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.Converters;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -25,13 +26,13 @@ namespace UVtools.Core.FileFormats;
 public sealed class LGSFile : FileFormat
 {
     #region Sub Classes
-        
+
     #region Header
 
     public class Header
     {
         public const string NameValue = "Longer3D";
-            
+
         /// <summary>
         /// Gets the model name
         /// </summary>
@@ -100,17 +101,17 @@ public sealed class LGSFile : FileFormat
 
         public void Encode(Mat? mat)
         {
-            mat ??= EmguExtensions.InitMat(new Size(ResolutionX, ResolutionY), 3);
+            mat ??= EmguCvExtensions.InitMat(new Size(ResolutionX, ResolutionY), 3);
 
             if (mat.Width != ResolutionX || mat.Height != ResolutionY)
             {
                 using var resizeMat = new Mat();
                 CvInvoke.Resize(mat, resizeMat, new Size(ResolutionX, ResolutionY));
-                PngBytes = resizeMat.GetPngByes();
+                PngBytes = resizeMat.GetPngBytes();
             }
             else
             {
-                PngBytes = mat.GetPngByes();
+                PngBytes = mat.GetPngBytes();
             }
         }
 
@@ -156,8 +157,7 @@ public sealed class LGSFile : FileFormat
                 CvInvoke.Rotate(mat, mat, RotateFlags.Rotate90Clockwise);
             }
 
-            var spanMat = mat.GetBytePointer();
-            var imageLength = mat.GetLength();
+            var spanMat = mat.GetReadOnlySpanOfBytes(0, 0);
 
             uint span = 0;
             byte lc = 0;
@@ -170,10 +170,10 @@ public sealed class LGSFile : FileFormat
                 rawData.AddRange(chunk.ToArray());
             }
 
-            for (int i = 0; i < imageLength; i++)
+            for (int i = 0; i < spanMat.Length; i++)
             {
                 byte c = (byte) (spanMat[i] & 0xf0);
-                    
+
                 if (c == lc)
                 {
                     span++;
@@ -203,10 +203,10 @@ public sealed class LGSFile : FileFormat
         {
             // lgs10/30 -------->
             // lgs120/4k From Y bottom to top Y
-            var mat = EmguExtensions.InitMat(Parent.HeaderSettings.PrinterModel is 4000 or 4500 ? Parent.Resolution.Exchange() : Parent.Resolution);
+            var mat = EmguCvExtensions.InitMat(Parent.HeaderSettings.PrinterModel is 4000 or 4500 ? Parent.Resolution.Exchange() : Parent.Resolution);
             //var matSpan = mat.GetBytePointer();
-            var imageLength = mat.GetLength();
-                
+            var imageLength = mat.ByteCountInt32;
+
             int pixelPos = 0;
 
             for (var i = 0; i < EncodedRle.Length; i++)
@@ -343,7 +343,7 @@ public sealed class LGSFile : FileFormat
     {
         get => FlipDirection.Horizontally;
         set { }
-    }      
+    }
 
     public override float LayerHeight
     {
@@ -531,7 +531,7 @@ public sealed class LGSFile : FileFormat
         {
             throw new FileLoadException("Not a valid LGS file!", FileFullPath);
         }
-        
+
         //if (HeaderSettings.PrinterModel is 10 or 30 or 120)
         //{
         // Fix inconsistencies found of different version of plugin and slicers
@@ -594,6 +594,6 @@ public sealed class LGSFile : FileFormat
         outputFile.Seek(0, SeekOrigin.Begin);
         outputFile.WriteSerialize(HeaderSettings);
     }
-        
+
     #endregion
 }

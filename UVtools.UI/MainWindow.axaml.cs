@@ -5,6 +5,7 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -35,10 +36,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Web;
+using StageKit;
 using Updatum;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
-using UVtools.Core.Dialogs;
 using UVtools.Core.Exceptions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -68,6 +69,7 @@ public partial class MainWindow : GenericWindow
     //public AppVersionChecker VersionChecker => App.VersionChecker;
     public UpdatumManager AppUpdater => App.AppUpdater;
     public static ClipboardManager ClipboardManager => ClipboardManager.Instance;
+
     #endregion
 
     #region Controls
@@ -76,67 +78,66 @@ public partial class MainWindow : GenericWindow
 
     public static MenuItem[] MenuTools { get; } =
     [
-        new() { Tag = new OperationEditParameters()},
-        new() { Tag = new OperationRepairLayers()},
-        new() { Tag = new OperationMove()},
-        new() { Tag = new OperationResize()},
-        new() { Tag = new OperationFlip()},
-        new() { Tag = new OperationRotate()},
-        new() { Tag = new OperationSolidify()},
-        new() { Tag = new OperationMorph()},
-        new() { Tag = new OperationRaftRelief()},
-        new() { Tag = new OperationRedrawModel()},
+        new() { Tag = new OperationEditParameters() },
+        new() { Tag = new OperationRepairLayers() },
+        new() { Tag = new OperationMove() },
+        new() { Tag = new OperationResize() },
+        new() { Tag = new OperationFlip() },
+        new() { Tag = new OperationRotate() },
+        new() { Tag = new OperationSolidify() },
+        new() { Tag = new OperationMorph() },
+        new() { Tag = new OperationRaftRelief() },
+        new() { Tag = new OperationRedrawModel() },
         //new() { Tag = new OperationThreshold()},
-        new() { Tag = new OperationLayerArithmetic()},
-        new() { Tag = new OperationPixelArithmetic()},
-        new() { Tag = new OperationMask()},
+        new() { Tag = new OperationLayerArithmetic() },
+        new() { Tag = new OperationPixelArithmetic() },
+        new() { Tag = new OperationMask() },
         //new() { Tag = new OperationPixelDimming()},
-        new() { Tag = new OperationLightBleedCompensation()},
-        new() { Tag = new OperationInfill()},
-        new() { Tag = new OperationBlur()},
-        new() { Tag = new OperationPattern()},
-        new() { Tag = new OperationFadeExposureTime()},
+        new() { Tag = new OperationLightBleedCompensation() },
+        new() { Tag = new OperationInfill() },
+        new() { Tag = new OperationBlur() },
+        new() { Tag = new OperationPattern() },
+        new() { Tag = new OperationFadeExposureTime() },
         //new() { Tag = new OperationDoubleExposure()},
-        new() { Tag = new OperationPhasedExposure()},
-        new() { Tag = new OperationDynamicLifts()},
-        new() { Tag = new OperationDynamicLayerHeight()},
-        new() { Tag = new OperationLayerReHeight()},
-        new() { Tag = new OperationRaiseOnPrintFinish()},
-        new() { Tag = new OperationChangeResolution()},
-        new() { Tag = new OperationTimelapse()},
-        new() { Tag = new OperationLithophane()},
-        new() { Tag = new OperationPCBExposure()},
-        new() { Tag = new OperationStirResin()},
-        new() { Tag = new OperationScripting()},
-        new() { Tag = new OperationCalculator()}
+        new() { Tag = new OperationPhasedExposure() },
+        new() { Tag = new OperationDynamicLifts() },
+        new() { Tag = new OperationDynamicLayerHeight() },
+        new() { Tag = new OperationLayerReHeight() },
+        new() { Tag = new OperationRaiseOnPrintFinish() },
+        new() { Tag = new OperationChangeResolution() },
+        new() { Tag = new OperationTimelapse() },
+        new() { Tag = new OperationLithophane() },
+        new() { Tag = new OperationPCBExposure() },
+        new() { Tag = new OperationStirResin() },
+        new() { Tag = new OperationScripting() },
+        new() { Tag = new OperationCalculator() }
     ];
 
     public static MenuItem[] MenuCalibration { get; } =
     [
-        new() { Tag = new OperationCalibrateExposureFinder()},
-        new() { Tag = new OperationCalibrateElephantFoot()},
-        new() { Tag = new OperationCalibrateXYZAccuracy()},
-        new() { Tag = new OperationCalibrateLiftHeight()},
-        new() { Tag = new OperationCalibrateBloomingEffect()},
-        new() { Tag = new OperationCalibrateTolerance()},
-        new() { Tag = new OperationCalibrateGrayscale()},
-        new() { Tag = new OperationCalibrateStressTower()},
-        new() { Tag = new OperationCalibrateExternalTests()}
+        new() { Tag = new OperationCalibrateExposureFinder() },
+        new() { Tag = new OperationCalibrateElephantFoot() },
+        new() { Tag = new OperationCalibrateXYZAccuracy() },
+        new() { Tag = new OperationCalibrateLiftHeight() },
+        new() { Tag = new OperationCalibrateBloomingEffect() },
+        new() { Tag = new OperationCalibrateTolerance() },
+        new() { Tag = new OperationCalibrateGrayscale() },
+        new() { Tag = new OperationCalibrateStressTower() },
+        new() { Tag = new OperationCalibrateExternalTests() }
     ];
 
     public static MenuItem[] LayerActionsMenu { get; } =
     [
-        new() { Tag = new OperationLayerImport()},
-        new() { Tag = new OperationLayerClone()},
-        new() { Tag = new OperationLayerRemove()},
-        new() { Tag = new OperationLayerExportImage()},
-        new() { Tag = new OperationLayerExportGif()},
-        new() { Tag = new OperationLayerExportHtml()},
-        new() { Tag = new OperationLayerExportSkeleton()},
-        new() { Tag = new OperationLayerExportHeatMap()},
-        new() { Tag = new OperationLayerExportMesh()}
+        new() { Tag = new OperationLayerImport() },
+        new() { Tag = new OperationLayerClone() },
+        new() { Tag = new OperationLayerRemove() },
+        new() { Tag = new OperationLayerExportImage() },
+        new() { Tag = new OperationLayerExportGif() },
+        new() { Tag = new OperationLayerExportHtml() },
+        new() { Tag = new OperationLayerExportSkeleton() },
+        new() { Tag = new OperationLayerExportHeatMap() },
+        new() { Tag = new OperationLayerExportMesh() }
     ];
-
 
     #endregion
 
@@ -165,7 +166,8 @@ public partial class MainWindow : GenericWindow
 
     #endregion
 
-    #region  GUI Models
+    #region GUI Models
+
     public bool IsGUIEnabled
     {
         get => _isGUIEnabled;
@@ -178,6 +180,7 @@ public partial class MainWindow : GenericWindow
                 //ProgressWindow = new ProgressWindow();
                 return;
             }
+
             DragDrop.SetAllowDrop(this, true);
 
             LastStopWatch = Progress.StopWatch;
@@ -220,7 +223,6 @@ public partial class MainWindow : GenericWindow
                 if (ReferenceEquals(_selectedTabItem, TabIssues) && Settings.Issues.ComputeIssuesOnClickTab)
                 {
                     Dispatcher.UIThread.InvokeAsync(async () => await OnClickDetectIssues());
-
                 }
             }
         }
@@ -271,7 +273,8 @@ public partial class MainWindow : GenericWindow
     {
         if (Settings.General.RestoreWindowLastPosition)
         {
-            Position = new PixelPoint(Settings.General.LastWindowBounds.Location.X, Settings.General.LastWindowBounds.Location.Y);
+            Position = new PixelPoint(Settings.General.LastWindowBounds.Location.X,
+                Settings.General.LastWindowBounds.Location.Y);
         }
 
         if (Settings.General.RestoreWindowLastSize)
@@ -321,8 +324,8 @@ public partial class MainWindow : GenericWindow
                             Kind = (MaterialIconKind)kind
                         };
                     }
-
                 }
+
                 menuTool.Header = operation.Title;
                 menuTool.Click += async (sender, args) => await ShowRunOperation(operation.GetType());
             }
@@ -371,7 +374,7 @@ public partial class MainWindow : GenericWindow
                     {
                         Header = header.ReplaceFirst("_", "__"),
                         Tag = drive,
-                        Icon = new MaterialIcon{ Kind = MaterialIconKind.Usb}
+                        Icon = new MaterialIcon { Kind = MaterialIconKind.Usb }
                     };
                     menuItem.Click += FileSendToItemClick;
 
@@ -383,11 +386,12 @@ public partial class MainWindow : GenericWindow
             {
                 foreach (var location in Settings.General.SendToCustomLocations)
                 {
-                    if(!location.IsEnabled) continue;
+                    if (!location.IsEnabled) continue;
 
                     if (!string.IsNullOrWhiteSpace(location.CompatibleExtensions))
                     {
-                        var extensions = location.CompatibleExtensions.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                        var extensions = location.CompatibleExtensions.Split(';',
+                            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
                         var found = false;
                         foreach (var ext in extensions)
@@ -395,7 +399,8 @@ public partial class MainWindow : GenericWindow
                             found = SlicerFile!.FileEndsWith($".{ext}");
                             if (found) break;
                         }
-                        if(!found) continue;
+
+                        if (!found) continue;
                     }
 
                     var menuItem = new MenuItem
@@ -414,11 +419,13 @@ public partial class MainWindow : GenericWindow
             {
                 foreach (var remotePrinter in Settings.Network.RemotePrinters)
                 {
-                    if(!remotePrinter.IsEnabled || !remotePrinter.IsValid || (!remotePrinter.RequestUploadFile.IsValid && !remotePrinter.RequestPrintFile.IsValid)) continue;
+                    if (!remotePrinter.IsEnabled || !remotePrinter.IsValid ||
+                        (!remotePrinter.RequestUploadFile.IsValid && !remotePrinter.RequestPrintFile.IsValid)) continue;
 
                     if (!string.IsNullOrWhiteSpace(remotePrinter.CompatibleExtensions))
                     {
-                        var extensions = remotePrinter.CompatibleExtensions.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                        var extensions = remotePrinter.CompatibleExtensions.Split(';',
+                            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
                         var found = false;
                         foreach (var ext in extensions)
@@ -426,6 +433,7 @@ public partial class MainWindow : GenericWindow
                             found = SlicerFile!.FileEndsWith($".{ext}");
                             if (found) break;
                         }
+
                         if (!found) continue;
                     }
 
@@ -445,11 +453,12 @@ public partial class MainWindow : GenericWindow
             {
                 foreach (var application in Settings.General.SendToProcess)
                 {
-                    if (!application.IsEnabled ) continue;
+                    if (!application.IsEnabled) continue;
 
                     if (!string.IsNullOrWhiteSpace(application.CompatibleExtensions))
                     {
-                        var extensions = application.CompatibleExtensions.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                        var extensions = application.CompatibleExtensions.Split(';',
+                            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
                         var found = false;
                         foreach (var ext in extensions)
@@ -457,6 +466,7 @@ public partial class MainWindow : GenericWindow
                             found = SlicerFile!.FileEndsWith($".{ext}");
                             if (found) break;
                         }
+
                         if (!found) continue;
                     }
 
@@ -514,11 +524,13 @@ public partial class MainWindow : GenericWindow
         var memoryStatus = SystemAware.GetMemoryStatus();
         if (memoryStatus.ullAvailPhys == 0) return; // Unable to check
 
-        var availableMemory = (decimal)Math.Round(memoryStatus.ullAvailPhys / Math.Pow(1024, 3), 2, MidpointRounding.AwayFromZero);
+        var availableMemory = (decimal)Math.Round(memoryStatus.ullAvailPhys / Math.Pow(1024, 3), 2,
+            MidpointRounding.AwayFromZero);
         if (availableMemory > Settings.General.AvailableRamLimit) return;
 
         var totalMemory = Math.Round(memoryStatus.ullTotalPhys / Math.Pow(1024, 3), 2, MidpointRounding.AwayFromZero);
-        var usedMemory = Math.Round((memoryStatus.ullTotalPhys - memoryStatus.ullAvailPhys) / Math.Pow(1024, 3), 2, MidpointRounding.AwayFromZero);
+        var usedMemory = Math.Round((memoryStatus.ullTotalPhys - memoryStatus.ullAvailPhys) / Math.Pow(1024, 3), 2,
+            MidpointRounding.AwayFromZero);
 
         var processMemory = Math.Round(Environment.WorkingSet / Math.Pow(1024, 3), 2, MidpointRounding.AwayFromZero);
         var percentProcessMemory = Math.Round(processMemory * 100 / totalMemory, 2, MidpointRounding.AwayFromZero);
@@ -528,7 +540,6 @@ public partial class MainWindow : GenericWindow
         {
             if (Progress.CanCancel)
             {
-
                 switch (Settings.General.AvailableRamOnHitLimitAction)
                 {
                     case RamLimitAction.Pause:
@@ -550,7 +561,6 @@ public partial class MainWindow : GenericWindow
                     $"You may need to stop other processes or increase your memory RAM in order to deal with huge files and/or heavy operations.\n\n" +
                     $"Currently you have configured a lower limit of {Settings.General.AvailableRamLimit}GB of available memory RAM for the operations.",
                     $"Insufficient memory RAM! ({usedMemory}GB / {totalMemory}GB)");
-
             }
             else
             {
@@ -576,7 +586,6 @@ public partial class MainWindow : GenericWindow
         string path;
         if (menuItem.Tag is DriveInfo drive)
         {
-
             if (!drive.IsReady)
             {
                 await this.MessageBoxError($"The device {drive.Name} is not ready/available at this time.",
@@ -605,10 +614,11 @@ public partial class MainWindow : GenericWindow
 
         if (CanSave)
         {
-            switch (await this.MessageBoxQuestion("There are unsaved changes. Do you want to save the current file before copy it over?\n\n" +
-                                                  "Yes: Save the current file and copy it over.\n" +
-                                                  "No: Copy the file without current modifications.\n" +
-                                                  "Cancel: Abort the operation.", 
+            switch (await this.MessageBoxQuestion(
+                        "There are unsaved changes. Do you want to save the current file before copy it over?\n\n" +
+                        "Yes: Save the current file and copy it over.\n" +
+                        "No: Copy the file without current modifications.\n" +
+                        "Cancel: Abort the operation.",
                         "Send to - Unsaved changes", SukiMessageBoxButtons.YesNoCancel))
             {
                 case SukiMessageBoxResult.Yes:
@@ -635,7 +645,7 @@ public partial class MainWindow : GenericWindow
                             "Keep in mind there is no guarantee that the file will start to print.\n" +
                             "Are you sure you want to continue?\n\n" +
                             "Yes: Print this file name.\n" +
-                            "No: Cancel file print.", 
+                            "No: Cancel file print.",
                             "Print the filename?") != SukiMessageBoxResult.Yes) return;
                 }
                 else
@@ -645,27 +655,29 @@ public partial class MainWindow : GenericWindow
                             "Keep in mind there is no guarantee that the file will start to print.\n" +
                             "Are you sure you want to continue?\n\n" +
                             "Yes: Send file and print it.\n" +
-                            "No: Cancel file sending and print.", 
+                            "No: Cancel file sending and print.",
                             "Send and print the file?") != SukiMessageBoxResult.Yes) return;
                 }
-
             }
 
             ShowProgressWindow($"Sending: {SlicerFile!.Filename} to {path}");
             Progress.ItemName = "Sending";
 
             HttpResponseMessage? response = null;
-            if(remotePrinter.RequestUploadFile.IsValid)
+            if (remotePrinter.RequestUploadFile.IsValid)
             {
                 try
                 {
-                    response = await remotePrinter.RequestUploadFile.SendRequest(remotePrinter, Progress, SlicerFile.Filename, SlicerFile.FileFullPath);
+                    response = await remotePrinter.RequestUploadFile.SendRequest(remotePrinter, Progress,
+                        SlicerFile.Filename, SlicerFile.FileFullPath);
                     if (!response.IsSuccessStatusCode)
                     {
                         await this.MessageBoxError(response.ToString(), "Send to printer");
                     }
                 }
-                catch (OperationCanceledException) { }
+                catch (OperationCanceledException)
+                {
+                }
                 catch (Exception ex)
                 {
                     await this.MessageBoxError(ex.Message, "Send to printer");
@@ -673,25 +685,30 @@ public partial class MainWindow : GenericWindow
             }
 
 
-            if (startPrint && (!remotePrinter.RequestUploadFile.IsValid || (response is not null && response.IsSuccessStatusCode)))
+            if (startPrint && (!remotePrinter.RequestUploadFile.IsValid ||
+                               (response is not null && response.IsSuccessStatusCode)))
             {
                 response?.Dispose();
                 Progress.Title = "Waiting 2 seconds...";
                 await Task.Delay(2000);
                 try
                 {
-                    response = await remotePrinter.RequestPrintFile.SendRequest(remotePrinter, Progress, SlicerFile.Filename);
+                    response = await remotePrinter.RequestPrintFile.SendRequest(remotePrinter, Progress,
+                        SlicerFile.Filename);
                     if (!response.IsSuccessStatusCode)
                     {
                         await this.MessageBoxError(response.ToString(), "Unable to send the print command");
                     }
+
                     response.Dispose();
                     /*else
                     {
                         await this.MessageBoxInfo(response.ToString(), "Print send command report");
                     }*/
                 }
-                catch (OperationCanceledException) { }
+                catch (OperationCanceledException)
+                {
+                }
                 catch (Exception ex)
                 {
                     await this.MessageBoxError(ex.Message, "Unable to send the print command");
@@ -706,19 +723,20 @@ public partial class MainWindow : GenericWindow
             {
                 await process.StartProcess(SlicerFile, Progress.Token);
             }
-            catch (OperationCanceledException){}
+            catch (OperationCanceledException)
+            {
+            }
             catch (Exception ex)
             {
                 await this.MessageBoxError(ex.Message, $"Unable to start the process {process.Name}");
             }
-
         }
         else
         {
             ShowProgressWindow($"Sending: {SlicerFile!.Filename} to {path}");
             Progress.ItemName = "Sending";
 
-            bool copyResult = false;
+            var copyResult = false;
             var fileDest = Path.Combine(path, SlicerFile!.Filename!);
             try
             {
@@ -726,7 +744,8 @@ public partial class MainWindow : GenericWindow
                 await using var dest = new FileStream(fileDest, FileMode.Create, FileAccess.Write);
 
                 Progress.Reset("Megabyte(s)", (uint)(source.Length / 1048576));
-                var copyProgress = new Progress<long>(copiedBytes => Progress.ProcessedItems = (uint)(copiedBytes / 1048576));
+                var copyProgress =
+                    new Progress<long>(copiedBytes => Progress.ProcessedItems = (uint)(copiedBytes / 1048576));
                 await source.CopyToAsync(dest, copyProgress, Progress.Token);
 
                 copyResult = true;
@@ -741,20 +760,20 @@ public partial class MainWindow : GenericWindow
                 {
                     Debug.WriteLine(ex);
                 }
-
             }
             catch (Exception exception)
             {
                 await this.MessageBoxError(exception.Message, "Unable to copy the file");
             }
 
-            if(copyResult && menuItem.Tag is DriveInfo removableDrive && OperatingSystem.IsWindows() && Settings.General.SendToPromptForRemovableDeviceEject)
+            if (copyResult && menuItem.Tag is DriveInfo removableDrive && OperatingSystem.IsWindows() &&
+                Settings.General.SendToPromptForRemovableDeviceEject)
             {
                 if (await this.MessageBoxQuestion(
                         $"File '{SlicerFile.Filename}' has copied successfully into {removableDrive.Name}\n" +
-                        $"Do you want to eject the {removableDrive.Name} drive now?", "Copied ok, eject the drive?") == SukiMessageBoxResult.Yes)
+                        $"Do you want to eject the {removableDrive.Name} drive now?", "Copied ok, eject the drive?") ==
+                    SukiMessageBoxResult.Yes)
                 {
-
                     Progress.ResetAll($"Ejecting {removableDrive.Name}");
                     var ejectResult = await Task.Run(() =>
                     {
@@ -764,7 +783,7 @@ public partial class MainWindow : GenericWindow
                         }
                         catch (Exception ex)
                         {
-                            HandleException(ex, $"Unable to eject the drive { removableDrive.Name}");
+                            HandleException(ex, $"Unable to eject the drive {removableDrive.Name}");
                         }
 
                         return false;
@@ -778,7 +797,8 @@ public partial class MainWindow : GenericWindow
                                                    "- Drive was already ejected\n" +
                                                    "- No permission to eject the drive\n" +
                                                    "- Another error while trying to eject the drive\n\n" +
-                                                   "Please try to eject the drive manually.", $"Unable to eject the drive {removableDrive.Name}");
+                                                   "Please try to eject the drive manually.",
+                            $"Unable to eject the drive {removableDrive.Name}");
                     }
                 }
             }
@@ -795,14 +815,16 @@ public partial class MainWindow : GenericWindow
         var clientSizeObs = this.GetObservable(ClientSizeProperty);
         clientSizeObs.Subscribe(new AnonymousObserver<Size>(size =>
         {
-            Settings.General.LastWindowBounds = new Rectangle((int)size.Width, (int)size.Height, Settings.General.LastWindowBounds.X, Settings.General.LastWindowBounds.Y);
+            Settings.General.LastWindowBounds = new Rectangle((int)size.Width, (int)size.Height,
+                Settings.General.LastWindowBounds.X, Settings.General.LastWindowBounds.Y);
             UpdateLayerTrackerHighlightIssues();
         }));
         var windowStateObs = this.GetObservable(WindowStateProperty);
         windowStateObs.Subscribe(new AnonymousObserver<WindowState>(state => UpdateLayerTrackerHighlightIssues()));
         PositionChanged += (sender, args) =>
         {
-            Settings.General.LastWindowBounds = new Rectangle(Settings.General.LastWindowBounds.Width, Settings.General.LastWindowBounds.Height, Math.Max(0, Position.X), Math.Max(0, Position.Y));
+            Settings.General.LastWindowBounds = new Rectangle(Settings.General.LastWindowBounds.Width,
+                Settings.General.LastWindowBounds.Height, Math.Max(0, Position.X), Math.Max(0, Position.Y));
         };
 
         AddHandler(DragDrop.DropEvent, async (sender, args) =>
@@ -813,7 +835,7 @@ public partial class MainWindow : GenericWindow
             await ProcessFiles(files.AsValueEnumerable().Select(file => file.TryGetLocalPath()).ToArray()!);
         });
 
-        AddLog($"{About.Software} start", Program.ProgramStartupTime.Elapsed.TotalSeconds);
+        AddLog($"{About.Software} start", ApplicationKit.RuntimeElapsed.TotalSeconds);
 
         if (Settings.General.CheckForUpdatesOnStartup)
         {
@@ -828,7 +850,7 @@ public partial class MainWindow : GenericWindow
             }
         }
 
-        await ProcessFiles(Program.Args);
+        await ProcessFiles(ApplicationKit.ApplicationArgs ?? []);
 
         if (!IsFileLoaded && Settings.General.LoadLastRecentFileOnStartup)
         {
@@ -849,7 +871,6 @@ public partial class MainWindow : GenericWindow
             UpdateTitle();
             return true;
         }, TimeSpan.FromSeconds(1));
-        Program.ProgramStartupTime.Stop();
 
         if (About.IsBirthdayWithin7Days && About.YearsOld != UserSettings.Instance.LastBirthdayYearsOld)
         {
@@ -863,7 +884,7 @@ public partial class MainWindow : GenericWindow
 
         if (!Settings.General.StartMaximized &&
             (Settings.General.RestoreWindowLastPosition ||
-            Settings.General.RestoreWindowLastSize))
+             Settings.General.RestoreWindowLastSize))
         {
             UserSettings.Save();
         }
@@ -879,10 +900,10 @@ public partial class MainWindow : GenericWindow
             return;
         }*/
     }
+
     #endregion
 
     #region Overrides
-
 
     protected override void OnPointerMoved(PointerEventArgs e)
     {
@@ -997,14 +1018,26 @@ public partial class MainWindow : GenericWindow
 
     public async Task ShowBirthdayMessage()
     {
-        await this.MessageBoxGeneric(About.BirthdayMessage, About.BirthdayTitle, About.BirthdayTitle, SukiMessageBoxButtons.OK, MaterialIconKind.PartyPopper);
+        await this.MessageBoxGeneric(About.BirthdayMessage, About.BirthdayTitle, About.BirthdayTitle,
+            SukiMessageBoxButtons.OK, MaterialIconKind.PartyPopper);
         Settings.LastBirthdayYearsOld = About.YearsOld;
         UserSettings.Save();
     }
 
-    public async void MenuFileOpenClicked() => await OpenFile();
-    public async void MenuFileOpenNewWindowClicked() => await OpenFile(true);
-    public async void MenuFileOpenInPartialModeClicked() => await OpenFile(false, FileFormat.FileDecodeType.Partial);
+    public async void MenuFileOpenClicked()
+    {
+        await OpenFile();
+    }
+
+    public async void MenuFileOpenNewWindowClicked()
+    {
+        await OpenFile(true);
+    }
+
+    public async void MenuFileOpenInPartialModeClicked()
+    {
+        await OpenFile(false, FileFormat.FileDecodeType.Partial);
+    }
 
     public void MenuFileOpenContainingFolderClicked()
     {
@@ -1024,7 +1057,7 @@ public partial class MainWindow : GenericWindow
         var window = new ToolWindow(control, "Rename the current file with a new name", false, false)
         {
             Title = $"Rename \"{SlicerFile!.FilenameNoExt}\" file",
-            ButtonOkText = "Rename",
+            ButtonOkText = "Rename"
         };
 
         var result = await window.ShowDialog<DialogResults>(this);
@@ -1051,7 +1084,8 @@ public partial class MainWindow : GenericWindow
         //var ext = Path.GetExtension(SlicerFile.FileFullPath);
         //var extNoDot = ext.Remove(0, 1);
         //var extension = FileExtension.Find(ext);
-        var extension = SlicerFile.FileExtensions.AsValueEnumerable().FirstOrDefault(fileExtension => fileExtension.Extension == ext);
+        var extension = SlicerFile.FileExtensions.AsValueEnumerable()
+            .FirstOrDefault(fileExtension => fileExtension.Extension == ext);
         if (extension is null)
         {
             await this.MessageBoxError("Unable to find the target extension.", "Invalid extension");
@@ -1074,20 +1108,23 @@ public partial class MainWindow : GenericWindow
                     foreach (Match match in matches)
                     {
                         if (!match.Success) continue;
-                        var property = SlicerFile.GetType().GetProperty(match.Groups[1].Value, BindingFlags.Public | BindingFlags.Instance);
+                        var property = SlicerFile.GetType().GetProperty(match.Groups[1].Value,
+                            BindingFlags.Public | BindingFlags.Instance);
                         if (property is null || !property.CanRead || property.GetMethod is null)
                         {
                             defaultFilename = defaultFilename.Replace(match.Value, null);
                             continue;
                         }
 
-                        defaultFilename = defaultFilename.Replace(match.Value, property.GetValue(SlicerFile)?.ToString());
+                        defaultFilename =
+                            defaultFilename.Replace(match.Value, property.GetValue(SlicerFile)?.ToString());
                     }
                 }
 
                 if (!string.IsNullOrWhiteSpace(Settings.General.FileSaveAsDefaultNameCleanUpRegex))
                 {
-                    filename = Regex.Replace(filename, Settings.General.FileSaveAsDefaultNameCleanUpRegex, string.Empty);
+                    filename = Regex.Replace(filename, Settings.General.FileSaveAsDefaultNameCleanUpRegex,
+                        string.Empty);
                 }
 
                 defaultFilename = string.Format(defaultFilename, filename);
@@ -1112,7 +1149,7 @@ public partial class MainWindow : GenericWindow
         }
 
         using var file = await SaveFilePickerAsync(defaultDirectory, defaultFilename,
-                AvaloniaStatic.CreateFilePickerFileTypes(extension.Description, ext));
+            AvaloniaStatic.CreateFilePickerFileTypes(extension.Description, ext));
 
         if (file?.TryGetLocalPath() is not { } filePath) return;
 
@@ -1121,13 +1158,14 @@ public partial class MainWindow : GenericWindow
         await SaveFile(filePath);
     }
 
-    public async Task OpenFile(bool newWindow = false, FileFormat.FileDecodeType fileDecodeType = FileFormat.FileDecodeType.Full)
+    public async Task OpenFile(bool newWindow = false,
+        FileFormat.FileDecodeType fileDecodeType = FileFormat.FileDecodeType.Full)
     {
         var filters = AvaloniaStatic.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
-        var orderedFilters = new List<FilePickerFileType> {filters[Settings.General.DefaultOpenFileExtensionIndex]};
-        for (int i = 0; i < filters.Count; i++)
+        var orderedFilters = new List<FilePickerFileType> { filters[Settings.General.DefaultOpenFileExtensionIndex] };
+        for (var i = 0; i < filters.Count; i++)
         {
-            if(i == Settings.General.DefaultOpenFileExtensionIndex) continue;
+            if (i == Settings.General.DefaultOpenFileExtensionIndex) continue;
             orderedFilters.Add(filters[i]);
         }
 
@@ -1136,7 +1174,8 @@ public partial class MainWindow : GenericWindow
 
         if (files.Count == 0) return;
 
-        await ProcessFiles(files.AsValueEnumerable().Select(file => file.TryGetLocalPath()!).ToArray(), newWindow, fileDecodeType);
+        await ProcessFiles(files.AsValueEnumerable().Select(file => file.TryGetLocalPath()!).ToArray(), newWindow,
+            fileDecodeType);
     }
 
     public async Task MenuFileCloseFileClicked()
@@ -1144,7 +1183,7 @@ public partial class MainWindow : GenericWindow
         if (CanSave && await this.MessageBoxQuestion("""
                                                      You have unsaved changes. Closing the file will discard them.
                                                      Do you want to close without saving?
-                                                     """, 
+                                                     """,
                 "Close file - Unsaved changes") != SukiMessageBoxResult.Yes)
         {
             return;
@@ -1186,8 +1225,8 @@ public partial class MainWindow : GenericWindow
 
         ClearROIAndMask();
 
-        if(!Settings.Tools.LastUsedSettingsKeepOnCloseFile) OperationSessionManager.Instance.Clear();
-        if(_menuFileOpenRecentItems.AsValueEnumerable().Any())
+        if (!Settings.Tools.LastUsedSettingsKeepOnCloseFile) OperationSessionManager.Instance.Clear();
+        if (_menuFileOpenRecentItems.AsValueEnumerable().Any())
         {
             _menuFileOpenRecentItems.AsValueEnumerable().First().IsEnabled = true; // Re-enable last file
         }
@@ -1206,6 +1245,7 @@ public partial class MainWindow : GenericWindow
     {
         var oldTheme = Settings.General.Theme;
         var oldLayerCompressionCodec = Settings.General.LayerCompressionCodec;
+        var oldLayerCompressionLevel = Settings.General.LayerCompressionLevel;
         var settingsWindow = new SettingsWindow();
         await settingsWindow.ShowDialog(this);
         if (settingsWindow.DialogResult == DialogResults.OK)
@@ -1217,12 +1257,17 @@ public partial class MainWindow : GenericWindow
 
             //App._fluentTheme.DensityStyle = Settings.General.ThemeDensity;
             CoreSettings.DefaultLayerCompressionLevel = Settings.General.LayerCompressionLevel;
-            if (oldLayerCompressionCodec != Settings.General.LayerCompressionCodec && IsFileLoaded)
+            if (IsFileLoaded &&
+                (oldLayerCompressionCodec != Settings.General.LayerCompressionCodec
+                 || oldLayerCompressionLevel != Settings.General.LayerCompressionLevel))
             {
-                SlicerFile!.ChangeLayersCompressionMethod(Settings.General.LayerCompressionCodec);
+                SlicerFile!.ChangeLayersCompressionMethod(Settings.General.LayerCompressionCodec,
+                    Settings.General.LayerCompressionLevel);
             }
 
-            _layerNavigationSliderDebounceTimer.Interval = Settings.LayerPreview.LayerSliderDebounce == 0 ? 1 : Settings.LayerPreview.LayerSliderDebounce;
+            _layerNavigationSliderDebounceTimer.Interval = Settings.LayerPreview.LayerSliderDebounce == 0
+                ? 1
+                : Settings.LayerPreview.LayerSliderDebounce;
             LayerImageBox.ZoomLevels = new AdvancedImageBox.ZoomLevelCollection(AppSettings.ZoomLevels);
             LayerImageBox.ZoomWithMouseWheelBehaviour = Settings.LayerPreview.ZoomPreferNative
                 ? AdvancedImageBox.MouseWheelZoomBehaviours.ZoomNativeAltLevels
@@ -1273,7 +1318,8 @@ public partial class MainWindow : GenericWindow
             // ignored
         }
 
-        SystemAware.OpenBrowser($"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title=%5BBug%5D+&system={HttpUtility.UrlEncode(system)}");
+        SystemAware.OpenBrowser(
+            $"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title=%5BBug%5D+&system={HttpUtility.UrlEncode(system)}");
     }
 
     public async Task MenuHelpMaterialManagerClicked()
@@ -1299,6 +1345,7 @@ public partial class MainWindow : GenericWindow
                 return;
             }
         }
+
         await new PrusaSlicerManagerWindow().ShowDialog(this);
     }
 
@@ -1315,7 +1362,9 @@ public partial class MainWindow : GenericWindow
 
     public async Task MenuHelpDebugLongMessageBoxClicked()
     {
-        await this.MessageBoxError(string.Concat(Enumerable.Repeat("Informative message:\n\nLorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.\n", 100)));
+        await this.MessageBoxError(string.Concat(Enumerable.Repeat(
+            "Informative message:\n\nLorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.\n",
+            100)));
     }
 
     public async Task MenuHelpDebugTriggerNewUpdateClicked()
@@ -1333,6 +1382,7 @@ public partial class MainWindow : GenericWindow
                 Debug.WriteLine(ex);
             }
         }
+
         if (AppUpdater.Releases.Count > 0)
         {
             AppUpdater.ForceTriggerUpdateFromRelease(AppUpdater.Releases[0]);
@@ -1346,23 +1396,24 @@ public partial class MainWindow : GenericWindow
         var asset = AppUpdater.GetCompatibleReleaseAsset(release);
         if (asset is null) return;
 
-        var host = new SukiMessageBoxHost()
+        var host = new SukiMessageBoxHost
         {
             Header =
                 $"Do you like to update {About.Software} from v{About.VersionString} to v{AppUpdater.LatestReleaseTagVersionStr}?",
-            Content = new MarkdownViewer.Core.Controls.MarkdownViewer()
+            Content = new MarkdownViewer.Core.Controls.MarkdownViewer
             {
                 MarkdownText = $"""
-                            ## Changelog:
+                                ## Changelog:
 
-                            {AppUpdater.GetChangelog()}
-                            """
+                                {AppUpdater.GetChangelog()}
+                                """
             }
         };
 
-        var autoUpdateButton = SukiMessageBoxButtonsFactory.CreateButton(new MaterialIconText {
-            Kind = MessageWindow.IconButtonDownload,
-            Text = "Auto update"
+        var autoUpdateButton = SukiMessageBoxButtonsFactory.CreateButton(new MaterialIconText
+            {
+                Kind = MessageWindow.IconButtonDownload,
+                Text = "Auto update"
             }
         );
 
@@ -1375,16 +1426,16 @@ public partial class MainWindow : GenericWindow
 
         var closeBtn = SukiMessageBoxButtonsFactory.CreateButton(SukiMessageBoxResult.Cancel);
 
-        var buttons = string.IsNullOrWhiteSpace(release.HtmlUrl) ?
-            new AvaloniaList<Button>(manualUpdateButton, closeBtn) :
-            new AvaloniaList<Button>(autoUpdateButton, manualUpdateButton, closeBtn);
+        var buttons = string.IsNullOrWhiteSpace(release.HtmlUrl)
+            ? new AvaloniaList<Button>(manualUpdateButton, closeBtn)
+            : new AvaloniaList<Button>(autoUpdateButton, manualUpdateButton, closeBtn);
 
         host.ActionButtonsSource = buttons;
 
         var options = SukiMessageBoxUtilities.GetDefaultOptions();
         options = options with
         {
-            Title = $"Update UVtools to v{AppUpdater.LatestReleaseTagVersionStr}?",
+            Title = $"Update UVtools to v{AppUpdater.LatestReleaseTagVersionStr}?"
         };
         var result = await SukiMessageBox.ShowDialog(host, options);
 
@@ -1427,7 +1478,6 @@ public partial class MainWindow : GenericWindow
             _loadedFileSize = 0;
             _loadedFileSizeRepresentation = "N/A";
         }
-
     }
 
     private void UpdateTitle()
@@ -1456,7 +1506,8 @@ public partial class MainWindow : GenericWindow
                     _titleStringBuilder.Append($"   LO: {LastStopWatch.Elapsed.Seconds}s");
                     break;
                 default:
-                    _titleStringBuilder.Append($"   LO: {LastStopWatch.Elapsed.Minutes}m {LastStopWatch.Elapsed.Seconds}s");
+                    _titleStringBuilder.Append(
+                        $"   LO: {LastStopWatch.Elapsed.Minutes}m {LastStopWatch.Elapsed.Seconds}s");
                     break;
             }
 
@@ -1479,11 +1530,14 @@ public partial class MainWindow : GenericWindow
         Title = _titleStringBuilder.ToString();
     }
 
-    public async Task ProcessFiles(string[] files, bool openNewWindow = false, FileFormat.FileDecodeType fileDecodeType = FileFormat.FileDecodeType.Full)
+    public async Task ProcessFiles(string[] files, bool openNewWindow = false,
+        FileFormat.FileDecodeType fileDecodeType = FileFormat.FileDecodeType.Full)
     {
         if (files.Length == 0) return;
 
-        if (IsFileLoaded && files.AsValueEnumerable().All(s => OperationPCBExposure.ValidExtensions.AsValueEnumerable().Any(extension => s.EndsWith($".{extension}", StringComparison.OrdinalIgnoreCase))))
+        if (IsFileLoaded && files.AsValueEnumerable().All(s =>
+                OperationPCBExposure.ValidExtensions.AsValueEnumerable().Any(extension =>
+                    s.EndsWith($".{extension}", StringComparison.OrdinalIgnoreCase))))
         {
             var operation = new OperationPCBExposure(SlicerFile!);
             operation.AddFiles(files);
@@ -1493,13 +1547,13 @@ public partial class MainWindow : GenericWindow
             return;
         }
 
-        for (int i = 0; i < files.Length; i++)
+        for (var i = 0; i < files.Length; i++)
         {
             if (!File.Exists(files[i])) continue;
 
             if (files[i].EndsWith(".uvtop", StringComparison.OrdinalIgnoreCase))
             {
-                if(!IsFileLoaded) continue;
+                if (!IsFileLoaded) continue;
                 try
                 {
                     var operation = Operation.Deserialize(files[i], SlicerFile);
@@ -1515,7 +1569,8 @@ public partial class MainWindow : GenericWindow
                 continue;
             }
 
-            if (files[i].EndsWith(".cs", StringComparison.OrdinalIgnoreCase) || files[i].EndsWith(".csx", StringComparison.OrdinalIgnoreCase))
+            if (files[i].EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ||
+                files[i].EndsWith(".csx", StringComparison.OrdinalIgnoreCase))
             {
                 if (!IsFileLoaded) continue;
                 try
@@ -1550,7 +1605,10 @@ public partial class MainWindow : GenericWindow
         }
     }
 
-    public Task ReloadFile() => ReloadFile(_actualLayer);
+    public Task ReloadFile()
+    {
+        return ReloadFile(_actualLayer);
+    }
 
     public async Task ReloadFile(uint actualLayer)
     {
@@ -1564,10 +1622,14 @@ public partial class MainWindow : GenericWindow
         {
             return;
         }
+
         await ProcessFile(SlicerFile!.FileFullPath!, SlicerFile.DecodeType, _actualLayer);
     }
 
-    private Task ProcessFile(string fileName, uint actualLayer = 0) => ProcessFile(fileName, FileFormat.FileDecodeType.Full, actualLayer);
+    private Task ProcessFile(string fileName, uint actualLayer = 0)
+    {
+        return ProcessFile(fileName, FileFormat.FileDecodeType.Full, actualLayer);
+    }
 
     private async Task ProcessFile(string fileName, FileFormat.FileDecodeType fileDecodeType, uint actualLayer = 0)
     {
@@ -1592,7 +1654,7 @@ public partial class MainWindow : GenericWindow
             await this.MessageBoxError(exception.ToString(), "Error opening the file");
         }*/
 
-        var task = await Task.Run( () =>
+        var task = await Task.Run(() =>
         {
             try
             {
@@ -1635,7 +1697,8 @@ public partial class MainWindow : GenericWindow
         UpdateLoadedFileSize();
 
         var fileNameNoExt = SlicerFile.FilenameNoExt!;
-        if (!FileFormat.IsFileNameValid(fileNameNoExt, out var message, Settings.Automations.FileNameOnlyAsciiCharacters))
+        if (!FileFormat.IsFileNameValid(fileNameNoExt, out var message,
+                Settings.Automations.FileNameOnlyAsciiCharacters))
         {
             var currentSetting = Settings.Automations.FileNameOnlyAsciiCharacters
                 ? "restrict the file name to valid ASCII characters"
@@ -1711,7 +1774,6 @@ public partial class MainWindow : GenericWindow
                         fileExtension = FileFormat.FindExtension(convertFileExtension);
                         convertToFormat = fileExtension?.GetFileFormat();
                     }
-
                 }
                 else if (!string.IsNullOrWhiteSpace(convertFileExtension))
                 {
@@ -1730,7 +1792,7 @@ public partial class MainWindow : GenericWindow
                     var outputFile = Path.Combine(directory, targetFilename);
                     FileFormat? convertedFile = null;
 
-                    bool canConvert = true;
+                    var canConvert = true;
                     if (File.Exists(outputFile))
                     {
                         var result = await this.MessageBoxQuestion(
@@ -1740,9 +1802,8 @@ public partial class MainWindow : GenericWindow
                             "Yes: Overwrite the file.\n" +
                             "No: Choose a location for the file.\n" +
                             "Cancel: Do not auto-convert the file.",
-
                             $"File '{SlicerFile.Filename}' already exists",
-                             SukiMessageBoxButtons.YesNoCancel);
+                            SukiMessageBoxButtons.YesNoCancel);
 
                         if (result is SukiMessageBoxResult.Cancel or SukiMessageBoxResult.Abort)
                         {
@@ -1751,11 +1812,13 @@ public partial class MainWindow : GenericWindow
                         else if (result == SukiMessageBoxResult.No)
                         {
                             using var file = await SaveFilePickerAsync(directory, filenameNoExt,
-                                    AvaloniaStatic.CreateFilePickerFileTypes(fileExtension.Description, convertFileExtension!));
+                                AvaloniaStatic.CreateFilePickerFileTypes(fileExtension.Description,
+                                    convertFileExtension!));
 
                             if (file?.TryGetLocalPath() is { } filePath)
                             {
-                                if (!filePath.EndsWith($".{convertFileExtension}")) filePath += $".{convertFileExtension}";
+                                if (!filePath.EndsWith($".{convertFileExtension}"))
+                                    filePath += $".{convertFileExtension}";
                                 outputFile = filePath;
                             }
                             else
@@ -1768,7 +1831,8 @@ public partial class MainWindow : GenericWindow
                     if (canConvert)
                     {
                         IsGUIEnabled = false;
-                        ShowProgressWindow($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {convertFileExtension}");
+                        ShowProgressWindow(
+                            $"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {convertFileExtension}");
 
                         task = await Task.Run(() =>
                         {
@@ -1792,16 +1856,18 @@ public partial class MainWindow : GenericWindow
                             SlicerFile = convertedFile;
                             AddRecentFile(SlicerFile!.FileFullPath!);
 
-                            bool removeSourceFile = false;
+                            var removeSourceFile = false;
                             switch (Settings.Automations.RemoveSourceFileAfterAutoConversion)
                             {
                                 case RemoveSourceFileAction.Yes:
                                     removeSourceFile = true;
                                     break;
                                 case RemoveSourceFileAction.Prompt:
-                                    if (await this.MessageBoxQuestion($"File was successfully converted to: {targetFilename}\n" +
-                                                                      $"Do you want to remove the source file: {oldFileName}", 
-                                            $"Remove source file: {oldFileName}") == SukiMessageBoxResult.Yes) removeSourceFile = true;
+                                    if (await this.MessageBoxQuestion(
+                                            $"File was successfully converted to: {targetFilename}\n" +
+                                            $"Do you want to remove the source file: {oldFileName}",
+                                            $"Remove source file: {oldFileName}") ==
+                                        SukiMessageBoxResult.Yes) removeSourceFile = true;
                                     break;
                             }
 
@@ -1845,7 +1911,7 @@ public partial class MainWindow : GenericWindow
 
             foreach (var fileFormat in FileFormat.AvailableFormats)
             {
-                if(fileFormat is ImageFile) continue;
+                if (fileFormat is ImageFile) continue;
 
                 List<MenuItem>? parentMenu;
                 if (string.IsNullOrWhiteSpace(fileFormat.ConvertMenuGroup))
@@ -1861,7 +1927,7 @@ public partial class MainWindow : GenericWindow
                         var subMenuItem = new MenuItem
                         {
                             Header = fileFormat.ConvertMenuGroup,
-                            Tag = fileFormat.ConvertMenuGroup,
+                            Tag = fileFormat.ConvertMenuGroup
                         };
                         menuItems.Add(subMenuItem);
 
@@ -1872,7 +1938,7 @@ public partial class MainWindow : GenericWindow
 
                 foreach (var fileExtension in fileFormat.FileExtensions)
                 {
-                    if(!fileExtension.IsVisibleOnConvertMenu) continue;
+                    if (!fileExtension.IsVisibleOnConvertMenu) continue;
 
                     var menuItem = new MenuItem
                     {
@@ -1901,7 +1967,10 @@ public partial class MainWindow : GenericWindow
             {
                 if (menuTool.Tag is not Operation operation) continue;
                 operation.SlicerFile = SlicerFile;
-                menuTool.IsEnabled = operation.CanSpawn && (SlicerFile.DecodeType == FileFormat.FileDecodeType.Full || (SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial && operation.CanRunInPartialMode));
+                menuTool.IsEnabled = operation.CanSpawn && (SlicerFile.DecodeType == FileFormat.FileDecodeType.Full ||
+                                                            (SlicerFile.DecodeType ==
+                                                             FileFormat.FileDecodeType.Partial &&
+                                                             operation.CanRunInPartialMode));
             }
         }
 
@@ -1927,19 +1996,22 @@ public partial class MainWindow : GenericWindow
                 else
                 {
                     _showLayerImageFlipped = true;
-                    _showLayerImageFlippedHorizontally = SlicerFile.DisplayMirror is FlipDirection.Horizontally or FlipDirection.Both;
-                    _showLayerImageFlippedVertically = SlicerFile.DisplayMirror is FlipDirection.Vertically or FlipDirection.Both;
+                    _showLayerImageFlippedHorizontally =
+                        SlicerFile.DisplayMirror is FlipDirection.Horizontally or FlipDirection.Both;
+                    _showLayerImageFlippedVertically =
+                        SlicerFile.DisplayMirror is FlipDirection.Vertically or FlipDirection.Both;
                 }
             }
 
             if (mat.Size != SlicerFile.Resolution)
             {
-                var result = await this.MessageBoxWaring($"Layer image resolution of {mat.Size} mismatch with printer resolution of {SlicerFile.Resolution}.\n" +
-                                                         "1) Printing this file can lead to problems or malformed model, please verify your slicer printer settings;\n" +
-                                                         "2) Processing this file with some of the tools can lead to program crash or dysfunction;\n" +
-                                                         "3) If you used PrusaSlicer to slice this file, you must use it with compatible UVtools printer profiles (Help - Install profiles into PrusaSlicer).\n\n" +
-                                                         "Click 'Yes' to auto fix and set the file resolution with the layer resolution, but only use this option if you are sure it's ok to!\n" +
-                                                         "Click 'No' to continue as it is and ignore this warning, you can still repair issues and use some of the tools.",
+                var result = await this.MessageBoxWaring(
+                    $"Layer image resolution of {mat.Size} mismatch with printer resolution of {SlicerFile.Resolution}.\n" +
+                    "1) Printing this file can lead to problems or malformed model, please verify your slicer printer settings;\n" +
+                    "2) Processing this file with some of the tools can lead to program crash or dysfunction;\n" +
+                    "3) If you used PrusaSlicer to slice this file, you must use it with compatible UVtools printer profiles (Help - Install profiles into PrusaSlicer).\n\n" +
+                    "Click 'Yes' to auto fix and set the file resolution with the layer resolution, but only use this option if you are sure it's ok to!\n" +
+                    "Click 'No' to continue as it is and ignore this warning, you can still repair issues and use some of the tools.",
                     "File and layer resolution mismatch!", SukiMessageBoxButtons.YesNo);
                 if (result == SukiMessageBoxResult.Yes)
                 {
@@ -2008,6 +2080,7 @@ public partial class MainWindow : GenericWindow
                 $"Ratio: {xRatio}:{yRatio}\n",
                 "Incorrect image ratio detected");
         }
+
         RefreshProperties();
         ResetDataContext();
 
@@ -2018,20 +2091,19 @@ public partial class MainWindow : GenericWindow
             ZoomToFit();
         }
 
-        SlicerFile.IssueManager.CollectionChanged += (sender, e) =>
-        {
-            UpdateLayerTrackerHighlightIssues();
-        };
+        SlicerFile.IssueManager.CollectionChanged += (sender, e) => { UpdateLayerTrackerHighlightIssues(); };
 
         if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Full)
         {
-            if (Settings.Issues.ComputeIssuesOnFileLoad == UserSettings.IssuesUserSettings.ComputeIssuesOnFileLoadType.EnabledIssues)
+            if (Settings.Issues.ComputeIssuesOnFileLoad ==
+                UserSettings.IssuesUserSettings.ComputeIssuesOnFileLoadType.EnabledIssues)
             {
                 _firstTimeOnIssues = false;
                 await OnClickDetectIssues();
                 if (SlicerFile.IssueManager.Count > 0)
                 {
-                    if (Settings.Issues.AutoRepairIssuesOnLoad) await RunOperation(ToolRepairLayersControl.GetOperationRepairLayers());
+                    if (Settings.Issues.AutoRepairIssuesOnLoad)
+                        await RunOperation(ToolRepairLayersControl.GetOperationRepairLayers());
 
                     if (SlicerFile.IssueManager.Count > 0)
                     {
@@ -2039,7 +2111,8 @@ public partial class MainWindow : GenericWindow
                     }
                 }
             }
-            else if (Settings.Issues.ComputeIssuesOnFileLoad == UserSettings.IssuesUserSettings.ComputeIssuesOnFileLoadType.TimeInexpensiveIssues)
+            else if (Settings.Issues.ComputeIssuesOnFileLoad ==
+                     UserSettings.IssuesUserSettings.ComputeIssuesOnFileLoadType.TimeInexpensiveIssues)
             {
                 var config = GetIssuesDetectionConfiguration(false);
                 config.PrintHeightConfig.Enable();
@@ -2126,11 +2199,13 @@ public partial class MainWindow : GenericWindow
             RefreshThumbnail();
             return;
         }
+
         if (e.PropertyName is nameof(SlicerFile.Resolution) or nameof(SlicerFile.Display))
         {
             RaisePropertyChanged(nameof(LayerResolutionStr));
             return;
         }
+
         if (e.PropertyName == nameof(SlicerFile.Ppmm))
         {
             RaisePropertyChanged(nameof(LayerZoomStr));
@@ -2164,7 +2239,6 @@ public partial class MainWindow : GenericWindow
                 {
                     Debug.WriteLine(e);
                 }*/
-
             });
         }
     }
@@ -2193,18 +2267,17 @@ public partial class MainWindow : GenericWindow
                 {
                     Debug.WriteLine(e);
                 }*/
-
             });
         }
     }
 
     private async void ConvertToOnClick(object? sender, RoutedEventArgs e)
     {
-        if (sender is not MenuItem {Tag: FileExtension fileExtension}) return;
+        if (sender is not MenuItem { Tag: FileExtension fileExtension }) return;
 
         var fileFormat = fileExtension.GetFileFormat();
         if (fileFormat is null) return;
-        uint version = fileFormat.DefaultVersion;
+        var version = fileFormat.DefaultVersion;
         var availableVersions = fileFormat.GetAvailableVersionsForExtension(fileExtension.Extension);
 
         if (availableVersions.Length > 1)
@@ -2213,19 +2286,20 @@ public partial class MainWindow : GenericWindow
             await versionSelectorWindow.ShowDialog(this);
             switch (versionSelectorWindow.DialogResult)
             {
-                case GenericWindow.DialogResults.OK:
+                case DialogResults.OK:
                     version = versionSelectorWindow.Version;
                     break;
-                case GenericWindow.DialogResults.Cancel:
+                case DialogResults.Cancel:
                     return;
             }
         }
 
         using var file = await SaveFilePickerAsync(string.IsNullOrEmpty(Settings.General.DefaultDirectoryConvertFile)
-                    ? SlicerFile!.DirectoryPath
-                    : Settings.General.DefaultDirectoryConvertFile,
-                SlicerFile!.FilenameNoExt,
-                new List<FilePickerFileType>{AvaloniaStatic.CreateFilePickerFileType(fileExtension.Description, fileExtension.Extension)});
+                ? SlicerFile!.DirectoryPath
+                : Settings.General.DefaultDirectoryConvertFile,
+            SlicerFile!.FilenameNoExt,
+            new List<FilePickerFileType>
+                { AvaloniaStatic.CreateFilePickerFileType(fileExtension.Description, fileExtension.Extension) });
 
         if (file?.TryGetLocalPath() is not { } filePath) return;
         if (!filePath.EndsWith($".{fileExtension.Extension}")) filePath += $".{fileExtension.Extension}";
@@ -2246,11 +2320,12 @@ public partial class MainWindow : GenericWindow
             }
             catch (Exception ex)
             {
-                string extraMessage = string.Empty;
+                var extraMessage = string.Empty;
                 if (SlicerFile is SL1File)
                 {
-                    extraMessage = "Note: When converting from SL1 make sure you have the correct printer selected, you MUST use a UVtools base printer.\n" +
-                                   "Go to \"Help\" -> \"Install profiles into PrusaSlicer\" to install printers.\n";
+                    extraMessage =
+                        "Note: When converting from SL1 make sure you have the correct printer selected, you MUST use a UVtools base printer.\n" +
+                        "Go to \"Help\" -> \"Install profiles into PrusaSlicer\" to install printers.\n";
                 }
 
                 Dispatcher.UIThread.InvokeAsync(async () =>
@@ -2270,7 +2345,7 @@ public partial class MainWindow : GenericWindow
                 "Yes: Open in a new window.\n" +
                 "No: Open in this window.\n" +
                 "Cancel: Do not perform any action.\n",
-                "Conversion complete",  SukiMessageBoxButtons.YesNoCancel);
+                "Conversion complete", SukiMessageBoxButtons.YesNoCancel);
 
             switch (question)
             {
@@ -2282,15 +2357,16 @@ public partial class MainWindow : GenericWindow
                     break;
             }
 
-            bool removeSourceFile = false;
+            var removeSourceFile = false;
             switch (Settings.Automations.RemoveSourceFileAfterAutoConversion)
             {
                 case RemoveSourceFileAction.Yes:
                     removeSourceFile = true;
                     break;
                 case RemoveSourceFileAction.Prompt:
-                    if (await this.MessageBoxQuestion($"File was successfully converted to: {Path.GetFileName(filePath)}\n" +
-                                                      $"Do you want to remove the source file: {oldFileName}", 
+                    if (await this.MessageBoxQuestion(
+                            $"File was successfully converted to: {Path.GetFileName(filePath)}\n" +
+                            $"Do you want to remove the source file: {oldFileName}",
                             $"Remove source file: {oldFileName}") == SukiMessageBoxResult.Yes) removeSourceFile = true;
                     break;
             }
@@ -2311,7 +2387,10 @@ public partial class MainWindow : GenericWindow
     }
 
 
-    public async Task<bool> SaveFile(bool ignoreOverwriteWarning) => await SaveFile(null, ignoreOverwriteWarning);
+    public async Task<bool> SaveFile(bool ignoreOverwriteWarning)
+    {
+        return await SaveFile(null, ignoreOverwriteWarning);
+    }
 
     public async Task<bool> SaveFile(string? filepath = null, bool ignoreOverwriteWarning = false)
     {
@@ -2322,7 +2401,7 @@ public partial class MainWindow : GenericWindow
                 var result = await this.MessageBoxQuestion(
                     "Original input file will be overwritten.  Do you wish to proceed?", "Overwrite file?");
 
-                if(result != SukiMessageBoxResult.Yes) return false;
+                if (result != SukiMessageBoxResult.Yes) return false;
             }
         }
 
@@ -2371,7 +2450,7 @@ public partial class MainWindow : GenericWindow
             Progress.CanCancel = true;
         }
 
-        var task = await Task.Run( () =>
+        var task = await Task.Run(() =>
         {
             try
             {
@@ -2400,14 +2479,14 @@ public partial class MainWindow : GenericWindow
                 {
                     var newFilename = SlicerFile.FilenameStripExtensions!;
                     newFilename = Regex.Replace(newFilename, @"[0-9]+h[0-9]+m([0-9]+s)?", SlicerFile.PrintTimeString);
-                    newFilename = Regex.Replace(newFilename, @"(([0-9]*[.])?[0-9]+)ml", $"{SlicerFile.MaterialMillilitersInteger}ml");
+                    newFilename = Regex.Replace(newFilename, @"(([0-9]*[.])?[0-9]+)ml",
+                        $"{SlicerFile.MaterialMillilitersInteger}ml");
                     if (SlicerFile.RenameFile(newFilename)) RemoveRecentFile(oldFile!);
                 }
                 catch (Exception e)
                 {
                     Debug.WriteLine(e);
                 }
-
             }
 
             if (oldFile != SlicerFile.FileFullPath) AddRecentFile(SlicerFile!.FileFullPath!);
@@ -2464,7 +2543,9 @@ public partial class MainWindow : GenericWindow
                 "Are you sure you want to reset layers properties with the global properties of the file?\n" +
                 "1. The bottom layers will set with the global bottom properties.\n" +
                 "2. The normal layers will set with the global normal properties.\n" +
-                ((currentModifiers & KeyModifiers.Shift) != 0 ? $"3. Rebuild layers position with the file layer height of {SlicerFile.LayerHeight}mm\n\n" : "\n")+
+                ((currentModifiers & KeyModifiers.Shift) != 0
+                    ? $"3. Rebuild layers position with the file layer height of {SlicerFile.LayerHeight}mm\n\n"
+                    : "\n") +
                 $"This action will undo any modification you or {About.Software} made to layers (properties), reverting its information to the original state.",
                 "Reset layers properties with the global properties of the file?") != SukiMessageBoxResult.Yes) return;
 
@@ -2484,7 +2565,7 @@ public partial class MainWindow : GenericWindow
         if (!IsFileLoaded) return;
         var filters = AvaloniaStatic.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
         var orderedFilters = new List<FilePickerFileType> { filters[Settings.General.DefaultOpenFileExtensionIndex] };
-        for (int i = 0; i < filters.Count; i++)
+        for (var i = 0; i < filters.Count; i++)
         {
             if (i == Settings.General.DefaultOpenFileExtensionIndex) continue;
             orderedFilters.Add(filters[i]);
@@ -2503,7 +2584,7 @@ public partial class MainWindow : GenericWindow
         {
             try
             {
-                for (int i = 0; i < files.Count; i++)
+                for (var i = 0; i < files.Count; i++)
                 {
                     if (Progress.Token.IsCancellationRequested) return;
                     var path = files[i].TryGetLocalPath();
@@ -2529,7 +2610,8 @@ public partial class MainWindow : GenericWindow
 
         if (count > 0)
         {
-            await this.MessageBoxInfo($"{count} parameters were copied over {files.Count} files.", "Copy parameters to files");
+            await this.MessageBoxInfo($"{count} parameters were copied over {files.Count} files.",
+                "Copy parameters to files");
         }
         else
         {
@@ -2547,11 +2629,11 @@ public partial class MainWindow : GenericWindow
         var fileNameNoExt = SlicerFile!.FilenameNoExt!;
 
         var folders = await OpenFolderPickerAsync(string.IsNullOrEmpty(Settings.General.DefaultDirectoryExtractFile)
-            ? SlicerFile.DirectoryPath
-            : Settings.General.DefaultDirectoryExtractFile,
+                ? SlicerFile.DirectoryPath
+                : Settings.General.DefaultDirectoryExtractFile,
             $"A \"{fileNameNoExt}\" folder will be created within your selected folder to dump the contents.");
         if (folders.Count == 0) return;
-        string finalPath = Path.Combine(folders[0].TryGetLocalPath()!, fileNameNoExt);
+        var finalPath = Path.Combine(folders[0].TryGetLocalPath()!, fileNameNoExt);
 
         IsGUIEnabled = false;
         ShowProgressWindow($"Extracting {Path.GetFileName(SlicerFile.FileFullPath)}");
@@ -2579,7 +2661,6 @@ public partial class MainWindow : GenericWindow
         {
             SystemAware.StartProcess(finalPath);
         }
-
     }
 
     public void OpenTerminal()
@@ -2589,8 +2670,10 @@ public partial class MainWindow : GenericWindow
 
     #region Operations
 
-    public async Task<Operation?> ShowRunOperation(Operation loadOperation) =>
-        await ShowRunOperation(loadOperation.GetType(), loadOperation);
+    public async Task<Operation?> ShowRunOperation(Operation loadOperation)
+    {
+        return await ShowRunOperation(loadOperation.GetType(), loadOperation);
+    }
 
     public async Task<Operation?> ShowRunOperation(Type type, Operation? loadOperation = null)
     {
@@ -2603,13 +2686,13 @@ public partial class MainWindow : GenericWindow
     {
         var toolTypeBase = typeof(ToolControl);
         var calibrateTypeBase = typeof(CalibrateElephantFootControl);
-        var classname = type.Name.StartsWith("OperationCalibrate") ?
-            $"{calibrateTypeBase.Namespace}.{type.Name[Operation.ClassNameLength..]}Control" :
-            $"{toolTypeBase.Namespace}.Tool{type.Name[Operation.ClassNameLength..]}Control";
+        var classname = type.Name.StartsWith("OperationCalibrate")
+            ? $"{calibrateTypeBase.Namespace}.{type.Name[Operation.ClassNameLength..]}Control"
+            : $"{toolTypeBase.Namespace}.Tool{type.Name[Operation.ClassNameLength..]}Control";
         var controlType = Type.GetType(classname);
         ToolControl? control;
 
-        bool removeContent = false;
+        var removeContent = false;
         if (controlType is null)
         {
             //controlType = toolTypeBase;
@@ -2629,8 +2712,9 @@ public partial class MainWindow : GenericWindow
 
         if (SlicerFile!.DecodeType == FileFormat.FileDecodeType.Partial && !control.BaseOperation!.CanRunInPartialMode)
         {
-            await this.MessageBoxError($"The file was open in partial mode and the tool \"{control.BaseOperation.Title}\" is unable to run in this mode.\n" +
-                                       "Please reload the file in full mode in order to use this tool.", "Unable to run in partial mode");
+            await this.MessageBoxError(
+                $"The file was open in partial mode and the tool \"{control.BaseOperation.Title}\" is unable to run in this mode.\n" +
+                "Please reload the file in full mode in order to use this tool.", "Unable to run in partial mode");
             return null;
         }
 
@@ -2644,6 +2728,7 @@ public partial class MainWindow : GenericWindow
         {
             control.BaseOperation = loadOperation;
         }
+
         var window = new ToolWindow(control);
         await window.ShowDialog(this);
         if (window.DialogResult != DialogResults.OK) return null;
@@ -2676,7 +2761,8 @@ public partial class MainWindow : GenericWindow
                 if (SlicerFile!.IssueManager.Count == 0)
                 {
                     var config = GetIssuesDetectionConfiguration(false);
-                    config.IslandConfig.Enabled = operation.RepairIslands && operation.RemoveIslandsBelowEqualPixelCount > 0;
+                    config.IslandConfig.Enabled =
+                        operation.RepairIslands && operation.RemoveIslandsBelowEqualPixelCount > 0;
                     config.ResinTrapConfig.Enabled = operation.RepairResinTraps;
 
                     if (config.IslandConfig.Enabled || config.ResinTrapConfig.Enabled)
@@ -2722,7 +2808,7 @@ public partial class MainWindow : GenericWindow
 
             CanSave = true;
 
-            if(baseOperation.GetType().Name.StartsWith("OperationCalibrate"))
+            if (baseOperation.GetType().Name.StartsWith("OperationCalibrate"))
             {
                 IssuesClear();
             }
@@ -2734,11 +2820,13 @@ public partial class MainWindow : GenericWindow
                     await OnClickDetectIssues();
                     break;
                 case OperationMove moveOp:
-                    if (SlicerFile!.IssueManager.HaveIssues && SlicerFile.BoundingRectangle != moveOp.OriginalBoundingRectangle)
+                    if (SlicerFile!.IssueManager.HaveIssues &&
+                        SlicerFile.BoundingRectangle != moveOp.OriginalBoundingRectangle)
                     {
                         // Recalculate issues due changed position
                         await OnClickDetectIssues();
                     }
+
                     break;
             }
         }
@@ -2749,7 +2837,8 @@ public partial class MainWindow : GenericWindow
 
         if (!string.IsNullOrWhiteSpace(baseOperation.AfterCompleteReport))
         {
-            await this.MessageBoxInfo(baseOperation.AfterCompleteReport, $"{baseOperation.Title} report ({LastStopWatch.Elapsed.Hours}h{LastStopWatch.Elapsed.Minutes}m{LastStopWatch.Elapsed.Seconds}s)");
+            await this.MessageBoxInfo(baseOperation.AfterCompleteReport,
+                $"{baseOperation.Title} report ({LastStopWatch.Elapsed.Hours}h{LastStopWatch.Elapsed.Minutes}m{LastStopWatch.Elapsed.Seconds}s)");
         }
 
         return result;
@@ -2757,7 +2846,7 @@ public partial class MainWindow : GenericWindow
 
     private void RefreshRecentFiles(bool reloadFiles = false)
     {
-        if(reloadFiles) RecentFiles.Load();
+        if (reloadFiles) RecentFiles.Load();
 
         var items = new List<MenuItem>();
 
@@ -2796,6 +2885,7 @@ public partial class MainWindow : GenericWindow
         {
             RecentFiles.Instance.Remove(file);
         }
+
         RecentFiles.Save();
         RefreshRecentFiles();
     }
@@ -2817,7 +2907,8 @@ public partial class MainWindow : GenericWindow
 
         if (_globalModifiers == KeyModifiers.Control)
         {
-            if (await this.MessageBoxQuestion("Are you sure you want to purge the non-existing files from the recent list?",
+            if (await this.MessageBoxQuestion(
+                    "Are you sure you want to purge the non-existing files from the recent list?",
                     "Purge the non-existing files?") == SukiMessageBoxResult.Yes)
             {
                 /*if (_globalModifiers == KeyModifiers.Shift)
@@ -2835,7 +2926,8 @@ public partial class MainWindow : GenericWindow
         if ((_globalModifiers & KeyModifiers.Control) != 0 &&
             (_globalModifiers & KeyModifiers.Shift) != 0)
         {
-            if (await this.MessageBoxQuestion($"Are you sure you want to remove the selected file from the recent list?\n{file}",
+            if (await this.MessageBoxQuestion(
+                    $"Are you sure you want to remove the selected file from the recent list?\n{file}",
                     "Remove the file from recent list?") == SukiMessageBoxResult.Yes)
             {
                 RemoveRecentFile(file);
@@ -2867,6 +2959,7 @@ public partial class MainWindow : GenericWindow
     #endregion
 
     #region Error Handling
+
     public Task<SukiMessageBoxResult> HandleException(Exception ex, string? title = null)
     {
         switch (ex)
@@ -2876,44 +2969,46 @@ public partial class MainWindow : GenericWindow
             case MessageException msgEx:
                 return Dispatcher.UIThread.Invoke(() => this.MessageBoxError(msgEx.Message, title));
             case AggregateException aggEx:
-                {
-                    var sb = new StringBuilder();
+            {
+                var sb = new StringBuilder();
 
-                    if (aggEx.InnerExceptions.Count > 0)
+                if (aggEx.InnerExceptions.Count > 0)
+                {
+                    if (aggEx.InnerExceptions.Count == 1)
                     {
-                        if (aggEx.InnerExceptions.Count == 1)
+                        if (aggEx.InnerExceptions[0] is MessageException messageException)
                         {
-                            if (aggEx.InnerExceptions[0] is MessageException messageException)
-                            {
-                                if (messageException.Title is not null) title = messageException.Title;
-                                sb.AppendLine(aggEx.InnerExceptions[0].Message);
-                            }
-                            else
-                            {
-                                sb.AppendLine(aggEx.InnerExceptions[0].ToString());
-                            }
+                            if (messageException.Title is not null) title = messageException.Title;
+                            sb.AppendLine(aggEx.InnerExceptions[0].Message);
                         }
                         else
                         {
-                            for (var i = 0; i < aggEx.InnerExceptions.Count; i++)
-                            {
-                                if (aggEx.InnerExceptions[i] is MessageException { Title: { } } messageException)
-                                {
-                                    title = messageException.Title;
-                                }
-
-                                if (i > 0) sb.AppendLine("---------------");
-                                sb.AppendLine($"({i + 1}) {(aggEx.InnerExceptions[i] is MessageException ? aggEx.InnerExceptions[i].Message : aggEx.InnerExceptions[i].ToString())}");
-                            }
+                            sb.AppendLine(aggEx.InnerExceptions[0].ToString());
                         }
                     }
+                    else
+                    {
+                        for (var i = 0; i < aggEx.InnerExceptions.Count; i++)
+                        {
+                            if (aggEx.InnerExceptions[i] is MessageException { Title: not null } messageException)
+                            {
+                                title = messageException.Title;
+                            }
 
-                    return Dispatcher.UIThread.Invoke(() => this.MessageBoxError(sb.ToString(), title));
+                            if (i > 0) sb.AppendLine("---------------");
+                            sb.AppendLine(
+                                $"({i + 1}) {(aggEx.InnerExceptions[i] is MessageException ? aggEx.InnerExceptions[i].Message : aggEx.InnerExceptions[i].ToString())}");
+                        }
+                    }
                 }
+
+                return Dispatcher.UIThread.Invoke(() => this.MessageBoxError(sb.ToString(), title));
+            }
             default:
                 return Dispatcher.UIThread.Invoke(() => this.MessageBoxError(ex.ToString(), title));
         }
     }
+
     #endregion
 
     #endregion

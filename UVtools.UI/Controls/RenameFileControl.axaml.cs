@@ -3,7 +3,6 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using UVtools.Core.Dialogs;
 using UVtools.Core.FileFormats;
 using UVtools.UI.Extensions;
 

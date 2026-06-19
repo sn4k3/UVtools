@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using System.Threading.Tasks;
 using UVtools.Core.FileFormats;
@@ -15,12 +16,10 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public class OperationFlip : Operation
+public partial class OperationFlip : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
-    private bool _makeCopy;
-    private FlipType _flipDirection = FlipType.Horizontal;
     #endregion
 
     #region Overrides
@@ -32,19 +31,19 @@ public class OperationFlip : Operation
 
     public override string ConfirmationText =>
         FlipDirection == FlipType.Both
-            ? $"flip {(_makeCopy ? "and blend ":"")}layers {LayerIndexStart} through {LayerIndexEnd} Horizontally and Vertically?"
-            : $"flip {(_makeCopy ? "and blend " : "")}layers {LayerIndexStart} through {LayerIndexEnd} {FlipDirection}?";
+            ? $"flip {(MakeCopy ? "and blend ":"")}layers {LayerIndexStart} through {LayerIndexEnd} Horizontally and Vertically?"
+            : $"flip {(MakeCopy ? "and blend " : "")}layers {LayerIndexStart} through {LayerIndexEnd} {FlipDirection}?";
 
     public override string ProgressTitle =>
         FlipDirection == FlipType.Both
-            ? $"Flipping {(_makeCopy ? "and blending " : "")}layers {LayerIndexStart} through {LayerIndexEnd} Horizontally and Vertically"
-            : $"Flipping {(_makeCopy ? "and blending " : "")}layers {LayerIndexStart} through {LayerIndexEnd} {FlipDirection}";
+            ? $"Flipping {(MakeCopy ? "and blending " : "")}layers {LayerIndexStart} through {LayerIndexEnd} Horizontally and Vertically"
+            : $"Flipping {(MakeCopy ? "and blending " : "")}layers {LayerIndexStart} through {LayerIndexEnd} {FlipDirection}";
 
     public override string ProgressAction => "Flipped layers";
 
     public override string ToString()
     {
-        var result = $"[{_flipDirection}] [Blend: {_makeCopy}]" + LayerRangeString;
+        var result = $"[{FlipDirection}] [Blend: {MakeCopy}]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -52,17 +51,11 @@ public class OperationFlip : Operation
 
     #region Properties
 
-    public FlipType FlipDirection
-    {
-        get => _flipDirection;
-        set => RaiseAndSetIfChanged(ref _flipDirection, value);
-    }
+    [ObservableProperty]
+    public partial FlipType FlipDirection { get; set; } = FlipType.Horizontal;
 
-    public bool MakeCopy
-    {
-        get => _makeCopy;
-        set => RaiseAndSetIfChanged(ref _makeCopy, value);
-    }
+    [ObservableProperty]
+    public partial bool MakeCopy { get; set; }
 
     #endregion
 
@@ -78,7 +71,7 @@ public class OperationFlip : Operation
 
     protected bool Equals(OperationFlip other)
     {
-        return _makeCopy == other._makeCopy && _flipDirection == other._flipDirection;
+        return MakeCopy == other.MakeCopy && FlipDirection == other.FlipDirection;
     }
 
     public override bool Equals(object? obj)
@@ -115,12 +108,12 @@ public class OperationFlip : Operation
         if (MakeCopy)
         {
             using Mat dst = new();
-            CvInvoke.Flip(target, dst, _flipDirection);
+            CvInvoke.Flip(target, dst, FlipDirection);
             CvInvoke.Add(target, dst, target);
         }
         else
         {
-            CvInvoke.Flip(target, target, _flipDirection);
+            CvInvoke.Flip(target, target, FlipDirection);
         }
 
         ApplyMask(original, target);

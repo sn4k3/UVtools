@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.Converters;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -51,7 +52,10 @@ public sealed class AnetFile : FileFormat
     /// <summary>
     /// Printer uses incorrect BMP header for preview image so we need to use it as-is instead of generating.
     /// </summary>
-    private static readonly byte[] BmpHeader = [66, 77, 162, 4, 0, 0, 0, 0, 0, 0, 66, 0, 0, 0, 40, 0, 0, 0, 4, 1, 0, 0, 140, 0, 0, 0, 1, 0, 16, 0, 3, 0, 0, 0, 96, 4, 0, 0, 18, 11, 0, 0, 18, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 248, 0, 0, 224, 7, 0, 0, 31, 0, 0, 0
+    private static readonly byte[] BmpHeader =
+    [
+        66, 77, 162, 4, 0, 0, 0, 0, 0, 0, 66, 0, 0, 0, 40, 0, 0, 0, 4, 1, 0, 0, 140, 0, 0, 0, 1, 0, 16, 0, 3, 0, 0, 0,
+        96, 4, 0, 0, 18, 11, 0, 0, 18, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 248, 0, 0, 224, 7, 0, 0, 31, 0, 0, 0
     ];
 
     #endregion
@@ -72,33 +76,109 @@ public sealed class AnetFile : FileFormat
 
     public class Header
     {
-        [FieldOrder(0)][FieldEndianness(Endianness.Big)] public int VersionLength { get; set; } = 2;
-        [FieldOrder(1)][FieldEncoding("UTF-16BE")][FieldLength(nameof(VersionLength))] public string Version { get; set; } = "3";
-        [FieldOrder(2)][FieldEndianness(Endianness.Big)] public int NameLength { get; set; } = About.SoftwareWithVersion.Length * 2;
-        [FieldOrder(3)][FieldEncoding("UTF-16BE")][FieldLength(nameof(NameLength))] public string Name { get; set; } = About.SoftwareWithVersion;
-        [FieldOrder(4)][FieldEndianness(Endianness.Big)] public int DescriptionLength { get; set; }
-        [FieldOrder(5)][FieldEncoding("UTF-16BE")][FieldLength(nameof(DescriptionLength))] public string Description { get; set; } = string.Empty; // Printer crashes for non-empty description (FW 1.65)
-        [FieldOrder(6)][FieldEndianness(Endianness.Big)] public double XYPixelSize { get; set; } = 0.04725; // mm
-        [FieldOrder(7)][FieldEndianness(Endianness.Big)] public double LayerHeight { get; set; } // mm; from 0.03 to 0.08
-        [FieldOrder(8)][FieldEndianness(Endianness.Big)] public uint BaseLayersCount { get; set; } // Number of extent filled additional first layers; do not use!
-        [FieldOrder(9)][FieldEndianness(Endianness.Big)] public uint FilledBaseLayersCount { get; set; } // Number of fully filled first layers inside BaseLayersCount; do not use!
-        [FieldOrder(10)][FieldEndianness(Endianness.Big)] public uint ExposureTime { get; set; } = 6; // from 3 to 25
-        [FieldOrder(11)][FieldEndianness(Endianness.Big)] public uint BottomExposureTime { get; set; } = 90; // from 60 to 120
-        [FieldOrder(12)][FieldEndianness(Endianness.Big)] public uint BottomLayerCount { get; set; } = DefaultBottomLayerCount; // from 2 to 10
-        [FieldOrder(13)][FieldEndianness(Endianness.Big)] public uint LiftSpeed { get; set; } = (uint)Math.Ceiling(SpeedConverter.Convert(DefaultLiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond)); // mm/s, from 1 to 10
-        [FieldOrder(14)][FieldEndianness(Endianness.Big)] public uint LiftHeight { get; set; } = (uint)DefaultLiftHeight; // mm, from 3 to 10
+        [FieldOrder(0)]
+        [FieldEndianness(Endianness.Big)]
+        public int VersionLength { get; set; } = 2;
 
-        [FieldOrder(15)][FieldEndianness(Endianness.Big)] public uint PreviewResolutionX { get; set; } = 260;
-        [FieldOrder(16)][FieldEndianness(Endianness.Big)] public uint PreviewResolutionY { get; set; } = 140;
-        [FieldOrder(17)][FieldEndianness(Endianness.Big)] public uint PreviewSize { get; set; } = 72866;
-        [FieldOrder(18)][FieldEndianness(Endianness.Big)][FieldLength(nameof(PreviewSize))] public byte[] PreviewContent { get; set; } = []; // BMP image, BGR565
-        [FieldOrder(19)][FieldEndianness(Endianness.Big)] public double VolumeMicroL { get; set; } // µl
-        [FieldOrder(20)][FieldEndianness(Endianness.Big)] public uint EncodedPrintTime { get; set; } // s; for unknown reason always broken in original slicer
-        [FieldOrder(21)][FieldEndianness(Endianness.Big)] public uint LayersCount { get; set; } // Not include BaseLayers
+        [FieldOrder(1)]
+        [FieldEncoding("UTF-16BE")]
+        [FieldLength(nameof(VersionLength))]
+        public string Version { get; set; } = "3";
+
+        [FieldOrder(2)]
+        [FieldEndianness(Endianness.Big)]
+        public int NameLength { get; set; } = About.SoftwareWithVersion.Length * 2;
+
+        [FieldOrder(3)]
+        [FieldEncoding("UTF-16BE")]
+        [FieldLength(nameof(NameLength))]
+        public string Name { get; set; } = About.SoftwareWithVersion;
+
+        [FieldOrder(4)]
+        [FieldEndianness(Endianness.Big)]
+        public int DescriptionLength { get; set; }
+
+        [FieldOrder(5)]
+        [FieldEncoding("UTF-16BE")]
+        [FieldLength(nameof(DescriptionLength))]
+        public string Description { get; set; } = string.Empty; // Printer crashes for non-empty description (FW 1.65)
+
+        [FieldOrder(6)]
+        [FieldEndianness(Endianness.Big)]
+        public double XYPixelSize { get; set; } = 0.04725; // mm
+
+        [FieldOrder(7)]
+        [FieldEndianness(Endianness.Big)]
+        public double LayerHeight { get; set; } // mm; from 0.03 to 0.08
+
+        [FieldOrder(8)]
+        [FieldEndianness(Endianness.Big)]
+        public uint BaseLayersCount { get; set; } // Number of extent filled additional first layers; do not use!
+
+        [FieldOrder(9)]
+        [FieldEndianness(Endianness.Big)]
+        public uint
+            FilledBaseLayersCount
+        {
+            get;
+            set;
+        } // Number of fully filled first layers inside BaseLayersCount; do not use!
+
+        [FieldOrder(10)]
+        [FieldEndianness(Endianness.Big)]
+        public uint ExposureTime { get; set; } = 6; // from 3 to 25
+
+        [FieldOrder(11)]
+        [FieldEndianness(Endianness.Big)]
+        public uint BottomExposureTime { get; set; } = 90; // from 60 to 120
+
+        [FieldOrder(12)]
+        [FieldEndianness(Endianness.Big)]
+        public uint BottomLayerCount { get; set; } = DefaultBottomLayerCount; // from 2 to 10
+
+        [FieldOrder(13)]
+        [FieldEndianness(Endianness.Big)]
+        public uint LiftSpeed { get; set; } =
+            (uint)Math.Ceiling(SpeedConverter.Convert(DefaultLiftSpeed, CoreSpeedUnit,
+                SpeedUnit.MillimetersPerSecond)); // mm/s, from 1 to 10
+
+        [FieldOrder(14)]
+        [FieldEndianness(Endianness.Big)]
+        public uint LiftHeight { get; set; } = (uint)DefaultLiftHeight; // mm, from 3 to 10
+
+        [FieldOrder(15)]
+        [FieldEndianness(Endianness.Big)]
+        public uint PreviewResolutionX { get; set; } = 260;
+
+        [FieldOrder(16)]
+        [FieldEndianness(Endianness.Big)]
+        public uint PreviewResolutionY { get; set; } = 140;
+
+        [FieldOrder(17)]
+        [FieldEndianness(Endianness.Big)]
+        public uint PreviewSize { get; set; } = 72866;
+
+        [FieldOrder(18)]
+        [FieldEndianness(Endianness.Big)]
+        [FieldLength(nameof(PreviewSize))]
+        public byte[] PreviewContent { get; set; } = []; // BMP image, BGR565
+
+        [FieldOrder(19)]
+        [FieldEndianness(Endianness.Big)]
+        public double VolumeMicroL { get; set; } // µl
+
+        [FieldOrder(20)]
+        [FieldEndianness(Endianness.Big)]
+        public uint EncodedPrintTime { get; set; } // s; for unknown reason always broken in original slicer
+
+        [FieldOrder(21)]
+        [FieldEndianness(Endianness.Big)]
+        public uint LayersCount { get; set; } // Not include BaseLayers
 
         public override string ToString()
         {
-            return $"{nameof(VersionLength)}: {VersionLength}, {nameof(Version)}: {Version}, {nameof(NameLength)}: {NameLength}, {nameof(Name)}: {Name}, {nameof(DescriptionLength)}: {DescriptionLength}, {nameof(Description)}: {Description}, {nameof(XYPixelSize)}: {XYPixelSize}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(BaseLayersCount)}: {BaseLayersCount}, {nameof(FilledBaseLayersCount)}: {FilledBaseLayersCount}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(PreviewResolutionX)}: {PreviewResolutionX}, {nameof(PreviewResolutionY)}: {PreviewResolutionY}, {nameof(PreviewSize)}: {PreviewSize}, {nameof(PreviewContent)}: {PreviewContent}, {nameof(VolumeMicroL)}: {VolumeMicroL}, {nameof(EncodedPrintTime)}: {EncodedPrintTime}, {nameof(LayersCount)}: {LayersCount}";
+            return
+                $"{nameof(VersionLength)}: {VersionLength}, {nameof(Version)}: {Version}, {nameof(NameLength)}: {NameLength}, {nameof(Name)}: {Name}, {nameof(DescriptionLength)}: {DescriptionLength}, {nameof(Description)}: {Description}, {nameof(XYPixelSize)}: {XYPixelSize}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(BaseLayersCount)}: {BaseLayersCount}, {nameof(FilledBaseLayersCount)}: {FilledBaseLayersCount}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(PreviewResolutionX)}: {PreviewResolutionX}, {nameof(PreviewResolutionY)}: {PreviewResolutionY}, {nameof(PreviewSize)}: {PreviewSize}, {nameof(PreviewContent)}: {PreviewContent}, {nameof(VolumeMicroL)}: {VolumeMicroL}, {nameof(EncodedPrintTime)}: {EncodedPrintTime}, {nameof(LayersCount)}: {LayersCount}";
         }
     }
 
@@ -111,12 +191,30 @@ public sealed class AnetFile : FileFormat
         /// <summary>
         /// White pixels region (border including corner pixels)
         /// </summary>
-        [FieldOrder(0)][FieldEndianness(Endianness.Big)] public uint WhitePixelsCount { get; set; }
-        [FieldOrder(1)][FieldEndianness(Endianness.Big)] public int XMin { get; set; }
-        [FieldOrder(2)][FieldEndianness(Endianness.Big)] public int YMin { get; set; }
-        [FieldOrder(3)][FieldEndianness(Endianness.Big)] public int XMax { get; set; }
-        [FieldOrder(4)][FieldEndianness(Endianness.Big)] public int YMax { get; set; }
-        [FieldOrder(5)][FieldEndianness(Endianness.Big)] public uint BitsCount { get; set; }
+        [FieldOrder(0)]
+        [FieldEndianness(Endianness.Big)]
+        public uint WhitePixelsCount { get; set; }
+
+        [FieldOrder(1)]
+        [FieldEndianness(Endianness.Big)]
+        public int XMin { get; set; }
+
+        [FieldOrder(2)]
+        [FieldEndianness(Endianness.Big)]
+        public int YMin { get; set; }
+
+        [FieldOrder(3)]
+        [FieldEndianness(Endianness.Big)]
+        public int XMax { get; set; }
+
+        [FieldOrder(4)]
+        [FieldEndianness(Endianness.Big)]
+        public int YMax { get; set; }
+
+        [FieldOrder(5)]
+        [FieldEndianness(Endianness.Big)]
+        public uint BitsCount { get; set; }
+
         [Ignore]
         public uint RleBytesCount
         {
@@ -141,7 +239,8 @@ public sealed class AnetFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(WhitePixelsCount)}: {WhitePixelsCount}, {nameof(XMin)}: {XMin}, {nameof(YMin)}: {YMin}, {nameof(XMax)}: {XMax}, {nameof(YMax)}: {YMax}, {nameof(BitsCount)}: {BitsCount}, {nameof(RleBytesCount)}: {RleBytesCount}, {nameof(EncodedRle)}: {EncodedRle?.Length}";
+            return
+                $"{nameof(WhitePixelsCount)}: {WhitePixelsCount}, {nameof(XMin)}: {XMin}, {nameof(YMin)}: {YMin}, {nameof(XMax)}: {XMax}, {nameof(YMax)}: {YMax}, {nameof(BitsCount)}: {BitsCount}, {nameof(RleBytesCount)}: {RleBytesCount}, {nameof(EncodedRle)}: {EncodedRle?.Length}";
         }
 
         public byte[] Encode(Mat mat)
@@ -158,10 +257,10 @@ public sealed class AnetFile : FileFormat
                     data.AddRange(new byte[(pos + count + 7 - data.Count * 8) / 8]);
                 }
 
-                for (int off = (int)(pos + count - 1); off + 1 > pos; --off)
+                for (var off = (int)(pos + count - 1); off + 1 > pos; --off)
                 {
-                    byte tmp = data[off / 8];
-                    byte mask = (byte)(1 << (off % 8));
+                    var tmp = data[off / 8];
+                    var mask = (byte)(1 << (off % 8));
                     data[off / 8] = ((int)value & 1) == 1 ? (byte)(tmp | mask) : (byte)(tmp & ~mask);
                     value >>= 1;
                 }
@@ -178,17 +277,17 @@ public sealed class AnetFile : FileFormat
             uint compressedPos = 33;
 
             var rawData = new List<byte>();
-            var spanMat = mat.GetDataByteReadOnlySpan();
+            var spanMat = mat.GetReadOnlySpanOfBytes();
 
-            bool isWhitePrev = spanMat[0] > 127;
+            var isWhitePrev = spanMat[0] > 127;
 
             SetBits(rawData, 0, (uint)mat.Width, 16);
             SetBits(rawData, 16, (uint)mat.Height, 16);
             SetBits(rawData, 32, isWhitePrev ? 1u : 0u);
 
-            for (int i = 0; i < spanMat.Length; i++)
+            for (var i = 0; i < spanMat.Length; i++)
             {
-                bool isWhiteCurrent = spanMat[i] > 127; // No AA
+                var isWhiteCurrent = spanMat[i] > 127; // No AA
 
                 if (isWhiteCurrent)
                 {
@@ -224,11 +323,12 @@ public sealed class AnetFile : FileFormat
             {
                 if (pos + count > BitsCount)
                 {
-                    throw new IndexOutOfRangeException($"Trying to read {count} bits from pos {pos}, but total size is {BitsCount} bits.");
+                    throw new IndexOutOfRangeException(
+                        $"Trying to read {count} bits from pos {pos}, but total size is {BitsCount} bits.");
                 }
 
                 uint res = 0;
-                for (uint i = pos; i < pos + count; i++)
+                for (var i = pos; i < pos + count; i++)
                 {
                     res <<= 1;
                     if ((EncodedRle[i >> 0x3] & (byte)(0x1u << (int)(i & 0x7u))) != 0)
@@ -236,28 +336,30 @@ public sealed class AnetFile : FileFormat
                         res |= 1;
                     }
                 }
+
                 return res;
             }
 
             if ((BitsCount + 7) / 8 != EncodedRle.Length)
             {
-                throw new IndexOutOfRangeException($"Incorrect RLE data size {EncodedRle.Length * 8}, except {BitsCount} bits.");
+                throw new IndexOutOfRangeException(
+                    $"Incorrect RLE data size {EncodedRle.Length * 8}, except {BitsCount} bits.");
             }
 
             resolutionX = GetBits(0, 16);
             resolutionY = GetBits(16, 16);
 
-            var mat = EmguExtensions.InitMat(new Size((int)resolutionX, (int)resolutionY));
-            var imageLength = mat.GetLength();
+            var mat = EmguCvExtensions.InitMat(new Size((int)resolutionX, (int)resolutionY));
+            var imageLength = mat.ByteCountInt32;
 
-            byte brightness = (byte)((GetBits(32) == 1) ? 0xff : 0x0);
+            var brightness = (byte)(GetBits(32) == 1 ? 0xff : 0x0);
 
-            int pixelPos = 0;
+            var pixelPos = 0;
             uint bitPos = 33;
             while (pixelPos < imageLength)
             {
-                uint keySize = GetBits(bitPos, 5);
-                uint stripSize = GetBits(bitPos + 5, keySize + 1);
+                var keySize = GetBits(bitPos, 5);
+                var stripSize = GetBits(bitPos + 5, keySize + 1);
                 bitPos += keySize + 6;
                 mat.FillSpan(ref pixelPos, (int)stripSize, brightness);
                 brightness = (byte)~brightness;
@@ -268,6 +370,7 @@ public sealed class AnetFile : FileFormat
             return mat;
         }
     }
+
     #endregion
 
     #endregion
@@ -277,6 +380,8 @@ public sealed class AnetFile : FileFormat
     public Header HeaderSettings { get; private set; } = new();
 
     public override FileFormatType FileType => FileFormatType.Binary;
+
+    public override Endianness FileFormatEndianness => Endianness.Big;
 
     public override string ConvertMenuGroup => "Anet";
 
@@ -369,8 +474,10 @@ public sealed class AnetFile : FileFormat
         get => SpeedConverter.Convert(HeaderSettings.LiftSpeed, SpeedUnit.MillimetersPerSecond, CoreSpeedUnit);
         set
         {
-            HeaderSettings.LiftSpeed = (uint)Math.Round(SpeedConverter.Convert(value, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond));
-            base.LiftSpeed = SpeedConverter.Convert(HeaderSettings.LiftSpeed, SpeedUnit.MillimetersPerSecond, CoreSpeedUnit);
+            HeaderSettings.LiftSpeed =
+                (uint)Math.Round(SpeedConverter.Convert(value, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond));
+            base.LiftSpeed =
+                SpeedConverter.Convert(HeaderSettings.LiftSpeed, SpeedUnit.MillimetersPerSecond, CoreSpeedUnit);
         }
     }
 
@@ -422,7 +529,10 @@ public sealed class AnetFile : FileFormat
 
     #region Constructors
 
-    public AnetFile() { }
+    public AnetFile()
+    {
+    }
+
     #endregion
 
     #region Methods
@@ -433,15 +543,18 @@ public sealed class AnetFile : FileFormat
         {
             case AnetPrinter.N4:
                 if (ResolutionX != RESOLUTION_N4_X || ResolutionY != RESOLUTION_N4_Y)
-                    throw new ArgumentException($"Anet N4 support only {RESOLUTION_N4_X}x{RESOLUTION_N4_Y} image, got {ResolutionX}x{ResolutionY}");
+                    throw new ArgumentException(
+                        $"Anet N4 support only {RESOLUTION_N4_X}x{RESOLUTION_N4_Y} image, got {ResolutionX}x{ResolutionY}");
                 break;
             case AnetPrinter.N7:
                 if (ResolutionX != RESOLUTION_N7_X || ResolutionY != RESOLUTION_N7_Y)
-                    throw new ArgumentException($"Anet N7 support only {RESOLUTION_N7_X}x{RESOLUTION_N7_Y} image, got {ResolutionX}x{ResolutionY}");
+                    throw new ArgumentException(
+                        $"Anet N7 support only {RESOLUTION_N7_X}x{RESOLUTION_N7_Y} image, got {ResolutionX}x{ResolutionY}");
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(PrinterModel), FileExtension);
         }
+
         HeaderSettings.XYPixelSize = Math.Round(PixelSizeMax, 3);
     }
 
@@ -508,15 +621,19 @@ public sealed class AnetFile : FileFormat
         HeaderSettings = Helpers.Deserialize<Header>(inputFile);
         if (HeaderSettings.Version is not "3")
         {
-            throw new FileLoadException($"Not a valid N4 file: Version doesn't match, got {HeaderSettings.Version} instead of 3)", FileFullPath);
+            throw new FileLoadException(
+                $"Not a valid N4 file: Version doesn't match, got {HeaderSettings.Version} instead of 3)",
+                FileFullPath);
         }
 
         if (HeaderSettings.PreviewSize != 72866 || HeaderSettings.PreviewContent is null)
         {
-            throw new FileLoadException($"Not a valid N4 file: incorrect preview format ({HeaderSettings.PreviewSize})", FileFullPath);
+            throw new FileLoadException($"Not a valid N4 file: incorrect preview format ({HeaderSettings.PreviewSize})",
+                FileFullPath);
         }
 
-        Thumbnails.Add(DecodeImage(DATATYPE_BGR565, HeaderSettings.PreviewContent[BmpHeader.Length..], ThumbnailsOriginalSize[0]));
+        Thumbnails.Add(DecodeImage(DATATYPE_BGR565, HeaderSettings.PreviewContent[BmpHeader.Length..],
+            ThumbnailsOriginalSize[0]));
 
         Debug.WriteLine(HeaderSettings);
 

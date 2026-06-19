@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using System;
 using System.Diagnostics;
@@ -14,6 +15,7 @@ using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
@@ -21,7 +23,7 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public class OperationPixelDimming : Operation
+public partial class OperationPixelDimming : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Subclasses
@@ -38,19 +40,7 @@ public class OperationPixelDimming : Operation
     #endregion
 
     #region Members
-    private bool _lighteningPixels;
-    private uint _wallThicknessStart = 10;
-    private uint _wallThicknessEnd = 10;
-    private bool _wallsOnly;
-    private bool _chamfer;
-    private Matrix<byte> _pattern = null!;
-    private Matrix<byte> _alternatePattern = null!;
     private ushort _alternatePatternPerLayers = 1;
-    private string _patternText = null!;
-    private string? _alternatePatternText;
-    private byte _brightness = 127;
-    private ushort _infillGenThickness = 10;
-    private ushort _infillGenSpacing = 20;
 
     #endregion
 
@@ -137,7 +127,7 @@ public class OperationPixelDimming : Operation
 
     public override string ToString()
     {
-        var result = $"[Border: {_wallThicknessStart}px to {_wallThicknessEnd}px] [Chamfer: {_chamfer}] [Only borders: {_wallsOnly}] [Alternate every: {_alternatePatternPerLayers}] [B: {_brightness}]" + LayerRangeString;
+        var result = $"[Border: {WallThicknessStart}px to {WallThicknessEnd}px] [Chamfer: {Chamfer}] [Only borders: {WallsOnly}] [Alternate every: {_alternatePatternPerLayers}] [B: {Brightness}]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -154,15 +144,12 @@ public class OperationPixelDimming : Operation
 
     #region Properties
 
-    public bool LighteningPixels
-    {
-        get => _lighteningPixels;
-        set => RaiseAndSetIfChanged(ref _lighteningPixels, value);
-    }
+    [ObservableProperty]
+    public partial bool LighteningPixels { get; set; }
 
     public uint WallThickness
     {
-        get => _wallThicknessStart;
+        get => WallThicknessStart;
         set
         {
             WallThicknessStart = value;
@@ -170,29 +157,17 @@ public class OperationPixelDimming : Operation
         }
     }
 
-    public uint WallThicknessStart
-    {
-        get => _wallThicknessStart;
-        set => RaiseAndSetIfChanged(ref _wallThicknessStart, value);
-    }
+    [ObservableProperty]
+    public partial uint WallThicknessStart { get; set; } = 10;
 
-    public uint WallThicknessEnd
-    {
-        get => _wallThicknessEnd;
-        set => RaiseAndSetIfChanged(ref _wallThicknessEnd, value);
-    }
+    [ObservableProperty]
+    public partial uint WallThicknessEnd { get; set; } = 10;
 
-    public bool WallsOnly
-    {
-        get => _wallsOnly;
-        set => RaiseAndSetIfChanged(ref _wallsOnly, value);
-    }
+    [ObservableProperty]
+    public partial bool WallsOnly { get; set; }
 
-    public bool Chamfer
-    {
-        get => _chamfer;
-        set => RaiseAndSetIfChanged(ref _chamfer, value);
-    }
+    [ObservableProperty]
+    public partial bool Chamfer { get; set; }
 
     /// <summary>
     /// Use the alternate pattern every <see cref="AlternatePatternPerLayers"/> layers
@@ -200,59 +175,35 @@ public class OperationPixelDimming : Operation
     public ushort AlternatePatternPerLayers
     {
         get => _alternatePatternPerLayers;
-        set => RaiseAndSetIfChanged(ref _alternatePatternPerLayers, Math.Max((ushort)1, value));
+        set => SetProperty(ref _alternatePatternPerLayers, Math.Max((ushort)1, value));
     }
 
-    public string PatternText
-    {
-        get => _patternText;
-        set => RaiseAndSetIfChanged(ref _patternText, value);
-    }
+    [ObservableProperty]
+    public partial string PatternText { get; set; } = null!;
 
-    public string? AlternatePatternText
-    {
-        get => _alternatePatternText;
-        set => RaiseAndSetIfChanged(ref _alternatePatternText, value);
-    }
+    [ObservableProperty]
+    public partial string? AlternatePatternText { get; set; }
 
     [XmlIgnore]
-    public Matrix<byte> Pattern
-    {
-        get => _pattern;
-        set => RaiseAndSetIfChanged(ref _pattern, value);
-    }
+    [ObservableProperty]
+    public partial Matrix<byte> Pattern { get; set; } = null!;
 
     [XmlIgnore]
-    public Matrix<byte> AlternatePattern
-    {
-        get => _alternatePattern;
-        set => RaiseAndSetIfChanged(ref _alternatePattern, value);
-    }
+    [ObservableProperty]
+    public partial Matrix<byte> AlternatePattern { get; set; } = null!;
 
-    public byte Brightness
-    {
-        get => _brightness;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _brightness, value)) return;
-            RaisePropertyChanged(nameof(BrightnessPercent));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BrightnessPercent))]
+    public partial byte Brightness { get; set; } = 127;
 
-    public float BrightnessPercent => MathF.Round(_brightness * 100 / 255.0f, 2);
+    public float BrightnessPercent => MathF.Round(Brightness * 100 / 255.0f, 2);
 
 
-    public ushort InfillGenThickness
-    {
-        get => _infillGenThickness;
-        set => RaiseAndSetIfChanged(ref _infillGenThickness, value);
-    }
+    [ObservableProperty]
+    public partial ushort InfillGenThickness { get; set; } = 10;
 
-    public ushort InfillGenSpacing
-    {
-        get => _infillGenSpacing;
-        set => RaiseAndSetIfChanged(ref _infillGenSpacing, value);
-    }
+    [ObservableProperty]
+    public partial ushort InfillGenSpacing { get; set; } = 20;
 
     #endregion
 
@@ -260,7 +211,7 @@ public class OperationPixelDimming : Operation
 
     protected bool Equals(OperationPixelDimming other)
     {
-        return _lighteningPixels == other._lighteningPixels && _wallThicknessStart == other._wallThicknessStart && _wallThicknessEnd == other._wallThicknessEnd && _wallsOnly == other._wallsOnly && _chamfer == other._chamfer && _alternatePatternPerLayers == other._alternatePatternPerLayers && _patternText == other._patternText && _alternatePatternText == other._alternatePatternText && _brightness == other._brightness && _infillGenThickness == other._infillGenThickness && _infillGenSpacing == other._infillGenSpacing;
+        return LighteningPixels == other.LighteningPixels && WallThicknessStart == other.WallThicknessStart && WallThicknessEnd == other.WallThicknessEnd && WallsOnly == other.WallsOnly && Chamfer == other.Chamfer && _alternatePatternPerLayers == other._alternatePatternPerLayers && PatternText == other.PatternText && AlternatePatternText == other.AlternatePatternText && Brightness == other.Brightness && InfillGenThickness == other.InfillGenThickness && InfillGenSpacing == other.InfillGenSpacing;
     }
 
     public override bool Equals(object? obj)
@@ -281,7 +232,7 @@ public class OperationPixelDimming : Operation
     public unsafe void LoadPatternFromImage(Mat mat, bool isAlternatePattern = false)
     {
         var result = new string[mat.Height];
-        var span = mat.GetBytePointer();
+        var span = mat.BytePointer;
         Parallel.For(0, mat.Height, CoreSettings.ParallelOptions, y =>
         {
             result[y] = string.Empty;
@@ -332,12 +283,12 @@ public class OperationPixelDimming : Operation
             PatternText = string.Format(
                 "255 {0}{1}" +
                 "{0} 255"
-                , _brightness, "\n");
+                , Brightness, "\n");
 
             AlternatePatternText = string.Format(
                 "{0} 255{1}" +
                 "255 {0}"
-                , _brightness, "\n");
+                , Brightness, "\n");
 
             return;
         }
@@ -347,12 +298,12 @@ public class OperationPixelDimming : Operation
             PatternText = string.Format(
                 "{0} 255 255 255{1}" +
                 "255 255 {0} 255"
-                , _brightness, "\n");
+                , Brightness, "\n");
 
             AlternatePatternText = string.Format(
                 "255 255 {0} 255{1}" +
                 "{0} 255 255 255"
-                , _brightness, "\n");
+                , Brightness, "\n");
             return;
         }
 
@@ -363,14 +314,14 @@ public class OperationPixelDimming : Operation
                 "255 {0} 255 255{1}" +
                 "{0} 255 {0} 255{1}" +
                 "255 255 255 255"
-                , _brightness, "\n");
+                , Brightness, "\n");
 
             AlternatePatternText = string.Format(
                 "255 255 255 255{1}" +
                 "{0} 255 {0} 255{1}" +
                 "255 {0} 255 255{1}" +
                 "{0} 255 {0} 255"
-                , _brightness, "\n");
+                , Brightness, "\n");
             return;
         }
 
@@ -379,12 +330,12 @@ public class OperationPixelDimming : Operation
             PatternText = string.Format(
                 "{0}{1}" +
                 "255"
-                , _brightness, "\n");
+                , Brightness, "\n");
 
             AlternatePatternText = string.Format(
                 "255{1}" +
                 "{0}"
-                , _brightness, "\n");
+                , Brightness, "\n");
             return;
         }
 
@@ -395,14 +346,14 @@ public class OperationPixelDimming : Operation
                 "255 {0} 255 {0} 255 255{1}" +
                 "{0} 255 {0} 255 {0} 255{1}" +
                 "255 255 255 255 255 255"
-                , _brightness, "\n");
+                , Brightness, "\n");
 
             AlternatePatternText = string.Format(
                 "255 {0} 255 {0} 255 {0}{1}" +
                 "255 255 {0} 255 {0} 255{1}" +
                 "255 255 255 {0} 255 255{1}" +
                 "255 255 255 255 255 255"
-                , _brightness, "\n");
+                , Brightness, "\n");
             return;
         }
 
@@ -413,14 +364,14 @@ public class OperationPixelDimming : Operation
                 "{0} 255 {0} 255{1}" +
                 "255 {0} 255 255{1}" +
                 "255 255 255 255"
-                , _brightness, "\n");
+                , Brightness, "\n");
 
             AlternatePatternText = string.Format(
                 "255 255 255 255{1}" +
                 "255 {0} 255 255{1}" +
                 "{0} 255 {0} 255{1}" +
                 "255 {0} 255 255"
-                , _brightness, "\n");
+                , Brightness, "\n");
             return;
         }
 
@@ -433,7 +384,7 @@ public class OperationPixelDimming : Operation
                 "255 {0} 255 {0} 255 255{1}" +
                 "255 255 {0} 255 255 255{1}" +
                 "255 255 255 255 255 255"
-                , _brightness, "\n");
+                , Brightness, "\n");
 
             AlternatePatternText = string.Format(
                 "255 255 255 255 255 255{1}" +
@@ -442,7 +393,7 @@ public class OperationPixelDimming : Operation
                 "255 {0} 255 255 255 {0}{1}" +
                 "255 255 {0} 255 {0} 255{1}" +
                 "255 255 255 {0} 255 255"
-                , _brightness, "\n");
+                , Brightness, "\n");
             return;
         }
 
@@ -452,13 +403,13 @@ public class OperationPixelDimming : Operation
                 "{0} 255 255{1}" +
                 "255 {0} 255{1}" +
                 "255 255 {0}"
-                , _brightness, "\n");
+                , Brightness, "\n");
 
             AlternatePatternText = string.Format(
                 "255 255 {0}{1}" +
                 "255 {0} 255{1}" +
                 "{0} 255 255"
-                , _brightness, "\n");
+                , Brightness, "\n");
             return;
         }
 
@@ -467,18 +418,18 @@ public class OperationPixelDimming : Operation
             PatternText = string.Format(
                 "{0} 255 255{1}" +
                 "255 255 {0}"
-                , _brightness, "\n");
+                , Brightness, "\n");
 
             AlternatePatternText = string.Format(
                 "255 255 {0}{1}" +
                 "{0} 255 255"
-                , _brightness, "\n");
+                , Brightness, "\n");
             return;
         }
 
         if (pattern == "Solid")
         {
-            PatternText = _brightness.ToString();
+            PatternText = Brightness.ToString();
             AlternatePatternText = null;
             return;
         }
@@ -488,21 +439,21 @@ public class OperationPixelDimming : Operation
     {
         if (pattern == "Rectilinear")
         {
-            PatternText = ($"0\n".Repeat(_infillGenSpacing) + $"255\n".Repeat(_infillGenSpacing)).Trim('\n', '\r');
+            PatternText = ($"0\n".Repeat(InfillGenSpacing) + $"255\n".Repeat(InfillGenSpacing)).Trim('\n', '\r');
             AlternatePatternText = null;
             return;
         }
 
         if (pattern == "Square grid")
         {
-            var p1 = "0 ".Repeat(_infillGenSpacing) + "255 ".Repeat(_infillGenThickness);
+            var p1 = "0 ".Repeat(InfillGenSpacing) + "255 ".Repeat(InfillGenThickness);
             p1 = p1.Trim() + "\n";
-            p1 += p1.Repeat(_infillGenThickness);
+            p1 += p1.Repeat(InfillGenThickness);
 
 
-            var p2 = "255 ".Repeat(_infillGenSpacing) + "255 ".Repeat(_infillGenThickness);
+            var p2 = "255 ".Repeat(InfillGenSpacing) + "255 ".Repeat(InfillGenThickness);
             p2 = p2.Trim() + '\n';
-            p2 += p2.Repeat(_infillGenThickness);
+            p2 += p2.Repeat(InfillGenThickness);
 
             p2 = p2.Trim('\n', '\r');
 
@@ -517,11 +468,11 @@ public class OperationPixelDimming : Operation
             var pos = 0;
             for (sbyte dir = 1; dir >= -1; dir -= 2)
             {
-                while (pos >= 0 && pos <= _infillGenSpacing)
+                while (pos >= 0 && pos <= InfillGenSpacing)
                 {
                     p1 += "0 ".Repeat(pos);
-                    p1 += "255 ".Repeat(_infillGenThickness);
-                    p1 += "0 ".Repeat(_infillGenSpacing - pos);
+                    p1 += "255 ".Repeat(InfillGenThickness);
+                    p1 += "0 ".Repeat(InfillGenSpacing - pos);
                     p1 = p1.Trim() + '\n';
 
                     pos += dir;
@@ -540,49 +491,49 @@ public class OperationPixelDimming : Operation
             var p1 = string.Empty;
             var p2 = string.Empty;
 
-            var zeros = Math.Max(0, _infillGenSpacing - _infillGenThickness * 2);
+            var zeros = Math.Max(0, InfillGenSpacing - InfillGenThickness * 2);
 
             // Pillar
-            for (int i = 0; i < _infillGenThickness; i++)
+            for (int i = 0; i < InfillGenThickness; i++)
             {
-                p1 += "255 ".Repeat(_infillGenThickness);
+                p1 += "255 ".Repeat(InfillGenThickness);
                 p1 += "0 ".Repeat(zeros);
-                p1 += "255 ".Repeat(_infillGenThickness);
+                p1 += "255 ".Repeat(InfillGenThickness);
                 p1 = p1.Trim() + '\n';
             }
 
             for (int i = 0; i < zeros; i++)
             {
-                p1 += "0 ".Repeat(_infillGenSpacing);
+                p1 += "0 ".Repeat(InfillGenSpacing);
                 p1 = p1.Trim() + '\n';
             }
 
-            for (int i = 0; i < _infillGenThickness; i++)
+            for (int i = 0; i < InfillGenThickness; i++)
             {
-                p1 += "255 ".Repeat(_infillGenThickness);
+                p1 += "255 ".Repeat(InfillGenThickness);
                 p1 += "0 ".Repeat(zeros);
-                p1 += "255 ".Repeat(_infillGenThickness);
+                p1 += "255 ".Repeat(InfillGenThickness);
                 p1 = p1.Trim() + '\n';
             }
 
             // Square
-            for (int i = 0; i < _infillGenThickness; i++)
+            for (int i = 0; i < InfillGenThickness; i++)
             {
-                p2 += "255 ".Repeat(_infillGenSpacing);
+                p2 += "255 ".Repeat(InfillGenSpacing);
                 p2 = p2.Trim() + '\n';
             }
 
             for (int i = 0; i < zeros; i++)
             {
-                p2 += "255 ".Repeat(_infillGenThickness);
+                p2 += "255 ".Repeat(InfillGenThickness);
                 p2 += "0 ".Repeat(zeros);
-                p2 += "255 ".Repeat(_infillGenThickness);
+                p2 += "255 ".Repeat(InfillGenThickness);
                 p2 = p2.Trim() + '\n';
             }
 
-            for (int i = 0; i < _infillGenThickness; i++)
+            for (int i = 0; i < InfillGenThickness; i++)
             {
-                p2 += "255 ".Repeat(_infillGenSpacing);
+                p2 += "255 ".Repeat(InfillGenSpacing);
                 p2 = p2.Trim() + '\n';
             }
 
@@ -617,7 +568,7 @@ public class OperationPixelDimming : Operation
 
         AlternatePattern ??= Pattern;
 
-        using var blankMat = EmguExtensions.InitMat(SlicerFile.Resolution);
+        using var blankMat = EmguCvExtensions.InitMat(SlicerFile.Resolution);
         using var matPattern = blankMat.NewZeros();
         using var matAlternatePattern = blankMat.NewZeros();
         using var target = GetRoiOrDefault(blankMat);
@@ -627,7 +578,7 @@ public class OperationPixelDimming : Operation
 
         using var patternMask = new Mat(matPattern, new Rectangle(0, 0, target.Width, target.Height));
         using var alternatePatternMask = new Mat(matAlternatePattern, new Rectangle(0, 0, target.Width, target.Height));
-        /*if (_wallsOnly)
+        /*if (WallsOnly)
         {
             CvInvoke.BitwiseNot(patternMask, patternMask);
             CvInvoke.BitwiseNot(alternatePatternMask, alternatePatternMask);
@@ -653,7 +604,7 @@ public class OperationPixelDimming : Operation
     {
         if (arguments is null || arguments.Length < 2) return false;
 
-        var kernel = EmguExtensions.Kernel3x3Rectangle;
+        var kernel = EmguCvExtensions.Kernel3X3Rectangle;
 
         uint layerIndex = Convert.ToUInt32(arguments[0]);
         Mat patternMask = (Mat)arguments[1];
@@ -677,18 +628,18 @@ public class OperationPixelDimming : Operation
         using var mask = GetMask(mat);
 
 
-        CvInvoke.Erode(target, erode, kernel, EmguExtensions.AnchorCenter, wallThickness, BorderType.Reflect101, default);
+        CvInvoke.Erode(target, erode, kernel, EmguCvExtensions.AnchorCenter, wallThickness, BorderType.Reflect101, default);
 
-        if (_lighteningPixels)
+        if (LighteningPixels)
         {
-            CvInvoke.Add(target, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, _wallsOnly ? target : erode);
+            CvInvoke.Add(target, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, WallsOnly ? target : erode);
         }
         else
         {
-            CvInvoke.Subtract(target, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, _wallsOnly ? target : erode);
+            CvInvoke.Subtract(target, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, WallsOnly ? target : erode);
         }
 
-        if (_wallsOnly)
+        if (WallsOnly)
         {
             originalRoi.CopyTo(target, erode);
         }

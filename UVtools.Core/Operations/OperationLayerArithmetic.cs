@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,24 +7,24 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
+using EmguExtensions;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public class OperationLayerArithmetic : Operation
+public partial class OperationLayerArithmetic : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
-    private string _sentence = null!;
     #endregion
 
     #region Enums
@@ -97,7 +97,7 @@ public class OperationLayerArithmetic : Operation
     public override string? ValidateInternally()
     {
         var sb = new StringBuilder();
-        if (string.IsNullOrWhiteSpace(_sentence))
+        if (string.IsNullOrWhiteSpace(Sentence))
             sb.AppendLine("The sentence is empty.");
         else if(!Parse())
             sb.AppendLine("Unable to parse the sentence, malformed or incomplete.");
@@ -113,18 +113,15 @@ public class OperationLayerArithmetic : Operation
 
     public override string ToString()
     {
-        var result = $"{_sentence}";
+        var result = $"{Sentence}";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
     #endregion
 
     #region Properties
-    public string Sentence
-    {
-        get => _sentence;
-        set => RaiseAndSetIfChanged(ref _sentence, value);
-    }
+    [ObservableProperty]
+    public partial string Sentence { get; set; } = null!;
     [XmlIgnore]
     public List<ArithmeticOperationGroup> Operations { get; } = [];
 
@@ -143,11 +140,11 @@ public class OperationLayerArithmetic : Operation
 
     public bool Parse()
     {
-        if (string.IsNullOrEmpty(_sentence)) return false;
+        if (string.IsNullOrEmpty(Sentence)) return false;
         Operations.Clear();
 
 
-        var sentences = Regex.Replace(_sentence, @"\s+", string.Empty)
+        var sentences = Regex.Replace(Sentence, @"\s+", string.Empty)
             .Split(';', StringSplitOptions.RemoveEmptyEntries);
 
         foreach (var sentence in sentences)
@@ -271,7 +268,7 @@ public class OperationLayerArithmetic : Operation
                         CvInvoke.Subtract(resultRoi, imageRoi, resultRoi, imageMask);
                         break;
                     case LayerArithmeticOperators.Multiply:
-                        CvInvoke.Multiply(resultRoi, imageRoi, resultRoi, EmguExtensions.ByteScale);
+                        CvInvoke.Multiply(resultRoi, imageRoi, resultRoi, EmguCvExtensions.NormalizedByteScale);
                         break;
                     case LayerArithmeticOperators.Divide:
                         CvInvoke.Divide(resultRoi, imageRoi, resultRoi);
@@ -322,7 +319,7 @@ public class OperationLayerArithmetic : Operation
     #region Equality
     protected bool Equals(OperationLayerArithmetic other)
     {
-        return _sentence == other._sentence;
+        return Sentence == other.Sentence;
     }
 
     public override bool Equals(object? obj)

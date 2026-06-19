@@ -9,6 +9,7 @@
 using System;
 using System.IO;
 using System.Text;
+using BinarySerialization;
 
 namespace UVtools.Core.Extensions;
 
@@ -39,10 +40,14 @@ public static class FileStreamExtensions
     }
 
     public static byte[] ReadBytes(this FileStream fs, uint length)
-        => fs.ReadBytes((int)length);
+    {
+        return fs.ReadBytes((int)length);
+    }
 
     public static byte[] ReadBytes(this FileStream fs, uint length, int offset)
-        => fs.ReadBytes((int)length, offset);
+    {
+        return fs.ReadBytes((int)length, offset);
+    }
 
     /// <summary>
     /// Read from current position to the end of the file
@@ -100,6 +105,7 @@ public static class FileStreamExtensions
         if (!BitConverter.IsLittleEndian) Array.Reverse(bytes); //reverse it so we get little endian.
         fs.WriteBytes(BitConverter.GetBytes(value), offset);
     }
+
     public static void WriteFloatBigEndian(this FileStream fs, float value, int offset = 0)
     {
         var bytes = BitConverter.GetBytes(value);
@@ -125,7 +131,9 @@ public static class FileStreamExtensions
     }
 
     public static uint WriteString(this FileStream fs, string text, int offset = 0)
-        => fs.WriteString(text, Encoding.UTF8, offset);
+    {
+        return fs.WriteString(text, Encoding.UTF8, offset);
+    }
 
     public static uint WriteString(this FileStream fs, string text, Encoding encoding, int offset = 0)
     {
@@ -134,10 +142,15 @@ public static class FileStreamExtensions
         return (uint)bytes.Length;
     }
 
-    public static uint WriteLine(this FileStream fs) => fs.WriteString(Environment.NewLine);
+    public static uint WriteLine(this FileStream fs)
+    {
+        return fs.WriteString(Environment.NewLine);
+    }
 
     public static uint WriteLine(this FileStream fs, string text, int offset = 0)
-        => fs.WriteLine(text, Encoding.UTF8, offset);
+    {
+        return fs.WriteLine(text, Encoding.UTF8, offset);
+    }
 
     public static uint WriteLine(this FileStream fs, string text, Encoding encoding, int offset = 0)
     {
@@ -153,7 +166,9 @@ public static class FileStreamExtensions
     }
 
     public static uint WriteLineLF(this FileStream fs, string text, int offset = 0)
-        => fs.WriteLineLF(text, Encoding.UTF8, offset);
+    {
+        return fs.WriteLineLF(text, Encoding.UTF8, offset);
+    }
 
     public static uint WriteLineLF(this FileStream fs, string text, Encoding encoding, int offset = 0)
     {
@@ -162,9 +177,15 @@ public static class FileStreamExtensions
         return (uint)bytes.Length;
     }
 
-    public static uint WriteSerialize(this FileStream fs, object data, int offset = 0)
+    public static uint WriteSerialize(this FileStream fs, object data, int offset = 0,
+        Endianness endianness = Endianness.Little)
     {
-        return Helpers.SerializeWriteFileStream(fs, data, offset);
+        return Helpers.SerializeWriteFileStream(fs, data, offset, endianness);
+    }
+
+    public static uint WriteSerialize(this FileStream fs, object data, Endianness endianness)
+    {
+        return Helpers.SerializeWriteFileStream(fs, data, endianness);
     }
 
     /// <summary>
@@ -174,7 +195,9 @@ public static class FileStreamExtensions
     /// <param name="action"></param>
     /// <param name="offset"></param>
     public static void SeekDoWorkAndRewind(this FileStream fs, long offset, Action action)
-        => fs.SeekDoWorkAndRewind(offset, SeekOrigin.Begin, action);
+    {
+        fs.SeekDoWorkAndRewind(offset, SeekOrigin.Begin, action);
+    }
 
     public static void SeekDoWorkAndRewind(this FileStream fs, long offset, SeekOrigin seekOrigin, Action action)
     {

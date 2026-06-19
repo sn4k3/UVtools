@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.ComponentModel;
 using System.Text;
@@ -13,7 +14,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.Suggestions;
 
-public sealed class SuggestionWaitTimeAfterCure : Suggestion
+public sealed partial class SuggestionWaitTimeAfterCure : Suggestion
 {
     #region Enums
     public enum SuggestionWaitTimeAfterCureSetType
@@ -26,15 +27,6 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
     #endregion
 
     #region Members
-    private SuggestionWaitTimeAfterCureSetType _setType = SuggestionWaitTimeAfterCureSetType.Fixed;
-    private decimal _fixedBottomWaitTimeAfterCure = 7;
-    private decimal _fixedWaitTimeAfterCure = 1;
-    private decimal _proportionalWaitTimeAfterCure = 1;
-    private decimal _proportionalExposureTime = 3;
-    private decimal _minimumBottomWaitTimeAfterCure = 3;
-    private decimal _minimumWaitTimeAfterCure = 1;
-    private decimal _maximumBottomWaitTimeAfterCure = 20;
-    private decimal _maximumWaitTimeAfterCure = 12;
     #endregion
 
     #region Properties
@@ -54,18 +46,18 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
         {
             if (SlicerFile is null) return false;
 
-            switch (_applyWhen)
+            switch (ApplyWhen)
             {
                 case SuggestionApplyWhen.OutsideLimits:
                     if (SlicerFile.CanUseBottomWaitTimeAfterCure)
                     {
-                        if ((decimal)SlicerFile.BottomWaitTimeAfterCure < _minimumWaitTimeAfterCure ||
-                            (decimal)SlicerFile.BottomWaitTimeAfterCure > _maximumWaitTimeAfterCure) return false;
+                        if ((decimal)SlicerFile.BottomWaitTimeAfterCure < MinimumWaitTimeAfterCure ||
+                            (decimal)SlicerFile.BottomWaitTimeAfterCure > MaximumWaitTimeAfterCure) return false;
                     }
                     if (SlicerFile.CanUseWaitTimeAfterCure)
                     {
-                        if ((decimal)SlicerFile.WaitTimeAfterCure < _minimumWaitTimeAfterCure ||
-                            (decimal)SlicerFile.WaitTimeAfterCure > _maximumWaitTimeAfterCure) return false;
+                        if ((decimal)SlicerFile.WaitTimeAfterCure < MinimumWaitTimeAfterCure ||
+                            (decimal)SlicerFile.WaitTimeAfterCure > MaximumWaitTimeAfterCure) return false;
                     }
 
                     if (SlicerFile.CanUseLayerWaitTimeAfterCure)
@@ -78,8 +70,8 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
                             }
                             else
                             {
-                                if ((decimal) layer.WaitTimeAfterCure < _minimumWaitTimeAfterCure ||
-                                    (decimal) layer.WaitTimeAfterCure > _maximumWaitTimeAfterCure) return false;
+                                if ((decimal) layer.WaitTimeAfterCure < MinimumWaitTimeAfterCure ||
+                                    (decimal) layer.WaitTimeAfterCure > MaximumWaitTimeAfterCure) return false;
                             }
                         }
                     }
@@ -147,17 +139,17 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
         {
             if (SlicerFile.CanUseLayerWaitTimeAfterCure || SlicerFile is {CanUseBottomWaitTimeAfterCure: true, CanUseWaitTimeAfterCure: true})
             {
-                return (_setType == SuggestionWaitTimeAfterCureSetType.Fixed
-                           ? $"The recommended wait time must be {_fixedBottomWaitTimeAfterCure}/{_fixedWaitTimeAfterCure}s"
-                           : $"The recommended wait time is a ratio of (wait time){_proportionalWaitTimeAfterCure}s to (exposure time){_proportionalExposureTime}s") +
-                       $" constrained from [Bottoms={_minimumBottomWaitTimeAfterCure}s to {_maximumBottomWaitTimeAfterCure}s] and [Normals={_minimumWaitTimeAfterCure}s to {_maximumWaitTimeAfterCure}s].\n" +
+                return (SetType == SuggestionWaitTimeAfterCureSetType.Fixed
+                           ? $"The recommended wait time must be {FixedBottomWaitTimeAfterCure}/{FixedWaitTimeAfterCure}s"
+                           : $"The recommended wait time is a ratio of (wait time){ProportionalWaitTimeAfterCure}s to (exposure time){ProportionalExposureTime}s") +
+                       $" constrained from [Bottoms={MinimumBottomWaitTimeAfterCure}s to {MaximumBottomWaitTimeAfterCure}s] and [Normals={MinimumWaitTimeAfterCure}s to {MaximumWaitTimeAfterCure}s].\n" +
                        $"Explanation: {Description}";
             }
 
-            return (_setType == SuggestionWaitTimeAfterCureSetType.Fixed
-                       ? $"The recommended wait time must be {_fixedWaitTimeAfterCure}s"
-                       : $"The recommended wait time is a ratio of (wait time){_proportionalWaitTimeAfterCure}s to (exposure time){_proportionalExposureTime}s") +
-                   $" constrained from {_minimumWaitTimeAfterCure}s to {_maximumWaitTimeAfterCure}s.\n" +
+            return (SetType == SuggestionWaitTimeAfterCureSetType.Fixed
+                       ? $"The recommended wait time must be {FixedWaitTimeAfterCure}s"
+                       : $"The recommended wait time is a ratio of (wait time){ProportionalWaitTimeAfterCure}s to (exposure time){ProportionalExposureTime}s") +
+                   $" constrained from {MinimumWaitTimeAfterCure}s to {MaximumWaitTimeAfterCure}s.\n" +
                    $"Explanation: {Description}";
         }
     }
@@ -176,67 +168,61 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
         }
     }
 
-    public SuggestionWaitTimeAfterCureSetType SetType
-    {
-        get => _setType;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _setType, value)) return;
-            RaisePropertyChanged(nameof(IsSetTypeFixed));
-            RaisePropertyChanged(nameof(IsSetTypeProportionalExposure));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSetTypeFixed))]
+    [NotifyPropertyChangedFor(nameof(IsSetTypeProportionalExposure))]
+    public partial SuggestionWaitTimeAfterCureSetType SetType { get; set; } = SuggestionWaitTimeAfterCureSetType.Fixed;
 
-    public bool IsSetTypeFixed => _setType == SuggestionWaitTimeAfterCureSetType.Fixed;
-    public bool IsSetTypeProportionalExposure => _setType == SuggestionWaitTimeAfterCureSetType.ProportionalExposure;
+    public bool IsSetTypeFixed => SetType == SuggestionWaitTimeAfterCureSetType.Fixed;
+    public bool IsSetTypeProportionalExposure => SetType == SuggestionWaitTimeAfterCureSetType.ProportionalExposure;
 
     public decimal FixedBottomWaitTimeAfterCure
     {
-        get => _fixedBottomWaitTimeAfterCure;
-        set => RaiseAndSetIfChanged(ref _fixedBottomWaitTimeAfterCure, Math.Round(value, 2));
-    }
+        get;
+        set => SetProperty(ref field, Math.Round(value, 2));
+    } = 7;
 
     public decimal FixedWaitTimeAfterCure
     {
-        get => _fixedWaitTimeAfterCure;
-        set => RaiseAndSetIfChanged(ref _fixedWaitTimeAfterCure, Math.Round(value, 2));
-    }
+        get;
+        set => SetProperty(ref field, Math.Round(value, 2));
+    } = 1;
 
     public decimal ProportionalWaitTimeAfterCure
     {
-        get => _proportionalWaitTimeAfterCure;
-        set => RaiseAndSetIfChanged(ref _proportionalWaitTimeAfterCure, Math.Round(value, 2));
-    }
+        get;
+        set => SetProperty(ref field, Math.Round(value, 2));
+    } = 1;
 
     public decimal ProportionalExposureTime
     {
-        get => _proportionalExposureTime;
-        set => RaiseAndSetIfChanged(ref _proportionalExposureTime, Math.Round(value, 2));
-    }
+        get;
+        set => SetProperty(ref field, Math.Round(value, 2));
+    } = 3;
         
     public decimal MinimumBottomWaitTimeAfterCure
     {
-        get => _minimumBottomWaitTimeAfterCure;
-        set => RaiseAndSetIfChanged(ref _minimumBottomWaitTimeAfterCure, Math.Round(value, 2));
-    }
+        get;
+        set => SetProperty(ref field, Math.Round(value, 2));
+    } = 3;
 
     public decimal MinimumWaitTimeAfterCure
     {
-        get => _minimumWaitTimeAfterCure;
-        set => RaiseAndSetIfChanged(ref _minimumWaitTimeAfterCure, Math.Round(value, 2));
-    }
+        get;
+        set => SetProperty(ref field, Math.Round(value, 2));
+    } = 1;
 
     public decimal MaximumBottomWaitTimeAfterCure
     {
-        get => _maximumBottomWaitTimeAfterCure;
-        set => RaiseAndSetIfChanged(ref _maximumBottomWaitTimeAfterCure, Math.Round(value, 2));
-    }
+        get;
+        set => SetProperty(ref field, Math.Round(value, 2));
+    } = 20;
 
     public decimal MaximumWaitTimeAfterCure
     {
-        get => _maximumWaitTimeAfterCure;
-        set => RaiseAndSetIfChanged(ref _maximumWaitTimeAfterCure, Math.Round(value, 2));
-    }
+        get;
+        set => SetProperty(ref field, Math.Round(value, 2));
+    } = 12;
 
     #endregion
 
@@ -244,7 +230,7 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
 
     public SuggestionWaitTimeAfterCure()
     {
-        _applyWhen = SuggestionApplyWhen.Different;
+        ApplyWhen = SuggestionApplyWhen.Different;
     }
 
     #endregion
@@ -255,24 +241,24 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
     {
         var sb = new StringBuilder();
 
-        if (_minimumBottomWaitTimeAfterCure > _maximumBottomWaitTimeAfterCure)
+        if (MinimumBottomWaitTimeAfterCure > MaximumBottomWaitTimeAfterCure)
         {
             sb.AppendLine("Minimum bottom limit can't be higher than maximum bottom limit");
         }
 
-        if (_minimumWaitTimeAfterCure > _maximumWaitTimeAfterCure)
+        if (MinimumWaitTimeAfterCure > MaximumWaitTimeAfterCure)
         {
             sb.AppendLine("Minimum normal limit can't be higher than maximum normal limit");
         }
 
-        if (_setType == SuggestionWaitTimeAfterCureSetType.ProportionalExposure)
+        if (SetType == SuggestionWaitTimeAfterCureSetType.ProportionalExposure)
         {
-            if (_proportionalWaitTimeAfterCure <= 0)
+            if (ProportionalWaitTimeAfterCure <= 0)
             {
                 sb.AppendLine("The proportional wait time must be higher than 0s");
             }
 
-            if (_proportionalExposureTime <= 0)
+            if (ProportionalExposureTime <= 0)
             {
                 sb.AppendLine("The proportional exposure time must be higher than 0s");
             }
@@ -310,16 +296,16 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
 
     public float CalculateWaitTime(LayerGroup layerGroup, decimal exposureTime)
     {
-        return _setType switch
+        return SetType switch
         {
             SuggestionWaitTimeAfterCureSetType.Fixed => (float) (layerGroup == LayerGroup.Bottom
-                ? _fixedBottomWaitTimeAfterCure
-                : _fixedWaitTimeAfterCure),
+                ? FixedBottomWaitTimeAfterCure
+                : FixedWaitTimeAfterCure),
             SuggestionWaitTimeAfterCureSetType.ProportionalExposure => 
                 (float)Math.Clamp(
-                    Math.Round(exposureTime * _proportionalWaitTimeAfterCure / _proportionalExposureTime, 2),
-                    layerGroup == LayerGroup.Bottom ? _minimumBottomWaitTimeAfterCure : _minimumWaitTimeAfterCure,
-                    layerGroup == LayerGroup.Bottom ? _maximumBottomWaitTimeAfterCure : _maximumWaitTimeAfterCure
+                    Math.Round(exposureTime * ProportionalWaitTimeAfterCure / ProportionalExposureTime, 2),
+                    layerGroup == LayerGroup.Bottom ? MinimumBottomWaitTimeAfterCure : MinimumWaitTimeAfterCure,
+                    layerGroup == LayerGroup.Bottom ? MaximumBottomWaitTimeAfterCure : MaximumWaitTimeAfterCure
                 ),
             _ => throw new ArgumentOutOfRangeException()
         };

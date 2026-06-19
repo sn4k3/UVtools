@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,12 +7,13 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
+using EmguExtensions;
 using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
@@ -21,7 +22,7 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public class OperationDoubleExposure : Operation
+public partial class OperationDoubleExposure : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
@@ -29,17 +30,6 @@ public class OperationDoubleExposure : Operation
     private decimal _firstNormalExposure;
     private decimal _secondBottomExposure;
     private decimal _secondNormalExposure;
-    private byte _firstBottomErodeIterations = 4;
-    private byte _secondBottomErodeIterations;
-    private byte _firstNormalErodeIterations = 1;
-    private byte _secondNormalErodeIterations;
-    private bool _secondLayerDifference = true;
-    private byte _secondLayerDifferenceOverlapErodeIterations = 10;
-    private bool _differentSettingsForSecondLayer;
-    private bool _secondLayerLiftHeightEnabled = true;
-    private decimal _secondLayerLiftHeight;
-    private bool _secondLayerWaitTimeBeforeCureEnabled = true;
-    private decimal _secondLayerWaitTimeBeforeCure;
 
     #endregion
 
@@ -78,7 +68,7 @@ public class OperationDoubleExposure : Operation
     {
         var sb = new StringBuilder();
 
-        //if (LayerRangeHaveBottoms && _firstBottomExposure == _secondBottomExposure && _firstBottomErodeIterations == _secondBottomErodeIterations)
+        //if (LayerRangeHaveBottoms && _firstBottomExposure == _secondBottomExposure && FirstBottomErodeIterations == SecondBottomErodeIterations)
         //    sb.AppendLine("The settings for bottoms layers will produce exactly to equal layers");
 
 
@@ -99,9 +89,9 @@ public class OperationDoubleExposure : Operation
 
     public override string ToString()
     {
-        var result = $"[1º exp: {_firstBottomExposure}/{_firstNormalExposure}s erode: {_firstBottomErodeIterations}/{_firstNormalErodeIterations}px] " +
-                     $"[2º exp: {_secondBottomExposure}/{_secondNormalExposure}s erode: {_secondBottomErodeIterations}/{_secondNormalErodeIterations}px] " +
-                     $"[Diff: {_secondLayerDifference} Overlap: {_secondLayerDifferenceOverlapErodeIterations}px]" + LayerRangeString;
+        var result = $"[1º exp: {_firstBottomExposure}/{_firstNormalExposure}s erode: {FirstBottomErodeIterations}/{FirstNormalErodeIterations}px] " +
+                     $"[2º exp: {_secondBottomExposure}/{_secondNormalExposure}s erode: {SecondBottomErodeIterations}/{SecondNormalErodeIterations}px] " +
+                     $"[Diff: {SecondLayerDifference} Overlap: {SecondLayerDifferenceOverlapErodeIterations}px]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -112,92 +102,59 @@ public class OperationDoubleExposure : Operation
     public decimal FirstBottomExposure
     {
         get => _firstBottomExposure;
-        set => RaiseAndSetIfChanged(ref _firstBottomExposure, Math.Round(value, 2));
+        set => SetProperty(ref _firstBottomExposure, Math.Round(value, 2));
     }
 
     public decimal FirstNormalExposure
     {
         get => _firstNormalExposure;
-        set => RaiseAndSetIfChanged(ref _firstNormalExposure, Math.Round(value, 2));
+        set => SetProperty(ref _firstNormalExposure, Math.Round(value, 2));
     }
 
     public decimal SecondBottomExposure
     {
         get => _secondBottomExposure;
-        set => RaiseAndSetIfChanged(ref _secondBottomExposure, Math.Round(value, 2));
+        set => SetProperty(ref _secondBottomExposure, Math.Round(value, 2));
     }
 
     public decimal SecondNormalExposure
     {
         get => _secondNormalExposure;
-        set => RaiseAndSetIfChanged(ref _secondNormalExposure, Math.Round(value, 2));
+        set => SetProperty(ref _secondNormalExposure, Math.Round(value, 2));
     }
 
-    public byte FirstBottomErodeIterations
-    {
-        get => _firstBottomErodeIterations;
-        set => RaiseAndSetIfChanged(ref _firstBottomErodeIterations, value);
-    }
+    [ObservableProperty]
+    public partial byte FirstBottomErodeIterations { get; set; } = 4;
 
-    public byte SecondBottomErodeIterations
-    {
-        get => _secondBottomErodeIterations;
-        set => RaiseAndSetIfChanged(ref _secondBottomErodeIterations, value);
-    }
+    [ObservableProperty]
+    public partial byte SecondBottomErodeIterations { get; set; }
 
-    public byte FirstNormalErodeIterations
-    {
-        get => _firstNormalErodeIterations;
-        set => RaiseAndSetIfChanged(ref _firstNormalErodeIterations, value);
-    }
+    [ObservableProperty]
+    public partial byte FirstNormalErodeIterations { get; set; } = 1;
 
-    public byte SecondNormalErodeIterations
-    {
-        get => _secondNormalErodeIterations;
-        set => RaiseAndSetIfChanged(ref _secondNormalErodeIterations, value);
-    }
+    [ObservableProperty]
+    public partial byte SecondNormalErodeIterations { get; set; }
 
-    public bool SecondLayerDifference
-    {
-        get => _secondLayerDifference;
-        set => RaiseAndSetIfChanged(ref _secondLayerDifference, value);
-    }
+    [ObservableProperty]
+    public partial bool SecondLayerDifference { get; set; } = true;
 
-    public byte SecondLayerDifferenceOverlapErodeIterations
-    {
-        get => _secondLayerDifferenceOverlapErodeIterations;
-        set => RaiseAndSetIfChanged(ref _secondLayerDifferenceOverlapErodeIterations, value);
-    }
+    [ObservableProperty]
+    public partial byte SecondLayerDifferenceOverlapErodeIterations { get; set; } = 10;
 
-    public bool DifferentSettingsForSecondLayer
-    {
-        get => _differentSettingsForSecondLayer;
-        set => RaiseAndSetIfChanged(ref _differentSettingsForSecondLayer, value);
-    }
+    [ObservableProperty]
+    public partial bool DifferentSettingsForSecondLayer { get; set; }
 
-    public bool SecondLayerLiftHeightEnabled
-    {
-        get => _secondLayerLiftHeightEnabled;
-        set => RaiseAndSetIfChanged(ref _secondLayerLiftHeightEnabled, value);
-    }
+    [ObservableProperty]
+    public partial bool SecondLayerLiftHeightEnabled { get; set; } = true;
 
-    public decimal SecondLayerLiftHeight
-    {
-        get => _secondLayerLiftHeight;
-        set => RaiseAndSetIfChanged(ref _secondLayerLiftHeight, value);
-    }
+    [ObservableProperty]
+    public partial decimal SecondLayerLiftHeight { get; set; }
 
-    public bool SecondLayerWaitTimeBeforeCureEnabled
-    {
-        get => _secondLayerWaitTimeBeforeCureEnabled;
-        set => RaiseAndSetIfChanged(ref _secondLayerWaitTimeBeforeCureEnabled, value);
-    }
+    [ObservableProperty]
+    public partial bool SecondLayerWaitTimeBeforeCureEnabled { get; set; } = true;
 
-    public decimal SecondLayerWaitTimeBeforeCure
-    {
-        get => _secondLayerWaitTimeBeforeCure;
-        set => RaiseAndSetIfChanged(ref _secondLayerWaitTimeBeforeCure, value);
-    }
+    [ObservableProperty]
+    public partial decimal SecondLayerWaitTimeBeforeCure { get; set; }
 
 
     public KernelConfiguration Kernel { get; set; } = new();
@@ -212,16 +169,16 @@ public class OperationDoubleExposure : Operation
     {
         if (SlicerFile.SupportPerLayerSettings)
         {
-            _differentSettingsForSecondLayer = true;
+            DifferentSettingsForSecondLayer = true;
             if (SlicerFile.SupportGCode)
             {
-                _secondLayerLiftHeight = 0;
-                _secondLayerWaitTimeBeforeCure = 2;
+                SecondLayerLiftHeight = 0;
+                SecondLayerWaitTimeBeforeCure = 2;
             }
             else
             {
-                _secondLayerLiftHeight = 0.1m;
-                _secondLayerWaitTimeBeforeCure = 0;
+                SecondLayerLiftHeight = 0.1m;
+                SecondLayerWaitTimeBeforeCure = 0;
             }
         }
     }
@@ -241,7 +198,7 @@ public class OperationDoubleExposure : Operation
 
     protected bool Equals(OperationDoubleExposure other)
     {
-        return _firstBottomExposure == other._firstBottomExposure && _firstNormalExposure == other._firstNormalExposure && _secondBottomExposure == other._secondBottomExposure && _secondNormalExposure == other._secondNormalExposure && _firstBottomErodeIterations == other._firstBottomErodeIterations && _secondBottomErodeIterations == other._secondBottomErodeIterations && _firstNormalErodeIterations == other._firstNormalErodeIterations && _secondNormalErodeIterations == other._secondNormalErodeIterations && _secondLayerDifference == other._secondLayerDifference && _secondLayerDifferenceOverlapErodeIterations == other._secondLayerDifferenceOverlapErodeIterations && _differentSettingsForSecondLayer == other._differentSettingsForSecondLayer && _secondLayerLiftHeightEnabled == other._secondLayerLiftHeightEnabled && _secondLayerLiftHeight == other._secondLayerLiftHeight && _secondLayerWaitTimeBeforeCureEnabled == other._secondLayerWaitTimeBeforeCureEnabled && _secondLayerWaitTimeBeforeCure == other._secondLayerWaitTimeBeforeCure;
+        return _firstBottomExposure == other._firstBottomExposure && _firstNormalExposure == other._firstNormalExposure && _secondBottomExposure == other._secondBottomExposure && _secondNormalExposure == other._secondNormalExposure && FirstBottomErodeIterations == other.FirstBottomErodeIterations && SecondBottomErodeIterations == other.SecondBottomErodeIterations && FirstNormalErodeIterations == other.FirstNormalErodeIterations && SecondNormalErodeIterations == other.SecondNormalErodeIterations && SecondLayerDifference == other.SecondLayerDifference && SecondLayerDifferenceOverlapErodeIterations == other.SecondLayerDifferenceOverlapErodeIterations && DifferentSettingsForSecondLayer == other.DifferentSettingsForSecondLayer && SecondLayerLiftHeightEnabled == other.SecondLayerLiftHeightEnabled && SecondLayerLiftHeight == other.SecondLayerLiftHeight && SecondLayerWaitTimeBeforeCureEnabled == other.SecondLayerWaitTimeBeforeCureEnabled && SecondLayerWaitTimeBeforeCure == other.SecondLayerWaitTimeBeforeCure;
     }
 
     public override bool Equals(object? obj)
@@ -283,14 +240,14 @@ public class OperationDoubleExposure : Operation
             firstLayer.ExposureTime = (float)( isBottomLayer ? _firstBottomExposure : _firstNormalExposure);
             secondLayer.ExposureTime = (float)(isBottomLayer ? _secondBottomExposure : _secondNormalExposure);
 
-            if (_differentSettingsForSecondLayer)
+            if (DifferentSettingsForSecondLayer)
             {
-                if (_secondLayerLiftHeightEnabled) secondLayer.LiftHeightTotal = (float)_secondLayerLiftHeight;
-                if (_secondLayerWaitTimeBeforeCureEnabled) secondLayer.SetWaitTimeBeforeCureOrLightOffDelay((float)_secondLayerWaitTimeBeforeCure);
+                if (SecondLayerLiftHeightEnabled) secondLayer.LiftHeightTotal = (float)SecondLayerLiftHeight;
+                if (SecondLayerWaitTimeBeforeCureEnabled) secondLayer.SetWaitTimeBeforeCureOrLightOffDelay((float)SecondLayerWaitTimeBeforeCure);
             }
 
-            byte firstErodeIterations = isBottomLayer ? _firstBottomErodeIterations : _firstNormalErodeIterations;
-            byte secondErodeIterations = isBottomLayer ? _secondBottomErodeIterations : _secondNormalErodeIterations;
+            byte firstErodeIterations = isBottomLayer ? FirstBottomErodeIterations : FirstNormalErodeIterations;
+            byte secondErodeIterations = isBottomLayer ? SecondBottomErodeIterations : SecondNormalErodeIterations;
 
             using (var mat = firstLayer.LayerMat)
             {
@@ -299,16 +256,16 @@ public class OperationDoubleExposure : Operation
                 {
                     int tempIterations = firstErodeIterations;
                     var kernel = Kernel.GetKernel(ref tempIterations);
-                    CvInvoke.Erode(mat, mat, kernel, EmguExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
+                    CvInvoke.Erode(mat, mat, kernel, EmguCvExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
                     firstLayer.LayerMat = mat;
                     firstLayer.CopyImageTo(secondLayer);
 
-                    if (_secondLayerDifference && _secondLayerDifferenceOverlapErodeIterations > 0)
+                    if (SecondLayerDifference && SecondLayerDifferenceOverlapErodeIterations > 0)
                     {
-                        tempIterations = _secondLayerDifferenceOverlapErodeIterations;
+                        tempIterations = SecondLayerDifferenceOverlapErodeIterations;
                         kernel = Kernel.GetKernel(ref tempIterations);
                         using var matErode = new Mat();
-                        CvInvoke.Erode(mat, matErode, kernel, EmguExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
+                        CvInvoke.Erode(mat, matErode, kernel, EmguCvExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
                         //CvInvoke.Threshold(matErode, matErode, 127, 255, ThresholdType.Binary);
                         CvInvoke.Subtract(mat, matErode, mat);
                         secondLayer.LayerMat = mat;
@@ -327,7 +284,7 @@ public class OperationDoubleExposure : Operation
                         int tempIterations = firstErodeIterations;
                         var kernel = Kernel.GetKernel(ref tempIterations);
                         firstMat = new Mat();
-                        CvInvoke.Erode(mat, firstMat, kernel, EmguExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
+                        CvInvoke.Erode(mat, firstMat, kernel, EmguCvExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
                         firstLayer.LayerMat = firstMat;
                     }
 
@@ -336,19 +293,19 @@ public class OperationDoubleExposure : Operation
                         int tempIterations = secondErodeIterations;
                         var kernel = Kernel.GetKernel(ref tempIterations);
                         secondMat = new Mat();
-                        CvInvoke.Erode(mat, secondMat, kernel, EmguExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
+                        CvInvoke.Erode(mat, secondMat, kernel, EmguCvExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
                     }
 
-                    if(firstMat is not null && _secondLayerDifference)
+                    if(firstMat is not null && SecondLayerDifference)
                     {
-                        if (firstErodeIterations + _secondLayerDifferenceOverlapErodeIterations != secondErodeIterations)
+                        if (firstErodeIterations + SecondLayerDifferenceOverlapErodeIterations != secondErodeIterations)
                         {
-                            if (_secondLayerDifferenceOverlapErodeIterations > 0 &&
-                                firstErodeIterations + _secondLayerDifferenceOverlapErodeIterations != secondErodeIterations)
+                            if (SecondLayerDifferenceOverlapErodeIterations > 0 &&
+                                firstErodeIterations + SecondLayerDifferenceOverlapErodeIterations != secondErodeIterations)
                             {
-                                int tempIterations = _secondLayerDifferenceOverlapErodeIterations;
+                                int tempIterations = SecondLayerDifferenceOverlapErodeIterations;
                                 var kernel = Kernel.GetKernel(ref tempIterations);
-                                CvInvoke.Erode(firstMat, firstMat, kernel, EmguExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
+                                CvInvoke.Erode(firstMat, firstMat, kernel, EmguCvExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
                                 //CvInvoke.Threshold(firstMat, firstMat, 127, 255, ThresholdType.Binary);
                             }
 

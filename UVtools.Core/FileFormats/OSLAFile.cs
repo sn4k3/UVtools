@@ -349,7 +349,7 @@ public sealed class OSLAFile : FileFormat
         set
         {
             HeaderSettings.MachineZ = MathF.Round(value, 2);
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 
@@ -359,7 +359,7 @@ public sealed class OSLAFile : FileFormat
         set
         {
             HeaderSettings.DisplayMirror = (byte)value;
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 

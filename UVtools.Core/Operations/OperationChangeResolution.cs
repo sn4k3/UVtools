@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -6,7 +6,8 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Emgu.CV;
+using EmguExtensions;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Drawing;
 using System.Text;
@@ -18,13 +19,12 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationChangeResolution : Operation
+public sealed partial class OperationChangeResolution : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
     private uint _newResolutionX;
     private uint _newResolutionY;
-    private bool _fixRatio;
     private decimal _newDisplayWidth;
     private decimal _newDisplayHeight;
 
@@ -100,7 +100,7 @@ public sealed class OperationChangeResolution : Operation
 
     public override string ToString()
     {
-        var result = $"{_newResolutionX}x{_newResolutionY} [Display: {_newDisplayWidth}x{_newDisplayHeight}] [Fix ratio: {_fixRatio}]";
+        var result = $"{_newResolutionX}x{_newResolutionY} [Display: {_newDisplayWidth}x{_newDisplayHeight}] [Fix ratio: {FixRatio}]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -113,10 +113,10 @@ public sealed class OperationChangeResolution : Operation
         get => _newResolutionX;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _newResolutionX, Math.Max(1, value))) return;
-            RaisePropertyChanged(nameof(NewPixelSizeMicrons));
-            RaisePropertyChanged(nameof(NewFixedRatioX));
-            RaisePropertyChanged(nameof(FinalBoundsWidth));
+            if(!SetProperty(ref _newResolutionX, Math.Max(1, value))) return;
+            OnPropertyChanged(nameof(NewPixelSizeMicrons));
+            OnPropertyChanged(nameof(NewFixedRatioX));
+            OnPropertyChanged(nameof(FinalBoundsWidth));
         }
     }
 
@@ -125,10 +125,10 @@ public sealed class OperationChangeResolution : Operation
         get => _newResolutionY;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _newResolutionY, Math.Max(1, value))) return;
-            RaisePropertyChanged(nameof(NewPixelSizeMicrons));
-            RaisePropertyChanged(nameof(NewFixedRatioY));
-            RaisePropertyChanged(nameof(FinalBoundsHeight));
+            if(!SetProperty(ref _newResolutionY, Math.Max(1, value))) return;
+            OnPropertyChanged(nameof(NewPixelSizeMicrons));
+            OnPropertyChanged(nameof(NewFixedRatioY));
+            OnPropertyChanged(nameof(FinalBoundsHeight));
         }
     }
 
@@ -137,9 +137,9 @@ public sealed class OperationChangeResolution : Operation
         get => _newDisplayWidth;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _newDisplayWidth, Math.Max(0, value))) return;
-            RaisePropertyChanged(nameof(NewPixelSizeMicrons));
-            RaisePropertyChanged(nameof(NewFixedRatioX));
+            if(!SetProperty(ref _newDisplayWidth, Math.Max(0, value))) return;
+            OnPropertyChanged(nameof(NewPixelSizeMicrons));
+            OnPropertyChanged(nameof(NewFixedRatioX));
         }
     }
 
@@ -148,9 +148,9 @@ public sealed class OperationChangeResolution : Operation
         get => _newDisplayHeight;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _newDisplayHeight, Math.Max(0, value))) return;
-            RaisePropertyChanged(nameof(NewPixelSizeMicrons));
-            RaisePropertyChanged(nameof(NewFixedRatioY));
+            if (!SetProperty(ref _newDisplayHeight, Math.Max(0, value))) return;
+            OnPropertyChanged(nameof(NewPixelSizeMicrons));
+            OnPropertyChanged(nameof(NewFixedRatioY));
         }
     }
 
@@ -183,19 +183,13 @@ public sealed class OperationChangeResolution : Operation
         }
     }
 
-    public bool FixRatio
-    {
-        get => _fixRatio;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _fixRatio, value)) return;
-            RaisePropertyChanged(nameof(FinalBoundsWidth));
-            RaisePropertyChanged(nameof(FinalBoundsHeight));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FinalBoundsWidth))]
+    [NotifyPropertyChangedFor(nameof(FinalBoundsHeight))]
+    public partial bool FixRatio { get; set; }
 
-    public uint FinalBoundsWidth => (uint)(_fixRatio ? SlicerFile.BoundingRectangle.Width * NewFixedRatioX : SlicerFile.BoundingRectangle.Width);
-    public uint FinalBoundsHeight => (uint)(_fixRatio ? SlicerFile.BoundingRectangle.Height * NewFixedRatioY : SlicerFile.BoundingRectangle.Height);
+    public uint FinalBoundsWidth => (uint)(FixRatio ? SlicerFile.BoundingRectangle.Width * NewFixedRatioX : SlicerFile.BoundingRectangle.Width);
+    public uint FinalBoundsHeight => (uint)(FixRatio ? SlicerFile.BoundingRectangle.Height * NewFixedRatioY : SlicerFile.BoundingRectangle.Height);
 
     #endregion
 
@@ -262,13 +256,13 @@ public sealed class OperationChangeResolution : Operation
 
             if (mat.Size != newSize)
             {
-                using var matDst = EmguExtensions.InitMat(newSize);
+                using var matDst = EmguCvExtensions.InitMat(newSize);
 
                 if (SlicerFile[layerIndex].NonZeroPixelCount > 0)
                 {
                     mat.CopyRegionToCenter(OriginalBoundingRectangle, matDst);
 
-                    if (_fixRatio && (newFixedRatioX != 1.0 || newFixedRatioY != 1.0))
+                    if (FixRatio && (newFixedRatioX != 1.0 || newFixedRatioY != 1.0))
                     {
                         matDst.TransformFromCenter(newFixedRatioX, newFixedRatioY);
                     }
@@ -318,7 +312,7 @@ public sealed class OperationChangeResolution : Operation
 
     private bool Equals(OperationChangeResolution other)
     {
-        return _newResolutionX == other._newResolutionX && _newResolutionY == other._newResolutionY && _fixRatio == other._fixRatio && _newDisplayWidth == other._newDisplayWidth && _newDisplayHeight == other._newDisplayHeight;
+        return _newResolutionX == other._newResolutionX && _newResolutionY == other._newResolutionY && FixRatio == other.FixRatio && _newDisplayWidth == other._newDisplayWidth && _newDisplayHeight == other._newDisplayHeight;
     }
 
     public override bool Equals(object? obj)

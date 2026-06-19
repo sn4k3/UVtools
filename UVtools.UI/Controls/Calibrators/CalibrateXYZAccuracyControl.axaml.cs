@@ -3,7 +3,7 @@ using Avalonia.Threading;
 using SukiUI.MessageBox;
 using System.Threading.Tasks;
 using System.Timers;
-using UVtools.Core.Dialogs;
+using EmguExtensions.Avalonia;
 using UVtools.Core.Operations;
 using UVtools.UI.Controls.Tools;
 using UVtools.UI.Extensions;

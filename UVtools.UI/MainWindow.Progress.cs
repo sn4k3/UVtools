@@ -8,7 +8,6 @@
 
 using Avalonia.Threading;
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.Timers;
 using UVtools.Core.Operations;
 using UVtools.UI.Structures;

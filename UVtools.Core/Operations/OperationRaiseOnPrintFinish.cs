@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Text;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -15,13 +16,12 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public class OperationRaiseOnPrintFinish : Operation
+public partial class OperationRaiseOnPrintFinish : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
     private decimal _positionZ;
     private decimal _waitTime = 1200; // 20m
-    private bool _outputDummyPixel = true;
 
     #endregion
 
@@ -88,7 +88,7 @@ public class OperationRaiseOnPrintFinish : Operation
 
     public override string ToString()
     {
-        var result = $"[Z={_positionZ}mm] [Wait: {_waitTime}s] [Dummy pixel: {_outputDummyPixel}]";
+        var result = $"[Z={_positionZ}mm] [Wait: {_waitTime}s] [Dummy pixel: {OutputDummyPixel}]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -106,7 +106,7 @@ public class OperationRaiseOnPrintFinish : Operation
     public decimal PositionZ
     {
         get => _positionZ;
-        set => RaiseAndSetIfChanged(ref _positionZ, Layer.RoundHeight(value));
+        set => SetProperty(ref _positionZ, Layer.RoundHeight(value));
     }
 
     /// <summary>
@@ -117,24 +117,21 @@ public class OperationRaiseOnPrintFinish : Operation
     public decimal WaitTime
     {
         get => _waitTime;
-        set => RaiseAndSetIfChanged(ref _waitTime, Math.Round(Math.Max(0, value), 2));
+        set => SetProperty(ref _waitTime, Math.Round(Math.Max(0, value), 2));
     }
 
     /// <summary>
     /// True to output a dummy pixel on bounding rectangle position to avoid empty layer and blank image, otherwise set to false
     /// </summary>
-    public bool OutputDummyPixel
-    {
-        get => _outputDummyPixel;
-        set => RaiseAndSetIfChanged(ref _outputDummyPixel, value);
-    }
+    [ObservableProperty]
+    public partial bool OutputDummyPixel { get; set; } = true;
     #endregion
 
     #region Constructor
 
     public OperationRaiseOnPrintFinish()
     {
-        //_outputDummyPixel = !SlicerFile.SupportsGCode;
+        //OutputDummyPixel = !SlicerFile.SupportsGCode;
     }
 
     public OperationRaiseOnPrintFinish(FileFormat slicerFile) : base(slicerFile)
@@ -151,7 +148,7 @@ public class OperationRaiseOnPrintFinish : Operation
 
     protected bool Equals(OperationRaiseOnPrintFinish other)
     {
-        return _positionZ == other._positionZ && _outputDummyPixel == other._outputDummyPixel && _waitTime == other._waitTime;
+        return _positionZ == other._positionZ && OutputDummyPixel == other.OutputDummyPixel && _waitTime == other._waitTime;
     }
 
     public override bool Equals(object? obj)
@@ -180,7 +177,7 @@ public class OperationRaiseOnPrintFinish : Operation
         layer.ExposureTime = SlicerFile.SupportGCode ? 0 : 0.05f; // Very low exposure time
         layer.LightPWM = 0; // Try to disable light if possible
         layer.SetNoDelays();
-        using var newMat = _outputDummyPixel
+        using var newMat = OutputDummyPixel
             ? SlicerFile.CreateMatWithDummyPixelFromLayer(SlicerFile.LastLayerIndex)
             : SlicerFile.CreateMat();
 

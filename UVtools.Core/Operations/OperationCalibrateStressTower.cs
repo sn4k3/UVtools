@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,8 +7,10 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using EmguExtensions;
 using System;
 using System.Drawing;
 using System.Text;
@@ -21,27 +23,15 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationCalibrateStressTower : Operation
+public sealed partial class OperationCalibrateStressTower : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
     private decimal _displayWidth;
     private decimal _displayHeight;
     private decimal _layerHeight;
-    private ushort _bottomLayers;
     private decimal _bottomExposure;
     private decimal _normalExposure;
-    private decimal _baseDiameter = 30;
-    private decimal _baseHeight = 3;
-    private decimal _bodyHeight = 50;
-    private decimal _ceilHeight = 3;
-    private byte _chamferLayers = 6;
-    private bool _enableAntiAliasing = true;
-    private bool _mirrorOutput;
-    private byte _spirals = 2;
-    private decimal _spiralDiameter = 2;
-    private SpiralDirections _spiralDirection = SpiralDirections.Both;
-    private decimal _spiralAngleStepPerLayer = 1;
 
     #endregion
 
@@ -84,13 +74,13 @@ public sealed class OperationCalibrateStressTower : Operation
     public override string ToString()
     {
         var result = $"[Layer Height: {_layerHeight}] " +
-                     $"[Bottom layers: {_bottomLayers}] " +
+                     $"[Bottom layers: {BottomLayers}] " +
                      $"[Exposure: {_bottomExposure}/{_normalExposure}] " +
-                     $"[Base: H:{_baseHeight} D:{_baseDiameter}] " +
-                     $"[Ceil: {_ceilHeight}] [Body: {_bodyHeight}] " +
-                     $"[Chamfer: {_chamferLayers}] " +
-                     $"[Spirals: {_spirals} Dir: {_spiralDirection} D:{_spiralDiameter} Angle: {_spiralAngleStepPerLayer}º]" +
-                     $"[AA: {_enableAntiAliasing}] [Mirror: {_mirrorOutput}]";
+                     $"[Base: H:{BaseHeight} D:{BaseDiameter}] " +
+                     $"[Ceil: {CeilHeight}] [Body: {BodyHeight}] " +
+                     $"[Chamfer: {ChamferLayers}] " +
+                     $"[Spirals: {Spirals} Dir: {SpiralDirection} D:{SpiralDiameter} Angle: {SpiralAngleStepPerLayer}º]" +
+                     $"[AA: {EnableAntiAliasing}] [Mirror: {MirrorOutput}]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -108,10 +98,10 @@ public sealed class OperationCalibrateStressTower : Operation
     {
         base.InitWithSlicerFile();
         if(_layerHeight <= 0) _layerHeight = (decimal)SlicerFile.LayerHeight;
-        if(_bottomLayers <= 0) _bottomLayers = SlicerFile.BottomLayerCount;
+        if(BottomLayers <= 0) BottomLayers = SlicerFile.BottomLayerCount;
         if(_bottomExposure <= 0) _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
         if(_normalExposure <= 0) _normalExposure = (decimal)SlicerFile.ExposureTime;
-        _mirrorOutput = SlicerFile.DisplayMirror != FlipDirection.None;
+        MirrorOutput = SlicerFile.DisplayMirror != FlipDirection.None;
 
         if (SlicerFile.DisplayWidth > 0)
             DisplayWidth = (decimal)SlicerFile.DisplayWidth;
@@ -128,7 +118,7 @@ public sealed class OperationCalibrateStressTower : Operation
         get => _displayWidth;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _displayWidth, FileFormat.RoundDisplaySize(value))) return;
+            if(!SetProperty(ref _displayWidth, FileFormat.RoundDisplaySize(value))) return;
         }
     }
 
@@ -137,7 +127,7 @@ public sealed class OperationCalibrateStressTower : Operation
         get => _displayHeight;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _displayHeight, FileFormat.RoundDisplaySize(value))) return;
+            if(!SetProperty(ref _displayHeight, FileFormat.RoundDisplaySize(value))) return;
         }
     }
 
@@ -146,119 +136,71 @@ public sealed class OperationCalibrateStressTower : Operation
         get => _layerHeight;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _layerHeight, Layer.RoundHeight(value))) return;
-            RaisePropertyChanged(nameof(BottomLayersMM));
-            RaisePropertyChanged(nameof(LayerCount));
+            if(!SetProperty(ref _layerHeight, Layer.RoundHeight(value))) return;
+            OnPropertyChanged(nameof(BottomLayersMM));
+            OnPropertyChanged(nameof(LayerCount));
         }
     }
 
     public ushort Microns => (ushort)(LayerHeight * 1000);
 
-    public ushort BottomLayers
-    {
-        get => _bottomLayers;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _bottomLayers, value)) return;
-            RaisePropertyChanged(nameof(BottomLayersMM));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BottomLayersMM))]
+    public partial ushort BottomLayers { get; set; }
 
     public decimal BottomLayersMM => Layer.RoundHeight(LayerHeight * BottomLayers);
 
     public decimal BottomExposure
     {
         get => _bottomExposure;
-        set => RaiseAndSetIfChanged(ref _bottomExposure, Math.Round(value, 2));
+        set => SetProperty(ref _bottomExposure, Math.Round(value, 2));
     }
 
     public decimal NormalExposure
     {
         get => _normalExposure;
-        set => RaiseAndSetIfChanged(ref _normalExposure, Math.Round(value, 2));
+        set => SetProperty(ref _normalExposure, Math.Round(value, 2));
     }
 
-    public uint LayerCount => (uint)((_baseHeight + _bodyHeight + _ceilHeight) / LayerHeight);
+    public uint LayerCount => (uint)((BaseHeight + BodyHeight + CeilHeight) / LayerHeight);
 
-    public decimal TotalHeight => _baseHeight + _bodyHeight + _ceilHeight;
+    public decimal TotalHeight => BaseHeight + BodyHeight + CeilHeight;
 
-    public decimal BaseDiameter
-    {
-        get => _baseDiameter;
-        set => RaiseAndSetIfChanged(ref _baseDiameter, value);
-    }
+    [ObservableProperty]
+    public partial decimal BaseDiameter { get; set; } = 30;
 
-    public decimal BaseHeight
-    {
-        get => _baseHeight;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _baseHeight, value)) return;
-            RaisePropertyChanged(nameof(TotalHeight));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TotalHeight))]
+    public partial decimal BaseHeight { get; set; } = 3;
 
-    public decimal BodyHeight
-    {
-        get => _bodyHeight;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _bodyHeight, value)) return;
-            RaisePropertyChanged(nameof(TotalHeight));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TotalHeight))]
+    public partial decimal BodyHeight { get; set; } = 50;
 
-    public decimal CeilHeight
-    {
-        get => _ceilHeight;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _ceilHeight, value)) return;
-            RaisePropertyChanged(nameof(TotalHeight));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TotalHeight))]
+    public partial decimal CeilHeight { get; set; } = 3;
 
-    public byte ChamferLayers
-    {
-        get => _chamferLayers;
-        set => RaiseAndSetIfChanged(ref _chamferLayers, value);
-    }
+    [ObservableProperty]
+    public partial byte ChamferLayers { get; set; } = 6;
 
-    public bool EnableAntiAliasing
-    {
-        get => _enableAntiAliasing;
-        set => RaiseAndSetIfChanged(ref _enableAntiAliasing, value);
-    }
+    [ObservableProperty]
+    public partial bool EnableAntiAliasing { get; set; } = true;
 
-    public bool MirrorOutput
-    {
-        get => _mirrorOutput;
-        set => RaiseAndSetIfChanged(ref _mirrorOutput, value);
-    }
+    [ObservableProperty]
+    public partial bool MirrorOutput { get; set; }
 
-    public byte Spirals
-    {
-        get => _spirals;
-        set => RaiseAndSetIfChanged(ref _spirals, value);
-    }
+    [ObservableProperty]
+    public partial byte Spirals { get; set; } = 2;
 
-    public decimal SpiralDiameter
-    {
-        get => _spiralDiameter;
-        set => RaiseAndSetIfChanged(ref _spiralDiameter, value);
-    }
+    [ObservableProperty]
+    public partial decimal SpiralDiameter { get; set; } = 2;
 
-    public SpiralDirections SpiralDirection
-    {
-        get => _spiralDirection;
-        set => RaiseAndSetIfChanged(ref _spiralDirection, value);
-    }
+    [ObservableProperty]
+    public partial SpiralDirections SpiralDirection { get; set; } = SpiralDirections.Both;
 
-    public decimal SpiralAngleStepPerLayer
-    {
-        get => _spiralAngleStepPerLayer;
-        set => RaiseAndSetIfChanged(ref _spiralAngleStepPerLayer, value);
-    }
+    [ObservableProperty]
+    public partial decimal SpiralAngleStepPerLayer { get; set; } = 1;
 
     #endregion
 
@@ -278,7 +220,7 @@ public sealed class OperationCalibrateStressTower : Operation
 
     private bool Equals(OperationCalibrateStressTower other)
     {
-        return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _baseDiameter == other._baseDiameter && _baseHeight == other._baseHeight && _bodyHeight == other._bodyHeight && _ceilHeight == other._ceilHeight && _chamferLayers == other._chamferLayers && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _spirals == other._spirals && _spiralDiameter == other._spiralDiameter && _spiralDirection == other._spiralDirection && _spiralAngleStepPerLayer == other._spiralAngleStepPerLayer;
+        return _layerHeight == other._layerHeight && BottomLayers == other.BottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && BaseDiameter == other.BaseDiameter && BaseHeight == other.BaseHeight && BodyHeight == other.BodyHeight && CeilHeight == other.CeilHeight && ChamferLayers == other.ChamferLayers && EnableAntiAliasing == other.EnableAntiAliasing && MirrorOutput == other.MirrorOutput && Spirals == other.Spirals && SpiralDiameter == other.SpiralDiameter && SpiralDirection == other.SpiralDirection && SpiralAngleStepPerLayer == other.SpiralAngleStepPerLayer;
     }
 
     public override bool Equals(object? obj)
@@ -291,7 +233,7 @@ public sealed class OperationCalibrateStressTower : Operation
     #region Methods
     public Mat GetThumbnail()
     {
-        Mat thumbnail = EmguExtensions.InitMat(new Size(400, 200), 3);
+        Mat thumbnail = EmguCvExtensions.InitMat(new Size(400, 200), 3);
         var fontFace = FontFace.HersheyDuplex;
         var fontScale = 1;
         var fontThickness = 2;
@@ -302,8 +244,8 @@ public sealed class OperationCalibrateStressTower : Operation
         CvInvoke.Line(thumbnail, new Point(xSpacing, ySpacing + 5), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
         CvInvoke.Line(thumbnail, new Point(thumbnail.Width - xSpacing, 0), new Point(thumbnail.Width - xSpacing, ySpacing + 5), new MCvScalar(255, 27, 245), 3);
         CvInvoke.PutText(thumbnail, "Stress Tower", new Point(xSpacing, ySpacing * 2), fontFace, fontScale, new MCvScalar(0, 255, 255), fontThickness);
-        CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
-        CvInvoke.PutText(thumbnail, $"{_spirals} Spirals @ {_spiralAngleStepPerLayer}deg", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguExtensions.WhiteColor, fontThickness);
+        CvInvoke.PutText(thumbnail, $"{Microns}um @ {BottomExposure}s/{NormalExposure}s", new Point(xSpacing, ySpacing * 3), fontFace, fontScale, EmguCvExtensions.WhiteColor, fontThickness);
+        CvInvoke.PutText(thumbnail, $"{Spirals} Spirals @ {SpiralAngleStepPerLayer}deg", new Point(xSpacing, ySpacing * 4), fontFace, fontScale, EmguCvExtensions.WhiteColor, fontThickness);
         return thumbnail;
     }
 
@@ -313,16 +255,16 @@ public sealed class OperationCalibrateStressTower : Operation
 
         Slicer.Slicer slicer = new(SlicerFile.Resolution, new SizeF((float)DisplayWidth, (float)DisplayHeight));
         Point center = new(SlicerFile.Resolution.Width / 2, SlicerFile.Resolution.Height / 2);
-        uint baseRadius = slicer.PixelsFromMillimeters(_baseDiameter) / 2;
-        uint baseLayers = (ushort)(_baseHeight / _layerHeight);
-        uint bodyLayers = (ushort)(_bodyHeight / _layerHeight);
-        uint spiralLayers = (uint)(_spiralDiameter / _layerHeight);
-        uint ceilLayers = (ushort)(_ceilHeight / _layerHeight);
+        uint baseRadius = slicer.PixelsFromMillimeters(BaseDiameter) / 2;
+        uint baseLayers = (ushort)(BaseHeight / _layerHeight);
+        uint bodyLayers = (ushort)(BodyHeight / _layerHeight);
+        uint spiralLayers = (uint)(SpiralDiameter / _layerHeight);
+        uint ceilLayers = (ushort)(CeilHeight / _layerHeight);
 
         uint basePlusBodyLayers = baseLayers + bodyLayers;
 
-        decimal spiralOffsetAngle = 360m / _spirals;
-        uint spiralRadius = slicer.PixelsFromMillimeters(_spiralDiameter) / 2;
+        decimal spiralOffsetAngle = 360m / Spirals;
+        uint spiralRadius = slicer.PixelsFromMillimeters(SpiralDiameter) / 2;
 
         var flip = SlicerFile.DisplayMirror;
         if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
@@ -330,9 +272,9 @@ public sealed class OperationCalibrateStressTower : Operation
         /*const FontFace fontFace = FontFace.HersheyDuplex;
         const double fontScale = 1;
         const byte fontThickness = 2;
-        LineType lineType = _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
+        LineType lineType = EnableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
 
-        var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), EmguExtensions.AnchorCenter);*/
+        var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), EmguCvExtensions.AnchorCenter);*/
         SlicerFile.Init(LayerCount);
 
         Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
@@ -342,17 +284,17 @@ public sealed class OperationCalibrateStressTower : Operation
 
             if (layerIndex < baseLayers)
             {
-                int chamferOffset = (int)Math.Max(0, _chamferLayers - layerIndex);
-                CvInvoke.Circle(mat, center, (int)baseRadius - chamferOffset, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                int chamferOffset = (int)Math.Max(0, ChamferLayers - layerIndex);
+                CvInvoke.Circle(mat, center, (int)baseRadius - chamferOffset, EmguCvExtensions.WhiteColor, -1, EnableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
             }
             else if (layerIndex < basePlusBodyLayers)
             {
-                decimal angle = (layerIndex * _spiralAngleStepPerLayer) % 360m;
+                decimal angle = (layerIndex * SpiralAngleStepPerLayer) % 360m;
 
-                for (byte spiral = 0; spiral < _spirals; spiral++)
+                for (byte spiral = 0; spiral < Spirals; spiral++)
                 {
                     decimal spiralAngle = (spiralOffsetAngle * spiral + angle) % 360;
-                    if (_spiralDirection == SpiralDirections.Alternate && spiral % 2 == 0)
+                    if (SpiralDirection == SpiralDirections.Alternate && spiral % 2 == 0)
                     {
                         spiralAngle = -spiralAngle;
                     }
@@ -365,21 +307,21 @@ public sealed class OperationCalibrateStressTower : Operation
                     //for (uint spiralLayerIndex = (uint)layerIndex; spiralLayerIndex < maxLayer; spiralLayerIndex++)
                     //{
 
-                    CvInvoke.Circle(mat, locationCW, (int)spiralRadius, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                    if (_spiralDirection == SpiralDirections.Both)
+                    CvInvoke.Circle(mat, locationCW, (int)spiralRadius, EmguCvExtensions.WhiteColor, -1, EnableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    if (SpiralDirection == SpiralDirections.Both)
                     {
                         spiralAngle = -spiralAngle;
-                        CvInvoke.Circle(mat, locationCCW, (int)spiralRadius, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                        CvInvoke.Circle(mat, locationCCW, (int)spiralRadius, EmguCvExtensions.WhiteColor, -1, EnableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                     }
                     //}
                 }
             }
             else
             {
-                CvInvoke.Circle(mat, center, (int)baseRadius, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                CvInvoke.Circle(mat, center, (int)baseRadius, EmguCvExtensions.WhiteColor, -1, EnableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
             }
 
-            if (_mirrorOutput) CvInvoke.Flip(mat, mat, (FlipType)flip);
+            if (MirrorOutput) CvInvoke.Flip(mat, mat, (FlipType)flip);
 
             SlicerFile[layerIndex] = new Layer((uint)layerIndex, mat, SlicerFile);
             progress.LockAndIncrement();

@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Text;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -17,14 +18,12 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public class OperationIPrintedThisFile : Operation
+public partial class OperationIPrintedThisFile : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
-    private Material? _materialItem;
     private decimal _volume;
     private float _printTime;
-    private decimal _multiplier = 1;
 
     #endregion
 
@@ -42,7 +41,7 @@ public class OperationIPrintedThisFile : Operation
     public override string Description => "Select a material and consume resin from stock and print time.";
 
     public override string ConfirmationText =>
-        $"consume {FinalVolume}ml and {FinalPrintTimeString:F4}h on:\n{_materialItem} ?";
+        $"consume {FinalVolume}ml and {FinalPrintTimeString:F4}h on:\n{MaterialItem} ?";
 
     public override string ProgressTitle =>
         $"Consuming";
@@ -53,7 +52,7 @@ public class OperationIPrintedThisFile : Operation
     {
         var sb = new StringBuilder();
 
-        if (_materialItem is null)
+        if (MaterialItem is null)
         {
             sb.AppendLine("You must select an material.");
         }
@@ -71,7 +70,7 @@ public class OperationIPrintedThisFile : Operation
 
     public override string ToString()
     {
-        var result = $"{FinalVolume}ml {FinalPrintTimeString:F4}h on {_materialItem?.Name}";
+        var result = $"{FinalVolume}ml {FinalPrintTimeString:F4}h on {MaterialItem?.Name}";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -79,53 +78,44 @@ public class OperationIPrintedThisFile : Operation
 
     #region Properties
 
-    public Material? MaterialItem
-    {
-        get => _materialItem;
-        set => RaiseAndSetIfChanged(ref _materialItem, value);
-    }
+    [ObservableProperty]
+    public partial Material? MaterialItem { get; set; }
 
     public decimal Volume
     {
         get => _volume;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _volume, Math.Max(0, value))) return;
-            RaisePropertyChanged(nameof(FinalVolume));
+            if(!SetProperty(ref _volume, Math.Max(0, value))) return;
+            OnPropertyChanged(nameof(FinalVolume));
         }
     }
 
-    public decimal FinalVolume => _volume * _multiplier;
+    public decimal FinalVolume => _volume * Multiplier;
 
     public float PrintTime
     {
         get => _printTime;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _printTime, Math.Max(0, value))) return;
-            RaisePropertyChanged(nameof(PrintTimeString));
-            RaisePropertyChanged(nameof(FinalPrintTime));
-            RaisePropertyChanged(nameof(FinalPrintTimeString));
+            if(!SetProperty(ref _printTime, Math.Max(0, value))) return;
+            OnPropertyChanged(nameof(PrintTimeString));
+            OnPropertyChanged(nameof(FinalPrintTime));
+            OnPropertyChanged(nameof(FinalPrintTimeString));
         }
     }
 
     public string PrintTimeString => TimeSpan.FromSeconds(_printTime).ToTimeString();
-    public float FinalPrintTime => _printTime * (float)_multiplier;
+    public float FinalPrintTime => _printTime * (float)Multiplier;
     public string FinalPrintTimeString => TimeSpan.FromSeconds(FinalPrintTime).ToTimeString();
 
     /// <summary>
     /// Number of times this file has been printed
     /// </summary>
-    public decimal Multiplier
-    {
-        get => _multiplier;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _multiplier, value)) return;
-            RaisePropertyChanged(nameof(FinalVolume));
-            RaisePropertyChanged(nameof(FinalPrintTime));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FinalVolume))]
+    [NotifyPropertyChangedFor(nameof(FinalPrintTime))]
+    public partial decimal Multiplier { get; set; } = 1;
 
     public MaterialManager Manager => MaterialManager.Instance;
 
@@ -165,7 +155,7 @@ public class OperationIPrintedThisFile : Operation
 
     protected bool Equals(OperationIPrintedThisFile other)
     {
-        return _volume == other._volume && _printTime.Equals(other._printTime) && Equals(_materialItem, other._materialItem) && _multiplier == other._multiplier;
+        return _volume == other._volume && _printTime.Equals(other._printTime) && Equals(MaterialItem, other.MaterialItem) && Multiplier == other.Multiplier;
     }
 
     public override bool Equals(object? obj)

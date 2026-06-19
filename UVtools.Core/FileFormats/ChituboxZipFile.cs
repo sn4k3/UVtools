@@ -182,7 +182,7 @@ public sealed class ChituboxZipFile : FileFormat
         {
             HeaderSettings.ProjectType = value == FlipDirection.None ? "Normal" : "LCD_mirror";
             HeaderSettings.Mirror = (byte)(value == FlipDirection.None ? 0 : 1);
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 
@@ -314,7 +314,7 @@ public sealed class ChituboxZipFile : FileFormat
         set
         {
             HeaderSettings.WeightG = MathF.Round(value, 3);
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 
@@ -324,7 +324,7 @@ public sealed class ChituboxZipFile : FileFormat
         set
         {
             HeaderSettings.Price = MathF.Round(value, 3);
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 
@@ -334,7 +334,7 @@ public sealed class ChituboxZipFile : FileFormat
         set
         {
             HeaderSettings.Resin = value;
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 
@@ -478,7 +478,7 @@ public sealed class ChituboxZipFile : FileFormat
     {
         if (!SupportGCode || SuppressRebuildGCode) return;
         GCode?.RebuildGCode(this, [HeaderSettings]);
-        RaisePropertyChanged(nameof(GCodeStr));
+        OnPropertyChanged(nameof(GCodeStr));
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)

@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using KdTree;
 using KdTree.Math;
@@ -17,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
@@ -27,7 +29,7 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationLayerExportMesh : Operation
+public sealed partial class OperationLayerExportMesh : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Enums
@@ -45,12 +47,6 @@ public sealed class OperationLayerExportMesh : Operation
     #endregion
 
     #region Members
-    private string _filePath = null!;
-    private MeshFile.MeshFileFormat _meshFileFormat = MeshFile.MeshFileFormat.BINARY;
-    private ExportMeshQuality _quality = ExportMeshQuality.Accurate;
-    private RotateDirection _rotateDirection = RotateDirection.None;
-    private FlipDirection _flipDirection = FlipDirection.None;
-    private bool _stripAntiAliasing = true;
 
     #endregion
 
@@ -77,7 +73,7 @@ public sealed class OperationLayerExportMesh : Operation
     {
         var sb = new StringBuilder();
 
-        if (MeshFile.FindFileExtension(_filePath) is null)
+        if (MeshFile.FindFileExtension(FilePath) is null)
         {
             sb.AppendLine("The used file extension is invalid.");
         }
@@ -97,41 +93,23 @@ public sealed class OperationLayerExportMesh : Operation
 
     #region Properties
 
-    public string FilePath
-    {
-        get => _filePath;
-        set => RaiseAndSetIfChanged(ref _filePath, value);
-    }
+    [ObservableProperty]
+    public partial string FilePath { get; set; } = null!;
 
-    public MeshFile.MeshFileFormat MeshFileFormat
-    {
-        get => _meshFileFormat;
-        set => RaiseAndSetIfChanged(ref _meshFileFormat, value);
-    }
+    [ObservableProperty]
+    public partial MeshFile.MeshFileFormat MeshFileFormat { get; set; } = MeshFile.MeshFileFormat.BINARY;
 
-    public ExportMeshQuality Quality
-    {
-        get => _quality;
-        set => RaiseAndSetIfChanged(ref _quality, value);
-    }
+    [ObservableProperty]
+    public partial ExportMeshQuality Quality { get; set; } = ExportMeshQuality.Accurate;
 
-    public RotateDirection RotateDirection
-    {
-        get => _rotateDirection;
-        set => RaiseAndSetIfChanged(ref _rotateDirection, value);
-    }
+    [ObservableProperty]
+    public partial RotateDirection RotateDirection { get; set; } = RotateDirection.None;
 
-    public FlipDirection FlipDirection
-    {
-        get => _flipDirection;
-        set => RaiseAndSetIfChanged(ref _flipDirection, value);
-    }
+    [ObservableProperty]
+    public partial FlipDirection FlipDirection { get; set; } = FlipDirection.None;
 
-    public bool StripAntiAliasing
-    {
-        get => _stripAntiAliasing;
-        set => RaiseAndSetIfChanged(ref _stripAntiAliasing, value);
-    }
+    [ObservableProperty]
+    public partial bool StripAntiAliasing { get; set; } = true;
 
     #endregion
 
@@ -141,12 +119,12 @@ public sealed class OperationLayerExportMesh : Operation
 
     public OperationLayerExportMesh(FileFormat slicerFile) : base(slicerFile)
     {
-        _flipDirection = SlicerFile.DisplayMirror;
+        FlipDirection = SlicerFile.DisplayMirror;
     }
 
     public override void InitWithSlicerFile()
     {
-        _filePath = Path.Combine(Path.GetDirectoryName(SlicerFile.FileFullPath) ?? string.Empty, $"{SlicerFile.FilenameNoExt}.{STLMeshFile.FileExtension.Extension}");
+        FilePath = Path.Combine(Path.GetDirectoryName(SlicerFile.FileFullPath) ?? string.Empty, $"{SlicerFile.FilenameNoExt}.{STLMeshFile.FileExtension.Extension}");
     }
 
     #endregion
@@ -155,11 +133,11 @@ public sealed class OperationLayerExportMesh : Operation
 
     protected override unsafe bool ExecuteInternally(OperationProgress progress)
     {
-        var fileExtension = MeshFile.FindFileExtension(_filePath);
+        var fileExtension = MeshFile.FindFileExtension(FilePath);
         if (fileExtension is null) return false;
 
-        //using var meshFile = fileExtension.FileFormatType.CreateInstance<MeshFile>(_filePath, FileMode.Create);
-        //new Voxelizer().CreateVoxelMesh(fileExtension.FileFormatType, SlicerFile, _filePath, progress);
+        //using var meshFile = fileExtension.FileFormatType.CreateInstance<MeshFile>(FilePath, FileMode.Create);
+        //new Voxelizer().CreateVoxelMesh(fileExtension.FileFormatType, SlicerFile, FilePath, progress);
 
 
         /* Voxelization has 4 overall stages
@@ -171,8 +149,8 @@ public sealed class OperationLayerExportMesh : Operation
 
         /* Basic information for the file, how many layers, how big should each voxel be) */
         var pixelSize = SlicerFile.PixelSize;
-        float xWidth = (pixelSize.Width > 0 ? pixelSize.Width : 0.035f) * (byte)_quality;
-        float yWidth = (pixelSize.Height > 0 ? pixelSize.Height : 0.035f) * (byte)_quality;
+        float xWidth = (pixelSize.Width > 0 ? pixelSize.Width : 0.035f) * (byte)Quality;
+        float yWidth = (pixelSize.Height > 0 ? pixelSize.Height : 0.035f) * (byte)Quality;
 
         //var totalLayerCount = SlicerFile.LayerCount;
         var distinctLayers = SlicerFile.GetDistinctLayersByPositionZ(LayerIndexStart, LayerIndexEnd).ToArray();
@@ -181,22 +159,22 @@ public sealed class OperationLayerExportMesh : Operation
 
         /* work around the mirror effect, this is caused by the voxel algorithm assuming 0,0 is bottom left, when 0,0 is top left for a Mat
          * ideally we would fix the algorithm itself but that's more invovled. for the time being we'll just flip it verticaly. */
-        var workAroundFlip = _flipDirection switch
+        var workAroundFlip = FlipDirection switch
         {
             FlipDirection.None => FlipDirection.Vertically,
             FlipDirection.Horizontally => FlipDirection.Both,
             FlipDirection.Vertically => FlipDirection.None,
             FlipDirection.Both => FlipDirection.Horizontally,
-            _ => throw new NotImplementedException($"Flip type: {_flipDirection} not handled!")
+            _ => throw new NotImplementedException($"Flip type: {FlipDirection} not handled!")
         };
 
         using var cacheManager = new MatCacheManager(this)
         {
             AutoDispose = true,
             AutoDisposeKeepLast = 1,
-            Rotate = _rotateDirection,
+            Rotate = RotateDirection,
             Flip = workAroundFlip,
-            StripAntiAliasing = _stripAntiAliasing
+            StripAntiAliasing = StripAntiAliasing
         };
 
         /*const float threshold = 0.5f;
@@ -255,10 +233,10 @@ public sealed class OperationLayerExportMesh : Operation
         {
             using var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
 
-            if ((byte)_quality > 1)
+            if ((byte)Quality > 1)
             {
                 aboveLayer = new Mat();
-                CvInvoke.Resize(matRoi, aboveLayer, Size.Empty, 1.0 / (int)_quality, 1.0 / (int)_quality, Inter.Area);
+                CvInvoke.Resize(matRoi, aboveLayer, Size.Empty, 1.0 / (int)Quality, 1.0 / (int)Quality, Inter.Area);
             }
             else
             {
@@ -320,10 +298,10 @@ public sealed class OperationLayerExportMesh : Operation
                 using var mat = SlicerFile.GetMergedMatForSequentialPositionedLayers(distinctLayers[(int)layerIndex+1].Index, cacheManager);
                 using var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
 
-                if ((byte)_quality > 1)
+                if ((byte)Quality > 1)
                 {
                     aboveLayer = new Mat();
-                    CvInvoke.Resize(matRoi, aboveLayer, Size.Empty, 1.0 / (int)_quality, 1.0 / (int)_quality, Inter.Area);
+                    CvInvoke.Resize(matRoi, aboveLayer, Size.Empty, 1.0 / (int)Quality, 1.0 / (int)Quality, Inter.Area);
                 }
                 else
                 {
@@ -339,7 +317,7 @@ public sealed class OperationLayerExportMesh : Operation
 
             /* get image of pixels to do neighbor checks on */
             var voxelLayer = Voxelizer.BuildVoxelLayerImage(curLayer!, aboveLayer, belowLayer);
-            var voxelSpan = voxelLayer.GetBytePointer();
+            var voxelSpan = voxelLayer.BytePointer;
 
             /* Seems to be faster to parallel on the Y and not the X */
             Parallel.For(0, curLayer!.Height, CoreSettings.GetParallelOptions(progress), y =>
@@ -645,7 +623,7 @@ public sealed class OperationLayerExportMesh : Operation
         progress.ProcessedItems = 0;
 
         var tmpFile = PathExtensions.GetTemporaryFilePathWithExtension("stl", $"UVtools{Id}-");
-        using (var mesh = fileExtension.FileFormatType.CreateInstance<MeshFile>(tmpFile, FileMode.Create, _meshFileFormat, SlicerFile))
+        using (var mesh = fileExtension.FileFormatType.CreateInstance<MeshFile>(tmpFile, FileMode.Create, MeshFileFormat, SlicerFile))
         {
             mesh!.BeginWrite();
 
@@ -679,7 +657,7 @@ public sealed class OperationLayerExportMesh : Operation
             mesh.EndWrite();
         }
 
-        if (!progress.Token.IsCancellationRequested && File.Exists(tmpFile)) File.Move(tmpFile, _filePath, true);
+        if (!progress.Token.IsCancellationRequested && File.Exists(tmpFile)) File.Move(tmpFile, FilePath, true);
 
         return !progress.Token.IsCancellationRequested;
     }
@@ -691,7 +669,7 @@ public sealed class OperationLayerExportMesh : Operation
 
     private bool Equals(OperationLayerExportMesh other)
     {
-        return _filePath == other._filePath && _meshFileFormat == other._meshFileFormat && _quality == other._quality && _rotateDirection == other._rotateDirection && _flipDirection == other._flipDirection && _stripAntiAliasing == other._stripAntiAliasing;
+        return FilePath == other.FilePath && MeshFileFormat == other.MeshFileFormat && Quality == other.Quality && RotateDirection == other.RotateDirection && FlipDirection == other.FlipDirection && StripAntiAliasing == other.StripAntiAliasing;
     }
 
     public override bool Equals(object? obj)

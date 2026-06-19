@@ -20,14 +20,14 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using CommunityToolkit.Diagnostics;
-using UVtools.Core.EmguCV;
 using UVtools.Core.Objects;
 using Size = System.Drawing.Size;
 
 namespace UVtools.Core.Extensions;
 
-public static class EmguExtensions
+public static class EmguExtensionsUV
 {
+    /*
     #region Constants
     /// <summary>
     /// White color: 255, 255, 255, 255
@@ -288,19 +288,6 @@ public static class EmguExtensions
         {
             return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length);
         }
-
-        /*if (length <= 0)
-        {
-            if (mat.IsContinuous)
-            {
-                length = mat.GetLength();
-            }
-            else
-            {
-                length = mat.Step / mat.DepthToByteCount() * (mat.Height - 1) + mat.GetRealStep();
-            }
-        }
-        return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length);*/
     }
 
     /// <summary>
@@ -367,24 +354,6 @@ public static class EmguExtensions
     /// <param name="offset"></param>
     /// <returns></returns>
     public static Span<byte> GetRowByteSpan(this Mat mat, int y, int length = 0, int offset = 0) => mat.GetRowSpan<byte>(y, length, offset);
-
-    /*
-    /// <summary>
-    /// Gets a col span to manipulate or read pixels
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="mat"></param>
-    /// <param name="x"></param>
-    /// <param name="length"></param>
-    /// <param name="offset"></param>
-    /// <returns></returns>
-    public static unsafe Span<T> GetColSpan<T>(this Mat mat, int x, int length = 0, int offset = 0)
-    {
-        // Fix with Span2D
-        var colMat = mat.Col(x);
-        return new(IntPtr.Add(colMat.DataPointer, offset).ToPointer(), length <= 0 ? mat.Height : length);
-    }*/
-
 
 
     /// <summary>
@@ -1019,12 +988,6 @@ public static class EmguExtensions
         //int xStart = mat.Width / 2 - targetSize.Width / 2;
         //int yStart = mat.Height / 2 - targetSize.Height / 2;
         using var newMatRoi = newMat.RoiFromCenter(roi.Size);
-        /*var newMatRoi = new Mat(newMat, new Rectangle(
-            targetSize.Width / 2 - roi.Width / 2,
-            targetSize.Height / 2 - roi.Height / 2,
-            roi.Width,
-            roi.Height
-        ));*/
         roiMat.CopyTo(newMatRoi);
         return newMat;
     }
@@ -1418,11 +1381,6 @@ public static class EmguExtensions
         return result;
     }
 
-    /*public static List<GreyStride> ScanLines(this Mat mat)
-    {
-        return mat.ScanStrides(0, true, true, true);
-    }*/
-
     /// <summary>
     /// Scan sequential lines in X or Y direction
     /// </summary>
@@ -1778,31 +1736,9 @@ public static class EmguExtensions
 
     public static void DrawLineAccurate(this Mat src, Point pt1, Point pt2, MCvScalar color, int thickness, LineType lineType = LineType.EightConnected)
     {
-        /*var deltaX = pt2.X - pt1.X;
-        var deltaY = pt2.Y - pt1.Y;
-        var deg = Math.Atan2(deltaY, deltaX) * (180 / Math.PI);
-        src.DrawRotatedRectangle(
-            new Size(Math.Abs(deltaX), thickness),
-            new Point(pt1.X + deltaX / 2, pt1.Y + deltaY / 2),
-            color, (int)deg, -1, lineType);*/
-
         if (thickness >= 3)
         {
             thickness--;
-            /*var lastNumber = thickness % 10;
-            switch (lastNumber)
-            {
-                case 1:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                    thickness--;
-                    break;
-            }*/
         }
 
         CvInvoke.Line(src, pt1, pt2, color, thickness, lineType);
@@ -2285,29 +2221,6 @@ public static class EmguExtensions
         return contours;
     }
 
-    /*
-    /// <summary>
-    /// Retrieves contours from the binary image as a contour tree. The pointer firstContour is filled by the function. It is provided as a convenient way to obtain the hierarchy value as int[,].
-    /// The function modifies the source image content
-    /// </summary>
-    /// <param name="mat">The source 8-bit single channel image. Non-zero pixels are treated as 1s, zero pixels remain 0s - that is image treated as binary. To get such a binary image from grayscale, one may use cvThreshold, cvAdaptiveThreshold or cvCanny. The function modifies the source image content</param>
-    /// <param name="contours">Detected contours. Each contour is stored as a vector of points.</param>
-    /// <param name="mode">Retrieval mode</param>
-    /// <param name="method">Approximation method (for all the modes, except CV_RETR_RUNS, which uses built-in approximation). </param>
-    /// <param name="offset">Offset, by which every contour point is shifted. This is useful if the contours are extracted from the image ROI and then they should be analyzed in the whole image context</param>
-    /// <returns>The contour hierarchy</returns>
-    public static int[,] FindContours(this Mat mat, IOutputArray contours, RetrType mode, ChainApproxMethod method = ChainApproxMethod.ChainApproxSimple, Point offset = default)
-    {
-        using var hierarchy = new Mat();
-        CvInvoke.FindContours(mat, contours, hierarchy, mode, method, offset);
-        var numArray = new int[hierarchy.Cols, 4];
-        var gcHandle = GCHandle.Alloc(numArray, GCHandleType.Pinned);
-        using (var mat2 = new Mat(hierarchy.Rows, hierarchy.Cols, hierarchy.Depth, 4, gcHandle.AddrOfPinnedObject(), hierarchy.Step))
-            hierarchy.CopyTo(mat2);
-        gcHandle.Free();
-        return numArray;
-    }*/
-
     /// <summary>
     /// Retrieves contours from the binary image as a contour tree. The pointer firstContour is filled by the function. It is provided as a convenient way to obtain the hierarchy value as int[,].
     /// The function modifies the source image content
@@ -2431,4 +2344,5 @@ public static class EmguExtensions
         if (!ReferenceEquals(mat, otherMat)) mat.Dispose();
     }
     #endregion
+     */
 }

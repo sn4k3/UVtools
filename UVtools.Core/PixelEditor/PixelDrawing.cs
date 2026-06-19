@@ -5,6 +5,7 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using System;
 using System.Drawing;
@@ -14,15 +15,10 @@ namespace UVtools.Core.PixelEditor;
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 #pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
-public class PixelDrawing : PixelOperation, IEquatable<PixelDrawing>
+public partial class PixelDrawing : PixelOperation, IEquatable<PixelDrawing>
 #pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
-    private BrushShapeType _brushShape = BrushShapeType.Square;
-    private ushort _brushSize = 1;
-    private short _thickness = -1;
-    private byte _removePixelBrightness;
-    private double _rotationAngle;
     public const byte MinRectangleBrush = 1;
     public const byte MinCircleBrush = 7;
     public enum BrushShapeType : byte
@@ -44,53 +40,39 @@ public class PixelDrawing : PixelOperation, IEquatable<PixelDrawing>
 
     public override PixelOperationType OperationType => PixelOperationType.Drawing;
 
-    public BrushShapeType BrushShape
+    [ObservableProperty]
+    public partial BrushShapeType BrushShape { get; set; } = BrushShapeType.Square;
+
+    partial void OnBrushShapeChanged(BrushShapeType value)
     {
-        get => _brushShape;
-        set
+        if (value == BrushShapeType.Circle)
         {
-            if (!RaiseAndSetIfChanged(ref _brushShape, value)) return;
-            if (_brushShape == BrushShapeType.Circle)
-            {
-                BrushSize = Math.Max(MinCircleBrush, BrushSize);
-            }
+            BrushSize = Math.Max(MinCircleBrush, BrushSize);
         }
     }
 
     public double RotationAngle
     {
-        get => _rotationAngle;
-        set => RaiseAndSetIfChanged(ref _rotationAngle, Math.Round(value, 2));
+        get;
+        set => SetProperty(ref field, Math.Round(value, 2));
     }
 
-    public ushort BrushSize
-    {
-        get => _brushSize;
-        set => RaiseAndSetIfChanged(ref _brushSize, value);
-    }
+    [ObservableProperty]
+    public partial ushort BrushSize { get; set; } = 1;
 
-    public short Thickness
-    {
-        get => _thickness;
-        set => RaiseAndSetIfChanged(ref _thickness, value);
-    }
+    [ObservableProperty]
+    public partial short Thickness { get; set; } = -1;
 
-    public byte RemovePixelBrightness
-    {
-        get => _removePixelBrightness;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _removePixelBrightness, value)) return;
-            RaisePropertyChanged(nameof(RemovePixelBrightnessPercent));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(RemovePixelBrightnessPercent))]
+    public partial byte RemovePixelBrightness { get; set; }
 
-    public decimal RemovePixelBrightnessPercent => Math.Round(_removePixelBrightness * 100M / 255M, 2);
+    public decimal RemovePixelBrightnessPercent => Math.Round(RemovePixelBrightness * 100M / 255M, 2);
 
     [XmlIgnore]
     public bool IsAdd { get; private set; }
 
-    public byte Brightness => IsAdd ? _pixelBrightness : _removePixelBrightness;
+    public byte Brightness => IsAdd ? PixelBrightness : RemovePixelBrightness;
 
     [XmlIgnore]
     public Rectangle Rectangle { get; private set; }
@@ -102,11 +84,11 @@ public class PixelDrawing : PixelOperation, IEquatable<PixelDrawing>
 
     public PixelDrawing(uint layerIndex, Point location, LineType lineType, BrushShapeType brushShape, double rotationAngle, ushort brushSize, short thickness, byte removePixelBrightness, byte pixelBrightness, bool isAdd) : base(layerIndex, location, lineType, pixelBrightness)
     {
-        _brushShape = brushShape;
-        _rotationAngle = rotationAngle;
-        _brushSize = brushSize;
-        _thickness = thickness;
-        _removePixelBrightness = removePixelBrightness;
+        BrushShape = brushShape;
+        RotationAngle = rotationAngle;
+        BrushSize = brushSize;
+        Thickness = thickness;
+        RemovePixelBrightness = removePixelBrightness;
         IsAdd = isAdd;
 
         int shiftPos = brushSize / 2;
@@ -118,18 +100,18 @@ public class PixelDrawing : PixelOperation, IEquatable<PixelDrawing>
     {
         base.CopyTo(operation);
         if (operation is not PixelDrawing drawing) throw new TypeAccessException($"Expecting PixelDrawing but got {operation.GetType().Name}");
-        drawing.BrushShape = _brushShape;
-        drawing.RotationAngle = _rotationAngle;
-        drawing.BrushSize = _brushSize;
-        drawing.Thickness = _thickness;
-        drawing.RemovePixelBrightness = _removePixelBrightness;
+        drawing.BrushShape = BrushShape;
+        drawing.RotationAngle = RotationAngle;
+        drawing.BrushSize = BrushSize;
+        drawing.Thickness = Thickness;
+        drawing.RemovePixelBrightness = RemovePixelBrightness;
         drawing.IsAdd = IsAdd;
         drawing.Rectangle = Rectangle;
     }
 
     public override string ToString()
     {
-        return $"{_lineType} {_brushShape}, {_brushSize}px/{Thickness}px, {_rotationAngle}º, {_pixelBrightness}☼/{_removePixelBrightness}☼, Layers: {_layersBelow}/{_layersAbove}";
+        return $"{LineType} {BrushShape}, {BrushSize}px/{Thickness}px, {RotationAngle}º, {PixelBrightness}☼/{RemovePixelBrightness}☼, Layers: {LayersBelow}/{LayersAbove}";
     }
 
 
@@ -137,7 +119,7 @@ public class PixelDrawing : PixelOperation, IEquatable<PixelDrawing>
     {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
-        return base.Equals(other) && _brushShape == other._brushShape && _brushSize == other._brushSize && _thickness == other._thickness && _removePixelBrightness == other._removePixelBrightness && _rotationAngle.Equals(other._rotationAngle) && IsAdd == other.IsAdd && Rectangle.Equals(other.Rectangle);
+        return base.Equals(other) && BrushShape == other.BrushShape && BrushSize == other.BrushSize && Thickness == other.Thickness && RemovePixelBrightness == other.RemovePixelBrightness && RotationAngle.Equals(other.RotationAngle) && IsAdd == other.IsAdd && Rectangle.Equals(other.Rectangle);
     }
 
     public override bool Equals(object? obj)

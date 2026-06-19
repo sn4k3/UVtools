@@ -1,10 +1,8 @@
-﻿using CommunityToolkit.HighPerformance.Buffers;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using UVtools.Core.Extensions;
 
 namespace UVtools.Core.IO;
 

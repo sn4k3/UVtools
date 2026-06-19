@@ -4,7 +4,6 @@ using Avalonia.Threading;
 using SukiUI.MessageBox;
 using System;
 using System.Threading.Tasks;
-using UVtools.Core.Dialogs;
 using UVtools.Core.Extensions;
 using UVtools.Core.Managers;
 using UVtools.Core.Suggestions;

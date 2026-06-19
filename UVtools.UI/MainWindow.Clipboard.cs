@@ -13,7 +13,6 @@ using SukiUI.MessageBox;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using UVtools.Core.Dialogs;
 using UVtools.UI.Extensions;
 
 namespace UVtools.UI;

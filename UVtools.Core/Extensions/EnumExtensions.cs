@@ -6,10 +6,8 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using UVtools.Core.Objects;
 using ZLinq;
 

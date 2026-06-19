@@ -408,7 +408,7 @@ public sealed class CWSFile : FileFormat
         {
             OutputSettings.FlipX = value is FlipDirection.Horizontally or FlipDirection.Both;
             OutputSettings.FlipY = value is FlipDirection.Vertically or FlipDirection.Both;
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 
@@ -889,7 +889,7 @@ public sealed class CWSFile : FileFormat
         }
 
         GCode.AppendFormat(Printer == PrinterType.Wanhao ? WanhaoGCodeEnd : GCodeEnd, Environment.NewLine, SliceSettings.LiftWhenFinished);*/
-        RaisePropertyChanged(nameof(GCodeStr));
+        OnPropertyChanged(nameof(GCodeStr));
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)

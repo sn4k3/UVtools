@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,9 +7,11 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
@@ -17,14 +19,11 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public class OperationResize : Operation
+public partial class OperationResize : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
     private decimal _x = 100;
-    private decimal _y = 100;
-    private bool _constrainXy;
-    private bool _isFade;
     #endregion
 
     #region Overrides
@@ -60,7 +59,7 @@ public class OperationResize : Operation
 
     public override string ToString()
     {
-        var result = $"[X: {_x}%, Y: {_y}%] [Fade: {_isFade}] [Constrain: {_constrainXy}]" + LayerRangeString;
+        var result = $"[X: {_x}%, Y: {Y}%] [Fade: {IsFade}] [Constrain: {ConstrainXY}]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -72,44 +71,30 @@ public class OperationResize : Operation
         get => _x;
         set
         {
-            RaiseAndSetIfChanged(ref _x, value);
-            if (_constrainXy)
+            SetProperty(ref _x, value);
+            if (ConstrainXY)
                 Y = value;
-            RaisePropertyChanged(nameof(XScale));
+            OnPropertyChanged(nameof(XScale));
         }
     }
 
     public decimal XScale => _x / 100m;
-    public decimal YScale => _y / 100m;
+    public decimal YScale => Y / 100m;
 
-    public decimal Y
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(YScale))]
+    public partial decimal Y { get; set; } = 100;
+
+    [ObservableProperty]
+    public partial bool ConstrainXY { get; set; }
+
+    partial void OnConstrainXYChanged(bool value)
     {
-        get => _y;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _y, value)) return;
-            RaisePropertyChanged(nameof(YScale));
-        }
+        if (value) Y = _x;
     }
 
-    public bool ConstrainXY
-    {
-        get => _constrainXy;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _constrainXy, value)) return;
-            if (_constrainXy)
-            {
-                Y = _x;
-            }
-        }
-    }
-
-    public bool IsFade
-    {
-        get => _isFade;
-        set => RaiseAndSetIfChanged(ref _isFade, value);
-    }
+    [ObservableProperty]
+    public partial bool IsFade { get; set; }
     #endregion
 
     #region Constructor
@@ -124,7 +109,7 @@ public class OperationResize : Operation
 
     protected bool Equals(OperationResize other)
     {
-        return _x == other._x && _y == other._y && _constrainXy == other._constrainXy && _isFade == other._isFade;
+        return _x == other._x && Y == other.Y && ConstrainXY == other.ConstrainXY && IsFade == other.IsFade;
     }
 
     public override bool Equals(object? obj)
@@ -141,17 +126,17 @@ public class OperationResize : Operation
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
-        if (_x <= 0 || _y <= 0) return false;
-        if (_x == 100 && _y == 100) return false;
+        if (_x <= 0 || Y <= 0) return false;
+        if (_x == 100 && Y == 100) return false;
 
         decimal xSteps = Math.Abs(100 - _x) / (LayerIndexEnd - LayerIndexStart + 1);
-        decimal ySteps = Math.Abs(100 - _y) / (LayerIndexEnd - LayerIndexStart + 1);
+        decimal ySteps = Math.Abs(100 - Y) / (LayerIndexEnd - LayerIndexStart + 1);
 
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
             var newX = _x;
-            var newY = _y;
+            var newY = Y;
             if (IsFade)
             {
                 if (newX != 100)

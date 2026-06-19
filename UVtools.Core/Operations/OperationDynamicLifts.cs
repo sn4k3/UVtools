@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.ComponentModel;
 using System.Text;
 using UVtools.Core.FileFormats;
@@ -17,7 +18,7 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationDynamicLifts : Operation
+public sealed partial class OperationDynamicLifts : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Enums
@@ -34,7 +35,6 @@ public sealed class OperationDynamicLifts : Operation
 
     #region Members
 
-    private DynamicLiftsSetMethod _setMethod = DynamicLiftsSetMethod.Traditional;
     private float _smallestBottomLiftHeight;
     private float _largestBottomLiftHeight;
     private float _smallestLiftHeight;
@@ -114,7 +114,7 @@ public sealed class OperationDynamicLifts : Operation
     public override string ToString()
     {
         var result =
-            $"[Method: {_setMethod}]" +
+            $"[Method: {SetMethod}]" +
             $" [Bottom height: {_smallestBottomLiftHeight}/{_largestBottomLiftHeight}mm]" +
             $" [Bottom speed: {_slowestBottomLiftSpeed}/{_fastestBottomLiftSpeed}mm/min]" +
             $" [Height: {_smallestLiftHeight}/{_largestLiftHeight}mm]" +
@@ -128,58 +128,55 @@ public sealed class OperationDynamicLifts : Operation
 
     #region Properties
 
-    public DynamicLiftsSetMethod SetMethod
-    {
-        get => _setMethod;
-        set => RaiseAndSetIfChanged(ref _setMethod, value);
-    }
+    [ObservableProperty]
+    public partial DynamicLiftsSetMethod SetMethod { get; set; } = DynamicLiftsSetMethod.Traditional;
 
     public float SmallestBottomLiftHeight
     {
         get => _smallestBottomLiftHeight;
-        set => RaiseAndSetIfChanged(ref _smallestBottomLiftHeight, MathF.Round(value, 2));
+        set => SetProperty(ref _smallestBottomLiftHeight, MathF.Round(value, 2));
     }
 
     public float LargestBottomLiftHeight
     {
         get => _largestBottomLiftHeight;
-        set => RaiseAndSetIfChanged(ref _largestBottomLiftHeight, MathF.Round(value, 2));
+        set => SetProperty(ref _largestBottomLiftHeight, MathF.Round(value, 2));
     }
 
     public float SmallestLiftHeight
     {
         get => _smallestLiftHeight;
-        set => RaiseAndSetIfChanged(ref _smallestLiftHeight, MathF.Round(value, 2));
+        set => SetProperty(ref _smallestLiftHeight, MathF.Round(value, 2));
     }
 
     public float LargestLiftHeight
     {
         get => _largestLiftHeight;
-        set => RaiseAndSetIfChanged(ref _largestLiftHeight, MathF.Round(value, 2));
+        set => SetProperty(ref _largestLiftHeight, MathF.Round(value, 2));
     }
 
     public float SlowestBottomLiftSpeed
     {
         get => _slowestBottomLiftSpeed;
-        set => RaiseAndSetIfChanged(ref _slowestBottomLiftSpeed, MathF.Round(value, 2));
+        set => SetProperty(ref _slowestBottomLiftSpeed, MathF.Round(value, 2));
     }
 
     public float FastestBottomLiftSpeed
     {
         get => _fastestBottomLiftSpeed;
-        set => RaiseAndSetIfChanged(ref _fastestBottomLiftSpeed, MathF.Round(value, 2));
+        set => SetProperty(ref _fastestBottomLiftSpeed, MathF.Round(value, 2));
     }
 
     public float SlowestLiftSpeed
     {
         get => _slowestLiftSpeed;
-        set => RaiseAndSetIfChanged(ref _slowestLiftSpeed, MathF.Round(value, 2));
+        set => SetProperty(ref _slowestLiftSpeed, MathF.Round(value, 2));
     }
 
     public float FastestLiftSpeed
     {
         get => _fastestLiftSpeed;
-        set => RaiseAndSetIfChanged(ref _fastestLiftSpeed, MathF.Round(value, 2));
+        set => SetProperty(ref _fastestLiftSpeed, MathF.Round(value, 2));
     }
 
     //public uint MinBottomLayerPixels => SlicerFile.Where(layer => layer.IsBottomLayer && !layer.IsEmpty && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd).Max(layer => layer.NonZeroPixelCount);
@@ -296,7 +293,7 @@ public sealed class OperationDynamicLifts : Operation
             //  x  - pixelcount
             if (setLayer.IsBottomLayer)
             {
-                switch (_setMethod)
+                switch (SetMethod)
                 {
                     case DynamicLiftsSetMethod.Traditional:
                         liftHeight = Math.Clamp(_largestBottomLiftHeight * calculateLayer.NonZeroPixelCount / maxBottomPixels, _smallestBottomLiftHeight, _largestBottomLiftHeight);
@@ -314,7 +311,7 @@ public sealed class OperationDynamicLifts : Operation
             }
             else
             {
-                switch (_setMethod)
+                switch (SetMethod)
                 {
                     case DynamicLiftsSetMethod.Traditional:
                         liftHeight = Math.Clamp(_largestLiftHeight * calculateLayer.NonZeroPixelCount / maxNormalPixels, _smallestLiftHeight, _largestLiftHeight);
@@ -361,7 +358,7 @@ public sealed class OperationDynamicLifts : Operation
 
     private bool Equals(OperationDynamicLifts other)
     {
-        return _setMethod == other._setMethod && _smallestBottomLiftHeight.Equals(other._smallestBottomLiftHeight) && _largestBottomLiftHeight.Equals(other._largestBottomLiftHeight) && _smallestLiftHeight.Equals(other._smallestLiftHeight) && _largestLiftHeight.Equals(other._largestLiftHeight) && _slowestBottomLiftSpeed.Equals(other._slowestBottomLiftSpeed) && _fastestBottomLiftSpeed.Equals(other._fastestBottomLiftSpeed) && _slowestLiftSpeed.Equals(other._slowestLiftSpeed) && _fastestLiftSpeed.Equals(other._fastestLiftSpeed);
+        return SetMethod == other.SetMethod && _smallestBottomLiftHeight.Equals(other._smallestBottomLiftHeight) && _largestBottomLiftHeight.Equals(other._largestBottomLiftHeight) && _smallestLiftHeight.Equals(other._smallestLiftHeight) && _largestLiftHeight.Equals(other._largestLiftHeight) && _slowestBottomLiftSpeed.Equals(other._slowestBottomLiftSpeed) && _fastestBottomLiftSpeed.Equals(other._fastestBottomLiftSpeed) && _slowestLiftSpeed.Equals(other._slowestLiftSpeed) && _fastestLiftSpeed.Equals(other._fastestLiftSpeed);
     }
 
     public override bool Equals(object? obj)

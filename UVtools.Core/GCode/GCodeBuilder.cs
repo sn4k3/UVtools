@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -16,8 +16,10 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using EmguExtensions;
 using UVtools.Core.Converters;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -28,7 +30,7 @@ using ZLinq;
 
 namespace UVtools.Core.GCode;
 
-public class GCodeBuilder : BindableBase
+public partial class GCodeBuilder : ObservableObject
 {
     #region Events
 
@@ -141,7 +143,7 @@ public class GCodeBuilder : BindableBase
     /// </summary>
     public void SetKlipperStandard()
     {
-        _gCodeClearImagePosition = GCodeClearImagePositions.End;
+        GCodeClearImagePosition = GCodeClearImagePositions.End;
 
         CommandMotorsOnM17.Enabled = false;
         CommandHomeG28.Arguments = "Z";
@@ -247,99 +249,48 @@ public class GCodeBuilder : BindableBase
     private readonly StringBuilder _gcode = new();
 
 
-    private GCodePositioningTypes _gCodePositioningType = GCodePositioningTypes.Absolute;
-    private GCodeTimeUnits _gCodeTimeUnit = GCodeTimeUnits.Milliseconds;
-    private GCodeSpeedUnits _gCodeSpeedUnit = GCodeSpeedUnits.MillimetersPerMinute;
-    private GCodeShowImageTypes _gCodeShowImageType = GCodeShowImageTypes.FilenamePng1Started;
-    private bool _useTailComma = true;
-    private bool _useComments = true;
-    private ushort _maxLedPower = byte.MaxValue;
-    private bool _encodeThumbnails;
-    private uint _lineCount;
-    private GCodeMoveCommands _layerMoveCommand;
-    private GCodeMoveCommands _endGCodeMoveCommand;
-    private GCodeShowImagePositions _gCodeShowImagePosition = GCodeShowImagePositions.FirstLine;
-    private GCodeClearImagePositions _gCodeClearImagePosition = GCodeClearImagePositions.Start |
-                                             GCodeClearImagePositions.Layer |
-                                             GCodeClearImagePositions.End;
-
     private float _lastAcceleration = 0;
 
     #endregion
 
     #region Properties
 
-    public GCodePositioningTypes GCodePositioningType
-    {
-        get => _gCodePositioningType;
-        set => RaiseAndSetIfChanged(ref _gCodePositioningType, value);
-    }
+    [ObservableProperty]
+    public partial GCodePositioningTypes GCodePositioningType { get; set; } = GCodePositioningTypes.Absolute;
 
-    public GCodeTimeUnits GCodeTimeUnit
-    {
-        get => _gCodeTimeUnit;
-        set => RaiseAndSetIfChanged(ref _gCodeTimeUnit, value);
-    }
+    [ObservableProperty]
+    public partial GCodeTimeUnits GCodeTimeUnit { get; set; } = GCodeTimeUnits.Milliseconds;
 
-    public GCodeSpeedUnits GCodeSpeedUnit
-    {
-        get => _gCodeSpeedUnit;
-        set => RaiseAndSetIfChanged(ref _gCodeSpeedUnit, value);
-    }
+    [ObservableProperty]
+    public partial GCodeSpeedUnits GCodeSpeedUnit { get; set; } = GCodeSpeedUnits.MillimetersPerMinute;
 
-    public GCodeShowImageTypes GCodeShowImageType
-    {
-        get => _gCodeShowImageType;
-        set => RaiseAndSetIfChanged(ref _gCodeShowImageType, value);
-    }
+    [ObservableProperty]
+    public partial GCodeShowImageTypes GCodeShowImageType { get; set; } = GCodeShowImageTypes.FilenamePng1Started;
 
-    public GCodeShowImagePositions GCodeShowImagePosition
-    {
-        get => _gCodeShowImagePosition;
-        set => RaiseAndSetIfChanged(ref _gCodeShowImagePosition, value);
-    }
+    [ObservableProperty]
+    public partial GCodeShowImagePositions GCodeShowImagePosition { get; set; } = GCodeShowImagePositions.FirstLine;
 
-    public GCodeClearImagePositions GCodeClearImagePosition
-    {
-        get => _gCodeClearImagePosition;
-        set => RaiseAndSetIfChanged(ref _gCodeClearImagePosition, value);
-    }
+    [ObservableProperty]
+    public partial GCodeClearImagePositions GCodeClearImagePosition { get; set; } =
+        GCodeClearImagePositions.Start | GCodeClearImagePositions.Layer | GCodeClearImagePositions.End;
 
-    public GCodeMoveCommands LayerMoveCommand
-    {
-        get => _layerMoveCommand;
-        set => RaiseAndSetIfChanged(ref _layerMoveCommand, value);
-    }
+    [ObservableProperty]
+    public partial GCodeMoveCommands LayerMoveCommand { get; set; }
 
-    public GCodeMoveCommands EndGCodeMoveCommand
-    {
-        get => _endGCodeMoveCommand;
-        set => RaiseAndSetIfChanged(ref _endGCodeMoveCommand, value);
-    }
+    [ObservableProperty]
+    public partial GCodeMoveCommands EndGCodeMoveCommand { get; set; }
 
-    public bool UseTailComma
-    {
-        get => _useTailComma;
-        set => RaiseAndSetIfChanged(ref _useTailComma, value);
-    }
+    [ObservableProperty]
+    public partial bool UseTailComma { get; set; } = true;
 
-    public bool UseComments
-    {
-        get => _useComments;
-        set => RaiseAndSetIfChanged(ref _useComments, value);
-    }
+    [ObservableProperty]
+    public partial bool UseComments { get; set; } = true;
 
-    public ushort MaxLEDPower
-    {
-        get => _maxLedPower;
-        set => RaiseAndSetIfChanged(ref _maxLedPower, value);
-    }
+    [ObservableProperty]
+    public partial ushort MaxLEDPower { get; set; } = byte.MaxValue;
 
-    public bool EncodeThumbnails
-    {
-        get => _encodeThumbnails;
-        set => RaiseAndSetIfChanged(ref _encodeThumbnails, value);
-    }
+    [ObservableProperty]
+    public partial bool EncodeThumbnails { get; set; }
 
     public string BeginStartGCodeComments { get; set; } = ";START_GCODE_BEGIN";
     public string EndStartGCodeComments { get; set; } = ";END_GCODE_BEGIN";
@@ -351,17 +302,11 @@ public class GCodeBuilder : BindableBase
     public string BeginEndGCodeComments { get; set; } = ";START_GCODE_END";
     public string EndEndGCodeComments { get; set; } = $";END_GCODE_END{Environment.NewLine};<Completed>";
 
-    public uint LineCount
-    {
-        get => _lineCount;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _lineCount, value)) return;
-            //RaisePropertyChanged(nameof(IsEmpty));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsEmpty))]
+    public partial uint LineCount { get; set; }
 
-    public bool IsEmpty => _lineCount <= 0 || _gcode.Length <= 0;
+    public bool IsEmpty => LineCount <= 0 || _gcode.Length <= 0;
     public int Length => _gcode.Length;
 
     #endregion
@@ -401,21 +346,21 @@ public class GCodeBuilder : BindableBase
     public void AppendLine(GCodeCommand command)
     {
         if (!command.Enabled) return;
-        AppendLine(command.ToString(_useComments, _useTailComma));
+        AppendLine(command.ToString(UseComments, UseTailComma));
         LineCount++;
     }
 
     public void AppendLineOverrideComment(GCodeCommand command, string? comment, params object[] args)
     {
         if (!command.Enabled) return;
-        AppendLine(command.ToStringOverrideComment(_useComments, _useTailComma, comment, args));
+        AppendLine(command.ToStringOverrideComment(UseComments, UseTailComma, comment, args));
         LineCount++;
     }
 
     public void AppendLine(GCodeCommand command, params object[] args)
     {
         if (!command.Enabled) return;
-        AppendLine(command.ToString(_useComments, _useTailComma, args));
+        AppendLine(command.ToString(UseComments, UseTailComma, args));
         LineCount++;
     }
 
@@ -427,19 +372,19 @@ public class GCodeBuilder : BindableBase
 
     public void AppendLineIfCanComment(string line)
     {
-        if (string.IsNullOrWhiteSpace(line) || !_useComments) return;
+        if (string.IsNullOrWhiteSpace(line) || !UseComments) return;
         AppendLine(line);
     }
 
     public void AppendLineIfCanComment(string line, params object[] args)
     {
-        if (string.IsNullOrWhiteSpace(line) || !_useComments) return;
+        if (string.IsNullOrWhiteSpace(line) || !UseComments) return;
         AppendLine(line, args);
     }
 
     public void AppendComment(string comment)
     {
-        if (string.IsNullOrWhiteSpace(comment) || !_useComments) return;
+        if (string.IsNullOrWhiteSpace(comment) || !UseComments) return;
         AppendLine($";{comment}");
     }
 
@@ -458,11 +403,11 @@ public class GCodeBuilder : BindableBase
     public string FormatGCodeLine(string line, string? comment = null)
     {
         if (line[0] == ';') return line;
-        if (_useComments && !string.IsNullOrWhiteSpace(comment))
+        if (UseComments && !string.IsNullOrWhiteSpace(comment))
         {
             line += $";{comment}";
         }
-        else if (_useTailComma)
+        else if (UseTailComma)
         {
             line += ';';
         }
@@ -484,7 +429,7 @@ public class GCodeBuilder : BindableBase
             AppendUnitsMmG21();
             AppendPositioningType();
             AppendLightOffM106();
-            if ((_gCodeClearImagePosition & GCodeClearImagePositions.Start) != 0) AppendClearImage();
+            if ((GCodeClearImagePosition & GCodeClearImagePositions.Start) != 0) AppendClearImage();
             AppendMotorsOn();
             AppendHomeZG28();
             AppendSyncMovements();
@@ -503,7 +448,7 @@ public class GCodeBuilder : BindableBase
         {
             AppendPrintProgressM73(100, 0);
             AppendLightOffM106();
-            if ((_gCodeClearImagePosition & GCodeClearImagePositions.End) != 0) AppendClearImage();
+            if ((GCodeClearImagePosition & GCodeClearImagePositions.End) != 0) AppendClearImage();
 
             var lastLayer = slicerFile.LastLayer;
 
@@ -514,7 +459,7 @@ public class GCodeBuilder : BindableBase
                     slicerFile.MachineZ);
 
                 var lift = new List<(float z, float feedrate, float acceleration)>();
-                switch (_gCodePositioningType)
+                switch (GCodePositioningType)
                 {
                     case GCodePositioningTypes.Absolute:
                         lift.Add((lastPosition, ConvertFromMillimetersPerMinute(slicerFile.LiftSpeed), slicerFile.LiftAcceleration));
@@ -531,7 +476,7 @@ public class GCodeBuilder : BindableBase
                 if (lastPosition < slicerFile.MachineZ)
                 {
                     float finalRaiseZPositionRelative = Layer.RoundHeight(slicerFile.MachineZ - lastPosition);
-                    var finalRaiseZPosition = _gCodePositioningType switch
+                    var finalRaiseZPosition = GCodePositioningType switch
                     {
                         GCodePositioningTypes.Relative => finalRaiseZPositionRelative,
                         _ => slicerFile.MachineZ
@@ -540,7 +485,7 @@ public class GCodeBuilder : BindableBase
 
                     if (finalRaiseZPositionRelative > 0)
                     {
-                        if (_endGCodeMoveCommand == GCodeMoveCommands.G0)
+                        if (EndGCodeMoveCommand == GCodeMoveCommands.G0)
                             AppendMoveG0(finalRaiseZPosition, ConvertFromMillimetersPerMinute(slicerFile.MaximumSpeed));
                         else
                             AppendMoveG1(finalRaiseZPosition, ConvertFromMillimetersPerMinute(slicerFile.MaximumSpeed));
@@ -572,7 +517,7 @@ public class GCodeBuilder : BindableBase
         AppendLightOffM106();
         if (raiseZ > 0)
         {
-            if (_endGCodeMoveCommand == GCodeMoveCommands.G0)
+            if (EndGCodeMoveCommand == GCodeMoveCommands.G0)
                 AppendMoveG0(raiseZ, feedRate);
             else
                 AppendMoveG1(raiseZ, feedRate);
@@ -651,7 +596,7 @@ public class GCodeBuilder : BindableBase
 
     public void AppendMoveGx(float z, float feedRate)
     {
-        if(_layerMoveCommand == GCodeMoveCommands.G0)
+        if(LayerMoveCommand == GCodeMoveCommands.G0)
             AppendMoveG0(z, feedRate);
         else
             AppendMoveG1(z, feedRate);
@@ -660,7 +605,7 @@ public class GCodeBuilder : BindableBase
     public void AppendLiftMoveGx(List<(float z, float feedrate, float acceleration)> lifts,
         List<(float z, float feedrate, float acceleration)> retracts, float waitAfterLift = 0, float waitAfterRetract = 0, Layer? layer = null)
     {
-        if (_layerMoveCommand == GCodeMoveCommands.G0)
+        if (LayerMoveCommand == GCodeMoveCommands.G0)
             AppendLiftMoveG0(lifts, retracts, waitAfterLift, waitAfterRetract, layer);
         else
             AppendLiftMoveG1(lifts, retracts, waitAfterLift, waitAfterRetract, layer);
@@ -857,7 +802,7 @@ public class GCodeBuilder : BindableBase
     }
 
     public void AppendLightOffM106() => AppendTurnLightM106(0);
-    public void AppendLightFullM106() => AppendTurnLightM106(_maxLedPower);
+    public void AppendLightFullM106() => AppendTurnLightM106(MaxLEDPower);
 
     public void AppendClearImage()
     {
@@ -874,7 +819,7 @@ public class GCodeBuilder : BindableBase
             AppendWaitG4(time, "Cure time/delay");
             AppendLightOffM106();
         }
-        if ((_gCodeClearImagePosition & GCodeClearImagePositions.Layer) != 0) AppendClearImage();
+        if ((GCodeClearImagePosition & GCodeClearImagePositions.Layer) != 0) AppendClearImage();
     }
 
     public void AppendPrintProgressM73(float percent, float minutes)
@@ -892,22 +837,22 @@ public class GCodeBuilder : BindableBase
         AppendLine(CommandShowImageM6054, layerIndex);
     }
 
-    public string GetShowImageString(uint layerIndex) => _gCodeShowImageType switch
+    public string GetShowImageString(uint layerIndex) => GCodeShowImageType switch
     {
         GCodeShowImageTypes.FilenamePng0Started => $"{layerIndex}.png",
         GCodeShowImageTypes.FilenamePng1Started => $"{layerIndex + 1}.png",
         GCodeShowImageTypes.LayerIndex0Started => $"{layerIndex}",
         GCodeShowImageTypes.LayerIndex1Started => $"{layerIndex + 1}",
-        _ => throw new InvalidExpressionException($"Unhandled image type for {_gCodeShowImageType}")
+        _ => throw new InvalidExpressionException($"Unhandled image type for {GCodeShowImageType}")
     };
 
-    public string GetShowImageString(string value) => _gCodeShowImageType switch
+    public string GetShowImageString(string value) => GCodeShowImageType switch
     {
         GCodeShowImageTypes.FilenamePng0Started => $"{value}.png",
         GCodeShowImageTypes.FilenamePng1Started => $"{value}.png",
         GCodeShowImageTypes.LayerIndex0Started => $"{value}",
         GCodeShowImageTypes.LayerIndex1Started => $"{value}",
-        _ => throw new InvalidExpressionException($"Unhandled image type for {_gCodeShowImageType}")
+        _ => throw new InvalidExpressionException($"Unhandled image type for {GCodeShowImageType}")
     };
 
     public void RebuildGCode(FileFormat slicerFile, StringBuilder? header) => RebuildGCode(slicerFile, header?.ToString());
@@ -919,7 +864,7 @@ public class GCodeBuilder : BindableBase
 
         AppendUVtools();
 
-        if (_encodeThumbnails && slicerFile.ThumbnailsCount > 0)
+        if (EncodeThumbnails && slicerFile.ThumbnailsCount > 0)
         {
             AppendLine();
 
@@ -927,7 +872,7 @@ public class GCodeBuilder : BindableBase
             {
                 var thumbnail = slicerFile.Thumbnails[i];
                 if (thumbnail.IsEmpty) continue;
-                var pngBytes = thumbnail.GetPngByes();
+                var pngBytes = thumbnail.GetPngBytes();
                 var base64Thumbnail = Convert.ToBase64String(pngBytes);
                 var chunks = base64Thumbnail.AsValueEnumerable().Chunk(78);
 
@@ -984,9 +929,9 @@ public class GCodeBuilder : BindableBase
             float retractAcceleration2 = layer.RetractAcceleration2;
             float liftHeightTotal = layer.LiftHeightTotal;
             ushort pwmValue = layer.LightPWM;
-            if (_maxLedPower != byte.MaxValue)
+            if (MaxLEDPower != byte.MaxValue)
             {
-                pwmValue = (ushort)(_maxLedPower * pwmValue / byte.MaxValue);
+                pwmValue = (ushort)(MaxLEDPower * pwmValue / byte.MaxValue);
             }
 
             var lifts = new List<(float z, float feedrate, float acceleration)>();
@@ -1039,7 +984,7 @@ public class GCodeBuilder : BindableBase
 
                 //if (layer.CanExpose)
                 //{ Dont check this for compability
-                if (_gCodeShowImagePosition == GCodeShowImagePositions.FirstLine)
+                if (GCodeShowImagePosition == GCodeShowImagePositions.FirstLine)
                 {
                     AppendShowImageM6054(GetShowImageString(layerIndex));
                 }
@@ -1065,7 +1010,7 @@ public class GCodeBuilder : BindableBase
                 }
 
                 AppendWaitG4(waitBeforeCure, "Wait before cure"); // Safer to parse if present
-                if (_gCodeShowImagePosition == GCodeShowImagePositions.WhenRequired && layer.ShouldExpose)
+                if (GCodeShowImagePosition == GCodeShowImagePositions.WhenRequired && layer.ShouldExpose)
                 {
                     AppendShowImageM6054(GetShowImageString(layerIndex));
                 }
@@ -1123,7 +1068,7 @@ public class GCodeBuilder : BindableBase
             if (line.StartsWith(CommandPositioningPartialG91.Command)) return GCodePositioningTypes.Relative;
         }
 
-        return _gCodePositioningType;
+        return GCodePositioningType;
     }
 
     public void ParseLayersFromGCode(FileFormat slicerFile, bool rebuildGlobalTable = true)
@@ -1234,7 +1179,7 @@ public class GCodeBuilder : BindableBase
                 if (match is {Success: true, Groups.Count: >= 2}) // Begin new layer
                 {
                     var layerIndex = uint.Parse(match.Groups[1].Value);
-                    if (_gCodeShowImageType is GCodeShowImageTypes.FilenamePng1Started or GCodeShowImageTypes.LayerIndex1Started) layerIndex--;
+                    if (GCodeShowImageType is GCodeShowImageTypes.FilenamePng1Started or GCodeShowImageTypes.LayerIndex1Started) layerIndex--;
                     if (layerIndex > slicerFile.LayerCount)
                     {
                         throw new FileLoadException(
@@ -1243,7 +1188,7 @@ public class GCodeBuilder : BindableBase
                     }
 
                     // Propagate values before switch to the new layer
-                    if (/*_gCodeShowImagePosition == GCodeShowImagePositions.FirstLine && */layerBlock.LayerIndex != layerIndex)
+                    if (/*GCodeShowImagePosition == GCodeShowImagePositions.FirstLine && */layerBlock.LayerIndex != layerIndex)
                     {
                         layerBlock.SetLayer(true);
                         layerBlock.LayerIndex = layerIndex;
@@ -1433,9 +1378,9 @@ public class GCodeBuilder : BindableBase
                         if (lineSplit[i].StartsWith("S"))
                         {
                             if(!float.TryParse(lineSplit[i][1..], CultureInfo.InvariantCulture, out var pwmValue)) continue;
-                            pwm = _maxLedPower == byte.MaxValue
+                            pwm = MaxLEDPower == byte.MaxValue
                                 ? (byte)pwmValue
-                                : (byte)(pwmValue * byte.MaxValue / _maxLedPower);
+                                : (byte)(pwmValue * byte.MaxValue / MaxLEDPower);
                         }
                         else if (lineSplit[i].StartsWith("P"))
                         {
@@ -1469,14 +1414,14 @@ public class GCodeBuilder : BindableBase
                 if (match is {Success: true, Groups.Count: >= 2})
                 {
                     byte pwm;
-                    if (_maxLedPower == byte.MaxValue)
+                    if (MaxLEDPower == byte.MaxValue)
                     {
                         pwm = byte.Parse(match.Groups[1].Value);
                     }
                     else
                     {
                         ushort pwmValue = ushort.Parse(match.Groups[1].Value);
-                        pwm = (byte) (pwmValue * byte.MaxValue / _maxLedPower);
+                        pwm = (byte) (pwmValue * byte.MaxValue / MaxLEDPower);
                     }
 
                     if (pwm == 0 && layerBlock.LightPWM.HasValue)
@@ -1513,11 +1458,11 @@ public class GCodeBuilder : BindableBase
     /// <returns></returns>
     public float ConvertFromSeconds(float seconds)
     {
-        return _gCodeTimeUnit switch
+        return GCodeTimeUnit switch
         {
             GCodeTimeUnits.Seconds => seconds,
             GCodeTimeUnits.Milliseconds => TimeConverter.SecondsToMilliseconds(seconds),
-            _ => throw new InvalidExpressionException($"Unhandled time unit for {_gCodeTimeUnit}")
+            _ => throw new InvalidExpressionException($"Unhandled time unit for {GCodeTimeUnit}")
         };
     }
 
@@ -1528,12 +1473,12 @@ public class GCodeBuilder : BindableBase
     /// <returns></returns>
     public float ConvertFromMillimetersPerMinute(float mmMin)
     {
-        return _gCodeSpeedUnit switch
+        return GCodeSpeedUnit switch
         {
             GCodeSpeedUnits.MillimetersPerMinute => mmMin,
             GCodeSpeedUnits.MillimetersPerSecond => MathF.Round(mmMin / 60, 2),
             GCodeSpeedUnits.CentimetersPerMinute => MathF.Round(mmMin / 10, 2),
-            _ => throw new InvalidExpressionException($"Unhandled speed unit for {_gCodeSpeedUnit}")
+            _ => throw new InvalidExpressionException($"Unhandled speed unit for {GCodeSpeedUnit}")
         };
     }
 
@@ -1544,11 +1489,11 @@ public class GCodeBuilder : BindableBase
     /// <returns></returns>
     public float ConvertToSeconds(float time)
     {
-        return _gCodeTimeUnit switch
+        return GCodeTimeUnit switch
         {
             GCodeTimeUnits.Seconds => time,
             GCodeTimeUnits.Milliseconds => TimeConverter.MillisecondsToSeconds(time),
-            _ => throw new InvalidExpressionException($"Unhandled time unit for {_gCodeTimeUnit}")
+            _ => throw new InvalidExpressionException($"Unhandled time unit for {GCodeTimeUnit}")
         };
     }
 
@@ -1559,12 +1504,12 @@ public class GCodeBuilder : BindableBase
     /// <returns></returns>
     public float ConvertToMillimetersPerMinute(float speed)
     {
-        return _gCodeSpeedUnit switch
+        return GCodeSpeedUnit switch
         {
             GCodeSpeedUnits.MillimetersPerMinute => speed,
             GCodeSpeedUnits.MillimetersPerSecond => MathF.Round(speed * 60, 2),
             GCodeSpeedUnits.CentimetersPerMinute => MathF.Round(speed * 10, 2),
-            _ => throw new InvalidExpressionException($"Unhandled speed unit for {_gCodeSpeedUnit}")
+            _ => throw new InvalidExpressionException($"Unhandled speed unit for {GCodeSpeedUnit}")
         };
     }
 }

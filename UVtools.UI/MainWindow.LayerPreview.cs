@@ -25,9 +25,10 @@ using System.Threading.Tasks;
 using System.Timers;
 using Avalonia.Platform.Storage;
 using Avalonia.Reactive;
+using EmguExtensions;
+using EmguExtensions.Avalonia;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
-using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
@@ -39,6 +40,7 @@ using AvaloniaStatic = UVtools.UI.Controls.AvaloniaStatic;
 using Point = System.Drawing.Point;
 using SukiUI.MessageBox;
 using ZLinq;
+using PointExtensions = UVtools.Core.Extensions.PointExtensions;
 
 namespace UVtools.UI;
 
@@ -1010,13 +1012,13 @@ public partial class MainWindow
                         {
                             if (previousLayer is null) return;
                             previousImage = previousLayer.LayerMat;
-                            previousSpan = previousImage.GetBytePointer();
+                            previousSpan = previousImage.BytePointer;
                         },
                         () =>
                         {
                             if (nextLayer is null) return;
                             nextImage = nextLayer.LayerMat;
-                            nextSpan = nextImage.GetBytePointer();
+                            nextSpan = nextImage.BytePointer;
                         });
 
                     /*using (var previousImage = SlicerFile[_actualLayer - 1].LayerMat)
@@ -1026,7 +1028,7 @@ public partial class MainWindow
                     //var nextSpan = nextImage.GetPixelSpan<byte>();
 
 
-                    int width = LayerCache.Image.GetRealStep();
+                    int width = LayerCache.Image.RealStep;
                     int channels = LayerCache.ImageBgra.NumberOfChannels;
                     bool showSimilarityInstead = Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead;
 
@@ -1310,9 +1312,9 @@ public partial class MainWindow
                     {
                         var points = new[]
                         {
-                            triangle.V0.ToPoint(),
-                            triangle.V1.ToPoint(),
-                            triangle.V2.ToPoint()
+                            PointExtensions.ToPoint(triangle.V0),
+                            PointExtensions.ToPoint(triangle.V1),
+                            PointExtensions.ToPoint(triangle.V2)
                         };
 
                         CvInvoke.Polylines(LayerCache.ImageBgra, points, true, lineColor, Settings.LayerPreview.TriangulateOutlineLineThickness);
@@ -2340,7 +2342,7 @@ public partial class MainWindow
 
                         //if (cursorSize % 2 != 0) cursorSize++;
 
-                        cursor = EmguExtensions.InitMat(SlicerFile!.PixelsToNormalizedPitch(cursorSize), 4);
+                        cursor = EmguCvExtensions.InitMat(SlicerFile!.PixelsToNormalizedPitch(cursorSize), 4);
                         //cursor.SetTo(new MCvScalar(255,255,255,255)); // Debug
 
                         /*FlipType? flip = null;
@@ -2389,10 +2391,10 @@ public partial class MainWindow
 
                 int baseLine = 0;
                 //var size = CvInvoke.GetTextSize(text, DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness, ref baseLine);
-                var size = EmguExtensions.GetTextSizeExtended(text, DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness, ref baseLine, DrawingPixelText.LineAlignment);
+                var size = EmguCvExtensions.GetTextSizeExtended(text, DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness, ref baseLine, DrawingPixelText.LineAlignment);
                 //var rotatedSize = size.Rotate(DrawingPixelText.Angle);
                 //Point point = (rotatedSize.Inflate(rotatedSize)).Rotate(DrawingPixelText.Angle, rotatedSize.ToPoint());
-                cursor = EmguExtensions.InitMat(size.Add(), 4);
+                cursor = EmguCvExtensions.InitMat(size.Add(), 4);
                 //CvInvoke.Rectangle(cursor, new Rectangle(Point.Empty, size), _pixelEditorCursorColor, -1, DrawingPixelText.LineType);
                 //_pixelEditorCursorColor.V3 = 255;
                 //CvInvoke.Rectangle(cursor, new Rectangle(new Point(size.Width, 0), size), _pixelEditorCursorColor, 1, DrawingPixelText.LineType);
@@ -2430,7 +2432,7 @@ public partial class MainWindow
                 {
                     var diameterPitched = SlicerFile!.PixelsToNormalizedPitch(diameter);
                     var radiusPitched = SlicerFile!.PixelsToNormalizedPitch(diameter / 2);
-                    cursor = EmguExtensions.InitMat(diameterPitched, 4);
+                    cursor = EmguCvExtensions.InitMat(diameterPitched, 4);
                     var center = radiusPitched.ToPoint();
                     cursor.DrawCircle(center,
                         radiusPitched,

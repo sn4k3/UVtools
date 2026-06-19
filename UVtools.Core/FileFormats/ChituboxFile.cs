@@ -17,6 +17,7 @@ using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
@@ -625,9 +626,8 @@ public sealed class ChituboxFile : FileFormat
 
         public static unsafe Mat DecodeCbddlpImage(ChituboxFile parent, uint layerIndex)
         {
-            var image = EmguExtensions.InitMat(parent.Resolution);
-            var span = image.GetBytePointer();
-            var imageLength = image.GetLength();
+            var image = EmguCvExtensions.InitMat(parent.Resolution);
+            var span = image.GetSpanOfBytes(0, 0);
 
             for (byte bit = 0; bit < parent.AntiAliasing; bit++)
             {
@@ -651,12 +651,12 @@ public sealed class ChituboxFile : FileFormat
 
                     n += reps;
 
-                    if (n == imageLength)
+                    if (n == span.Length)
                     {
                         break;
                     }
 
-                    if (n > imageLength)
+                    if (n > span.Length)
                     {
                         image.Dispose();
                         throw new FileLoadException("Error image ran off the end");
@@ -664,7 +664,7 @@ public sealed class ChituboxFile : FileFormat
                 }
             }
 
-            for (int i = 0; i < imageLength; i++)
+            for (int i = 0; i < span.Length; i++)
             {
                 int newC = span[i] * (256 / parent.AntiAliasing);
 
@@ -681,7 +681,7 @@ public sealed class ChituboxFile : FileFormat
 
         private Mat DecodeCtbImage(uint layerIndex)
         {
-            var mat = EmguExtensions.InitMat(Parent!.Resolution);
+            var mat = EmguCvExtensions.InitMat(Parent!.Resolution);
             //var span = mat.GetBytePointer();
 
             if (Parent.HeaderSettings.EncryptionKey > 0)
@@ -762,8 +762,7 @@ public sealed class ChituboxFile : FileFormat
         public unsafe byte[] EncodeCbddlpImage(Mat image, byte bit)
         {
             List<byte> rawData = [];
-            var span = image.GetBytePointer();
-            var imageLength = image.GetLength();
+            var span = image.GetSpanOfBytes(0, 0);
 
             bool obit = false;
             int rep = 0;
@@ -791,7 +790,7 @@ public sealed class ChituboxFile : FileFormat
                 rawData.Add(by);
             }
 
-            for (int pixel = 0; pixel < imageLength; pixel++)
+            for (int pixel = 0; pixel < span.Length; pixel++)
             {
                 var nbit = span[pixel] >= threshold;
 
@@ -827,8 +826,7 @@ public sealed class ChituboxFile : FileFormat
             List<byte> rawData = [];
             byte color = byte.MaxValue >> 1;
             uint stride = 0;
-            var span = image.GetBytePointer();
-            var imageLength = image.GetLength();
+            var span = image.GetSpanOfBytes(0, 0);
 
             void AddRep()
             {
@@ -880,7 +878,7 @@ public sealed class ChituboxFile : FileFormat
             }
 
 
-            for (int pixel = 0; pixel < imageLength; pixel++)
+            for (int pixel = 0; pixel < span.Length; pixel++)
             {
                 var grey7 = (byte) (span[pixel] >> 1);
 
@@ -1249,7 +1247,7 @@ public sealed class ChituboxFile : FileFormat
         set
         {
             HeaderSettings.ProjectorType = value == FlipDirection.None ? 0u : 1;
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 

@@ -1,103 +1,109 @@
 <windows:GenericWindow xmlns="https://github.com/avaloniaui"
-               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-               xmlns:uc="clr-namespace:UVtools.UI.Controls"
-               xmlns:windows="clr-namespace:UVtools.UI.Windows"
-               xmlns:suki="https://github.com/kikipoulet/SukiUI"
-               xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-               mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
-               x:Class="UVtools.UI.Windows.MissingInformationWindow"
-               x:DataType="windows:MissingInformationWindow"
-               CanResize="False"
-               SizeToContent="Height"
-               WindowStartupLocation="CenterOwner"
-               Width="500"
-               Title="Missing information on the file">
-  <StackPanel Orientation="Vertical" Spacing="10">
-    <suki:GlassCard Classes="HeaderActions">
-        <SelectableTextBlock Text="There are crucial information missing on this file in order to UVtools work properly and/or provide the correct information.
+                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                       xmlns:windows="clr-namespace:UVtools.UI.Windows"
+                       xmlns:suki="https://github.com/kikipoulet/SukiUI"
+                       xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                       mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
+                       x:Class="UVtools.UI.Windows.MissingInformationWindow"
+                       x:DataType="windows:MissingInformationWindow"
+                       CanResize="False"
+                       SizeToContent="Height"
+                       WindowStartupLocation="CenterOwner"
+                       Width="500"
+                       Title="Missing information on the file">
+    <LayoutTransformControl>
+        <LayoutTransformControl.LayoutTransform>
+            <ScaleTransform ScaleX="{Binding Settings.General.UiScaling}"
+                            ScaleY="{Binding Settings.General.UiScaling}" />
+        </LayoutTransformControl.LayoutTransform>
+        <StackPanel Orientation="Vertical" Spacing="10">
+            <suki:GlassCard Classes="HeaderActions">
+                <SelectableTextBlock
+                    Text="There are crucial information missing on this file in order to UVtools work properly and/or provide the correct information.
 &#x0a;Fill in the missing information only if you know the correct values, otherwise leave it unchanged if unsure.
 &#x0a;In most cases the missing information is not required by the printer.
 &#x0a;Note: Some fields may rebuild the layers information."
-                             TextWrapping="Wrap"/>
-    </suki:GlassCard>
+                    TextWrapping="Wrap" />
+            </suki:GlassCard>
 
 
-      <suki:GlassCard Margin="20,0">
-        <Grid RowDefinitions="Auto,10,Auto,10,Auto"
-              ColumnDefinitions="Auto,10,220,10,Auto">
+            <suki:GlassCard Margin="20,0">
+                <Grid RowDefinitions="Auto,10,Auto,10,Auto"
+                      ColumnDefinitions="Auto,10,220,10,Auto">
 
-            <TextBlock Grid.Row="0" Grid.Column="0"
-                       VerticalAlignment="Center"
-                       IsVisible="{Binding LayerHeightIsVisible}"
-                       Text="Layer height:"/>
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               VerticalAlignment="Center"
+                               IsVisible="{Binding LayerHeightIsVisible}"
+                               Text="Layer height:" />
 
-            <NumericUpDown Grid.Row="0" Grid.Column="2"
-                            suki:NumericUpDownExtensions.Unit="mm"
-                            IsVisible="{Binding LayerHeightIsVisible}"
-                            Minimum="0"
-                            Maximum="0.200"
-                            Increment="0.01"
-                            FormatString="F3"
-                            Value="{Binding LayerHeight}"/>
+                    <NumericUpDown Grid.Row="0" Grid.Column="2"
+                                   suki:NumericUpDownExtensions.Unit="mm"
+                                   IsVisible="{Binding LayerHeightIsVisible}"
+                                   Minimum="0"
+                                   Maximum="0.200"
+                                   Increment="0.01"
+                                   FormatString="F3"
+                                   Value="{Binding LayerHeight}" />
 
-            <TextBlock Grid.Row="0" Grid.Column="4"
-                       VerticalAlignment="Center"
-                       IsVisible="{Binding LayerHeightIsVisible}"
-                       Text="(Critical)"/>
+                    <TextBlock Grid.Row="0" Grid.Column="4"
+                               VerticalAlignment="Center"
+                               IsVisible="{Binding LayerHeightIsVisible}"
+                               Text="(Critical)" />
 
-            <TextBlock Grid.Row="2" Grid.Column="0"
-                       VerticalAlignment="Center"
-                       IsVisible="{Binding DisplayWidthIsVisible}"
-                       Text="Display width:"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0"
+                               VerticalAlignment="Center"
+                               IsVisible="{Binding DisplayWidthIsVisible}"
+                               Text="Display width:" />
 
-            <NumericUpDown Grid.Row="2" Grid.Column="2"
-                           suki:NumericUpDownExtensions.Unit="mm"
-                           IsVisible="{Binding DisplayWidthIsVisible}"
-                           Minimum="0"
-                           Maximum="10000"
-                           Increment="10"
-                           Value="{Binding DisplayWidth}"/>
+                    <NumericUpDown Grid.Row="2" Grid.Column="2"
+                                   suki:NumericUpDownExtensions.Unit="mm"
+                                   IsVisible="{Binding DisplayWidthIsVisible}"
+                                   Minimum="0"
+                                   Maximum="10000"
+                                   Increment="10"
+                                   Value="{Binding DisplayWidth}" />
 
-            <TextBlock Grid.Row="2" Grid.Column="4"
-                       VerticalAlignment="Center"
-                       IsVisible="{Binding DisplayWidthIsVisible}"
-                       Text="(Regular)"/>
+                    <TextBlock Grid.Row="2" Grid.Column="4"
+                               VerticalAlignment="Center"
+                               IsVisible="{Binding DisplayWidthIsVisible}"
+                               Text="(Regular)" />
 
-            <TextBlock Grid.Row="4" Grid.Column="0"
-                       VerticalAlignment="Center"
-                       IsVisible="{Binding DisplayHeightIsVisible}"
-                       Text="Display height:"/>
+                    <TextBlock Grid.Row="4" Grid.Column="0"
+                               VerticalAlignment="Center"
+                               IsVisible="{Binding DisplayHeightIsVisible}"
+                               Text="Display height:" />
 
-            <NumericUpDown Grid.Row="4" Grid.Column="2"
-                           suki:NumericUpDownExtensions.Unit="mm"
-                           IsVisible="{Binding DisplayHeightIsVisible}"
-                           Minimum="0"
-                           Maximum="10000"
-                           Increment="10"
-                           Value="{Binding DisplayHeight}"/>
+                    <NumericUpDown Grid.Row="4" Grid.Column="2"
+                                   suki:NumericUpDownExtensions.Unit="mm"
+                                   IsVisible="{Binding DisplayHeightIsVisible}"
+                                   Minimum="0"
+                                   Maximum="10000"
+                                   Increment="10"
+                                   Value="{Binding DisplayHeight}" />
 
-            <TextBlock Grid.Row="4" Grid.Column="4"
-                       VerticalAlignment="Center"
-                       IsVisible="{Binding DisplayHeightIsVisible}"
-                       Text="(Regular)"/>
+                    <TextBlock Grid.Row="4" Grid.Column="4"
+                               VerticalAlignment="Center"
+                               IsVisible="{Binding DisplayHeightIsVisible}"
+                               Text="(Regular)" />
 
-        </Grid>
-      </suki:GlassCard>
+                </Grid>
+            </suki:GlassCard>
 
-      <suki:GlassCard Classes="FooterActions">
-          <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
-              <Button Padding="10"
-                      IsDefault="True"
-                      Content="{avalonia:MaterialIconTextExt Kind=Check, Text='Apply'}"
-                      Command="{Binding Apply}"/>
+            <suki:GlassCard Classes="FooterActions">
+                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+                    <Button Padding="10"
+                            IsDefault="True"
+                            Content="{avalonia:MaterialIconTextExt Kind=Check, Text='Apply'}"
+                            Command="{Binding Apply}" />
 
-              <Button Padding="10"
-                      IsCancel="True"
-                      Content="{avalonia:MaterialIconTextExt Kind=SignOut, Text='Cancel'}"
-                      Command="{Binding Close}"/>
-          </StackPanel>
-      </suki:GlassCard>
-  </StackPanel>
+                    <Button Padding="10"
+                            IsCancel="True"
+                            Content="{avalonia:MaterialIconTextExt Kind=SignOut, Text='Cancel'}"
+                            Command="{Binding Close}" />
+                </StackPanel>
+            </suki:GlassCard>
+        </StackPanel>
+    </LayoutTransformControl>
 </windows:GenericWindow>

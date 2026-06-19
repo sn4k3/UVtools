@@ -2,8 +2,6 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using UVtools.Core.Dialogs;
-using UVtools.UI.Controls;
 using UVtools.UI.Extensions;
 using UVtools.UI.Structures;
 

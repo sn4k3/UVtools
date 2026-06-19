@@ -25,50 +25,6 @@ public static class PointExtensions
     public static bool IsBothNegative(this Point point) => point is {X: < 0, Y: < 0};
     public static bool IsBothZeroOrPositive(this Point point) => point is {X: >= 0, Y: >= 0};
 
-    public static Point Rotate(this Point point, double angleDegree, Point pivot = default)
-    {
-        if (angleDegree % 360 == 0) return point;
-        double angle = angleDegree * Math.PI / 180;
-        double cos = Math.Cos(angle);
-        double sin = Math.Sin(angle);
-        int dx = point.X - pivot.X;
-        int dy = point.Y - pivot.Y;
-        double x = cos * dx - sin * dy + pivot.X;
-        double y = sin * dx + cos * dy + pivot.Y;
-
-        return new((int)Math.Round(x), (int)Math.Round(y));
-    }
-
-    public static PointF Rotate(this PointF point, double angleDegree, PointF pivot = default)
-    {
-        if (angleDegree % 360 == 0) return point;
-        double angle = angleDegree * Math.PI / 180;
-        double cos = Math.Cos(angle);
-        double sin = Math.Sin(angle);
-        double dx = point.X - pivot.X;
-        double dy = point.Y - pivot.Y;
-        double x = cos * dx - sin * dy + pivot.X;
-        double y = sin * dx + cos * dy + pivot.Y;
-
-        return new((float) x, (float) y);
-    }
-
-    public static void Rotate(Point[] points, double angleDegree, Point pivot = default)
-    {
-        for (int i = 0; i < points.Length; i++)
-        {
-            points[i] = points[i].Rotate(angleDegree, pivot);
-        }
-    }
-
-    public static void Rotate(PointF[] points, double angleDegree, PointF pivot = default)
-    {
-        for (int i = 0; i < points.Length; i++)
-        {
-            points[i] = points[i].Rotate(angleDegree, pivot);
-        }
-    }
-
     public static Point Invert(this Point point) => new(-point.X, -point.Y);
 
     public static PointF Invert(this PointF point) => new(-point.X, -point.Y);
@@ -88,6 +44,6 @@ public static class PointExtensions
 
     public static SizeF ToSize(this PointF point) => new(point.X, point.Y);
 
-        
+
 
 }

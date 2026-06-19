@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -6,9 +6,11 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System.Linq;
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
+using EmguExtensions;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
@@ -18,15 +20,10 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationLayerExportHeatMap : Operation
+public sealed partial class OperationLayerExportHeatMap : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
-    private string _filePath = null!;
-    private RotateDirection _rotateDirection = RotateDirection.None;
-    private FlipDirection _flipDirection = FlipDirection.None;
-    private bool _mergeSamePositionedLayers = true;
-    private bool _cropByRoi = true;
 
     #endregion
 
@@ -63,7 +60,7 @@ public sealed class OperationLayerExportHeatMap : Operation
 
     public override string ToString()
     {
-        var result = $"[Crop by ROI: {_cropByRoi}]" +
+        var result = $"[Crop by ROI: {CropByROI}]" +
                      LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
@@ -73,35 +70,20 @@ public sealed class OperationLayerExportHeatMap : Operation
 
     #region Properties
 
-    public string FilePath
-    {
-        get => _filePath;
-        set => RaiseAndSetIfChanged(ref _filePath, value);
-    }
+    [ObservableProperty]
+    public partial string FilePath { get; set; } = null!;
 
-    public RotateDirection RotateDirection
-    {
-        get => _rotateDirection;
-        set => RaiseAndSetIfChanged(ref _rotateDirection, value);
-    }
+    [ObservableProperty]
+    public partial RotateDirection RotateDirection { get; set; } = RotateDirection.None;
 
-    public FlipDirection FlipDirection
-    {
-        get => _flipDirection;
-        set => RaiseAndSetIfChanged(ref _flipDirection, value);
-    }
+    [ObservableProperty]
+    public partial FlipDirection FlipDirection { get; set; } = FlipDirection.None;
 
-    public bool MergeSamePositionedLayers
-    {
-        get => _mergeSamePositionedLayers;
-        set => RaiseAndSetIfChanged(ref _mergeSamePositionedLayers, value);
-    }
+    [ObservableProperty]
+    public partial bool MergeSamePositionedLayers { get; set; } = true;
 
-    public bool CropByROI
-    {
-        get => _cropByRoi;
-        set => RaiseAndSetIfChanged(ref _cropByRoi, value);
-    }
+    [ObservableProperty]
+    public partial bool CropByROI { get; set; } = true;
 
     #endregion
 
@@ -112,12 +94,12 @@ public sealed class OperationLayerExportHeatMap : Operation
 
     public OperationLayerExportHeatMap(FileFormat slicerFile) : base(slicerFile)
     {
-        _flipDirection = SlicerFile.DisplayMirror;
+        FlipDirection = SlicerFile.DisplayMirror;
     }
 
     public override void InitWithSlicerFile()
     {
-        _filePath = SlicerFile.FileFullPathNoExt + "_heatmap.png";
+        FilePath = SlicerFile.FileFullPathNoExt + "_heatmap.png";
     }
 
     #endregion
@@ -126,11 +108,11 @@ public sealed class OperationLayerExportHeatMap : Operation
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
-        using var resultMat = EmguExtensions.InitMat(SlicerFile.Resolution, 1, DepthType.Cv32S);
+        using var resultMat = EmguCvExtensions.InitMat(SlicerFile.Resolution, 1, DepthType.Cv32S);
         using var resultMatRoi = GetRoiOrDefault(resultMat);
         using var mask = GetMask(resultMat, HaveROI ? ROI.Location.Invert() : default);
 
-        var layerRange = _mergeSamePositionedLayers
+        var layerRange = MergeSamePositionedLayers
             ? SlicerFile.GetDistinctLayersByPositionZ(LayerIndexStart, LayerIndexEnd).ToArray()
             : GetSelectedLayerRange().ToArray();
 
@@ -140,7 +122,7 @@ public sealed class OperationLayerExportHeatMap : Operation
        Parallel.ForEach(layerRange, CoreSettings.GetParallelOptions(progress), layer =>
         {
             progress.PauseIfRequested();
-            using var mat = _mergeSamePositionedLayers
+            using var mat = MergeSamePositionedLayers
                 ? SlicerFile.GetMergedMatForSequentialPositionedLayers(layer.Index)
                 : layer.LayerMat;
             using var matRoi = GetRoiOrDefault(mat);
@@ -157,24 +139,24 @@ public sealed class OperationLayerExportHeatMap : Operation
 
         resultMat.ConvertTo(resultMat, DepthType.Cv8U, 1.0 / layerRange.Length);
 
-        if (_flipDirection != FlipDirection.None)
+        if (FlipDirection != FlipDirection.None)
         {
-            CvInvoke.Flip(resultMat, resultMat, (FlipType)_flipDirection);
+            CvInvoke.Flip(resultMat, resultMat, (FlipType)FlipDirection);
         }
 
-        if (_rotateDirection != RotateDirection.None)
+        if (RotateDirection != RotateDirection.None)
         {
-            CvInvoke.Rotate(resultMat, resultMat, (RotateFlags)_rotateDirection);
+            CvInvoke.Rotate(resultMat, resultMat, (RotateFlags)RotateDirection);
         }
 
-        if (_cropByRoi && HaveROI)
+        if (CropByROI && HaveROI)
         {
             using var sumMatRoi = GetRoiOrDefault(resultMat);
-            sumMatRoi.Save(_filePath);
+            sumMatRoi.Save(FilePath);
         }
         else
         {
-            resultMat.Save(_filePath);
+            resultMat.Save(FilePath);
         }
 
 
@@ -187,7 +169,7 @@ public sealed class OperationLayerExportHeatMap : Operation
 
     private bool Equals(OperationLayerExportHeatMap other)
     {
-        return _filePath == other._filePath && _rotateDirection == other._rotateDirection && _flipDirection == other._flipDirection && _mergeSamePositionedLayers == other._mergeSamePositionedLayers && _cropByRoi == other._cropByRoi;
+        return FilePath == other.FilePath && RotateDirection == other.RotateDirection && FlipDirection == other.FlipDirection && MergeSamePositionedLayers == other.MergeSamePositionedLayers && CropByROI == other.CropByROI;
     }
 
     public override bool Equals(object? obj)

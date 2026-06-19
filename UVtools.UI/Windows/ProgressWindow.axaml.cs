@@ -6,14 +6,12 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
 using System;
 using System.Diagnostics;
 using System.Timers;
 using UVtools.Core.Operations;
-using UVtools.UI.Controls;
 using UVtools.UI.Structures;
 
 namespace UVtools.UI.Windows;
@@ -74,7 +72,11 @@ public partial class ProgressWindow : GenericWindow, IDisposable
         Progress.StopWatch.Stop();
         _logItem.ElapsedTime = Math.Round(Progress.StopWatch.Elapsed.TotalSeconds, 2);
         App.MainWindow.AddLog(_logItem);
+        _timer.Close();
+        _timer.Dispose();
     }
+
+
 
     public void OnClickCancel()
     {
@@ -103,11 +105,5 @@ public partial class ProgressWindow : GenericWindow, IDisposable
         }
 
         return Progress;
-    }
-
-    public void Dispose()
-    {
-        _timer.Close();
-        _timer.Dispose();
     }
 }

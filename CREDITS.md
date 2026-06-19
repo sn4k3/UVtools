@@ -114,3 +114,9 @@
 - Grzegorz Gajak
 - Carmine DiChiara
 - Xicotencatl Aguilera Herrera
+- Markus Fabian
+- Josh Crawley
+- Filippo Lenzi
+- Waggery LLC
+- David Ayerst
+- Jaromír Jarušek

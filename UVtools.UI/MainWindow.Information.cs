@@ -20,7 +20,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
-using UVtools.Core.Dialogs;
+using EmguExtensions.Avalonia;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;

@@ -2,7 +2,7 @@
 using Emgu.CV.CvEnum;
 using System;
 using System.Drawing;
-using UVtools.Core.Extensions;
+using EmguExtensions;
 using UVtools.Core.Scripting;
 
 namespace UVtools.ScriptSample;
@@ -65,7 +65,7 @@ public class ScriptBuildGrid : ScriptGlobals
         return null;
     }
 
-    private Mat GenerateGridPattern() 
+    private Mat GenerateGridPattern()
     {
         var pattern = SlicerFile.CreateMat();
 
@@ -73,22 +73,22 @@ public class ScriptBuildGrid : ScriptGlobals
             CvInvoke.Line(pattern,
                 new Point(x, 0),
                 new Point(x, pattern.Size.Height),
-                EmguExtensions.WhiteColor, GridWidth.Value, LineType.FourConnected);
+                EmguCvExtensions.WhiteColor, GridWidth.Value, LineType.FourConnected);
             CvInvoke.Line(pattern,
                 new Point(pattern.Size.Width - x, 0),
                 new Point(pattern.Size.Width - x, pattern.Size.Height),
-                EmguExtensions.WhiteColor, GridWidth.Value, LineType.FourConnected);
+                EmguCvExtensions.WhiteColor, GridWidth.Value, LineType.FourConnected);
         }
 
         for (int y = pattern.Size.Height / 2; y < pattern.Size.Height; y += GridSpacing.Value) {
             CvInvoke.Line(pattern,
                 new Point(0, y),
                 new Point(pattern.Size.Width, y),
-                EmguExtensions.WhiteColor, GridWidth.Value, LineType.FourConnected);
+                EmguCvExtensions.WhiteColor, GridWidth.Value, LineType.FourConnected);
             CvInvoke.Line(pattern,
                 new Point(0, pattern.Size.Height - y),
                 new Point(pattern.Size.Width, pattern.Size.Height - y),
-                EmguExtensions.WhiteColor, GridWidth.Value, LineType.FourConnected);
+                EmguCvExtensions.WhiteColor, GridWidth.Value, LineType.FourConnected);
         }
 
         return pattern;

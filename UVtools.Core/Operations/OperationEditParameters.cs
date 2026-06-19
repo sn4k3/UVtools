@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using System.Text;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Xml.Serialization;
 using UVtools.Core.FileFormats;
 using ZLinq;
@@ -14,14 +15,10 @@ using ZLinq;
 namespace UVtools.Core.Operations;
 
 
-public class OperationEditParameters : Operation
+public partial class OperationEditParameters : Operation
 {
     #region Members
 
-    private bool _propagateModificationsToLayers = true;
-    private bool _perLayerOverride;
-    private uint _setNumberOfLayer = 1;
-    private uint _skipNumberOfLayer;
 
     #endregion
 
@@ -49,7 +46,7 @@ public class OperationEditParameters : Operation
                 sb.AppendLine($"{modifier.Name}: {modifier.OldValue}{modifier.ValueUnit} » {modifier.NewValue}{modifier.ValueUnit}");
             }
             var text = "commit the following print parameter changes";
-            if (_perLayerOverride)
+            if (PerLayerOverride)
             {
                 if (LayerRangeCount == 1)
                 {
@@ -99,9 +96,9 @@ public class OperationEditParameters : Operation
 
         if (Modifiers.AsValueEnumerable().Contains(FileFormat.PrintParameterModifier.PositionZ)
             && FileFormat.PrintParameterModifier.PositionZ.HasChanged
-            && _skipNumberOfLayer > 0
+            && SkipNumberOfLayer > 0
             && LayerRangeCount > 1
-            && _setNumberOfLayer + _skipNumberOfLayer < LayerRangeCount)
+            && SetNumberOfLayer + SkipNumberOfLayer < LayerRangeCount)
         {
             sb.AppendLine("Can not change the PositionZ in layers with an active alternating pattern.");
         }
@@ -116,38 +113,26 @@ public class OperationEditParameters : Operation
     [XmlIgnore]
     public FileFormat.PrintParameterModifier[] Modifiers { get; set; } = [];
 
-    public bool PropagateModificationsToLayers
-    {
-        get => _propagateModificationsToLayers;
-        set => RaiseAndSetIfChanged(ref _propagateModificationsToLayers, value);
-    }
+    [ObservableProperty]
+    public partial bool PropagateModificationsToLayers { get; set; } = true;
 
     /// <summary>
     /// Gets or sets if parameters are global or per layer inside a layer range
     /// </summary>
-    public bool PerLayerOverride
-    {
-        get => _perLayerOverride;
-        set => RaiseAndSetIfChanged(ref _perLayerOverride, value);
-    }
+    [ObservableProperty]
+    public partial bool PerLayerOverride { get; set; }
 
     /// <summary>
     /// Gets or sets the number of sequential layers to set the parameters
     /// </summary>
-    public uint SetNumberOfLayer
-    {
-        get => _setNumberOfLayer;
-        set => RaiseAndSetIfChanged(ref _setNumberOfLayer, value);
-    }
+    [ObservableProperty]
+    public partial uint SetNumberOfLayer { get; set; } = 1;
 
     /// <summary>
     /// Gets or sets the number of sequential layers to skip after set a layer
     /// </summary>
-    public uint SkipNumberOfLayer
-    {
-        get => _skipNumberOfLayer;
-        set => RaiseAndSetIfChanged(ref _skipNumberOfLayer, value);
-    }
+    [ObservableProperty]
+    public partial uint SkipNumberOfLayer { get; set; }
 
     #endregion
 
@@ -170,18 +155,18 @@ public class OperationEditParameters : Operation
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
-        if (_perLayerOverride)
+        if (PerLayerOverride)
         {
             uint setLayers = 0;
             for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
             {
                 SlicerFile[layerIndex].SetValuesFromPrintParametersModifiers(Modifiers);
-                if (_skipNumberOfLayer == 0) continue;
+                if (SkipNumberOfLayer == 0) continue;
                 setLayers++;
-                if (setLayers >= _setNumberOfLayer)
+                if (setLayers >= SetNumberOfLayer)
                 {
                     setLayers = 0;
-                    layerIndex += _skipNumberOfLayer;
+                    layerIndex += SkipNumberOfLayer;
                 }
             }
 
@@ -193,12 +178,12 @@ public class OperationEditParameters : Operation
         }
         else
         {
-            if (!_propagateModificationsToLayers)
+            if (!PropagateModificationsToLayers)
             {
                 SlicerFile.SuppressRebuildProperties = true;
             }
             SlicerFile.SetValuesFromPrintParametersModifiers();
-            if (!_propagateModificationsToLayers)
+            if (!PropagateModificationsToLayers)
             {
                 SlicerFile.SuppressRebuildProperties = false;
                 SlicerFile.RebuildGCode();

@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,15 +7,16 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
+using EmguExtensions;
 using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
-using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
@@ -23,7 +24,7 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public class OperationRaftRelief : Operation
+public partial class OperationRaftRelief : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Enums
@@ -47,17 +48,7 @@ public class OperationRaftRelief : Operation
     #endregion
 
     #region Members
-    private RaftReliefTypes _reliefType = RaftReliefTypes.Relief;
-    private uint _maskLayerIndex;
-    private byte _ignoreFirstLayers;
-    private byte _lowBrightness;
-    private byte _dilateIterations = 15;// +/- 1.5mm radius
-    private byte _wallMargin = 40;      // +/- 2mm
-    private byte _holeDiameter = 80;    // +/- 4mm
-    private byte _holeSpacing = 40;     // +/- 2mm
     private byte _linkedLineThickness = 26;
-    private byte _linkedMinimumLinks = 4;
-    private bool _linkedExternalSupports = true;
     private byte _highBrightness = byte.MaxValue;
     private ushort _tabTriangleBase = 200;
     private ushort _tabTriangleHeight = 250;
@@ -83,13 +74,13 @@ public class OperationRaftRelief : Operation
     public override string? ValidateInternally()
     {
         var sb = new StringBuilder();
-        if (_reliefType == RaftReliefTypes.Tabs)
+        if (ReliefType == RaftReliefTypes.Tabs)
         {
             if(_tabTriangleHeight == 0) sb.AppendLine("The tab height can't be 0");
             if(_tabTriangleBase == 0) sb.AppendLine("The tab base can't be 0");
             if(_highBrightness == 0) sb.AppendLine("The tab brightness can't be 0");
         }
-        else if (_reliefType == RaftReliefTypes.LinkedLines)
+        else if (ReliefType == RaftReliefTypes.LinkedLines)
         {
             if(_linkedLineThickness < 4) sb.AppendLine("The link thickness can't be less than 4");
         }
@@ -99,7 +90,7 @@ public class OperationRaftRelief : Operation
 
     public override string ToString()
     {
-        var result = $"[{_reliefType}] [Mask layer: {_maskLayerIndex}] [Ignore: {_ignoreFirstLayers}] [B: {_lowBrightness}] [Dilate: {_dilateIterations}] [Wall margin: {_wallMargin}] [Hole diameter: {_holeDiameter}] [Hole spacing: {_holeSpacing}]";
+        var result = $"[{ReliefType}] [Mask layer: {MaskLayerIndex}] [Ignore: {IgnoreFirstLayers}] [B: {LowBrightness}] [Dilate: {DilateIterations}] [Wall margin: {WallMargin}] [Hole diameter: {HoleDiameter}] [Hole spacing: {HoleSpacing}]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -114,107 +105,71 @@ public class OperationRaftRelief : Operation
     #endregion
 
     #region Properties
-    public RaftReliefTypes ReliefType
-    {
-        get => _reliefType;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _reliefType, value)) return;
-            RaisePropertyChanged(nameof(IsRelief));
-            RaisePropertyChanged(nameof(IsLinkedLines));
-            RaisePropertyChanged(nameof(IsDimming));
-            RaisePropertyChanged(nameof(IsDecimate));
-            RaisePropertyChanged(nameof(IsTabs));
-            RaisePropertyChanged(nameof(BrightnessPercent));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsRelief))]
+    [NotifyPropertyChangedFor(nameof(IsLinkedLines))]
+    [NotifyPropertyChangedFor(nameof(IsDimming))]
+    [NotifyPropertyChangedFor(nameof(IsDecimate))]
+    [NotifyPropertyChangedFor(nameof(IsTabs))]
+    [NotifyPropertyChangedFor(nameof(BrightnessPercent))]
+    public partial RaftReliefTypes ReliefType { get; set; } = RaftReliefTypes.Relief;
 
-    public bool IsRelief => _reliefType == RaftReliefTypes.Relief;
-    public bool IsLinkedLines => _reliefType == RaftReliefTypes.LinkedLines;
-    public bool IsDimming => _reliefType == RaftReliefTypes.Dimming;
-    public bool IsDecimate => _reliefType == RaftReliefTypes.Decimate;
-    public bool IsTabs => _reliefType == RaftReliefTypes.Tabs;
+    public bool IsRelief => ReliefType == RaftReliefTypes.Relief;
+    public bool IsLinkedLines => ReliefType == RaftReliefTypes.LinkedLines;
+    public bool IsDimming => ReliefType == RaftReliefTypes.Dimming;
+    public bool IsDecimate => ReliefType == RaftReliefTypes.Decimate;
+    public bool IsTabs => ReliefType == RaftReliefTypes.Tabs;
 
-    public uint MaskLayerIndex
-    {
-        get => _maskLayerIndex;
-        set => RaiseAndSetIfChanged(ref _maskLayerIndex, value);
-    }
+    [ObservableProperty]
+    public partial uint MaskLayerIndex { get; set; }
 
-    public byte IgnoreFirstLayers
-    {
-        get => _ignoreFirstLayers;
-        set => RaiseAndSetIfChanged(ref _ignoreFirstLayers, value);
-    }
+    [ObservableProperty]
+    public partial byte IgnoreFirstLayers { get; set; }
 
-    public byte LowBrightness
-    {
-        get => _lowBrightness;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _lowBrightness, value)) return;
-            RaisePropertyChanged(nameof(BrightnessPercent));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BrightnessPercent))]
+    public partial byte LowBrightness { get; set; }
 
     public byte HighBrightness
     {
         get => _highBrightness;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _highBrightness, Math.Max((byte) 1, value))) return;
-            RaisePropertyChanged(nameof(BrightnessPercent));
+            if(!SetProperty(ref _highBrightness, Math.Max((byte) 1, value))) return;
+            OnPropertyChanged(nameof(BrightnessPercent));
         }
     }
 
-    public decimal BrightnessPercent => Math.Round((_reliefType is RaftReliefTypes.LinkedLines or RaftReliefTypes.Tabs ? _highBrightness : _lowBrightness) * 100 / 255M, 2);
+    public decimal BrightnessPercent => Math.Round((ReliefType is RaftReliefTypes.LinkedLines or RaftReliefTypes.Tabs ? _highBrightness : LowBrightness) * 100 / 255M, 2);
 
-    public byte DilateIterations
-    {
-        get => _dilateIterations;
-        set => RaiseAndSetIfChanged(ref _dilateIterations, value);
-    }
+    [ObservableProperty]
+    public partial byte DilateIterations { get; set; } = 15;
 
-    public byte WallMargin
-    {
-        get => _wallMargin;
-        set => RaiseAndSetIfChanged(ref _wallMargin, value);
-    }
+    [ObservableProperty]
+    public partial byte WallMargin { get; set; } = 40;
 
-    public byte HoleDiameter
-    {
-        get => _holeDiameter;
-        set => RaiseAndSetIfChanged(ref _holeDiameter, value);
-    }
+    [ObservableProperty]
+    public partial byte HoleDiameter { get; set; } = 80;
 
-    public byte HoleSpacing
-    {
-        get => _holeSpacing;
-        set => RaiseAndSetIfChanged(ref _holeSpacing, value);
-    }
+    [ObservableProperty]
+    public partial byte HoleSpacing { get; set; } = 40;
 
     public byte LinkedLineThickness
     {
         get => _linkedLineThickness;
-        set => RaiseAndSetIfChanged(ref _linkedLineThickness, Math.Max((byte)4, value));
+        set => SetProperty(ref _linkedLineThickness, Math.Max((byte)4, value));
     }
 
-    public byte LinkedMinimumLinks
-    {
-        get => _linkedMinimumLinks;
-        set => RaiseAndSetIfChanged(ref _linkedMinimumLinks, value);
-    }
+    [ObservableProperty]
+    public partial byte LinkedMinimumLinks { get; set; } = 4;
 
-    public bool LinkedExternalSupports
-    {
-        get => _linkedExternalSupports;
-        set => RaiseAndSetIfChanged(ref _linkedExternalSupports, value);
-    }
+    [ObservableProperty]
+    public partial bool LinkedExternalSupports { get; set; } = true;
 
     public ushort TabTriangleBase
     {
         get => _tabTriangleBase;
-        set => RaiseAndSetIfChanged(ref _tabTriangleBase, Math.Max((ushort)5, value));
+        set => SetProperty(ref _tabTriangleBase, Math.Max((ushort)5, value));
     }
 
     public ushort TabTriangleHeight
@@ -222,8 +177,8 @@ public class OperationRaftRelief : Operation
         get => _tabTriangleHeight;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _tabTriangleHeight, Math.Max((ushort)5, value))) return;
-            RaisePropertyChanged(nameof(BrightnessPercent));
+            if (!SetProperty(ref _tabTriangleHeight, Math.Max((ushort)5, value))) return;
+            OnPropertyChanged(nameof(BrightnessPercent));
         }
     }
 
@@ -233,7 +188,7 @@ public class OperationRaftRelief : Operation
 
     protected bool Equals(OperationRaftRelief other)
     {
-        return _reliefType == other._reliefType && _maskLayerIndex == other._maskLayerIndex && _ignoreFirstLayers == other._ignoreFirstLayers && _lowBrightness == other._lowBrightness && _dilateIterations == other._dilateIterations && _wallMargin == other._wallMargin && _holeDiameter == other._holeDiameter && _holeSpacing == other._holeSpacing && _linkedLineThickness == other._linkedLineThickness && _linkedMinimumLinks == other._linkedMinimumLinks && _linkedExternalSupports == other._linkedExternalSupports && _highBrightness == other._highBrightness && _tabTriangleBase == other._tabTriangleBase && _tabTriangleHeight == other._tabTriangleHeight;
+        return ReliefType == other.ReliefType && MaskLayerIndex == other.MaskLayerIndex && IgnoreFirstLayers == other.IgnoreFirstLayers && LowBrightness == other.LowBrightness && DilateIterations == other.DilateIterations && WallMargin == other.WallMargin && HoleDiameter == other.HoleDiameter && HoleSpacing == other.HoleSpacing && _linkedLineThickness == other._linkedLineThickness && LinkedMinimumLinks == other.LinkedMinimumLinks && LinkedExternalSupports == other.LinkedExternalSupports && _highBrightness == other._highBrightness && _tabTriangleBase == other._tabTriangleBase && _tabTriangleHeight == other._tabTriangleHeight;
     }
 
     public override bool Equals(object? obj)
@@ -256,9 +211,9 @@ public class OperationRaftRelief : Operation
 
         Mat? supportsMat = null;
 
-        var kernel = EmguExtensions.Kernel3x3Rectangle;
+        var kernel = EmguCvExtensions.Kernel3X3Rectangle;
 
-        uint firstSupportLayerIndex = _maskLayerIndex;
+        uint firstSupportLayerIndex = MaskLayerIndex;
         if (firstSupportLayerIndex <= 0)
         {
             uint layerCount = Math.Min(SlicerFile.LayerCount, maxLayerCount);
@@ -281,24 +236,24 @@ public class OperationRaftRelief : Operation
             supportsMat = GetRoiOrDefault(SlicerFile[firstSupportLayerIndex].LayerMat);
         }
 
-        if (supportsMat is null || /*firstSupportLayerIndex == 0 ||*/ _ignoreFirstLayers >= firstSupportLayerIndex) return false;
+        if (supportsMat is null || /*firstSupportLayerIndex == 0 ||*/ IgnoreFirstLayers >= firstSupportLayerIndex) return false;
         Mat? patternMat = null;
         using var supportsMatOriginal = supportsMat.Clone();
 
-        if (_dilateIterations > 0)
+        if (DilateIterations > 0)
         {
-            CvInvoke.Dilate(supportsMat, supportsMat, EmguExtensions.Kernel3x3Rectangle,
-                EmguExtensions.AnchorCenter, _dilateIterations, BorderType.Reflect101, new MCvScalar());
+            CvInvoke.Dilate(supportsMat, supportsMat, EmguCvExtensions.Kernel3X3Rectangle,
+                EmguCvExtensions.AnchorCenter, DilateIterations, BorderType.Reflect101, new MCvScalar());
         }
 
-        var color = new MCvScalar(255 - _lowBrightness);
+        var color = new MCvScalar(255 - LowBrightness);
 
         switch (ReliefType)
         {
             case RaftReliefTypes.Relief:
                 patternMat = supportsMat.NewZeros();
                 int shapeSize = HoleDiameter + HoleSpacing;
-                using (var shape = EmguExtensions.InitMat(new Size(shapeSize, shapeSize)))
+                using (var shape = EmguCvExtensions.InitMat(new Size(shapeSize, shapeSize)))
                 {
 
                     int center = HoleDiameter / 2;
@@ -319,12 +274,12 @@ public class OperationRaftRelief : Operation
             case RaftReliefTypes.LinkedLines:
             {
                 using var contours = new EmguContours(supportsMatOriginal, RetrType.List);
-                using var supportsRedraw = _linkedExternalSupports ? supportsMatOriginal.Clone() : null;
+                using var supportsRedraw = LinkedExternalSupports ? supportsMatOriginal.Clone() : null;
                 using var supportsBrightnessCorrection = _highBrightness < byte.MaxValue ? supportsMat.Clone() : null;
 
                 var centroidDistance = contours.CalculateCentroidDistances(false, true);
 
-                var links = Math.Min(_linkedMinimumLinks, contours.Count-1);
+                var links = Math.Min(LinkedMinimumLinks, contours.Count-1);
                 var linkColor = new MCvScalar(_highBrightness);
 
                 //var listPoints = new List<Point>();
@@ -335,7 +290,7 @@ public class OperationRaftRelief : Operation
                     //listPoints.Add(contours[i].Centroid);
 
                     // Link all centroids to each other to calculate the external contour
-                    if (_linkedExternalSupports)
+                    if (LinkedExternalSupports)
                     {
                         for (int x = 0; x < contours.Count; x++)
                         {
@@ -354,7 +309,7 @@ public class OperationRaftRelief : Operation
 
                 //CvInvoke.Polylines(supportsMat, listPoints.ToArray(), false, linkColor, _linkedLineThickness);
                 // Link external centroids
-                if (_linkedExternalSupports)
+                if (LinkedExternalSupports)
                 {
                     using var externalContours = supportsRedraw!.FindContours(RetrType.External);
                     CvInvoke.DrawContours(supportsMat, externalContours, -1, linkColor, _linkedLineThickness);
@@ -367,17 +322,17 @@ public class OperationRaftRelief : Operation
                 }
 
                 // Close minor holes, round imperfections, stronger joints
-                CvInvoke.MorphologyEx(supportsMat, supportsMat, MorphOp.Close, EmguExtensions.Kernel3x3Rectangle, EmguExtensions.AnchorCenter, 1, BorderType.Reflect101, default);
+                CvInvoke.MorphologyEx(supportsMat, supportsMat, MorphOp.Close, EmguCvExtensions.Kernel3X3Rectangle, EmguCvExtensions.AnchorCenter, 1, BorderType.Reflect101, default);
 
                 break;
             }
             case RaftReliefTypes.Dimming:
-                patternMat = EmguExtensions.InitMat(supportsMat.Size, color);
+                patternMat = EmguCvExtensions.InitMat(supportsMat.Size, color);
                 break;
         }
 
-        progress.Reset(ProgressAction, firstSupportLayerIndex - _ignoreFirstLayers);
-        Parallel.For(_ignoreFirstLayers, firstSupportLayerIndex, CoreSettings.GetParallelOptions(progress), layerIndex =>
+        progress.Reset(ProgressAction, firstSupportLayerIndex - IgnoreFirstLayers);
+        Parallel.For(IgnoreFirstLayers, firstSupportLayerIndex, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
             using var mat = SlicerFile[layerIndex].LayerMat;
@@ -394,7 +349,7 @@ public class OperationRaftRelief : Operation
                             CvInvoke.Erode(mask, mask, kernel, anchor, operation.WallMargin, BorderType.Reflect101, new MCvScalar());
                             CvInvoke.Subtract(target, patternMat, target, mask);*/
 
-                        CvInvoke.Erode(target, mask, kernel, EmguExtensions.AnchorCenter, WallMargin, BorderType.Reflect101, default);
+                        CvInvoke.Erode(target, mask, kernel, EmguCvExtensions.AnchorCenter, WallMargin, BorderType.Reflect101, default);
                         CvInvoke.Subtract(mask, supportsMat, mask);
                         CvInvoke.Subtract(target, patternMat, target, mask);
                     }
@@ -407,7 +362,7 @@ public class OperationRaftRelief : Operation
                 case RaftReliefTypes.Tabs:
                 {
                     using var contours = new EmguContours(mat, RetrType.External);
-                    var span = mat.GetDataByteReadOnlySpan();
+                    var span = mat.GetReadOnlySpanOfBytes();
 
                     var minX = 10;
                     var maxX = mat.Size.Width - 10;
@@ -494,7 +449,7 @@ public class OperationRaftRelief : Operation
                                     break;
                             }
 
-                            CvInvoke.Ellipse(mat, new Point(x, y), new Size(triangleBaseRadius, (int)(triangleBaseRadius / 1.5)), 90 * dir, 0, 180, EmguExtensions.WhiteColor, -1);
+                            CvInvoke.Ellipse(mat, new Point(x, y), new Size(triangleBaseRadius, (int)(triangleBaseRadius / 1.5)), 90 * dir, 0, 180, EmguCvExtensions.WhiteColor, -1);
                             using var vec = new VectorOfPoint(polygon);
                             CvInvoke.FillPoly(mat, vec, color);
                         }

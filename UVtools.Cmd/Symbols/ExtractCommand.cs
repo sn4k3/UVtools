@@ -12,7 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UVtools.Core.FileFormats;
-using static UVtools.Core.Extensions.ZipArchiveExtensions;
 
 namespace UVtools.Cmd.Symbols;
 

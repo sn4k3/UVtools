@@ -9,6 +9,7 @@
 using System;
 using System.Drawing;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using ZLinq;
@@ -17,6 +18,46 @@ namespace UVtools.Core.Extensions;
 
 public static class ReflectionExtensions
 {
+    public static object? CreateByClassName(string className, Assembly? assembly = null)
+    {
+        if (assembly is null)
+        {
+            var type = AppDomain.CurrentDomain
+                .GetAssemblies()
+                .AsValueEnumerable()
+                .SelectMany(a =>
+                {
+                    try
+                    {
+                        return a.GetTypes();
+                    }
+                    catch (ReflectionTypeLoadException ex)
+                    {
+                        return ex.Types.OfType<Type>();
+                    }
+                })
+                .FirstOrDefault(t =>
+                    t is not null &&
+                    t.Name == className &&
+                    t is { IsClass: true, IsAbstract: false });
+
+            if (type == null)
+                return null;
+
+            return Activator.CreateInstance(type);
+        }
+        else
+        {
+            var type = assembly.GetTypes()
+                .AsValueEnumerable()
+                .FirstOrDefault(t => t.Name == className);
+
+            return type == null
+                ? null
+                : Activator.CreateInstance(type);
+        }
+    }
+
     public static bool SetValueFromString(this PropertyInfo attribute, object obj, string value)
     {
         if (attribute.PropertyType == typeof(string))
@@ -35,7 +76,8 @@ public static class ReflectionExtensions
                 return true;
             }
 
-            throw new ArgumentException($"The requested enum name '{value}' was not found.\nAvailable names: ({string.Join(", ", Enum.GetNames(attribute.PropertyType))}).");
+            throw new ArgumentException(
+                $"The requested enum name '{value}' was not found.\nAvailable names: ({string.Join(", ", Enum.GetNames(attribute.PropertyType))}).");
         }
 
         if (attribute.PropertyType == typeof(bool))
@@ -221,7 +263,8 @@ public static class ReflectionExtensions
 
         if (attribute.PropertyType == typeof(RectangleF))
         {
-            var match = Regex.Match(value, string.Format("X={0},\\s?Y={0},\\s?Width={0},\\s?Height={0}", "([+-]?([0-9]*[.])?[0-9]+)"));
+            var match = Regex.Match(value,
+                string.Format("X={0},\\s?Y={0},\\s?Width={0},\\s?Height={0}", "([+-]?([0-9]*[.])?[0-9]+)"));
             if (match is { Success: true, Groups.Count: >= 5 })
             {
                 if (float.TryParse(match.Groups[1].Value, CultureInfo.InvariantCulture, out var x)
@@ -241,13 +284,20 @@ public static class ReflectionExtensions
         throw new Exception($"Data type '{attribute.PropertyType.Name}' not recognized nor implemented.");
     }
 
-    public static bool SetValueFromString(this PropertyInfo attribute, object obj, object? value) =>
-        attribute.SetValueFromString(obj, value?.ToString() ?? string.Empty);
+    public static bool SetValueFromString(this PropertyInfo attribute, object obj, object? value)
+    {
+        return attribute.SetValueFromString(obj, value?.ToString() ?? string.Empty);
+    }
 
     public static void CopyPropertiesTo(object src, object dest, params string[] ignoredProperties)
     {
-        var srcProperties = src.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).AsValueEnumerable().Where(info => info is { CanRead: true, CanWrite: true, GetMethod: not null } && !ignoredProperties.AsValueEnumerable().Contains(info.Name));
-        var destProperties = dest.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).AsValueEnumerable().Where(info => info is { CanRead: true, CanWrite: true, SetMethod: not null } && !ignoredProperties.AsValueEnumerable().Contains(info.Name));
+        var srcProperties = src.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).AsValueEnumerable()
+            .Where(info => info is { CanRead: true, CanWrite: true, GetMethod: not null } &&
+                           !ignoredProperties.AsValueEnumerable().Contains(info.Name));
+        var destProperties = dest.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .AsValueEnumerable().Where(info =>
+                info is { CanRead: true, CanWrite: true, SetMethod: not null } &&
+                !ignoredProperties.AsValueEnumerable().Contains(info.Name));
         foreach (var srcProperty in srcProperties)
         {
             foreach (var destProperty in destProperties)
@@ -261,6 +311,6 @@ public static class ReflectionExtensions
 
     public static PropertyInfo[] GetProperties(object obj)
     {
-	    return obj.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+        return obj.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
     }
 }

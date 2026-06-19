@@ -11,6 +11,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Skia;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using EmguExtensions;
 using SkiaSharp;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -41,8 +42,8 @@ public sealed class LayerCache : IDisposable
             }
             CvInvoke.CvtColor(_image, ImageBgra, ColorConversion.Gray2Bgra);
 
-            ImageSpan = _image.GetBytePointer();
-            ImageBgraSpan = ImageBgra.GetBytePointer();
+            ImageSpan = _image.BytePointer;
+            ImageBgraSpan = ImageBgra.BytePointer;
         }
     }
 
@@ -82,7 +83,7 @@ public sealed class LayerCache : IDisposable
             return SKSurface.Create(info, framebuffer.Address, framebuffer.RowBytes).Canvas;
         }
     }
-    
+
     /// <summary>
     /// Clears the cache
     /// </summary>

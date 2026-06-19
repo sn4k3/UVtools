@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,7 +18,7 @@ using ZLinq;
 
 namespace UVtools.Core.Managers;
 
-public class MaterialManager : BindableBase, IList<Material>
+public partial class MaterialManager : ObservableObject, IList<Material>
 {
     #region Settings
 
@@ -39,17 +40,15 @@ public class MaterialManager : BindableBase, IList<Material>
 
     #region Members
 
-    private RangeObservableCollection<Material> _materials = [];
-
     #endregion
 
     #region Properties
 
-    public RangeObservableCollection<Material> Materials
-    {
-        get => _materials;
-        set => RaiseAndSetIfChanged(ref _materials, value);
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BottlesInStock), nameof(OwnedBottles), nameof(ConsumedVolume),
+        nameof(ConsumedVolumeLiters), nameof(VolumeInStock), nameof(VolumeInStockLiters),
+        nameof(TotalCost), nameof(PrintTime), nameof(PrintTimeSpan), nameof(Count))]
+    public partial RangeObservableCollection<Material> Materials { get; set; } = [];
 
     /// <summary>
     /// Gets the total number of bottles in stock
@@ -107,14 +106,14 @@ public class MaterialManager : BindableBase, IList<Material>
     #region Methods
     public Material this[int index]
     {
-        get => _materials[index];
-        set => _materials[index] = value;
+        get => Materials[index];
+        set => Materials[index] = value;
     }
 
     public Material this[uint index]
     {
-        get => _materials[(int) index];
-        set => _materials[(int) index] = value;
+        get => Materials[(int) index];
+        set => Materials[(int) index] = value;
     }
 
     public Material? this[Material material]
@@ -131,12 +130,12 @@ public class MaterialManager : BindableBase, IList<Material>
         }
     }
 
-    public IEnumerator<Material> GetEnumerator() => _materials.GetEnumerator();
+    public IEnumerator<Material> GetEnumerator() => Materials.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     public void Add(Material item)
     {
-        _materials.Add(item);
+        Materials.Add(item);
         RaisePropertiesChanged();
     }
 
@@ -148,7 +147,7 @@ public class MaterialManager : BindableBase, IList<Material>
 
     public void Clear()
     {
-        _materials.Clear();
+        Materials.Clear();
         RaisePropertiesChanged();
     }
 
@@ -159,17 +158,17 @@ public class MaterialManager : BindableBase, IList<Material>
     }
 
 
-    public bool Contains(Material item) => _materials.Contains(item);
+    public bool Contains(Material item) => Materials.Contains(item);
 
     public void CopyTo(Material[] array, int arrayIndex)
     {
-        _materials.CopyTo(array, arrayIndex);
+        Materials.CopyTo(array, arrayIndex);
         RaisePropertiesChanged();
     }
 
     public bool Remove(Material item)
     {
-        if (_materials.Remove(item))
+        if (Materials.Remove(item))
         {
             RaisePropertiesChanged();
             return true;
@@ -186,16 +185,16 @@ public class MaterialManager : BindableBase, IList<Material>
 
     public void RemoveRange(IEnumerable<Material> collection)
     {
-        _materials.RemoveRange(collection);
+        Materials.RemoveRange(collection);
     }
 
-    public int Count => _materials.Count;
+    public int Count => Materials.Count;
     public bool IsReadOnly => false;
-    public int IndexOf(Material item) => _materials.IndexOf(item);
+    public int IndexOf(Material item) => Materials.IndexOf(item);
 
     public void Insert(int index, Material item)
     {
-        _materials.Insert(index, item);
+        Materials.Insert(index, item);
         RaisePropertiesChanged();
     }
 
@@ -207,7 +206,7 @@ public class MaterialManager : BindableBase, IList<Material>
 
     public void RemoveAt(int index)
     {
-        _materials.RemoveAt(index);
+        Materials.RemoveAt(index);
         RaisePropertiesChanged();
     }
 
@@ -219,16 +218,16 @@ public class MaterialManager : BindableBase, IList<Material>
 
     public void RaisePropertiesChanged()
     {
-        RaisePropertyChanged(nameof(BottlesInStock));
-        RaisePropertyChanged(nameof(OwnedBottles));
-        RaisePropertyChanged(nameof(ConsumedVolume));
-        RaisePropertyChanged(nameof(ConsumedVolumeLiters));
-        RaisePropertyChanged(nameof(VolumeInStock));
-        RaisePropertyChanged(nameof(VolumeInStockLiters));
-        RaisePropertyChanged(nameof(TotalCost));
-        RaisePropertyChanged(nameof(PrintTime));
-        RaisePropertyChanged(nameof(PrintTimeSpan));
-        RaisePropertyChanged(nameof(Count));
+        OnPropertyChanged(nameof(BottlesInStock));
+        OnPropertyChanged(nameof(OwnedBottles));
+        OnPropertyChanged(nameof(ConsumedVolume));
+        OnPropertyChanged(nameof(ConsumedVolumeLiters));
+        OnPropertyChanged(nameof(VolumeInStock));
+        OnPropertyChanged(nameof(VolumeInStockLiters));
+        OnPropertyChanged(nameof(TotalCost));
+        OnPropertyChanged(nameof(PrintTime));
+        OnPropertyChanged(nameof(PrintTimeSpan));
+        OnPropertyChanged(nameof(Count));
     }
 
     /// <summary>
@@ -269,7 +268,7 @@ public class MaterialManager : BindableBase, IList<Material>
 
     public void SortByName()
     {
-        _materials.Sort((material, material1) => string.Compare(material.Name, material1.Name, StringComparison.Ordinal));
+        Materials.Sort((material, material1) => string.Compare(material.Name, material1.Name, StringComparison.Ordinal));
     }
 
     #endregion

@@ -5,7 +5,7 @@
 # Then run this script
 # usage 1: ./libcvextern.sh clean
 # usage 2: ./libcvextern.sh -i
-# usage 3: ./libcvextern.sh 
+# usage 3: ./libcvextern.sh
 # usage 3: ./libcvextern.sh 4.x.0
 #
 #cd "$(dirname "$0")"
@@ -40,8 +40,8 @@ y/yes/blank: Continue with master
 4.x.0: Continue with specified tag
 n/no:  Cancel
 
-Anwser: " confirmation 
-    
+Anwser: " confirmation
+
     if [ -z "$confirmation" -o "$confirmation" == "y" -o "$confirmation" == "yes" ]; then
         echo "Continuing with master..."
     elif [ "$confirmation" == "n" -o "$confirmation" == "no" -o "$confirmation" == "cancel" ]; then
@@ -180,7 +180,8 @@ if [ "$osVariant" == "macOS" ]; then
        -DBUILD_opencv_videoio:BOOL=FALSE \\\\\\
        -DBUILD_opencv_gapi:BOOL=FALSE \\\\\\
        -DWITH_PROTOBUF:BOOL=FALSE \\\\\\
-       -DBUILD_PROTOBUF:BOOL=FALSE/g" "$directory/platforms/macos/configure" 2>/dev/null
+       -DBUILD_PROTOBUF:BOOL=FALSE \\\\\\
+       -DBUILD_opencv_calib:BOOL=TRUE /g" "$directory/platforms/macos/configure" 2>/dev/null
     fi
     "$directory/platforms/macos/configure" $arch $build_package
 else # Linux
@@ -196,7 +197,8 @@ else # Linux
        -DBUILD_opencv_videoio:BOOL=FALSE \\\\\\
        -DBUILD_opencv_gapi:BOOL=FALSE \\\\\\
        -DWITH_PROTOBUF:BOOL=FALSE \\\\\\
-       -DBUILD_PROTOBUF:BOOL=FALSE /g" "$directory/platforms/ubuntu/24.04/cmake_configure" 2>/dev/null
+       -DBUILD_PROTOBUF:BOOL=FALSE \\\\\\
+       -DBUILD_opencv_calib:BOOL=TRUE /g" "$directory/platforms/ubuntu/24.04/cmake_configure" 2>/dev/null
     fi
     "$directory/platforms/ubuntu/24.04/cmake_configure" $build_package
 fi

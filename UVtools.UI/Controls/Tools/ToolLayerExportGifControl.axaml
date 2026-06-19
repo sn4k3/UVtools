@@ -13,8 +13,8 @@
 
         <StackPanel Orientation="Horizontal" Spacing="5">
             <TextBox
-                Watermark="Output filepath"
-                UseFloatingWatermark="True"
+                PlaceholderText="Output filepath"
+                UseFloatingPlaceholder="True"
                 VerticalAlignment="Center"
                 IsReadOnly="True"
                 Width="500"

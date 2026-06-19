@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,7 +7,9 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
+using EmguExtensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -25,42 +27,34 @@ namespace UVtools.Core.Operations;
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 #pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
-public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExposure>
+public partial class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExposure>
 #pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region SubClasses
 
-    public sealed class PhasedExposure : BindableBase
+    public sealed partial class PhasedExposure : ObservableObject
     {
         private decimal _bottomExposureTime;
-        private ushort _bottomIterations;
         private decimal _exposureTime;
-        private ushort _iterations;
 
         public decimal BottomExposureTime
         {
             get => _bottomExposureTime;
-            set => RaiseAndSetIfChanged(ref _bottomExposureTime, Math.Round(Math.Clamp(value, 0, 1000), 2));
+            set => SetProperty(ref _bottomExposureTime, Math.Round(Math.Clamp(value, 0, 1000), 2));
         }
 
-        public ushort BottomIterations
-        {
-            get => _bottomIterations;
-            set => RaiseAndSetIfChanged(ref _bottomIterations, value);
-        }
+        [ObservableProperty]
+        public partial ushort BottomIterations { get; set; }
 
         public decimal ExposureTime
         {
             get => _exposureTime;
-            set => RaiseAndSetIfChanged(ref _exposureTime, Math.Round(Math.Clamp(value, 0, 1000), 2));
+            set => SetProperty(ref _exposureTime, Math.Round(Math.Clamp(value, 0, 1000), 2));
         }
 
-       public ushort Iterations
-        {
-            get => _iterations;
-            set => RaiseAndSetIfChanged(ref _iterations, value);
-        }
+        [ObservableProperty]
+        public partial ushort Iterations { get; set; }
 
         public PhasedExposure()
         {
@@ -74,9 +68,9 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
         public PhasedExposure(decimal bottomExposureTime, ushort bottomIterations, decimal exposureTime, ushort iterations)
         {
             _bottomExposureTime = bottomExposureTime;
-            _bottomIterations = bottomIterations;
+            BottomIterations = bottomIterations;
             _exposureTime = exposureTime;
-            _iterations = iterations;
+            Iterations = iterations;
         }
 
 
@@ -91,14 +85,6 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
 
     #region Members
 
-    private RangeObservableCollection<PhasedExposure> _phasedExposures = [];
-    private bool _exposureDifferenceOnly = true;
-    private ushort _exposureDifferenceOnlyOverlapIterations = 10;
-    private bool _differentSettingsForSequentialLayers;
-    private bool _sequentialLiftHeightEnabled = true;
-    private decimal _sequentialLiftHeight;
-    private bool _sequentialWaitTimeBeforeCureEnabled = true;
-    private decimal _sequentialWaitTimeBeforeCure;
 
     #endregion
 
@@ -153,12 +139,12 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
             lastPositionZ = SlicerFile[layerIndex].PositionZ;
         }
 
-        for (var i = 0; i < _phasedExposures.Count-1; i++)
+        for (var i = 0; i < PhasedExposures.Count-1; i++)
         {
-            if (_phasedExposures[i].BottomExposureTime == _phasedExposures[i + 1].ExposureTime &&
-                _phasedExposures[i].BottomIterations == _phasedExposures[i + 1].BottomIterations &&
-                _phasedExposures[i].ExposureTime == _phasedExposures[i + 1].ExposureTime &&
-                _phasedExposures[i].Iterations == _phasedExposures[i + 1].Iterations)
+            if (PhasedExposures[i].BottomExposureTime == PhasedExposures[i + 1].ExposureTime &&
+                PhasedExposures[i].BottomIterations == PhasedExposures[i + 1].BottomIterations &&
+                PhasedExposures[i].ExposureTime == PhasedExposures[i + 1].ExposureTime &&
+                PhasedExposures[i].Iterations == PhasedExposures[i + 1].Iterations)
             {
                 sb.AppendLine($"Duplicated exposure sequence #{i+1} == #{i+2}. Group of entries can't be duplicated.");
             }
@@ -170,20 +156,20 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
 
     public IEnumerator<PhasedExposure> GetEnumerator()
     {
-        return _phasedExposures.GetEnumerator();
+        return PhasedExposures.GetEnumerator();
     }
 
     public override string ToString()
     {
         var result = $"[Phases: {Count}] " +
-                     $"[Diff: {_exposureDifferenceOnly} Overlap: {_exposureDifferenceOnlyOverlapIterations}px]" + LayerRangeString;
+                     $"[Diff: {ExposureDifferenceOnly} Overlap: {ExposureDifferenceOnlyOverlapIterations}px]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
 
-    public int Count => _phasedExposures.Count;
+    public int Count => PhasedExposures.Count;
 
-    public PhasedExposure this[int index] => _phasedExposures[index];
+    public PhasedExposure this[int index] => PhasedExposures[index];
 
     public override Operation Clone()
     {
@@ -196,53 +182,29 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
 
     #region Properties
 
-    public RangeObservableCollection<PhasedExposure> PhasedExposures
-    {
-        get => _phasedExposures;
-        set => RaiseAndSetIfChanged(ref _phasedExposures, value);
-    }
+    [ObservableProperty]
+    public partial RangeObservableCollection<PhasedExposure> PhasedExposures { get; set; } = [];
 
-    public bool ExposureDifferenceOnly
-    {
-        get => _exposureDifferenceOnly;
-        set => RaiseAndSetIfChanged(ref _exposureDifferenceOnly, value);
-    }
+    [ObservableProperty]
+    public partial bool ExposureDifferenceOnly { get; set; } = true;
 
-    public ushort ExposureDifferenceOnlyOverlapIterations
-    {
-        get => _exposureDifferenceOnlyOverlapIterations;
-        set => RaiseAndSetIfChanged(ref _exposureDifferenceOnlyOverlapIterations, value);
-    }
+    [ObservableProperty]
+    public partial ushort ExposureDifferenceOnlyOverlapIterations { get; set; } = 10;
 
-    public bool DifferentSettingsForSequentialLayers
-    {
-        get => _differentSettingsForSequentialLayers;
-        set => RaiseAndSetIfChanged(ref _differentSettingsForSequentialLayers, value);
-    }
+    [ObservableProperty]
+    public partial bool DifferentSettingsForSequentialLayers { get; set; }
 
-    public bool SequentialLiftHeightEnabled
-    {
-        get => _sequentialLiftHeightEnabled;
-        set => RaiseAndSetIfChanged(ref _sequentialLiftHeightEnabled, value);
-    }
+    [ObservableProperty]
+    public partial bool SequentialLiftHeightEnabled { get; set; } = true;
 
-    public decimal SequentialLiftHeight
-    {
-        get => _sequentialLiftHeight;
-        set => RaiseAndSetIfChanged(ref _sequentialLiftHeight, value);
-    }
+    [ObservableProperty]
+    public partial decimal SequentialLiftHeight { get; set; }
 
-    public bool SequentialWaitTimeBeforeCureEnabled
-    {
-        get => _sequentialWaitTimeBeforeCureEnabled;
-        set => RaiseAndSetIfChanged(ref _sequentialWaitTimeBeforeCureEnabled, value);
-    }
+    [ObservableProperty]
+    public partial bool SequentialWaitTimeBeforeCureEnabled { get; set; } = true;
 
-    public decimal SequentialWaitTimeBeforeCure
-    {
-        get => _sequentialWaitTimeBeforeCure;
-        set => RaiseAndSetIfChanged(ref _sequentialWaitTimeBeforeCure, value);
-    }
+    [ObservableProperty]
+    public partial decimal SequentialWaitTimeBeforeCure { get; set; }
 
 
     public KernelConfiguration Kernel { get; set; } = new();
@@ -257,16 +219,16 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
     {
         if (SlicerFile.SupportPerLayerSettings)
         {
-            _differentSettingsForSequentialLayers = true;
+            DifferentSettingsForSequentialLayers = true;
             if (SlicerFile.SupportGCode)
             {
-                _sequentialLiftHeight = 0;
-                _sequentialWaitTimeBeforeCure = 2;
+                SequentialLiftHeight = 0;
+                SequentialWaitTimeBeforeCure = 2;
             }
             else
             {
-                _sequentialLiftHeight = 0.1m;
-                _sequentialWaitTimeBeforeCure = 0;
+                SequentialLiftHeight = 0.1m;
+                SequentialWaitTimeBeforeCure = 0;
             }
         }
     }
@@ -276,7 +238,7 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
         base.InitWithSlicerFile();
         if (Count == 0)
         {
-            _phasedExposures.AddRange([
+            PhasedExposures.AddRange([
                 new PhasedExposure((decimal)SlicerFile.BottomExposureTime, 10, (decimal)SlicerFile.ExposureTime, 4),
                 new PhasedExposure((decimal)SlicerFile.ExposureTime, 0, (decimal)SlicerFile.ExposureTime, 0)
             ]);
@@ -291,7 +253,7 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
     {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
-        return _phasedExposures.Equals(other._phasedExposures) && _exposureDifferenceOnly == other._exposureDifferenceOnly && _exposureDifferenceOnlyOverlapIterations == other._exposureDifferenceOnlyOverlapIterations && _differentSettingsForSequentialLayers == other._differentSettingsForSequentialLayers && _sequentialLiftHeightEnabled == other._sequentialLiftHeightEnabled && _sequentialLiftHeight == other._sequentialLiftHeight && _sequentialWaitTimeBeforeCureEnabled == other._sequentialWaitTimeBeforeCureEnabled && _sequentialWaitTimeBeforeCure == other._sequentialWaitTimeBeforeCure;
+        return PhasedExposures.Equals(other.PhasedExposures) && ExposureDifferenceOnly == other.ExposureDifferenceOnly && ExposureDifferenceOnlyOverlapIterations == other.ExposureDifferenceOnlyOverlapIterations && DifferentSettingsForSequentialLayers == other.DifferentSettingsForSequentialLayers && SequentialLiftHeightEnabled == other.SequentialLiftHeightEnabled && SequentialLiftHeight == other.SequentialLiftHeight && SequentialWaitTimeBeforeCureEnabled == other.SequentialWaitTimeBeforeCureEnabled && SequentialWaitTimeBeforeCure == other.SequentialWaitTimeBeforeCure;
     }
 
     public override bool Equals(object? obj)
@@ -318,7 +280,7 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
-        var layers = new Layer?[SlicerFile.LayerCount + LayerRangeCount * (_phasedExposures.Count - 1)];
+        var layers = new Layer?[SlicerFile.LayerCount + LayerRangeCount * (PhasedExposures.Count - 1)];
 
         // Untouched
         for (uint i = 0; i < LayerIndexStart; i++)
@@ -341,15 +303,15 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
 
             var isBottomLayer = layer.IsBottomLayer;
 
-            uint newLayerIndex = (uint)(LayerIndexStart + (layerIndex - LayerIndexStart) * _phasedExposures.Count);
+            uint newLayerIndex = (uint)(LayerIndexStart + (layerIndex - LayerIndexStart) * PhasedExposures.Count);
 
             if (isBottomLayer) Interlocked.Increment(ref bottomLayers);
 
             using var matRoi = layer.LayerMatBoundingRectangle;
             uint affectedLayers = 0;
 
-            var lastPhasedExposure = _phasedExposures[0];
-            foreach (var phasedExposure in _phasedExposures)
+            var lastPhasedExposure = PhasedExposures[0];
+            foreach (var phasedExposure in PhasedExposures)
             {
                 int iterations = isBottomLayer ? phasedExposure.BottomIterations : phasedExposure.Iterations;
                 bool setNewMat = false;
@@ -359,20 +321,20 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
                 {
                     int tempIterations = iterations;
                     var kernel = Kernel.GetKernel(ref tempIterations);
-                    CvInvoke.Erode(newMatRoi.RoiMat, newMatRoi.RoiMat, kernel, EmguExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
+                    CvInvoke.Erode(newMatRoi.RoiMat, newMatRoi.RoiMat, kernel, EmguCvExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
                     if (!CvInvoke.HasNonZero(newMatRoi.RoiMat)) continue; // Produce all black layer, ignoring
                     setNewMat = true;
                 }
 
-                if (affectedLayers > 0 && _exposureDifferenceOnly)
+                if (affectedLayers > 0 && ExposureDifferenceOnly)
                 {
-                    var overlapIterations = _exposureDifferenceOnlyOverlapIterations + (isBottomLayer ? lastPhasedExposure.BottomIterations : lastPhasedExposure.Iterations);
+                    var overlapIterations = ExposureDifferenceOnlyOverlapIterations + (isBottomLayer ? lastPhasedExposure.BottomIterations : lastPhasedExposure.Iterations);
                     if (overlapIterations > iterations)
                     {
                         using var overlapMat = new Mat();
                         int tempIterations = overlapIterations;
                         var kernel = Kernel.GetKernel(ref tempIterations);
-                        CvInvoke.Erode(matRoi.RoiMat, overlapMat, kernel, EmguExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
+                        CvInvoke.Erode(matRoi.RoiMat, overlapMat, kernel, EmguCvExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
                         if (CvInvoke.HasNonZero(overlapMat))
                         {
                             CvInvoke.Subtract(newMatRoi.RoiMat, overlapMat, newMatRoi.RoiMat);
@@ -384,10 +346,10 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
                 var newLayer = layer.Clone();
                 newLayer.ExposureTime = (float)(isBottomLayer ? phasedExposure.BottomExposureTime : phasedExposure.ExposureTime);
 
-                if (_differentSettingsForSequentialLayers && affectedLayers > 0)
+                if (DifferentSettingsForSequentialLayers && affectedLayers > 0)
                 {
-                    if (_sequentialLiftHeightEnabled) newLayer.LiftHeightTotal = (float)_sequentialLiftHeight;
-                    if (_sequentialWaitTimeBeforeCureEnabled) newLayer.SetWaitTimeBeforeCureOrLightOffDelay((float)_sequentialWaitTimeBeforeCure);
+                    if (SequentialLiftHeightEnabled) newLayer.LiftHeightTotal = (float)SequentialLiftHeight;
+                    if (SequentialWaitTimeBeforeCureEnabled) newLayer.SetWaitTimeBeforeCureOrLightOffDelay((float)SequentialWaitTimeBeforeCure);
                 }
 
                 layers[newLayerIndex] = newLayer;

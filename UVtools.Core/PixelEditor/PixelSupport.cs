@@ -5,6 +5,7 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using System;
 using System.Drawing;
@@ -13,32 +14,20 @@ namespace UVtools.Core.PixelEditor;
 
 #pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public class PixelSupport : PixelOperation, IEquatable<PixelSupport>
+public partial class PixelSupport : PixelOperation, IEquatable<PixelSupport>
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 #pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 {
-    private byte _tipDiameter = 19;
-    private byte _pillarDiameter = 32;
-    private byte _baseDiameter = 60;
     public override PixelOperationType OperationType => PixelOperationType.Supports;
 
-    public byte TipDiameter
-    {
-        get => _tipDiameter;
-        set => RaiseAndSetIfChanged(ref _tipDiameter, value);
-    }
+    [ObservableProperty]
+    public partial byte TipDiameter { get; set; } = 19;
 
-    public byte PillarDiameter
-    {
-        get => _pillarDiameter;
-        set => RaiseAndSetIfChanged(ref _pillarDiameter, value);
-    }
+    [ObservableProperty]
+    public partial byte PillarDiameter { get; set; } = 32;
 
-    public byte BaseDiameter
-    {
-        get => _baseDiameter;
-        set => RaiseAndSetIfChanged(ref _baseDiameter, value);
-    }
+    [ObservableProperty]
+    public partial byte BaseDiameter { get; set; } = 60;
 
     public PixelSupport(){}
 
@@ -61,14 +50,14 @@ public class PixelSupport : PixelOperation, IEquatable<PixelSupport>
 
     public override string ToString()
     {
-        return $"{_tipDiameter}px, {_pillarDiameter}px, {_baseDiameter}px, {_pixelBrightness}☼";
+        return $"{TipDiameter}px, {PillarDiameter}px, {BaseDiameter}px, {PixelBrightness}☼";
     }
 
     public bool Equals(PixelSupport? other)
     {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
-        return base.Equals(other) && _tipDiameter == other._tipDiameter && _pillarDiameter == other._pillarDiameter && _baseDiameter == other._baseDiameter;
+        return base.Equals(other) && TipDiameter == other.TipDiameter && PillarDiameter == other.PillarDiameter && BaseDiameter == other.BaseDiameter;
     }
 
     public override bool Equals(object? obj)

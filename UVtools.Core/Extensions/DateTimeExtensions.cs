@@ -55,7 +55,7 @@ public static class DateTimeExtensions
     /// <returns>Age in years today. 0 is returned for a future date of birth.</returns>
     public static int Age(this DateTime birthDate)
     {
-        return Age(birthDate, DateTime.UtcNow.Date);
+        return birthDate.Age(DateTime.UtcNow.Date);
     }
 
     /// <summary>

@@ -5,50 +5,43 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace UVtools.Core.Objects;
 
-
-public class GenericFileRepresentation : BindableBase, ICloneable, 
+public partial class GenericFileRepresentation : ObservableObject, ICloneable,
     IComparable<GenericFileRepresentation>, IEquatable<GenericFileRepresentation>,
     IComparable<string>, IEquatable<string>
 {
-    #region Members
-    private string _filePath = null!;
-    #endregion
-
     #region Properties
+
     /// <summary>
     /// Gets or sets the file path
     /// </summary>
-    public string FilePath
-    {
-        get => _filePath;
-        set
-        {
-            if (RaiseAndSetIfChanged(ref _filePath, value)) return;
-            RaisePropertyChanged(nameof(FileName));
-            RaisePropertyChanged(nameof(Exists));
-            RaisePropertyChanged(nameof(FileInfo));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FileName), nameof(Exists), nameof(FileInfo))]
+    [field: MaybeNull]
+    [field: AllowNull]
+    public partial string FilePath { get; set; }
 
     /// <summary>
     /// Gets the file name with extension
     /// </summary>
-    public string FileName => Path.GetFileName(_filePath);
+    public string FileName => Path.GetFileName(FilePath);
 
     /// <summary>
     /// Gets the file name without extension
     /// </summary>
-    public string FileNameWithoutExtension => Path.GetFileNameWithoutExtension(_filePath);
+    public string FileNameWithoutExtension => Path.GetFileNameWithoutExtension(FilePath);
 
     /// <summary>
     /// Gets the file extension. The returned value includes the period (".")
     /// </summary>
-    public string FileExtension => Path.GetExtension(_filePath);
+    public string FileExtension => Path.GetExtension(FilePath);
 
     /// <summary>
     /// Gets if the file exists
@@ -58,17 +51,21 @@ public class GenericFileRepresentation : BindableBase, ICloneable,
     /// <summary>
     /// Gets an <see cref="FileInfo"/> instance on the <see cref="FilePath"/>
     /// </summary>
-    public FileInfo FileInfo => new(_filePath);
+    public FileInfo FileInfo => new(FilePath);
+
     #endregion
 
     #region Constructor
+
     public GenericFileRepresentation()
-    { }
+    {
+    }
 
     public GenericFileRepresentation(string filePath)
     {
-        _filePath = filePath;
+        FilePath = filePath;
     }
+
     #endregion
 
     #region Methods
@@ -82,7 +79,7 @@ public class GenericFileRepresentation : BindableBase, ICloneable,
     {
         if (string.IsNullOrWhiteSpace(extension)) return false;
         if (extension[0] != '.') extension = $".{extension}";
-        return _filePath.EndsWith(extension, StringComparison.OrdinalIgnoreCase);
+        return FilePath.EndsWith(extension, StringComparison.OrdinalIgnoreCase);
     }
 
     #endregion
@@ -115,23 +112,24 @@ public class GenericFileRepresentation : BindableBase, ICloneable,
     {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
-        return _filePath == other._filePath;
+        return FilePath == other.FilePath;
     }
-    
+
 
     public bool Equals(string? other)
     {
-        return _filePath.Equals(other);
+        return FilePath.Equals(other);
     }
 
     public override bool Equals(object? obj)
     {
-        return ReferenceEquals(this, obj) || obj is GenericFileRepresentation other && Equals(other);
+        return ReferenceEquals(this, obj) || (obj is GenericFileRepresentation other && Equals(other));
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(_filePath);
+        return HashCode.Combine(FilePath);
     }
+
     #endregion
 }

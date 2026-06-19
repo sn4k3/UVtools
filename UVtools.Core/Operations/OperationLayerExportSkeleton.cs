@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,10 +7,11 @@
  */
 
 using Emgu.CV;
-using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Drawing;
 using System.Threading.Tasks;
 using Emgu.CV.CvEnum;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
@@ -18,12 +19,10 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationLayerExportSkeleton : Operation
+public sealed partial class OperationLayerExportSkeleton : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
-    private string _filePath = null!;
-    private bool _cropByRoi = true;
 
     #endregion
 
@@ -47,7 +46,7 @@ public sealed class OperationLayerExportSkeleton : Operation
 
     public override string ToString()
     {
-        var result = $"[Crop by ROI: {_cropByRoi}]" +
+        var result = $"[Crop by ROI: {CropByROI}]" +
                      LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
@@ -57,17 +56,11 @@ public sealed class OperationLayerExportSkeleton : Operation
 
     #region Properties
 
-    public string FilePath
-    {
-        get => _filePath;
-        set => RaiseAndSetIfChanged(ref _filePath, value);
-    }
+    [ObservableProperty]
+    public partial string FilePath { get; set; } = null!;
 
-    public bool CropByROI
-    {
-        get => _cropByRoi;
-        set => RaiseAndSetIfChanged(ref _cropByRoi, value);
-    }
+    [ObservableProperty]
+    public partial bool CropByROI { get; set; } = true;
 
     #endregion
 
@@ -81,7 +74,7 @@ public sealed class OperationLayerExportSkeleton : Operation
 
     public override void InitWithSlicerFile()
     {
-        _filePath = SlicerFile.FileFullPathNoExt + "_skeleton.png";
+        FilePath = SlicerFile.FileFullPathNoExt + "_skeleton.png";
     }
 
     #endregion
@@ -100,7 +93,7 @@ public sealed class OperationLayerExportSkeleton : Operation
             progress.PauseIfRequested();
             using var mat = SlicerFile[layerIndex].LayerMat;
             using var matRoi = GetRoiOrDefault(mat);
-            using var skeletonRoi = matRoi.Skeletonize(new Size(3, 3), MorphShapes.Rectangle, progress.Token);
+            using var skeletonRoi = matRoi.Skeletonize();
             lock (progress.Mutex)
             {
                 CvInvoke.Add(skeletonSumRoi, skeletonRoi, skeletonSumRoi, mask);
@@ -108,13 +101,13 @@ public sealed class OperationLayerExportSkeleton : Operation
             }
         });
 
-        if (_cropByRoi && HaveROI)
+        if (CropByROI && HaveROI)
         {
-            skeletonSumRoi.Save(_filePath);
+            skeletonSumRoi.Save(FilePath);
         }
         else
         {
-            skeletonSum.Save(_filePath);
+            skeletonSum.Save(FilePath);
         }
 
         return !progress.Token.IsCancellationRequested;
@@ -126,7 +119,7 @@ public sealed class OperationLayerExportSkeleton : Operation
 
     private bool Equals(OperationLayerExportSkeleton other)
     {
-        return _filePath == other._filePath && _cropByRoi == other._cropByRoi;
+        return FilePath == other.FilePath && CropByROI == other.CropByROI;
     }
 
     public override bool Equals(object? obj)

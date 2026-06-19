@@ -15,6 +15,7 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.Converters;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -26,7 +27,8 @@ namespace UVtools.Core.FileFormats;
 public sealed class AnycubicFile : FileFormat
 {
     #region Constants
-    public const byte VERSION_1 = 1;       // 0x1
+
+    public const byte VERSION_1 = 1; // 0x1
     public const ushort VERSION_515 = 515; // 0x203
     public const ushort VERSION_516 = 516; // 0x204
     public const ushort VERSION_517 = 517; // 0x205
@@ -76,6 +78,7 @@ public sealed class AnycubicFile : FileFormat
     #endregion
 
     #region Enums
+
     public enum PhotonRleFormat
     {
         PWS,
@@ -105,13 +108,15 @@ public sealed class AnycubicFile : FileFormat
         PhotonMonoM5,
         PhotonMonoM5s,
         PhotonMonoM5sPro,
-        Custom,
+        Custom
     }
+
     #endregion
 
     #region Sub Classes
 
     #region FileMark
+
     public class FileMark
     {
         public const string SectionMarkFile = "ANYCUBIC";
@@ -128,77 +133,92 @@ public sealed class AnycubicFile : FileFormat
         /// <summary>
         /// Gets the file format version
         /// </summary>
-        [FieldOrder(1)] public uint Version { get; set; } = VERSION_1;
+        [FieldOrder(1)]
+        public uint Version { get; set; } = VERSION_1;
 
         /// <summary>
         /// Gets the area num
         /// 4 for v1, 5 for v515, 8 for v516?
         /// </summary>
-        [FieldOrder(2)] public uint NumberOfTables { get; set; }
+        [FieldOrder(2)]
+        public uint NumberOfTables { get; set; }
 
         /// <summary>
         /// Gets the header start address
         /// </summary>
-        [FieldOrder(3)]  public uint HeaderAddress { get; set; }
+        [FieldOrder(3)]
+        public uint HeaderAddress { get; set; }
 
         /// <summary>
         /// </summary>
-        [FieldOrder(4)]  public uint SoftwareAddress { get; set; }
+        [FieldOrder(4)]
+        public uint SoftwareAddress { get; set; }
 
         /// <summary>
         /// Gets the preview start offset
         /// </summary>
-        [FieldOrder(5)]  public uint PreviewAddress { get; set; }
+        [FieldOrder(5)]
+        public uint PreviewAddress { get; set; }
 
         /// <summary>
         /// Spotted on version 515 only
         /// </summary>
-        [FieldOrder(6)]  public uint LayerImageColorTableAddress  { get; set; }
+        [FieldOrder(6)]
+        public uint LayerImageColorTableAddress { get; set; }
 
         /// <summary>
         /// Gets the layer definition start address
         /// </summary>
-        [FieldOrder(7)]  public uint LayerDefinitionAddress { get; set; }
+        [FieldOrder(7)]
+        public uint LayerDefinitionAddress { get; set; }
 
         /// <summary>
         /// Spotted on version 516 only
         /// </summary>
-        [FieldOrder(8)]  public uint ExtraAddress  { get; set; }
+        [FieldOrder(8)]
+        public uint ExtraAddress { get; set; }
 
         /// <summary>
         /// Spotted on version 516 only
         /// </summary>
         [SerializeWhen(nameof(Version), VERSION_516, ComparisonOperator.GreaterThanOrEqual)]
-        [FieldOrder(9)] public uint MachineAddress { get; set; }
+        [FieldOrder(9)]
+        public uint MachineAddress { get; set; }
 
         /// <summary>
         /// Gets layer image start address
         /// </summary>
-        [FieldOrder(10)]  public uint LayerImageAddress { get; set; }
+        [FieldOrder(10)]
+        public uint LayerImageAddress { get; set; }
 
         /// <summary>
         /// Spotted on version 517 only
         /// </summary>
         [SerializeWhen(nameof(Version), VERSION_517, ComparisonOperator.GreaterThanOrEqual)]
-        [FieldOrder(11)] public uint ModelAddress { get; set; }
+        [FieldOrder(11)]
+        public uint ModelAddress { get; set; }
 
         /// <summary>
         /// Spotted on version 518 only
         /// </summary>
         [SerializeWhen(nameof(Version), VERSION_518, ComparisonOperator.GreaterThanOrEqual)]
-        [FieldOrder(12)] public uint SubLayerDefinitionAddress { get; set; }
+        [FieldOrder(12)]
+        public uint SubLayerDefinitionAddress { get; set; }
 
         /// <summary>
         /// Spotted on version 518 only
         /// </summary>
         [SerializeWhen(nameof(Version), VERSION_518, ComparisonOperator.GreaterThanOrEqual)]
-        [FieldOrder(13)] public uint Preview2Address { get; set; }
+        [FieldOrder(13)]
+        public uint Preview2Address { get; set; }
 
         public override string ToString()
         {
-            return $"{nameof(Mark)}: {Mark}, {nameof(Version)}: {Version}, {nameof(NumberOfTables)}: {NumberOfTables}, {nameof(HeaderAddress)}: {HeaderAddress}, {nameof(SoftwareAddress)}: {SoftwareAddress}, {nameof(PreviewAddress)}: {PreviewAddress}, {nameof(LayerImageColorTableAddress)}: {LayerImageColorTableAddress}, {nameof(LayerDefinitionAddress)}: {LayerDefinitionAddress}, {nameof(ExtraAddress)}: {ExtraAddress}, {nameof(MachineAddress)}: {MachineAddress}, {nameof(LayerImageAddress)}: {LayerImageAddress}, {nameof(ModelAddress)}: {ModelAddress}, {nameof(SubLayerDefinitionAddress)}: {SubLayerDefinitionAddress}, {nameof(Preview2Address)}: {Preview2Address}";
+            return
+                $"{nameof(Mark)}: {Mark}, {nameof(Version)}: {Version}, {nameof(NumberOfTables)}: {NumberOfTables}, {nameof(HeaderAddress)}: {HeaderAddress}, {nameof(SoftwareAddress)}: {SoftwareAddress}, {nameof(PreviewAddress)}: {PreviewAddress}, {nameof(LayerImageColorTableAddress)}: {LayerImageColorTableAddress}, {nameof(LayerDefinitionAddress)}: {LayerDefinitionAddress}, {nameof(ExtraAddress)}: {ExtraAddress}, {nameof(MachineAddress)}: {MachineAddress}, {nameof(LayerImageAddress)}: {LayerImageAddress}, {nameof(ModelAddress)}: {ModelAddress}, {nameof(SubLayerDefinitionAddress)}: {SubLayerDefinitionAddress}, {nameof(Preview2Address)}: {Preview2Address}";
         }
     }
+
     #endregion
 
     #region Section
@@ -233,7 +253,8 @@ public sealed class AnycubicFile : FileFormat
         /// <summary>
         /// Gets the length of this section
         /// </summary>
-        [FieldOrder(1)] public uint TableLength { get; set; }
+        [FieldOrder(1)]
+        public uint TableLength { get; set; }
 
         protected AnycubicNamedTable()
         {
@@ -249,19 +270,28 @@ public sealed class AnycubicFile : FileFormat
         /// <summary>
         /// Gets the absolute size of the table including base and derived
         /// </summary>
-        public uint GetWholeTableLength() => (uint)Helpers.Serializer.SizeOf(this);
+        public uint GetWholeTableLength()
+        {
+            return (uint)Helpers.Serializer.SizeOf(this);
+        }
 
         /// <summary>
         /// Gets the absolute size of the derived table
         /// </summary>
         /// <returns></returns>
-        public uint GetDerivedTableLength() => GetWholeTableLength() - TableBaseLength;
+        public uint GetDerivedTableLength()
+        {
+            return GetWholeTableLength() - TableBaseLength;
+        }
 
         /// <summary>
         /// Gets the absolute size to set in this table
         /// </summary>
         /// <returns></returns>
-        public uint GetFinalTableLength() => IncludeBaseTableLength ? GetWholeTableLength() : GetDerivedTableLength();
+        public uint GetFinalTableLength()
+        {
+            return IncludeBaseTableLength ? GetWholeTableLength() : GetDerivedTableLength();
+        }
 
         /// <summary>
         /// Validates this table
@@ -269,14 +299,40 @@ public sealed class AnycubicFile : FileFormat
         /// <param name="validateName">True to validate the name, otherwise false</param>
         /// <param name="lengthOffset">Offset to length</param>
         /// <exception cref="FileLoadException"></exception>
-        public void Validate(bool validateName, int lengthOffset = 0) => ValidateExpecting((int)GetFinalTableLength() + lengthOffset, validateName);
+        public void Validate(bool validateName, int lengthOffset = 0)
+        {
+            ValidateExpecting((int)GetFinalTableLength() + lengthOffset, validateName);
+        }
 
-        public void Validate(sbyte lengthOffset) => Validate(true, lengthOffset);
-        public void Validate(byte lengthOffset) => Validate(true, lengthOffset);
-        public void Validate(ushort lengthOffset) => Validate(true, lengthOffset);
-        public void Validate(short lengthOffset) => Validate(true, lengthOffset);
-        public void Validate(int lengthOffset = 0) => Validate(true, lengthOffset);
-        public void Validate(uint lengthOffset) => Validate(true, (int)lengthOffset);
+        public void Validate(sbyte lengthOffset)
+        {
+            Validate(true, lengthOffset);
+        }
+
+        public void Validate(byte lengthOffset)
+        {
+            Validate(true, lengthOffset);
+        }
+
+        public void Validate(ushort lengthOffset)
+        {
+            Validate(true, lengthOffset);
+        }
+
+        public void Validate(short lengthOffset)
+        {
+            Validate(true, lengthOffset);
+        }
+
+        public void Validate(int lengthOffset = 0)
+        {
+            Validate(true, lengthOffset);
+        }
+
+        public void Validate(uint lengthOffset)
+        {
+            Validate(true, (int)lengthOffset);
+        }
 
         /// <summary>
         /// Validates this table
@@ -293,7 +349,8 @@ public sealed class AnycubicFile : FileFormat
 
             if (TableLength != length)
             {
-                throw new FileLoadException($"{DefaultTableName} section bytes: expected {length}, got {TableLength}, difference: {length - TableLength}");
+                throw new FileLoadException(
+                    $"{DefaultTableName} section bytes: expected {length}, got {TableLength}, difference: {length - TableLength}");
             }
         }
     }
@@ -301,6 +358,7 @@ public sealed class AnycubicFile : FileFormat
     #endregion
 
     #region Header
+
     public sealed class Header : AnycubicNamedTable
     {
         protected override string DefaultTableName => "HEADER";
@@ -312,7 +370,8 @@ public sealed class AnycubicFile : FileFormat
         /// <summary>
         /// Layer height in mm
         /// </summary>
-        [FieldOrder(2)] public float LayerHeight { get; set; }
+        [FieldOrder(2)]
+        public float LayerHeight { get; set; }
 
         [FieldOrder(3)] public float ExposureTime { get; set; }
 
@@ -327,12 +386,16 @@ public sealed class AnycubicFile : FileFormat
         /// <summary>
         /// Gets the lift speed in mm/s
         /// </summary>
-        [FieldOrder(8)] public float LiftSpeed { get; set; } = SpeedConverter.Convert(DefaultLiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond); // mm/s
+        [FieldOrder(8)]
+        public float LiftSpeed { get; set; } =
+            SpeedConverter.Convert(DefaultLiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond); // mm/s
 
         /// <summary>
         /// Gets the retract speed in mm/s
         /// </summary>
-        [FieldOrder(9)] public float RetractSpeed { get; set; } = SpeedConverter.Convert(DefaultRetractSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond); // mm/s
+        [FieldOrder(9)]
+        public float RetractSpeed { get; set; } =
+            SpeedConverter.Convert(DefaultRetractSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond); // mm/s
 
         [FieldOrder(10)] public float VolumeMl { get; set; }
 
@@ -349,24 +412,30 @@ public sealed class AnycubicFile : FileFormat
         /// <summary>
         /// 24 00 00 00 $ or ¥ C2 A5 00 00 or € = E2 82 AC 00
         /// </summary>
-        [FieldOrder(16)] [FieldLength(4)] public char PriceCurrencySymbol { get; set; } = '$';
+        [FieldOrder(16)]
+        [FieldLength(4)]
+        public char PriceCurrencySymbol { get; set; } = '$';
 
         /// <summary>
         /// 80
         /// </summary>
-        [FieldOrder(17)] [SerializeAs(SerializedType.UInt4)] public bool PerLayerSettings { get; set; } // bool
+        [FieldOrder(17)]
+        [SerializeAs(SerializedType.UInt4)]
+        public bool PerLayerSettings { get; set; } // bool
 
         [FieldOrder(18)] public uint PrintTime { get; set; }
 
         /// <summary>
         /// spotted on 516
         /// </summary>
-        [FieldOrder(19)] public uint TransitionLayerCount { get; set; }
+        [FieldOrder(19)]
+        public uint TransitionLayerCount { get; set; }
 
         /// <summary>
         /// spotted on 516
         /// </summary>
-        [FieldOrder(20)] public uint TransitionLayerType { get; set; }
+        [FieldOrder(20)]
+        public uint TransitionLayerType { get; set; }
 
         //[SerializeUntil((char)'P')] [FieldOrder(21)] public List<byte> Offset { get; set; } = new();
 
@@ -374,29 +443,44 @@ public sealed class AnycubicFile : FileFormat
         /// 0 = Basic mode | 1 = Advanced mode which allows TSMC
         /// v516
         /// </summary>
-        [FieldOrder(21)] [SerializeWhen(nameof(TableLength), 84, ComparisonOperator.GreaterThanOrEqual)] public uint AdvancedMode { get; set; }
+        [FieldOrder(21)]
+        [SerializeWhen(nameof(TableLength), 84, ComparisonOperator.GreaterThanOrEqual)]
+        public uint AdvancedMode { get; set; }
 
         /// <summary>
         /// v517
         /// </summary>
-        [FieldOrder(22)] [SerializeWhen(nameof(TableLength), 86, ComparisonOperator.GreaterThanOrEqual)] public ushort Grey { get; set; }
+        [FieldOrder(22)]
+        [SerializeWhen(nameof(TableLength), 86, ComparisonOperator.GreaterThanOrEqual)]
+        public ushort Grey { get; set; }
+
         /// <summary>
         /// v517
         /// </summary>
-        [FieldOrder(23)] [SerializeWhen(nameof(TableLength), 88, ComparisonOperator.GreaterThanOrEqual)] public ushort BlurLevel { get; set; }
+        [FieldOrder(23)]
+        [SerializeWhen(nameof(TableLength), 88, ComparisonOperator.GreaterThanOrEqual)]
+        public ushort BlurLevel { get; set; }
+
         /// <summary>
         /// v517
         /// </summary>
-        [FieldOrder(24)] [SerializeWhen(nameof(TableLength), 92, ComparisonOperator.GreaterThanOrEqual)] public uint ResinType { get; set; }
+        [FieldOrder(24)]
+        [SerializeWhen(nameof(TableLength), 92, ComparisonOperator.GreaterThanOrEqual)]
+        public uint ResinType { get; set; }
+
         /// <summary>
         /// When true, normal exposure time will be auto set, use false for traditional way
         /// v518
         /// </summary>
-        [FieldOrder(25)] [SerializeWhen(nameof(TableLength), 96, ComparisonOperator.GreaterThanOrEqual)] [SerializeAs(SerializedType.UInt4)] public bool IntelligentMode { get; set; }
+        [FieldOrder(25)]
+        [SerializeWhen(nameof(TableLength), 96, ComparisonOperator.GreaterThanOrEqual)]
+        [SerializeAs(SerializedType.UInt4)]
+        public bool IntelligentMode { get; set; }
 
         public override string ToString()
         {
-            return $"{base.ToString()}, {nameof(PixelSizeUm)}: {PixelSizeUm}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(WeightG)}: {WeightG}, {nameof(Price)}: {Price}, {nameof(PriceCurrencySymbol)}: {PriceCurrencySymbol}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(PrintTime)}: {PrintTime}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(TransitionLayerType)}: {TransitionLayerType}, {nameof(AdvancedMode)}: {AdvancedMode}, {nameof(Grey)}: {Grey}, {nameof(BlurLevel)}: {BlurLevel}, {nameof(ResinType)}: {ResinType}, {nameof(IntelligentMode)}: {IntelligentMode}";
+            return
+                $"{base.ToString()}, {nameof(PixelSizeUm)}: {PixelSizeUm}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(WeightG)}: {WeightG}, {nameof(Price)}: {Price}, {nameof(PriceCurrencySymbol)}: {PriceCurrencySymbol}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(PrintTime)}: {PrintTime}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(TransitionLayerType)}: {TransitionLayerType}, {nameof(AdvancedMode)}: {AdvancedMode}, {nameof(Grey)}: {Grey}, {nameof(BlurLevel)}: {BlurLevel}, {nameof(ResinType)}: {ResinType}, {nameof(IntelligentMode)}: {IntelligentMode}";
         }
     }
 
@@ -416,17 +500,22 @@ public sealed class AnycubicFile : FileFormat
         /// <summary>
         /// Gets the image width, in pixels.
         /// </summary>
-        [FieldOrder(0)] public uint ResolutionX { get; set; } = 224;
+        [FieldOrder(0)]
+        public uint ResolutionX { get; set; } = 224;
 
         /// <summary>
         /// Gets the operation mark 'x'
         /// </summary>
-        [FieldOrder(1)] [FieldLength(4)] [SerializeAs(SerializedType.TerminatedString)] public string Mark { get; set; } = "x";
+        [FieldOrder(1)]
+        [FieldLength(4)]
+        [SerializeAs(SerializedType.TerminatedString)]
+        public string Mark { get; set; } = "x";
 
         /// <summary>
         /// Gets the image height, in pixels.
         /// </summary>
-        [FieldOrder(2)] public uint ResolutionY { get; set; } = 168;
+        [FieldOrder(2)]
+        public uint ResolutionY { get; set; } = 168;
 
         [Ignore] public uint DataSize => ResolutionX * ResolutionY * 2;
 
@@ -450,10 +539,14 @@ public sealed class AnycubicFile : FileFormat
 
         public override string ToString()
         {
-            return $"{base.ToString()}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(Mark)}: {Mark}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(DataSize)}: {DataSize}";
+            return
+                $"{base.ToString()}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(Mark)}: {Mark}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(DataSize)}: {DataSize}";
         }
 
-        public void ResetData() => Data = null!;
+        public void ResetData()
+        {
+            Data = null!;
+        }
     }
 
     public sealed class Preview2 : AnycubicNamedTable
@@ -464,18 +557,22 @@ public sealed class AnycubicFile : FileFormat
         /// <summary>
         /// Gets the image width, in pixels.
         /// </summary>
-        [FieldOrder(0)] public uint ResolutionX { get; set; } = 320;
+        [FieldOrder(0)]
+        public uint ResolutionX { get; set; } = 320;
 
         /// <summary>
         /// Gets the operation mark 'x'
         /// </summary>
-        [FieldOrder(1)] public ushort BackgroundColor1 { get; set; } = 4293;
+        [FieldOrder(1)]
+        public ushort BackgroundColor1 { get; set; } = 4293;
+
         [FieldOrder(2)] public ushort BackgroundColor2 { get; set; }
 
         /// <summary>
         /// Gets the image height, in pixels.
         /// </summary>
-        [FieldOrder(3)] public uint ResolutionY { get; set; } = 190;
+        [FieldOrder(3)]
+        public uint ResolutionY { get; set; } = 190;
 
         [Ignore] public uint DataSize => ResolutionX * ResolutionY * 2;
 
@@ -511,45 +608,78 @@ public sealed class AnycubicFile : FileFormat
     {
         [FieldOrder(0)] public uint UseFullGreyscale { get; set; }
         [FieldOrder(1)] public uint GreyMaxCount { get; set; } = 16;
-        [FieldOrder(2)] [FieldCount(nameof(GreyMaxCount))] public byte[] Grey { get; set; } =
+
+        [FieldOrder(2)]
+        [FieldCount(nameof(GreyMaxCount))]
+        public byte[] Grey { get; set; } =
         [
             // AA16: 255, 239, 223, 207, 191, 175, 159, 143, 127, 111, 95, 79, 63, 47, 31, 15
-            15, 31, 47,    // 1,2,3
-            63, 79, 95,    // 4,5,6
+            15, 31, 47, // 1,2,3
+            63, 79, 95, // 4,5,6
             111, 127, 143, // 7,8,9
             159, 175, 191, // 10,11,12
             207, 223, 239, // 13,14,15
-            byte.MaxValue  // 16
+            byte.MaxValue // 16
         ];
 
         [FieldOrder(3)] public uint Unknown { get; set; }
 
         public override string ToString()
         {
-            return $"{nameof(UseFullGreyscale)}: {UseFullGreyscale}, {nameof(GreyMaxCount)}: {GreyMaxCount}, {nameof(Grey)}: {Grey}, {nameof(Unknown)}: {Unknown}";
+            return
+                $"{nameof(UseFullGreyscale)}: {UseFullGreyscale}, {nameof(GreyMaxCount)}: {GreyMaxCount}, {nameof(Grey)}: {Grey}, {nameof(Unknown)}: {Unknown}";
         }
     }
+
     #endregion
 
     #region Extra
+
     public class Extra : AnycubicNamedTable
     {
         protected override string DefaultTableName => "EXTRA";
 
         [FieldOrder(0)] public uint BottomLiftCount { get; set; } = 2;
         [FieldOrder(1)] public float BottomLiftHeight1 { get; set; }
-        [FieldOrder(2)] public float BottomLiftSpeed1 { get; set; } = SpeedConverter.Convert(DefaultBottomLiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
-        [FieldOrder(3)] public float BottomRetractSpeed2 { get; set; } = SpeedConverter.Convert(DefaultBottomRetractSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+
+        [FieldOrder(2)]
+        public float BottomLiftSpeed1 { get; set; } =
+            SpeedConverter.Convert(DefaultBottomLiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+
+        [FieldOrder(3)]
+        public float BottomRetractSpeed2 { get; set; } = SpeedConverter.Convert(DefaultBottomRetractSpeed,
+            CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+
         [FieldOrder(4)] public float BottomLiftHeight2 { get; set; }
-        [FieldOrder(5)] public float BottomLiftSpeed2 { get; set; } = SpeedConverter.Convert(DefaultBottomLiftSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
-        [FieldOrder(6)] public float BottomRetractSpeed1 { get; set; } = SpeedConverter.Convert(DefaultBottomRetractSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+
+        [FieldOrder(5)]
+        public float BottomLiftSpeed2 { get; set; } =
+            SpeedConverter.Convert(DefaultBottomLiftSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+
+        [FieldOrder(6)]
+        public float BottomRetractSpeed1 { get; set; } = SpeedConverter.Convert(DefaultBottomRetractSpeed2,
+            CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+
         [FieldOrder(7)] public uint NormalLiftCount { get; set; } = 2;
         [FieldOrder(8)] public float LiftHeight1 { get; set; }
-        [FieldOrder(9)] public float LiftSpeed1 { get; set; } = SpeedConverter.Convert(DefaultLiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
-        [FieldOrder(10)] public float RetractSpeed2 { get; set; } = SpeedConverter.Convert(DefaultRetractSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+
+        [FieldOrder(9)]
+        public float LiftSpeed1 { get; set; } =
+            SpeedConverter.Convert(DefaultLiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+
+        [FieldOrder(10)]
+        public float RetractSpeed2 { get; set; } =
+            SpeedConverter.Convert(DefaultRetractSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+
         [FieldOrder(11)] public float LiftHeight2 { get; set; }
-        [FieldOrder(12)] public float LiftSpeed2 { get; set; } = SpeedConverter.Convert(DefaultLiftSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
-        [FieldOrder(13)] public float RetractSpeed1 { get; set; } = SpeedConverter.Convert(DefaultRetractSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+
+        [FieldOrder(12)]
+        public float LiftSpeed2 { get; set; } =
+            SpeedConverter.Convert(DefaultLiftSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+
+        [FieldOrder(13)]
+        public float RetractSpeed1 { get; set; } =
+            SpeedConverter.Convert(DefaultRetractSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
 
         public Extra()
         {
@@ -558,20 +688,31 @@ public sealed class AnycubicFile : FileFormat
 
         public override string ToString()
         {
-            return $"{base.ToString()}, {nameof(BottomLiftCount)}: {BottomLiftCount}, {nameof(BottomLiftHeight1)}: {BottomLiftHeight1}, {nameof(BottomLiftSpeed1)}: {BottomLiftSpeed1}, {nameof(BottomRetractSpeed1)}: {BottomRetractSpeed1}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(NormalLiftCount)}: {NormalLiftCount}, {nameof(LiftHeight1)}: {LiftHeight1}, {nameof(LiftSpeed1)}: {LiftSpeed1}, {nameof(RetractSpeed1)}: {RetractSpeed1}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractSpeed2)}: {RetractSpeed2}";
+            return
+                $"{base.ToString()}, {nameof(BottomLiftCount)}: {BottomLiftCount}, {nameof(BottomLiftHeight1)}: {BottomLiftHeight1}, {nameof(BottomLiftSpeed1)}: {BottomLiftSpeed1}, {nameof(BottomRetractSpeed1)}: {BottomRetractSpeed1}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(NormalLiftCount)}: {NormalLiftCount}, {nameof(LiftHeight1)}: {LiftHeight1}, {nameof(LiftSpeed1)}: {LiftSpeed1}, {nameof(RetractSpeed1)}: {RetractSpeed1}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractSpeed2)}: {RetractSpeed2}";
         }
     }
+
     #endregion
 
     #region Machine
+
     public class Machine : AnycubicNamedTable
     {
         protected override string DefaultTableName => "MACHINE";
 
         protected override bool IncludeBaseTableLength => true;
 
-        [FieldOrder(0)][FieldLength(96)][SerializeAs(SerializedType.TerminatedString)] public string MachineName { get; set; } = null!;
-        [FieldOrder(1)][FieldLength(16)][SerializeAs(SerializedType.TerminatedString)] public string LayerImageFormat { get; set; } = "pw0img";
+        [FieldOrder(0)]
+        [FieldLength(96)]
+        [SerializeAs(SerializedType.TerminatedString)]
+        public string MachineName { get; set; } = null!;
+
+        [FieldOrder(1)]
+        [FieldLength(16)]
+        [SerializeAs(SerializedType.TerminatedString)]
+        public string LayerImageFormat { get; set; } = "pw0img";
+
         [FieldOrder(2)] public uint MaxAntialiasingLevel { get; set; } = 16;
         [FieldOrder(3)] public uint PropertyFields { get; set; } = 1;
         [FieldOrder(4)] public float DisplayWidth { get; set; }
@@ -579,50 +720,127 @@ public sealed class AnycubicFile : FileFormat
         [FieldOrder(6)] public float MachineZ { get; set; }
         [FieldOrder(7)] public uint MaxFileVersion { get; set; } = VERSION_518;
         [FieldOrder(8)] public uint MachineBackground { get; set; } = 6506241;
-        [FieldOrder(9)] [SerializeWhen(nameof(TableLength), 160, ComparisonOperator.GreaterThanOrEqual)] public float PixelWidthUm { get; set; }
-        [FieldOrder(10)] [SerializeWhen(nameof(TableLength), 164, ComparisonOperator.GreaterThanOrEqual)] public float PixelHeightUm { get; set; }
-        [FieldOrder(11)] [SerializeWhen(nameof(TableLength), 168, ComparisonOperator.GreaterThanOrEqual)] public uint Padding1 { get; set; }
-        [FieldOrder(12)] [SerializeWhen(nameof(TableLength), 172, ComparisonOperator.GreaterThanOrEqual)] public uint Padding2 { get; set; }
-        [FieldOrder(13)] [SerializeWhen(nameof(TableLength), 176, ComparisonOperator.GreaterThanOrEqual)] public uint Padding3 { get; set; }
-        [FieldOrder(14)] [SerializeWhen(nameof(TableLength), 180, ComparisonOperator.GreaterThanOrEqual)] public uint Padding4 { get; set; }
-        [FieldOrder(15)] [SerializeWhen(nameof(TableLength), 184, ComparisonOperator.GreaterThanOrEqual)] public uint Padding5 { get; set; }
-        [FieldOrder(16)] [SerializeWhen(nameof(TableLength), 188, ComparisonOperator.GreaterThanOrEqual)] public uint Padding6 { get; set; }
-        [FieldOrder(17)] [SerializeWhen(nameof(TableLength), 192, ComparisonOperator.GreaterThanOrEqual)] public uint Padding7 { get; set; }
-        [FieldOrder(18)] [SerializeWhen(nameof(TableLength), 196, ComparisonOperator.GreaterThanOrEqual)] public uint Padding8 { get; set; }
-        [FieldOrder(19)] [SerializeWhen(nameof(TableLength), 200, ComparisonOperator.GreaterThanOrEqual)] public uint DisplayCount { get; set; } = 1;
-        [FieldOrder(20)] [SerializeWhen(nameof(TableLength), 204, ComparisonOperator.GreaterThanOrEqual)] public uint Padding9 { get; set; }
-        [FieldOrder(21)] [SerializeWhen(nameof(TableLength), 206, ComparisonOperator.GreaterThanOrEqual)] public ushort ResolutionX { get; set; }
-        [FieldOrder(22)] [SerializeWhen(nameof(TableLength), 208, ComparisonOperator.GreaterThanOrEqual)] public ushort ResolutionY { get; set; }
-        [FieldOrder(23)] [SerializeWhen(nameof(TableLength), 212, ComparisonOperator.GreaterThanOrEqual)] public uint Padding10 { get; set; }
-        [FieldOrder(24)] [SerializeWhen(nameof(TableLength), 216, ComparisonOperator.GreaterThanOrEqual)] public uint Padding11 { get; set; }
-        [FieldOrder(25)] [SerializeWhen(nameof(TableLength), 220, ComparisonOperator.GreaterThanOrEqual)] public uint Padding12 { get; set; }
-        [FieldOrder(26)] [SerializeWhen(nameof(TableLength), 224, ComparisonOperator.GreaterThanOrEqual)] public uint Padding13 { get; set; }
+
+        [FieldOrder(9)]
+        [SerializeWhen(nameof(TableLength), 160, ComparisonOperator.GreaterThanOrEqual)]
+        public float PixelWidthUm { get; set; }
+
+        [FieldOrder(10)]
+        [SerializeWhen(nameof(TableLength), 164, ComparisonOperator.GreaterThanOrEqual)]
+        public float PixelHeightUm { get; set; }
+
+        [FieldOrder(11)]
+        [SerializeWhen(nameof(TableLength), 168, ComparisonOperator.GreaterThanOrEqual)]
+        public uint Padding1 { get; set; }
+
+        [FieldOrder(12)]
+        [SerializeWhen(nameof(TableLength), 172, ComparisonOperator.GreaterThanOrEqual)]
+        public uint Padding2 { get; set; }
+
+        [FieldOrder(13)]
+        [SerializeWhen(nameof(TableLength), 176, ComparisonOperator.GreaterThanOrEqual)]
+        public uint Padding3 { get; set; }
+
+        [FieldOrder(14)]
+        [SerializeWhen(nameof(TableLength), 180, ComparisonOperator.GreaterThanOrEqual)]
+        public uint Padding4 { get; set; }
+
+        [FieldOrder(15)]
+        [SerializeWhen(nameof(TableLength), 184, ComparisonOperator.GreaterThanOrEqual)]
+        public uint Padding5 { get; set; }
+
+        [FieldOrder(16)]
+        [SerializeWhen(nameof(TableLength), 188, ComparisonOperator.GreaterThanOrEqual)]
+        public uint Padding6 { get; set; }
+
+        [FieldOrder(17)]
+        [SerializeWhen(nameof(TableLength), 192, ComparisonOperator.GreaterThanOrEqual)]
+        public uint Padding7 { get; set; }
+
+        [FieldOrder(18)]
+        [SerializeWhen(nameof(TableLength), 196, ComparisonOperator.GreaterThanOrEqual)]
+        public uint Padding8 { get; set; }
+
+        [FieldOrder(19)]
+        [SerializeWhen(nameof(TableLength), 200, ComparisonOperator.GreaterThanOrEqual)]
+        public uint DisplayCount { get; set; } = 1;
+
+        [FieldOrder(20)]
+        [SerializeWhen(nameof(TableLength), 204, ComparisonOperator.GreaterThanOrEqual)]
+        public uint Padding9 { get; set; }
+
+        [FieldOrder(21)]
+        [SerializeWhen(nameof(TableLength), 206, ComparisonOperator.GreaterThanOrEqual)]
+        public ushort ResolutionX { get; set; }
+
+        [FieldOrder(22)]
+        [SerializeWhen(nameof(TableLength), 208, ComparisonOperator.GreaterThanOrEqual)]
+        public ushort ResolutionY { get; set; }
+
+        [FieldOrder(23)]
+        [SerializeWhen(nameof(TableLength), 212, ComparisonOperator.GreaterThanOrEqual)]
+        public uint Padding10 { get; set; }
+
+        [FieldOrder(24)]
+        [SerializeWhen(nameof(TableLength), 216, ComparisonOperator.GreaterThanOrEqual)]
+        public uint Padding11 { get; set; }
+
+        [FieldOrder(25)]
+        [SerializeWhen(nameof(TableLength), 220, ComparisonOperator.GreaterThanOrEqual)]
+        public uint Padding12 { get; set; }
+
+        [FieldOrder(26)]
+        [SerializeWhen(nameof(TableLength), 224, ComparisonOperator.GreaterThanOrEqual)]
+        public uint Padding13 { get; set; }
 
         public override string ToString()
         {
-            return $"{base.ToString()}, {nameof(MachineName)}: {MachineName}, {nameof(LayerImageFormat)}: {LayerImageFormat}, {nameof(MaxAntialiasingLevel)}: {MaxAntialiasingLevel}, {nameof(PropertyFields)}: {PropertyFields}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(MaxFileVersion)}: {MaxFileVersion}, {nameof(MachineBackground)}: {MachineBackground}, {nameof(PixelWidthUm)}: {PixelWidthUm}, {nameof(PixelHeightUm)}: {PixelHeightUm}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(DisplayCount)}: {DisplayCount}, {nameof(Padding9)}: {Padding9}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(Padding10)}: {Padding10}, {nameof(Padding11)}: {Padding11}, {nameof(Padding12)}: {Padding12}, {nameof(Padding13)}: {Padding13}";
+            return
+                $"{base.ToString()}, {nameof(MachineName)}: {MachineName}, {nameof(LayerImageFormat)}: {LayerImageFormat}, {nameof(MaxAntialiasingLevel)}: {MaxAntialiasingLevel}, {nameof(PropertyFields)}: {PropertyFields}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(MaxFileVersion)}: {MaxFileVersion}, {nameof(MachineBackground)}: {MachineBackground}, {nameof(PixelWidthUm)}: {PixelWidthUm}, {nameof(PixelHeightUm)}: {PixelHeightUm}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(DisplayCount)}: {DisplayCount}, {nameof(Padding9)}: {Padding9}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(Padding10)}: {Padding10}, {nameof(Padding11)}: {Padding11}, {nameof(Padding12)}: {Padding12}, {nameof(Padding13)}: {Padding13}";
         }
     }
+
     #endregion
 
     #region Software
+
     public sealed class Software
     {
         public const uint TableSize = 164;
-        [FieldOrder(0)][FieldLength(32)][SerializeAs(SerializedType.TerminatedString)] public string SoftwareName { get; set; } = About.Software;
+
+        [FieldOrder(0)]
+        [FieldLength(32)]
+        [SerializeAs(SerializedType.TerminatedString)]
+        public string SoftwareName { get; set; } = About.Software;
+
         [FieldOrder(1)] public uint TableLength { get; set; } = TableSize;
-        [FieldOrder(2)][FieldLength(32)][SerializeAs(SerializedType.TerminatedString)] public string Version { get; set; } = About.VersionString;
-        [FieldOrder(3)][FieldLength(64)][SerializeAs(SerializedType.TerminatedString)] public string OperativeSystem { get; set; } = RuntimeInformation.RuntimeIdentifier;
-        [FieldOrder(4)][FieldLength(32)][SerializeAs(SerializedType.TerminatedString)] public string OpenGLVersion { get; set; } = "3.3-CoreProfile";
+
+        [FieldOrder(2)]
+        [FieldLength(32)]
+        [SerializeAs(SerializedType.TerminatedString)]
+        public string Version { get; set; } = About.VersionString;
+
+        [FieldOrder(3)]
+        [FieldLength(64)]
+        [SerializeAs(SerializedType.TerminatedString)]
+        public string OperativeSystem { get; set; } = RuntimeInformation.RuntimeIdentifier;
+
+        [FieldOrder(4)]
+        [FieldLength(32)]
+        [SerializeAs(SerializedType.TerminatedString)]
+        public string OpenGLVersion { get; set; } = "3.3-CoreProfile";
 
         public override string ToString()
         {
-            return $"{nameof(SoftwareName)}: {SoftwareName}, {nameof(TableLength)}: {TableLength}, {nameof(Version)}: {Version}, {nameof(OperativeSystem)}: {OperativeSystem}, {nameof(OpenGLVersion)}: {OpenGLVersion}";
+            return
+                $"{nameof(SoftwareName)}: {SoftwareName}, {nameof(TableLength)}: {TableLength}, {nameof(Version)}: {Version}, {nameof(OperativeSystem)}: {OperativeSystem}, {nameof(OpenGLVersion)}: {OpenGLVersion}";
         }
     }
+
     #endregion
 
     #region Model
+
     public sealed class Model : AnycubicNamedTable
     {
         protected override string DefaultTableName => "MODEL";
@@ -640,7 +858,8 @@ public sealed class AnycubicFile : FileFormat
 
         public override string ToString()
         {
-            return $"{base.ToString()}, {nameof(MinX)}: {MinX}, {nameof(MinY)}: {MinY}, {nameof(MinZ)}: {MinZ}, {nameof(MaxX)}: {MaxX}, {nameof(MaxY)}: {MaxY}, {nameof(MaxZ)}: {MaxZ}, {nameof(SupportsEnabled)}: {SupportsEnabled}, {nameof(SupportsDensity)}: {SupportsDensity}";
+            return
+                $"{base.ToString()}, {nameof(MinX)}: {MinX}, {nameof(MinY)}: {MinY}, {nameof(MinZ)}: {MinZ}, {nameof(MaxX)}: {MaxX}, {nameof(MaxY)}: {MaxY}, {nameof(MaxZ)}: {MaxZ}, {nameof(SupportsEnabled)}: {SupportsEnabled}, {nameof(SupportsDensity)}: {SupportsDensity}";
         }
 
         public void Parse(FileFormat slicerFile)
@@ -656,6 +875,7 @@ public sealed class AnycubicFile : FileFormat
             MaxZ = slicerFile.PrintHeight;
         }
     }
+
     #endregion
 
     #region Layer
@@ -663,15 +883,18 @@ public sealed class AnycubicFile : FileFormat
     public sealed class LayerDef
     {
         public const byte ClassSize = 32;
+
         /// <summary>
         /// Gets the layer image offset to encoded layer data, and its length in bytes.
         /// </summary>
-        [FieldOrder(0)] public uint DataAddress { get; set; }
+        [FieldOrder(0)]
+        public uint DataAddress { get; set; }
 
         /// <summary>
         /// Gets the layer image length in bytes.
         /// </summary>
-        [FieldOrder(1)] public uint DataLength { get; set; }
+        [FieldOrder(1)]
+        public uint DataLength { get; set; }
 
         [FieldOrder(2)] public float LiftHeight { get; set; }
 
@@ -680,12 +903,14 @@ public sealed class AnycubicFile : FileFormat
         /// <summary>
         /// Gets the exposure time for this layer, in seconds.
         /// </summary>
-        [FieldOrder(4)] public float ExposureTime { get; set; }
+        [FieldOrder(4)]
+        public float ExposureTime { get; set; }
 
         /// <summary>
         /// Gets the layer height for this layer, measured in millimeters.
         /// </summary>
-        [FieldOrder(5)] public float LayerHeight { get; set; }
+        [FieldOrder(5)]
+        public float LayerHeight { get; set; }
 
         [FieldOrder(6)] public uint NonZeroPixelCount { get; set; }
         [FieldOrder(7)] public uint Padding1 { get; set; }
@@ -720,7 +945,9 @@ public sealed class AnycubicFile : FileFormat
 
         public Mat Decode(AnycubicFile slicerFile, bool consumeData = true)
         {
-            var result = slicerFile.RleFormat == PhotonRleFormat.PWS ? DecodePWS(slicerFile) : DecodePW0(slicerFile.CreateMat(), EncodedRle);
+            var result = slicerFile.RleFormat == PhotonRleFormat.PWS
+                ? DecodePWS(slicerFile)
+                : DecodePW0(slicerFile.CreateMat(), EncodedRle);
             if (consumeData)
                 EncodedRle = null!;
 
@@ -736,24 +963,23 @@ public sealed class AnycubicFile : FileFormat
 
         private unsafe Mat DecodePWS(AnycubicFile slicerFile)
         {
-            var image = EmguExtensions.InitMat(slicerFile.Resolution);
-            var span = image.GetBytePointer();
-            var imageLength = image.GetLength();
+            var image = EmguCvExtensions.InitMat(slicerFile.Resolution);
+            var span = image.GetSpanOfBytes(0, 0);
 
-            int index = 0;
+            var index = 0;
             for (byte bit = 0; bit < slicerFile.AntiAliasing; bit++)
             {
-                int pixel = 0;
+                var pixel = 0;
                 for (; index < EncodedRle.Length; index++)
                 {
                     // Lower 7 bits is the repeat count for the bit (0..127)
-                    int reps = EncodedRle[index] & 0x7f;
+                    var reps = EncodedRle[index] & 0x7f;
 
                     // We only need to set the non-zero pixels
                     // High bit is on for white, off for black
                     if ((EncodedRle[index] & 0x80) != 0)
                     {
-                        for (int i = 0; i < reps; i++)
+                        for (var i = 0; i < reps; i++)
                         {
                             span[pixel + i]++;
                         }
@@ -761,13 +987,13 @@ public sealed class AnycubicFile : FileFormat
 
                     pixel += reps;
 
-                    if (pixel == imageLength)
+                    if (pixel == span.Length)
                     {
                         index++;
                         break;
                     }
 
-                    if (pixel > imageLength)
+                    if (pixel > span.Length)
                     {
                         image.Dispose();
                         throw new FileLoadException("Image ran off the end.");
@@ -775,9 +1001,9 @@ public sealed class AnycubicFile : FileFormat
                 }
             }
 
-            for (int i = 0; i < imageLength; i++)
+            for (var i = 0; i < span.Length; i++)
             {
-                int newC = span[i] * (256 / slicerFile.AntiAliasing);
+                var newC = span[i] * (256 / slicerFile.AntiAliasing);
 
                 if (newC > 0)
                 {
@@ -793,8 +1019,7 @@ public sealed class AnycubicFile : FileFormat
         public unsafe byte[] EncodePWS(AnycubicFile slicerFile, Mat image)
         {
             List<byte> rawData = [];
-            var span = image.GetBytePointer();
-            var imageLength = image.GetLength();
+            var span = image.GetReadOnlySpanOfBytes();
 
             bool obit;
             int rep;
@@ -803,7 +1028,7 @@ public sealed class AnycubicFile : FileFormat
             {
                 if (rep <= 0) return;
 
-                byte by = (byte)rep;
+                var by = (byte)rep;
 
                 if (obit)
                 {
@@ -827,10 +1052,10 @@ public sealed class AnycubicFile : FileFormat
                 // aa 8:  255 223 191 159 127 95 63 31
                 //byte threshold = (byte)(256 / slicerFile.AntiAliasing * aalevel - 1);
                 // threshold := byte(int(255 * (level + 1) / (levels + 1))) + 1
-                byte threshold = (byte) (255 * aalevel / (slicerFile.AntiAliasing + 1) + 1);
+                var threshold = (byte)(255 * aalevel / (slicerFile.AntiAliasing + 1) + 1);
 
 
-                for (int pixel = 0; pixel < imageLength; pixel++)
+                for (var pixel = 0; pixel < span.Length; pixel++)
                 {
                     var nbit = span[pixel] >= threshold;
 
@@ -856,7 +1081,7 @@ public sealed class AnycubicFile : FileFormat
                 AddRep();
             }
 
-            DataLength = (uint) rawData.Count;
+            DataLength = (uint)rawData.Count;
 
             return rawData.ToArray();
         }
@@ -864,12 +1089,12 @@ public sealed class AnycubicFile : FileFormat
         public static ushort CRCRle4(byte[] data)
         {
             ushort crc16 = 0;
-            for (int i = 0; i < data.Length; i++)
+            for (var i = 0; i < data.Length; i++)
             {
-                crc16 = (ushort) ((crc16 << 8) ^ CRC16Table[((crc16 >> 8) ^ CRC16Table[data[i]]) & 0xff]);
+                crc16 = (ushort)((crc16 << 8) ^ CRC16Table[((crc16 >> 8) ^ CRC16Table[data[i]]) & 0xff]);
             }
 
-            crc16 = (ushort) ((CRC16Table[crc16 & 0xff] * 0x100) + CRC16Table[(crc16 >> 8) & 0xff]);
+            crc16 = (ushort)(CRC16Table[crc16 & 0xff] * 0x100 + CRC16Table[(crc16 >> 8) & 0xff]);
 
             return crc16;
         }
@@ -881,7 +1106,8 @@ public sealed class AnycubicFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(DataAddress)}: {DataAddress}, {nameof(DataLength)}: {DataLength}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(Padding1)}: {Padding1}, {nameof(EncodedRle)}: {EncodedRle?.Length ?? 0}";
+            return
+                $"{nameof(DataAddress)}: {DataAddress}, {nameof(DataLength)}: {DataLength}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(Padding1)}: {Padding1}, {nameof(EncodedRle)}: {EncodedRle?.Length ?? 0}";
         }
     }
 
@@ -890,12 +1116,14 @@ public sealed class AnycubicFile : FileFormat
         /// <summary>
         /// Gets the layer image offset to encoded layer data, and its length in bytes.
         /// </summary>
-        [FieldOrder(0)] public uint DataAddress { get; set; }
+        [FieldOrder(0)]
+        public uint DataAddress { get; set; }
 
         /// <summary>
         /// Gets the layer image length in bytes.
         /// </summary>
-        [FieldOrder(1)] public uint DataLength { get; set; }
+        [FieldOrder(1)]
+        public uint DataLength { get; set; }
 
         [FieldOrder(2)] public uint NonZeroPixelCount { get; set; }
 
@@ -910,7 +1138,8 @@ public sealed class AnycubicFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(DataAddress)}: {DataAddress}, {nameof(DataLength)}: {DataLength}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}";
+            return
+                $"{nameof(DataAddress)}: {DataAddress}, {nameof(DataLength)}: {DataLength}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}";
         }
 
         public void SetFrom(LayerDef layerDef)
@@ -924,26 +1153,31 @@ public sealed class AnycubicFile : FileFormat
     #endregion
 
     #region LayerDefinition
+
     public sealed class LayerDefinition : AnycubicNamedTable
     {
         protected override string DefaultTableName => "LAYERDEF";
 
         [FieldOrder(0)] public uint LayerCount { get; set; }
 
-        [FieldOrder(1)] [FieldCount(nameof(LayerCount))] public LayerDef[] Layers { get; set; } = [];
+        [FieldOrder(1)]
+        [FieldCount(nameof(LayerCount))]
+        public LayerDef[] Layers { get; set; } = [];
 
         public LayerDefinition()
-        { }
+        {
+        }
 
         public LayerDefinition(uint layerCount) : this()
         {
             LayerCount = layerCount;
             Layers = new LayerDef[layerCount];
-            TableLength += (uint) Helpers.Serializer.SizeOf(new LayerDef()) * LayerCount;
+            TableLength += (uint)Helpers.Serializer.SizeOf(new LayerDef()) * LayerCount;
         }
 
         public LayerDefinition(FileFormat slicerFile) : this(slicerFile.LayerCount)
-        { }
+        {
+        }
 
         [Ignore]
         public LayerDef this[uint index]
@@ -974,10 +1208,13 @@ public sealed class AnycubicFile : FileFormat
         [FieldOrder(0)] public uint LayerCount { get; set; }
         [FieldOrder(1)] public uint Index { get; set; } = 1;
 
-        [FieldOrder(2)] [FieldCount(nameof(LayerCount))] public SubLayerDef[] Layers { get; set; } = [];
+        [FieldOrder(2)]
+        [FieldCount(nameof(LayerCount))]
+        public SubLayerDef[] Layers { get; set; } = [];
 
         public SubLayerDefinition()
-        { }
+        {
+        }
 
         public SubLayerDefinition(uint layerCount) : this()
         {
@@ -987,7 +1224,8 @@ public sealed class AnycubicFile : FileFormat
         }
 
         public SubLayerDefinition(FileFormat slicerFile) : this(slicerFile.LayerCount)
-        { }
+        {
+        }
 
         [Ignore]
         public SubLayerDef this[uint index]
@@ -1008,8 +1246,8 @@ public sealed class AnycubicFile : FileFormat
             return $"{base.ToString()}, {nameof(LayerCount)}: {LayerCount}, {nameof(Index)}: {Index}";
         }
     }
-    #endregion
 
+    #endregion
 
     #endregion
 
@@ -1043,7 +1281,6 @@ public sealed class AnycubicFile : FileFormat
 
     public override FileExtension[] FileExtensions { get; } =
     [
-
         new(typeof(AnycubicFile), "pws", "Photon / Photon S (PWS)"),
         new(typeof(AnycubicFile), "pw0", "Photon Zero (PW0)"),
         new(typeof(AnycubicFile), "pwx", "Photon X (PWX)"),
@@ -1255,6 +1492,7 @@ public sealed class AnycubicFile : FileFormat
         }
         set => base.DisplayWidth = MachineSettings.DisplayWidth = RoundDisplaySize(value);
     }
+
     public override float DisplayHeight
     {
         get
@@ -1326,14 +1564,14 @@ public sealed class AnycubicFile : FileFormat
     public override FlipDirection DisplayMirror
     {
         get => FlipDirection.Horizontally;
-        set {}
+        set { }
     }
 
     public override bool IsAntiAliasingEmulated => true;
 
     public override byte AntiAliasing
     {
-        get => (byte) HeaderSettings.AntiAliasing;
+        get => (byte)HeaderSettings.AntiAliasing;
         set
         {
             base.AntiAliasing = (byte)(HeaderSettings.AntiAliasing = Math.Clamp(value, (byte)1, (byte)16));
@@ -1355,14 +1593,15 @@ public sealed class AnycubicFile : FileFormat
 
     public override ushort BottomLayerCount
     {
-        get => (ushort) HeaderSettings.BottomLayersCount;
-        set => base.BottomLayerCount = (ushort) (HeaderSettings.BottomLayersCount = value);
+        get => (ushort)HeaderSettings.BottomLayersCount;
+        set => base.BottomLayerCount = (ushort)(HeaderSettings.BottomLayersCount = value);
     }
 
     public override ushort TransitionLayerCount
     {
         get => (ushort)HeaderSettings.TransitionLayerCount;
-        set => base.TransitionLayerCount = (ushort)(HeaderSettings.TransitionLayerCount = Math.Min(value, MaximumPossibleTransitionLayerCount));
+        set => base.TransitionLayerCount =
+            (ushort)(HeaderSettings.TransitionLayerCount = Math.Min(value, MaximumPossibleTransitionLayerCount));
     }
 
     public override float BottomLightOffDelay => BottomWaitTimeBeforeCure;
@@ -1374,13 +1613,15 @@ public sealed class AnycubicFile : FileFormat
     public override float WaitTimeBeforeCure
     {
         get => HeaderSettings.WaitTimeBeforeCure;
-        set => base.WaitTimeBeforeCure = HeaderSettings.WaitTimeBeforeCure = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+        set => base.WaitTimeBeforeCure =
+            HeaderSettings.WaitTimeBeforeCure = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
     }
 
     public override float BottomExposureTime
     {
         get => HeaderSettings.BottomExposureTime;
-        set => base.BottomExposureTime = HeaderSettings.BottomExposureTime = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
+        set => base.BottomExposureTime =
+            HeaderSettings.BottomExposureTime = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
     }
 
     public override float ExposureTime
@@ -1404,7 +1645,8 @@ public sealed class AnycubicFile : FileFormat
             ExtraSettings.BottomLiftHeight1 = value;
             if (FileMarkSettings.Version >= VERSION_516)
             {
-                base.BottomLiftHeight = MathF.Round(value + ExtraSettings.BottomLiftHeight2, 2, MidpointRounding.AwayFromZero);
+                base.BottomLiftHeight = MathF.Round(value + ExtraSettings.BottomLiftHeight2, 2,
+                    MidpointRounding.AwayFromZero);
                 foreach (var layer in this) // Fix layer value
                 {
                     if (!layer.IsBottomLayer) continue;
@@ -1442,7 +1684,7 @@ public sealed class AnycubicFile : FileFormat
                 base.LiftHeight = HeaderSettings.LiftHeight = Layer.RoundHeight(value + ExtraSettings.LiftHeight2);
                 foreach (var layer in this) // Fix layer value
                 {
-                    if(!layer.IsNormalLayer) continue;
+                    if (!layer.IsNormalLayer) continue;
                     layer.LiftHeight = base.LiftHeight;
                 }
             }
@@ -1458,7 +1700,8 @@ public sealed class AnycubicFile : FileFormat
         set
         {
             value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
-            HeaderSettings.LiftSpeed = ExtraSettings.LiftSpeed1 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
+            HeaderSettings.LiftSpeed =
+                ExtraSettings.LiftSpeed1 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
             base.LiftSpeed = value;
         }
     }
@@ -1476,7 +1719,7 @@ public sealed class AnycubicFile : FileFormat
             BottomLiftHeight = bottomLiftHeight;
             base.BottomLiftHeight2 = ExtraSettings.BottomLiftHeight2;
             HeaderSettings.AdvancedMode = System.Convert.ToUInt32(IsUsingTSMC);
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 
@@ -1507,7 +1750,7 @@ public sealed class AnycubicFile : FileFormat
             LiftHeight = liftHeight;
             base.LiftHeight2 = ExtraSettings.LiftHeight2;
             HeaderSettings.AdvancedMode = System.Convert.ToUInt32(IsUsingTSMC);
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 
@@ -1547,7 +1790,8 @@ public sealed class AnycubicFile : FileFormat
         set
         {
             value = MathF.Round(value, 2, MidpointRounding.AwayFromZero);
-            ExtraSettings.RetractSpeed1 = HeaderSettings.RetractSpeed = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
+            ExtraSettings.RetractSpeed1 = HeaderSettings.RetractSpeed =
+                SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
             base.RetractSpeed = value;
         }
     }
@@ -1586,7 +1830,7 @@ public sealed class AnycubicFile : FileFormat
         set
         {
             base.PrintTime = value;
-            HeaderSettings.PrintTime = (uint) base.PrintTime;
+            HeaderSettings.PrintTime = (uint)base.PrintTime;
         }
     }
 
@@ -1619,28 +1863,28 @@ public sealed class AnycubicFile : FileFormat
             if (!string.IsNullOrWhiteSpace(MachineSettings.MachineName)) return MachineSettings.MachineName;
             return PrinterModel switch
             {
-                AnyCubicMachine.PhotonS       => "Photon S",
-                AnyCubicMachine.PhotonZero    => "Photon Zero",
-                AnyCubicMachine.PhotonX       => "Photon X",
-                AnyCubicMachine.PhotonUltra   => "Photon Ultra",
-                AnyCubicMachine.PhotonD2      => "Photon D2",
-                AnyCubicMachine.PhotonMono    => "Photon Mono",
-                AnyCubicMachine.PhotonMono2   => "Photon Mono 2",
-                AnyCubicMachine.PhotonMono4   => "Photon Mono 4",
-                AnyCubicMachine.PhotonMonoSE  => "Photon Mono SE",
-                AnyCubicMachine.PhotonMono4K  => "Photon Mono 4K",
-                AnyCubicMachine.PhotonMonoX   => "Photon Mono X",
-                AnyCubicMachine.PhotonMonoX2   => "Photon Mono X2",
+                AnyCubicMachine.PhotonS => "Photon S",
+                AnyCubicMachine.PhotonZero => "Photon Zero",
+                AnyCubicMachine.PhotonX => "Photon X",
+                AnyCubicMachine.PhotonUltra => "Photon Ultra",
+                AnyCubicMachine.PhotonD2 => "Photon D2",
+                AnyCubicMachine.PhotonMono => "Photon Mono",
+                AnyCubicMachine.PhotonMono2 => "Photon Mono 2",
+                AnyCubicMachine.PhotonMono4 => "Photon Mono 4",
+                AnyCubicMachine.PhotonMonoSE => "Photon Mono SE",
+                AnyCubicMachine.PhotonMono4K => "Photon Mono 4K",
+                AnyCubicMachine.PhotonMonoX => "Photon Mono X",
+                AnyCubicMachine.PhotonMonoX2 => "Photon Mono X2",
                 AnyCubicMachine.PhotonMonoX6KM3Plus => "Photon Mono X 6K / M3 Plus",
                 AnyCubicMachine.PhotonMonoX6Ks => "Photon Mono X 6Ks",
-                AnyCubicMachine.PhotonMonoSQ  => "Photon Mono SQ",
-                AnyCubicMachine.PhotonM3  => "Photon M3",
-                AnyCubicMachine.PhotonM3Max  => "Photon M3 Max",
+                AnyCubicMachine.PhotonMonoSQ => "Photon Mono SQ",
+                AnyCubicMachine.PhotonM3 => "Photon M3",
+                AnyCubicMachine.PhotonM3Max => "Photon M3 Max",
                 AnyCubicMachine.PhotonM3Premium => "Photon M3 Premium",
                 AnyCubicMachine.PhotonMonoM5 => "Photon Mono M5",
                 AnyCubicMachine.PhotonMonoM5s => "Photon Mono M5s",
                 AnyCubicMachine.PhotonMonoM5sPro => "Photon Mono M5s Pro",
-                AnyCubicMachine.Custom  => "Custom",
+                AnyCubicMachine.Custom => "Custom",
                 _ => base.MachineName
             };
         }
@@ -1676,7 +1920,8 @@ public sealed class AnycubicFile : FileFormat
                     return
                     [
                         FileMarkSettings, HeaderSettings, PreviewSettings, LayerImageColorSettings, LayersDefinition,
-                        ExtraSettings, MachineSettings, SoftwareSettings, ModelSettings, SubLayersDefinition, Preview2Settings
+                        ExtraSettings, MachineSettings, SoftwareSettings, ModelSettings, SubLayersDefinition,
+                        Preview2Settings
                     ];
             }
         }
@@ -1806,15 +2051,19 @@ public sealed class AnycubicFile : FileFormat
             return AnyCubicMachine.PhotonS;
         }
     }
+
     #endregion
 
     #region Constructors
+
     public AnycubicFile()
     {
     }
+
     #endregion
 
     #region Methods
+
     public override void Clear()
     {
         base.Clear();
@@ -1865,7 +2114,7 @@ public sealed class AnycubicFile : FileFormat
         MachineSettings.LayerImageFormat = $"{RleFormat.ToString().ToLower()}Img";
         MachineSettings.MaxFileVersion = GetAvailableVersionsForExtension(FileExtension)[^1];
 
-        FileMarkSettings.HeaderAddress = (uint) Helpers.Serializer.SizeOf(FileMarkSettings);
+        FileMarkSettings.HeaderAddress = (uint)Helpers.Serializer.SizeOf(FileMarkSettings);
         FileMarkSettings.PreviewAddress = 0;
         FileMarkSettings.Preview2Address = 0;
 
@@ -1885,7 +2134,7 @@ public sealed class AnycubicFile : FileFormat
 
         if (FileMarkSettings.Version >= VERSION_515)
         {
-            float pixelIncrement = 255.0f / Math.Max(1, HeaderSettings.AntiAliasing);
+            var pixelIncrement = 255.0f / Math.Max(1, HeaderSettings.AntiAliasing);
 
             // Table was always noticed as 16 bytes
             if (LayerImageColorSettings.GreyMaxCount < 16 || LayerImageColorSettings.Grey.Length < 16)
@@ -1894,14 +2143,16 @@ public sealed class AnycubicFile : FileFormat
             }
 
             // But if the AntiAliasing is higher than 16, we adjust the table (Experimental)
-            if (HeaderSettings.AntiAliasing > LayerImageColorSettings.GreyMaxCount || HeaderSettings.AntiAliasing > LayerImageColorSettings.Grey.Length)
+            if (HeaderSettings.AntiAliasing > LayerImageColorSettings.GreyMaxCount ||
+                HeaderSettings.AntiAliasing > LayerImageColorSettings.Grey.Length)
             {
                 LayerImageColorSettings.GreyMaxCount = HeaderSettings.AntiAliasing;
             }
 
             // Ensure the table is the correct size
             if (LayerImageColorSettings.Grey.Length != LayerImageColorSettings.GreyMaxCount)
-                LayerImageColorSettings.Grey = GC.AllocateUninitializedArray<byte>((int)LayerImageColorSettings.GreyMaxCount);
+                LayerImageColorSettings.Grey =
+                    GC.AllocateUninitializedArray<byte>((int)LayerImageColorSettings.GreyMaxCount);
 
             // Map the grey values
             for (var i = 0; i < LayerImageColorSettings.GreyMaxCount; i++)
@@ -1918,7 +2169,8 @@ public sealed class AnycubicFile : FileFormat
         LayersDefinition = new LayerDefinition(LayerCount);
         SubLayersDefinition = new SubLayerDefinition(LayerCount);
         FileMarkSettings.LayerDefinitionAddress = (uint)outputFile.Position;
-        FileMarkSettings.LayerImageAddress = FileMarkSettings.LayerDefinitionAddress + LayersDefinition.TableLength + AnycubicNamedTable.TableBaseLength;
+        FileMarkSettings.LayerImageAddress = FileMarkSettings.LayerDefinitionAddress + LayersDefinition.TableLength +
+                                             AnycubicNamedTable.TableBaseLength;
 
         outputFile.Seek(FileMarkSettings.LayerImageAddress, SeekOrigin.Begin);
 
@@ -1976,6 +2228,7 @@ public sealed class AnycubicFile : FileFormat
                     LayersDefinition[layerIndex].Encode(this, mat);
                     SubLayersDefinition[layerIndex] = new SubLayerDef();
                 }
+
                 progress.LockAndIncrement();
             });
 
@@ -1994,14 +2247,14 @@ public sealed class AnycubicFile : FileFormat
                 }
                 else
                 {*/
-                    layerDef.DataAddress = (uint)outputFile.Position;
-                    SubLayersDefinition[layerIndex].SetFrom(layerDef);
+                layerDef.DataAddress = (uint)outputFile.Position;
+                SubLayersDefinition[layerIndex].SetFrom(layerDef);
 
 
-                    //layersHash.Add(hash, layerDef);
+                //layersHash.Add(hash, layerDef);
 
-                    outputFile.WriteBytes(layerDef.EncodedRle);
-                    layerDef.EncodedRle = null!;
+                outputFile.WriteBytes(layerDef.EncodedRle);
+                layerDef.EncodedRle = null!;
                 //}
             }
         }
@@ -2032,12 +2285,15 @@ public sealed class AnycubicFile : FileFormat
 
         if (!FileMarkSettings.Mark.Equals(FileMark.SectionMarkFile))
         {
-            throw new FileLoadException($"Invalid Filemark {FileMarkSettings.Mark}, expected {FileMark.SectionMarkFile}", FileFullPath);
+            throw new FileLoadException(
+                $"Invalid Filemark {FileMarkSettings.Mark}, expected {FileMark.SectionMarkFile}", FileFullPath);
         }
 
         if (!AvailableVersions.AsValueEnumerable().Contains(FileMarkSettings.Version))
         {
-            throw new FileLoadException($"Invalid Version {FileMarkSettings.Version}, expecting {string.Join(" or ", AvailableVersions)}", FileFullPath);
+            throw new FileLoadException(
+                $"Invalid Version {FileMarkSettings.Version}, expecting {string.Join(" or ", AvailableVersions)}",
+                FileFullPath);
         }
 
         inputFile.Seek(FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
@@ -2056,7 +2312,8 @@ public sealed class AnycubicFile : FileFormat
             Debug.Write("Preview 1 -> ");
             Debug.WriteLine(PreviewSettings);
 
-            Thumbnails.Add(DecodeImage(DATATYPE_RGB565, PreviewSettings.Data, PreviewSettings.ResolutionX, PreviewSettings.ResolutionY));
+            Thumbnails.Add(DecodeImage(DATATYPE_RGB565, PreviewSettings.Data, PreviewSettings.ResolutionX,
+                PreviewSettings.ResolutionY));
             PreviewSettings.ResetData();
         }
 
@@ -2149,7 +2406,8 @@ public sealed class AnycubicFile : FileFormat
                             Debug.WriteLine(Preview2Settings);
                             Preview2Settings.Validate(Preview2Settings.Data.Length);
 
-                            Thumbnails.Add(DecodeImage(DATATYPE_RGB565, Preview2Settings.Data, Preview2Settings.ResolutionX, Preview2Settings.ResolutionY));
+                            Thumbnails.Add(DecodeImage(DATATYPE_RGB565, Preview2Settings.Data,
+                                Preview2Settings.ResolutionX, Preview2Settings.ResolutionY));
                             Preview2Settings.ResetData();
                         }
                     }
@@ -2178,7 +2436,8 @@ public sealed class AnycubicFile : FileFormat
                 if (DecodeType == FileDecodeType.Full)
                 {
                     inputFile.Seek(LayersDefinition[layerIndex].DataAddress, SeekOrigin.Begin);
-                    LayersDefinition[layerIndex].EncodedRle = inputFile.ReadBytes(LayersDefinition[layerIndex].DataLength);
+                    LayersDefinition[layerIndex].EncodedRle =
+                        inputFile.ReadBytes(LayersDefinition[layerIndex].DataLength);
                 }
             }
 
@@ -2269,14 +2528,14 @@ public sealed class AnycubicFile : FileFormat
 
     public static Mat DecodePW0(Mat mat, byte[] encodedRle)
     {
-        var imageLength = mat.GetLength();
+        var imageLength = mat.ByteCountInt32;
 
-        int pixelPos = 0;
-        for (int i = 0; i < encodedRle.Length; i++)
+        var pixelPos = 0;
+        for (var i = 0; i < encodedRle.Length; i++)
         {
-            byte b = encodedRle[i];
-            int code = b >> 4;
-            int repeat = b & 0xf;
+            var b = encodedRle[i];
+            var code = b >> 4;
+            var repeat = b & 0xf;
             byte color;
             switch (code)
             {
@@ -2310,6 +2569,7 @@ public sealed class AnycubicFile : FileFormat
                     {
                         repeat = imageLength - pixelPos;
                     }
+
                     break;
             }
 
@@ -2318,7 +2578,8 @@ public sealed class AnycubicFile : FileFormat
             if (pixelPos + repeat > imageLength)
             {
                 mat.Dispose();
-                throw new FileLoadException($"Image ran off the end: {pixelPos} + {repeat} = {pixelPos + repeat}, expecting: {imageLength}");
+                throw new FileLoadException(
+                    $"Image ran off the end: {pixelPos} + {repeat} = {pixelPos + repeat}, expecting: {imageLength}");
             }
 
             // We only need to set the non-zero pixels
@@ -2344,16 +2605,16 @@ public sealed class AnycubicFile : FileFormat
     public static byte[] EncodePW0(Mat image)
     {
         List<byte> rawData = [];
-        var span = image.GetDataByteSpan();
+        var span = image.GetSpanOfBytes(0, 0);
 
-        int lastColor = -1;
-        int reps = 0;
+        var lastColor = -1;
+        var reps = 0;
 
         void PutReps()
         {
             while (reps > 0)
             {
-                int done = reps;
+                var done = reps;
 
                 if (lastColor is 0 or 0xf)
                 {
@@ -2362,7 +2623,7 @@ public sealed class AnycubicFile : FileFormat
                         done = RLE4EncodingLimit;
                     }
 
-                    ushort more = (ushort)(done | (lastColor << 12));
+                    var more = (ushort)(done | (lastColor << 12));
                     rawData.Add((byte)(more >> 8));
                     rawData.Add((byte)more);
                 }
@@ -2372,16 +2633,17 @@ public sealed class AnycubicFile : FileFormat
                     {
                         done = 0xf;
                     }
-                    rawData.Add((byte)(done | lastColor << 4));
+
+                    rawData.Add((byte)(done | (lastColor << 4)));
                 }
 
                 reps -= done;
             }
         }
 
-        for (int i = 0; i < span.Length; i++)
+        for (var i = 0; i < span.Length; i++)
         {
-            int color = span[i] >> 4;
+            var color = span[i] >> 4;
 
             if (color == lastColor)
             {

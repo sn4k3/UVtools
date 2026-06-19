@@ -21,8 +21,8 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
+using EmguExtensions;
 using UVtools.Core.Converters;
-using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
@@ -697,17 +697,13 @@ public sealed class AnycubicZipFile : FileFormat
         [JsonPropertyName("model_type")]
         public int ModelType { get; set; } = 1;
 
-        // TODO: Find this
-        //[JsonPropertyName("partition_exposure_array")]
-        //public int PartitionExposureArray { get; set; }
-
         [JsonPropertyName("partition_num")]
         public int PartitionNum { get; set; }
 
         public override string ToString()
         {
             return
-                $"{nameof(Enable)}: {Enable}, {nameof(ModelName)}: {ModelName}, {nameof(ModelType)}: {ModelType}, {nameof(PartitionNum)}: {PartitionNum}";
+                $"{nameof(Enable)}: {Enable}, {nameof(ModelName)}: {ModelName}, {nameof(ModelType)}: {ModelType}, {nameof(PartitionExposureArray)}: {PartitionExposureArray}, {nameof(PartitionNum)}: {PartitionNum}";
         }
     }
 
@@ -1910,7 +1906,7 @@ public sealed class AnycubicZipFile : FileFormat
                     var startPoint = DisplayToPixelPosition(startX, startY);
                     var endPoint = DisplayToPixelPosition(endX, endY);
 
-                    //CvInvoke.Line(mat, startPoint, endPoint, EmguExtensions.WhiteColor);
+                    //CvInvoke.Line(mat, startPoint, endPoint, EmguCvExtensions.WhiteColor);
                     CvInvoke.Line(mat, startPoint, endPoint, new MCvScalar((1+i)*15));
                 }
 
@@ -1935,7 +1931,7 @@ public sealed class AnycubicZipFile : FileFormat
                         CvInvoke.PutText(mat, contours.Hierarchy[i, EmguContour.HierarchyParent].ToString(), contours.Vector[i][0], FontFace.HersheyDuplex, 1, new MCvScalar(127), 1);
                     }*/
 
-                    CvInvoke.DrawContours(mat, newContours, -1, EmguExtensions.WhiteColor, -1);
+                    CvInvoke.DrawContours(mat, newContours, -1, EmguCvExtensions.WhiteColor, -1);
 
                     /*foreach (var family in contours.Families)
                     {

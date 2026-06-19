@@ -13,6 +13,7 @@ using System.Data;
 using System.Drawing;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Gerber.Primitives;

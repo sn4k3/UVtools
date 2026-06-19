@@ -5,8 +5,6 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
-using Avalonia;
-using UVtools.UI.Controls;
 
 namespace UVtools.UI.Windows;
 

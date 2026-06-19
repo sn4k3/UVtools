@@ -15,6 +15,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
@@ -26,6 +27,7 @@ public sealed class GR1File : FileFormat
     #region Constants
 
     private const uint SlicerInfoAddress = 4 + 7 + 290 * 290 * 2 + 116 * 116 * 2 + 4;
+
     #endregion
 
     #region Sub Classes
@@ -49,6 +51,7 @@ public sealed class GR1File : FileFormat
         [SerializeAs(SerializedType.TerminatedString)]
         public string HeaderValue { get; set; } = HEADER_VALUE;
     }
+
     #endregion
 
     #region SlicerInfo
@@ -58,43 +61,115 @@ public sealed class GR1File : FileFormat
         // 290 * 290 * 2 + 116 * 116 * 2 + 4
         //[FieldOrder(0)] [FieldLength(195116)] public byte[] PreviewData { get; set; }
 
-        [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public ushort LayerCount { get; set; }
-        [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public ushort ResolutionX { get; set; }
-        [FieldOrder(2)] [FieldEndianness(Endianness.Big)] public ushort ResolutionY { get; set; }
-        [FieldOrder(3)][FieldEndianness(Endianness.Big)] public uint DisplayWidthLength { get; set; }
-        [FieldOrder(4)][FieldEncoding("UTF-16BE")][FieldLength(nameof(DisplayWidthLength))] public string DisplayWidth { get; set; } = string.Empty;
-        [FieldOrder(5)][FieldEndianness(Endianness.Big)] public uint DisplayHeightLength { get; set; }
-        [FieldOrder(6)][FieldEncoding("UTF-16BE")][FieldLength(nameof(DisplayHeightLength))] public string DisplayHeight { get; set; } = string.Empty;
-        [FieldOrder(7)][FieldEndianness(Endianness.Big)] public uint LayerHeightLength { get; set; } = 8;
-        [FieldOrder(8)][FieldEncoding("UTF-16BE")][FieldLength(nameof(LayerHeightLength))] public string LayerHeight { get; set; } = DefaultLayerHeight.ToString(CultureInfo.InvariantCulture);
-        [FieldOrder(9)] [FieldEndianness(Endianness.Big)] public ushort ExposureTime { get; set; }
-        [FieldOrder(10)] [FieldEndianness(Endianness.Big)] public ushort LightOffDelay { get; set; }
-        [FieldOrder(11)] [FieldEndianness(Endianness.Big)] public ushort BottomExposureTime { get; set; }
-        [FieldOrder(12)] [FieldEndianness(Endianness.Big)] public ushort BottomLayers { get; set; }
-        [FieldOrder(13)] [FieldEndianness(Endianness.Big)] public ushort BottomLiftHeight { get; set; }
-        [FieldOrder(14)] [FieldEndianness(Endianness.Big)] public ushort BottomLiftSpeed { get; set; }
-        [FieldOrder(15)] [FieldEndianness(Endianness.Big)] public ushort LiftHeight { get; set; }
-        [FieldOrder(16)] [FieldEndianness(Endianness.Big)] public ushort LiftSpeed { get; set; }
-        [FieldOrder(17)] [FieldEndianness(Endianness.Big)] public ushort RetractSpeed { get; set; }
-        [FieldOrder(18)] [FieldEndianness(Endianness.Big)] public ushort BottomLightPWM { get; set; }
-        [FieldOrder(19)] [FieldEndianness(Endianness.Big)] public ushort LightPWM { get; set; }
+        [FieldOrder(0)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort LayerCount { get; set; }
+
+        [FieldOrder(1)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort ResolutionX { get; set; }
+
+        [FieldOrder(2)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort ResolutionY { get; set; }
+
+        [FieldOrder(3)]
+        [FieldEndianness(Endianness.Big)]
+        public uint DisplayWidthLength { get; set; }
+
+        [FieldOrder(4)]
+        [FieldEncoding("UTF-16BE")]
+        [FieldLength(nameof(DisplayWidthLength))]
+        public string DisplayWidth { get; set; } = string.Empty;
+
+        [FieldOrder(5)]
+        [FieldEndianness(Endianness.Big)]
+        public uint DisplayHeightLength { get; set; }
+
+        [FieldOrder(6)]
+        [FieldEncoding("UTF-16BE")]
+        [FieldLength(nameof(DisplayHeightLength))]
+        public string DisplayHeight { get; set; } = string.Empty;
+
+        [FieldOrder(7)]
+        [FieldEndianness(Endianness.Big)]
+        public uint LayerHeightLength { get; set; } = 8;
+
+        [FieldOrder(8)]
+        [FieldEncoding("UTF-16BE")]
+        [FieldLength(nameof(LayerHeightLength))]
+        public string LayerHeight { get; set; } = DefaultLayerHeight.ToString(CultureInfo.InvariantCulture);
+
+        [FieldOrder(9)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort ExposureTime { get; set; }
+
+        [FieldOrder(10)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort LightOffDelay { get; set; }
+
+        [FieldOrder(11)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort BottomExposureTime { get; set; }
+
+        [FieldOrder(12)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort BottomLayers { get; set; }
+
+        [FieldOrder(13)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort BottomLiftHeight { get; set; }
+
+        [FieldOrder(14)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort BottomLiftSpeed { get; set; }
+
+        [FieldOrder(15)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort LiftHeight { get; set; }
+
+        [FieldOrder(16)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort LiftSpeed { get; set; }
+
+        [FieldOrder(17)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort RetractSpeed { get; set; }
+
+        [FieldOrder(18)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort BottomLightPWM { get; set; }
+
+        [FieldOrder(19)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort LightPWM { get; set; }
 
         public override string ToString()
         {
-            return $"{nameof(LayerCount)}: {LayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(DisplayWidthLength)}: {DisplayWidthLength}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeightLength)}: {DisplayHeightLength}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(LayerHeightLength)}: {LayerHeightLength}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayers)}: {BottomLayers}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LightPWM)}: {LightPWM}";
+            return
+                $"{nameof(LayerCount)}: {LayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(DisplayWidthLength)}: {DisplayWidthLength}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeightLength)}: {DisplayHeightLength}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(LayerHeightLength)}: {LayerHeightLength}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayers)}: {BottomLayers}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LightPWM)}: {LightPWM}";
         }
     }
+
     #endregion
 
     #region LayerDef
 
     public sealed class LayerDef
     {
-        [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public uint LineCount { get; set; }
-        [FieldOrder(1)] [FieldCount(nameof(LineCount))] public LayerLine[] Lines { get; set; } = [];
+        [FieldOrder(0)]
+        [FieldEndianness(Endianness.Big)]
+        public uint LineCount { get; set; }
+
+        [FieldOrder(1)]
+        [FieldCount(nameof(LineCount))]
+        public LayerLine[] Lines { get; set; } = [];
+
         [FieldOrder(2)] public PageBreak PageBreak { get; set; } = new();
 
-        public LayerDef() { }
+        public LayerDef()
+        {
+        }
 
         public LayerDef(uint lineCount, LayerLine[] lines)
         {
@@ -105,9 +180,17 @@ public sealed class GR1File : FileFormat
 
     public sealed class LayerLine
     {
-        [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public ushort StartY { get; set; }
-        [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public ushort EndY { get; set; }
-        [FieldOrder(2)] [FieldEndianness(Endianness.Big)] public ushort StartX { get; set; }
+        [FieldOrder(0)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort StartY { get; set; }
+
+        [FieldOrder(1)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort EndY { get; set; }
+
+        [FieldOrder(2)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort StartX { get; set; }
         //[FieldOrder(3)] [FieldEndianness(Endianness.Big)] public byte Gray { get; set; }
 
 
@@ -121,7 +204,8 @@ public sealed class GR1File : FileFormat
         }
 
         public LayerLine()
-        { }
+        {
+        }
 
         public LayerLine(ushort startY, ushort endY, ushort startX)
         {
@@ -134,8 +218,14 @@ public sealed class GR1File : FileFormat
     public sealed class PageBreak
     {
         public static byte[] Bytes => [0x0D, 0x0A];
-        [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public byte Line { get; set; } = 0x0D;
-        [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public byte Break { get; set; } = 0x0A;
+
+        [FieldOrder(0)]
+        [FieldEndianness(Endianness.Big)]
+        public byte Line { get; set; } = 0x0D;
+
+        [FieldOrder(1)]
+        [FieldEndianness(Endianness.Big)]
+        public byte Break { get; set; } = 0x0A;
     }
 
     #endregion
@@ -148,9 +238,11 @@ public sealed class GR1File : FileFormat
     public SlicerInfo SlicerInfoSettings { get; private set; } = new();
     public override FileFormatType FileType => FileFormatType.Binary;
 
+    public override Endianness FileFormatEndianness => Endianness.Big;
+
     public override FileExtension[] FileExtensions { get; } =
     [
-        new (typeof(GR1File), "GR1", "GR1 Workshop")
+        new(typeof(GR1File), "GR1", "GR1 Workshop")
     ];
 
     public override PrintParameterModifier[] PrintParameterModifiers { get; } =
@@ -172,8 +264,8 @@ public sealed class GR1File : FileFormat
 
     public override Size[] ThumbnailsOriginalSize { get; } =
     [
-        new (116, 116),
-        new (290, 290)
+        new(116, 116),
+        new(290, 290)
     ];
 
     public override bool SupportAntiAliasing => false;
@@ -181,7 +273,7 @@ public sealed class GR1File : FileFormat
     public override uint ResolutionX
     {
         get => SlicerInfoSettings.ResolutionX;
-        set => base.ResolutionX = SlicerInfoSettings.ResolutionX = (ushort) value;
+        set => base.ResolutionX = SlicerInfoSettings.ResolutionX = (ushort)value;
     }
 
     public override uint ResolutionY
@@ -329,6 +421,7 @@ public sealed class GR1File : FileFormat
     #endregion
 
     #region Methods
+
     protected override void EncodeInternally(OperationProgress progress)
     {
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
@@ -348,16 +441,18 @@ public sealed class GR1File : FileFormat
 
             if (encodeLength != previews[previewIndex].Length)
             {
-                throw new FileLoadException($"Preview encode incomplete encode, expected: {previews[previewIndex].Length}, encoded: {encodeLength}");
+                throw new FileLoadException(
+                    $"Preview encode incomplete encode, expected: {previews[previewIndex].Length}, encoded: {encodeLength}");
             }
         });
 
-        for (int i = 0; i < previews.Length; i++)
+        for (var i = 0; i < previews.Length; i++)
         {
             outputFile.WriteSerialize(previews[i]);
             outputFile.WriteBytes(pageBreak);
             previews[i] = null!;
         }
+
         outputFile.WriteSerialize(SlicerInfoSettings);
 
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
@@ -371,23 +466,24 @@ public sealed class GR1File : FileFormat
                 var layer = this[layerIndex];
                 using (var mat = layer.LayerMat)
                 {
-                    var span = mat.GetDataByteReadOnlySpan();
+                    var span = mat.GetReadOnlySpanOfBytes();
 
                     layerBytes[layerIndex] = [];
 
                     uint lineCount = 0;
 
-                    for (int x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++)
+                    for (var x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++)
                     {
-                        int y = layer.BoundingRectangle.Y;
-                        int startY = -1;
+                        var y = layer.BoundingRectangle.Y;
+                        var startY = -1;
                         for (; y < layer.BoundingRectangle.Bottom; y++)
                         {
-                            int pos = mat.GetPixelPos(x, y);
+                            var pos = mat.GetPixelPos(x, y);
                             if (span[pos] < 128) // Black pixel
                             {
                                 if (startY == -1) continue; // Keep ignoring
-                                layerBytes[layerIndex].AddRange(LayerLine.GetBytes((ushort)startY, (ushort)(y - 1), (ushort)x));
+                                layerBytes[layerIndex]
+                                    .AddRange(LayerLine.GetBytes((ushort)startY, (ushort)(y - 1), (ushort)x));
                                 startY = -1;
                                 lineCount++;
                             }
@@ -429,7 +525,6 @@ public sealed class GR1File : FileFormat
     }
 
 
-
     protected override void DecodeInternally(OperationProgress progress)
     {
         using var inputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Read);
@@ -439,7 +534,7 @@ public sealed class GR1File : FileFormat
             throw new FileLoadException("Not a valid Makerbase file!", FileFullPath);
         }
 
-        for (int i = 0; i < ThumbnailCountFileShouldHave; i++)
+        for (var i = 0; i < ThumbnailCountFileShouldHave; i++)
         {
             progress.PauseOrCancelIfRequested();
             var bytes = inputFile.ReadBytes(ThumbnailsOriginalSize[i].Area() * 2);
@@ -473,16 +568,19 @@ public sealed class GR1File : FileFormat
                 {
                     progress.PauseIfRequested();
 
-                    using (var mat = EmguExtensions.InitMat(Resolution))
+                    using (var mat = EmguCvExtensions.InitMat(Resolution))
                     {
-
-                        for (int i = 0; i < linesBytes[layerIndex].Length; i++)
+                        for (var i = 0; i < linesBytes[layerIndex].Length; i++)
                         {
-                            var startY = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i++]);
-                            var endY = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i++]);
-                            var startX = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i]);
+                            var startY = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++],
+                                linesBytes[layerIndex][i++]);
+                            var endY = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++],
+                                linesBytes[layerIndex][i++]);
+                            var startX = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++],
+                                linesBytes[layerIndex][i]);
 
-                            CvInvoke.Line(mat, new Point(startX, startY), new Point(startX, endY), EmguExtensions.WhiteColor);
+                            CvInvoke.Line(mat, new Point(startX, startY), new Point(startX, endY),
+                                EmguCvExtensions.WhiteColor);
                         }
 
                         linesBytes[layerIndex] = null!;

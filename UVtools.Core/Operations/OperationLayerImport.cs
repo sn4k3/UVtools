@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -23,7 +25,7 @@ using ZLinq;
 namespace UVtools.Core.Operations;
 
 
-public sealed class OperationLayerImport : Operation
+public sealed partial class OperationLayerImport : Operation
 {
     private const string ImageFileVirtualFormatPath = "#VIRTUAL";
 
@@ -54,12 +56,6 @@ public sealed class OperationLayerImport : Operation
     #endregion
 
     #region Members
-    private ImportTypes _importType = ImportTypes.Stack;
-    private uint _startLayerIndex;
-    private bool _extendBeyondLayerCount = true;
-    private bool _discardUnmodifiedLayers;
-    private ushort _stackMargin = 50;
-    private RangeObservableCollection<GenericFileRepresentation> _files = [];
     #endregion
 
     #region Overrides
@@ -75,16 +71,16 @@ public sealed class OperationLayerImport : Operation
         "Import layers from local files into the model at a selected layer height.\n" +
         "NOTE: Imported images must be greyscale and have the same resolution as the model.";
 
-    public override string ConfirmationText => $"{_importType} import {Count} file{(Count>=1?"s":"")}?";
+    public override string ConfirmationText => $"{ImportType} import {Count} file{(Count>=1?"s":"")}?";
 
     public override string ProgressTitle =>
-        $"{_importType} importing {Count} file{(Count>=1 ? "s" : "")}";
+        $"{ImportType} importing {Count} file{(Count>=1 ? "s" : "")}";
 
     public override string ProgressAction => "Imported layers";
 
     public override bool CanCancel => true;
 
-    public override uint LayerIndexEnd => _startLayerIndex + Count - 1;
+    public override uint LayerIndexEnd => StartLayerIndex + Count - 1;
 
     public override string? ValidateInternally()
     {
@@ -121,13 +117,13 @@ public sealed class OperationLayerImport : Operation
 
         StringBuilder sb = new();
 
-        if (_files.Count == 0)
+        if (Files.Count == 0)
         {
             sb.AppendLine("No files to import.");
         }
         else
         {
-            foreach (var keyValue in _files)
+            foreach (var keyValue in Files)
             {
                 if (!keyValue.Exists)
                 {
@@ -151,55 +147,34 @@ public sealed class OperationLayerImport : Operation
         "gif"
     ];
 
-    public ImportTypes ImportType
-    {
-        get => _importType;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _importType, value)) return;
-            RaisePropertyChanged(nameof(IsImportStackType));
-            RaisePropertyChanged(nameof(IsExtendBeyondLayerCountVisible));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsImportStackType))]
+    [NotifyPropertyChangedFor(nameof(IsExtendBeyondLayerCountVisible))]
+    public partial ImportTypes ImportType { get; set; } = ImportTypes.Stack;
 
 
     public static Array ImportTypesItems => Enum.GetValues(typeof(ImportTypes));
 
-    public bool IsImportStackType => _importType == ImportTypes.Stack;
+    public bool IsImportStackType => ImportType == ImportTypes.Stack;
 
-    public uint StartLayerIndex
-    {
-        get => _startLayerIndex;
-        set => RaiseAndSetIfChanged(ref _startLayerIndex, value);
-    }
+    [ObservableProperty]
+    public partial uint StartLayerIndex { get; set; }
 
-    public bool ExtendBeyondLayerCount
-    {
-        get => _extendBeyondLayerCount;
-        set => RaiseAndSetIfChanged(ref _extendBeyondLayerCount, value);
-    }
+    [ObservableProperty]
+    public partial bool ExtendBeyondLayerCount { get; set; } = true;
 
-    public bool IsExtendBeyondLayerCountVisible => _importType is ImportTypes.Replace or ImportTypes.Stack or ImportTypes.MergeSum or ImportTypes.MergeMax;
+    public bool IsExtendBeyondLayerCountVisible => ImportType is ImportTypes.Replace or ImportTypes.Stack or ImportTypes.MergeSum or ImportTypes.MergeMax;
 
-    public bool DiscardUnmodifiedLayers
-    {
-        get => _discardUnmodifiedLayers;
-        set => RaiseAndSetIfChanged(ref _discardUnmodifiedLayers, value);
-    }
+    [ObservableProperty]
+    public partial bool DiscardUnmodifiedLayers { get; set; }
 
-    public ushort StackMargin
-    {
-        get => _stackMargin;
-        set => RaiseAndSetIfChanged(ref _stackMargin, value);
-    }
+    [ObservableProperty]
+    public partial ushort StackMargin { get; set; } = 50;
 
-    public RangeObservableCollection<GenericFileRepresentation> Files
-    {
-        get => _files;
-        set => RaiseAndSetIfChanged(ref _files, value);
-    }
+    [ObservableProperty]
+    public partial RangeObservableCollection<GenericFileRepresentation> Files { get; set; } = [];
 
-    public uint Count => (uint)_files.Count;
+    public uint Count => (uint)Files.Count;
     #endregion
 
     #region Constructor
@@ -215,12 +190,12 @@ public sealed class OperationLayerImport : Operation
 
     public void AddFile(string file)
     {
-        _files.Add(new GenericFileRepresentation(file));
+        Files.Add(new GenericFileRepresentation(file));
     }
 
     public void Sort()
     {
-        _files.Sort();
+        Files.Sort();
     }
 
 
@@ -241,7 +216,7 @@ public sealed class OperationLayerImport : Operation
 
     public override string ToString()
     {
-        var result = $"[{_importType}] [Start at: {_startLayerIndex}] [Files: {Count}]";
+        var result = $"[{ImportType}] [Start at: {StartLayerIndex}] [Files: {Count}]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -257,8 +232,8 @@ public sealed class OperationLayerImport : Operation
             // Order raw images
             for (int i = 0; i < Count; i++)
             {
-                if(!ValidImageExtensions.AsValueEnumerable().Any(extension => _files[i].IsExtension(extension))) continue;
-                keyImage.Add(new KeyValuePair<uint, string>((uint)keyImage.Count, _files[i].FilePath));
+                if(!ValidImageExtensions.AsValueEnumerable().Any(extension => Files[i].IsExtension(extension))) continue;
+                keyImage.Add(new KeyValuePair<uint, string>((uint)keyImage.Count, Files[i].FilePath));
             }
 
             // Create virtual file format with images
@@ -292,10 +267,10 @@ public sealed class OperationLayerImport : Operation
             // Order remaining possible file formats that are not images
             for (int i = 0; i < Count; i++)
             {
-                if (ValidImageExtensions.AsValueEnumerable().Any(extension => _files[i].IsExtension(extension))) continue;
-                var fileFormat = FileFormat.FindByExtensionOrFilePath(_files[i].FilePath, true);
+                if (ValidImageExtensions.AsValueEnumerable().Any(extension => Files[i].IsExtension(extension))) continue;
+                var fileFormat = FileFormat.FindByExtensionOrFilePath(Files[i].FilePath, true);
                 if (fileFormat is null) continue;
-                fileFormat.FileFullPath = _files[i].FilePath;
+                fileFormat.FileFullPath = Files[i].FilePath;
                 fileFormats.Add(fileFormat);
             }
 
@@ -303,7 +278,7 @@ public sealed class OperationLayerImport : Operation
 
             if (fileFormats.Count == 0) return false;
 
-            if (_importType == ImportTypes.Stack)
+            if (ImportType == ImportTypes.Stack)
             {
                 new OperationMove(SlicerFile, Anchor.TopLeft).Execute(progress);
             }
@@ -323,13 +298,13 @@ public sealed class OperationLayerImport : Operation
                 var roiRectangle = Rectangle.Empty;
 
                 // Check if is possible to process this file
-                switch (_importType)
+                switch (ImportType)
                 {
                     case ImportTypes.Insert:
                         if (SlicerFile.Resolution != fileFormat.Resolution &&
                             (SlicerFile.Resolution.Width < fileFormatBoundingRectangle.Width ||
                              SlicerFile.Resolution.Height < fileFormatBoundingRectangle.Height)) continue;
-                        SlicerFile.ReallocateInsert(_startLayerIndex, fileFormat.LayerCount, fixPositionZ:true);
+                        SlicerFile.ReallocateInsert(StartLayerIndex, fileFormat.LayerCount, fixPositionZ:true);
                         importedFormats++;
                         break;
                     case ImportTypes.Replace:
@@ -341,18 +316,18 @@ public sealed class OperationLayerImport : Operation
                         //if(fileFormatBoundingRectangle.Width >= SlicerFile.ResolutionX || fileFormatBoundingRectangle.Height >= SlicerFile.ResolutionY)
                         //    continue;
 
-                        if (_importType == ImportTypes.Stack)
+                        if (ImportType == ImportTypes.Stack)
                         {
                             int x = 0;
                             int y = 0;
 
-                            if (SlicerFile.IsPixelInsideXBounds(boundingRectangle.Right + _stackMargin + fileFormatBoundingRectangle.Width))
+                            if (SlicerFile.IsPixelInsideXBounds(boundingRectangle.Right + StackMargin + fileFormatBoundingRectangle.Width))
                             {
-                                x = boundingRectangle.Right + _stackMargin;
+                                x = boundingRectangle.Right + StackMargin;
                             }
                             else
                             {
-                                y = boundingRectangle.Bottom + _stackMargin;
+                                y = boundingRectangle.Bottom + StackMargin;
                             }
 
                             if (!SlicerFile.IsPixelInsideXBounds(x + fileFormatBoundingRectangle.Width))
@@ -363,9 +338,9 @@ public sealed class OperationLayerImport : Operation
                             roiRectangle = fileFormatBoundingRectangle with {X = x, Y = y};
                         }
 
-                        if (_extendBeyondLayerCount)
+                        if (ExtendBeyondLayerCount)
                         {
-                            int layerCountDifference = (int)(_startLayerIndex + fileFormat.LayerCount - SlicerFile.LayerCount);
+                            int layerCountDifference = (int)(StartLayerIndex + fileFormat.LayerCount - SlicerFile.LayerCount);
                             if (layerCountDifference > 0)
                             {
                                 SlicerFile.ReallocateEnd((uint)layerCountDifference);
@@ -377,9 +352,9 @@ public sealed class OperationLayerImport : Operation
                     case ImportTypes.MergeSum:
                     case ImportTypes.MergeMax:
                         if (SlicerFile.Resolution != fileFormat.Resolution) continue;
-                        if (_extendBeyondLayerCount)
+                        if (ExtendBeyondLayerCount)
                         {
-                            int layerCountDifference = (int)(_startLayerIndex + fileFormat.LayerCount - SlicerFile.LayerCount);
+                            int layerCountDifference = (int)(StartLayerIndex + fileFormat.LayerCount - SlicerFile.LayerCount);
                             if (layerCountDifference > 0)
                             {
                                 SlicerFile.ReallocateEnd((uint)layerCountDifference);
@@ -401,9 +376,9 @@ public sealed class OperationLayerImport : Operation
                 Parallel.For(0, fileFormat.LayerCount, CoreSettings.GetParallelOptions(progress), i =>
                 {
                     progress.PauseIfRequested();
-                    uint layerIndex = (uint)(_startLayerIndex + i);
+                    uint layerIndex = (uint)(StartLayerIndex + i);
 
-                    switch (_importType)
+                    switch (ImportType)
                     {
                         case ImportTypes.Insert:
                         {
@@ -415,7 +390,7 @@ public sealed class OperationLayerImport : Operation
                             }
 
                             using var mat = fileFormat[i].LayerMat;
-                            using var matRoi = mat.NewMatFromCenterRoi(SlicerFile.Resolution, fileFormatBoundingRectangle);
+                            using var matRoi = mat.NewFromRoiToCenter(SlicerFile.Resolution, fileFormatBoundingRectangle);
                             SlicerFile[layerIndex].LayerMat = matRoi;
 
                             break;
@@ -430,7 +405,7 @@ public sealed class OperationLayerImport : Operation
                             }
 
                             using var mat = fileFormat[i].LayerMat;
-                            using var matRoi = mat.NewMatFromCenterRoi(SlicerFile.Resolution, fileFormatBoundingRectangle);
+                            using var matRoi = mat.NewFromRoiToCenter(SlicerFile.Resolution, fileFormatBoundingRectangle);
                             SlicerFile[layerIndex].LayerMat = matRoi;
                             break;
                         }
@@ -532,14 +507,14 @@ public sealed class OperationLayerImport : Operation
 
             if (lastProcessedLayerIndex < 0) return false;
 
-            if (_importType == ImportTypes.Stack)
+            if (ImportType == ImportTypes.Stack)
             {
                 new OperationMove(SlicerFile).Execute(progress);
             }
 
 
 
-            if (lastProcessedLayerIndex + 1 < SlicerFile.LayerCount && _discardUnmodifiedLayers)
+            if (lastProcessedLayerIndex + 1 < SlicerFile.LayerCount && DiscardUnmodifiedLayers)
             {
                 SlicerFile.Reallocate((uint)lastProcessedLayerIndex + 1);
             }

@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Text;
 using UVtools.Core.Layers;
@@ -13,15 +14,9 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.Suggestions;
 
-public sealed class SuggestionBottomLayerCount : Suggestion
+public sealed partial class SuggestionBottomLayerCount : Suggestion
 {
     #region Members
-
-    private decimal _targetBottomHeight = 0.25m;
-    private decimal _minimumBottomHeight = 0.07m;
-    private decimal _maximumBottomHeight = 0.4m;
-    private byte _minimumBottomLayerCount = 3;
-    private byte _maximumBottomLayerCount = 7;
 
     #endregion
 
@@ -36,12 +31,12 @@ public sealed class SuggestionBottomLayerCount : Suggestion
             if (SlicerFile is null) return false;
             var bottomHeight = (decimal)SlicerFile.BottomLayersHeight;
 
-            return _applyWhen switch
+            return ApplyWhen switch
             {
-                SuggestionApplyWhen.OutsideLimits => bottomHeight >= Math.Min((decimal)SlicerFile.PrintHeight, _minimumBottomHeight) &&
-                                                      bottomHeight <= _maximumBottomHeight &&
-                                                      SlicerFile.BottomLayerCount >= Math.Min(SlicerFile.LayerCount, _minimumBottomLayerCount) &&
-                                                      SlicerFile.BottomLayerCount <= _maximumBottomLayerCount,
+                SuggestionApplyWhen.OutsideLimits => bottomHeight >= Math.Min((decimal)SlicerFile.PrintHeight, MinimumBottomHeight) &&
+                                                      bottomHeight <= MaximumBottomHeight &&
+                                                      SlicerFile.BottomLayerCount >= Math.Min(SlicerFile.LayerCount, MinimumBottomLayerCount) &&
+                                                      SlicerFile.BottomLayerCount <= MaximumBottomLayerCount,
                 SuggestionApplyWhen.Different => bottomHeight == Math.Min((decimal)SlicerFile.PrintHeight, TargetBottomHeight),
                     
                 _ => throw new ArgumentOutOfRangeException()
@@ -57,7 +52,7 @@ public sealed class SuggestionBottomLayerCount : Suggestion
         ? $"{GlobalAppliedMessage}: {SlicerFile.BottomLayerCount} / {SlicerFile.BottomLayersHeight}mm" 
         : $"{GlobalNotAppliedMessage} ({SlicerFile.BottomLayerCount}) is out of the recommended {BottomLayerCountValue} layers";
 
-    public override string ToolTip => $"The recommended total height for the bottom layers must be between [{_minimumBottomHeight}mm to {_maximumBottomHeight}mm] constrained from [{_minimumBottomLayerCount} to {_maximumBottomLayerCount}] layers.\n" +
+    public override string ToolTip => $"The recommended total height for the bottom layers must be between [{MinimumBottomHeight}mm to {MaximumBottomHeight}mm] constrained from [{MinimumBottomLayerCount} to {MaximumBottomLayerCount}] layers.\n" +
                                       $"Explanation: {Description}";
 
     public override string? InformationUrl => "https://ameralabs.com/blog/default-3d-printing-raft-settings";
@@ -66,35 +61,29 @@ public sealed class SuggestionBottomLayerCount : Suggestion
 
     public decimal TargetBottomHeight
     {
-        get => _targetBottomHeight;
-        set => RaiseAndSetIfChanged(ref _targetBottomHeight, Layer.RoundHeight(Math.Max(0, value)));
-    }
+        get;
+        set => SetProperty(ref field, Layer.RoundHeight(Math.Max(0, value)));
+    } = 0.25m;
 
     public decimal MinimumBottomHeight
     {
-        get => _minimumBottomHeight;
-        set => RaiseAndSetIfChanged(ref _minimumBottomHeight, Layer.RoundHeight(Math.Max(0, value)));
-    }
+        get;
+        set => SetProperty(ref field, Layer.RoundHeight(Math.Max(0, value)));
+    } = 0.07m;
 
     public decimal MaximumBottomHeight
     {
-        get => _maximumBottomHeight;
-        set => RaiseAndSetIfChanged(ref _maximumBottomHeight, Layer.RoundHeight(Math.Max(0, value)));
-    }
+        get;
+        set => SetProperty(ref field, Layer.RoundHeight(Math.Max(0, value)));
+    } = 0.4m;
 
-    public byte MinimumBottomLayerCount
-    {
-        get => _minimumBottomLayerCount;
-        set => RaiseAndSetIfChanged(ref _minimumBottomLayerCount, value);
-    }
+    [ObservableProperty]
+    public partial byte MinimumBottomLayerCount { get; set; } = 3;
 
-    public byte MaximumBottomLayerCount
-    {
-        get => _maximumBottomLayerCount;
-        set => RaiseAndSetIfChanged(ref _maximumBottomLayerCount, value);
-    }
+    [ObservableProperty]
+    public partial byte MaximumBottomLayerCount { get; set; } = 7;
 
-    public ushort BottomLayerCountValue => Math.Clamp((ushort)Math.Ceiling((float)_targetBottomHeight / SlicerFile.LayerHeight), _minimumBottomLayerCount, _maximumBottomLayerCount);
+    public ushort BottomLayerCountValue => Math.Clamp((ushort)Math.Ceiling((float)TargetBottomHeight / SlicerFile.LayerHeight), MinimumBottomLayerCount, MaximumBottomLayerCount);
 
     #endregion
 
@@ -104,27 +93,27 @@ public sealed class SuggestionBottomLayerCount : Suggestion
     {
         var sb = new StringBuilder();
 
-        if (_targetBottomHeight < 0)
+        if (TargetBottomHeight < 0)
         {
             sb.AppendLine("Bottom height must be a positive value");
         }
 
-        if (_minimumBottomHeight < 0)
+        if (MinimumBottomHeight < 0)
         {
             sb.AppendLine("Minimum limit (mm) must be a positive value");
         }
 
-        if (_maximumBottomHeight < 0)
+        if (MaximumBottomHeight < 0)
         {
             sb.AppendLine("maximum limit (mm) must be a positive value");
         }
 
-        if (_minimumBottomHeight > _maximumBottomHeight)
+        if (MinimumBottomHeight > MaximumBottomHeight)
         {
             sb.AppendLine("Minimum limit (mm) can't be higher than maximum limit (mm)");
         }
 
-        if (_minimumBottomLayerCount > _maximumBottomLayerCount)
+        if (MinimumBottomLayerCount > MaximumBottomLayerCount)
         {
             sb.AppendLine("Minimum limit (layers) can't be higher than maximum limit (layers)");
         }
@@ -137,7 +126,7 @@ public sealed class SuggestionBottomLayerCount : Suggestion
     #region Constructor
     public SuggestionBottomLayerCount()
     {
-        _applyWhen = SuggestionApplyWhen.OutsideLimits;
+        ApplyWhen = SuggestionApplyWhen.OutsideLimits;
     }
     #endregion
 

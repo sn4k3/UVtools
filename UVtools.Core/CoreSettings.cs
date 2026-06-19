@@ -11,9 +11,9 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
@@ -23,7 +23,7 @@ namespace UVtools.Core;
 public static class CoreSettings
 {
     #region Members
-    private static int _maxDegreeOfParallelism = -1;
+    private static int _maxDegreeOfParallelism = OptimalMaxDegreeOfParallelism;
 
     #endregion
 
@@ -144,7 +144,15 @@ public static class CoreSettings
     /// <summary>
     /// Gets or sets the default compression type for layers
     /// </summary>
-    public static LayerCompressionCodec DefaultLayerCompressionCodec { get; set; } = LayerCompressionCodec.Brotli;
+    public static LayerCompressionCodec DefaultLayerCompressionCodec
+    {
+        get;
+        set
+        {
+            field = value;
+            MatCompressor.DefaultCompressor = Layer.LayerCompressionCodecToMatCompressor(value);
+        }
+    } = LayerCompressionCodec.Deflate;
 
     /// <summary>
     /// Gets or sets the default compression level applied to image layers.
@@ -152,7 +160,15 @@ public static class CoreSettings
     /// <remarks>This property determines the compression level used when no explicit compression setting is
     /// specified for a layer. Changing this value affects subsequent operations that rely on the default compression
     /// behavior.</remarks>
-    public static LayerCompressionLevel DefaultLayerCompressionLevel { get; set; } = Layers.LayerCompressionLevel.Optimal;
+    public static LayerCompressionLevel DefaultLayerCompressionLevel
+    {
+        get;
+        set
+        {
+            field = value;
+            MatCompressor.DefaultCompressionLevel = Layer.LayerCompressionLevelToMatCompressionLevel(value);
+        }
+    } = Layers.LayerCompressionLevel.Optimal;
 
     /// <summary>
     /// <para>The average resin 1000ml bottle cost, to use when bottle cost is not available.</para>
@@ -217,39 +233,6 @@ public static class CoreSettings
             return path;
         }
     }
-
-    /// <summary>
-    /// Maps the current default layer compression level to the corresponding standard compression level.
-    /// </summary>
-    /// <remarks>Use this method to obtain the appropriate <see cref="CompressionLevel"/> value based on the
-    /// application's configured default layer compression. This is useful when interoperating with APIs that require a
-    /// standard compression level.</remarks>
-    /// <returns>A value of the <see cref="CompressionLevel"/> enumeration that represents the compression level associated with
-    /// the current default layer setting.</returns>
-    public static CompressionLevel LayerCompressionLevel =>
-        DefaultLayerCompressionLevel switch
-        {
-            Layers.LayerCompressionLevel.Lowest => CompressionLevel.Fastest,
-            Layers.LayerCompressionLevel.Optimal => CompressionLevel.Optimal,
-            Layers.LayerCompressionLevel.Highest => CompressionLevel.SmallestSize,
-            _ => CompressionLevel.Optimal
-        };
-
-    /// <summary>
-    /// Gets the PNG compression level corresponding to the current default layer compression setting.
-    /// </summary>
-    /// <remarks>The returned value is suitable for use with PNG encoders that accept a compression level
-    /// parameter, where higher values typically indicate greater compression at the cost of performance.</remarks>
-    /// <returns>An integer value representing the PNG compression level. The value is 1 for lowest compression, 3 for optimal
-    /// compression, and 9 for highest compression. Returns 3 if the default setting is unrecognized.</returns>
-    public static int LayerCompressionPngLevel =>
-        DefaultLayerCompressionLevel switch
-        {
-            Layers.LayerCompressionLevel.Lowest => 1,
-            Layers.LayerCompressionLevel.Optimal => 3,
-            Layers.LayerCompressionLevel.Highest => 9,
-            _ => 3
-        };
 
     #endregion
 }

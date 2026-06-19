@@ -17,6 +17,7 @@ using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
@@ -369,8 +370,8 @@ public sealed class FDGFile : FileFormat
 
         public unsafe Mat Decode(uint layerIndex, bool consumeData = true)
         {
-            var image = EmguExtensions.InitMat(Parent!.Resolution);
-            var span = image.GetBytePointer();
+            var image = EmguCvExtensions.InitMat(Parent!.Resolution);
+            var span = image.GetSpanOfBytes(0, 0);
 
             if (Parent.HeaderSettings.EncryptionKey > 0)
             {
@@ -464,7 +465,7 @@ public sealed class FDGFile : FileFormat
             //int pixel = 0;
             for (int y = 0; y < mat.Height; y++)
             {
-                var span = mat.GetRowByteSpan(y);
+                var span = mat.GetReadOnlyRowSpanOfBytes(y);
                 for (int x = 0; x < span.Length; x++)
                 {
 
@@ -620,7 +621,7 @@ public sealed class FDGFile : FileFormat
         set
         {
             HeaderSettings.ProjectorType = value == FlipDirection.None ? 0u : 1;
-            RaisePropertyChanged();
+            OnPropertyChanged();
         }
     }
 

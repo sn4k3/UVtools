@@ -3,8 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using Avalonia.Reactive;
@@ -620,12 +618,14 @@ public partial class ToolScriptingControl : ToolControl
                             AvaloniaStatic.ToAvaloniaFileFilter(inputSaveFile.Filters),
                             inputSaveFile.Title);
 
-
-                        var filePath = result.TryGetLocalPath();
-                        if (string.IsNullOrWhiteSpace(filePath))
+                        if (result is not null)
                         {
-                            inputSaveFile.Value = filePath;
-                            control.Text = filePath;
+                            var filePath = result.TryGetLocalPath();
+                            if (string.IsNullOrWhiteSpace(filePath))
+                            {
+                                inputSaveFile.Value = filePath;
+                                control.Text = filePath;
+                            }
                         }
                     };
 

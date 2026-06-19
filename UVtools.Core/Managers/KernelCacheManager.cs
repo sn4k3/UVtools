@@ -8,9 +8,9 @@
 
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using EmguExtensions;
 using System;
 using System.Collections.Concurrent;
-using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Managers;
 
@@ -27,13 +27,13 @@ public class KernelCacheManager : IDisposable
     public KernelCacheManager(bool useDynamicKernel = false, Mat? defaultKernel = null)
     {
         UseDynamicKernel = useDynamicKernel;
-        _defaultKernel = defaultKernel ?? EmguExtensions.Kernel3x3Rectangle;
+        _defaultKernel = defaultKernel ?? EmguCvExtensions.Kernel3X3Rectangle;
     }
 
     public Mat Get(ref int iterations)
     {
         if (!UseDynamicKernel) return _defaultKernel;
-        var mat = _kernelCache.GetOrAdd(iterations, i => EmguExtensions.GetDynamicKernel(ref i, DynamicKernelShape));
+        var mat = _kernelCache.GetOrAdd(iterations, i => EmguCvExtensions.CreateDynamicKernel(ref i, DynamicKernelShape));
         iterations = 1;
         return mat;
     }
@@ -45,7 +45,7 @@ public class KernelCacheManager : IDisposable
     {
         foreach (var (_, mat) in _kernelCache)
         {
-            if(ReferenceEquals(mat, EmguExtensions.Kernel3x3Rectangle)) mat?.Dispose();
+            if(ReferenceEquals(mat, EmguCvExtensions.Kernel3X3Rectangle)) mat?.Dispose();
         }
     }
 

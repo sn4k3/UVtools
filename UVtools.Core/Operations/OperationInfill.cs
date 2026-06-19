@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,8 +7,10 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using EmguExtensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -24,18 +26,11 @@ namespace UVtools.Core.Operations;
 
 #pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
+public sealed partial class OperationInfill : Operation, IEquatable<OperationInfill>
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 #pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 {
     #region Members
-    private InfillAlgorithm _infillType = InfillAlgorithm.CubicCrossAlternating;
-    private decimal _floorCeilThickness = 3.0m;
-    private ushort _wallThickness = 64;
-    private ushort _infillThickness = 45;
-    private ushort _infillSpacing = 300;
-    private byte _infillBrightness = 255;
-    private bool _reinforceInfill;
 
     #endregion
 
@@ -87,51 +82,30 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
     #endregion
 
     #region Properties
-    public InfillAlgorithm InfillType
-    {
-        get => _infillType;
-        set => RaiseAndSetIfChanged(ref _infillType, value);
-    }
+    [ObservableProperty]
+    public partial InfillAlgorithm InfillType { get; set; } = InfillAlgorithm.CubicCrossAlternating;
 
-    public decimal FloorCeilThickness
-    {
-        get => _floorCeilThickness;
-        set => RaiseAndSetIfChanged(ref _floorCeilThickness, value);
-    }
+    [ObservableProperty]
+    public partial decimal FloorCeilThickness { get; set; } = 3.0m;
 
-    public ushort WallThickness
-    {
-        get => _wallThickness;
-        set => RaiseAndSetIfChanged(ref _wallThickness, value);
-    }
+    [ObservableProperty]
+    public partial ushort WallThickness { get; set; } = 64;
 
-    public byte InfillBrightness
-    {
-        get => _infillBrightness;
-        set => RaiseAndSetIfChanged(ref _infillBrightness, value);
-    }
+    [ObservableProperty]
+    public partial byte InfillBrightness { get; set; } = 255;
 
-    public ushort InfillThickness
-    {
-        get => _infillThickness;
-        set => RaiseAndSetIfChanged(ref _infillThickness, value);
-    }
+    [ObservableProperty]
+    public partial ushort InfillThickness { get; set; } = 45;
 
-    public ushort InfillSpacing
-    {
-        get => _infillSpacing;
-        set => RaiseAndSetIfChanged(ref _infillSpacing, value);
-    }
+    [ObservableProperty]
+    public partial ushort InfillSpacing { get; set; } = 300;
 
-    public bool ReinforceInfill
-    {
-        get => _reinforceInfill;
-        set => RaiseAndSetIfChanged(ref _reinforceInfill, value);
-    }
+    [ObservableProperty]
+    public partial bool ReinforceInfill { get; set; }
 
     public override string ToString()
     {
-        var result = $"[{_infillType}] [Floor/Ceil: {_floorCeilThickness}mm] [Wall: {_wallThickness}px] [B: {_infillBrightness}px] [T: {_infillThickness}px] [S: {_infillSpacing}px] [R: {_reinforceInfill}]" + LayerRangeString;
+        var result = $"[{InfillType}] [Floor/Ceil: {FloorCeilThickness}mm] [Wall: {WallThickness}px] [B: {InfillBrightness}px] [T: {InfillThickness}px] [S: {InfillSpacing}px] [R: {ReinforceInfill}]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -152,7 +126,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
     {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
-        return _infillType == other._infillType && _floorCeilThickness == other._floorCeilThickness && _wallThickness == other._wallThickness && _infillThickness == other._infillThickness && _infillSpacing == other._infillSpacing && _infillBrightness == other._infillBrightness && _reinforceInfill == other._reinforceInfill;
+        return InfillType == other.InfillType && FloorCeilThickness == other.FloorCeilThickness && WallThickness == other.WallThickness && InfillThickness == other.InfillThickness && InfillSpacing == other.InfillSpacing && InfillBrightness == other.InfillBrightness && ReinforceInfill == other.ReinforceInfill;
     }
 
     public override bool Equals(object? obj)
@@ -177,12 +151,12 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
     protected override bool ExecuteInternally(OperationProgress progress)
     {
         Mat? mask = null;
-        if (_infillType == InfillAlgorithm.Honeycomb)
+        if (InfillType == InfillAlgorithm.Honeycomb)
         {
             mask = GetHoneycombMask(GetRoiSizeOrVolumeSize());
 
         }
-        else if (_infillType == InfillAlgorithm.Concentric)
+        else if (InfillType == InfillAlgorithm.Concentric)
         {
             mask = GetConcentricMask(GetRoiSizeOrVolumeSize());
         }
@@ -217,8 +191,8 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
     {
         if (arguments is null || arguments.Length < 3) return false;
 
-        var kernel = EmguExtensions.Kernel3x3Rectangle;
-        var infillColor = new MCvScalar(_infillBrightness);
+        var kernel = EmguCvExtensions.Kernel3X3Rectangle;
+        var infillColor = new MCvScalar(InfillBrightness);
         uint index = Convert.ToUInt32(arguments[0]);
         uint layerIndex = index - LayerIndexStart;
         var clonedLayers = (Layer[])arguments[2];
@@ -230,12 +204,12 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
         using var mask = GetMask(mat);
         bool disposeTargetMask = true;
 
-        if (_infillType is InfillAlgorithm.Pillars
+        if (InfillType is InfillAlgorithm.Pillars
             or InfillAlgorithm.CubicCross
             or InfillAlgorithm.CubicCrossAlternating
             or InfillAlgorithm.CubicStar)
         {
-            using var infillPattern = EmguExtensions.InitMat(new Size(_infillSpacing, _infillSpacing));
+            using var infillPattern = EmguCvExtensions.InitMat(new Size(InfillSpacing, InfillSpacing));
             using var matPattern = mat.NewZeros();
             bool firstPattern = true;
             uint accumulator = 0;
@@ -244,20 +218,20 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
             {
                 dynamicCenter = !dynamicCenter;
                 firstPattern = true;
-                accumulator += _infillSpacing;
+                accumulator += InfillSpacing;
 
                 if (accumulator >= layerIndex) break;
 
-                if (_reinforceInfill)
+                if (ReinforceInfill)
                 {
                     firstPattern = false;
-                    accumulator += _infillThickness;
+                    accumulator += InfillThickness;
                 }
             }
 
             if (firstPattern)
             {
-                int thickness = _infillThickness / 2;
+                int thickness = InfillThickness / 2;
                 // Top Left
                 CvInvoke.Rectangle(infillPattern,
                     new Rectangle(0, 0, thickness, thickness),
@@ -283,83 +257,83 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
                 int margin = (int) (InfillSpacing - accumulator + layerIndex) - thickness;
                 int marginInv = (int) (accumulator - layerIndex) - thickness;
 
-                if (_infillType == InfillAlgorithm.CubicCross ||
-                    (_infillType == InfillAlgorithm.CubicCrossAlternating &&
+                if (InfillType == InfillAlgorithm.CubicCross ||
+                    (InfillType == InfillAlgorithm.CubicCrossAlternating &&
                      dynamicCenter) ||
-                    _infillType == InfillAlgorithm.CubicStar)
+                    InfillType == InfillAlgorithm.CubicStar)
                 {
 
                     CvInvoke.Rectangle(infillPattern,
-                        new Rectangle(margin, margin, _infillThickness, _infillThickness),
+                        new Rectangle(margin, margin, InfillThickness, InfillThickness),
                         infillColor, -1);
 
                     CvInvoke.Rectangle(infillPattern,
-                        new Rectangle(marginInv, marginInv, _infillThickness,
-                            _infillThickness),
+                        new Rectangle(marginInv, marginInv, InfillThickness,
+                            InfillThickness),
                         infillColor, -1);
 
                     CvInvoke.Rectangle(infillPattern,
-                        new Rectangle(margin, marginInv, _infillThickness,
-                            _infillThickness),
+                        new Rectangle(margin, marginInv, InfillThickness,
+                            InfillThickness),
                         infillColor, -1);
 
                     CvInvoke.Rectangle(infillPattern,
-                        new Rectangle(marginInv, margin, _infillThickness,
-                            _infillThickness),
+                        new Rectangle(marginInv, margin, InfillThickness,
+                            InfillThickness),
                         infillColor, -1);
                 }
 
 
-                if (_infillType == InfillAlgorithm.CubicStar ||
-                    (_infillType == InfillAlgorithm.CubicCrossAlternating &&
+                if (InfillType == InfillAlgorithm.CubicStar ||
+                    (InfillType == InfillAlgorithm.CubicCrossAlternating &&
                      !dynamicCenter))
                 {
                     CvInvoke.Rectangle(infillPattern,
-                        new Rectangle(margin, -thickness, _infillThickness,
-                            _infillThickness),
+                        new Rectangle(margin, -thickness, InfillThickness,
+                            InfillThickness),
                         infillColor, -1);
 
                     CvInvoke.Rectangle(infillPattern,
-                        new Rectangle(marginInv, -thickness, _infillThickness,
-                            _infillThickness),
+                        new Rectangle(marginInv, -thickness, InfillThickness,
+                            InfillThickness),
                         infillColor, -1);
 
                     CvInvoke.Rectangle(infillPattern,
-                        new Rectangle(-thickness, margin, _infillThickness,
-                            _infillThickness),
+                        new Rectangle(-thickness, margin, InfillThickness,
+                            InfillThickness),
                         infillColor, -1);
 
                     CvInvoke.Rectangle(infillPattern,
-                        new Rectangle(-thickness, marginInv, _infillThickness,
-                            _infillThickness),
+                        new Rectangle(-thickness, marginInv, InfillThickness,
+                            InfillThickness),
                         infillColor, -1);
 
                     CvInvoke.Rectangle(infillPattern,
                         new Rectangle(InfillSpacing - thickness, margin,
-                            _infillThickness, _infillThickness),
+                            InfillThickness, InfillThickness),
                         infillColor, -1);
 
                     CvInvoke.Rectangle(infillPattern,
                         new Rectangle(InfillSpacing - thickness, marginInv,
-                            _infillThickness, _infillThickness),
+                            InfillThickness, InfillThickness),
                         infillColor, -1);
 
                     CvInvoke.Rectangle(infillPattern,
                         new Rectangle(margin, InfillSpacing - thickness,
-                            _infillThickness, _infillThickness),
+                            InfillThickness, InfillThickness),
                         infillColor, -1);
 
                     CvInvoke.Rectangle(infillPattern,
                         new Rectangle(marginInv, InfillSpacing - thickness,
-                            _infillThickness, _infillThickness),
+                            InfillThickness, InfillThickness),
                         infillColor, -1);
                 }
             }
             else
             {
                 CvInvoke.Rectangle(infillPattern,
-                    new Rectangle(0, 0, _infillSpacing, _infillSpacing),
-                    infillColor, _infillThickness);
+                    new Rectangle(0, 0, InfillSpacing, InfillSpacing),
+                    infillColor, InfillThickness);
             }
 
 
@@ -367,7 +341,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
             patternMask = matPattern.Roi(target);
             disposeTargetMask = true;
         }
-        else if (_infillType == InfillAlgorithm.Honeycomb)
+        else if (InfillType == InfillAlgorithm.Honeycomb)
         {
             if (arguments.Length >= 2)
             {
@@ -380,7 +354,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
                 disposeTargetMask = true;
             }
         }
-        else if (_infillType == InfillAlgorithm.Concentric)
+        else if (InfillType == InfillAlgorithm.Concentric)
         {
             if (arguments.Length >= 2)
             {
@@ -393,11 +367,11 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
                 disposeTargetMask = true;
             }
         }
-        else if (_infillType == InfillAlgorithm.Waves)
+        else if (InfillType == InfillAlgorithm.Waves)
         {
             var sineHeight = 100;
             var sineWidth = 100;
-            var radius = (ushort)(_infillThickness / 2);
+            var radius = (ushort)(InfillThickness / 2);
 
             var points = new List<Point>();
 
@@ -413,7 +387,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
                 }
             }
 
-            //using var infillPattern = EmguExtensions.InitMat(new Size(_infillSpacing, _infillSpacing));
+            //using var infillPattern = EmguCvExtensions.InitMat(new Size(InfillSpacing, InfillSpacing));
             //using var matPattern = new Mat();
             using var infillPattern = mat.NewZeros();
 
@@ -428,8 +402,8 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
                     points.Add(new Point(x, y));
                     maxY = Math.Max(maxY, y);
                 }
-                using var infillPatternRoi = infillPattern.Roi(new Size(infillPattern.Width, maxY + radius + 2 + _infillSpacing));
-                CvInvoke.Polylines(infillPatternRoi, points.ToArray(), false, infillColor, _infillThickness);
+                using var infillPatternRoi = infillPattern.Roi(new Size(infillPattern.Width, maxY + radius + 2 + InfillSpacing));
+                CvInvoke.Polylines(infillPatternRoi, points.ToArray(), false, infillColor, InfillThickness);
 
                 CvInvoke.Repeat(infillPatternRoi, target.Rows / infillPatternRoi.Rows + 1, 1, infillPattern);
             }
@@ -442,8 +416,8 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
                     points.Add(new Point(x, y));
                     maxY = Math.Max(maxY, x);
                 }
-                using var infillPatternRoi = infillPattern.Roi(new Size(maxY + radius + 2 + _infillSpacing, infillPattern.Height));
-                CvInvoke.Polylines(infillPatternRoi, points.ToArray(), false, infillColor, _infillThickness);
+                using var infillPatternRoi = infillPattern.Roi(new Size(maxY + radius + 2 + InfillSpacing, infillPattern.Height));
+                CvInvoke.Polylines(infillPatternRoi, points.ToArray(), false, infillColor, InfillThickness);
                 CvInvoke.Repeat(infillPatternRoi, 1, target.Cols / infillPatternRoi.Cols + 1, infillPattern);
 
             }
@@ -452,13 +426,13 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
             patternMask = infillPattern.Roi(target);
             disposeTargetMask = true;
         }
-        else if (_infillType == InfillAlgorithm.Gyroid)
+        else if (InfillType == InfillAlgorithm.Gyroid)
         {
             patternMask = target.NewZeros();
 
-            var scaleRatio = 0.0012 / (_infillSpacing + _infillThickness / 2);
-            //var scaleX = 0.04 * _infillSpacing * Math.PI / target.Width;
-            //var scaleY = 0.04 * _infillSpacing * Math.PI / target.Height;
+            var scaleRatio = 0.0012 / (InfillSpacing + InfillThickness / 2);
+            //var scaleX = 0.04 * InfillSpacing * Math.PI / target.Width;
+            //var scaleY = 0.04 * InfillSpacing * Math.PI / target.Height;
             var scaleX = scaleRatio * mat.Width;
             var scaleY = scaleRatio * mat.Height;
 
@@ -473,7 +447,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
 
             for (int y = 0; y < patternMask.Height; y++)
             {
-                var span = patternMask.GetRowByteSpan(y);
+                var span = patternMask.GetRowSpanOfBytes(y);
                 var yy = y * scaleY; // y position of pixel
                 for (int x = 0; x < patternMask.Width; x++)
                 {
@@ -483,16 +457,16 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
                             + Math.Sin(yy) * Math.Cos(zz)
                             + Math.Sin(zz) * Math.Cos(xx);
                     //if (d > 1e-6) continue; // Far from surface
-                    if (Math.Abs(d) - 0.006*_infillThickness > 0) continue;
+                    if (Math.Abs(d) - 0.006*InfillThickness > 0) continue;
                     //if (d - 0.05 > 1e-6) continue;
 
-                    span[x] = _infillBrightness;
+                    span[x] = InfillBrightness;
                 }
             }
 
 
             //using var contours = patternMask.FindContours();
-            //CvInvoke.DrawContours(patternMask, contours, -1, infillColor, _infillThickness);
+            //CvInvoke.DrawContours(patternMask, contours, -1, infillColor, InfillThickness);
 
             disposeTargetMask = true;
         }
@@ -500,9 +474,9 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
         using var surfaceMat = target.Clone();
 
         decimal heightAccumulator = (decimal)SlicerFile[index].LayerHeight;
-        if (_floorCeilThickness > heightAccumulator)
+        if (FloorCeilThickness > heightAccumulator)
         {
-            for (int floorLayerIndex = (int)(index - 1); heightAccumulator <= _floorCeilThickness && floorLayerIndex >= 0; floorLayerIndex--)
+            for (int floorLayerIndex = (int)(index - 1); heightAccumulator <= FloorCeilThickness && floorLayerIndex >= 0; floorLayerIndex--)
             {
                 using var floorMat = clonedLayers[floorLayerIndex].LayerMat;
                 using var floorMatRoi = GetRoiOrVolumeBounds(floorMat);
@@ -512,10 +486,10 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
                 heightAccumulator += (decimal)SlicerFile[floorLayerIndex + 1].PositionZ - (decimal)SlicerFile[floorLayerIndex].PositionZ;
             }
 
-            if (heightAccumulator <= _floorCeilThickness) return true;
+            if (heightAccumulator <= FloorCeilThickness) return true;
 
             heightAccumulator = (decimal)SlicerFile[index].LayerHeight;
-            for (var ceilLayerIndex = index + 1; heightAccumulator <= _floorCeilThickness && ceilLayerIndex <= SlicerFile.LastLayerIndex; ceilLayerIndex++)
+            for (var ceilLayerIndex = index + 1; heightAccumulator <= FloorCeilThickness && ceilLayerIndex <= SlicerFile.LastLayerIndex; ceilLayerIndex++)
             {
                 using var ceilMat = clonedLayers[ceilLayerIndex].LayerMat;
                 using var ceilMatRoi = GetRoiOrVolumeBounds(ceilMat);
@@ -525,16 +499,16 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
                 heightAccumulator += (decimal)SlicerFile[ceilLayerIndex].PositionZ - (decimal)SlicerFile[ceilLayerIndex - 1].PositionZ;
             }
 
-            if (heightAccumulator <= _floorCeilThickness) return true;
+            if (heightAccumulator <= FloorCeilThickness) return true;
         }
 
 
         //patternMask.Save("D:\\pattern.png");
-        CvInvoke.Erode(target, erode, kernel, EmguExtensions.AnchorCenter, WallThickness, BorderType.Reflect101, default);
+        CvInvoke.Erode(target, erode, kernel, EmguCvExtensions.AnchorCenter, WallThickness, BorderType.Reflect101, default);
 
         CvInvoke.BitwiseAnd(erode, surfaceMat, erode, mask);
         patternMask!.CopyTo(target, erode);
-        //target.SetTo(EmguExtensions.BlackColor, erode);
+        //target.SetTo(EmguCvExtensions.BlackColor, erode);
         //erode.CopyTo(target);
         //CvInvoke.BitwiseOr(target, patternMask, target, erode);
 
@@ -553,16 +527,16 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
 
     public Mat GetHoneycombMask(Size targetSize)
     {
-        var patternMask = EmguExtensions.InitMat(targetSize);
+        var patternMask = EmguCvExtensions.InitMat(targetSize);
 
-        var halfInfillSpacingD = _infillSpacing / 2.0;
+        var halfInfillSpacingD = InfillSpacing / 2.0;
         var halfInfillSpacing = (int)Math.Round(halfInfillSpacingD);
-        var halfThickenss = _infillThickness / 2;
+        var halfThickenss = InfillThickness / 2;
         int width = (int)Math.Round(4 * (halfInfillSpacingD / Math.Sqrt(3)));
-        var infillColor = new MCvScalar(_infillBrightness);
+        var infillColor = new MCvScalar(InfillBrightness);
 
         int cols = (int)Math.Ceiling(targetSize.Width / (width * 0.75f));
-        int rows = (int)Math.Ceiling((float)targetSize.Height / _infillSpacing);
+        int rows = (int)Math.Ceiling((float)targetSize.Height / InfillSpacing);
 
         for (int col = 0; col <= cols; col++)
         {
@@ -572,7 +546,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
                 int x = (int)Math.Round(halfThickenss + col * (width * 0.75f));
 
                 // Move down the required number of rows.
-                int y = halfThickenss + halfInfillSpacing + row * _infillSpacing;
+                int y = halfThickenss + halfInfillSpacing + row * InfillSpacing;
 
                 // If the column is odd, move down half a hex more.
                 if (col % 2 == 1) y += halfInfillSpacing;
@@ -587,7 +561,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
                     new((int) Math.Round(x + width * 0.25f), y + halfInfillSpacing),
                 };
 
-                CvInvoke.Polylines(patternMask, points, true, infillColor, _infillThickness);
+                CvInvoke.Polylines(patternMask, points, true, infillColor, InfillThickness);
             }
         }
 
@@ -596,10 +570,10 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
 
     public Mat GetConcentricMask(Size targetSize)
     {
-        var patternMask = EmguExtensions.InitMat(targetSize);
+        var patternMask = EmguCvExtensions.InitMat(targetSize);
 
-        //var halfInfillSpacing = _infillSpacing / 2;
-        //var halfThickenss = _infillThickness / 2;
+        //var halfInfillSpacing = InfillSpacing / 2;
+        //var halfThickenss = InfillThickness / 2;
         int multiplier = 1;
         byte position = 0;
 
@@ -608,10 +582,10 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
 
         Point[] directions =
         [
-            new(0, -_infillSpacing), // top
-            new(_infillSpacing, 0), // right
-            new(0, _infillSpacing), // bottom
-            new(-_infillSpacing, 0) // left
+            new(0, -InfillSpacing), // top
+            new(InfillSpacing, 0), // right
+            new(0, InfillSpacing), // bottom
+            new(-InfillSpacing, 0) // left
         ];
 
         bool[] hitLimits =
@@ -643,7 +617,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
         }
 
 
-        CvInvoke.Polylines(patternMask, points.ToArray(), false, new MCvScalar(_infillBrightness), _infillThickness);
+        CvInvoke.Polylines(patternMask, points.ToArray(), false, new MCvScalar(InfillBrightness), InfillThickness);
 
         return patternMask;
     }

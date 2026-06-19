@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 using System;
 using System.Threading.Tasks;
@@ -16,15 +17,9 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public class OperationThreshold : Operation
+public partial class OperationThreshold : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
-    #region Members
-    private byte _threshold = 127;
-    private byte _maximum = 255;
-    private ThresholdType _type = ThresholdType.Binary;
-    #endregion
-
     #region Overrides
     public override string IconClass => "Opacity";
     public override string Title => "Threshold pixels";
@@ -44,7 +39,7 @@ public class OperationThreshold : Operation
 
     public override string ToString()
     {
-        var result = $"[{_type} = {_threshold} / {_maximum}]" + LayerRangeString;
+        var result = $"[{Type} = {Threshold} / {Maximum}]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -59,23 +54,15 @@ public class OperationThreshold : Operation
     #endregion
 
     #region Properties
-    public byte Threshold
-    {
-        get => _threshold;
-        set => RaiseAndSetIfChanged(ref _threshold, value);
-    }
 
-    public byte Maximum
-    {
-        get => _maximum;
-        set => RaiseAndSetIfChanged(ref _maximum, value);
-    }
+    [ObservableProperty]
+    public partial byte Threshold { get; set; } = 127;
 
-    public ThresholdType Type
-    {
-        get => _type;
-        set => RaiseAndSetIfChanged(ref _type, value);
-    }
+    [ObservableProperty]
+    public partial byte Maximum { get; set; } = 255;
+
+    [ObservableProperty]
+    public partial ThresholdType Type { get; set; } = ThresholdType.Binary;
 
     public static Array ThresholdTypes => Enum.GetValues(typeof(ThresholdType));
     #endregion
@@ -114,7 +101,7 @@ public class OperationThreshold : Operation
 
     protected bool Equals(OperationThreshold other)
     {
-        return _threshold == other._threshold && _maximum == other._maximum && _type == other._type;
+        return Threshold == other.Threshold && Maximum == other.Maximum && Type == other.Type;
     }
 
     public override bool Equals(object? obj)

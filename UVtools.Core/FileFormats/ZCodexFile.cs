@@ -579,7 +579,7 @@ M106 S0
         GCode!.Clear();
         GCode.Append(gcode);
 
-        RaisePropertyChanged(nameof(GCodeStr));
+        OnPropertyChanged(nameof(GCodeStr));
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)

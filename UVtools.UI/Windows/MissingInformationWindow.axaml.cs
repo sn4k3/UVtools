@@ -8,8 +8,6 @@
 
 using SukiUI.MessageBox;
 using System.Threading.Tasks;
-using UVtools.Core.Dialogs;
-using UVtools.UI.Controls;
 using UVtools.UI.Extensions;
 
 namespace UVtools.UI.Windows;

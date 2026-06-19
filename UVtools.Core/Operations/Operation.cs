@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,27 +7,31 @@
  */
 
 using Emgu.CV;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using UVtools.Core.EmguCV;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
-using UVtools.Core.Objects;
 using ZLinq;
 
 namespace UVtools.Core.Operations;
 
-
-public abstract class Operation : BindableBase, IDisposable
+public abstract partial class Operation : ObservableObject, IDisposable
 {
     #region Constants
-    public const string NotSupportedMessage = "The current printer and/or file format is not compatible with this tool.";
+
+    public const string NotSupportedMessage =
+        "The current printer and/or file format is not compatible with this tool.";
+
     public string NotSupportedTitle => $"{Title} - Unable to run";
+
     #endregion
 
     #region Enums
@@ -37,24 +41,15 @@ public abstract class Operation : BindableBase, IDisposable
         None,
         Profile,
         Session,
-        Undo,
+        Undo
     }
+
     #endregion
 
     #region Members
 
     public const byte ClassNameLength = 9;
     private FileFormat _slicerFile = null!;
-    private Rectangle _originalBoundingRectangle;
-    private OperationImportFrom _importedFrom = OperationImportFrom.None;
-    private Rectangle _roi = Rectangle.Empty;
-    private Point[][]? _maskPoints;
-    private uint _layerIndexEnd;
-    private uint _layerIndexStart;
-    private string? _profileName;
-    private bool _profileIsDefault;
-    private LayerRangeSelection _layerRangeSelection = LayerRangeSelection.All;
-    private string? _lastValidationMessage;
 
     #endregion
 
@@ -64,11 +59,8 @@ public abstract class Operation : BindableBase, IDisposable
     /// Gets or sets from where this option got loaded/imported
     /// </summary>
     [XmlIgnore]
-    public OperationImportFrom ImportedFrom
-    {
-        get => _importedFrom;
-        set => RaiseAndSetIfChanged(ref _importedFrom, value);
-    }
+    [ObservableProperty]
+    public partial OperationImportFrom ImportedFrom { get; set; } = OperationImportFrom.None;
 
     /// <summary>
     /// Gets or sets the parent <see cref="FileFormat"/>
@@ -79,7 +71,7 @@ public abstract class Operation : BindableBase, IDisposable
         get => _slicerFile;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _slicerFile, value)) return;
+            if (!SetProperty(ref _slicerFile, value)) return;
             OriginalBoundingRectangle = _slicerFile.BoundingRectangle;
             InitWithSlicerFile();
         }
@@ -89,11 +81,8 @@ public abstract class Operation : BindableBase, IDisposable
     /// Gets the bounding rectangle of the model, preserved from any change during and after execution
     /// </summary>
     [XmlIgnore]
-    public Rectangle OriginalBoundingRectangle
-    {
-        get => _originalBoundingRectangle;
-        private set => RaiseAndSetIfChanged(ref _originalBoundingRectangle, value);
-    }
+    [ObservableProperty]
+    public partial Rectangle OriginalBoundingRectangle { get; set; }
 
     /// <summary>
     /// Gets or sets any object which is not used internally
@@ -114,14 +103,13 @@ public abstract class Operation : BindableBase, IDisposable
     /// <summary>
     /// Gets the last used layer range selection, returns none if custom
     /// </summary>
-    public LayerRangeSelection LayerRangeSelection
+    [ObservableProperty]
+    public partial LayerRangeSelection LayerRangeSelection { get; set; } = LayerRangeSelection.All;
+
+    partial void OnLayerRangeSelectionChanged(LayerRangeSelection value)
     {
-        get => _layerRangeSelection;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _layerRangeSelection, value)) return;
-            if(SlicerFile is not null) SelectLayers(_layerRangeSelection);
-        }
+        if (SlicerFile is null) return;
+        SelectLayers(value);
     }
 
     /// <summary>
@@ -131,12 +119,12 @@ public abstract class Operation : BindableBase, IDisposable
     {
         get
         {
-            if (_layerRangeSelection == LayerRangeSelection.None)
+            if (LayerRangeSelection == LayerRangeSelection.None)
             {
                 return $" [Layers: {LayerIndexStart}-{LayerIndexEnd}]";
             }
 
-            return $" [Layers: {_layerRangeSelection}]";
+            return $" [Layers: {LayerRangeSelection}]";
         }
     }
 
@@ -220,16 +208,17 @@ public abstract class Operation : BindableBase, IDisposable
     /// </summary>
     public virtual uint LayerIndexStart
     {
-        get => _layerIndexStart;
+        get;
         set
         {
             if (SlicerFile is not null)
             {
                 SlicerFile.SanitizeLayerIndex(ref value);
             }
-            if (!RaiseAndSetIfChanged(ref _layerIndexStart, value)) return;
-            RaisePropertyChanged(nameof(LayerRangeCount));
-            RaisePropertyChanged(nameof(LayerRangeHaveBottoms));
+
+            if (!SetProperty(ref field, value)) return;
+            OnPropertyChanged(nameof(LayerRangeCount));
+            OnPropertyChanged(nameof(LayerRangeHaveBottoms));
         }
     }
 
@@ -238,16 +227,17 @@ public abstract class Operation : BindableBase, IDisposable
     /// </summary>
     public virtual uint LayerIndexEnd
     {
-        get => _layerIndexEnd;
+        get;
         set
         {
             if (SlicerFile is not null)
             {
                 SlicerFile.SanitizeLayerIndex(ref value);
             }
-            if(!RaiseAndSetIfChanged(ref _layerIndexEnd, value)) return;
-            RaisePropertyChanged(nameof(LayerRangeCount));
-            RaisePropertyChanged(nameof(LayerRangeHaveNormals));
+
+            if (!SetProperty(ref field, value)) return;
+            OnPropertyChanged(nameof(LayerRangeCount));
+            OnPropertyChanged(nameof(LayerRangeHaveNormals));
         }
     }
 
@@ -269,20 +259,14 @@ public abstract class Operation : BindableBase, IDisposable
     /// <summary>
     /// Gets the name for this profile
     /// </summary>
-    public string? ProfileName
-    {
-        get => _profileName;
-        set => RaiseAndSetIfChanged(ref _profileName, value);
-    }
+    [ObservableProperty]
+    public partial string? ProfileName { get; set; }
 
     /// <summary>
     /// Gets if this profile is the default to load
     /// </summary>
-    public bool ProfileIsDefault
-    {
-        get => _profileIsDefault;
-        set => RaiseAndSetIfChanged(ref _profileIsDefault, value);
-    }
+    [ObservableProperty]
+    public partial bool ProfileIsDefault { get; set; }
 
     /// <summary>
     /// Gets or sets an ROI to process this operation
@@ -290,18 +274,18 @@ public abstract class Operation : BindableBase, IDisposable
     [XmlIgnore]
     public Rectangle ROI
     {
-        get => _roi;
+        get;
         set
         {
             if (!CanROI) return;
-            RaiseAndSetIfChanged(ref _roi, value);
+            SetProperty(ref field, value);
         }
-    }
+    } = Rectangle.Empty;
 
     /// <summary>
     /// Gets if there is an ROI associated
     /// </summary>
-    public bool HaveROI => !_roi.IsEmpty;
+    public bool HaveROI => !ROI.IsEmpty;
 
     /// <summary>
     /// Gets or sets an Mask to process this operation
@@ -309,11 +293,11 @@ public abstract class Operation : BindableBase, IDisposable
     [XmlIgnore]
     public Point[][]? MaskPoints
     {
-        get => _maskPoints;
+        get;
         set
         {
             if (!CanMask) return;
-            if(!RaiseAndSetIfChanged(ref _maskPoints, value)) return;
+            if (!SetProperty(ref field, value)) return;
             //if(HaveMask) ROI = Rectangle.Empty;
         }
     }
@@ -321,7 +305,7 @@ public abstract class Operation : BindableBase, IDisposable
     /// <summary>
     /// Gets if there is masks associated
     /// </summary>
-    public bool HaveMask => _maskPoints is not null && _maskPoints.Length > 0;
+    public bool HaveMask => MaskPoints is not null && MaskPoints.Length > 0;
 
     /// <summary>
     /// Gets if there is roi or masks associated
@@ -344,44 +328,40 @@ public abstract class Operation : BindableBase, IDisposable
     /// Gets the last validation message
     /// </summary>
     [XmlIgnore]
-    public string? LastValidationMessage
-    {
-        get => _lastValidationMessage;
-        private set
-        {
-            if(!RaiseAndSetIfChanged(ref _lastValidationMessage, value)) return;
-            RaisePropertyChanged(nameof(IsLastValidationSuccess));
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsLastValidationSuccess))]
+    public partial string? LastValidationMessage { get; private set; }
 
     /// <summary>
     /// Gets if the last validation pass with success
     /// </summary>
     [XmlIgnore]
-    public bool IsLastValidationSuccess => string.IsNullOrWhiteSpace(_lastValidationMessage);
+    public bool IsLastValidationSuccess => string.IsNullOrWhiteSpace(LastValidationMessage);
 
     /// <summary>
     /// Gets or sets an report to show to the user after complete the operation with success
     /// </summary>
     [XmlIgnore]
     public string? AfterCompleteReport { get; set; }
+
     #endregion
 
     #region Constructor
 
     protected Operation()
     {
-        _layerRangeSelection = StartLayerRangeSelection;
+        LayerRangeSelection = StartLayerRangeSelection;
     }
 
     protected Operation(FileFormat slicerFile) : this()
     {
         _slicerFile = slicerFile;
-        _originalBoundingRectangle = slicerFile.BoundingRectangle;
-        _layerIndexEnd = slicerFile.LastLayerIndex;
-        SelectLayers(_layerRangeSelection);
+        OriginalBoundingRectangle = slicerFile.BoundingRectangle;
+        LayerIndexEnd = slicerFile.LastLayerIndex;
+        SelectLayers(LayerRangeSelection);
         InitWithSlicerFile();
     }
+
     #endregion
 
     #region Methods
@@ -394,7 +374,10 @@ public abstract class Operation : BindableBase, IDisposable
     /// <summary>
     /// Gets if this operation can spawn under the <see cref="SlicerFile"/>
     /// </summary>
-    public virtual string? ValidateSpawn() => null;
+    public virtual string? ValidateSpawn()
+    {
+        return null;
+    }
 
     /// <summary>
     /// Gets if this operation can spawn under the <see cref="SlicerFile"/>
@@ -415,6 +398,7 @@ public abstract class Operation : BindableBase, IDisposable
         {
             return message;
         }
+
         return null;
     }
 
@@ -426,7 +410,7 @@ public abstract class Operation : BindableBase, IDisposable
     {
         IsValidated = true;
         LastValidationMessage = ValidateInternally();
-        return _lastValidationMessage;
+        return LastValidationMessage;
     }
 
     /// <summary>
@@ -554,7 +538,9 @@ public abstract class Operation : BindableBase, IDisposable
     /// <summary>
     /// Called to init the object when <see cref="SlicerFile"/> changes
     /// </summary>
-    public virtual void InitWithSlicerFile() { }
+    public virtual void InitWithSlicerFile()
+    {
+    }
 
     /// <summary>
     /// Clears the ROI and set to empty
@@ -587,21 +573,30 @@ public abstract class Operation : BindableBase, IDisposable
     /// Gets the <see cref="ROI"/> size, but if empty returns the file resolution size instead
     /// </summary>
     /// <returns></returns>
-    public Size GetRoiSizeOrDefault() => GetRoiSizeOrDefault(SlicerFile.Resolution);
+    public Size GetRoiSizeOrDefault()
+    {
+        return GetRoiSizeOrDefault(SlicerFile.Resolution);
+    }
 
     /// <summary>
     /// Gets the <see cref="ROI"/> size, but if empty returns <paramref name="src"/> size instead
     /// </summary>
     /// <param name="src"></param>
     /// <returns></returns>
-    public Size GetRoiSizeOrDefault(Mat? src) => src is null ? GetRoiSizeOrDefault() : GetRoiSizeOrDefault(src.Size);
+    public Size GetRoiSizeOrDefault(Mat? src)
+    {
+        return src is null ? GetRoiSizeOrDefault() : GetRoiSizeOrDefault(src.Size);
+    }
 
     /// <summary>
     /// Gets the <see cref="ROI"/> size, but if empty returns the size from <paramref name="fallbackRectangle"/> instead
     /// </summary>
     /// <param name="fallbackRectangle"></param>
     /// <returns></returns>
-    public Size GetRoiSizeOrDefault(Rectangle fallbackRectangle) => GetRoiSizeOrDefault(fallbackRectangle.Size);
+    public Size GetRoiSizeOrDefault(Rectangle fallbackRectangle)
+    {
+        return GetRoiSizeOrDefault(fallbackRectangle.Size);
+    }
 
     /// <summary>
     /// Gets the <see cref="ROI"/> size, but if empty returns the <paramref name="fallbackSize"/> instead
@@ -610,14 +605,17 @@ public abstract class Operation : BindableBase, IDisposable
     /// <returns></returns>
     public Size GetRoiSizeOrDefault(Size fallbackSize)
     {
-        return HaveROI ? _roi.Size : fallbackSize;
+        return HaveROI ? ROI.Size : fallbackSize;
     }
 
     /// <summary>
     /// Gets the <see cref="ROI"/> size, but if empty returns the model volume bounds size instead
     /// </summary>
     /// <returns></returns>
-    public Size GetRoiSizeOrVolumeSize() => GetRoiSizeOrVolumeSize(_originalBoundingRectangle.Size);
+    public Size GetRoiSizeOrVolumeSize()
+    {
+        return GetRoiSizeOrVolumeSize(OriginalBoundingRectangle.Size);
+    }
 
     /// <summary>
     /// Gets the <see cref="ROI"/> size, but if empty returns the <paramref name="fallbackSize"/> instead
@@ -626,7 +624,7 @@ public abstract class Operation : BindableBase, IDisposable
     /// <returns></returns>
     public Size GetRoiSizeOrVolumeSize(Size fallbackSize)
     {
-        return HaveROI ? _roi.Size : fallbackSize;
+        return HaveROI ? ROI.Size : fallbackSize;
     }
 
     /// <summary>
@@ -636,7 +634,7 @@ public abstract class Operation : BindableBase, IDisposable
     /// <returns></returns>
     public Mat GetRoiOrDefault(Mat src)
     {
-        return src.Roi(_roi, EmptyRoiBehaviour.CaptureSource);
+        return src.Roi(ROI, EmptyRoiBehavior.CaptureSource);
     }
 
     /// <summary>
@@ -647,7 +645,7 @@ public abstract class Operation : BindableBase, IDisposable
     /// <returns></returns>
     public Mat GetRoiOrDefault(Mat src, Rectangle fallbackRoi)
     {
-        return HaveROI ? src.Roi(_roi) : src.Roi(fallbackRoi, EmptyRoiBehaviour.CaptureSource);
+        return HaveROI ? src.Roi(ROI) : src.Roi(fallbackRoi, EmptyRoiBehavior.CaptureSource);
     }
 
     /// <summary>
@@ -657,14 +655,17 @@ public abstract class Operation : BindableBase, IDisposable
     /// <returns></returns>
     public Mat GetRoiOrVolumeBounds(Mat defaultMat)
     {
-        return GetRoiOrDefault(defaultMat, _originalBoundingRectangle);
+        return GetRoiOrDefault(defaultMat, OriginalBoundingRectangle);
     }
 
     /// <summary>
     /// Gets the <see cref="ROI"/>, but if empty returns <see cref="OriginalBoundingRectangle"/>
     /// </summary>
     /// <returns></returns>
-    public Rectangle GetRoiOrVolumeBounds() => HaveROI ? _roi : _originalBoundingRectangle;
+    public Rectangle GetRoiOrVolumeBounds()
+    {
+        return HaveROI ? ROI : OriginalBoundingRectangle;
+    }
 
     /// <summary>
     /// Clears all masks
@@ -690,7 +691,10 @@ public abstract class Operation : BindableBase, IDisposable
     /// <param name="mat"></param>
     /// <param name="offset"></param>
     /// <returns></returns>
-    public Mat? GetMask(Mat mat, Point offset = default) => GetMask(_maskPoints, mat, offset);
+    public Mat? GetMask(Mat mat, Point offset = default)
+    {
+        return GetMask(MaskPoints, mat, offset);
+    }
 
     public Mat? GetMask(Point[][]? points, Mat mat, Point offset = default)
     {
@@ -711,7 +715,7 @@ public abstract class Operation : BindableBase, IDisposable
     {
         if (mask is null) return;
         var originalRoi = original;
-        bool needDisposeOriginalRoi = false;
+        var needDisposeOriginalRoi = false;
         if (originalRoi.Size != result.Size) // Accept a ROI mat
         {
             originalRoi = GetRoiOrDefault(original);
@@ -719,14 +723,14 @@ public abstract class Operation : BindableBase, IDisposable
         }
 
         var resultRoi = result;
-        bool needDisposeResultRoi = false;
+        var needDisposeResultRoi = false;
         if (originalRoi.Size != result.Size) // Accept a ROI mat
         {
             resultRoi = GetRoiOrDefault(result);
             needDisposeResultRoi = true;
         }
 
-        bool needDisposeMask = false;
+        var needDisposeMask = false;
         if (mask.Size != resultRoi.Size) // Accept a full size mask
         {
             mask = GetRoiOrDefault(mask);
@@ -772,15 +776,19 @@ public abstract class Operation : BindableBase, IDisposable
     /// <exception cref="InvalidOperationException"></exception>
     public bool Execute(OperationProgress? progress = null)
     {
-        if (_slicerFile is null) throw new InvalidOperationException($"{Title} can't execute due the lacking of a file parent.");
-        if (_slicerFile.DecodeType == FileFormat.FileDecodeType.Partial && !CanRunInPartialMode) throw new InvalidOperationException($"The file was open in partial mode and the tool \"{Title}\" is unable to run in this mode.\nPlease reload the file in full mode in order to use this tool.");
+        if (_slicerFile is null)
+            throw new InvalidOperationException($"{Title} can't execute due the lacking of a file parent.");
+        if (_slicerFile.DecodeType == FileFormat.FileDecodeType.Partial && !CanRunInPartialMode)
+            throw new InvalidOperationException(
+                $"The file was open in partial mode and the tool \"{Title}\" is unable to run in this mode.\nPlease reload the file in full mode in order to use this tool.");
 
         AfterCompleteReport = null;
 
         if (!IsValidated)
         {
             var msg = Validate();
-            if(!string.IsNullOrWhiteSpace(msg)) throw new InvalidOperationException($"{Title} can't execute due some errors:\n{msg}");
+            if (!string.IsNullOrWhiteSpace(msg))
+                throw new InvalidOperationException($"{Title} can't execute due some errors:\n{msg}");
         }
 
         progress ??= new OperationProgress();
@@ -793,7 +801,10 @@ public abstract class Operation : BindableBase, IDisposable
         return result;
     }
 
-    public Task<bool> ExecuteAsync(OperationProgress? progress = null) => Task.Run(() => Execute(progress), progress?.Token ?? default);
+    public Task<bool> ExecuteAsync(OperationProgress? progress = null)
+    {
+        return Task.Run(() => Execute(progress), progress?.Token ?? default);
+    }
 
     /// <summary>
     /// Execute the operation on a given <see cref="Mat"/>
@@ -807,7 +818,10 @@ public abstract class Operation : BindableBase, IDisposable
         throw new NotImplementedException();
     }
 
-    public Task<bool> ExecuteAsync(Mat mat, params object[]? arguments) => Task.Run(() => Execute(mat, arguments));
+    public Task<bool> ExecuteAsync(Mat mat, params object[]? arguments)
+    {
+        return Task.Run(() => Execute(mat, arguments));
+    }
 
     /// <summary>
     /// Get the selected layer range in a new array, array index will not match layer index when a range is selected
@@ -817,7 +831,8 @@ public abstract class Operation : BindableBase, IDisposable
     {
         return LayerRangeCount == SlicerFile.LayerCount
             ? SlicerFile.AsValueEnumerable().ToArray()
-            : SlicerFile.AsValueEnumerable().Where((_, layerIndex) => layerIndex >= _layerIndexStart && layerIndex <= _layerIndexEnd).ToArray();
+            : SlicerFile.AsValueEnumerable()
+                .Where((_, layerIndex) => layerIndex >= LayerIndexStart && layerIndex <= LayerIndexEnd).ToArray();
     }
 
     /// <summary>
@@ -840,7 +855,7 @@ public abstract class Operation : BindableBase, IDisposable
     /// <param name="indent"></param>
     public void Serialize(string path, bool indent = false)
     {
-        if(indent) XmlExtensions.SerializeToFile(this, path, XmlExtensions.SettingsIndent);
+        if (indent) XmlExtensions.SerializeToFile(this, path, XmlExtensions.SettingsIndent);
         else XmlExtensions.SerializeToFile(this, path);
     }
 
@@ -863,7 +878,11 @@ public abstract class Operation : BindableBase, IDisposable
         return result;
     }
 
-    public virtual void Dispose() { /*GC.SuppressFinalize(this);*/ }
+    public virtual void Dispose()
+    {
+        /*GC.SuppressFinalize(this);*/
+    }
+
     #endregion
 
     #region Static Methods
@@ -875,7 +894,8 @@ public abstract class Operation : BindableBase, IDisposable
     /// <param name="enableXmlProfileFile">If true, it will attempt to deserialize the operation from a file profile.</param>
     /// <param name="slicerFile"></param>
     /// <returns></returns>
-    public static Operation? CreateInstance(string classNamePath, bool enableXmlProfileFile = false, FileFormat? slicerFile = null)
+    public static Operation? CreateInstance(string classNamePath, bool enableXmlProfileFile = false,
+        FileFormat? slicerFile = null)
     {
         if (string.IsNullOrWhiteSpace(classNamePath)) return null;
         if (enableXmlProfileFile)
@@ -939,6 +959,7 @@ public abstract class Operation : BindableBase, IDisposable
             operation.SlicerFile = slicerFile;
             operation.SelectLayers(operation.LayerRangeSelection);
         }
+
         return operation;
     }
 
@@ -949,7 +970,10 @@ public abstract class Operation : BindableBase, IDisposable
     /// <param name="operation"></param>
     /// <param name="slicerFile"></param>
     /// <returns></returns>
-    public static Operation? Deserialize(string path, Operation operation, FileFormat? slicerFile = null) => Deserialize(path, operation.GetType(), slicerFile);
+    public static Operation? Deserialize(string path, Operation operation, FileFormat? slicerFile = null)
+    {
+        return Deserialize(path, operation.GetType(), slicerFile);
+    }
 
     #endregion
 }

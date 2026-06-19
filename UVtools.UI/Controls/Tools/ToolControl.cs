@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using System.Threading.Tasks;
+using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 using UVtools.UI.Extensions;
 using UVtools.UI.Windows;
@@ -19,7 +20,7 @@ public class ToolControl : ToolBaseControl
 
             if (!wasNullBefore)
             {
-                _baseOperation!.ClearPropertyChangedListeners();
+                _baseOperation!.ClearPropertyChangedHandlers();
                 Callback(ToolWindow.Callbacks.BeforeLoadProfile);
             }
 
@@ -77,7 +78,7 @@ public class ToolControl : ToolBaseControl
     {
         return BaseOperation?.Validate();
     }
-    
+
     public override async Task<bool> ValidateForm()
     {
         if (BaseOperation is null) return true;

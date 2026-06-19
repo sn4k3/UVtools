@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,7 @@
  */
 
 using Microsoft.CodeAnalysis.CSharp.Scripting;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CodeAnalysis.Scripting;
 using System;
 using System.IO;
@@ -18,7 +19,7 @@ namespace UVtools.Core.Operations;
 
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
-public sealed class OperationScripting : Operation
+public sealed partial class OperationScripting : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
@@ -35,7 +36,6 @@ public sealed class OperationScripting : Operation
     }
 
     private string? _filePath;
-    private string? _scriptText;
     private ScriptState? _scriptState;
 
     #endregion
@@ -99,25 +99,22 @@ public sealed class OperationScripting : Operation
         {
             if (value is null)
             {
-                RaiseAndSetIfChanged(ref _filePath, null);
+                SetProperty(ref _filePath, null);
             }
             else
             {
                 if (!value.EndsWith(".csx") && !value.EndsWith(".cs")) return;
                 if (!File.Exists(value)) return;
-                if (!RaiseAndSetIfChanged(ref _filePath, value)) return;
+                if (!SetProperty(ref _filePath, value)) return;
             }
 
-            RaisePropertyChanged(nameof(HaveFile));
+            OnPropertyChanged(nameof(HaveFile));
         }
     }
 
     [XmlIgnore]
-    public string? ScriptText
-    {
-        get => _scriptText;
-        set => RaiseAndSetIfChanged(ref _scriptText, value);
-    }
+    [ObservableProperty]
+    public partial string? ScriptText { get; set; }
 
     public bool CanExecute => !string.IsNullOrWhiteSpace(_filePath) && _scriptState is not null && ScriptGlobals is not null && About.Version.CompareTo(ScriptGlobals.Script.MinimumVersionToRun) >= 0;
 
@@ -169,20 +166,20 @@ public sealed class OperationScripting : Operation
     public void ReloadScriptFromText(string? text = null)
     {
         if (!string.IsNullOrWhiteSpace(text)) ScriptText = text;
-        if (string.IsNullOrWhiteSpace(_scriptText)) return;
+        if (string.IsNullOrWhiteSpace(ScriptText)) return;
 
-        ScriptText = ScriptParser.ParseScriptFromText(_scriptText);
+        ScriptText = ScriptParser.ParseScriptFromText(ScriptText);
 
         ScriptGlobals = new ScriptGlobals { SlicerFile = SlicerFile, Operation = this };
 
-       _scriptState = CSharpScript.RunAsync(_scriptText,
+       _scriptState = CSharpScript.RunAsync(ScriptText,
             ScriptOptions.Default
                 .AddReferences(typeof(About).Assembly)
                 .WithAllowUnsafe(true),
             ScriptGlobals).Result;
         var result = _scriptState.ContinueWithAsync("ScriptInit();").Result;
 
-        RaisePropertyChanged(nameof(CanExecute));
+        OnPropertyChanged(nameof(CanExecute));
         _onScriptReloaded?.Invoke(this, EventArgs.Empty);
     }
 

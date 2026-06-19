@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UVtools.Core.Extensions;
 using ZLinq;
@@ -32,7 +33,10 @@ public sealed class ReflectionPropertyValue
         value = Value;
     }
 
-    public void SetFound() => Found = true;
+    public void SetFound()
+    {
+        Found = true;
+    }
 
     private bool Equals(ReflectionPropertyValue other)
     {
@@ -41,7 +45,7 @@ public sealed class ReflectionPropertyValue
 
     public override bool Equals(object? obj)
     {
-        return ReferenceEquals(this, obj) || obj is ReflectionPropertyValue other && Equals(other);
+        return ReferenceEquals(this, obj) || (obj is ReflectionPropertyValue other && Equals(other));
     }
 
     public override int GetHashCode()
@@ -56,16 +60,48 @@ public sealed class ReflectionPropertyValue
 
     public static uint SetProperties(object obj, IEnumerable<ReflectionPropertyValue> properties)
     {
-        if (!properties.AsValueEnumerable().Any()) return 0;
+        var reflectionPropertyValues = properties as ReflectionPropertyValue[] ?? properties.ToArray();
+        if (reflectionPropertyValues.Length == 0) return 0;
         uint count = 0;
         foreach (var propertyInfo in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
-            foreach (var property in properties)
+            if (propertyInfo.PropertyType == typeof(string[]))
             {
-                if (propertyInfo.Name != property.Name) continue;
-                propertyInfo.SetValueFromString(obj, property.Value);
-                property.Found = true;
-                count++;
+                var matchingProperties = reflectionPropertyValues
+                    .Where(property => propertyInfo.Name == property.Name)
+                    .ToArray();
+                if (matchingProperties.Length == 0) continue;
+
+                propertyInfo.SetValue(obj, matchingProperties.Select(property => property.Value).ToArray());
+                foreach (var property in matchingProperties)
+                {
+                    property.Found = true;
+                    count++;
+                }
+            }
+            else if (propertyInfo.PropertyType == typeof(List<string>))
+            {
+                var matchingProperties = reflectionPropertyValues
+                    .Where(property => propertyInfo.Name == property.Name)
+                    .ToArray();
+                if (matchingProperties.Length == 0) continue;
+
+                propertyInfo.SetValue(obj, matchingProperties.Select(property => property.Value).ToList());
+                foreach (var property in matchingProperties)
+                {
+                    property.Found = true;
+                    count++;
+                }
+            }
+            else
+            {
+                foreach (var property in reflectionPropertyValues)
+                {
+                    if (propertyInfo.Name != property.Name) continue;
+                    propertyInfo.SetValueFromString(obj, property.Value);
+                    property.Found = true;
+                    count++;
+                }
             }
         }
 
@@ -77,7 +113,7 @@ public sealed class ReflectionPropertyValue
         property = null;
         var split = line.Split(['=', ':'], 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (split.Length < 2) return false;
-        property = new(split[0], split[1]);
+        property = new ReflectionPropertyValue(split[0], split[1]);
         return true;
     }
 
