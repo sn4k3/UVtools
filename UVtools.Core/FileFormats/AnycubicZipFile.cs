@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -696,6 +696,10 @@ public sealed class AnycubicZipFile : FileFormat
 
         [JsonPropertyName("model_type")]
         public int ModelType { get; set; } = 1;
+
+        // Exposure times for each partition
+        [JsonPropertyName("partition_exposure_array")]
+        public float[] PartitionExposureArray { get; set; } = [];
 
         [JsonPropertyName("partition_num")]
         public int PartitionNum { get; set; }
