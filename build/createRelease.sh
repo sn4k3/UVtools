@@ -1,4 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export NUKE_TELEMETRY_OPTOUT=1
+
+bash "$(dirname "$0")/../build.sh" publish --rids osx-x64 osx-arm64 linux-x64 linux-arm64
+exit
+
+# Old script, kept for reference
 #
 # Script to publish and pack UVtools to a platform
 # Clone the repo first from github:
@@ -9,12 +17,12 @@
 # usage 3: ./createRelease.sh -b -z osx-x64
 #
 cd "$(dirname "$0")/.."
-[ ! -d "UVtools.Core" ] && echo "UVtools.Core not found!" && exit -1
+[ ! -d "UVtools.Core" ] && echo "UVtools.Core not found!" && exit 9
 
 testcmd() { command -v "$1" &> /dev/null; }
 
 #runtime=$1
-for runtime in $@; do :; done # Get last argument
+for runtime in "$@"; do :; done # Get last argument
 rootDir="$PWD"
 buildDir="$rootDir/build"
 coreDir="$rootDir/UVtools.Core"
@@ -73,35 +81,35 @@ fi
 
 if [ "$zipPackage" == true -a -z "$(command -v zip)" ]; then
     echo "Error: zip is not installed, please install zip in order to zip packages."
-    exit -1
+    exit 9
 fi
 
 if [ "$bundlePublish" == true -a -z "$(command -v file)" ]; then
     echo "Error: file is not installed, please install file in order to bundle packages."
-    exit -1
+    exit 9
 fi
 
 if [ -z "$version" ]; then
     echo "Error: UVtools version not found, please check path and script."
-    exit -1
+    exit 9
 fi
 
 if [ -z "$runtime" ]; then
     echo "Error: No runtime selected, please pick one of the following:"
     ls "$platformsDir" | grep -
-    exit -1
+    exit 9
 fi
 
 if [[ "$runtime" != *-* && $runtime != *-arm && $runtime != *-x64 && $runtime != *-x86 ]]; then
     echo "Error: The runtime '$runtime' is not valid, please pick one of the following:"
     ls "$platformsDir" | grep -
-    exit -1
+    exit 9
 fi
 
 if [ "$runtime" != "win-x64" -a ! -d "$platformsDir/$runtime" ]; then
     echo "Error: The runtime '$runtime' is not valid, please pick one of the following:"
     ls "$platformsDir" | grep -
-    exit -1
+    exit 9
 fi
 
 echo "1. Preparing the environment"

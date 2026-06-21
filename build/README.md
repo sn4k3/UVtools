@@ -9,6 +9,7 @@
   - dotnet-sdk
   - zip
   - unzip
+  - dotnet nuke: `dotnet tool install Nuke.GlobalTool —global`
 
 ### Linux and macOS
 
@@ -16,11 +17,10 @@
 - zip
 - unzip 
 - file
+- dotnet nuke: `dotnet tool install Nuke.GlobalTool —global`
 
 ## Scripts
 
-- **compile.(bat|sh):** Compiles project under default configurations
-- **run.(bat|sh):** Compiles and runs the project under default configurations
 - **createRelease.(ps1|sh):** Compiles, publish and pack a release for a target runtime
 - **cvextern.ps1:** Compiles and produces `cvextern.dll`
 - **libcvextern.sh:** Compiles and produces `libcvextern.so|dylib`

@@ -13,6 +13,7 @@
   affects `UVtoolsCmd` and libraries that might use `UVtools.Core`
 - (Improvement) Allow to set array of strings via reflection, this simplifies the use of `UVtoolsCmd`
 - (Improvement) Migrate `BindableBase` to `ObservableObject` from `CommunityToolkit.Mvvm`
+- (Improvement) Migrate to `Nuke` builds and publish
 - (Breaking change) As `EmguCV` extensions moved to a separate library, if you are using them in your own code/scripts
   you need to adapt and use the new naming and reference the new library
 - (Fix) Anycubic zip format after save can not be loaded again in anycubic slicer (#1108)

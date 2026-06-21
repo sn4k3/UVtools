@@ -2,13 +2,31 @@
 # Creates and assembles relases for all supported operative systems
 # Run under Windows with WSL installed
 
-if($PSVersionTable.PSVersion.Major -lt 7){
-    Write-Error("Powershell version $($PSVersionTable.PSVersion) is not compatible with this build script.`n
-You need at least the Powershell 7: https://github.com/PowerShell/PowerShell/releases/latest")
-    return;
+$env:DOTNET_CLI_TELEMETRY_OPTOUT = 1
+$env:NUKE_TELEMETRY_OPTOUT = 1
+
+$repoRoot = Split-Path -Parent $PSScriptRoot
+Push-Location $repoRoot
+try
+{
+    & "./build.ps1" publish --rids win-x64 win-arm64
+    bash "./build.sh" publish --rids osx-x64 osx-arm64 linux-x64 linux-arm64
+}
+finally
+{
+    Pop-Location
 }
 
-set DOTNET_CLI_TELEMETRY_OPTOUT=1
+return
+exit
+# old script below, kept for reference
+
+if ($PSVersionTable.PSVersion.Major -lt 7)
+{
+    Write-Error("Powershell version $( $PSVersionTable.PSVersion ) is not compatible with this build script.`n
+You need at least the Powershell 7: https://github.com/PowerShell/PowerShell/releases/latest")
+    return
+}
 
 # When using System.IO.Compression.ZipFile.CreateFromDirectory in PowerShell, it still uses backslashes in the zip paths
 # despite this https://docs.microsoft.com/en-us/dotnet/framework/migration-guide/mitigation-ziparchiveentry-fullname-path-separator
@@ -27,10 +45,14 @@ set DOTNET_CLI_TELEMETRY_OPTOUT=1
 Add-Type -AssemblyName System.Text.Encoding
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
-class FixedEncoder : System.Text.UTF8Encoding {
-    FixedEncoder() : base($true) { }
+class FixedEncoder: System.Text.UTF8Encoding
+{
+    FixedEncoder(): base($true)
+    {
+    }
 
-    [byte[]] GetBytes([string] $s)
+    [byte[]]
+    GetBytes([string] $s)
     {
         $s = $s.Replace("\", "/");
         return ([System.Text.UTF8Encoding]$this).GetBytes($s);
@@ -71,34 +93,35 @@ $stopWatch.Start()
 
 
 # Variables
-$software       = "UVtools"
-$project        = "UVtools.UI"
-$buildWith      = "Release"
-$netVersion     = "9.0"
-$publishFolder  = "publish"
+$software = "UVtools"
+$project = "UVtools.UI"
+$buildWith = "Release"
+$netVersion = "10.0"
+$publishFolder = "publish"
 
-$rootPath           = Split-Path $PSScriptRoot -Parent
-$buildPath          = "$rootPath\build"
-$platformsPath      = "$buildPath\platforms"
-$artifactsPath      = "$rootPath\artifacts"
-$publishPath        = "$artifactsPath\$publishFolder"
+$rootPath = Split-Path $PSScriptRoot -Parent
+$buildPath = "$rootPath\build"
+$platformsPath = "$buildPath\platforms"
+$artifactsPath = "$rootPath\artifacts"
+$publishPath = "$artifactsPath\$publishFolder"
 #$releasePath        = "$rootPath\artifacts\bin\$project\$buildWith\net$netVersion"
 #$objPath            = "$rootPath\artifacts\obj\$project\$buildWith\net$netVersion"
-$changelogFile      = "$rootPath\CHANGELOG.md"
-$releaseNotesFile   = "$rootPath\RELEASE_NOTES.md"
+$changelogFile = "$rootPath\CHANGELOG.md"
+$releaseNotesFile = "$rootPath\RELEASE_NOTES.md"
 
 #$version = (Get-Command "$releasePath\UVtools.dll").FileVersionInfo.ProductVersion
-$projectXml = [Xml] (Get-Content "$rootPath\Directory.Build.props")
-$version = "$($projectXml.Project.PropertyGroup.UVtoolsVersion)".Trim();
-if([string]::IsNullOrWhiteSpace($version)){
+$projectXml = [Xml](Get-Content "$rootPath\Directory.Build.props")
+$version = "$( $projectXml.Project.PropertyGroup.UVtoolsVersion )".Trim();
+if ( [string]::IsNullOrWhiteSpace($version))
+{
     Write-Error "Can not detect the UVtools version, does $project\$project.csproj exists?"
     exit
 }
 
 # MSI Variables
-$installer      = "UVtools.Installer"
-$installerPath  = "$rootPath\$installer"
-$msiOutputFile  = "$installerPath\bin\x64\Release\UVtools.msi"
+$installer = "UVtools.Installer"
+$installerPath = "$rootPath\$installer"
+$msiOutputFile = "$installerPath\bin\x64\Release\UVtools.msi"
 $msiProductFile = "$installerPath\Code\Product.wxs"
 $msiSourceFiles = "$publishPath\${software}_win-x64_v$version"
 
@@ -182,18 +205,27 @@ $runtimes =
 $changelog = Get-Content -Path "$changelogFile"
 $foundHashTag = $false
 $sb = [System.Text.StringBuilder]::new()
-foreach($line in $changelog) {
+foreach ($line in $changelog)
+{
     $line = $line.TrimEnd()
-    if([string]::IsNullOrWhiteSpace($line)) { continue }
-    if($line.StartsWith('##')) {
-        if(!$foundHashTag)
+    if ( [string]::IsNullOrWhiteSpace($line))
+    {
+        continue
+    }
+    if ( $line.StartsWith('##'))
+    {
+        if (!$foundHashTag)
         {
             $foundHashTag = $true
             continue
         }
-        else { break }
+        else
+        {
+            break
+        }
     }
-    elseif($foundHashTag){
+    elseif($foundHashTag)
+    {
         $sb.AppendLine($line)
     }
 }
@@ -225,19 +257,23 @@ if($null -ne $enableNugetPublish -and $enableNugetPublish)
 }
 #>
 
-foreach ($obj in $runtimes.GetEnumerator()) {
-    if(![string]::IsNullOrWhiteSpace($buildOnly) -and !$buildOnly.Equals($obj.Name)) {continue}
+foreach ($obj in $runtimes.GetEnumerator())
+{
+    if (![string]::IsNullOrWhiteSpace($buildOnly) -and !$buildOnly.Equals($obj.Name))
+    {
+        continue
+    }
     # Configuration
     $deployStopWatch.Restart()
-    $runtime = $obj.Name;       # runtime name
-    $extraCmd = $obj.extraCmd;  # extra cmd to run with dotnet
-    $publishName="${software}_${runtime}_v$version"
-    $publishCurrentPath="$publishPath\$publishName"
+    $runtime = $obj.Name; # runtime name
+    $extraCmd = $obj.extraCmd; # extra cmd to run with dotnet
+    $publishName = "${software}_${runtime}_v$version"
+    $publishCurrentPath = "$publishPath\$publishName"
 
     #dotnet build "UVtools.Cmd" -c $buildWith
     #dotnet build $project -c $buildWith
 
-    if($runtime.StartsWith("win-"))
+    if ( $runtime.StartsWith("win-"))
     {
         $targetZipName = "${software}_${runtime}_v$version.zip"  # Target zip filename
         $targetZipPath = "$publishPath/$targetZipName"  # Target zip filename
@@ -261,17 +297,19 @@ foreach ($obj in $runtimes.GetEnumerator()) {
 
         Write-Output "$publishCurrentPath"
 
-        foreach ($excludeObj in $obj.Value.exclude) {
+        foreach ($excludeObj in $obj.Value.exclude)
+        {
             Write-Output "Excluding: $excludeObj"
             Remove-Item "$publishCurrentPath\$excludeObj" -Recurse -ErrorAction Ignore
         }
 
-        foreach ($includeObj in $obj.Value.include) {
+        foreach ($includeObj in $obj.Value.include)
+        {
             Write-Output "Including: $includeObj"
             Copy-Item "$platformsPath\$runtime\$includeObj" -Destination "$publishCurrentPath" -Recurse -ErrorAction Ignore
         }
 
-        if($null -ne $zipPackages -and $zipPackages)
+        if ($null -ne $zipPackages -and $zipPackages)
         {
             Write-Output "Compressing $runtime to: $targetZipName"
             wsl --cd "$publishCurrentPath" pwd `&`& zip -rq "../$targetZipName" .
@@ -280,7 +318,7 @@ foreach ($obj in $runtimes.GetEnumerator()) {
     else
     {
         $buildArgs = '-b' # Bundle
-        if($null -ne $zipPackages -and $zipPackages)
+        if ($null -ne $zipPackages -and $zipPackages)
         {
             $buildArgs += ' -z' # Zip
         }
@@ -290,7 +328,7 @@ foreach ($obj in $runtimes.GetEnumerator()) {
     }
 
     $deployStopWatch.Stop()
-    Write-Output "Took: $($deployStopWatch.Elapsed)"
+    Write-Output "Took: $( $deployStopWatch.Elapsed )"
     Write-Output "################################"
 }
 
@@ -313,14 +351,15 @@ $stopWatch.Stop()
 #>
 
 # MSI Installer for Windows
-if($null -ne $enableMSI -and $enableMSI)
+if ($null -ne $enableMSI -and $enableMSI)
 {
     $deployStopWatch.Restart()
     $runtime = 'win-x64'
     $publishName = "${software}_${runtime}_v$version";
-    $publishCurrentPath="$publishPath\$publishName"
+    $publishCurrentPath = "$publishPath\$publishName"
 
-    if ((Test-Path -Path $msiSourceFiles) -and ((Get-ChildItem "$msiSourceFiles" | Measure-Object).Count) -gt 0) {
+    if ((Test-Path -Path $msiSourceFiles) -and ((Get-ChildItem "$msiSourceFiles" | Measure-Object).Count) -gt 0)
+    {
 
         $msiTargetFile = "$publishPath\$publishName.msi"
         Write-Output "################################"
@@ -328,9 +367,12 @@ if($null -ne $enableMSI -and $enableMSI)
 
         Remove-Item "$msiTargetFile" -ErrorAction Ignore
 
-        if(Test-Path "$publishCurrentPath\UVtools.Core.dll" -PathType Leaf){
+        if (Test-Path "$publishCurrentPath\UVtools.Core.dll" -PathType Leaf)
+        {
             Add-Type -Path "$publishCurrentPath\UVtools.Core.dll"
-        } else {
+        }
+        else
+        {
             Write-Error "Unable to find UVtools.Core.dll"
             return
         }
@@ -338,16 +380,22 @@ if($null -ne $enableMSI -and $enableMSI)
         # Add edit with UVtools possible extensions
         $extensions = [UVtools.Core.FileFormats.FileFormat]::AllFileExtensions;
         $extensionList = New-Object Collections.Generic.List[String]
-        foreach($ext in $extensions)
+        foreach ($ext in $extensions)
         {
-            if($ext.Extension.Contains('.')) { continue; } # Virtual extension, ignore
+            if ( $ext.Extension.Contains('.'))
+            {
+                continue;
+            } # Virtual extension, ignore
 
-            $extKey = "System.FileName:&quot;*.$($ext.Extension.ToLowerInvariant())&quot;";
-            if($extensionList.Contains($extKey)) { continue; } # Already here
+            $extKey = "System.FileName:&quot;*.$($ext.Extension.ToLowerInvariant() )&quot;";
+            if ( $extensionList.Contains($extKey))
+            {
+                continue;
+            } # Already here
             $extensionList.Add($extKey);
         }
 
-        if($extensionList.Count -gt 0)
+        if ($extensionList.Count -gt 0)
         {
             $regValue = [String]::Join(' OR ', $extensionList)
             (Get-Content "$msiProductFile") -replace '(?<A><RegistryValue Name="AppliesTo" Value=").+(?<B>" Type=.+)', "`${A}$regValue`${B}" | Out-File "$msiProductFile"
@@ -364,7 +412,7 @@ if($null -ne $enableMSI -and $enableMSI)
         Write-Output "Copying $runtime MSI to: $msiTargetFile"
         Copy-Item $msiOutputFile $msiTargetFile
 
-        Write-Output "Took: $($deployStopWatch.Elapsed)"
+        Write-Output "Took: $( $deployStopWatch.Elapsed )"
         Write-Output "################################"
         Write-Output ""
     }
@@ -372,14 +420,14 @@ if($null -ne $enableMSI -and $enableMSI)
 
 # Cleanup
 Get-ChildItem -Force -Path "$artifactsPath" -Recurse -Directory |
-  Where-Object { $_.name -match "^$($buildWith.ToLower())_.*-.*" } |
-  Remove-Item -Force -Recurse #-Whatif
+        Where-Object { $_.name -match "^$($buildWith.ToLower() )_.*-.*" } |
+        Remove-Item -Force -Recurse #-Whatif
 
 
 Write-Output "
 ####################################
 ###           Completed          ###
 ####################################
-In: $($stopWatch.Elapsed)"
+In: $( $stopWatch.Elapsed )"
 
 

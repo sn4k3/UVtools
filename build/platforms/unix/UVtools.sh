@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 path="$(dirname "$0")"
 arch="$(uname -m)" # x86_64 or arm64
 
@@ -8,18 +8,18 @@ run_app_normal(){
     exec "$path/UVtools" $@
 }
 
-run_app_dotnet(){ 
+run_app_dotnet(){
     if ! testcmd dotnet; then
         echo "$(uname) $arch requires dotnet in order to run."
         echo 'Please use the auto installer script to install all the dependencies.'
-        exit -1
+        exit 9
     fi
 
     if [ -f "$path/UVtools.dll" ]; then
         exec dotnet "$path/UVtools.dll" $@
     else
         echo "Error: UVtools.dll not found."
-        exit -1
+        exit 9
     fi
 }
 
@@ -36,5 +36,5 @@ elif [ -f "$path/UVtools.dll" ]; then
 else
     echo 'Error: Unable to detect UVtools or to run it.'
     echo 'Please use the auto installer script to re/install UVtools.'
-    exit -1
+    exit 9
 fi

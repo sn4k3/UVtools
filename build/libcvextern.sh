@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Script to build the libcvextern.so
 # Can be run outside UVtools and as standalone script
@@ -19,10 +19,10 @@ testcmd() { command -v "$1" &> /dev/null; }
 
 if [ "$arch" != "x86_64" -a "$arch" != "arm64" ]; then
     echo "Error: Unsupported host arch: $arch"
-    exit -1
+    exit 9
 fi
 
-for lastArg in $@; do :; done # Get last argument
+for lastArg in "$@"; do :; done # Get last argument
 
 if [ $lastArg == "clean" ]; then
     echo "Cleaning $directory directory"
@@ -132,22 +132,22 @@ fi
 echo "- Checks"
 if [ -z "$osVariant" ]; then
     echo "Error: Unable to detect your Operative System."
-    exit -1
+    exit 9
 fi
 
 if ! testcmd git; then
     echo "Error: git not installed. Please re-run this script with -i flag."
-    exit -1
+    exit 9
 fi
 
 if ! testcmd cmake; then
     echo "Error: cmake not installed. Please re-run this script with -i flag."
-    exit -1
+    exit 9
 fi
 
 if ! testcmd dotnet; then
     echo "Error: dotnet not installed. Please re-run this script with -i flag."
-    exit -1
+    exit 9
 fi
 
 

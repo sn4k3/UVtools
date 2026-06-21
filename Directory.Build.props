@@ -6,10 +6,13 @@
         <Nullable>enable</Nullable>
 
         <!-- Metadata -->
-        <Authors>Tiago Conceição, sn4k3</Authors>
+        <ProductName>UVtools</ProductName>
         <Company>PTRTECH</Company>
+        <CompanyRDNS>pt.ptrtech</CompanyRDNS>
+        <Authors>Tiago Conceição, sn4k3</Authors>
         <Copyright>Copyright 2020-$([System.DateTime]::Now.ToString(`yyyy`)) © PTRTECH</Copyright>
-        <Description>MSLA/DLP, file analysis, calibration, repair, conversion and manipulation</Description>
+        <Summary>MSLA/DLP, file analysis, calibration, repair, conversion and manipulation</Summary>
+        <Description>$(Summary)</Description>
 
         <!-- Package -->
         <ApplicationIcon>$(MSBuildThisFileDirectory)UVtools.CAD\UVtools.ico</ApplicationIcon>
@@ -26,7 +29,7 @@
 
         <!-- Sign -->
         <SignAssembly>True</SignAssembly>
-        <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\UVtools.snk</AssemblyOriginatorKeyFile>
+        <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)UVtools.snk</AssemblyOriginatorKeyFile>
 
         <!-- Set the path map and artifacts path. -->
         <PathMap>$(MSBuildProjectDirectory)=$(MSBuildProjectName)</PathMap>
@@ -43,6 +46,9 @@
 
         <!-- MvvmToolkit -->
         <MvvmToolkitEnableINotifyPropertyChangingSupport>false</MvvmToolkitEnableINotifyPropertyChangingSupport>
+
+        <!-- Other variables -->
+        <BuildRuntimeCacheFileName>buildruntime.json</BuildRuntimeCacheFileName>
     </PropertyGroup>
 
     <!-- GitHub Actions -->
@@ -51,18 +57,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="$(MSBuildThisFileDirectory)UVtools.CAD\UVtools.png" Pack="true" PackagePath="" Visible="false" />
+        <None Include="$(MSBuildThisFileDirectory)UVtools.CAD\UVtools.png" Pack="true" PackagePath="" Visible="false"/>
     </ItemGroup>
 
     <Choose>
         <When Condition="Exists('$(MSBuildProjectDirectory)\README.md')">
             <ItemGroup>
-                <None Include="$(MSBuildProjectDirectory)\README.md" Pack="true" PackagePath="" Visible="false" />
+                <None Include="$(MSBuildProjectDirectory)\README.md" Pack="true" PackagePath="" Visible="false"/>
             </ItemGroup>
         </When>
         <When Condition="Exists('$(MSBuildThisFileDirectory)README.md')">
             <ItemGroup>
-                <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="" Visible="false" />
+                <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="" Visible="false"/>
             </ItemGroup>
         </When>
     </Choose>
