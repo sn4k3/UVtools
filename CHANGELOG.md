@@ -18,6 +18,7 @@
   you need to adapt and use the new naming and reference the new library
 - (Fix) Anycubic zip format after save can not be loaded again in anycubic slicer (#1108)
 - (Fix) Goo: Disallow open files with a version that is not known by decoder (#1114)
+- (Fix) Calibrate - Exposure Finder: NullReferenceException when loading profiles (#1109)
 - (Upgrade) .NET from 10.0.5 to 10.0.8
 - (Upgrade) AvaloniaUI from 11.3.13 to 12.0.4
 

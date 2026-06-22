@@ -324,8 +324,8 @@ public sealed partial class OperationCalibrateExposureFinder : Operation
         }
     }
 
-    public decimal Xppmm => DisplayWidth > 0 ? Math.Round(SlicerFile.ResolutionX / DisplayWidth, 3) : 0;
-    public decimal Yppmm => DisplayHeight > 0 ? Math.Round(SlicerFile.ResolutionY / DisplayHeight, 3) : 0;
+    public decimal Xppmm => DisplayWidth > 0 && SlicerFile is not null ? Math.Round(SlicerFile.ResolutionX / DisplayWidth, 3) : 0;
+    public decimal Yppmm => DisplayHeight > 0 && SlicerFile is not null ? Math.Round(SlicerFile.ResolutionY / DisplayHeight, 3) : 0;
     public decimal Ppmm => Math.Max(Xppmm, Yppmm);
 
     public decimal LayerHeight
