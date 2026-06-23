@@ -390,10 +390,8 @@ The citation year should correspond to that version's release year.
 
 ## APA 7
 
-```
 Conceição, T. M. F. (2026). *UVtools: MSLA/DLP file analysis, calibration, repair, conversion and manipulation* (Version
 6.0.3) [Computer software]. GitHub. https://github.com/sn4k3/UVtools/releases/tag/v6.0.3
-```
 
 **In-text citation:** (Conceição, 2026)
 
