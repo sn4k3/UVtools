@@ -47,7 +47,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scr
 # MSLA/DLP, file analysis, calibration, repair, conversion and manipulation
 
 This simple tool can give you insight of supports and find key failures.  
-Did you forget what resin or other settings you used on a project? 
+Did you forget what resin or other settings you used on a project?
 This can also save you, check every setting that were used with or simply change them!
 
 - Facebook group: https://www.facebook.com/groups/uvtools
@@ -59,22 +59,23 @@ This can also save you, check every setting that were used with or simply change
 # Why this project?
 
 I don't own a Prusa SL1 or any other resin printer, for now I’m only a FDM user with Prusa MK3 and a Ender3.
-PrusaSlicer is my only choose, why? Because I think it's the best and feature more, at least for me, simple but powerful. 
+PrusaSlicer is my only choose, why? Because I think it's the best and feature more, at least for me, simple but
+powerful.
 
-So why this project? Well in fact I’m looking for a resin printer and i like to study 
-and learn first before buy, get good and don't regret, and while inspecting i found that 
-resin printers firmwares are not as universal as FDM, too many file formats and there 
+So why this project? Well in fact I’m looking for a resin printer and i like to study
+and learn first before buy, get good and don't regret, and while inspecting i found that
+resin printers firmwares are not as universal as FDM, too many file formats and there
 before each printer can use their own property file, this of course limit the software selection,
 for example, only PrusaSlicer can slice SL1 files. So with that in mind I'm preparing when I get
-a resin printer in future I can use PrusaSlicer instead of others. 
+a resin printer in future I can use PrusaSlicer instead of others.
 I've explored the other slicers and again, no one give me joy, and i feel them unstable,
 many users slice model on PrusaSlicer just to get those supports and export STL to load in another,
 that means again PrusaSlicer is on the win side, the problem is they can't slice directly on PrusaSlicer,
 so, in the end, my project aims to do almost that, configure a printer on PrusaSlicer, eg: EPAX X1,
 slice, export file, convert SL1 to native printer file and print.
 
-Please note I don't own any resin printer! All my work is virtual and calculated, 
-so, use experimental functions with care! Once things got confirmed a list will show. 
+Please note I don't own any resin printer! All my work is virtual and calculated,
+so, use experimental functions with care! Once things got confirmed a list will show.
 But also, I need victims for test subject. Proceed at your own risk!
 
 # Features
@@ -85,20 +86,20 @@ But also, I need victims for test subject. Proceed at your own risk!
 - View and edit all used properties/settings
 - Many tools to mutate and filter layers
 - Check for issues and repair/remove them as possible:
-  - Islands
-  - Overhangs
-  - Resin traps
-  - Suction cups
-  - Touching bounds
-  - Print height
-  - Empty layers
+    - Islands
+    - Overhangs
+    - Resin traps
+    - Suction cups
+    - Touching bounds
+    - Print height
+    - Empty layers
 - Suggestions and auto corrections:
-  - Layer height
-  - Bottom layer count
-  - Wait time before cure
-  - Wait time after cure
-  - Transition layer count
-  - Model position
+    - Layer height
+    - Bottom layer count
+    - Wait time before cure
+    - Wait time after cure
+    - Transition layer count
+    - Model position
 - [Convert format to another format](https://github.com/sn4k3/UVtools/wiki/Sliced-File-Conversion)
 - Calibration tests
 - Portable (No installation needed)
@@ -107,7 +108,8 @@ But also, I need victims for test subject. Proceed at your own risk!
 
 - SL1, SL1S (PrusaSlicer)
 - Photon, Photons, CBDDLP, CTB, PHZ, FDG, ZIP (Chitubox)
-- PWS, PW0, PWX, DLP, DL2P, PWMO, PWMA, PWMS, PWMX, PMX2, PWMB, PWSQ, PX6S, PM3, PM3N, PM3M, PM4M, PM4U, PM3R, PM5, PM5S, PWC, PM7, PM7M, PWSZ, PP1, PP1M (Photon Workshop)
+- PWS, PW0, PWX, DLP, DL2P, PWMO, PWMA, PWMS, PWMX, PMX2, PWMB, PWSQ, PX6S, PM3, PM3N, PM3M, PM4M, PM4U, PM3R, PM5,
+  PM5S, PWC, PM7, PM7M, PWSZ, PP1, PP1M (Photon Workshop)
 - JXS (GKone Slicer)
 - ZCode (UnizMaker)
 - ZCodex (Z-Suite)
@@ -121,7 +123,7 @@ But also, I need victims for test subject. Proceed at your own risk!
 - LGS (Longer Orange 10), LGS30 (Longer Orange 30), LGS120 (Longer Orange 120), LGS4K (Longer Orange 4K & mono)
 - Flashforge SVGX
 - Anet N4, Anet N7
-- QDT (Emake3D Galaxy 1) 
+- QDT (Emake3D Galaxy 1)
 - OSLA (Open SLA universal binary file)
 - OSF (Vlare Open File Format)
 - NanoDLP (Zip)
@@ -135,40 +137,41 @@ But also, I need victims for test subject. Proceed at your own risk!
 
 - **Installation:** https://github.com/sn4k3/UVtools/wiki/Setup-PrusaSlicer
 - **Available printers:** https://github.com/sn4k3/UVtools/tree/master/PrusaSlicer/printer
-- **Available profiles**: 
-  - From 0.01mm to 0.20mm
-  - Light, Medium and Heavy Supports
+- **Available profiles**:
+    - From 0.01mm to 0.20mm
+    - Light, Medium and Heavy Supports
 - **Custom "Material Notes" and "Printer Notes" keywords:**
-  - **TransitionLayerCount_xxx:** Sets the number of transition layers
-  - **BottomLightOffDelay_xxx:** Sets the bottom light off delay time in seconds
-  - **LightOffDelay_xxx:** Sets the light off delay time in seconds
-  - **BottomWaitTimeBeforeCure_xxx:** Sets the bottom wait time before cure in seconds
-  - **WaitTimeBeforeCure_xxx:** Sets the wait time before cure in seconds
-  - **BottomWaitTimeAfterCure_xxx:** Sets the bottom wait time after cure in seconds
-  - **WaitTimeAfterCure_xxx:** Sets the wait time after cure in seconds
-  - **BottomLiftHeight_xxx:** Sets the bottom lift height in millimeters
-  - **BottomLiftSpeed_xxx:** Sets the bottom lift speed in millimeters/minute
-  - **BottomLiftHeight2_xxx:** Sets the second bottom lift height in millimeters
-  - **BottomLiftSpeed2_xxx:** Sets the second bottom lift speed in millimeters/minute
-  - **LiftHeight_xxx:** Sets the lift height in millimeters
-  - **LiftSpeed_xxx:** Sets the lift speed in millimeters/minute
-  - **LiftHeight2_xxx:** Sets the second lift height in millimeters
-  - **LiftSpeed2_xxx:** Sets the second lift speed in millimeters/minute
-  - **BottomWaitTimeAfterLift_xxx:** Sets the bottom wait time after lift in seconds
-  - **WaitTimeAfterLift_xxx:** Sets the wait time after lift in seconds
-  - **BottomRetractSpeed_xxx:** Sets the bottom retract speed in millimeters/minute
-  - **BottomRetractHeight2_xxx:** Sets the second bottom retract height in millimeters
-  - **BottomRetractSpeed2_xxx:** Sets the second bottom retract speed in millimeters/minute
-  - **RetractSpeed_xxx:** Sets the retract speed in millimeters/minute
-  - **RetractHeight2_xxx:** Sets the second retract height in millimeters
-  - **RetractSpeed2_xxx:** Sets the second retract speed in millimeters/minute
-  - **BottomLightPWM_xxx:** Sets the bottom LED light power (0-255)
-  - **LightPWM_xxx:** Sets the LED light power (0-255)
-  - **FILEVERSION_n:** Sets the output file format version/revision
-  - **FILECLASS_xxx:** Sets the output file format class to be auto converted once open on UVtools
-  - **FILEFORMAT_xxx:** Sets the output file format extension to be auto converted once open on UVtools
-  - **LAYERIMAGEFORMAT_xxx:** Sets the layer image format required for the converted file if the format have multiple options (For Archives with PNG's)
-   
+    - **TransitionLayerCount_xxx:** Sets the number of transition layers
+    - **BottomLightOffDelay_xxx:** Sets the bottom light off delay time in seconds
+    - **LightOffDelay_xxx:** Sets the light off delay time in seconds
+    - **BottomWaitTimeBeforeCure_xxx:** Sets the bottom wait time before cure in seconds
+    - **WaitTimeBeforeCure_xxx:** Sets the wait time before cure in seconds
+    - **BottomWaitTimeAfterCure_xxx:** Sets the bottom wait time after cure in seconds
+    - **WaitTimeAfterCure_xxx:** Sets the wait time after cure in seconds
+    - **BottomLiftHeight_xxx:** Sets the bottom lift height in millimeters
+    - **BottomLiftSpeed_xxx:** Sets the bottom lift speed in millimeters/minute
+    - **BottomLiftHeight2_xxx:** Sets the second bottom lift height in millimeters
+    - **BottomLiftSpeed2_xxx:** Sets the second bottom lift speed in millimeters/minute
+    - **LiftHeight_xxx:** Sets the lift height in millimeters
+    - **LiftSpeed_xxx:** Sets the lift speed in millimeters/minute
+    - **LiftHeight2_xxx:** Sets the second lift height in millimeters
+    - **LiftSpeed2_xxx:** Sets the second lift speed in millimeters/minute
+    - **BottomWaitTimeAfterLift_xxx:** Sets the bottom wait time after lift in seconds
+    - **WaitTimeAfterLift_xxx:** Sets the wait time after lift in seconds
+    - **BottomRetractSpeed_xxx:** Sets the bottom retract speed in millimeters/minute
+    - **BottomRetractHeight2_xxx:** Sets the second bottom retract height in millimeters
+    - **BottomRetractSpeed2_xxx:** Sets the second bottom retract speed in millimeters/minute
+    - **RetractSpeed_xxx:** Sets the retract speed in millimeters/minute
+    - **RetractHeight2_xxx:** Sets the second retract height in millimeters
+    - **RetractSpeed2_xxx:** Sets the second retract speed in millimeters/minute
+    - **BottomLightPWM_xxx:** Sets the bottom LED light power (0-255)
+    - **LightPWM_xxx:** Sets the LED light power (0-255)
+    - **FILEVERSION_n:** Sets the output file format version/revision
+    - **FILECLASS_xxx:** Sets the output file format class to be auto converted once open on UVtools
+    - **FILEFORMAT_xxx:** Sets the output file format extension to be auto converted once open on UVtools
+    - **LAYERIMAGEFORMAT_xxx:** Sets the layer image format required for the converted file if the format have multiple
+      options (For Archives with PNG's)
+
 Note that some variables will only work if the target format supports them, otherwise they will be ignored.  
 Replace the "xxx" by your desired value in the correct units
 
@@ -208,61 +211,63 @@ Note: On each command you can use -? to see specific command help and extra opti
 ## UVtools (UI) executable
 
 - **Open file(s):**
-   - **Syntax:** UVtools \<file1\> [file2] [file3] ...
-   - **Example 1:** UVtools C:\model.osla
-   - **Example 2:** UVtools C:\model.zip D:\other_model.osla
-   - **Note:** When a invalid file is pass, the program will open as default.
+    - **Syntax:** UVtools \<file1\> [file2] [file3] ...
+    - **Example 1:** UVtools C:\model.osla
+    - **Example 2:** UVtools C:\model.zip D:\other_model.osla
+    - **Note:** When a invalid file is pass, the program will open as default.
 - **Redirect a command to UVtoolsCmd:**
-   - **Syntax:** UVtools --cmd \<commands ...\>
-   - **Example 1:** UVtools --cmd convert C:\model.osla zip
-   - **Note:** This can be used when UVtoolsCmd is not directly exposed, for example if you are running via a .AppImage.  
-               All commands will be redirected to `UVtoolsCmd` and the UI will not run. It still shows the terminal window.
+    - **Syntax:** UVtools --cmd \<commands ...\>
+    - **Example 1:** UVtools --cmd convert C:\model.osla zip
+    - **Note:** This can be used when UVtoolsCmd is not directly exposed, for example if you are running via a
+      .AppImage.  
+      All commands will be redirected to `UVtoolsCmd` and the UI will not run. It still shows the terminal window.
 
 ### Legacy
 
-The following commands are the old way and commands under the UI executable, they will be removed in near future, try to not use them, please prefer **UVtoolsCmd**.
+The following commands are the old way and commands under the UI executable, they will be removed in near future, try to
+not use them, please prefer **UVtoolsCmd**.
 
 - **Convert a file into another type(s)**
-   - **Syntax:** UVtools -c/--convert \<input_file\> \<output_file1_or_ext\> [output_file2_or_ext] ...
-   - **Example 1:** UVtools -c model.zip osla
-   - **Example 2:** UVtools -c model.zip model_converted.osla
-   - **Example 3:** UVtools --convert model.zip model_converted.osla model_converted.zcode
-   - **Note:** Nothing happen when providing wrong files, will quit.
+    - **Syntax:** UVtools -c/--convert \<input_file\> \<output_file1_or_ext\> [output_file2_or_ext] ...
+    - **Example 1:** UVtools -c model.zip osla
+    - **Example 2:** UVtools -c model.zip model_converted.osla
+    - **Example 3:** UVtools --convert model.zip model_converted.osla model_converted.zcode
+    - **Note:** Nothing happen when providing wrong files, will quit.
 - **Extract a file to a folder**
-   - **Syntax:** UVtools -e/--extract \<input_file\> [output_folder]
-   - **Example 1:** UVtools -e model.zip
-   - **Example 2:** UVtools -e model.zip mymodel
-   - **Example 3:** UVtools --extract model.zip .
-   - **Note:** Nothing happen when providing wrong files/folder, will quit.
+    - **Syntax:** UVtools -e/--extract \<input_file\> [output_folder]
+    - **Example 1:** UVtools -e model.zip
+    - **Example 2:** UVtools -e model.zip mymodel
+    - **Example 3:** UVtools --extract model.zip .
+    - **Note:** Nothing happen when providing wrong files/folder, will quit.
 - **Export a file to a 3D mesh**
-   - **Syntax:** UVtools --export-mesh \<input_file\> [output_mesh_file]
-   - **Example 1:** UVtools --export-mesh model.zip
-   - **Example 2:** UVtools --export-mesh model.zip model_exported.stl
-   - **Note:** Nothing happen when providing wrong files, will quit.
+    - **Syntax:** UVtools --export-mesh \<input_file\> [output_mesh_file]
+    - **Example 1:** UVtools --export-mesh model.zip
+    - **Example 2:** UVtools --export-mesh model.zip model_exported.stl
+    - **Note:** Nothing happen when providing wrong files, will quit.
 - **Run a operation and save the file**
-   - **Syntax:** UVtools --run-operation \<input_file\> \<operation_file.uvtop\>
-   - **Example 1:** UVtools --run-operation model.zip MyMorph.uvtop
-   - **Note:** Nothing happen when providing wrong files, will quit.
+    - **Syntax:** UVtools --run-operation \<input_file\> \<operation_file.uvtop\>
+    - **Example 1:** UVtools --run-operation model.zip MyMorph.uvtop
+    - **Note:** Nothing happen when providing wrong files, will quit.
 - **Run a script and save the file**
-   - **Syntax:** UVtools --run-script \<input_file\> \<script_file.cs\>
-   - **Example 1:** UVtools --run-script model.zip myScript.cs
-   - **Note:** Nothing happen when providing wrong files, will quit.
+    - **Syntax:** UVtools --run-script \<input_file\> \<script_file.cs\>
+    - **Example 1:** UVtools --run-script model.zip myScript.cs
+    - **Note:** Nothing happen when providing wrong files, will quit.
 - **Copy print parameters from one file to another**
-   - **Syntax:** UVtools --copy-parameters \<from_file\> \<to_file\>
-   - **Example 1:** UVtools --copy-parameters model.zip otherfile.zip
-   - **Note:** Nothing happen when providing wrong files, will quit.
+    - **Syntax:** UVtools --copy-parameters \<from_file\> \<to_file\>
+    - **Example 1:** UVtools --copy-parameters model.zip otherfile.zip
+    - **Note:** Nothing happen when providing wrong files, will quit.
 
 # Requirements
 
 ## Windows
 
 1. Windows 10 or greater
-   1. If on Windows 10/11 N or NK:
-      - [Media Feature Pack](https://www.microsoft.com/download/details.aspx?id=48231) must be installed
-      - Press Windows + R
-      - Type: appwiz.cpl (and press Enter key)
-      - Click on: Turn Windows features on or off
-      - Check the "Media Extensions" and click Ok
+    1. If on Windows 10/11 N or NK:
+        - [Media Feature Pack](https://www.microsoft.com/download/details.aspx?id=48231) must be installed
+        - Press Windows + R
+        - Type: appwiz.cpl (and press Enter key)
+        - Click on: Turn Windows features on or off
+        - Check the "Media Extensions" and click Ok
 1. 8GB RAM or higher + 512MB per CPU core
 2. 64 bit System
 3. 1920 x 1080 @ 100% scale as minimum resolution
@@ -276,7 +281,8 @@ The following commands are the old way and commands under the UI executable, the
 ### Installing the dependencies
 
 **Copy the following script, paste and run on a terminal:**  
-(Required if you didn't use the [auto installer](https://github.com/sn4k3/UVtools#to-auto-install-on-linux) or if it failed to detect and install dependencies)
+(Required if you didn't use the [auto installer](https://github.com/sn4k3/UVtools#to-auto-install-on-linux) or if it
+failed to detect and install dependencies)
 
 ```bash
 [ "$(command -v apt-get)" -a -z "$(command -v curl)" ] && sudo apt-get install -y curl 
@@ -285,6 +291,7 @@ The following commands are the old way and commands under the UI executable, the
 [ "$(command -v zypper)" -a -z "$(command -v curl)" ] && sudo zypper install -y curl
 sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh)"
 ```
+
 <!-- sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh)" !-->
 
 **To run UVtools open it folder on a terminal and call one of:**
@@ -322,8 +329,9 @@ There are multiple ways to open your file in UVtools:
 
 # Library -> Developers
 
-Are you a developer? 
-This project include a .NET 6.0 library (UVtools.Core) that can be referenced in your application to make use of my work. 
+Are you a developer?
+This project include a .NET 6.0 library (UVtools.Core) that can be referenced in your application to make use of my
+work.
 Easy to use calls that allow you work with the formats. For more information navigate main code to see some calls.
 
 Nuget package: https://www.nuget.org/packages/UVtools.Core
@@ -342,23 +350,24 @@ dotnet add package UVtools.Core
 ## Develop and build from Source
 
 [Build directions](https://github.com/sn4k3/UVtools/tree/master/build)  
-The fastest way to compile the project is by run the `build/compile.bat`, however if you wish to develop with visual studio follow the following steps:
+The fastest way to compile the project is by run the `build/compile.bat`, however if you wish to develop with visual
+studio follow the following steps:
 
 1. Install Visual Studio and include .NET development support
 1. Install the [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) if not included on previous installation
-1. Install the [Avalonia for Visual Studio](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaVS):
+1. Install
+   the [Avalonia for Visual Studio](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaVS):
 1. Install the Wix Toolset: (Required only for MSI build, **optional**)
-   - `dotnet tool install --global wix`
-   - [Visual Studio HeatWave extension](https://www.firegiant.com/wix/heatwave)
+    - `dotnet tool install --global wix`
+    - [Visual Studio HeatWave extension](https://www.firegiant.com/wix/heatwave)
 1. Open UVtools.sln
 1. Build
 
-
 # TODO
+
 - More file formats
 - Clean up & performance (always)
 - See features request under GitHub
-
 
 # Support my work / Donate
 
@@ -369,7 +378,70 @@ Use one of the following methods:
 [![GitHub Sponsors](https://img.shields.io/badge/Donate-Sponsor-red?style=for-the-badge)](https://github.com/sponsors/sn4k3)
 [![Donate PayPal](https://img.shields.io/badge/Donate-PayPal-blue?style=for-the-badge)](https://paypal.me/SkillTournament)
 
-# Contributors 
+# Contributors
 
 [![GitHub contributors](https://img.shields.io/github/contributors/sn4k3/UVtools?style=for-the-badge)](https://github.com/sn4k3/UVtools/graphs/contributors)  
 [![Contributors](https://contrib.rocks/image?repo=sn4k3/UVtools)](https://github.com/sn4k3/UVtools/graphs/contributors)
+
+# Citation
+
+If you use **UVtools** in academic or scientific work, Please cite the specific UVtools version used in your research.
+The citation year should correspond to that version's release year.
+
+## APA 7
+
+```
+Conceição, T. M. F. (2026). *UVtools: MSLA/DLP file analysis, calibration, repair, conversion and manipulation* (Version
+6.0.3) [Computer software]. GitHub. https://github.com/sn4k3/UVtools/releases/tag/v6.0.3
+```
+
+**In-text citation:** (Conceição, 2026)
+
+## Harvard
+
+Conceição, Tiago M. F. (2026) *UVtools: MSLA/DLP file analysis, calibration, repair, conversion and manipulation*,
+version 6.0.3 [computer software]. Available at: https://github.com/sn4k3/UVtools/releases/tag/v6.0.3 (Accessed: 23 June
+2026).
+
+**In-text citation:**  (Conceição, 2026)
+
+## IEEE
+
+T. M. F. Conceição, “UVtools: MSLA/DLP file analysis, calibration, repair, conversion and manipulation,” version 6.0.3,
+2026\. [Computer software]. Available: https://github.com/sn4k3/UVtools/releases/tag/v6.0.3
+
+**In-text citation:** [1]
+
+## Chicago
+
+Conceição, Tiago M. F. *UVtools: MSLA/DLP File Analysis, Calibration, Repair, Conversion and Manipulation*. Version
+6.0.3. Computer software. 2026\. https://github.com/sn4k3/UVtools/releases/tag/v6.0.3
+
+## Vancouver
+
+Conceição TMF. UVtools: MSLA/DLP file analysis, calibration, repair, conversion and manipulation [computer software].
+Version 6.0.3. 2026\. Available from: https://github.com/sn4k3/UVtools/releases/tag/v6.0.3
+
+## MLA 9
+
+Conceição, Tiago M. F. *UVtools: MSLA/DLP File Analysis, Calibration, Repair, Conversion and Manipulation*. Version
+6.0.3, GitHub, 2026, https://github.com/sn4k3/UVtools/releases/tag/v6.0.3
+
+## Generic citation
+
+File processing was performed using UVtools, an open-source application for MSLA/DLP file analysis, calibration, repair,
+conversion and manipulation (Conceição, 2026).
+
+## BibTeX
+
+```bibtex
+@software{conceicao_uvtools,
+author  = {Conceição, Tiago M. F.},
+title   = {{UVtools}: MSLA/DLP File Analysis, Calibration, Repair,
+Conversion and Manipulation},
+version = {VERSION_USED},
+year    = {VERSION_RELEASE_YEAR},
+url     = {https://github.com/sn4k3/UVtools/releases/tag/VERSION_TAG},
+note    = {Open-source computer software}
+}
+```
