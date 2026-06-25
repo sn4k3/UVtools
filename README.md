@@ -14,14 +14,14 @@
 
 ### https://github.com/sn4k3/UVtools/releases/latest
 
-## To auto install on Windows (package manager):
+## To auto-install on Windows (package manager):
 
 - **Winget:** `winget install -e --id PTRTECH.UVtools`
 - **Chocolatey:** `choco install -y uvtools`
 
 **Note:** Winget is included on Windows 10 with recent updates and Windows 11 by default.
 
-## To auto install on Linux:
+## To auto-install on Linux:
 
 ```bash
 [ "$(command -v apt)" -a -z "$(command -v curl)" ] && sudo apt-get install -y curl 
@@ -31,7 +31,7 @@
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-uvtools.sh)"
 ```
 
-## To auto install on MacOS:
+## To auto-install on macOS:
 
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-uvtools.sh)"
@@ -48,7 +48,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scr
 
 This simple tool can give you insight of supports and find key failures.  
 Did you forget what resin or other settings you used on a project?
-This can also save you, check every setting that were used with or simply change them!
+This can also save you, check every setting that was used with or change them!
 
 - Facebook group: https://www.facebook.com/groups/uvtools
 - Discussions: https://github.com/sn4k3/UVtools/discussions
@@ -58,25 +58,25 @@ This can also save you, check every setting that were used with or simply change
 
 # Why this project?
 
-I don't own a Prusa SL1 or any other resin printer, for now I’m only a FDM user with Prusa MK3 and a Ender3.
-PrusaSlicer is my only choose, why? Because I think it's the best and feature more, at least for me, simple but
+I don't own a Prusa SL1 or any other resin printer, for now I’m only an FDM user with Prusa MK3 and an Ender3.
+PrusaSlicer is my only choice, why? Because I think it's the best and features more, at least for me, simple but
 powerful.
 
-So why this project? Well in fact I’m looking for a resin printer and i like to study
-and learn first before buy, get good and don't regret, and while inspecting i found that
+So why this project? Well, in fact, I’m looking for a resin printer. I like to study
+and learn first before buying and get good and don't regret. While inspecting, I found that
 resin printers firmwares are not as universal as FDM, too many file formats and there
-before each printer can use their own property file, this of course limit the software selection,
-for example, only PrusaSlicer can slice SL1 files. So with that in mind I'm preparing when I get
-a resin printer in future I can use PrusaSlicer instead of others.
-I've explored the other slicers and again, no one give me joy, and i feel them unstable,
+before each printer can use their own property file, this of course limit the software selection. For example, only
+PrusaSlicer can slice SL1 files. So with that in mind, I'm preparing when I get
+a resin printer in the future, I can use PrusaSlicer instead of others.
+I've explored the other slicers and again, no one gives me joy, and I feel them unstable,
 many users slice model on PrusaSlicer just to get those supports and export STL to load in another,
 that means again PrusaSlicer is on the win side, the problem is they can't slice directly on PrusaSlicer,
-so, in the end, my project aims to do almost that, configure a printer on PrusaSlicer, eg: EPAX X1,
-slice, export file, convert SL1 to native printer file and print.
+so, in the end, my project aims to do almost that, configure a printer on PrusaSlicer, e.g.: EPAX X1,
+slice, export a file, convert SL1 to native printer file and print.
 
 Please note I don't own any resin printer! All my work is virtual and calculated,
-so, use experimental functions with care! Once things got confirmed a list will show.
-But also, I need victims for test subject. Proceed at your own risk!
+so, use experimental functions with care! Once things got confirmed, a list will show.
+But also, I need victims for a test subject. Proceed at your own risk!
 
 # Features
 
@@ -107,11 +107,11 @@ But also, I need victims for test subject. Proceed at your own risk!
 # Known File Formats
 
 - SL1, SL1S (PrusaSlicer)
-- Photon, Photons, CBDDLP, CTB, PHZ, FDG, ZIP (Chitubox)
+- Photon, Photons, CBDDLP, CTB, PHZ, FDG, ZIP (ThickBox)
 - PWS, PW0, PWX, DLP, DL2P, PWMO, PWMA, PWMS, PWMX, PMX2, PWMB, PWSQ, PX6S, PM3, PM3N, PM3M, PM4M, PM4U, PM3R, PM5,
   PM5S, PWC, PM7, PM7M, PWSZ, PP1, PP1M (Photon Workshop)
 - JXS (GKone Slicer)
-- ZCode (UnizMaker)
+- ZCode (UnitMaker)
 - ZCodex (Z-Suite)
 - CWS (NovaMaker), RGB.CWS (Nova Bene4 Mono / Elfin2 Mono SE)
 - XML.CWS (Wanhao Workshop)
@@ -129,7 +129,7 @@ But also, I need victims for test subject. Proceed at your own risk!
 - NanoDLP (Zip)
 - UVJ (Vendor-neutral format for manual manipulation)
 - VDT (Voxeldance Tango), VDA.ZIP (Voxeldance Additive)
-- ZIP (Generic / Phrozen Zip)
+- ZIP (Generic / Frozen Zip)
 - ZIP (Klipper)
 - Image files (png, jpg, jpeg, jp2, tif, bmp, pbm, pgm, ras, sr)
 
@@ -138,7 +138,7 @@ But also, I need victims for test subject. Proceed at your own risk!
 - **Installation:** https://github.com/sn4k3/UVtools/wiki/Setup-PrusaSlicer
 - **Available printers:** https://github.com/sn4k3/UVtools/tree/master/PrusaSlicer/printer
 - **Available profiles**:
-    - From 0.01mm to 0.20mm
+    - From 0.01 mm to 0.20 mm
     - Light, Medium and Heavy Supports
 - **Custom "Material Notes" and "Printer Notes" keywords:**
     - **TransitionLayerCount_xxx:** Sets the number of transition layers
@@ -164,11 +164,11 @@ But also, I need victims for test subject. Proceed at your own risk!
     - **RetractSpeed_xxx:** Sets the retract speed in millimeters/minute
     - **RetractHeight2_xxx:** Sets the second retract height in millimeters
     - **RetractSpeed2_xxx:** Sets the second retract speed in millimeters/minute
-    - **BottomLightPWM_xxx:** Sets the bottom LED light power (0-255)
-    - **LightPWM_xxx:** Sets the LED light power (0-255)
+    - **BottomLightPWM_xxx:** Sets the bottom LED light power (0–255)
+    - **LightPWM_xxx:** Sets the LED light power (0–255)
     - **FILEVERSION_n:** Sets the output file format version/revision
-    - **FILECLASS_xxx:** Sets the output file format class to be auto converted once open on UVtools
-    - **FILEFORMAT_xxx:** Sets the output file format extension to be auto converted once open on UVtools
+    - **FILECLASS_xxx:** Sets the output file format class to be auto-converted once open on UVtools
+    - **FILEFORMAT_xxx:** Sets the output file format extension to be auto-converted once open on UVtools
     - **LAYERIMAGEFORMAT_xxx:** Sets the layer image format required for the converted file if the format have multiple
       options (For Archives with PNG's)
 
@@ -214,17 +214,17 @@ Note: On each command you can use -? to see specific command help and extra opti
     - **Syntax:** UVtools \<file1\> [file2] [file3] ...
     - **Example 1:** UVtools C:\model.osla
     - **Example 2:** UVtools C:\model.zip D:\other_model.osla
-    - **Note:** When a invalid file is pass, the program will open as default.
+    - **Note:** When an invalid file is passed, the program will open as default.
 - **Redirect a command to UVtoolsCmd:**
     - **Syntax:** UVtools --cmd \<commands ...\>
     - **Example 1:** UVtools --cmd convert C:\model.osla zip
-    - **Note:** This can be used when UVtoolsCmd is not directly exposed, for example if you are running via a
+    - **Note:** This can be used when UVtoolsCmd is not directly exposed, for example, if you are running via a
       .AppImage.  
       All commands will be redirected to `UVtoolsCmd` and the UI will not run. It still shows the terminal window.
 
 ### Legacy
 
-The following commands are the old way and commands under the UI executable, they will be removed in near future, try to
+The following commands are the old way and commands under the UI executable, they will be removed soon, try to
 not use them, please prefer **UVtoolsCmd**.
 
 - **Convert a file into another type(s)**
@@ -232,30 +232,30 @@ not use them, please prefer **UVtoolsCmd**.
     - **Example 1:** UVtools -c model.zip osla
     - **Example 2:** UVtools -c model.zip model_converted.osla
     - **Example 3:** UVtools --convert model.zip model_converted.osla model_converted.zcode
-    - **Note:** Nothing happen when providing wrong files, will quit.
+    - **Note:** Nothing happens when providing wrong files, will quit.
 - **Extract a file to a folder**
     - **Syntax:** UVtools -e/--extract \<input_file\> [output_folder]
     - **Example 1:** UVtools -e model.zip
     - **Example 2:** UVtools -e model.zip mymodel
-    - **Example 3:** UVtools --extract model.zip .
-    - **Note:** Nothing happen when providing wrong files/folder, will quit.
+    - **Example 3:** UVtools --extract model.zip.
+    - **Note:** Nothing happens when providing the wrong files / folder, will quit.
 - **Export a file to a 3D mesh**
     - **Syntax:** UVtools --export-mesh \<input_file\> [output_mesh_file]
     - **Example 1:** UVtools --export-mesh model.zip
     - **Example 2:** UVtools --export-mesh model.zip model_exported.stl
-    - **Note:** Nothing happen when providing wrong files, will quit.
-- **Run a operation and save the file**
+    - **Note:** Nothing happens when providing wrong files, will quit.
+- **Run an operation and save the file**
     - **Syntax:** UVtools --run-operation \<input_file\> \<operation_file.uvtop\>
     - **Example 1:** UVtools --run-operation model.zip MyMorph.uvtop
-    - **Note:** Nothing happen when providing wrong files, will quit.
+    - **Note:** Nothing happens when providing wrong files, will quit.
 - **Run a script and save the file**
     - **Syntax:** UVtools --run-script \<input_file\> \<script_file.cs\>
     - **Example 1:** UVtools --run-script model.zip myScript.cs
-    - **Note:** Nothing happen when providing wrong files, will quit.
+    - **Note:** Nothing happens when providing wrong files, will quit.
 - **Copy print parameters from one file to another**
     - **Syntax:** UVtools --copy-parameters \<from_file\> \<to_file\>
     - **Example 1:** UVtools --copy-parameters model.zip otherfile.zip
-    - **Note:** Nothing happen when providing wrong files, will quit.
+    - **Note:** Nothing happens when providing wrong files, will quit.
 
 # Requirements
 
@@ -268,14 +268,14 @@ not use them, please prefer **UVtoolsCmd**.
         - Type: appwiz.cpl (and press Enter key)
         - Click on: Turn Windows features on or off
         - Check the "Media Extensions" and click Ok
-1. 8GB RAM or higher + 512MB per CPU core
-2. 64 bit System
-3. 1920 x 1080 @ 100% scale as minimum resolution
+2. 8GB RAM or higher + 512MB per CPU core
+3. 64-bit System
+4. 1920 x 1080 @ 100% scale as minimum resolution
 
 ## Linux
 
 1. 8GB RAM or higher + 512MB per CPU core
-2. 64 bit System
+2. 64-bit System
 3. 1920 x 1080 @ 100% scale as minimum resolution
 
 ### Installing the dependencies
@@ -294,15 +294,15 @@ sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/maste
 
 <!-- sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh)" !-->
 
-**To run UVtools open it folder on a terminal and call one of:**
+**To run UVtools, open it folder on a terminal and call one of:**
 
 - Double-click `UVtools` file
 - `./UVtools`
 - `bash UVtools.sh`
 - `dotnet UVtools.dll` [For universal package only, requires dotnet-runtime]
-- As a practical alternative you can create a shortcut on Desktop
+- As a practical alternative, you can create a shortcut on Desktop
 
-If you downloaded the **.AppImage** package variant you must set run permissions to it before attempt to run it:  
+If you download the **.AppImage** package variant, you must set run permissions to it before attempting to run it:  
 ![AppImage permissions](https://github.com/sn4k3/UVtools/raw/master/wiki/linux_AppImage_permissions.png)
 
 ## Mac
@@ -311,28 +311,29 @@ If you downloaded the **.AppImage** package variant you must set run permissions
 1. 8GB RAM or higher + 512MB per CPU core
 3. Install UVtools via the [auto installer](https://github.com/sn4k3/UVtools#to-auto-install-on-macos)
 
-To run UVtools open it folder on a terminal and call one of:
+To run UVtools, open its folder on a terminal and call one of:
 
 - Double-click `UVtools` file
 - `./UVtools.app/Contents/MacOS/UVtools`
 - `bash UVtools.app/Contents/MacOS/UVtools.sh`
-- As a practical alternative you can create a shortcut on Desktop
+- As a practical alternative, you can create a shortcut on Desktop
 
 # How to use
 
 There are multiple ways to open your file in UVtools:
 
-1. Open UVtools and load your file (CTRL + O) (File -> Open)
-2. Open UVtools and drag and drop your file inside window
-3. Drag and drop file into UVtools.exe
+1. Open UVtools and load your file (CTRL + O) (File → Open)
+2. Open UVtools and drag and drop your file inside the window
+3. Drag and drop the file into UVtools.exe
 4. Set UVtools the default program to open your files
 
 # Library -> Developers
 
 Are you a developer?
-This project include a .NET 6.0 library (UVtools.Core) that can be referenced in your application to make use of my
+This project includes a .NET library (UVtools.Core) that can be referenced in your application to make use of my
 work.
-Easy to use calls that allow you work with the formats. For more information navigate main code to see some calls.
+Easy-to-use calls that allow you to work with the formats. For more information, navigate the main code to see some
+calls.
 
 Nuget package: https://www.nuget.org/packages/UVtools.Core
 
@@ -344,35 +345,36 @@ dotnet add package UVtools.Core
 
 ## Scripting:
 
-- [Powershell](https://github.com/sn4k3/UVtools/tree/master/Scripts/UVtools.Powershell)
+- [PowerShell](https://github.com/sn4k3/UVtools/tree/master/Scripts/UVtools.Powershell)
 - [Python](https://github.com/sn4k3/UVtools/tree/master/Scripts/UVtools.Python)
 
 ## Develop and build from Source
 
 [Build directions](https://github.com/sn4k3/UVtools/tree/master/build)  
-The fastest way to compile the project is by run the `build/compile.bat`, however if you wish to develop with visual
-studio follow the following steps:
+The fastest way to compile the project is by run the `build/compile.bat`, however, if you wish to develop with Visual
+Studio follow the following steps:
 
 1. Install Visual Studio and include .NET development support
-1. Install the [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) if not included on previous installation
-1. Install
+2. Install the [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) if not included on the previous
+   installation
+3. Install
    the [Avalonia for Visual Studio](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaVS):
-1. Install the Wix Toolset: (Required only for MSI build, **optional**)
+4. Install the Wix Toolset: (Required only for MSI build, **optional**)
     - `dotnet tool install --global wix`
     - [Visual Studio HeatWave extension](https://www.firegiant.com/wix/heatwave)
-1. Open UVtools.sln
-1. Build
+5. Open UVtools.sln
+6. Build
 
 # TODO
 
 - More file formats
-- Clean up & performance (always)
+- Cleanup and performance (always)
 - See features request under GitHub
 
 # Support my work / Donate
 
 All my work here is given for free (OpenSource), it took some hours to build, test and polish the program.
-If you're happy to contribute for a better program and for my work i will appreciate the tip.  
+If you're happy to contribute to a better program and for my work, I will appreciate the tip.  
 Use one of the following methods:
 
 [![GitHub Sponsors](https://img.shields.io/badge/Donate-Sponsor-red?style=for-the-badge)](https://github.com/sponsors/sn4k3)

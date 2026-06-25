@@ -39,6 +39,9 @@
             Provides a singleton instance of the <see cref="T:MatCompressorLz4" /> class for efficient reuse across the application.
             </summary>
         </member>
+        <member name="M:UVtools.Core.Compressors.MatCompressorLz4.#ctor">
+            <inheritdoc />
+        </member>
         <member name="P:UVtools.Core.Compressors.MatCompressorLz4.Provider">
             <inheritdoc />
         </member>
@@ -46,9 +49,6 @@
             <inheritdoc />
         </member>
         <member name="P:UVtools.Core.Compressors.MatCompressorLz4.MaximumCompressionLevel">
-            <inheritdoc />
-        </member>
-        <member name="M:UVtools.Core.Compressors.MatCompressorLz4.#ctor">
             <inheritdoc />
         </member>
         <member name="M:UVtools.Core.Compressors.MatCompressorLz4.GetCompressionLevel(System.IO.Compression.CompressionLevel)">
