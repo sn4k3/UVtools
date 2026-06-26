@@ -180,8 +180,7 @@ if [ "$osVariant" == "macOS" ]; then
        -DBUILD_opencv_videoio:BOOL=FALSE \\\\\\
        -DBUILD_opencv_gapi:BOOL=FALSE \\\\\\
        -DWITH_PROTOBUF:BOOL=FALSE \\\\\\
-       -DBUILD_PROTOBUF:BOOL=FALSE \\\\\\
-       -DBUILD_opencv_calib:BOOL=TRUE /g" "$directory/platforms/macos/configure" 2>/dev/null
+       -DBUILD_PROTOBUF:BOOL=FALSE /g" "$directory/platforms/macos/configure" 2>/dev/null
     fi
     "$directory/platforms/macos/configure" $arch $build_package
 else # Linux
@@ -197,8 +196,7 @@ else # Linux
        -DBUILD_opencv_videoio:BOOL=FALSE \\\\\\
        -DBUILD_opencv_gapi:BOOL=FALSE \\\\\\
        -DWITH_PROTOBUF:BOOL=FALSE \\\\\\
-       -DBUILD_PROTOBUF:BOOL=FALSE \\\\\\
-       -DBUILD_opencv_calib:BOOL=TRUE /g" "$directory/platforms/ubuntu/24.04/cmake_configure" 2>/dev/null
+       -DBUILD_PROTOBUF:BOOL=FALSE /g" "$directory/platforms/ubuntu/24.04/cmake_configure" 2>/dev/null
     fi
     "$directory/platforms/ubuntu/24.04/cmake_configure" $build_package
 fi
