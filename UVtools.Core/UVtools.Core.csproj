@@ -38,9 +38,9 @@
         <PackageReference Include="Portable.BouncyCastle" Version="1.9.0"/>
         <PackageReference Include="SixLabors.ImageSharp" Version="4.0.0"/>
         <PackageReference Include="Emgu.CV" Version="4.13.0.5924"/>
-        <PackageReference Include="Emgu.CV.runtime.mini.macos" Version="4.13.0.5924"/>
-        <PackageReference Include="Emgu.CV.runtime.mini.ubuntu-x64" Version="4.12.0.5764"/>
         <PackageReference Include="Emgu.CV.runtime.mini.windows" Version="4.13.0.5924"/>
+        <PackageReference Include="Emgu.CV.runtime.mini.ubuntu-24.04-x64" Version="4.13.0.5924"/>
+        <PackageReference Include="Emgu.CV.runtime.mini.macos" Version="4.13.0.5924"/>
         <PackageReference Include="KdTree" Version="1.4.1"/>
         <PackageReference Include="ZLinq" Version="1.5.6"/>
     </ItemGroup>
