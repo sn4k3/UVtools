@@ -30,15 +30,11 @@
     <File Path=".github/workflows/package-publish.yml" />
   </Folder>
   <Folder Name="/root/build/">
-    <File Path="build/compile.bat" />
-    <File Path="build/compile.sh" />
     <File Path="build/createRelease.ps1" />
     <File Path="build/createRelease.sh" />
     <File Path="build/cvextern.ps1" />
     <File Path="build/libcvextern.sh" />
     <File Path="build/README.md" />
-    <File Path="build/run.bat" />
-    <File Path="build/run.sh" />
   </Folder>
   <Folder Name="/root/scripts/">
     <File Path="Scripts/ImportPrusaSlicerData.ps1" />

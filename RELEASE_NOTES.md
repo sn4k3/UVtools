@@ -16,3 +16,4 @@
 - (Fix) Calibrate - Exposure Finder: NullReferenceException when loading profiles (#1109)
 - (Upgrade) .NET from 10.0.5 to 10.0.9
 - (Upgrade) AvaloniaUI from 11.3.13 to 12.0.5
+- (Upgrade) openCV from 4.12.0 to 4.13.0

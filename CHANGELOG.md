@@ -1,6 +1,6 @@
 # Changelog
 
-## 25/06/2026 - v6.1.0
+## 27/06/2026 - v6.1.0
 
 - (Add) Zstd/Zstandard layer compression
 - (Add) UI Scaling setting to allow to scale the UI to your preference
@@ -20,6 +20,7 @@
 - (Fix) Calibrate - Exposure Finder: NullReferenceException when loading profiles (#1109)
 - (Upgrade) .NET from 10.0.5 to 10.0.9
 - (Upgrade) AvaloniaUI from 11.3.13 to 12.0.5
+- (Upgrade) openCV from 4.12.0 to 4.13.0
 
 ## 06/04/2026 - v6.0.3
 
