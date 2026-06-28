@@ -22,6 +22,253 @@
 - (Upgrade) AvaloniaUI from 11.3.13 to 12.0.5
 - (Upgrade) openCV from 4.12.0 to 4.13.0
 
+**Benchmark:**
+
+```
+*** 64.goo ****
+Layer count: 3144
+Resolution: 11520 x 5120
+Pixels: 58982400
+Uncompressed size/layer: 56.25 MB
+Total uncompressed size: 172.71 GB
+
+- Compressed with Png @ Lowest level:
+  - Layers cache size: 932.12 MB
+  - Compression ratio: 189.73x (99.47% saved)
+  - Took: 00:00:58.0968780 (3044.05 MB/s)
+  - Efficiency score: 0.33
+
+Opening file 64.goo: Done in 55.87s
+- Compressed with Png @ Optimal level:
+  - Layers cache size: 891.05 MB
+  - Compression ratio: 198.47x (99.50% saved)
+  - Took: 00:00:55.8672170 (3165.54 MB/s)
+  - Efficiency score: 0.36
+
+Opening file 64.goo: Done in 214.33s
+- Compressed with Png @ Highest level:
+  - Layers cache size: 383.46 MB
+  - Compression ratio: 461.19x (99.78% saved)
+  - Took: 00:03:34.3342806 (825.11 MB/s)
+  - Efficiency score: 0.22
+
+*** Compressing with GZip ***
+Opening file 64.goo: Done in 21.25s
+- Compressed with GZip @ Lowest level:
+  - Layers cache size: 1.56 GB
+  - Compression ratio: 111.01x (99.10% saved)
+  - Took: 00:00:21.2451546 (8324.25 MB/s)
+  - Efficiency score: 0.52
+
+Opening file 64.goo: Done in 23.23s
+- Compressed with GZip @ Optimal level:
+  - Layers cache size: 467.83 MB
+  - Compression ratio: 378.02x (99.74% saved)
+  - Took: 00:00:23.2257618 (7614.39 MB/s)
+  - Efficiency score: 1.63
+
+Opening file 64.goo: Done in 86.36s
+- Compressed with GZip @ Highest level:
+  - Layers cache size: 365.84 MB
+  - Compression ratio: 483.41x (99.79% saved)
+  - Took: 00:01:26.3654719 (2047.69 MB/s)
+  - Efficiency score: 0.56
+
+*** Compressing with Deflate ***
+Opening file 64.goo: Done in 20.66s
+- Compressed with Deflate @ Lowest level:
+  - Layers cache size: 1.56 GB
+  - Compression ratio: 111.02x (99.10% saved)
+  - Took: 00:00:20.6646495 (8558.09 MB/s)
+  - Efficiency score: 0.54
+
+Opening file 64.goo: Done in 22.15s
+- Compressed with Deflate @ Optimal level:
+  - Layers cache size: 467.77 MB
+  - Compression ratio: 378.07x (99.74% saved)
+  - Took: 00:00:22.1466998 (7985.39 MB/s)
+  - Efficiency score: 1.71
+
+Opening file 64.goo: Done in 82.43s
+- Compressed with Deflate @ Highest level:
+  - Layers cache size: 365.79 MB
+  - Compression ratio: 483.48x (99.79% saved)
+  - Took: 00:01:22.4335569 (2145.36 MB/s)
+  - Efficiency score: 0.59
+
+*** Compressing with Brotli ***
+Opening file 64.goo: Done in 31.06s
+- Compressed with Brotli @ Lowest level:
+  - Layers cache size: 944.61 MB
+  - Compression ratio: 187.22x (99.47% saved)
+  - Took: 00:00:31.0634355 (5693.19 MB/s)
+  - Efficiency score: 0.60
+
+Opening file 64.goo: Done in 25.10s
+- Compressed with Brotli @ Optimal level:
+  - Layers cache size: 449.87 MB
+  - Compression ratio: 393.11x (99.75% saved)
+  - Took: 00:00:25.1045734 (7044.53 MB/s)
+  - Efficiency score: 1.57
+
+*** Compressing with Lz4 ***
+Opening file 64.goo: Done in 20.53s
+- Compressed with Lz4 @ Lowest level:
+  - Layers cache size: 1.55 GB
+  - Compression ratio: 111.29x (99.10% saved)
+  - Took: 00:00:20.5324849 (8613.18 MB/s)
+  - Efficiency score: 0.54
+
+Opening file 64.goo: Done in 33.89s
+- Compressed with Lz4 @ Optimal level:
+  - Layers cache size: 675.15 MB
+  - Compression ratio: 261.94x (99.62% saved)
+  - Took: 00:00:33.8888118 (5218.54 MB/s)
+  - Efficiency score: 0.77
+
+Opening file 64.goo: Done in 330.08s
+- Compressed with Lz4 @ Highest level:
+  - Layers cache size: 645.46 MB
+  - Compression ratio: 273.99x (99.64% saved)
+  - Took: 00:05:30.0777280 (535.78 MB/s)
+  - Efficiency score: 0.08
+
+*** Compressing with Zstd ***
+Opening file 64.goo: Done in 22.51s
+- Compressed with Zstd @ Lowest level:
+  - Layers cache size: 608.55 MB
+  - Compression ratio: 290.61x (99.66% saved)
+  - Took: 00:00:22.5071716 (7857.50 MB/s)
+  - Efficiency score: 1.29
+
+Opening file 64.goo: Done in 28.94s
+- Compressed with Zstd @ Optimal level:
+  - Layers cache size: 413.11 MB
+  - Compression ratio: 428.09x (99.77% saved)
+  - Took: 00:00:28.9375050 (6111.45 MB/s)
+  - Efficiency score: 1.48
+
+Opening file 64.goo: Done in 34.88s
+- Compressed with Zstd @ Highest level:
+  - Layers cache size: 426.33 MB
+  - Compression ratio: 414.82x (99.76% saved)
+  - Took: 00:00:34.8796002 (5070.30 MB/s)
+  - Efficiency score: 1.19
+
+*** Total benchmark time: 00:18:31.4016417 ***
+
+*** Results: ***
+Png @ Lowest | Size: 932.12 MB | Ratio: 189.73x | Saved: 99.47% | Time: 00:00:58.0968780 | Speed: 3044.05 MB/s | Efficiency: 0.33
+Png @ Optimal | Size: 891.05 MB | Ratio: 198.47x | Saved: 99.50% | Time: 00:00:55.8672170 | Speed: 3165.54 MB/s | Efficiency: 0.36
+Png @ Highest | Size: 383.46 MB | Ratio: 461.19x | Saved: 99.78% | Time: 00:03:34.3342806 | Speed: 825.11 MB/s | Efficiency: 0.22
+GZip @ Lowest | Size: 1.56 GB | Ratio: 111.01x | Saved: 99.10% | Time: 00:00:21.2451546 | Speed: 8324.25 MB/s | Efficiency: 0.52
+GZip @ Optimal | Size: 467.83 MB | Ratio: 378.02x | Saved: 99.74% | Time: 00:00:23.2257618 | Speed: 7614.39 MB/s | Efficiency: 1.63
+GZip @ Highest | Size: 365.84 MB | Ratio: 483.41x | Saved: 99.79% | Time: 00:01:26.3654719 | Speed: 2047.69 MB/s | Efficiency: 0.56
+Deflate @ Lowest | Size: 1.56 GB | Ratio: 111.02x | Saved: 99.10% | Time: 00:00:20.6646495 | Speed: 8558.09 MB/s | Efficiency: 0.54
+Deflate @ Optimal | Size: 467.77 MB | Ratio: 378.07x | Saved: 99.74% | Time: 00:00:22.1466998 | Speed: 7985.39 MB/s | Efficiency: 1.71
+Deflate @ Highest | Size: 365.79 MB | Ratio: 483.48x | Saved: 99.79% | Time: 00:01:22.4335569 | Speed: 2145.36 MB/s | Efficiency: 0.59
+Brotli @ Lowest | Size: 944.61 MB | Ratio: 187.22x | Saved: 99.47% | Time: 00:00:31.0634355 | Speed: 5693.19 MB/s | Efficiency: 0.60
+Brotli @ Optimal | Size: 449.87 MB | Ratio: 393.11x | Saved: 99.75% | Time: 00:00:25.1045734 | Speed: 7044.53 MB/s | Efficiency: 1.57
+Lz4 @ Lowest | Size: 1.55 GB | Ratio: 111.29x | Saved: 99.10% | Time: 00:00:20.5324849 | Speed: 8613.18 MB/s | Efficiency: 0.54
+Lz4 @ Optimal | Size: 675.15 MB | Ratio: 261.94x | Saved: 99.62% | Time: 00:00:33.8888118 | Speed: 5218.54 MB/s | Efficiency: 0.77
+Lz4 @ Highest | Size: 645.46 MB | Ratio: 273.99x | Saved: 99.64% | Time: 00:05:30.0777280 | Speed: 535.78 MB/s | Efficiency: 0.08
+Zstd @ Lowest | Size: 608.55 MB | Ratio: 290.61x | Saved: 99.66% | Time: 00:00:22.5071716 | Speed: 7857.50 MB/s | Efficiency: 1.29
+Zstd @ Optimal | Size: 413.11 MB | Ratio: 428.09x | Saved: 99.77% | Time: 00:00:28.9375050 | Speed: 6111.45 MB/s | Efficiency: 1.48
+Zstd @ Highest | Size: 426.33 MB | Ratio: 414.82x | Saved: 99.76% | Time: 00:00:34.8796002 | Speed: 5070.30 MB/s | Efficiency: 1.19
+
+*** Sorted by best compression ratio: ***
+Deflate @ Highest | Size: 365.79 MB | Ratio: 483.48x | Saved: 99.79% | Time: 00:01:22.4335569 | Speed: 2145.36 MB/s | Efficiency: 0.59
+GZip @ Highest | Size: 365.84 MB | Ratio: 483.41x | Saved: 99.79% | Time: 00:01:26.3654719 | Speed: 2047.69 MB/s | Efficiency: 0.56
+Png @ Highest | Size: 383.46 MB | Ratio: 461.19x | Saved: 99.78% | Time: 00:03:34.3342806 | Speed: 825.11 MB/s | Efficiency: 0.22
+Zstd @ Optimal | Size: 413.11 MB | Ratio: 428.09x | Saved: 99.77% | Time: 00:00:28.9375050 | Speed: 6111.45 MB/s | Efficiency: 1.48
+Zstd @ Highest | Size: 426.33 MB | Ratio: 414.82x | Saved: 99.76% | Time: 00:00:34.8796002 | Speed: 5070.30 MB/s | Efficiency: 1.19
+Brotli @ Optimal | Size: 449.87 MB | Ratio: 393.11x | Saved: 99.75% | Time: 00:00:25.1045734 | Speed: 7044.53 MB/s | Efficiency: 1.57
+Deflate @ Optimal | Size: 467.77 MB | Ratio: 378.07x | Saved: 99.74% | Time: 00:00:22.1466998 | Speed: 7985.39 MB/s | Efficiency: 1.71
+GZip @ Optimal | Size: 467.83 MB | Ratio: 378.02x | Saved: 99.74% | Time: 00:00:23.2257618 | Speed: 7614.39 MB/s | Efficiency: 1.63
+Zstd @ Lowest | Size: 608.55 MB | Ratio: 290.61x | Saved: 99.66% | Time: 00:00:22.5071716 | Speed: 7857.50 MB/s | Efficiency: 1.29
+Lz4 @ Highest | Size: 645.46 MB | Ratio: 273.99x | Saved: 99.64% | Time: 00:05:30.0777280 | Speed: 535.78 MB/s | Efficiency: 0.08
+Lz4 @ Optimal | Size: 675.15 MB | Ratio: 261.94x | Saved: 99.62% | Time: 00:00:33.8888118 | Speed: 5218.54 MB/s | Efficiency: 0.77
+Png @ Optimal | Size: 891.05 MB | Ratio: 198.47x | Saved: 99.50% | Time: 00:00:55.8672170 | Speed: 3165.54 MB/s | Efficiency: 0.36
+Png @ Lowest | Size: 932.12 MB | Ratio: 189.73x | Saved: 99.47% | Time: 00:00:58.0968780 | Speed: 3044.05 MB/s | Efficiency: 0.33
+Brotli @ Lowest | Size: 944.61 MB | Ratio: 187.22x | Saved: 99.47% | Time: 00:00:31.0634355 | Speed: 5693.19 MB/s | Efficiency: 0.60
+Lz4 @ Lowest | Size: 1.55 GB | Ratio: 111.29x | Saved: 99.10% | Time: 00:00:20.5324849 | Speed: 8613.18 MB/s | Efficiency: 0.54
+Deflate @ Lowest | Size: 1.56 GB | Ratio: 111.02x | Saved: 99.10% | Time: 00:00:20.6646495 | Speed: 8558.09 MB/s | Efficiency: 0.54
+GZip @ Lowest | Size: 1.56 GB | Ratio: 111.01x | Saved: 99.10% | Time: 00:00:21.2451546 | Speed: 8324.25 MB/s | Efficiency: 0.52
+
+*** Sorted by fastest time: ***
+Lz4 @ Lowest | Size: 1.55 GB | Ratio: 111.29x | Saved: 99.10% | Time: 00:00:20.5324849 | Speed: 8613.18 MB/s | Efficiency: 0.54
+Deflate @ Lowest | Size: 1.56 GB | Ratio: 111.02x | Saved: 99.10% | Time: 00:00:20.6646495 | Speed: 8558.09 MB/s | Efficiency: 0.54
+GZip @ Lowest | Size: 1.56 GB | Ratio: 111.01x | Saved: 99.10% | Time: 00:00:21.2451546 | Speed: 8324.25 MB/s | Efficiency: 0.52
+Deflate @ Optimal | Size: 467.77 MB | Ratio: 378.07x | Saved: 99.74% | Time: 00:00:22.1466998 | Speed: 7985.39 MB/s | Efficiency: 1.71
+Zstd @ Lowest | Size: 608.55 MB | Ratio: 290.61x | Saved: 99.66% | Time: 00:00:22.5071716 | Speed: 7857.50 MB/s | Efficiency: 1.29
+GZip @ Optimal | Size: 467.83 MB | Ratio: 378.02x | Saved: 99.74% | Time: 00:00:23.2257618 | Speed: 7614.39 MB/s | Efficiency: 1.63
+Brotli @ Optimal | Size: 449.87 MB | Ratio: 393.11x | Saved: 99.75% | Time: 00:00:25.1045734 | Speed: 7044.53 MB/s | Efficiency: 1.57
+Zstd @ Optimal | Size: 413.11 MB | Ratio: 428.09x | Saved: 99.77% | Time: 00:00:28.9375050 | Speed: 6111.45 MB/s | Efficiency: 1.48
+Brotli @ Lowest | Size: 944.61 MB | Ratio: 187.22x | Saved: 99.47% | Time: 00:00:31.0634355 | Speed: 5693.19 MB/s | Efficiency: 0.60
+Lz4 @ Optimal | Size: 675.15 MB | Ratio: 261.94x | Saved: 99.62% | Time: 00:00:33.8888118 | Speed: 5218.54 MB/s | Efficiency: 0.77
+Zstd @ Highest | Size: 426.33 MB | Ratio: 414.82x | Saved: 99.76% | Time: 00:00:34.8796002 | Speed: 5070.30 MB/s | Efficiency: 1.19
+Png @ Optimal | Size: 891.05 MB | Ratio: 198.47x | Saved: 99.50% | Time: 00:00:55.8672170 | Speed: 3165.54 MB/s | Efficiency: 0.36
+Png @ Lowest | Size: 932.12 MB | Ratio: 189.73x | Saved: 99.47% | Time: 00:00:58.0968780 | Speed: 3044.05 MB/s | Efficiency: 0.33
+Deflate @ Highest | Size: 365.79 MB | Ratio: 483.48x | Saved: 99.79% | Time: 00:01:22.4335569 | Speed: 2145.36 MB/s | Efficiency: 0.59
+GZip @ Highest | Size: 365.84 MB | Ratio: 483.41x | Saved: 99.79% | Time: 00:01:26.3654719 | Speed: 2047.69 MB/s | Efficiency: 0.56
+Png @ Highest | Size: 383.46 MB | Ratio: 461.19x | Saved: 99.78% | Time: 00:03:34.3342806 | Speed: 825.11 MB/s | Efficiency: 0.22
+Lz4 @ Highest | Size: 645.46 MB | Ratio: 273.99x | Saved: 99.64% | Time: 00:05:30.0777280 | Speed: 535.78 MB/s | Efficiency: 0.08
+
+*** Sorted by best efficiency score (balanced time/compression): ***
+Deflate @ Optimal | Size: 467.77 MB | Ratio: 378.07x | Saved: 99.74% | Time: 00:00:22.1466998 | Speed: 7985.39 MB/s | Efficiency: 1.71
+GZip @ Optimal | Size: 467.83 MB | Ratio: 378.02x | Saved: 99.74% | Time: 00:00:23.2257618 | Speed: 7614.39 MB/s | Efficiency: 1.63
+Brotli @ Optimal | Size: 449.87 MB | Ratio: 393.11x | Saved: 99.75% | Time: 00:00:25.1045734 | Speed: 7044.53 MB/s | Efficiency: 1.57
+Zstd @ Optimal | Size: 413.11 MB | Ratio: 428.09x | Saved: 99.77% | Time: 00:00:28.9375050 | Speed: 6111.45 MB/s | Efficiency: 1.48
+Zstd @ Lowest | Size: 608.55 MB | Ratio: 290.61x | Saved: 99.66% | Time: 00:00:22.5071716 | Speed: 7857.50 MB/s | Efficiency: 1.29
+Zstd @ Highest | Size: 426.33 MB | Ratio: 414.82x | Saved: 99.76% | Time: 00:00:34.8796002 | Speed: 5070.30 MB/s | Efficiency: 1.19
+Lz4 @ Optimal | Size: 675.15 MB | Ratio: 261.94x | Saved: 99.62% | Time: 00:00:33.8888118 | Speed: 5218.54 MB/s | Efficiency: 0.77
+Brotli @ Lowest | Size: 944.61 MB | Ratio: 187.22x | Saved: 99.47% | Time: 00:00:31.0634355 | Speed: 5693.19 MB/s | Efficiency: 0.60
+Deflate @ Highest | Size: 365.79 MB | Ratio: 483.48x | Saved: 99.79% | Time: 00:01:22.4335569 | Speed: 2145.36 MB/s | Efficiency: 0.59
+GZip @ Highest | Size: 365.84 MB | Ratio: 483.41x | Saved: 99.79% | Time: 00:01:26.3654719 | Speed: 2047.69 MB/s | Efficiency: 0.56
+Lz4 @ Lowest | Size: 1.55 GB | Ratio: 111.29x | Saved: 99.10% | Time: 00:00:20.5324849 | Speed: 8613.18 MB/s | Efficiency: 0.54
+Deflate @ Lowest | Size: 1.56 GB | Ratio: 111.02x | Saved: 99.10% | Time: 00:00:20.6646495 | Speed: 8558.09 MB/s | Efficiency: 0.54
+GZip @ Lowest | Size: 1.56 GB | Ratio: 111.01x | Saved: 99.10% | Time: 00:00:21.2451546 | Speed: 8324.25 MB/s | Efficiency: 0.52
+Png @ Optimal | Size: 891.05 MB | Ratio: 198.47x | Saved: 99.50% | Time: 00:00:55.8672170 | Speed: 3165.54 MB/s | Efficiency: 0.36
+Png @ Lowest | Size: 932.12 MB | Ratio: 189.73x | Saved: 99.47% | Time: 00:00:58.0968780 | Speed: 3044.05 MB/s | Efficiency: 0.33
+Png @ Highest | Size: 383.46 MB | Ratio: 461.19x | Saved: 99.78% | Time: 00:03:34.3342806 | Speed: 825.11 MB/s | Efficiency: 0.22
+Lz4 @ Highest | Size: 645.46 MB | Ratio: 273.99x | Saved: 99.64% | Time: 00:05:30.0777280 | Speed: 535.78 MB/s | Efficiency: 0.08
+
+*** Sorted by weighted efficiency (favors compression): ***
+Deflate @ Optimal | Size: 467.77 MB | Ratio: 378.07x | Saved: 99.74% | Time: 00:00:22.1466998 | Speed: 7985.39 MB/s | Efficiency: 1.71
+GZip @ Optimal | Size: 467.83 MB | Ratio: 378.02x | Saved: 99.74% | Time: 00:00:23.2257618 | Speed: 7614.39 MB/s | Efficiency: 1.63
+Brotli @ Optimal | Size: 449.87 MB | Ratio: 393.11x | Saved: 99.75% | Time: 00:00:25.1045734 | Speed: 7044.53 MB/s | Efficiency: 1.57
+Zstd @ Optimal | Size: 413.11 MB | Ratio: 428.09x | Saved: 99.77% | Time: 00:00:28.9375050 | Speed: 6111.45 MB/s | Efficiency: 1.48
+Zstd @ Highest | Size: 426.33 MB | Ratio: 414.82x | Saved: 99.76% | Time: 00:00:34.8796002 | Speed: 5070.30 MB/s | Efficiency: 1.19
+Zstd @ Lowest | Size: 608.55 MB | Ratio: 290.61x | Saved: 99.66% | Time: 00:00:22.5071716 | Speed: 7857.50 MB/s | Efficiency: 1.29
+Deflate @ Highest | Size: 365.79 MB | Ratio: 483.48x | Saved: 99.79% | Time: 00:01:22.4335569 | Speed: 2145.36 MB/s | Efficiency: 0.59
+Lz4 @ Optimal | Size: 675.15 MB | Ratio: 261.94x | Saved: 99.62% | Time: 00:00:33.8888118 | Speed: 5218.54 MB/s | Efficiency: 0.77
+GZip @ Highest | Size: 365.84 MB | Ratio: 483.41x | Saved: 99.79% | Time: 00:01:26.3654719 | Speed: 2047.69 MB/s | Efficiency: 0.56
+Brotli @ Lowest | Size: 944.61 MB | Ratio: 187.22x | Saved: 99.47% | Time: 00:00:31.0634355 | Speed: 5693.19 MB/s | Efficiency: 0.60
+Lz4 @ Lowest | Size: 1.55 GB | Ratio: 111.29x | Saved: 99.10% | Time: 00:00:20.5324849 | Speed: 8613.18 MB/s | Efficiency: 0.54
+Deflate @ Lowest | Size: 1.56 GB | Ratio: 111.02x | Saved: 99.10% | Time: 00:00:20.6646495 | Speed: 8558.09 MB/s | Efficiency: 0.54
+GZip @ Lowest | Size: 1.56 GB | Ratio: 111.01x | Saved: 99.10% | Time: 00:00:21.2451546 | Speed: 8324.25 MB/s | Efficiency: 0.52
+Png @ Optimal | Size: 891.05 MB | Ratio: 198.47x | Saved: 99.50% | Time: 00:00:55.8672170 | Speed: 3165.54 MB/s | Efficiency: 0.36
+Png @ Highest | Size: 383.46 MB | Ratio: 461.19x | Saved: 99.78% | Time: 00:03:34.3342806 | Speed: 825.11 MB/s | Efficiency: 0.22
+Png @ Lowest | Size: 932.12 MB | Ratio: 189.73x | Saved: 99.47% | Time: 00:00:58.0968780 | Speed: 3044.05 MB/s | Efficiency: 0.33
+Lz4 @ Highest | Size: 645.46 MB | Ratio: 273.99x | Saved: 99.64% | Time: 00:05:30.0777280 | Speed: 535.78 MB/s | Efficiency: 0.08
+
+*** RECOMMENDED CHOICES: ***
+Best balanced (speed + compression): Deflate @ Optimal
+  - Compression: 467.77 MB, 467.77 MB 378.07x (99.74% saved)
+  - Speed: 7985.39 MB/s
+  - Efficiency: 1.71
+
+Best for speed: Lz4 @ Lowest (Use with high RAM)
+  - Compression: 1.55 GB, 111.29x (99.10% saved)
+  - Speed: 8613.18 MB/s
+  - Weighted efficiency: 5.72
+
+Best for maximum compression: Deflate @ Optimal
+  - Compression: 467.77 MB, 378.07x (99.74% saved)
+  - Speed: 7985.39 MB/s
+  - Weighted efficiency: 33.19
+```
+
 ## 06/04/2026 - v6.0.3
 
 - (Fix) Null reference exception on `CMat`
