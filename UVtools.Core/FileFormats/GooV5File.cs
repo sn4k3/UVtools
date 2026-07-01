@@ -469,6 +469,11 @@ public sealed class GooV5File : FileFormat
     private IndexTableEntry[]? _rdtEntries;
     private byte[] _resinData = [];
 
+    // Raw EDT (Extension Definition Table) data, preserved for round-trip.
+    // V5.2+ files may include an EDT with magic 0xA4 after the RDT.
+    private byte[] _edtData = [];
+    private uint _edtOffset;  // 0 = no EDT
+
     public byte PixelBitWidth
     {
         get => Header.PixelBitWidth == 0 ? (byte)3 : Header.PixelBitWidth;
@@ -528,7 +533,7 @@ public sealed class GooV5File : FileFormat
         || MachineName.Contains("Mars 5 Ultra", StringComparison.OrdinalIgnoreCase)
         || LiftHeight == 0;
 
-    public override uint[] AvailableVersions { get; } = [50, 51];
+    public override uint[] AvailableVersions { get; } = [50, 51, 52];
 
     public override uint Version
     {
@@ -689,6 +694,11 @@ public sealed class GooV5File : FileFormat
             }
         }
 
+        // Read EDT (Extension Definition Table) — V5.2+ may have one.
+        // The EDT offset is stored at a fixed file position right after
+        // the header struct (offset 195492), validated by 0xA4 magic.
+        ReadEdtData(inputFile);
+
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             LayersDefinition[layerIndex].CopyTo(this[layerIndex]);
 
@@ -767,6 +777,47 @@ public sealed class GooV5File : FileFormat
         }
 
         return score;
+    }
+
+    /// <summary>
+    /// Read the EDT (Extension Definition Table) if present.
+    /// The EDT offset is at fixed file position 195492 (right after the
+    /// header struct). Validate by checking 0xA4 magic at the target.
+    /// </summary>
+    private void ReadEdtData(FileStream fs)
+    {
+        _edtOffset = 0;
+        _edtData = [];
+
+        const int edtOffsetPosition = 195492;
+        if (edtOffsetPosition + 4 > fs.Length) return;
+
+        fs.Seek(edtOffsetPosition, SeekOrigin.Begin);
+        var rawOffset = (int)fs.ReadUIntLittleEndian();
+
+        if (rawOffset <= 0 || rawOffset >= fs.Length) return;
+        fs.Seek(rawOffset, SeekOrigin.Begin);
+        if (fs.ReadByte() != 0xA4) return;
+
+        _edtOffset = (uint)rawOffset;
+
+        // Determine EDT extent: read from EDT start to the first layer
+        // content offset (from LDT), or to resin data start if no LDT.
+        var edtStart = rawOffset;
+        var edtEnd = (int)fs.Length - 34; // before CRLF + MD5
+
+        if (_ldtEntries is { Length: > 0 })
+        {
+            var firstLayerOffset = _ldtEntries[0].Offset;
+            if (firstLayerOffset > edtStart && firstLayerOffset < edtEnd)
+                edtEnd = firstLayerOffset;
+        }
+
+        if (edtEnd > edtStart)
+        {
+            fs.Seek(edtStart, SeekOrigin.Begin);
+            _edtData = fs.ReadBytes(edtEnd - edtStart);
+        }
     }
 
     /// <summary>
@@ -921,14 +972,17 @@ public sealed class GooV5File : FileFormat
         progress++;
 
         var headerSize = (int)Helpers.Serializer.SizeOf(Header);
+        // V5.2+ with EDT: 4-byte EDT offset field sits between header and LDT
+        var edtFieldSize = _edtData.Length > 0 ? 4 : 0;
         var nLayers = (int)LayerCount;
         var nImages = nLayers * partitions;
 
-        var ldtOffset = headerSize;
+        var ldtOffset = headerSize + edtFieldSize;
         var iedtOffset = ldtOffset + 1 + nLayers * 8;
         var rdtOffset = iedtOffset + 1 + nImages * 8;
         var separatorOffset = rdtOffset + 1 + (_resinData.Length > 0 ? 8 : 0);
-        var lcStart = separatorOffset + 4;
+        var edtOffset = _edtData.Length > 0 ? separatorOffset + 4 : 0;
+        var lcStart = separatorOffset + 4 + _edtData.Length;
 
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
         var layerData = new LayerDef[LayerCount];
@@ -971,6 +1025,10 @@ public sealed class GooV5File : FileFormat
 
         outputFile.WriteSerialize(Header, endianness);
 
+        // EDT offset field (V5.2+): 4 bytes between header and LDT
+        if (edtFieldSize > 0)
+            outputFile.WriteUIntLittleEndian((uint)edtOffset);
+
         outputFile.WriteByte(LdtMagic);
         for (var i = 0; i < nLayers; i++)
         { outputFile.WriteUIntLittleEndian((uint)layerBlockOffsets[i]); outputFile.WriteUIntLittleEndian((uint)Helpers.Serializer.SizeOf(layerData[i])); }
@@ -984,6 +1042,12 @@ public sealed class GooV5File : FileFormat
         { outputFile.WriteUIntLittleEndian(1); outputFile.WriteUIntLittleEndian((uint)resinStart); }
 
         outputFile.WriteUIntLittleEndian((uint)(_resinData.Length + 2));
+
+        // EDT data (V5.2+)
+        if (_edtData.Length > 0)
+        {
+            outputFile.WriteBytes(_edtData);
+        }
 
         for (var i = 0; i < nLayers; i++)
             outputFile.WriteSerialize(layerData[i], endianness);
