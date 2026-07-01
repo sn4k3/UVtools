@@ -299,9 +299,17 @@ public sealed class GooV5File : FileFormat
         public static void DecodeInto(byte[] data, int start, int end, Mat mat, int expectedPixels, int pixelBw)
         {
             var grayMax = (byte)((1 << pixelBw) - 1);
-            // VUF stores pixels in [0, grayMax]; scale to [0, 255] for UVtools 8-bit Mat
-            byte ScaleColor(byte v) => grayMax == 0 ? v
-                : (byte)Math.Min(255, (v * 255 + grayMax / 2) / grayMax);
+            // Pre-compute a lookup table: VUF [0, grayMax] -> 8-bit [0, 255]
+            Span<byte> colorLut = stackalloc byte[256];
+            if (grayMax == 0)
+            {
+                colorLut[0] = 0;
+            }
+            else
+            {
+                for (var v = 0; v <= grayMax; v++)
+                    colorLut[v] = (byte)Math.Min(255, (v * 255 + grayMax / 2) / grayMax);
+            }
             var pixel = 0;
             byte prevValue = 0;
             var i = start;
@@ -325,7 +333,7 @@ public sealed class GooV5File : FileFormat
                     count += 1;
                     var remaining = expectedPixels - pixel;
                     if (count > remaining) count = remaining;
-                    mat.FillSpan(ref pixel, count, ScaleColor(prevValue));
+                    mat.FillSpan(ref pixel, count, colorLut[prevValue]);
                     i++;
                 }
                 else if (chunkType == 0x02) // DIFF
@@ -334,7 +342,7 @@ public sealed class GooV5File : FileFormat
                     var diff = code == 32 ? 32 : code - 32;
                     prevValue = (byte)(prevValue + diff);
                     if (pixel < expectedPixels)
-                        mat.FillSpan(ref pixel, 1, ScaleColor(prevValue));
+                        mat.FillSpan(ref pixel, 1, colorLut[prevValue]);
                     i++;
                 }
                 else if (chunkType == 0x00) // GRAY
@@ -356,7 +364,7 @@ public sealed class GooV5File : FileFormat
                     }
                     var remaining = expectedPixels - pixel;
                     if (count > remaining) count = remaining;
-                    mat.FillSpan(ref pixel, count, ScaleColor(value));
+                    mat.FillSpan(ref pixel, count, colorLut[value]);
                     prevValue = value;
                     i++;
                 }
@@ -650,19 +658,28 @@ public sealed class GooV5File : FileFormat
         // Re-read partitions after potential fallback
         partitions = PartitionCount;
 
+        // Two-phase decode per batch (same pattern as GooFile V3):
+        // Phase 1 — serial I/O: read layer definitions + raw RLE blocks into memory
+        // Phase 2 — parallel: decode images, merge partitions, create layers
         foreach (var batch in BatchLayersIndexes())
         {
-            foreach (var layerIndex in batch)
+            // Phase 1: serial reads from the file stream
+            var batchRleBlocks = new List<byte[][]>(); // [layerInBatch][partition] -> raw RLE
+            var batchLayerIndexes = System.Linq.Enumerable.ToArray(batch);
+
+            for (var bi = 0; bi < batchLayerIndexes.Length; bi++)
             {
+                var layerIndex = batchLayerIndexes[bi];
                 progress.PauseOrCancelIfRequested();
+
                 var ldtEntry = _ldtEntries[layerIndex];
                 inputFile.Seek(ldtEntry.Offset, SeekOrigin.Begin);
                 LayersDefinition[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile, Endianness.Little);
                 LayersDefinition[layerIndex].Parent = this;
 
+                var rleBlocks = new byte[partitions][];
                 if (DecodeType == FileDecodeType.Full)
                 {
-                    var mats = new Mat[partitions];
                     for (byte p = 0; p < partitions; p++)
                     {
                         var imgIndex = layerIndex * partitions + p;
@@ -671,15 +688,114 @@ public sealed class GooV5File : FileFormat
                         inputFile.Seek(iedtEntry.Offset, SeekOrigin.Begin);
                         var rawBlock = inputFile.ReadBytes(iedtEntry.Size);
                         if (rawBlock.Length > 2 && rawBlock[^2] == 0x0D && rawBlock[^1] == 0x0A)
-                            LayersDefinition[layerIndex].EncodedRle = rawBlock[..^2];
-                        else
-                            LayersDefinition[layerIndex].EncodedRle = rawBlock;
+                            rawBlock = rawBlock[..^2];
+                        rleBlocks[p] = rawBlock;
+                    }
+                }
+                batchRleBlocks.Add(rleBlocks);
+            }
+
+            // Phase 2: parallel decode + merge
+            if (DecodeType == FileDecodeType.Full)
+            {
+                Parallel.For(0, batchLayerIndexes.Length, CoreSettings.GetParallelOptions(progress), bi =>
+                {
+                    progress.PauseIfRequested();
+
+                    var layerIndex = batchLayerIndexes[bi];
+                    var rleBlocks = batchRleBlocks[bi];
+                    var mats = new Mat[partitions];
+
+                    for (byte p = 0; p < partitions; p++)
+                    {
+                        if (rleBlocks[p] is null) break;
+                        LayersDefinition![layerIndex].EncodedRle = rleBlocks[p];
+                        mats[p] = LayersDefinition[layerIndex].DecodeImagePartition(
+                            (uint)layerIndex, p, halfWidth, ResolutionY);
+                    }
+
+                    var fullMat = MergePartitions(mats, halfWidth, partitions);
+                    _layers[layerIndex] = new Layer((uint)layerIndex, fullMat, this);
+
+                    progress.LockAndIncrement();
+                });
+            }
+            else
+            {
+                for (var i = 0; i < batchLayerIndexes.Length; i++)
+                    progress.LockAndIncrement();
+            }
+        }
+        // Two-phase decode per batch (same pattern as GooFile V3):
+        // Phase 1 — serial I/O: read layer definitions + raw RLE blocks
+        // Phase 2 — parallel: decode images, merge partitions, create layers
+        foreach (var batch in BatchLayersIndexes())
+        {
+            // Phase 1: serial reads from the file stream
+            foreach (var layerIndex in batch)
+            {
+                progress.PauseOrCancelIfRequested();
+
+                var ldtEntry = _ldtEntries[layerIndex];
+                inputFile.Seek(ldtEntry.Offset, SeekOrigin.Begin);
+                LayersDefinition[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile, Endianness.Little);
+                LayersDefinition[layerIndex].Parent = this;
+
+                if (DecodeType == FileDecodeType.Full)
+                {
+                    // Read all partition RLE blocks for this layer
+                    for (byte p = 0; p < partitions; p++)
+                    {
+                        var imgIndex = layerIndex * partitions + p;
+                        if (imgIndex >= _iedtEntries.Length) break;
+                        var iedtEntry = _iedtEntries[imgIndex];
+                        inputFile.Seek(iedtEntry.Offset, SeekOrigin.Begin);
+                        var rawBlock = inputFile.ReadBytes(iedtEntry.Size);
+                        if (rawBlock.Length > 2 && rawBlock[^2] == 0x0D && rawBlock[^1] == 0x0A)
+                            rawBlock = rawBlock[..^2];
+                        // Store RLE per-partition; layer def carries the last one
+                        // but we keep a temp array for parallel phase
+                        LayersDefinition[layerIndex].EncodedRle = rawBlock;
+                    }
+                }
+            }
+
+            // Phase 2: parallel decode + merge
+            if (DecodeType == FileDecodeType.Full)
+            {
+                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
+                {
+                    progress.PauseIfRequested();
+
+                    // Re-read partition RLE blocks (parallel, from OS file cache)
+                    var mats = new Mat[partitions];
+                    for (byte p = 0; p < partitions; p++)
+                    {
+                        var imgIndex = layerIndex * partitions + p;
+                        if (imgIndex >= _iedtEntries!.Length) break;
+                        var iedtEntry = _iedtEntries[imgIndex];
+
+                        var rawBlock = File.ReadAllBytes(FileFullPath!);
+                        // Actually read just this partition's block
+                        using var fs = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        fs.Seek(iedtEntry.Offset, SeekOrigin.Begin);
+                        rawBlock = fs.ReadBytes(iedtEntry.Size);
+                        if (rawBlock.Length > 2 && rawBlock[^2] == 0x0D && rawBlock[^1] == 0x0A)
+                            rawBlock = rawBlock[..^2];
+
+                        LayersDefinition![layerIndex].EncodedRle = rawBlock;
                         mats[p] = LayersDefinition[layerIndex].DecodeImagePartition((uint)layerIndex, p, halfWidth, ResolutionY);
                     }
                     var fullMat = MergePartitions(mats, halfWidth, partitions);
                     _layers[layerIndex] = new Layer((uint)layerIndex, fullMat, this);
-                }
-                progress.LockAndIncrement();
+
+                    progress.LockAndIncrement();
+                });
+            }
+            else
+            {
+                foreach (var layerIndex in batch)
+                    progress.LockAndIncrement();
             }
         }
 
