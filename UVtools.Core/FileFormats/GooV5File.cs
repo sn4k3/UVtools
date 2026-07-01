@@ -637,9 +637,9 @@ public sealed class GooV5File : FileFormat
             throw new FileLoadException("Not a valid GOO V5 file! Magic value mismatch", FileFullPath);
 
         progress.Reset(OperationProgress.StatusDecodePreviews, (uint)ThumbnailCountFileShouldHave);
-        Thumbnails.Add(DecodeImage(DATATYPE_RGB565_BE, Header.SmallPreview565, ThumbnailsOriginalSize[0]));
+        Thumbnails.Add(DecodeImage(DATATYPE_RGB565, Header.SmallPreview565, ThumbnailsOriginalSize[0]));
         progress++;
-        Thumbnails.Add(DecodeImage(DATATYPE_RGB565_BE, Header.BigPreview565, ThumbnailsOriginalSize[1]));
+        Thumbnails.Add(DecodeImage(DATATYPE_RGB565, Header.BigPreview565, ThumbnailsOriginalSize[1]));
         progress++;
 
         var partitions = PartitionCount;
