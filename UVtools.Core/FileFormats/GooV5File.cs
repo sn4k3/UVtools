@@ -636,10 +636,14 @@ public sealed class GooV5File : FileFormat
         Init(Header.LayerCount, DecodeType == FileDecodeType.Partial);
         LayersDefinition = new LayerDef[LayerCount];
 
-        _ldtEntries = ReadIndexTable(inputFile, Header.LayerDefTableAddress, LdtMagic, (int)LayerCount);
+        _ldtEntries = ReadIndexTable(inputFile, ResolveTableOffset(inputFile, Header.LayerDefTableAddress, LdtMagic), LdtMagic, (int)LayerCount);
         var imageCount = LayerCount * partitions;
-        _iedtEntries = ReadIndexTable(inputFile, Header.ImageDefTableAddress, IedtMagic, (int)imageCount);
-        _rdtEntries = ReadResinTable(inputFile, Header.ResinDefTableAddress);
+        _iedtEntries = ReadIndexTable(inputFile, ResolveTableOffset(inputFile, Header.ImageDefTableAddress, IedtMagic), IedtMagic, (int)imageCount);
+        _rdtEntries = ReadResinTable(inputFile, ResolveTableOffset(inputFile, Header.ResinDefTableAddress, RdtMagic));
+
+        ResolveExtensionFields(inputFile);
+        // Re-read partitions after potential fallback
+        partitions = PartitionCount;
 
         foreach (var batch in BatchLayersIndexes())
         {
@@ -695,6 +699,96 @@ public sealed class GooV5File : FileFormat
             base.BottomWaitTimeAfterCure = enumerable.FirstOrDefault(l => l is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
             base.BottomWaitTimeAfterLift = enumerable.FirstOrDefault(l => l is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
         });
+    }
+
+    /// <summary>
+    /// Validate a table offset from the header; if it doesn't point to the
+    /// expected magic byte, scan the file for the best candidate. This makes
+    /// decoding robust against new header layouts where the extension fields
+    /// may be at different offsets or absent entirely.
+    /// </summary>
+    private static uint ResolveTableOffset(FileStream fs, uint headerOffset, byte magic)
+    {
+        // Fast path: header offset is valid and points to the right magic
+        if (headerOffset > 0 && headerOffset < fs.Length)
+        {
+            fs.Position = headerOffset;
+            if (fs.ReadByte() == magic) return headerOffset;
+        }
+
+        // Fallback: scan the file for the magic byte, then score each
+        // candidate by how many consecutive valid (offset, size) entries
+        // follow it. Pick the best-scoring position.
+        var bestOffset = 0u;
+        var bestScore = -1;
+
+        fs.Seek(0, SeekOrigin.Begin);
+        int b;
+        while ((b = fs.ReadByte()) != -1)
+        {
+            if (b != magic) continue;
+            var candidate = (uint)(fs.Position - 1);
+            var score = ScoreTableAt(fs, candidate, magic);
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestOffset = candidate;
+            }
+        }
+
+        return bestScore >= 1 ? bestOffset : 0u;
+    }
+
+    /// <summary>
+    /// Count how many consecutive valid (offset, size) entries follow a
+    /// magic byte at the given position. Returns -1 if the magic doesn't match.
+    /// </summary>
+    private static int ScoreTableAt(FileStream fs, uint pos, byte magic, int maxCheck = 8)
+    {
+        if (pos >= fs.Length) return -1;
+        fs.Position = pos;
+        if (fs.ReadByte() != magic) return -1;
+
+        var score = 0;
+        var p = fs.Position;
+        for (var i = 0; i < maxCheck; i++)
+        {
+            if (p + 8 > fs.Length) break;
+            fs.Position = p;
+            var offset = (int)fs.ReadUIntLittleEndian();
+            var size = (int)fs.ReadUIntLittleEndian();
+
+            if (offset == 0 && size == 0) break;
+            if (offset < 0 || size <= 0 || offset >= fs.Length) break;
+            if ((long)offset + size > fs.Length) break;
+
+            score++;
+            p += 8;
+        }
+
+        return score;
+    }
+
+    /// <summary>
+    /// Resolve V5 extension fields with fallback. If the deserialized header
+    /// has invalid extension values (e.g. a newer format with a different
+    /// layout), infer them from the file content.
+    /// </summary>
+    private void ResolveExtensionFields(FileStream fs)
+    {
+        // Fallback for PartitionCount: if 0 or implausible, infer from IEDT/LDT ratio
+        if (PartitionCount == 0 || PartitionCount > 16)
+        {
+            if (_ldtEntries is { Length: > 0 } && _iedtEntries is { Length: > 0 })
+            {
+                var inferred = (byte)(_iedtEntries.Length / _ldtEntries.Length);
+                if (inferred >= 1 && inferred <= 16) PartitionCount = inferred;
+            }
+            if (PartitionCount == 0 || PartitionCount > 16) PartitionCount = 2;
+        }
+
+        // Fallback for PixelBitWidth: if 0 or > 8, use most common default
+        if (PixelBitWidth == 0 || PixelBitWidth > 8) PixelBitWidth = 3;
     }
 
     private IndexTableEntry[] ReadIndexTable(FileStream fs, uint tableAddress, byte magic, int maxEntries)
