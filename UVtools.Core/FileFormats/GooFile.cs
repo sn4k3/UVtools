@@ -579,6 +579,22 @@ public sealed class GooFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Binary;
 
+    public override bool CanProcess(string? fileFullPath)
+    {
+        if (!base.CanProcess(fileFullPath)) return false;
+        if (string.IsNullOrWhiteSpace(fileFullPath)) return false;
+        try
+        {
+            using var stream = File.OpenRead(fileFullPath);
+            Span<byte> hdr = stackalloc byte[4];
+            if (stream.Read(hdr) != 4) return false;
+            // Reject V5 files — they are handled by GooV5File
+            if (hdr[0] == (byte)'V' && hdr[1] == (byte)'5') return false;
+            return true;
+        }
+        catch { return false; }
+    }
+
     public override Endianness FileFormatEndianness =>
         string.Equals(MachineName, "ELEGOO Jupiter 2", StringComparison.OrdinalIgnoreCase)
             ? Endianness.Little
