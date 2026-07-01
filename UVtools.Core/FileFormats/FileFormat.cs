@@ -534,6 +534,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         new KlipperFile(), // Klipper
 
         new FDGFile(), // fdg
+        new GooV5File(), // goo V5
         new GooFile(), // goo
         new ZCodeFile(), // zcode
         new JXSFile(), // jxs
