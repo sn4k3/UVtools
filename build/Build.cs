@@ -24,6 +24,32 @@ namespace build;
 
 public partial class Build : NukeBuild
 {
+    [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
+    public readonly Configuration Configuration = Configuration.Release;
+
+    [Parameter(
+        "When publish set this variable(true) to bundle all arch in a single bundle, eg: x64 and arm64 together, app will then run the required arch. Default: False")]
+    readonly bool PublishBundleWithMultipleArch;
+
+    [Parameter("When publish set this variable(true) to create the bundles (zip, apps, installers). Default: True")]
+    readonly bool PublishCreateBundles = true;
+
+    [Parameter(
+        "When publish set this variable(true) to keep only the bundles (zip, apps, installers), compilation folders will be removed. Default: False")]
+    readonly bool PublishDiscardNonBundles;
+    //public readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
+
+    [Parameter(
+        "RIDs to publish separated by space, Default: 'win-x64 win-arm64 osx-x64 osx-arm64 linux-x64 linux-arm64'")]
+    readonly string[] RIds =
+    [
+        "win-x64", "win-arm64",
+        "osx-x64", "osx-arm64",
+        "linux-x64", "linux-arm64"
+    ];
+
+    [Solution(GenerateProjects = true)] internal readonly Solution Solution = null!;
+
     /// Support plugins are available for:
     ///   - JetBrains ReSharper        https://nuke.build/resharper
     ///   - JetBrains Rider            https://nuke.build/rider
@@ -111,34 +137,6 @@ public partial class Build : NukeBuild
     public string BuildRuntimeCacheFileName =>
         field ??= Solution.UVtools_Core.GetProperty(nameof(BuildRuntimeCacheFileName))!;
 
-    public static int Main() => Execute<Build>(x => x.Compile);
-
-    [Solution(GenerateProjects = true)] internal readonly Solution Solution = null!;
-
-    [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
-    public readonly Configuration Configuration = Configuration.Release;
-    //public readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
-
-    [Parameter(
-        "RIDs to publish separated by space, Default: 'win-x64 win-arm64 osx-x64 osx-arm64 linux-x64 linux-arm64'")]
-    readonly string[] RIds =
-    [
-        "win-x64", "win-arm64",
-        "osx-x64", "osx-arm64",
-        "linux-x64", "linux-arm64"
-    ];
-
-    [Parameter("When publish set this variable(true) to create the bundles (zip, apps, installers). Default: True")]
-    readonly bool PublishCreateBundles = true;
-
-    [Parameter(
-        "When publish set this variable(true) to keep only the bundles (zip, apps, installers), compilation folders will be removed. Default: False")]
-    readonly bool PublishDiscardNonBundles;
-
-    [Parameter(
-        "When publish set this variable(true) to bundle all arch in a single bundle, eg: x64 and arm64 together, app will then run the required arch. Default: False")]
-    readonly bool PublishBundleWithMultipleArch;
-
 
     public Target Print => _ => _
         .Executes(() =>
@@ -157,7 +155,7 @@ public partial class Build : NukeBuild
             Log.Information("IsOsx = {Value}", IsOsx);
             Log.Information("IsLinux = {Value}", IsLinux);
             Log.Information("IsWsl = {Value}", IsWsl);
-            Log.Information("RFID = {Value}", string.Join(", ", RIds));
+            Log.Information("RIds = {Value}", string.Join(", ", RIds));
         });
 
     public Target Clean => _ => _
@@ -686,6 +684,8 @@ public partial class Build : NukeBuild
                 }
             });
         });
+
+    public static int Main() => Execute<Build>(x => x.Compile);
 
     [GeneratedRegex("printer_technology.*=.*(SLA)")]
     private static partial Regex SlaPrinterRegex();

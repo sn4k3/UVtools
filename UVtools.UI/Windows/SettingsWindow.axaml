@@ -106,6 +106,8 @@
                                                        Value="{Binding Settings.General.UiScaling}"
                                                        FormatString="F2"
                                                        Increment="0.05"
+                                                       Minimum="0.3"
+                                                       Maximum="3.0"
                                                        suki:NumericUpDownExtensions.Unit="×" />
                                         <TextBlock Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
                                                    VerticalAlignment="Center"

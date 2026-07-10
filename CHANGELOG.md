@@ -1,5 +1,9 @@
 # Changelog
 
+## 27/06/2026 - v6.1.1
+
+- (Fix) Settings - UI Scaling: Set minimum and maximum values on the input box
+
 ## 27/06/2026 - v6.1.0
 
 - (Add) Zstd/Zstandard layer compression

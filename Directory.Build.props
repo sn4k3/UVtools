@@ -41,7 +41,7 @@
         <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
 
         <!-- Versions -->
-        <UVtoolsVersion>6.1.0</UVtoolsVersion>
+        <UVtoolsVersion>6.1.1</UVtoolsVersion>
         <AvaloniaVersion>12.0.5</AvaloniaVersion>
 
         <!-- MvvmToolkit -->
@@ -73,19 +73,20 @@
         </When>
     </Choose>
 
-    <!--
-    <Target Name="ShowReservedProperties" AfterTargets="BeforeBuild">
-        <Message Text=" MSBuildThisFileDirectory  = $(MSBuildThisFileDirectory)" Importance="high" />
-        <Message Text=" MSBuildProjectDirectory  = $(MSBuildProjectDirectory)" Importance="high" />
-        <Message Text=" MSBuildProjectFile  = $(MSBuildProjectFile)" Importance="high" />
-        <Message Text=" MSBuildProjectExtension  = $(MSBuildProjectExtension)" Importance="high" />
-        <Message Text=" MSBuildProjectFullPath  = $(MSBuildProjectFullPath)" Importance="high" />
-        <Message Text=" MSBuildProjectName  = $(MSBuildProjectName)" Importance="high" />
-        <Message Text=" MSBuildBinPath  = $(MSBuildBinPath)" Importance="high" />
-        <Message Text=" MSBuildProjectDefaultTargets  = $(MSBuildProjectDefaultTargets)" Importance="high" />
-        <Message Text=" MSBuildExtensionsPath  = $(MSBuildExtensionsPath)" Importance="high" />
-        <Message Text=" MSBuildStartupDirectory  = $(MSBuildStartupDirectory)" Importance="high"/>
-    </Target>
-    -->
+
+<!--    <Target Name="ShowReservedProperties" AfterTargets="BeforeBuild">-->
+<!--        <Message Text=" SolutionName  = $(SolutionName)" Importance="high" />-->
+<!--        <Message Text=" MSBuildThisFileDirectory  = $(MSBuildThisFileDirectory)" Importance="high" />-->
+<!--        <Message Text=" MSBuildProjectDirectory  = $(MSBuildProjectDirectory)" Importance="high" />-->
+<!--        <Message Text=" MSBuildProjectFile  = $(MSBuildProjectFile)" Importance="high" />-->
+<!--        <Message Text=" MSBuildProjectExtension  = $(MSBuildProjectExtension)" Importance="high" />-->
+<!--        <Message Text=" MSBuildProjectFullPath  = $(MSBuildProjectFullPath)" Importance="high" />-->
+<!--        <Message Text=" MSBuildProjectName  = $(MSBuildProjectName)" Importance="high" />-->
+<!--        <Message Text=" MSBuildBinPath  = $(MSBuildBinPath)" Importance="high" />-->
+<!--        <Message Text=" MSBuildProjectDefaultTargets  = $(MSBuildProjectDefaultTargets)" Importance="high" />-->
+<!--        <Message Text=" MSBuildExtensionsPath  = $(MSBuildExtensionsPath)" Importance="high" />-->
+<!--        <Message Text=" MSBuildStartupDirectory  = $(MSBuildStartupDirectory)" Importance="high"/>-->
+<!--    </Target>-->
+
 
 </Project>
