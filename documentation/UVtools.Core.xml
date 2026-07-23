@@ -4325,6 +4325,54 @@
             1: current layer pause printing
             </summary>
         </member>
+        <member name="T:UVtools.Core.FileFormats.GooV5File">
+            <summary>
+            Elegoo GOO V5 file format.
+            V5 uses index tables (LDT/IEDT/RDT), partitioned images, VUF RLE codec,
+            and an MD5 checksum. The header is binary-compatible with V3 through
+            field 61, then adds 6 extension fields.
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.FileFormats.GooV5File.ResinDef">
+            <summary>
+            Resin definition block (V5.2 layout, 270 bytes).
+            Layout per GOO V5 spec: magic(1) + name(128) + type(128) +
+            color(3) + density(4) + stickiness(4) + delimiter(2).
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.GooV5File.Resin">
+            <summary>Parsed resin definition; always present after decode.</summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.GooV5File.ResolveTableOffset(System.IO.FileStream,System.UInt32,System.Byte,System.Boolean)">
+            <summary>
+            Validate a table offset from the header; if it doesn't point to the
+            expected magic byte, scan the file for the best candidate. This makes
+            decoding robust against new header layouts where the extension fields
+            may be at different offsets or absent entirely.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.GooV5File.ScoreTableAt(System.IO.FileStream,System.UInt32,System.Byte,System.Int32,System.Boolean)">
+            <summary>
+            Count how many consecutive valid (offset, size) entries follow a
+            magic byte at the given position. Returns -1 if the magic doesn't match.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.GooV5File.ReadEdtData(System.IO.FileStream)">
+            <summary>
+            Read the EDT (Extension Definition Table) if present.  The EDT offset
+            is stored in the header (ExtDefTableAddress).  The EDT is a counted
+            table: magic(1) + count(u32) + count × (offset, size).  Each entry
+            points to an extension block; we store the raw blocks so they can be
+            re-emitted with corrected offsets on encode.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.GooV5File.ResolveExtensionFields">
+            <summary>
+            Resolve V5 extension fields with fallback. If the deserialized header
+            has invalid extension values (e.g. a newer format with a different
+            layout), infer them from the file content.
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.GR1File.Header.HeaderValue">
             <summary>
             Gets the file tag = MKSDLP

@@ -1,11 +1,11 @@
-﻿using BinarySerialization;
-using Emgu.CV;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
+using BinarySerialization;
+using Emgu.CV;
 using EmguExtensions;
 using UVtools.Core.Exceptions;
 using UVtools.Core.Extensions;
@@ -17,23 +17,6 @@ namespace UVtools.Core.FileFormats;
 
 public sealed class GooFile : FileFormat
 {
-    #region Constants
-
-    private const string FileVersion = "V3.0";
-
-
-    private static readonly byte[] FileMagic =
-    [
-        0x07, 0x00, 0x00, 0x00,
-        0x44, 0x4C, 0x50, 0x00
-    ];
-
-    private static byte[] Delimiter => [0x0D, 0x0A];
-
-    private static byte LayerMagic => 0x55;
-
-    #endregion
-
     #region Enums
 
     public enum DelayModes : byte
@@ -51,141 +34,319 @@ public sealed class GooFile : FileFormat
 
     #endregion
 
+    #region Constructors
+
+    public GooFile()
+    {
+    }
+
+    #endregion
+
+    #region Constants
+
+    private const string FileVersion = "V3.0";
+
+
+    private static readonly byte[] FileMagic =
+    [
+        0x07, 0x00, 0x00, 0x00,
+        0x44, 0x4C, 0x50, 0x00
+    ];
+
+    private static byte[] Delimiter => [0x0D, 0x0A];
+
+    private static byte LayerMagic => 0x55;
+
+    #endregion
+
     #region Sub Classes
 
     public class FileHeader
     {
-        [FieldOrder(0)] [FieldLength(4)] public string Version { get; set; } = FileVersion;
-        [FieldOrder(1)] [FieldCount(8)] public byte[] Magic { get; set; } = FileMagic;
+        [FieldOrder(0)]
+        [FieldLength(4)]
+        [FieldEndianness(Endianness.Big)]
+        public string Version { get; set; } = FileVersion;
+
+        [FieldOrder(1)]
+        [FieldCount(8)]
+        [FieldEndianness(Endianness.Big)]
+        public byte[] Magic { get; set; } = FileMagic;
 
         [FieldOrder(2)]
         [FieldLength(32)]
         [SerializeAs(SerializedType.TerminatedString)]
+        [FieldEndianness(Endianness.Big)]
         public string SoftwareName { get; set; } = About.Software;
 
         [FieldOrder(3)]
         [FieldLength(24)]
         [SerializeAs(SerializedType.TerminatedString)]
+        [FieldEndianness(Endianness.Big)]
         public string SoftwareVersion { get; set; } = About.VersionString;
 
         [FieldOrder(4)]
         [FieldLength(24)]
         [SerializeAs(SerializedType.TerminatedString)]
+        [FieldEndianness(Endianness.Big)]
         public string FileCreateTime { get; set; } = DateTime.UtcNow.ToString("yyyy-mm-dd HH:mm:ss");
 
         [FieldOrder(5)]
         [FieldLength(32)]
         [SerializeAs(SerializedType.TerminatedString)]
+        [FieldEndianness(Endianness.Big)]
         public string MachineName { get; set; } = DefaultMachineName;
 
         [FieldOrder(6)]
         [FieldLength(32)]
         [SerializeAs(SerializedType.TerminatedString)]
+        [FieldEndianness(Endianness.Big)]
         public string MachineType { get; set; } = "DLP";
 
         [FieldOrder(7)]
         [FieldLength(32)]
         [SerializeAs(SerializedType.TerminatedString)]
+        [FieldEndianness(Endianness.Big)]
         public string ProfileName { get; set; } = About.Software;
 
-        [FieldOrder(8)] public ushort AntiAliasingLevel { get; set; } = 8;
-        [FieldOrder(9)] public ushort GreyLevel { get; set; } = 1;
-        [FieldOrder(10)] public ushort BlurLevel { get; set; } = 0;
+        [FieldOrder(8)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort AntiAliasingLevel { get; set; } = 8;
+
+        [FieldOrder(9)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort GreyLevel { get; set; } = 1;
+
+        [FieldOrder(10)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort BlurLevel { get; set; } = 0;
 
         [FieldOrder(11)]
         [FieldCount(116 * 116 * 2)]
+        [FieldEndianness(Endianness.Big)]
         public byte[] SmallPreview565 { get; set; } = [];
 
-        [FieldOrder(12)] [FieldCount(2)] public byte[] SmallPreviewDelimiter { get; set; } = Delimiter;
+        [FieldOrder(12)]
+        [FieldCount(2)]
+        [FieldEndianness(Endianness.Big)]
+        public byte[] SmallPreviewDelimiter { get; set; } = Delimiter;
 
         [FieldOrder(13)]
         [FieldCount(290 * 290 * 2)]
+        [FieldEndianness(Endianness.Big)]
         public byte[] BigPreview565 { get; set; } = [];
 
-        [FieldOrder(14)] [FieldCount(2)] public byte[] BigPreviewDelimiter { get; set; } = Delimiter;
-        [FieldOrder(15)] public uint LayerCount { get; set; }
-        [FieldOrder(16)] public ushort ResolutionX { get; set; }
-        [FieldOrder(17)] public ushort ResolutionY { get; set; }
-        [FieldOrder(18)] public bool MirrorX { get; set; }
-        [FieldOrder(19)] public bool MirrorY { get; set; }
-        [FieldOrder(20)] public float DisplayWidth { get; set; }
-        [FieldOrder(21)] public float DisplayHeight { get; set; }
-        [FieldOrder(22)] public float MachineZ { get; set; }
-        [FieldOrder(23)] public float LayerHeight { get; set; }
-        [FieldOrder(24)] public float ExposureTime { get; set; }
+        [FieldOrder(14)]
+        [FieldCount(2)]
+        [FieldEndianness(Endianness.Big)]
+        public byte[] BigPreviewDelimiter { get; set; } = Delimiter;
+
+        [FieldOrder(15)]
+        [FieldEndianness(Endianness.Big)]
+        public uint LayerCount { get; set; }
+
+        [FieldOrder(16)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort ResolutionX { get; set; }
+
+        [FieldOrder(17)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort ResolutionY { get; set; }
+
+        [FieldOrder(18)]
+        [FieldEndianness(Endianness.Big)]
+        public bool MirrorX { get; set; }
+
+        [FieldOrder(19)]
+        [FieldEndianness(Endianness.Big)]
+        public bool MirrorY { get; set; }
+
+        [FieldOrder(20)]
+        [FieldEndianness(Endianness.Big)]
+        public float DisplayWidth { get; set; }
+
+        [FieldOrder(21)]
+        [FieldEndianness(Endianness.Big)]
+        public float DisplayHeight { get; set; }
+
+        [FieldOrder(22)]
+        [FieldEndianness(Endianness.Big)]
+        public float MachineZ { get; set; }
+
+        [FieldOrder(23)]
+        [FieldEndianness(Endianness.Big)]
+        public float LayerHeight { get; set; }
+
+        [FieldOrder(24)]
+        [FieldEndianness(Endianness.Big)]
+        public float ExposureTime { get; set; }
 
         /// <summary>
         ///  0: Light off delay mode | 1：Wait time mode
         /// </summary>
         [FieldOrder(25)]
+        [FieldEndianness(Endianness.Big)]
         public DelayModes DelayMode { get; set; } = DelayModes.WaitTime;
 
-        [FieldOrder(26)] public float LightOffDelay { get; set; }
-        [FieldOrder(27)] public float BottomWaitTimeAfterCure { get; set; }
-        [FieldOrder(28)] public float BottomWaitTimeAfterLift { get; set; }
-        [FieldOrder(29)] public float BottomWaitTimeBeforeCure { get; set; }
-        [FieldOrder(30)] public float WaitTimeAfterCure { get; set; }
-        [FieldOrder(31)] public float WaitTimeAfterLift { get; set; }
-        [FieldOrder(32)] public float WaitTimeBeforeCure { get; set; }
-        [FieldOrder(33)] public float BottomExposureTime { get; set; }
-        [FieldOrder(34)] public uint BottomLayerCount { get; set; }
-        [FieldOrder(35)] public float BottomLiftHeight { get; set; }
-        [FieldOrder(36)] public float BottomLiftSpeed { get; set; }
-        [FieldOrder(37)] public float LiftHeight { get; set; }
-        [FieldOrder(38)] public float LiftSpeed { get; set; }
-        [FieldOrder(39)] public float BottomRetractHeight { get; set; }
-        [FieldOrder(40)] public float BottomRetractSpeed { get; set; }
-        [FieldOrder(41)] public float RetractHeight { get; set; }
-        [FieldOrder(42)] public float RetractSpeed { get; set; }
-        [FieldOrder(43)] public float BottomLiftHeight2 { get; set; }
-        [FieldOrder(44)] public float BottomLiftSpeed2 { get; set; }
-        [FieldOrder(45)] public float LiftHeight2 { get; set; }
-        [FieldOrder(46)] public float LiftSpeed2 { get; set; }
-        [FieldOrder(47)] public float BottomRetractHeight2 { get; set; }
-        [FieldOrder(48)] public float BottomRetractSpeed2 { get; set; }
-        [FieldOrder(49)] public float RetractHeight2 { get; set; }
-        [FieldOrder(50)] public float RetractSpeed2 { get; set; }
-        [FieldOrder(51)] public ushort BottomLightPWM { get; set; } = DefaultBottomLightPWM;
-        [FieldOrder(52)] public ushort LightPWM { get; set; } = DefaultLightPWM;
+        [FieldOrder(26)]
+        [FieldEndianness(Endianness.Big)]
+        public float LightOffDelay { get; set; }
+
+        [FieldOrder(27)]
+        [FieldEndianness(Endianness.Big)]
+        public float BottomWaitTimeAfterCure { get; set; }
+
+        [FieldOrder(28)]
+        [FieldEndianness(Endianness.Big)]
+        public float BottomWaitTimeAfterLift { get; set; }
+
+        [FieldOrder(29)]
+        [FieldEndianness(Endianness.Big)]
+        public float BottomWaitTimeBeforeCure { get; set; }
+
+        [FieldOrder(30)]
+        [FieldEndianness(Endianness.Big)]
+        public float WaitTimeAfterCure { get; set; }
+
+        [FieldOrder(31)]
+        [FieldEndianness(Endianness.Big)]
+        public float WaitTimeAfterLift { get; set; }
+
+        [FieldOrder(32)]
+        [FieldEndianness(Endianness.Big)]
+        public float WaitTimeBeforeCure { get; set; }
+
+        [FieldOrder(33)]
+        [FieldEndianness(Endianness.Big)]
+        public float BottomExposureTime { get; set; }
+
+        [FieldOrder(34)]
+        [FieldEndianness(Endianness.Big)]
+        public uint BottomLayerCount { get; set; }
+
+        [FieldOrder(35)]
+        [FieldEndianness(Endianness.Big)]
+        public float BottomLiftHeight { get; set; }
+
+        [FieldOrder(36)]
+        [FieldEndianness(Endianness.Big)]
+        public float BottomLiftSpeed { get; set; }
+
+        [FieldOrder(37)]
+        [FieldEndianness(Endianness.Big)]
+        public float LiftHeight { get; set; }
+
+        [FieldOrder(38)]
+        [FieldEndianness(Endianness.Big)]
+        public float LiftSpeed { get; set; }
+
+        [FieldOrder(39)]
+        [FieldEndianness(Endianness.Big)]
+        public float BottomRetractHeight { get; set; }
+
+        [FieldOrder(40)]
+        [FieldEndianness(Endianness.Big)]
+        public float BottomRetractSpeed { get; set; }
+
+        [FieldOrder(41)]
+        [FieldEndianness(Endianness.Big)]
+        public float RetractHeight { get; set; }
+
+        [FieldOrder(42)]
+        [FieldEndianness(Endianness.Big)]
+        public float RetractSpeed { get; set; }
+
+        [FieldOrder(43)]
+        [FieldEndianness(Endianness.Big)]
+        public float BottomLiftHeight2 { get; set; }
+
+        [FieldOrder(44)]
+        [FieldEndianness(Endianness.Big)]
+        public float BottomLiftSpeed2 { get; set; }
+
+        [FieldOrder(45)]
+        [FieldEndianness(Endianness.Big)]
+        public float LiftHeight2 { get; set; }
+
+        [FieldOrder(46)]
+        [FieldEndianness(Endianness.Big)]
+        public float LiftSpeed2 { get; set; }
+
+        [FieldOrder(47)]
+        [FieldEndianness(Endianness.Big)]
+        public float BottomRetractHeight2 { get; set; }
+
+        [FieldOrder(48)]
+        [FieldEndianness(Endianness.Big)]
+        public float BottomRetractSpeed2 { get; set; }
+
+        [FieldOrder(49)]
+        [FieldEndianness(Endianness.Big)]
+        public float RetractHeight2 { get; set; }
+
+        [FieldOrder(50)]
+        [FieldEndianness(Endianness.Big)]
+        public float RetractSpeed2 { get; set; }
+
+        [FieldOrder(51)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort BottomLightPWM { get; set; } = DefaultBottomLightPWM;
+
+        [FieldOrder(52)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort LightPWM { get; set; } = DefaultLightPWM;
 
         /// <summary>
         /// <para>0: Normal mode</para>
         /// <para>1: Advance mode, printing use the value of "Layer Definition Content"</para>
         /// </summary>
         [FieldOrder(53)]
+        [FieldEndianness(Endianness.Big)]
         public bool PerLayerSettings { get; set; }
 
-        [FieldOrder(54)] public uint PrintTime { get; set; }
+        [FieldOrder(54)]
+        [FieldEndianness(Endianness.Big)]
+        public uint PrintTime { get; set; }
 
         /// <summary>
         /// // The volume of all parts. unit: mm3
         /// </summary>
         [FieldOrder(55)]
+        [FieldEndianness(Endianness.Big)]
         public float Volume { get; set; }
 
         /// <summary>
         /// The weight of all parts. unit: g
         /// </summary>
         [FieldOrder(56)]
+        [FieldEndianness(Endianness.Big)]
         public float MaterialGrams { get; set; }
 
-        [FieldOrder(57)] public float MaterialCost { get; set; }
+        [FieldOrder(57)]
+        [FieldEndianness(Endianness.Big)]
+        public float MaterialCost { get; set; }
 
         [FieldOrder(58)]
         [FieldLength(8)]
         [SerializeAs(SerializedType.TerminatedString)]
+        [FieldEndianness(Endianness.Big)]
         public string PriceCurrencySymbol { get; set; } = "$";
 
-        [FieldOrder(59)] public uint LayerDefAddress { get; set; } // 195477
+        [FieldOrder(59)]
+        [FieldEndianness(Endianness.Big)]
+        public uint LayerDefAddress { get; set; } // 195477
 
         /// <summary>
         /// <para>0：The range of pixel's gray value is from 0x0 ~ 0xf</para>
         /// <para>1：The range of pixel's gray value is from 0x0 ~ 0xff</para>
         /// </summary>
         [FieldOrder(60)]
+        [FieldEndianness(Endianness.Big)]
         public byte GrayScaleLevel { get; set; } = 1;
 
-        [FieldOrder(61)] public ushort TransitionLayerCount { get; set; }
+        [FieldOrder(61)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort TransitionLayerCount { get; set; }
 
         public override string ToString()
         {
@@ -196,37 +357,6 @@ public sealed class GooFile : FileFormat
 
     public class LayerDef
     {
-        /// <summary>
-        /// 0: reserve
-        /// 1: current layer pause printing
-        /// </summary>
-        [FieldOrder(0)]
-        public ushort Pause { get; set; }
-
-        [FieldOrder(1)] public float PausePositionZ { get; set; }
-        [FieldOrder(2)] public float PositionZ { get; set; }
-        [FieldOrder(3)] public float ExposureTime { get; set; }
-        [FieldOrder(4)] public float LightOffDelay { get; set; }
-        [FieldOrder(5)] public float WaitTimeAfterCure { get; set; }
-        [FieldOrder(6)] public float WaitTimeAfterLift { get; set; }
-        [FieldOrder(7)] public float WaitTimeBeforeCure { get; set; }
-        [FieldOrder(8)] public float LiftHeight { get; set; }
-        [FieldOrder(9)] public float LiftSpeed { get; set; }
-        [FieldOrder(10)] public float LiftHeight2 { get; set; }
-        [FieldOrder(11)] public float LiftSpeed2 { get; set; }
-        [FieldOrder(12)] public float RetractHeight { get; set; }
-        [FieldOrder(13)] public float RetractSpeed { get; set; }
-        [FieldOrder(14)] public float RetractHeight2 { get; set; }
-        [FieldOrder(15)] public float RetractSpeed2 { get; set; }
-        [FieldOrder(16)] public ushort LightPWM { get; set; }
-        [FieldOrder(17)] [FieldCount(2)] public byte[] DelimiterData { get; set; } = Delimiter;
-        [FieldOrder(18)] public uint DataLength { get; set; }
-
-
-        [Ignore] public GooFile? Parent { get; set; }
-
-        [Ignore] public byte[] EncodedRle { get; set; } = [];
-
         // DelimiterRLE
 
         public LayerDef()
@@ -239,6 +369,92 @@ public sealed class GooFile : FileFormat
             PausePositionZ = parent.MachineZ;
             SetFrom(layer);
         }
+
+        /// <summary>
+        /// 0: reserve
+        /// 1: current layer pause printing
+        /// </summary>
+        [FieldOrder(0)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort Pause { get; set; }
+
+        [FieldOrder(1)]
+        [FieldEndianness(Endianness.Big)]
+        public float PausePositionZ { get; set; }
+
+        [FieldOrder(2)]
+        [FieldEndianness(Endianness.Big)]
+        public float PositionZ { get; set; }
+
+        [FieldOrder(3)]
+        [FieldEndianness(Endianness.Big)]
+        public float ExposureTime { get; set; }
+
+        [FieldOrder(4)]
+        [FieldEndianness(Endianness.Big)]
+        public float LightOffDelay { get; set; }
+
+        [FieldOrder(5)]
+        [FieldEndianness(Endianness.Big)]
+        public float WaitTimeAfterCure { get; set; }
+
+        [FieldOrder(6)]
+        [FieldEndianness(Endianness.Big)]
+        public float WaitTimeAfterLift { get; set; }
+
+        [FieldOrder(7)]
+        [FieldEndianness(Endianness.Big)]
+        public float WaitTimeBeforeCure { get; set; }
+
+        [FieldOrder(8)]
+        [FieldEndianness(Endianness.Big)]
+        public float LiftHeight { get; set; }
+
+        [FieldOrder(9)]
+        [FieldEndianness(Endianness.Big)]
+        public float LiftSpeed { get; set; }
+
+        [FieldOrder(10)]
+        [FieldEndianness(Endianness.Big)]
+        public float LiftHeight2 { get; set; }
+
+        [FieldOrder(11)]
+        [FieldEndianness(Endianness.Big)]
+        public float LiftSpeed2 { get; set; }
+
+        [FieldOrder(12)]
+        [FieldEndianness(Endianness.Big)]
+        public float RetractHeight { get; set; }
+
+        [FieldOrder(13)]
+        [FieldEndianness(Endianness.Big)]
+        public float RetractSpeed { get; set; }
+
+        [FieldOrder(14)]
+        [FieldEndianness(Endianness.Big)]
+        public float RetractHeight2 { get; set; }
+
+        [FieldOrder(15)]
+        [FieldEndianness(Endianness.Big)]
+        public float RetractSpeed2 { get; set; }
+
+        [FieldOrder(16)]
+        [FieldEndianness(Endianness.Big)]
+        public ushort LightPWM { get; set; }
+
+        [FieldOrder(17)]
+        [FieldCount(2)]
+        [FieldEndianness(Endianness.Big)]
+        public byte[] DelimiterData { get; set; } = Delimiter;
+
+        [FieldOrder(18)]
+        [FieldEndianness(Endianness.Big)]
+        public uint DataLength { get; set; }
+
+
+        [Ignore] public GooFile? Parent { get; set; }
+
+        [Ignore] public byte[] EncodedRle { get; set; } = [];
 
         public void SetFrom(Layer layer)
         {
@@ -561,10 +777,22 @@ public sealed class GooFile : FileFormat
 
     public class FileFooter
     {
-        [FieldOrder(0)] public byte Padding1 { get; set; }
-        [FieldOrder(1)] public byte Padding2 { get; set; }
-        [FieldOrder(2)] public byte Padding3 { get; set; }
-        [FieldOrder(3)] [FieldCount(8)] public byte[] Magic { get; set; } = FileMagic;
+        [FieldOrder(0)]
+        [FieldEndianness(Endianness.Big)]
+        public byte Padding1 { get; set; }
+
+        [FieldOrder(1)]
+        [FieldEndianness(Endianness.Big)]
+        public byte Padding2 { get; set; }
+
+        [FieldOrder(2)]
+        [FieldEndianness(Endianness.Big)]
+        public byte Padding3 { get; set; }
+
+        [FieldOrder(3)]
+        [FieldCount(8)]
+        [FieldEndianness(Endianness.Big)]
+        public byte[] Magic { get; set; } = FileMagic;
 
         public override string ToString()
         {
@@ -579,10 +807,28 @@ public sealed class GooFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Binary;
 
-    public override Endianness FileFormatEndianness =>
-        string.Equals(MachineName, "ELEGOO Jupiter 2", StringComparison.OrdinalIgnoreCase)
-            ? Endianness.Little
-            : Endianness.Big;
+    public override bool CanProcess(string? fileFullPath)
+    {
+        if (!base.CanProcess(fileFullPath)) return false;
+        if (string.IsNullOrWhiteSpace(fileFullPath)) return false;
+        try
+        {
+            using var stream = File.OpenRead(fileFullPath);
+            Span<byte> hdr = stackalloc byte[4];
+            if (stream.Read(hdr) != 4) return false;
+            // Reject V5 files — they are handled by GooV5File
+            if (hdr[0] == (byte)'V' && hdr[1] == (byte)'5') return false;
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public override Endianness FileFormatEndianness => Endianness.Big;
+
+    public override string? ConvertMenuGroup => "Elegoo";
 
     public override FileExtension[] FileExtensions { get; } =
     [
@@ -725,7 +971,8 @@ public sealed class GooFile : FileFormat
         }
     }
 
-    public override uint[] AvailableVersions { get; } = [
+    public override uint[] AvailableVersions { get; } =
+    [
         30
     ];
 
@@ -1085,32 +1332,15 @@ public sealed class GooFile : FileFormat
 
     #endregion
 
-    #region Constructors
-
-    public GooFile()
-    {
-    }
-
-    #endregion
-
     #region Methods
 
     protected override void DecodeInternally(OperationProgress progress)
     {
         using var inputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Read);
-        Header = Helpers.Deserialize<FileHeader>(inputFile, Endianness.Big);
+        Header = Helpers.Deserialize<FileHeader>(inputFile);
 
 
         ThrowIfVersionOutOfRange();
-
-        var endianness = FileFormatEndianness;
-
-        // Check endianness, Jupiter 2 is little
-        if (endianness == Endianness.Little)
-        {
-            inputFile.Seek(0, SeekOrigin.Begin);
-            Header = Helpers.Deserialize<FileHeader>(inputFile, endianness);
-        }
 
         Debug.WriteLine($"Header: {Header}");
 
@@ -1140,7 +1370,7 @@ public sealed class GooFile : FileFormat
             {
                 progress.PauseOrCancelIfRequested();
 
-                LayersDefinition[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile, endianness);
+                LayersDefinition[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
                 LayersDefinition[layerIndex].Parent = this;
                 if (DecodeType == FileDecodeType.Full)
                 {
@@ -1172,7 +1402,7 @@ public sealed class GooFile : FileFormat
             }
         }
 
-        Footer = Helpers.Deserialize<FileFooter>(inputFile, endianness);
+        Footer = Helpers.Deserialize<FileFooter>(inputFile);
         Debug.WriteLine($"Footer: {Footer}");
         if (!Footer.Magic.AsValueEnumerable().SequenceEqual(expectedMagic))
         {
@@ -1239,7 +1469,6 @@ public sealed class GooFile : FileFormat
     protected override void EncodeInternally(OperationProgress progress)
     {
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
-        var endianness = FileFormatEndianness;
 
         progress.Reset(OperationProgress.StatusEncodePreviews, 2);
 
@@ -1277,7 +1506,7 @@ public sealed class GooFile : FileFormat
             {
                 progress.PauseOrCancelIfRequested();
 
-                outputFile.WriteSerialize(layerData[layerIndex], endianness);
+                outputFile.WriteSerialize(layerData[layerIndex]);
                 outputFile.WriteBytes(layerData[layerIndex].EncodedRle);
                 outputFile.WriteBytes(delimiter);
 
@@ -1286,11 +1515,11 @@ public sealed class GooFile : FileFormat
         }
 
         // Footer
-        outputFile.WriteSerialize(Footer, endianness);
+        outputFile.WriteSerialize(Footer);
 
         // Header
         outputFile.Seek(0, SeekOrigin.Begin);
-        outputFile.WriteSerialize(Header, endianness);
+        outputFile.WriteSerialize(Header);
 
         Debug.WriteLine("Encode Results:");
         Debug.WriteLine(Header);
@@ -1302,14 +1531,13 @@ public sealed class GooFile : FileFormat
     {
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(0, SeekOrigin.Begin);
-        var endianness = FileFormatEndianness;
 
-        outputFile.WriteSerialize(Header, endianness);
+        outputFile.WriteSerialize(Header);
         outputFile.Seek(Header.LayerDefAddress, SeekOrigin.Begin);
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
         {
             LayersDefinition![layerIndex].SetFrom(this[layerIndex]);
-            outputFile.WriteSerialize(LayersDefinition[layerIndex], endianness);
+            outputFile.WriteSerialize(LayersDefinition[layerIndex]);
             outputFile.Seek(LayersDefinition[layerIndex].DataLength + 2, SeekOrigin.Current);
         }
     }

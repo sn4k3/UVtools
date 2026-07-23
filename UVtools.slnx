@@ -41,6 +41,30 @@
     <File Path="Scripts/install-dependencies.sh" />
     <File Path="Scripts/install-uvtools.sh" />
   </Folder>
+  <Folder Name="/root/scripts/010/">
+    <File Path="Scripts/010 Editor/anet.bt" />
+    <File Path="Scripts/010 Editor/ctb.bt" />
+    <File Path="Scripts/010 Editor/ctb_decrypted.bt" />
+    <File Path="Scripts/010 Editor/ctb_encrypted.bt" />
+    <File Path="Scripts/010 Editor/cxdlp.bt" />
+    <File Path="Scripts/010 Editor/cxdlpv4.bt" />
+    <File Path="Scripts/010 Editor/cxdlp_v1.bt" />
+    <File Path="Scripts/010 Editor/fdg.bt" />
+    <File Path="Scripts/010 Editor/FileFormats.1pj" />
+    <File Path="Scripts/010 Editor/goo.bt" />
+    <File Path="Scripts/010 Editor/gr1.bt" />
+    <File Path="Scripts/010 Editor/lgs.bt" />
+    <File Path="Scripts/010 Editor/mdlp.bt" />
+    <File Path="Scripts/010 Editor/osf.bt" />
+    <File Path="Scripts/010 Editor/osla.bt" />
+    <File Path="Scripts/010 Editor/photons.bt" />
+    <File Path="Scripts/010 Editor/PhotonWorkshop.bt" />
+    <File Path="Scripts/010 Editor/phz.bt" />
+    <File Path="Scripts/010 Editor/pwsz.bt" />
+    <File Path="Scripts/010 Editor/pwszCalcLayerVolumes.bt" />
+    <File Path="Scripts/010 Editor/pwszScene.bt" />
+    <File Path="Scripts/010 Editor/svgx.bt" />
+  </Folder>
   <Project Path="build/build.csproj">
     <Build Solution="Release|Any CPU" Project="false" />
   </Project>

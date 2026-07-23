@@ -9,9 +9,22 @@ BigEndian();
 
 enum <ubyte> BOOL { False, True };
 
-typedef struct HEADER {
+struct HEADER {
     char Version[4] <fgcolor=cBlack, bgcolor=cRed>; // format version: V3.0
     char Magic[8] <fgcolor=cBlack, bgcolor=cRed>; // Fix contant:0x07 0x00 0x00 0x00 0x44 0x4C 0x50 0x00
+
+} Header;
+
+if (Header.Version[1] >= '5')
+{
+    LittleEndian();
+}
+else
+{
+    BigEndian();
+}
+
+struct SETTINGS {
     char SoftwareName[32] <fgcolor=cBlack, bgcolor=cRed>;
     char SoftwareVersion[24] <fgcolor=cBlack, bgcolor=cRed>;
     char FileCreateTime[24] <fgcolor=cBlack, bgcolor=cRed>; // yyyy-mm-dd hh:mm:ss
@@ -78,97 +91,232 @@ typedef struct HEADER {
     uint LayerDefAddress <fgcolor=cBlack, bgcolor=cRed>;
     ubyte GrayScaleLevel <fgcolor=cBlack, bgcolor=cRed>; // 0： The range of pixel's gray value is from 0x0 ~ 0xf; 1：The range of pixel's gray value is from 0x0 ~ 0xff;
     ushort TransitionLayerCount <fgcolor=cBlack, bgcolor=cRed>;
-} HEADER;
 
-HEADER header;
-local uint LayerCount = header.LayerCount;
-local ubyte IsJupiter2 = 0;
-
-if (header.MachineName == "ELEGOO Jupiter 2")
-{
-    FSeek(0);
-    LittleEndian();
-    HEADER header_le;
-    LayerCount = header_le.LayerCount;
-    IsJupiter2 = 1;
-}
-
-struct LAYER_DEF {
-    // 0: reserve; 1: current layer pause printing
-    ushort Pause <fgcolor=cWhite, bgcolor=cBlue>;
-    // The lift distance of Z axis when "Pause flag" equal 1. unit:mm
-    float PausePositionZ <fgcolor=cWhite, bgcolor=cBlue>;
-    float PositionZ <fgcolor=cWhite, bgcolor=cBlue>;
-    float ExposureTime <fgcolor=cWhite, bgcolor=cBlue>;
-    float LightOffDelay <fgcolor=cWhite, bgcolor=cBlue>;
-    float WaitTimeAfterCure <fgcolor=cWhite, bgcolor=cBlue>;
-    float WaitTimeAfterLift <fgcolor=cWhite, bgcolor=cBlue>;
-    float WaitTimeBeforeCure <fgcolor=cWhite, bgcolor=cBlue>;
-    float LiftHeight <fgcolor=cWhite, bgcolor=cBlue>;
-    float LiftSpeed <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
-    float LiftHeight2 <fgcolor=cWhite, bgcolor=cBlue>;
-    float LiftSpeed2 <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
-    float RetractHeight <fgcolor=cWhite, bgcolor=cBlue>;
-    float RetractSpeed <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
-    float RetractHeight2 <fgcolor=cWhite, bgcolor=cBlue>;
-    float RetractSpeed2 <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
-    ushort LightPWM <fgcolor=cWhite, bgcolor=cBlue>;
-    ubyte DelimiterData[2] <fgcolor=cWhite, bgcolor=cBlue>; // \n 0x0D 0x0A
-    uint DataSize <fgcolor=cWhite, bgcolor=cBlue>;
-    // First RLE byte is Magic (0x55)
-    ubyte RLE[DataSize] <fgcolor=cWhite, bgcolor=cBlack>;
-    // Last RLE byte is Checksum XOR
-    ubyte DelimiterRLE[2] <fgcolor=cWhite, bgcolor=cBlack>;  // \n 0x0D 0x0A
-};
-
-struct LAYER_DEF_JUPITER2 {
-    // 0: reserve; 1: current layer pause printing
-    ushort Pause <fgcolor=cWhite, bgcolor=cBlue>;
-    // The lift distance of Z axis when "Pause flag" equal 1. unit:mm
-    float PausePositionZ <fgcolor=cWhite, bgcolor=cBlue>;
-    float PositionZ <fgcolor=cWhite, bgcolor=cBlue>;
-    float ExposureTime <fgcolor=cWhite, bgcolor=cBlue>;
-    float LightOffDelay <fgcolor=cWhite, bgcolor=cBlue>;
-    float WaitTimeAfterCure <fgcolor=cWhite, bgcolor=cBlue>;
-    float WaitTimeAfterLift <fgcolor=cWhite, bgcolor=cBlue>;
-    float WaitTimeBeforeCure <fgcolor=cWhite, bgcolor=cBlue>;
-    float LiftHeight <fgcolor=cWhite, bgcolor=cBlue>;
-    float LiftSpeed <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
-    float LiftHeight2 <fgcolor=cWhite, bgcolor=cBlue>;
-    float LiftSpeed2 <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
-    float RetractHeight <fgcolor=cWhite, bgcolor=cBlue>;
-    float RetractSpeed <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
-    float RetractHeight2 <fgcolor=cWhite, bgcolor=cBlue>;
-    float RetractSpeed2 <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
-    ushort LightPWM <fgcolor=cWhite, bgcolor=cBlue>;
-    ubyte DelimiterData[2] <fgcolor=cWhite, bgcolor=cBlue>; // \n 0x0D 0x0A
-};
-
-if (IsJupiter2 == 1)
-{
-    FSkip(365);
-}
-
-struct LAYERS{
-    local uint i;
-    if (header.MachineName == "ELEGOO Jupiter 2")
+    if (Header.Version[1] >= '5')
     {
-        for(i = 0; i < LayerCount; i++){
-            LAYER_DEF_JUPITER2 layerDef;
-        }
+        ubyte PartitionCount <fgcolor=cBlack, bgcolor=cRed>; // 2
+        uint LayerDefTableAddress <fgcolor=cBlack, bgcolor=cRed>;
+        uint ImageDefTableAddress <fgcolor=cBlack, bgcolor=cRed>;
+        uint ResinDefTableAddress <fgcolor=cBlack, bgcolor=cRed>;
+        ubyte SupportAntiAliasing <fgcolor=cBlack, bgcolor=cRed>;
+        ubyte PixelBitWidth  <fgcolor=cBlack, bgcolor=cRed>; // 3
+        uint ExtDefTableAddress  <fgcolor=cBlack, bgcolor=cRed>; // 3
     }
-    else
+} Settings;
+
+if (Header.Version[1] >= '5')
+{
+    struct INDEX_TABLE_ENTRY {
+        uint Offset <fgcolor=cWhite, bgcolor=cBlue>;
+        uint Size <fgcolor=cWhite, bgcolor=cBlue>;
+    };
+
+    struct LAYER_DEF_V5 {
+        ushort Pause <fgcolor=cWhite, bgcolor=cBlue>; // 0: reserve; 1: pause printing
+        float PausePositionZ <fgcolor=cWhite, bgcolor=cBlue>;
+        float PositionZ <fgcolor=cWhite, bgcolor=cBlue>;
+        float ExposureTime <fgcolor=cWhite, bgcolor=cBlue>;
+        float LightOffDelay <fgcolor=cWhite, bgcolor=cBlue>;
+        float WaitTimeAfterCure <fgcolor=cWhite, bgcolor=cBlue>;
+        float WaitTimeAfterLift <fgcolor=cWhite, bgcolor=cBlue>;
+        float WaitTimeBeforeCure <fgcolor=cWhite, bgcolor=cBlue>;
+        float LiftHeight <fgcolor=cWhite, bgcolor=cBlue>;
+        float LiftSpeed <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
+        float LiftHeight2 <fgcolor=cWhite, bgcolor=cBlue>;
+        float LiftSpeed2 <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
+        float RetractHeight <fgcolor=cWhite, bgcolor=cBlue>;
+        float RetractSpeed <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
+        float RetractHeight2 <fgcolor=cWhite, bgcolor=cBlue>;
+        float RetractSpeed2 <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
+        ushort LightPWM <fgcolor=cWhite, bgcolor=cBlue>;
+        ubyte DelimiterData[2] <fgcolor=cWhite, bgcolor=cPurple>; // 0x0D 0x0A
+    };
+
+    struct IMAGE_DATA_V5 (uint DataSize) {
+        if (DataSize >= 4)
+        {
+            ubyte Magic <fgcolor=cBlack, bgcolor=cRed, format=hex>; // 0x55
+            if (DataSize > 4)
+                ubyte VUF[DataSize - 4] <fgcolor=cWhite, bgcolor=cBlack>;
+            ubyte Checksum <fgcolor=cBlack, bgcolor=cRed, format=hex>;
+            ubyte Delimiter[2] <fgcolor=cBlack, bgcolor=cPurple>; // 0x0D 0x0A
+        }
+        else
+        {
+            ubyte Data[DataSize] <fgcolor=cWhite, bgcolor=cBlack>;
+        }
+    };
+
+    struct RESIN_DATA_V5 (uint DataSize) {
+        if (DataSize >= 270)
+        {
+            ubyte Magic <fgcolor=cBlack, bgcolor=cRed, format=hex>; // 0x66
+            char Name[128] <fgcolor=cBlack, bgcolor=cYellow>;
+            char ResinType[128] <fgcolor=cBlack, bgcolor=cYellow>;
+            ubyte Color[3] <fgcolor=cBlack, bgcolor=cYellow, format=hex>;
+            float Density <fgcolor=cBlack, bgcolor=cYellow>;
+            float Stickiness <fgcolor=cBlack, bgcolor=cYellow>;
+            ubyte Delimiter[2] <fgcolor=cBlack, bgcolor=cPurple>; // 0x0D 0x0A
+            if (DataSize > 270)
+                ubyte ExtraData[DataSize - 270] <fgcolor=cWhite, bgcolor=cBlack>;
+        }
+        else
+        {
+            ubyte Data[DataSize] <fgcolor=cWhite, bgcolor=cBlack>;
+        }
+    };
+
+    struct RAW_DATA_V5 (uint DataSize) {
+        ubyte Data[DataSize] <fgcolor=cWhite, bgcolor=cBlack>;
+    };
+
+    local ubyte partitionCount = Settings.PartitionCount;
+    local uint indexedImageCount = 0;
+    local uint inferredPartitionCount = 0;
+
+    // The IEDT has no count. Its size is the span up to the RDT.
+    if (Settings.ResinDefTableAddress > Settings.ImageDefTableAddress + 1)
     {
-        for(i = 0; i < LayerCount; i++){
-            LAYER_DEF layerDef;
-        }
+        indexedImageCount = (Settings.ResinDefTableAddress - Settings.ImageDefTableAddress - 1) / 8;
+        if (Settings.LayerCount > 0 && indexedImageCount % Settings.LayerCount == 0)
+            inferredPartitionCount = indexedImageCount / Settings.LayerCount;
     }
-   
-} layers;
 
+    if (inferredPartitionCount >= 1 && inferredPartitionCount <= 64)
+        partitionCount = inferredPartitionCount;
+    else if (partitionCount == 0 || partitionCount > 64)
+        partitionCount = 2;
 
-struct FOOTER {
-    ubyte Padding[3] <fgcolor=cBlack, bgcolor=cRed>; // format version
-    char Magic[8] <fgcolor=cBlack, bgcolor=cRed>; // Fix contant:0x07 0x00 0x00 0x00 0x44 0x4C 0x50 0x00
-    
-} footer;
+    local uint imageCount = Settings.LayerCount * partitionCount;
+
+    FSeek(Settings.LayerDefTableAddress);
+    ubyte LayerDefIndexMagic <fgcolor=cBlack, bgcolor=cRed, format=hex>; // 0xA1
+
+    struct LAYER_DEF_INDEX_TABLES {
+        local uint i;
+        for (i = 0; i < Settings.LayerCount; i++)
+        {
+            INDEX_TABLE_ENTRY Entry;
+        }
+    } LayerDefIndexTables;
+
+    FSeek(Settings.ImageDefTableAddress);
+    ubyte ImageIndexMagic <fgcolor=cBlack, bgcolor=cRed, format=hex>; // 0xA2
+
+    struct IMAGE_INDEX_TABLES {
+        local uint i;
+        for (i = 0; i < imageCount; i++)
+        {
+            INDEX_TABLE_ENTRY Entry;
+        }
+    } ImageIndexTables;
+
+    FSeek(Settings.ResinDefTableAddress);
+    ubyte ResinIndexMagic <fgcolor=cBlack, bgcolor=cRed, format=hex>; // 0xA3
+    uint ResinCount <fgcolor=cBlack, bgcolor=cRed>;
+
+    struct RESIN_INDEX_TABLES {
+        local uint i;
+        for (i = 0; i < ResinCount; i++)
+        {
+            INDEX_TABLE_ENTRY Entry;
+        }
+    } ResinIndexTables;
+
+    if (Settings.ExtDefTableAddress > 0 && Settings.ExtDefTableAddress < FileSize() - 32)
+    {
+        FSeek(Settings.ExtDefTableAddress);
+        ubyte ExtIndexMagic <fgcolor=cBlack, bgcolor=cRed, format=hex>; // 0xA4
+        uint ExtCount <fgcolor=cBlack, bgcolor=cRed>;
+
+        struct EXT_INDEX_TABLES {
+            local uint i;
+            for (i = 0; i < ExtCount; i++)
+            {
+                INDEX_TABLE_ENTRY Entry;
+            }
+        } ExtIndexTables;
+
+        struct EXTENSIONS_V5 {
+            local uint i;
+            for (i = 0; i < ExtCount; i++)
+            {
+                FSeek(ExtIndexTables.Entry[i].Offset);
+                RAW_DATA_V5 Extension(ExtIndexTables.Entry[i].Size);
+            }
+        } ExtensionsV5;
+    }
+
+    struct LAYERS_V5 {
+        local uint i;
+        for (i = 0; i < Settings.LayerCount; i++)
+        {
+            FSeek(LayerDefIndexTables.Entry[i].Offset);
+            LAYER_DEF_V5 Layer;
+        }
+    } LayersV5;
+
+    struct IMAGES_V5 {
+        local uint i;
+        for (i = 0; i < imageCount; i++)
+        {
+            FSeek(ImageIndexTables.Entry[i].Offset);
+            IMAGE_DATA_V5 Image(ImageIndexTables.Entry[i].Size);
+        }
+    } ImagesV5;
+
+    struct RESINS_V5 {
+        local uint i;
+        for (i = 0; i < ResinCount; i++)
+        {
+            FSeek(ResinIndexTables.Entry[i].Offset);
+            RESIN_DATA_V5 Resin(ResinIndexTables.Entry[i].Size);
+        }
+    } ResinsV5;
+
+    FSeek(FileSize() - 32);
+    char MD5[32] <fgcolor=cBlack, bgcolor=cRed>;
+}
+else
+{
+    struct LAYER_DEF {
+        // 0: reserve; 1: current layer pause printing
+        ushort Pause <fgcolor=cWhite, bgcolor=cBlue>;
+        // The lift distance of Z axis when "Pause flag" equal 1. unit:mm
+        float PausePositionZ <fgcolor=cWhite, bgcolor=cBlue>;
+        float PositionZ <fgcolor=cWhite, bgcolor=cBlue>;
+        float ExposureTime <fgcolor=cWhite, bgcolor=cBlue>;
+        float LightOffDelay <fgcolor=cWhite, bgcolor=cBlue>;
+        float WaitTimeAfterCure <fgcolor=cWhite, bgcolor=cBlue>;
+        float WaitTimeAfterLift <fgcolor=cWhite, bgcolor=cBlue>;
+        float WaitTimeBeforeCure <fgcolor=cWhite, bgcolor=cBlue>;
+        float LiftHeight <fgcolor=cWhite, bgcolor=cBlue>;
+        float LiftSpeed <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
+        float LiftHeight2 <fgcolor=cWhite, bgcolor=cBlue>;
+        float LiftSpeed2 <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
+        float RetractHeight <fgcolor=cWhite, bgcolor=cBlue>;
+        float RetractSpeed <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
+        float RetractHeight2 <fgcolor=cWhite, bgcolor=cBlue>;
+        float RetractSpeed2 <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
+        ushort LightPWM <fgcolor=cWhite, bgcolor=cBlue>;
+        ubyte DelimiterData[2] <fgcolor=cWhite, bgcolor=cBlue>; // \n 0x0D 0x0A
+        uint DataSize <fgcolor=cWhite, bgcolor=cBlue>;
+        // First RLE byte is Magic (0x55)
+        ubyte RLE[DataSize] <fgcolor=cWhite, bgcolor=cBlack>;
+        // Last RLE byte is Checksum XOR
+        ubyte DelimiterRLE[2] <fgcolor=cWhite, bgcolor=cBlack>;  // \n 0x0D 0x0A
+    };
+
+    struct LAYERS {
+        local uint i;
+        for (i = 0; i < Settings.LayerCount; i++)
+        {
+            LAYER_DEF Layer;
+        }
+    } Layers;
+
+    struct FOOTER {
+        ubyte Padding[3] <fgcolor=cBlack, bgcolor=cRed>;
+        char Magic[8] <fgcolor=cBlack, bgcolor=cRed>; // 0x07 0x00 0x00 0x00 0x44 0x4C 0x50 0x00
+    } Footer;
+}
