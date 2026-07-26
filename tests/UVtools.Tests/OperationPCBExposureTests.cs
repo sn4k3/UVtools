@@ -9,6 +9,7 @@
 using System;
 using System.Drawing;
 using Emgu.CV;
+using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 using Xunit;
@@ -25,7 +26,7 @@ public class OperationPCBExposureTests
     }
 
     [Fact]
-    public void AutoCenterPlacesTheArtworkAtThePlateCenter()
+    public void DefaultAnchorPlacesTheArtworkAtThePlateCenter()
     {
         using var slicerFile = PcbFixtures.CreateSlicerFile();
         using var board = new TempFile(PcbFixtures.NegativeYBoard);
@@ -40,13 +41,39 @@ public class OperationPCBExposureTests
         Assert.InRange(rectangle.Y + rectangle.Height / 2, center - 2, center + 2);
     }
 
-    [Fact]
-    public void AutoCenterDisabledLeavesAnOffPlateBoardUnrendered()
+    [Theory]
+    [InlineData(Anchor.TopLeft, 0, 0)]
+    [InlineData(Anchor.TopCenter, 1, 0)]
+    [InlineData(Anchor.TopRight, 2, 0)]
+    [InlineData(Anchor.MiddleLeft, 0, 1)]
+    [InlineData(Anchor.MiddleCenter, 1, 1)]
+    [InlineData(Anchor.MiddleRight, 2, 1)]
+    [InlineData(Anchor.BottomLeft, 0, 2)]
+    [InlineData(Anchor.BottomCenter, 1, 2)]
+    [InlineData(Anchor.BottomRight, 2, 2)]
+    public void PlacementAnchorsAlignArtworkWithPlate(Anchor anchor, int horizontal, int vertical)
     {
         using var slicerFile = PcbFixtures.CreateSlicerFile();
         using var board = new TempFile(PcbFixtures.NegativeYBoard);
         var operation = CreateOperation(slicerFile, board.Path);
-        operation.AutoCenter = false;
+        operation.Anchor = anchor;
+
+        using var mat = operation.GetMat(operation.Files[0]);
+
+        var rectangle = CvInvoke.BoundingRectangle(mat);
+        var expectedX = horizontal * (PcbFixtures.PlatePixels - rectangle.Width) / 2;
+        var expectedY = vertical * (PcbFixtures.PlatePixels - rectangle.Height) / 2;
+        Assert.InRange(rectangle.X, expectedX - 1, expectedX + 1);
+        Assert.InRange(rectangle.Y, expectedY - 1, expectedY + 1);
+    }
+
+    [Fact]
+    public void AnchorNoneLeavesAnOffPlateBoardUnrendered()
+    {
+        using var slicerFile = PcbFixtures.CreateSlicerFile();
+        using var board = new TempFile(PcbFixtures.NegativeYBoard);
+        var operation = CreateOperation(slicerFile, board.Path);
+        operation.Anchor = Anchor.None;
 
         using var mat = operation.GetMat(operation.Files[0]);
 
@@ -101,9 +128,9 @@ public class OperationPCBExposureTests
         using var slicerFile = PcbFixtures.CreateSlicerFile();
         using var board = new TempFile(PcbFixtures.NegativeYBoard);
         var operation = CreateOperation(slicerFile, board.Path);
-        operation.AutoCenter = false;
+        operation.Anchor = Anchor.None;
 
-        // Without centering this board is off the plate, so nothing is drawn. The failure must name the
+        // With original board placement this board is off the plate, so nothing is drawn. The failure must name the
         // cause rather than surface an OpenCV assertion from the thumbnail step.
         var exception = Assert.Throws<InvalidOperationException>(() => operation.Execute());
         Assert.Contains("empty", exception.Message, StringComparison.OrdinalIgnoreCase);

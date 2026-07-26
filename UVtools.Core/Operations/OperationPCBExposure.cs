@@ -6,9 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Emgu.CV;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,6 +14,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
 using EmguExtensions;
 using UVtools.Core.Excellon;
 using UVtools.Core.Extensions;
@@ -32,38 +32,6 @@ namespace UVtools.Core.Operations;
 public partial class OperationPCBExposure : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
-    #region Sub Classes
-
-    public sealed partial class PCBExposureFile : GenericFileRepresentation
-    {
-        /// <summary>
-        /// Gets or sets to invert the polarity when drawing
-        /// </summary>
-        [ObservableProperty]
-        public partial bool InvertPolarity { get; set; }
-
-        /// <summary>
-        /// Gets or sets the scale to apply to each shape drawing size.
-        /// Positions and vectors aren't affected by this.
-        /// </summary>
-        public double SizeScale
-        {
-            get;
-            set => SetProperty(ref field, Math.Max(0.001, Math.Round(value, 4)));
-        } = 1;
-
-        public PCBExposureFile()
-        {
-        }
-
-        public PCBExposureFile(string filePath, bool invertPolarity = false) : base(filePath)
-        {
-            InvertPolarity = invertPolarity;
-        }
-    }
-
-    #endregion
-
     #region Static
 
     public static string[] ValidExtensions =>
@@ -80,6 +48,38 @@ public partial class OperationPCBExposure : Operation
         "drl", // Drill holes
         "xln" // Eagle drill holes
     ];
+
+    #endregion
+
+    #region Sub Classes
+
+    public sealed partial class PCBExposureFile : GenericFileRepresentation
+    {
+        public PCBExposureFile()
+        {
+        }
+
+        public PCBExposureFile(string filePath, bool invertPolarity = false) : base(filePath)
+        {
+            InvertPolarity = invertPolarity;
+        }
+
+        /// <summary>
+        /// Gets or sets to invert the polarity when drawing
+        /// </summary>
+        [ObservableProperty]
+        public partial bool InvertPolarity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scale to apply to each shape drawing size.
+        /// Positions and vectors aren't affected by this.
+        /// </summary>
+        public double SizeScale
+        {
+            get;
+            set => SetProperty(ref field, Math.Max(0.001, Math.Round(value, 4)));
+        } = 1;
+    }
 
     #endregion
 
@@ -220,21 +220,25 @@ public partial class OperationPCBExposure : Operation
     /// way the file describes it, matching what a gerber viewer or the CAD tool shows.</para>
     /// <para>Applied once to the finished plate, so every file lands on the same axis and the layers stay aligned.</para>
     /// </summary>
-    [ObservableProperty] public partial bool FlipY { get; set; } = true;
+    [ObservableProperty]
+    public partial bool FlipY { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets to center the artwork on the plate before drawing it.
+    /// Gets or sets where to place the artwork on the plate before drawing it.
     /// <para>Files plotted far from the origin, such as a KiCad export using absolute page coordinates,
     /// would otherwise fall outside the plate and render blank.</para>
-    /// <para><see cref="OffsetX"/> and <see cref="OffsetY"/> still apply on top of the centering as a manual nudge.</para>
+    /// <para><see cref="Anchor.None"/> preserves the coordinates declared by the board files.</para>
+    /// <para><see cref="OffsetX"/> and <see cref="OffsetY"/> still apply on top of the placement as a manual nudge.</para>
     /// </summary>
-    [ObservableProperty] public partial bool AutoCenter { get; set; } = true;
+    [ObservableProperty]
+    public partial Anchor Anchor { get; set; } = Anchor.None;
 
     /// <summary>
     /// Gets or sets to repeat the artwork as many times as it fits to fill the plate.
     /// Only whole copies are placed, a copy that would be clipped by the plate edge is skipped.
     /// </summary>
-    [ObservableProperty] public partial bool FillPlate { get; set; }
+    [ObservableProperty]
+    public partial bool FillPlate { get; set; }
 
     /// <summary>
     /// Gets or sets the horizontal gap in millimeters left between each copy when <see cref="FillPlate"/> is enabled
@@ -264,7 +268,7 @@ public partial class OperationPCBExposure : Operation
                ExposureTime == other.ExposureTime && SizeMidpointRounding == other.SizeMidpointRounding &&
                OffsetX == other.OffsetX && OffsetY == other.OffsetY && Mirror == other.Mirror &&
                InvertColor == other.InvertColor && EnableAntiAliasing == other.EnableAntiAliasing &&
-               FlipY == other.FlipY && AutoCenter == other.AutoCenter && FillPlate == other.FillPlate &&
+               FlipY == other.FlipY && Anchor == other.Anchor && FillPlate == other.FillPlate &&
                FillSpacingX == other.FillSpacingX && FillSpacingY == other.FillSpacingY;
     }
 
@@ -328,6 +332,16 @@ public partial class OperationPCBExposure : Operation
         Files.Sort();
     }
 
+    public void SetAnchor(byte value)
+    {
+        Anchor = (Anchor)value;
+    }
+
+    public void SetAnchor(object value)
+    {
+        Anchor = (Anchor)Convert.ToByte(value);
+    }
+
     /// <summary>
     /// Parses every file in <see cref="Files"/> without rendering it, to find the area the artwork occupies.
     /// </summary>
@@ -358,22 +372,40 @@ public partial class OperationPCBExposure : Operation
     }
 
     /// <summary>
-    /// Gets the offset in millimeters that places the given area at the center of the plate.
+    /// Gets the offset in millimeters that places the given area at <see cref="Anchor"/>.
     /// </summary>
-    /// <param name="boundsMm">Area to center, in millimeters</param>
-    public SizeF GetCenterOffsetMillimeters(RectangleF boundsMm)
+    /// <param name="boundsMm">Area to place, in millimeters</param>
+    public SizeF GetAnchorOffsetMillimeters(RectangleF boundsMm)
     {
         var plateWidthMm = SlicerFile.ResolutionX / SlicerFile.Ppmm.Width;
         var plateHeightMm = SlicerFile.ResolutionY / SlicerFile.Ppmm.Height;
 
-        return new SizeF(
-            plateWidthMm / 2f - (boundsMm.Left + boundsMm.Width / 2f),
-            plateHeightMm / 2f - (boundsMm.Top + boundsMm.Height / 2f));
+        var x = Anchor switch
+        {
+            Anchor.TopLeft or Anchor.MiddleLeft or Anchor.BottomLeft => -boundsMm.Left,
+            Anchor.TopCenter or Anchor.MiddleCenter or Anchor.BottomCenter =>
+                plateWidthMm / 2f - (boundsMm.Left + boundsMm.Width / 2f),
+            Anchor.TopRight or Anchor.MiddleRight or Anchor.BottomRight => plateWidthMm - boundsMm.Right,
+            _ => 0
+        };
+
+        var y = Anchor switch
+        {
+            Anchor.TopLeft or Anchor.TopCenter or Anchor.TopRight =>
+                FlipY ? plateHeightMm - boundsMm.Bottom : -boundsMm.Top,
+            Anchor.MiddleLeft or Anchor.MiddleCenter or Anchor.MiddleRight =>
+                plateHeightMm / 2f - (boundsMm.Top + boundsMm.Height / 2f),
+            Anchor.BottomLeft or Anchor.BottomCenter or Anchor.BottomRight =>
+                FlipY ? -boundsMm.Top : plateHeightMm - boundsMm.Bottom,
+            _ => 0
+        };
+
+        return new SizeF(x, y);
     }
 
     /// <summary>
     /// Gets the offset in millimeters to draw with: the manual <see cref="OffsetX"/> and <see cref="OffsetY"/>,
-    /// plus the centering correction when <see cref="AutoCenter"/> is enabled.
+    /// plus the placement correction selected by <see cref="Anchor"/>.
     /// </summary>
     /// <remarks>
     /// Every file must be drawn with the same offset, otherwise the layers of a multi file job no longer line up.
@@ -382,12 +414,12 @@ public partial class OperationPCBExposure : Operation
     public SizeF GetDrawOffsetMillimeters()
     {
         var offset = new SizeF((float)OffsetX, (float)OffsetY);
-        if (!AutoCenter) return offset;
+        if (Anchor == Anchor.None) return offset;
 
         if (GetBoundsMillimeters() is not { } bounds) return offset;
 
-        var center = GetCenterOffsetMillimeters(bounds);
-        return new SizeF(offset.Width + center.Width, offset.Height + center.Height);
+        var anchorOffset = GetAnchorOffsetMillimeters(bounds);
+        return new SizeF(offset.Width + anchorOffset.Width, offset.Height + anchorOffset.Height);
     }
 
     /// <summary>
@@ -406,7 +438,8 @@ public partial class OperationPCBExposure : Operation
     /// regardless of the offset and inversion already applied. It must however be measured in the same orientation as
     /// <paramref name="mat"/>, so tile before mirroring, or measure from an equally mirrored plate.</para>
     /// <para>The resulting grid is centered on the plate, which repositions the artwork even when
-    /// <see cref="AutoCenter"/> is disabled. Nothing is moved when a single copy is all that fits.</para>
+    /// <see cref="Anchor"/> is <see cref="UVtools.Core.Anchor.None"/>. Nothing is moved when a single copy is all that
+    /// fits.</para>
     /// </remarks>
     public int FillPlateWithCopies(Mat mat, Rectangle? source = null)
     {
@@ -475,7 +508,10 @@ public partial class OperationPCBExposure : Operation
     /// Must run once per plate, never per file: this flips the whole <see cref="Mat"/>, so calling it while composing
     /// several files into one would undo itself on every second file.
     /// </remarks>
-    private static void FlipMatVertically(Mat mat) => CvInvoke.Flip(mat, mat, FlipType.Vertical);
+    private static void FlipMatVertically(Mat mat)
+    {
+        CvInvoke.Flip(mat, mat, FlipType.Vertical);
+    }
 
     /// <summary>
     /// Flips <paramref name="mat"/> along the printer display mirror axis, defaulting to horizontally.
@@ -487,7 +523,8 @@ public partial class OperationPCBExposure : Operation
         CvInvoke.Flip(mat, mat, (FlipType)flip);
     }
 
-    public Mat GetMat(PCBExposureFile file, bool canMirror = true, SizeF? drawOffsetMm = null, Rectangle? fillSource = null)
+    public Mat GetMat(PCBExposureFile file, bool canMirror = true, SizeF? drawOffsetMm = null,
+        Rectangle? fillSource = null)
     {
         var mat = SlicerFile.CreateMat();
         DrawMat(file, mat, canMirror, drawOffsetMm);
@@ -565,8 +602,8 @@ public partial class OperationPCBExposure : Operation
             throw new InvalidOperationException(
                 "The generated image is empty, nothing was rendered onto the build area.\n" +
                 "This usually means the artwork does not fit the plate, or that it sits outside it because " +
-                "auto-center is disabled and the file uses coordinates far from the origin.\n" +
-                "Enable auto-center, or set the Offset X/Y to bring the artwork onto the plate, and try again.");
+                "placement is set to None and the file uses coordinates far from the origin.\n" +
+                "Select a placement anchor, or set the Offset X/Y to bring the artwork onto the plate, and try again.");
         }
 
         // The composed plate is the grid cell for every layer. Taken before mirroring and before the plate is

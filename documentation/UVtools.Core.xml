@@ -8636,7 +8636,7 @@
         <member name="P:UVtools.Core.Operations.OperationPCBExposure.FlipY">
             <inheritdoc/>
         </member>
-        <member name="P:UVtools.Core.Operations.OperationPCBExposure.AutoCenter">
+        <member name="P:UVtools.Core.Operations.OperationPCBExposure.Anchor">
             <inheritdoc/>
         </member>
         <member name="P:UVtools.Core.Operations.OperationPCBExposure.FillPlate">
@@ -8661,16 +8661,16 @@
             therefore possibly negative, or null when none of them plots anything.
             </returns>
         </member>
-        <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetCenterOffsetMillimeters(System.Drawing.RectangleF)">
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetAnchorOffsetMillimeters(System.Drawing.RectangleF)">
             <summary>
-            Gets the offset in millimeters that places the given area at the center of the plate.
+            Gets the offset in millimeters that places the given area at <see cref="P:UVtools.Core.Operations.OperationPCBExposure.Anchor"/>.
             </summary>
-            <param name="boundsMm">Area to center, in millimeters</param>
+            <param name="boundsMm">Area to place, in millimeters</param>
         </member>
         <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetDrawOffsetMillimeters">
             <summary>
             Gets the offset in millimeters to draw with: the manual <see cref="P:UVtools.Core.Operations.OperationPCBExposure.OffsetX"/> and <see cref="P:UVtools.Core.Operations.OperationPCBExposure.OffsetY"/>,
-            plus the centering correction when <see cref="P:UVtools.Core.Operations.OperationPCBExposure.AutoCenter"/> is enabled.
+            plus the placement correction selected by <see cref="P:UVtools.Core.Operations.OperationPCBExposure.Anchor"/>.
             </summary>
             <remarks>
             Every file must be drawn with the same offset, otherwise the layers of a multi file job no longer line up.
@@ -8694,7 +8694,8 @@
             regardless of the offset and inversion already applied. It must however be measured in the same orientation as
             <paramref name="mat"/>, so tile before mirroring, or measure from an equally mirrored plate.</para>
             <para>The resulting grid is centered on the plate, which repositions the artwork even when
-            <see cref="P:UVtools.Core.Operations.OperationPCBExposure.AutoCenter"/> is disabled. Nothing is moved when a single copy is all that fits.</para>
+            <see cref="P:UVtools.Core.Operations.OperationPCBExposure.Anchor"/> is <see cref="F:UVtools.Core.Anchor.None"/>. Nothing is moved when a single copy is all that
+            fits.</para>
             </remarks>
         </member>
         <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetFillSourceRectangle(System.Nullable{System.Drawing.SizeF},System.Boolean)">
@@ -11522,9 +11523,6 @@
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.FlipY">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "FlipY" generated properties.</summary>
-        </member>
-        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.AutoCenter">
-            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "AutoCenter" generated properties.</summary>
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.FillPlate">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "FillPlate" generated properties.</summary>

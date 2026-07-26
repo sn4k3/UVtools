@@ -149,7 +149,7 @@
                 <TextBlock Grid.Row="8" Grid.Column="0"
                            VerticalAlignment="Center"
                            ToolTip.Tip="Offset the PCB origin.
-&#x0a;Applied on top of the auto-center correction, use it to nudge the artwork from there.
+&#x0a;Applied on top of the selected placement, use it to nudge the artwork from there.
 &#x0a;Use the 'Show full preview image (The final result)' option to preview the resulting position."
                            Text="Offset X/Y:"/>
 
@@ -176,22 +176,110 @@
                            VerticalAlignment="Center"
                            Text="Positioning:"/>
 
-                <StackPanel Grid.Row="10" Grid.Column="2"
-                            Orientation="Horizontal" Spacing="20">
-                    <CheckBox VerticalAlignment="Center"
-                              IsChecked="{Binding Operation.AutoCenter}"
-                              ToolTip.Tip="Center the artwork on the plate before drawing it.
-&#x0a;Files exported with absolute page coordinates, such as most KiCad plots, sit far from the origin and would otherwise fall outside the plate and render blank.
-&#x0a;Disable it to place the artwork at the exact coordinates the file declares, for example to align several boards by hand."
-                              Content="Auto-center"/>
+                <Grid Grid.Row="10" Grid.Column="2"
+                      ColumnDefinitions="90,20,*"
+                      MinHeight="90"
+                      ToolTip.Tip="Place the artwork at the selected side of the plate before drawing it.
+&#x0a;Files exported with absolute page coordinates, such as most KiCad plots, sit far from the origin and would otherwise fall outside the plate and render blank.">
+                    <Grid Grid.Column="0"
+                          RowDefinitions="30,30,30"
+                          ColumnDefinitions="30,30,30"
+                          Width="90"
+                          Height="90">
+                        <RadioButton Grid.Row="0" Grid.Column="0"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     GroupName="Anchor"
+                                     ToolTip.Tip="Top Left"
+                                     IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=TopLeft, Mode=OneWay}"
+                                     Command="{Binding Operation.SetAnchor}"
+                                     CommandParameter="0"/>
+                        <RadioButton Grid.Row="0" Grid.Column="1"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     GroupName="Anchor"
+                                     ToolTip.Tip="Top Center"
+                                     IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=TopCenter, Mode=OneWay}"
+                                     Command="{Binding Operation.SetAnchor}"
+                                     CommandParameter="1"/>
+                        <RadioButton Grid.Row="0" Grid.Column="2"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     GroupName="Anchor"
+                                     ToolTip.Tip="Top Right"
+                                     IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=TopRight, Mode=OneWay}"
+                                     Command="{Binding Operation.SetAnchor}"
+                                     CommandParameter="2"/>
 
-                    <CheckBox VerticalAlignment="Center"
-                              IsChecked="{Binding Operation.FlipY}"
-                              ToolTip.Tip="Flip the artwork along the vertical axis.
+                        <RadioButton Grid.Row="1" Grid.Column="0"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     GroupName="Anchor"
+                                     ToolTip.Tip="Middle Left"
+                                     IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MiddleLeft, Mode=OneWay}"
+                                     Command="{Binding Operation.SetAnchor}"
+                                     CommandParameter="3"/>
+                        <RadioButton Grid.Row="1" Grid.Column="1"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     GroupName="Anchor"
+                                     ToolTip.Tip="Middle Center"
+                                     IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MiddleCenter, Mode=OneWay}"
+                                     Command="{Binding Operation.SetAnchor}"
+                                     CommandParameter="4"/>
+                        <RadioButton Grid.Row="1" Grid.Column="2"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     GroupName="Anchor"
+                                     ToolTip.Tip="Middle Right"
+                                     IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MiddleRight, Mode=OneWay}"
+                                     Command="{Binding Operation.SetAnchor}"
+                                     CommandParameter="5"/>
+
+                        <RadioButton Grid.Row="2" Grid.Column="0"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     GroupName="Anchor"
+                                     ToolTip.Tip="Bottom Left"
+                                     IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=BottomLeft, Mode=OneWay}"
+                                     Command="{Binding Operation.SetAnchor}"
+                                     CommandParameter="6"/>
+                        <RadioButton Grid.Row="2" Grid.Column="1"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     GroupName="Anchor"
+                                     ToolTip.Tip="Bottom Center"
+                                     IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=BottomCenter, Mode=OneWay}"
+                                     Command="{Binding Operation.SetAnchor}"
+                                     CommandParameter="7"/>
+                        <RadioButton Grid.Row="2" Grid.Column="2"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     GroupName="Anchor"
+                                     ToolTip.Tip="Bottom Right"
+                                     IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=BottomRight, Mode=OneWay}"
+                                     Command="{Binding Operation.SetAnchor}"
+                                     CommandParameter="8"/>
+                    </Grid>
+
+                    <StackPanel Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Spacing="10">
+                        <RadioButton GroupName="Anchor"
+                                     Content="Original from board"
+                                     ToolTip.Tip="Preserve the exact coordinates declared by the board files."
+                                     IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=None, Mode=OneWay}"
+                                     Command="{Binding Operation.SetAnchor}"
+                                     CommandParameter="9"/>
+
+                        <CheckBox VerticalAlignment="Center"
+                                  IsChecked="{Binding Operation.FlipY}"
+                                  ToolTip.Tip="Flip the artwork along the vertical axis.
 &#x0a;Gerber and drill files put the origin at the bottom left with Y growing upwards, while image rows grow downwards, so the drawing comes out mirrored top to bottom without this.
 &#x0a;Leave it enabled to get the same orientation your CAD tool or gerber viewer shows."
-                              Content="Flip vertically"/>
-                </StackPanel>
+                                  Content="Flip vertically"/>
+                    </StackPanel>
+                </Grid>
 
                 <TextBlock Grid.Row="12" Grid.Column="0"
                            VerticalAlignment="Center"
