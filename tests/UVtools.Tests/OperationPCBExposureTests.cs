@@ -20,13 +20,16 @@ public class OperationPCBExposureTests
 {
     private static OperationPCBExposure CreateOperation(FileFormat slicerFile, params string[] filePaths)
     {
-        var operation = new OperationPCBExposure(slicerFile);
+        var operation = new OperationPCBExposure(slicerFile)
+        {
+            Anchor = Anchor.MiddleCenter
+        };
         foreach (var path in filePaths) operation.Files.Add(new OperationPCBExposure.PCBExposureFile(path));
         return operation;
     }
 
     [Fact]
-    public void DefaultAnchorPlacesTheArtworkAtThePlateCenter()
+    public void MiddleCenterAnchorPlacesTheArtworkAtThePlateCenter()
     {
         using var slicerFile = PcbFixtures.CreateSlicerFile();
         using var board = new TempFile(PcbFixtures.NegativeYBoard);
@@ -65,6 +68,43 @@ public class OperationPCBExposureTests
         var expectedY = vertical * (PcbFixtures.PlatePixels - rectangle.Height) / 2;
         Assert.InRange(rectangle.X, expectedX - 1, expectedX + 1);
         Assert.InRange(rectangle.Y, expectedY - 1, expectedY + 1);
+    }
+
+    [Theory]
+    [InlineData(Anchor.TopLeft)]
+    [InlineData(Anchor.TopCenter)]
+    [InlineData(Anchor.TopRight)]
+    [InlineData(Anchor.MiddleLeft)]
+    [InlineData(Anchor.MiddleRight)]
+    [InlineData(Anchor.BottomLeft)]
+    [InlineData(Anchor.BottomCenter)]
+    [InlineData(Anchor.BottomRight)]
+    public void PlacementAnchorsDoNotClipAperturesAtTheArtworkBounds(Anchor anchor)
+    {
+        const string gerber =
+            """
+            %FSLAX46Y46*%
+            %MOMM*%
+            %ADD10C,10.000000*%
+            D10*
+            X10000000Y20000000D03*
+            X30000000Y40000000D03*
+            M02*
+            """;
+
+        using var slicerFile = PcbFixtures.CreateSlicerFile();
+        using var board = new TempFile(gerber);
+        var operation = CreateOperation(slicerFile, board.Path);
+
+        using var centered = operation.GetMat(operation.Files[0]);
+        var centeredBounds = CvInvoke.BoundingRectangle(centered);
+        var centeredPixels = CvInvoke.CountNonZero(centered);
+
+        operation.Anchor = anchor;
+        using var anchored = operation.GetMat(operation.Files[0]);
+
+        Assert.Equal(centeredBounds.Size, CvInvoke.BoundingRectangle(anchored).Size);
+        Assert.Equal(centeredPixels, CvInvoke.CountNonZero(anchored));
     }
 
     [Fact]
@@ -247,6 +287,7 @@ public class OperationPCBExposureTests
         using var slicerFile = PcbFixtures.CreateSlicerFile();
         var operation = new OperationPCBExposure(slicerFile)
         {
+            Anchor = Anchor.MiddleCenter,
             MergeFiles = mergeFiles,
             FillPlate = true,
             FillSpacingX = 5,

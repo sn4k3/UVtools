@@ -8667,6 +8667,12 @@
             </summary>
             <param name="boundsMm">Area to place, in millimeters</param>
         </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetRenderedBounds(System.Drawing.SizeF)">
+            <summary>
+            Renders the complete job at the center of the plate and returns the bounds of the pixels it actually draws.
+            Gerber coordinate bounds follow path and flash centers, so they do not include aperture radii.
+            </summary>
+        </member>
         <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetDrawOffsetMillimeters">
             <summary>
             Gets the offset in millimeters to draw with: the manual <see cref="P:UVtools.Core.Operations.OperationPCBExposure.OffsetX"/> and <see cref="P:UVtools.Core.Operations.OperationPCBExposure.OffsetY"/>,

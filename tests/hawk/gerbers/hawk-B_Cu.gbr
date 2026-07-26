@@ -1,0 +1,85 @@
+G04 #@! TF.GenerationSoftware,KiCad,Pcbnew,10.0.5*
+G04 #@! TF.CreationDate,2026-07-26T23:15:38+00:00*
+G04 #@! TF.ProjectId,hawk,6861776b-2e6b-4696-9361-645f70636258,rev?*
+G04 #@! TF.SameCoordinates,Original*
+G04 #@! TF.FileFunction,Copper,L2,Bot*
+G04 #@! TF.FilePolarity,Positive*
+%FSLAX46Y46*%
+G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*
+G04 Created by KiCad (PCBNEW 10.0.5) date 2026-07-26 23:15:38*
+%MOMM*%
+%LPD*%
+G01*
+G04 APERTURE LIST*
+G04 Aperture macros list*
+%AMRoundRect*
+0 Rectangle with rounded corners*
+0 $1 Rounding radius*
+0 $2 $3 $4 $5 $6 $7 $8 $9 X,Y pos of 4 corners*
+0 Add a 4 corners polygon primitive as box body*
+4,1,4,$2,$3,$4,$5,$6,$7,$8,$9,$2,$3,0*
+0 Add four circle primitives for the rounded corners*
+1,1,$1+$1,$2,$3*
+1,1,$1+$1,$4,$5*
+1,1,$1+$1,$6,$7*
+1,1,$1+$1,$8,$9*
+0 Add four rect primitives between the rounded corners*
+20,1,$1+$1,$2,$3,$4,$5,0*
+20,1,$1+$1,$4,$5,$6,$7,0*
+20,1,$1+$1,$6,$7,$8,$9,0*
+20,1,$1+$1,$8,$9,$2,$3,0*%
+G04 Aperture macros list end*
+G04 #@! TA.AperFunction,ComponentPad*
+%ADD10C,3.000000*%
+G04 #@! TD*
+G04 #@! TA.AperFunction,ComponentPad*
+%ADD11R,1.700000X1.700000*%
+G04 #@! TD*
+G04 #@! TA.AperFunction,ComponentPad*
+%ADD12O,1.700000X1.700000*%
+G04 #@! TD*
+G04 #@! TA.AperFunction,ComponentPad*
+%ADD13RoundRect,0.250000X0.625000X-0.350000X0.625000X0.350000X-0.625000X0.350000X-0.625000X-0.350000X0*%
+G04 #@! TD*
+G04 #@! TA.AperFunction,ComponentPad*
+%ADD14O,1.750000X1.200000*%
+G04 #@! TD*
+G04 #@! TA.AperFunction,ComponentPad*
+%ADD15C,2.000000*%
+G04 #@! TD*
+G04 APERTURE END LIST*
+D10*
+X27100000Y-42300000D03*
+X13100000Y-42300000D03*
+X13100000Y-12400000D03*
+D11*
+X22600000Y-39700000D03*
+D12*
+X22600000Y-42240000D03*
+X20060000Y-39700000D03*
+X20060000Y-42240000D03*
+X17520000Y-39700000D03*
+X17520000Y-42240000D03*
+D11*
+X13780000Y-29280000D03*
+D12*
+X13780000Y-31820000D03*
+X13780000Y-34360000D03*
+X13780000Y-36900000D03*
+X26480000Y-36900000D03*
+X26480000Y-34360000D03*
+X26480000Y-31820000D03*
+D11*
+X26480000Y-29280000D03*
+D13*
+X13500000Y-24000000D03*
+D14*
+X13500000Y-22000000D03*
+D15*
+X23400000Y-12500000D03*
+X23400000Y-17000000D03*
+X16900000Y-12500000D03*
+X16900000Y-17000000D03*
+D10*
+X27100000Y-12400000D03*
+M02*

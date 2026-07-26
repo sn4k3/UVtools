@@ -342,6 +342,11 @@ public partial class OperationPCBExposure : Operation
         Anchor = (Anchor)Convert.ToByte(value);
     }
 
+    private static bool IsDrillFile(PCBExposureFile file)
+    {
+        return ExcellonDrillFormat.Extensions.AsValueEnumerable().Any(file.IsExtension);
+    }
+
     /// <summary>
     /// Parses every file in <see cref="Files"/> without rendering it, to find the area the artwork occupies.
     /// </summary>
@@ -360,7 +365,7 @@ public partial class OperationPCBExposure : Operation
         {
             if (!file.Exists) continue;
 
-            var bounds = ExcellonDrillFormat.Extensions.AsValueEnumerable().Any(file.IsExtension)
+            var bounds = IsDrillFile(file)
                 ? ExcellonDrillFormat.ParseAndDraw(file, measureMat, SlicerFile.Ppmm, SizeMidpointRounding).BoundsMm
                 : GerberFormat.ParseAndDraw(file, measureMat, SlicerFile.Ppmm, SizeMidpointRounding).BoundsMm;
 
@@ -377,10 +382,15 @@ public partial class OperationPCBExposure : Operation
     /// <param name="boundsMm">Area to place, in millimeters</param>
     public SizeF GetAnchorOffsetMillimeters(RectangleF boundsMm)
     {
+        return GetAnchorOffsetMillimeters(boundsMm, Anchor);
+    }
+
+    private SizeF GetAnchorOffsetMillimeters(RectangleF boundsMm, Anchor anchor)
+    {
         var plateWidthMm = SlicerFile.ResolutionX / SlicerFile.Ppmm.Width;
         var plateHeightMm = SlicerFile.ResolutionY / SlicerFile.Ppmm.Height;
 
-        var x = Anchor switch
+        var x = anchor switch
         {
             Anchor.TopLeft or Anchor.MiddleLeft or Anchor.BottomLeft => -boundsMm.Left,
             Anchor.TopCenter or Anchor.MiddleCenter or Anchor.BottomCenter =>
@@ -389,7 +399,7 @@ public partial class OperationPCBExposure : Operation
             _ => 0
         };
 
-        var y = Anchor switch
+        var y = anchor switch
         {
             Anchor.TopLeft or Anchor.TopCenter or Anchor.TopRight =>
                 FlipY ? plateHeightMm - boundsMm.Bottom : -boundsMm.Top,
@@ -401,6 +411,31 @@ public partial class OperationPCBExposure : Operation
         };
 
         return new SizeF(x, y);
+    }
+
+    /// <summary>
+    /// Renders the complete job at the center of the plate and returns the bounds of the pixels it actually draws.
+    /// Gerber coordinate bounds follow path and flash centers, so they do not include aperture radii.
+    /// </summary>
+    private Rectangle GetRenderedBounds(SizeF centerOffsetMm)
+    {
+        using var mat = SlicerFile.CreateMat();
+
+        // Match execution order so subtractive drill files affect the measured result in the same way.
+        foreach (var file in Files)
+        {
+            if (IsDrillFile(file)) continue;
+            DrawMat(file, mat, false, centerOffsetMm);
+        }
+
+        foreach (var file in Files)
+        {
+            if (!IsDrillFile(file)) continue;
+            DrawMat(file, mat, false, centerOffsetMm);
+        }
+
+        if (FlipY) FlipMatVertically(mat);
+        return CvInvoke.BoundingRectangle(mat);
     }
 
     /// <summary>
@@ -418,8 +453,40 @@ public partial class OperationPCBExposure : Operation
 
         if (GetBoundsMillimeters() is not { } bounds) return offset;
 
-        var anchorOffset = GetAnchorOffsetMillimeters(bounds);
-        return new SizeF(offset.Width + anchorOffset.Width, offset.Height + anchorOffset.Height);
+        // Centering the declared coordinates keeps a fitting drawing fully visible while its real pixel bounds are
+        // measured. Those bounds include flashes, line thickness, arcs, macros and anti-aliasing.
+        var centerOffset = GetAnchorOffsetMillimeters(bounds, Anchor.MiddleCenter);
+        var renderedBounds = GetRenderedBounds(centerOffset);
+        if (renderedBounds.Width <= 0 || renderedBounds.Height <= 0)
+        {
+            var anchorOffset = GetAnchorOffsetMillimeters(bounds);
+            return new SizeF(offset.Width + anchorOffset.Width, offset.Height + anchorOffset.Height);
+        }
+
+        var availableX = SlicerFile.ResolutionX - renderedBounds.Width;
+        var availableY = SlicerFile.ResolutionY - renderedBounds.Height;
+        var targetX = Anchor switch
+        {
+            Anchor.TopLeft or Anchor.MiddleLeft or Anchor.BottomLeft => 0,
+            Anchor.TopCenter or Anchor.MiddleCenter or Anchor.BottomCenter => availableX / 2,
+            Anchor.TopRight or Anchor.MiddleRight or Anchor.BottomRight => availableX,
+            _ => renderedBounds.X
+        };
+        var targetY = Anchor switch
+        {
+            Anchor.TopLeft or Anchor.TopCenter or Anchor.TopRight => 0,
+            Anchor.MiddleLeft or Anchor.MiddleCenter or Anchor.MiddleRight => availableY / 2,
+            Anchor.BottomLeft or Anchor.BottomCenter or Anchor.BottomRight => availableY,
+            _ => renderedBounds.Y
+        };
+
+        var correctionX = (targetX - renderedBounds.X) / SlicerFile.Ppmm.Width;
+        var correctionY = (targetY - renderedBounds.Y) / SlicerFile.Ppmm.Height;
+        if (FlipY) correctionY = -correctionY;
+
+        return new SizeF(
+            offset.Width + centerOffset.Width + correctionX,
+            offset.Height + centerOffset.Height + correctionY);
     }
 
     /// <summary>
@@ -526,15 +593,17 @@ public partial class OperationPCBExposure : Operation
     public Mat GetMat(PCBExposureFile file, bool canMirror = true, SizeF? drawOffsetMm = null,
         Rectangle? fillSource = null)
     {
+        // Resolve the offset before allocating the final plate because anchor measurement uses a temporary plate.
+        var offset = drawOffsetMm ?? GetDrawOffsetMillimeters();
         var mat = SlicerFile.CreateMat();
-        DrawMat(file, mat, canMirror, drawOffsetMm);
+        DrawMat(file, mat, canMirror, offset);
         if (FlipY) FlipMatVertically(mat);
 
         if (FillPlate)
         {
             // Measured across every file, not just this one: a drill layer covers a smaller area than the
             // copper it belongs to, and sizing each layer grid on its own content pulls the copies out of line
-            FillPlateWithCopies(mat, fillSource ?? GetFillSourceRectangle(drawOffsetMm, canMirror));
+            FillPlateWithCopies(mat, fillSource ?? GetFillSourceRectangle(offset, canMirror));
         }
 
         return mat;
@@ -546,7 +615,7 @@ public partial class OperationPCBExposure : Operation
 
         var offset = drawOffsetMm ?? GetDrawOffsetMillimeters();
 
-        if (ExcellonDrillFormat.Extensions.AsValueEnumerable().Any(file.IsExtension))
+        if (IsDrillFile(file))
         {
             ExcellonDrillFormat.ParseAndDraw(file, mat, SlicerFile.Ppmm, SizeMidpointRounding,
                 offset, EnableAntiAliasing);
@@ -572,15 +641,15 @@ public partial class OperationPCBExposure : Operation
     {
         if (Files.Count == 0) return false;
         var layers = new List<Layer>();
-        using var mergeMat = SlicerFile.CreateMat();
         progress.ItemCount = FileCount;
 
         //var orderFiles = Files.OrderBy(file => file.IsExtension(".drl") || file.IsExtension(".xln")).ToArray();
         var orderFiles = Files.AsValueEnumerable()
-            .OrderBy(file => ExcellonDrillFormat.Extensions.AsValueEnumerable().Any(file.IsExtension)).ToArray();
+            .OrderBy(IsDrillFile).ToArray();
 
         // Measured once and shared by every file, per file centering would misalign the layers against each other
         var drawOffset = GetDrawOffsetMillimeters();
+        using var mergeMat = SlicerFile.CreateMat();
 
         // Compose every file first: the per layer Mats below need the grid cell measured across all of them
         for (var i = 0; i < orderFiles.Length; i++)
