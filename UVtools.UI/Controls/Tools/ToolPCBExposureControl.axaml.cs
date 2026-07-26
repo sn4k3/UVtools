@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using EmguExtensions;
 using EmguExtensions.Avalonia;
+using SukiUI.MessageBox;
 using UVtools.Core.Excellon;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
@@ -110,6 +111,47 @@ public partial class ToolPCBExposureControl : ToolControl
                 if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.FileCount > 0;
                 Operation.Files.CollectionChanged += (sender, e) => ParentWindow!.ButtonOkEnabled = Operation.FileCount > 0;
                 break;
+        }
+    }
+
+    public override async Task<bool> OnBeforeProcess()
+    {
+        if (Operation.MergeFiles) return true;
+
+        // Drill files are drawn in black, subtractively, over the copper drawn before them. Given a layer of their
+        // own they land on an empty plate, come out completely black and get discarded, so the holes silently never
+        // happen and the pads stay solid. Only warn about the files that would actually be dropped: one with the
+        // polarity inverted draws white and does produce a layer of its own.
+        var ignoredDrillFiles = Operation.Files
+            .Where(file => file.Exists
+                           && !file.InvertPolarity
+                           && ExcellonDrillFormat.Extensions.AsValueEnumerable().Any(file.IsExtension))
+            .Select(file => $"- {file.FileName}")
+            .ToArray();
+
+        if (ignoredDrillFiles.Length == 0) return true;
+
+        var result = await ParentWindow!.MessageBoxQuestion(
+            $"The following drill file(s) will have no effect on the output:\n\n{string.Join('\n', ignoredDrillFiles)}\n\n" +
+            "Drill files are drawn in black to punch their holes out of the copper drawn before them. " +
+            "With \"Merge files\" disabled every file gets a layer of its own, so a drill file is drawn onto an empty " +
+            "layer, comes out completely black and is discarded, leaving the pads solid.\n\n" +
+            "Enable \"Merge files\" so the holes are punched out of the copper?\n\n" +
+            "Yes: enable merging and continue.\n" +
+            "No: continue as is, the drill file(s) are ignored.\n" +
+            "Cancel: go back to the tool.",
+            "Drill file(s) without merging",
+            SukiMessageBoxButtons.YesNoCancel);
+
+        switch (result)
+        {
+            case SukiMessageBoxResult.Yes:
+                Operation.MergeFiles = true;
+                return true;
+            case SukiMessageBoxResult.No:
+                return true;
+            default:
+                return false;
         }
     }
 
