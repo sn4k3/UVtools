@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:UVtools.UI.Controls"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:operations="clr-namespace:UVtools.Core.Operations;assembly=UVtools.Core"
              xmlns:suki="https://github.com/kikipoulet/SukiUI"
              xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -87,7 +88,7 @@
                                          Width="*" />
                     <DataGridTemplateColumn  Header="Size scale"
                                              Width="130">
-                        <DataTemplate>
+                        <DataTemplate x:DataType="operations:OperationPCBExposure+PCBExposureFile">
                             <NumericUpDown Increment="0.05"
                                            Minimum="0.01"
                                            Maximum="100"
