@@ -105,7 +105,7 @@
             </DataGrid>
 
 
-			<Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+			<Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
                   ColumnDefinitions="Auto,10,400">
 
                 <ToggleSwitch Grid.Row="0" Grid.Column="2"
@@ -149,6 +149,7 @@
                 <TextBlock Grid.Row="8" Grid.Column="0"
                            VerticalAlignment="Center"
                            ToolTip.Tip="Offset the PCB origin.
+&#x0a;Applied on top of the auto-center correction, use it to nudge the artwork from there.
 &#x0a;Use the 'Show full preview image (The final result)' option to preview the resulting position."
                            Text="Offset X/Y:"/>
 
@@ -173,9 +174,64 @@
 
                 <TextBlock Grid.Row="10" Grid.Column="0"
                            VerticalAlignment="Center"
+                           Text="Positioning:"/>
+
+                <StackPanel Grid.Row="10" Grid.Column="2"
+                            Orientation="Horizontal" Spacing="20">
+                    <CheckBox VerticalAlignment="Center"
+                              IsChecked="{Binding Operation.AutoCenter}"
+                              ToolTip.Tip="Center the artwork on the plate before drawing it.
+&#x0a;Files exported with absolute page coordinates, such as most KiCad plots, sit far from the origin and would otherwise fall outside the plate and render blank.
+&#x0a;Disable it to place the artwork at the exact coordinates the file declares, for example to align several boards by hand."
+                              Content="Auto-center"/>
+
+                    <CheckBox VerticalAlignment="Center"
+                              IsChecked="{Binding Operation.FlipY}"
+                              ToolTip.Tip="Flip the artwork along the vertical axis.
+&#x0a;Gerber and drill files put the origin at the bottom left with Y growing upwards, while image rows grow downwards, so the drawing comes out mirrored top to bottom without this.
+&#x0a;Leave it enabled to get the same orientation your CAD tool or gerber viewer shows."
+                              Content="Flip vertically"/>
+                </StackPanel>
+
+                <TextBlock Grid.Row="12" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           ToolTip.Tip="Repeat the artwork as many times as it fits to fill the plate.
+&#x0a;Only whole copies are placed, a copy that would be clipped by the plate edge is skipped.
+&#x0a;The spacing is the gap left between the copies."
+                           Text="Fill plate:"/>
+
+                <StackPanel Grid.Row="12" Grid.Column="2"
+                            Orientation="Horizontal" Spacing="20">
+                    <CheckBox VerticalAlignment="Center"
+                              IsChecked="{Binding Operation.FillPlate}"
+                              Content="Enable"/>
+
+                    <NumericUpDown suki:NumericUpDownExtensions.Unit="mm"
+                                   Increment="0.5"
+                                   Minimum="0"
+                                   Maximum="1000"
+                                   FormatString="F2"
+                                   Width="140"
+                                   IsEnabled="{Binding Operation.FillPlate}"
+                                   ToolTip.Tip="Horizontal gap between copies"
+                                   Value="{Binding Operation.FillSpacingX}"/>
+
+                    <NumericUpDown suki:NumericUpDownExtensions.Unit="mm"
+                                   Increment="0.5"
+                                   Minimum="0"
+                                   Maximum="1000"
+                                   FormatString="F2"
+                                   Width="140"
+                                   IsEnabled="{Binding Operation.FillPlate}"
+                                   ToolTip.Tip="Vertical gap between copies"
+                                   Value="{Binding Operation.FillSpacingY}"/>
+                </StackPanel>
+
+                <TextBlock Grid.Row="14" Grid.Column="0"
+                           VerticalAlignment="Center"
                            Text="Options:"/>
 
-				<StackPanel Grid.Row="10" Grid.Column="2"
+				<StackPanel Grid.Row="14" Grid.Column="2"
                             Orientation="Horizontal" Spacing="20">
 					<CheckBox VerticalAlignment="Center"
                               IsChecked="{Binding Operation.Mirror}"

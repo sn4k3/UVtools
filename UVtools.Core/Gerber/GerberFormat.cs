@@ -263,6 +263,11 @@ public partial class GerberFormat
                 continue;
             }
 
+            // Track the plotted extents for auto-centering. Operation 2 is a pen-up move, so it only counts
+            // when it becomes the start point of the line a following operation 1 draws
+            if (currentOperation == 1) document.PlotBounds(currentX, currentY);
+            if (currentOperation is 1 or 3 || insideRegion) document.PlotBounds(nowX, nowY);
+
             if (insideRegion)
             {
                 if (currentOperation == 2)
@@ -754,6 +759,34 @@ public partial class GerberFormat
         get;
         set => field = double.IsFinite(value) && value > 0 ? value : 1;
     } = 1;
+
+    private double _minXmm = double.MaxValue;
+    private double _minYmm = double.MaxValue;
+    private double _maxXmm = double.MinValue;
+    private double _maxYmm = double.MinValue;
+
+    /// <summary>
+    /// Gets the bounding rectangle of everything plotted so far, in millimeters and without
+    /// <see cref="OffsetX"/> and <see cref="OffsetY"/> applied, ie: the coordinates as the file declares them.
+    /// <para>Measured from the path centerlines: the aperture width and the bulge of an arc are not accounted for.</para>
+    /// <para>Returns null when nothing was plotted. A single flash yields a zero sized rectangle, not null.</para>
+    /// </summary>
+    public RectangleF? BoundsMm => _maxXmm < _minXmm || _maxYmm < _minYmm
+        ? null
+        : new RectangleF((float)_minXmm, (float)_minYmm, (float)(_maxXmm - _minXmm), (float)(_maxYmm - _minYmm));
+
+    /// <summary>
+    /// Expands <see cref="BoundsMm"/> to include the given coordinate.
+    /// </summary>
+    /// <param name="atXmm">X coordinate in millimeters, without the offset applied</param>
+    /// <param name="atYmm">Y coordinate in millimeters, without the offset applied</param>
+    public void PlotBounds(double atXmm, double atYmm)
+    {
+        if (atXmm < _minXmm) _minXmm = atXmm;
+        if (atXmm > _maxXmm) _maxXmm = atXmm;
+        if (atYmm < _minYmm) _minYmm = atYmm;
+        if (atYmm > _maxYmm) _maxYmm = atYmm;
+    }
 
     #endregion
 }
