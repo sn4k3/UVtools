@@ -236,7 +236,12 @@ public partial class OperationRaftRelief : Operation
             supportsMat = GetRoiOrDefault(SlicerFile[firstSupportLayerIndex].LayerMat);
         }
 
-        if (supportsMat is null || /*firstSupportLayerIndex == 0 ||*/ IgnoreFirstLayers >= firstSupportLayerIndex) return false;
+        if (supportsMat is null) return false;
+        if (IgnoreFirstLayers >= firstSupportLayerIndex)
+        {
+            supportsMat.Dispose();
+            return false;
+        }
         Mat? patternMat = null;
         using var supportsMatOriginal = supportsMat.Clone();
 
@@ -267,7 +272,9 @@ public partial class OperationRaftRelief : Operation
 
                     CvInvoke.Repeat(shape, supportsMat.Height / shape.Height + 1, supportsMat.Width / shape.Width + 1, patternMat);
 
-                    patternMat = new Mat(patternMat, new Rectangle(0, 0, supportsMat.Width, supportsMat.Height));
+                    var repeatedPattern = patternMat;
+                    patternMat = new Mat(repeatedPattern, new Rectangle(0, 0, supportsMat.Width, supportsMat.Height));
+                    repeatedPattern.Dispose();
                 }
 
                 break;

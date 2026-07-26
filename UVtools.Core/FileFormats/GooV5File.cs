@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using BinarySerialization;
+using DotNext.Buffers;
 using Emgu.CV;
 using EmguExtensions;
 using UVtools.Core.Exceptions;
@@ -159,91 +160,103 @@ public sealed class GooV5File : FileFormat
 
         public static byte[] Encode(ReadOnlySpan<byte> pixels, byte pixelBw)
         {
-            var output = new List<byte>(pixels.Length / 4 + 16);
-            if (pixels.IsEmpty || pixelBw == 0 || pixelBw > 8) return output.ToArray();
+            if (pixels.IsEmpty || pixelBw == 0 || pixelBw > 8) return [];
 
-            var grayMax = (byte)((1 << pixelBw) - 1);
-
-            // UVtools pixels are 8-bit [0,255]; quantize to [0, grayMax] for VUF encoding
-            byte Quantize(byte v)
+            var output = new BufferWriterSlim<byte>(
+                FileFormat.GetRleBufferInitialCapacity(
+                    pixels.Length,
+                    estimatedPixelsPerRun: 128,
+                    encodedBytesPerRun: 2));
+            try
             {
-                return (byte)((v * grayMax + 127) / 255);
-            }
 
-            byte prevChunkValue = 0;
-            var runValue = Quantize(pixels[0]);
-            uint run = 0;
+                var grayMax = (byte)((1 << pixelBw) - 1);
 
-            for (var pos = 0; pos < pixels.Length; pos++)
-            {
-                var q = Quantize(pixels[pos]);
-                if (q == runValue)
+                // UVtools pixels are 8-bit [0,255]; quantize to [0, grayMax] for VUF encoding
+                byte Quantize(byte v)
                 {
-                    run++;
-                    continue;
+                    return (byte)((v * grayMax + 127) / 255);
                 }
 
-                EncodeChunk(output, run, runValue, prevChunkValue, pixelBw, grayMax);
-                prevChunkValue = runValue;
-                runValue = q;
-                run = 1;
+                byte prevChunkValue = 0;
+                var runValue = Quantize(pixels[0]);
+                uint run = 0;
+
+                for (var pos = 0; pos < pixels.Length; pos++)
+                {
+                    var q = Quantize(pixels[pos]);
+                    if (q == runValue)
+                    {
+                        run++;
+                        continue;
+                    }
+
+                    EncodeChunk(ref output, run, runValue, prevChunkValue, pixelBw, grayMax);
+                    prevChunkValue = runValue;
+                    runValue = q;
+                    run = 1;
+                }
+
+                if (run > 0)
+                    EncodeChunk(ref output, run, runValue, prevChunkValue, pixelBw, grayMax);
+
+                return output.WrittenSpan.ToArray();
             }
-
-            if (run > 0)
-                EncodeChunk(output, run, runValue, prevChunkValue, pixelBw, grayMax);
-
-            return output.ToArray();
+            finally
+            {
+                output.Dispose();
+            }
         }
 
-        private static void EncodeChunk(List<byte> output, uint run, byte value,
+        private static void EncodeChunk(ref BufferWriterSlim<byte> output, uint run, byte value,
             byte prevValue, byte pixelBw, byte grayMax)
         {
             var diff = (int)value - (int)prevValue;
 
             if (diff == 0)
             {
-                EncodeRunChunk(output, run);
+                EncodeRunChunk(ref output, run);
                 return;
             }
 
             if (run == 1 && diff is >= -32 and <= 32)
             {
-                EncodeDiffChunk(output, diff);
+                EncodeDiffChunk(ref output, diff);
                 return;
             }
 
             if (run <= 7 && pixelBw <= 3)
             {
-                EncodeGreyChunk(output, run, value, grayMax);
+                EncodeGreyChunk(ref output, run, value, grayMax);
                 return;
             }
 
             if (diff is >= -32 and <= 32 && run > 1)
             {
-                EncodeDiffChunk(output, diff);
-                EncodeRunChunk(output, run - 1);
+                EncodeDiffChunk(ref output, diff);
+                EncodeRunChunk(ref output, run - 1);
                 return;
             }
 
             if ((value == 0 || value == grayMax) && run <= 7)
             {
-                EncodeGreyChunk(output, run, value, grayMax);
+                EncodeGreyChunk(ref output, run, value, grayMax);
                 return;
             }
 
             if ((value == 0 || value == grayMax) && run > 7)
             {
-                EncodeGreyChunk(output, 7, value, grayMax);
-                EncodeRunChunk(output, run - 7);
+                EncodeGreyChunk(ref output, 7, value, grayMax);
+                EncodeRunChunk(ref output, run - 7);
                 return;
             }
 
             var head = run < 8 ? run : 8;
-            EncodeGreyChunk(output, head, value, grayMax);
-            if (run > head) EncodeRunChunk(output, run - head);
+            EncodeGreyChunk(ref output, head, value, grayMax);
+            if (run > head) EncodeRunChunk(ref output, run - head);
         }
 
-        private static void EncodeRunChunk(List<byte> output, uint size)
+        private static void EncodeRunChunk(ref BufferWriterSlim<byte> output, uint size)
         {
             while (size > 0)
             {
@@ -279,7 +292,7 @@ public sealed class GooV5File : FileFormat
             }
         }
 
-        private static void EncodeDiffChunk(List<byte> output, int diff)
+        private static void EncodeDiffChunk(ref BufferWriterSlim<byte> output, int diff)
         {
             if (diff == 32)
                 output.Add(0xA0); // normal encoding would collide with RUN prefix
@@ -287,7 +300,7 @@ public sealed class GooV5File : FileFormat
                 output.Add((byte)(VufDiffOp | (diff + 32)));
         }
 
-        private static void EncodeGreyChunk(List<byte> output, uint run, byte value, byte grayMax)
+        private static void EncodeGreyChunk(ref BufferWriterSlim<byte> output, uint run, byte value, byte grayMax)
         {
             if (run > 8) run = 8;
             if (run <= 7 && value < 7)
@@ -337,8 +350,8 @@ public sealed class GooV5File : FileFormat
 
     public class FileHeader
     {
-        [FieldOrder(0)] [FieldLength(4)] public string Version { get; set; } = FileVersion;
-        [FieldOrder(1)] [FieldCount(8)] public byte[] Magic { get; set; } = FileMagic;
+        [FieldOrder(0)][FieldLength(4)] public string Version { get; set; } = FileVersion;
+        [FieldOrder(1)][FieldCount(8)] public byte[] Magic { get; set; } = FileMagic;
 
         [FieldOrder(2)]
         [FieldLength(32)]
@@ -378,13 +391,13 @@ public sealed class GooV5File : FileFormat
         [FieldCount(116 * 116 * 2)]
         public byte[] SmallPreview565 { get; set; } = [];
 
-        [FieldOrder(12)] [FieldCount(2)] public byte[] SmallPreviewDelimiter { get; set; } = Delimiter;
+        [FieldOrder(12)][FieldCount(2)] public byte[] SmallPreviewDelimiter { get; set; } = Delimiter;
 
         [FieldOrder(13)]
         [FieldCount(290 * 290 * 2)]
         public byte[] BigPreview565 { get; set; } = [];
 
-        [FieldOrder(14)] [FieldCount(2)] public byte[] BigPreviewDelimiter { get; set; } = Delimiter;
+        [FieldOrder(14)][FieldCount(2)] public byte[] BigPreviewDelimiter { get; set; } = Delimiter;
         [FieldOrder(15)] public uint LayerCount { get; set; }
         [FieldOrder(16)] public ushort ResolutionX { get; set; }
         [FieldOrder(17)] public ushort ResolutionY { get; set; }
@@ -478,7 +491,7 @@ public sealed class GooV5File : FileFormat
         [FieldOrder(14)] public float RetractHeight2 { get; set; }
         [FieldOrder(15)] public float RetractSpeed2 { get; set; }
         [FieldOrder(16)] public ushort LightPWM { get; set; }
-        [FieldOrder(17)] [FieldCount(2)] public byte[] DelimiterData { get; set; } = Delimiter;
+        [FieldOrder(17)][FieldCount(2)] public byte[] DelimiterData { get; set; } = Delimiter;
 
         [Ignore] public GooV5File? Parent { get; set; }
         [Ignore] public byte[] EncodedRle { get; set; } = [];
@@ -611,15 +624,16 @@ public sealed class GooV5File : FileFormat
         [SerializeAs(SerializedType.TerminatedString)]
         public string ResinType { get; set; } = string.Empty;
 
-        [FieldOrder(3)] [FieldCount(3)] public byte[] Color { get; set; } = [0x80, 0x80, 0x80];
+        [FieldOrder(3)][FieldCount(3)] public byte[] Color { get; set; } = [0x80, 0x80, 0x80];
         [FieldOrder(4)] public float Density { get; set; } = 1.0f;
         [FieldOrder(5)] public float Stickiness { get; set; } = 0.5f;
-        [FieldOrder(6)] [FieldCount(2)] public byte[] Delimiter { get; set; } = GooV5File.Delimiter;
+        [FieldOrder(6)][FieldCount(2)] public byte[] Delimiter { get; set; } = GooV5File.Delimiter;
 
         public static ResinDef FromRaw(byte[] data)
         {
             if (data.Length < 270 || data[0] != ResinDataMagic) return new ResinDef();
-            return Helpers.Deserialize<ResinDef>(new MemoryStream(data));
+            using var stream = new MemoryStream(data, false);
+            return Helpers.Deserialize<ResinDef>(stream);
         }
     }
 
@@ -1572,27 +1586,21 @@ public sealed class GooV5File : FileFormat
             throw new MessageException("GOO V5 checksum length is invalid");
 
         using var md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
-        var buffer = ArrayPool<byte>.Shared.Rent(1024 * 1024);
-        try
+        using var bufferOwner = new MemoryOwner<byte>(ArrayPool<byte>.Shared, 1024 * 1024);
+        var buffer = bufferOwner.Memory;
+        var remaining = lengthToHash;
+        file.Seek(0, SeekOrigin.Begin);
+        while (remaining > 0)
         {
-            var remaining = lengthToHash;
-            file.Seek(0, SeekOrigin.Begin);
-            while (remaining > 0)
-            {
-                var bytesToRead = (int)Math.Min(buffer.Length, remaining);
-                var bytesRead = file.Read(buffer, 0, bytesToRead);
-                if (bytesRead == 0) throw new EndOfStreamException();
+            var bytesToRead = (int)Math.Min(buffer.Length, remaining);
+            var bytesRead = file.Read(buffer.Span[..bytesToRead]);
+            if (bytesRead == 0) throw new EndOfStreamException();
 
-                md5.AppendData(buffer, 0, bytesRead);
-                remaining -= bytesRead;
-            }
+            md5.AppendData(buffer.Span[..bytesRead]);
+            remaining -= bytesRead;
+        }
 
-            return md5.GetHashAndReset();
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(buffer);
-        }
+        return md5.GetHashAndReset();
     }
 
     private static void ValidateMd5Checksum(FileStream file)

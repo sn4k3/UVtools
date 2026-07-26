@@ -408,8 +408,8 @@ public abstract partial class Operation : ObservableObject, IDisposable
     /// <returns>null or empty if validates, otherwise return a string with error message</returns>
     public string? Validate()
     {
-        IsValidated = true;
         LastValidationMessage = ValidateInternally();
+        IsValidated = true;
         return LastValidationMessage;
     }
 
@@ -781,6 +781,9 @@ public abstract partial class Operation : ObservableObject, IDisposable
         if (_slicerFile.DecodeType == FileFormat.FileDecodeType.Partial && !CanRunInPartialMode)
             throw new InvalidOperationException(
                 $"The file was open in partial mode and the tool \"{Title}\" is unable to run in this mode.\nPlease reload the file in full mode in order to use this tool.");
+        if (LayerIndexStart > LayerIndexEnd)
+            throw new InvalidOperationException(
+                $"{Title} can't execute because the start layer is greater than the end layer.");
 
         AfterCompleteReport = null;
 
@@ -791,14 +794,24 @@ public abstract partial class Operation : ObservableObject, IDisposable
                 throw new InvalidOperationException($"{Title} can't execute due some errors:\n{msg}");
         }
 
-        progress ??= new OperationProgress();
-        progress.Reset(ProgressAction, LayerRangeCount);
-        HaveExecuted = true;
+        var ownsProgress = progress is null;
+        progress ??= new OperationProgress(CanCancel);
+        try
+        {
+            progress.Reset(ProgressAction, LayerRangeCount);
+            var result = ExecuteInternally(progress);
 
-        var result = ExecuteInternally(progress);
-
-        progress.PauseOrCancelIfRequested();
-        return result;
+            progress.PauseOrCancelIfRequested();
+            HaveExecuted = true;
+            return result;
+        }
+        finally
+        {
+            if (ownsProgress)
+            {
+                progress.Dispose();
+            }
+        }
     }
 
     public Task<bool> ExecuteAsync(OperationProgress? progress = null)
@@ -881,6 +894,17 @@ public abstract partial class Operation : ObservableObject, IDisposable
     public virtual void Dispose()
     {
         /*GC.SuppressFinalize(this);*/
+    }
+
+    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+        if (!IsValidated ||
+            e.PropertyName is nameof(LastValidationMessage) or nameof(IsLastValidationSuccess))
+            return;
+
+        IsValidated = false;
+        LastValidationMessage = null;
     }
 
     #endregion

@@ -7,9 +7,11 @@
  */
 
 using BinarySerialization;
+using DotNext.Buffers;
 using Emgu.CV;
 using System;
-using System.Collections.Generic;
+using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -173,12 +175,18 @@ public sealed class MDLPFile : FileFormat
         [FieldEndianness(Endianness.Big)]
         public ushort StartX { get; set; }
 
-        public static byte[] GetBytes(ushort StartY, ushort EndY, ushort StartX)
+        public static void WriteBytes(Span<byte> bytes, ushort startY, ushort endY, ushort startX)
+        {
+            if (bytes.Length < 6) throw new ArgumentException("The destination must contain at least 6 bytes.", nameof(bytes));
+            BinaryPrimitives.WriteUInt16BigEndian(bytes, startY);
+            BinaryPrimitives.WriteUInt16BigEndian(bytes[2..], endY);
+            BinaryPrimitives.WriteUInt16BigEndian(bytes[4..], startX);
+        }
+
+        public static byte[] GetBytes(ushort startY, ushort endY, ushort startX)
         {
             var bytes = GC.AllocateUninitializedArray<byte>(6);
-            BitExtensions.ToBytesBigEndian(StartY, bytes);
-            BitExtensions.ToBytesBigEndian(EndY, bytes, 2);
-            BitExtensions.ToBytesBigEndian(StartX, bytes, 4);
+            WriteBytes(bytes, startY, endY, startX);
             return bytes;
         }
 
@@ -395,62 +403,73 @@ public sealed class MDLPFile : FileFormat
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
         var range = ValueEnumerable.Range(0, (int)LayerCount);
 
-        var layerBytes = new List<byte>[LayerCount];
+        var layerBytes = new MemoryOwner<byte>[LayerCount];
         foreach (var batch in BatchLayersIndexes())
         {
-            Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
+            try
             {
-                progress.PauseIfRequested();
-                var layer = this[layerIndex];
-                using (var mat = layer.LayerMat)
+                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
-                    var span = mat.GetReadOnlySpanOfBytes();
+                    progress.PauseIfRequested();
+                    var layer = this[layerIndex];
+                    using var writer = new BufferWriterSlim<byte>(
+                        Math.Max(256, layer.BoundingRectangle.Width * 6 + 6));
+                    writer.Write(stackalloc byte[4]);
 
-                    layerBytes[layerIndex] = [];
-
-                    uint lineCount = 0;
-
-                    for (var x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++)
+                    using (var mat = layer.LayerMat)
                     {
-                        var y = layer.BoundingRectangle.Y;
-                        var startY = -1;
-                        for (; y < layer.BoundingRectangle.Bottom; y++)
+                        var span = mat.GetReadOnlySpanOfBytes();
+                        uint lineCount = 0;
+
+                        for (var x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++)
                         {
-                            var pos = mat.GetPixelPos(x, y);
-                            if (span[pos] < 128) // Black pixel
+                            var y = layer.BoundingRectangle.Y;
+                            var startY = -1;
+                            for (; y < layer.BoundingRectangle.Bottom; y++)
                             {
-                                if (startY == -1) continue; // Keep ignoring
-                                layerBytes[layerIndex]
-                                    .AddRange(LayerLine.GetBytes((ushort)startY, (ushort)(y - 1), (ushort)x));
-                                startY = -1;
+                                var pos = mat.GetPixelPos(x, y);
+                                if (span[pos] < 128) // Black pixel
+                                {
+                                    if (startY == -1) continue; // Keep ignoring
+                                    LayerLine.WriteBytes(writer.GetSpan(6), (ushort)startY, (ushort)(y - 1), (ushort)x);
+                                    writer.Advance(6);
+                                    startY = -1;
+                                    lineCount++;
+                                }
+                                else
+                                {
+                                    if (startY >= 0) continue; // Keep sum
+                                    startY = y;
+                                }
+                            }
+
+                            if (startY >= 0)
+                            {
+                                LayerLine.WriteBytes(writer.GetSpan(6), (ushort)startY, (ushort)(y - 1), (ushort)x);
+                                writer.Advance(6);
                                 lineCount++;
                             }
-                            else
-                            {
-                                if (startY >= 0) continue; // Keep sum
-                                startY = y;
-                            }
                         }
 
-                        if (startY >= 0)
-                        {
-                            layerBytes[layerIndex]
-                                .AddRange(LayerLine.GetBytes((ushort)startY, (ushort)(y - 1), (ushort)x));
-                            lineCount++;
-                        }
+                        writer.Write(pageBreak);
+                        var owner = writer.DetachOrCopyBuffer();
+                        BinaryPrimitives.WriteUInt32BigEndian(owner.Span, lineCount);
+                        layerBytes[layerIndex] = owner;
                     }
 
-                    layerBytes[layerIndex].InsertRange(0, BitExtensions.ToBytesBigEndian(lineCount));
-                    layerBytes[layerIndex].AddRange(pageBreak);
+                    progress.LockAndIncrement();
+                });
+
+                foreach (var layerIndex in batch)
+                {
+                    outputFile.Write(layerBytes[layerIndex].Span);
+                    layerBytes[layerIndex].Dispose();
+                    layerBytes[layerIndex] = default;
                 }
-
-                progress.LockAndIncrement();
-            });
-
-            foreach (var layerIndex in batch)
+            }
+            finally
             {
-                outputFile.WriteBytes(layerBytes[layerIndex].ToArray());
-                layerBytes[layerIndex] = null!;
+                foreach (var layerIndex in batch) layerBytes[layerIndex].Dispose();
             }
         }
 
@@ -485,45 +504,53 @@ public sealed class MDLPFile : FileFormat
         if (DecodeType == FileDecodeType.Full)
         {
             progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
-            var linesBytes = new byte[LayerCount][];
+            var linesBytes = new MemoryOwner<byte>[LayerCount];
             foreach (var batch in BatchLayersIndexes())
             {
-                foreach (var layerIndex in batch)
+                try
                 {
-                    progress.PauseOrCancelIfRequested();
-
-                    var lineCount = BitExtensions.ToUIntBigEndian(inputFile.ReadBytes(4));
-
-                    linesBytes[layerIndex] = GC.AllocateUninitializedArray<byte>((int)lineCount * 6);
-                    inputFile.ReadExactly(linesBytes[layerIndex]);
-                    inputFile.Seek(2, SeekOrigin.Current);
-                }
-
-                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
-                {
-                    progress.PauseIfRequested();
-                    using (var mat = EmguCvExtensions.InitMat(Resolution))
+                    foreach (var layerIndex in batch)
                     {
-                        for (var i = 0; i < linesBytes[layerIndex].Length; i++)
+                        progress.PauseOrCancelIfRequested();
+                        var lineCount = inputFile.ReadUIntBigEndian();
+                        var byteLength = checked((int)lineCount * 6);
+                        if (byteLength > inputFile.Length - inputFile.Position - 2)
+                            throw new InvalidDataException("Layer line data exceeds the remaining file length.");
+
+                        if (byteLength > 0)
                         {
-                            var startY = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++],
-                                linesBytes[layerIndex][i++]);
-                            var endY = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++],
-                                linesBytes[layerIndex][i++]);
-                            var startX = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++],
-                                linesBytes[layerIndex][i]);
-
-                            CvInvoke.Line(mat, new Point(startX, startY), new Point(startX, endY),
-                                EmguCvExtensions.WhiteColor);
+                            linesBytes[layerIndex] = new MemoryOwner<byte>(ArrayPool<byte>.Shared, byteLength);
+                            inputFile.ReadExactly(linesBytes[layerIndex].Span);
                         }
-
-                        linesBytes[layerIndex] = null!;
-
-                        _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                        inputFile.Seek(2, SeekOrigin.Current);
                     }
 
-                    progress.LockAndIncrement();
-                });
+                    Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
+                    {
+                        progress.PauseIfRequested();
+                        using (var mat = EmguCvExtensions.InitMat(Resolution))
+                        {
+                            var lineData = linesBytes[layerIndex].Span;
+                            for (var i = 0; i < lineData.Length; i += 6)
+                            {
+                                var startY = BinaryPrimitives.ReadUInt16BigEndian(lineData[i..]);
+                                var endY = BinaryPrimitives.ReadUInt16BigEndian(lineData[(i + 2)..]);
+                                var startX = BinaryPrimitives.ReadUInt16BigEndian(lineData[(i + 4)..]);
+
+                                CvInvoke.Line(mat, new Point(startX, startY), new Point(startX, endY),
+                                    EmguCvExtensions.WhiteColor);
+                            }
+
+                            _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                        }
+
+                        progress.LockAndIncrement();
+                    });
+                }
+                finally
+                {
+                    foreach (var layerIndex in batch) linesBytes[layerIndex].Dispose();
+                }
             }
         }
         else // Partial read

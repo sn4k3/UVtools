@@ -144,7 +144,7 @@ public sealed partial class OperationProgress : ObservableObject, IDisposable
     /// <summary>
     /// Gets the remaining items to be processed
     /// </summary>
-    public uint RemainingItems => ItemCount - ProcessedItems;
+    public uint RemainingItems => ProcessedItems >= ItemCount ? 0 : ItemCount - ProcessedItems;
 
     public int ProgressStep => (int)ProgressPercent;
 
@@ -185,6 +185,7 @@ public sealed partial class OperationProgress : ObservableObject, IDisposable
         ProcessedItems = 0;
         Log = string.Empty;
 
+        TokenSource?.Dispose();
         TokenSource = new CancellationTokenSource();
         OnPropertyChanged(nameof(CanCancel));
     }

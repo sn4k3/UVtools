@@ -6,10 +6,13 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -18,7 +21,13 @@ namespace UVtools.Core.MeshFormats;
 
 public class Consortium3MFMeshFile : MeshFile
 {
+    #region Constants
+    private const int VertexRecordBufferSize = 256;
+    private const int TriangleRecordBufferSize = 128;
+    #endregion
+
     #region Members
+    private static readonly StandardFormat CoordinateFormat = new('F', 6);
     private readonly Dictionary<Vector3, uint> _vertexCache = new(VertexCacheSize);
     private FileStream _triangleStream = null!;
     #endregion
@@ -53,28 +62,10 @@ public class Consortium3MFMeshFile : MeshFile
 
     public override void WriteTriangle(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 normal)
     {
-        if (!_vertexCache.ContainsKey(p1))
-        {
-            MeshStream.WriteLineLF($"\t\t\t\t\t<vertex x=\"{p1.X:F6}\" y=\"{p1.Y:F6}\" z=\"{p1.Z:F6}\" />");
-            _vertexCache.Add(p1, VertexCount);
-            VertexCount++;
-        }
-
-        if (!_vertexCache.ContainsKey(p2))
-        {
-            MeshStream.WriteLineLF($"\t\t\t\t\t<vertex x=\"{p2.X:F6}\" y=\"{p2.Y:F6}\" z=\"{p2.Z:F6}\" />");
-            _vertexCache.Add(p2, VertexCount);
-            VertexCount++;
-        }
-
-        if (!_vertexCache.ContainsKey(p3))
-        {
-            MeshStream.WriteLineLF($"\t\t\t\t\t<vertex x=\"{p3.X:F6}\" y=\"{p3.Y:F6}\" z=\"{p3.Z:F6}\" />");
-            _vertexCache.Add(p3, VertexCount);
-            VertexCount++;
-        }
-
-        _triangleStream.WriteLineLF($"\t\t\t\t\t<triangle v1=\"{_vertexCache[p1]}\" v2=\"{_vertexCache[p2]}\" v3=\"{_vertexCache[p3]}\" />");
+        var vertex1 = GetOrWriteVertex(p1);
+        var vertex2 = GetOrWriteVertex(p2);
+        var vertex3 = GetOrWriteVertex(p3);
+        WriteTriangle(vertex1, vertex2, vertex3);
 
         TriangleCount++;
             
@@ -138,6 +129,54 @@ public class Consortium3MFMeshFile : MeshFile
         MeshStream.Dispose();
             
         File.Move(tmpFile, FilePath, true);
+    }
+
+    private uint GetOrWriteVertex(Vector3 vertex)
+    {
+        ref var index = ref CollectionsMarshal.GetValueRefOrAddDefault(_vertexCache, vertex, out var exists);
+        if (exists)
+        {
+            return index;
+        }
+
+        index = VertexCount++;
+
+        Span<byte> record = stackalloc byte[VertexRecordBufferSize];
+        var writer = new MeshTextWriter(record);
+        writer.Append("\t\t\t\t\t<vertex x=\""u8);
+        writer.Append(vertex.X, CoordinateFormat);
+        writer.Append("\" y=\""u8);
+        writer.Append(vertex.Y, CoordinateFormat);
+        writer.Append("\" z=\""u8);
+        writer.Append(vertex.Z, CoordinateFormat);
+        writer.Append("\" />\n"u8);
+        writer.CopyTo(MeshStream);
+
+        return index;
+    }
+
+    private void WriteTriangle(uint vertex1, uint vertex2, uint vertex3)
+    {
+        Span<byte> record = stackalloc byte[TriangleRecordBufferSize];
+        var writer = new MeshTextWriter(record);
+        writer.Append("\t\t\t\t\t<triangle v1=\""u8);
+        writer.Append(vertex1);
+        writer.Append("\" v2=\""u8);
+        writer.Append(vertex2);
+        writer.Append("\" v3=\""u8);
+        writer.Append(vertex3);
+        writer.Append("\" />\n"u8);
+        writer.CopyTo(_triangleStream);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _triangleStream?.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 
     #endregion

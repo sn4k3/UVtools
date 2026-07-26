@@ -239,7 +239,7 @@ public partial class OperationPCBExposure : Operation
 
     public void AddFilesFromZip(string zipFile)
     {
-        if (!File.Exists(zipFile) || !zipFile.EndsWith(".zip")) return;
+        if (!File.Exists(zipFile) || !zipFile.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)) return;
         using var zip = ZipFile.Open(zipFile, ZipArchiveMode.Read);
 
         var tmpPath = PathExtensions.GetTemporaryDirectory($"{About.Software}.");
@@ -259,7 +259,7 @@ public partial class OperationPCBExposure : Operation
     public void AddFile(string filePath, bool handleZipFiles = true)
     {
         if (!File.Exists(filePath)) return;
-        if (filePath.EndsWith(".zip"))
+        if (filePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
         {
             if (handleZipFiles) AddFilesFromZip(filePath);
             return;
@@ -276,7 +276,7 @@ public partial class OperationPCBExposure : Operation
     {
         foreach (var file in files)
         {
-            AddFile(file);
+            AddFile(file, handleZipFiles);
         }
     }
 
@@ -336,13 +336,18 @@ public partial class OperationPCBExposure : Operation
 
         for (var i = 0; i < orderFiles.Length; i++)
         {
-            DrawMat(orderFiles[i], mergeMat, false);
-            if (!MergeFiles)
+            progress.PauseOrCancelIfRequested();
+            if (MergeFiles)
+            {
+                DrawMat(orderFiles[i], mergeMat, false);
+            }
+            else
             {
                 using var mat = GetMat(orderFiles[i]);
                 if (CvInvoke.HasNonZero(mat))
                 {
                     layers.Add(new Layer(mat, SlicerFile));
+                    CvInvoke.BitwiseOr(mergeMat, mat, mergeMat);
                 }
             }
 
@@ -364,6 +369,7 @@ public partial class OperationPCBExposure : Operation
             }
         }
 
+        if (progress.Token.IsCancellationRequested || layers.Count == 0) return false;
         SlicerFile.SuppressRebuildPropertiesWork(() =>
         {
             SlicerFile.LayerHeight = (float)LayerHeight;

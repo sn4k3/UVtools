@@ -7,6 +7,7 @@
  */
 
 using BinarySerialization;
+using DotNext.Buffers;
 using Emgu.CV;
 using System;
 using System.Collections.Generic;
@@ -963,127 +964,146 @@ public sealed class AnycubicFile : FileFormat
 
         private unsafe Mat DecodePWS(AnycubicFile slicerFile)
         {
+            if (slicerFile.AntiAliasing == 0)
+                throw new FileLoadException("Anti-aliasing level cannot be zero.");
+
             var image = EmguCvExtensions.InitMat(slicerFile.Resolution);
-            var span = image.GetSpanOfBytes(0, 0);
-
-            var index = 0;
-            for (byte bit = 0; bit < slicerFile.AntiAliasing; bit++)
+            try
             {
-                var pixel = 0;
-                for (; index < EncodedRle.Length; index++)
-                {
-                    // Lower 7 bits is the repeat count for the bit (0..127)
-                    var reps = EncodedRle[index] & 0x7f;
+                var span = image.GetSpanOfBytes();
 
-                    // We only need to set the non-zero pixels
-                    // High bit is on for white, off for black
-                    if ((EncodedRle[index] & 0x80) != 0)
+                var index = 0;
+                for (byte bit = 0; bit < slicerFile.AntiAliasing; bit++)
+                {
+                    var pixel = 0;
+                    for (; index < EncodedRle.Length; index++)
                     {
-                        for (var i = 0; i < reps; i++)
+                        // Lower 7 bits is the repeat count for the bit (0..127)
+                        var reps = EncodedRle[index] & 0x7f;
+                        if (reps > span.Length - pixel)
+                            throw new FileLoadException("Image ran off the end.");
+
+                        // We only need to set the non-zero pixels
+                        // High bit is on for white, off for black
+                        if ((EncodedRle[index] & 0x80) != 0)
                         {
-                            span[pixel + i]++;
+                            for (var i = 0; i < reps; i++)
+                            {
+                                span[pixel + i]++;
+                            }
+                        }
+
+                        pixel += reps;
+
+                        if (pixel == span.Length)
+                        {
+                            index++;
+                            break;
                         }
                     }
 
-                    pixel += reps;
-
-                    if (pixel == span.Length)
-                    {
-                        index++;
-                        break;
-                    }
-
-                    if (pixel > span.Length)
-                    {
-                        image.Dispose();
-                        throw new FileLoadException("Image ran off the end.");
-                    }
                 }
-            }
 
-            for (var i = 0; i < span.Length; i++)
-            {
-                var newC = span[i] * (256 / slicerFile.AntiAliasing);
-
-                if (newC > 0)
+                for (var i = 0; i < span.Length; i++)
                 {
-                    newC--;
+                    var newC = span[i] * (256 / slicerFile.AntiAliasing);
+
+                    if (newC > 0)
+                    {
+                        newC--;
+                    }
+
+                    span[i] = (byte)newC;
                 }
 
-                span[i] = (byte)newC;
+                return image;
             }
-
-            return image;
+            catch
+            {
+                image.Dispose();
+                throw;
+            }
         }
 
         public unsafe byte[] EncodePWS(AnycubicFile slicerFile, Mat image)
         {
-            List<byte> rawData = [];
             var span = image.GetReadOnlySpanOfBytes();
-
-            bool obit;
-            int rep;
-
-            void AddRep()
+            var minimumRunCount =
+                span.Length / RLE1EncodingLimit + (span.Length % RLE1EncodingLimit == 0 ? 0 : 1);
+            var minimumEncodedLength = Math.Max(
+                256,
+                checked(minimumRunCount * slicerFile.AntiAliasing));
+            var rawData = new BufferWriterSlim<byte>(minimumEncodedLength);
+            try
             {
-                if (rep <= 0) return;
+                bool obit;
+                int rep;
 
-                var by = (byte)rep;
-
-                if (obit)
+                static void AddRep(ref BufferWriterSlim<byte> rawData, int rep, bool obit)
                 {
-                    by |= 0x80;
-                    //bitsOn += uint(rep)
+                    if (rep <= 0) return;
+
+                    var by = (byte)rep;
+
+                    if (obit)
+                    {
+                        by |= 0x80;
+                        //bitsOn += uint(rep)
+                    }
+
+                    rawData.Add(by);
                 }
 
-                rawData.Add(by);
-            }
-
-            for (byte aalevel = 1; aalevel <= slicerFile.AntiAliasing; aalevel++)
-            {
-                obit = false;
-                rep = 0;
-
-                //ngrey:= uint16(r | g | b)
-                // thresholds:
-                // aa 1:  127
-                // aa 2:  255 127
-                // aa 4:  255 191 127 63
-                // aa 8:  255 223 191 159 127 95 63 31
-                //byte threshold = (byte)(256 / slicerFile.AntiAliasing * aalevel - 1);
-                // threshold := byte(int(255 * (level + 1) / (levels + 1))) + 1
-                var threshold = (byte)(255 * aalevel / (slicerFile.AntiAliasing + 1) + 1);
-
-
-                for (var pixel = 0; pixel < span.Length; pixel++)
+                for (byte aalevel = 1; aalevel <= slicerFile.AntiAliasing; aalevel++)
                 {
-                    var nbit = span[pixel] >= threshold;
+                    obit = false;
+                    rep = 0;
 
-                    if (nbit == obit)
+                    //ngrey:= uint16(r | g | b)
+                    // thresholds:
+                    // aa 1:  127
+                    // aa 2:  255 127
+                    // aa 4:  255 191 127 63
+                    // aa 8:  255 223 191 159 127 95 63 31
+                    //byte threshold = (byte)(256 / slicerFile.AntiAliasing * aalevel - 1);
+                    // threshold := byte(int(255 * (level + 1) / (levels + 1))) + 1
+                    var threshold = (byte)(255 * aalevel / (slicerFile.AntiAliasing + 1) + 1);
+
+
+                    for (var pixel = 0; pixel < span.Length; pixel++)
                     {
-                        rep++;
+                        var nbit = span[pixel] >= threshold;
 
-                        if (rep == RLE1EncodingLimit)
+                        if (nbit == obit)
                         {
-                            AddRep();
-                            rep = 0;
+                            rep++;
+
+                            if (rep == RLE1EncodingLimit)
+                            {
+                                AddRep(ref rawData, rep, obit);
+                                rep = 0;
+                            }
+                        }
+                        else
+                        {
+                            AddRep(ref rawData, rep, obit);
+                            obit = nbit;
+                            rep = 1;
                         }
                     }
-                    else
-                    {
-                        AddRep();
-                        obit = nbit;
-                        rep = 1;
-                    }
+
+                    // Collect stragglers
+                    AddRep(ref rawData, rep, obit);
                 }
 
-                // Collect stragglers
-                AddRep();
+                DataLength = (uint)rawData.WrittenCount;
+
+                return rawData.WrittenSpan.ToArray();
             }
-
-            DataLength = (uint)rawData.Count;
-
-            return rawData.ToArray();
+            finally
+            {
+                rawData.Dispose();
+            }
         }
 
         public static ushort CRCRle4(byte[] data)
@@ -2604,62 +2624,70 @@ public sealed class AnycubicFile : FileFormat
 
     public static byte[] EncodePW0(Mat image)
     {
-        List<byte> rawData = [];
-        var span = image.GetSpanOfBytes(0, 0);
-
-        var lastColor = -1;
-        var reps = 0;
-
-        void PutReps()
+        var span = image.GetSpanOfBytes();
+        var minimumRunCount =
+            span.Length / RLE4EncodingLimit + (span.Length % RLE4EncodingLimit == 0 ? 0 : 1);
+        var rawData = new BufferWriterSlim<byte>(Math.Max(256, checked(minimumRunCount * 2)));
+        try
         {
-            while (reps > 0)
-            {
-                var done = reps;
+            var lastColor = -1;
+            var reps = 0;
 
-                if (lastColor is 0 or 0xf)
+            static void PutReps(ref BufferWriterSlim<byte> rawData, ref int reps, int lastColor)
+            {
+                while (reps > 0)
                 {
-                    if (done > RLE4EncodingLimit)
+                    var done = reps;
+
+                    if (lastColor is 0 or 0xf)
                     {
-                        done = RLE4EncodingLimit;
+                        if (done > RLE4EncodingLimit)
+                        {
+                            done = RLE4EncodingLimit;
+                        }
+
+                        var more = (ushort)(done | (lastColor << 12));
+                        rawData.Add((byte)(more >> 8));
+                        rawData.Add((byte)more);
+                    }
+                    else
+                    {
+                        if (done > 0xf)
+                        {
+                            done = 0xf;
+                        }
+
+                        rawData.Add((byte)(done | (lastColor << 4)));
                     }
 
-                    var more = (ushort)(done | (lastColor << 12));
-                    rawData.Add((byte)(more >> 8));
-                    rawData.Add((byte)more);
+                    reps -= done;
+                }
+            }
+
+            for (var i = 0; i < span.Length; i++)
+            {
+                var color = span[i] >> 4;
+
+                if (color == lastColor)
+                {
+                    reps++;
                 }
                 else
                 {
-                    if (done > 0xf)
-                    {
-                        done = 0xf;
-                    }
-
-                    rawData.Add((byte)(done | (lastColor << 4)));
+                    PutReps(ref rawData, ref reps, lastColor);
+                    lastColor = color;
+                    reps = 1;
                 }
-
-                reps -= done;
             }
-        }
 
-        for (var i = 0; i < span.Length; i++)
+            PutReps(ref rawData, ref reps, lastColor);
+
+            return rawData.WrittenSpan.ToArray();
+        }
+        finally
         {
-            var color = span[i] >> 4;
-
-            if (color == lastColor)
-            {
-                reps++;
-            }
-            else
-            {
-                PutReps();
-                lastColor = color;
-                reps = 1;
-            }
+            rawData.Dispose();
         }
-
-        PutReps();
-
-        return rawData.ToArray();
         /*EncodedRle = rawData.ToArray();
         DataLength = (uint)rawData.Count;
 

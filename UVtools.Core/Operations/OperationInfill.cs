@@ -49,6 +49,13 @@ public sealed partial class OperationInfill : Operation, IEquatable<OperationInf
 
     public override string ProgressAction => "Infilled layers";
 
+    public override string? ValidateInternally()
+    {
+        if (InfillThickness == 0) return "The infill thickness must be greater than zero.";
+        if (InfillSpacing == 0) return "The infill spacing must be greater than zero.";
+        return null;
+    }
+
     #endregion
 
     #region Enums
@@ -174,16 +181,22 @@ public sealed partial class OperationInfill : Operation, IEquatable<OperationInf
 
         var clonedLayers = SlicerFile.CloneLayers();
 
-        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
+        try
         {
-            progress.PauseIfRequested();
-            using var mat = SlicerFile[layerIndex].LayerMat;
-            Execute(mat, layerIndex, mask!, clonedLayers);
-            SlicerFile[layerIndex].LayerMat = mat;
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
+            {
+                progress.PauseIfRequested();
+                using var mat = SlicerFile[layerIndex].LayerMat;
+                Execute(mat, layerIndex, mask!, clonedLayers);
+                SlicerFile[layerIndex].LayerMat = mat;
 
-            progress.LockAndIncrement();
-        });
-        mask?.Dispose();
+                progress.LockAndIncrement();
+            });
+        }
+        finally
+        {
+            mask?.Dispose();
+        }
         return !progress.Token.IsCancellationRequested;
     }
 
@@ -337,7 +350,10 @@ public sealed partial class OperationInfill : Operation, IEquatable<OperationInf
             }
 
 
-            CvInvoke.Repeat(infillPattern, target.Rows / infillPattern.Rows + 1, target.Cols / infillPattern.Cols + 1, matPattern);
+            CvInvoke.Repeat(infillPattern,
+                (target.Rows + infillPattern.Rows - 1) / infillPattern.Rows,
+                (target.Cols + infillPattern.Cols - 1) / infillPattern.Cols,
+                matPattern);
             patternMask = matPattern.Roi(target);
             disposeTargetMask = true;
         }
@@ -371,15 +387,15 @@ public sealed partial class OperationInfill : Operation, IEquatable<OperationInf
         {
             var sineHeight = 100;
             var sineWidth = 100;
-            var radius = (ushort)(InfillThickness / 2);
+            var radius = Math.Max(1, InfillThickness / 2);
 
             var points = new List<Point>();
 
             bool isHorizontal = true;
             float accumulator = 0;
-            for (int i = 0; i <= layerIndex; i++)
+            for (var i = LayerIndexStart; i <= index; i++)
             {
-                accumulator += SlicerFile[index].RelativePositionZ;
+                accumulator += SlicerFile[i].RelativePositionZ;
                 if (accumulator >= 2)
                 {
                     isHorizontal = !isHorizontal;
@@ -405,7 +421,10 @@ public sealed partial class OperationInfill : Operation, IEquatable<OperationInf
                 using var infillPatternRoi = infillPattern.Roi(new Size(infillPattern.Width, maxY + radius + 2 + InfillSpacing));
                 CvInvoke.Polylines(infillPatternRoi, points.ToArray(), false, infillColor, InfillThickness);
 
-                CvInvoke.Repeat(infillPatternRoi, target.Rows / infillPatternRoi.Rows + 1, 1, infillPattern);
+                CvInvoke.Repeat(infillPatternRoi,
+                    (target.Rows + infillPatternRoi.Rows - 1) / infillPatternRoi.Rows,
+                    1,
+                    infillPattern);
             }
             else
             {
@@ -418,7 +437,10 @@ public sealed partial class OperationInfill : Operation, IEquatable<OperationInf
                 }
                 using var infillPatternRoi = infillPattern.Roi(new Size(maxY + radius + 2 + InfillSpacing, infillPattern.Height));
                 CvInvoke.Polylines(infillPatternRoi, points.ToArray(), false, infillColor, InfillThickness);
-                CvInvoke.Repeat(infillPatternRoi, 1, target.Cols / infillPatternRoi.Cols + 1, infillPattern);
+                CvInvoke.Repeat(infillPatternRoi,
+                    1,
+                    (target.Cols + infillPatternRoi.Cols - 1) / infillPatternRoi.Cols,
+                    infillPattern);
 
             }
             points.Clear();
@@ -471,43 +493,45 @@ public sealed partial class OperationInfill : Operation, IEquatable<OperationInf
             disposeTargetMask = true;
         }
 
-        using var surfaceMat = target.Clone();
-
-        decimal heightAccumulator = (decimal)SlicerFile[index].LayerHeight;
-        if (FloorCeilThickness > heightAccumulator)
+        try
         {
-            for (int floorLayerIndex = (int)(index - 1); heightAccumulator <= FloorCeilThickness && floorLayerIndex >= 0; floorLayerIndex--)
+            using var surfaceMat = target.Clone();
+
+            decimal heightAccumulator = (decimal)SlicerFile[index].LayerHeight;
+            if (FloorCeilThickness > heightAccumulator)
             {
-                using var floorMat = clonedLayers[floorLayerIndex].LayerMat;
-                using var floorMatRoi = GetRoiOrVolumeBounds(floorMat);
+                for (int floorLayerIndex = (int)(index - 1); heightAccumulator <= FloorCeilThickness && floorLayerIndex >= 0; floorLayerIndex--)
+                {
+                    using var floorMat = clonedLayers[floorLayerIndex].LayerMat;
+                    using var floorMatRoi = GetRoiOrVolumeBounds(floorMat);
 
-                CvInvoke.BitwiseAnd(surfaceMat, floorMatRoi, surfaceMat);
+                    CvInvoke.BitwiseAnd(surfaceMat, floorMatRoi, surfaceMat);
 
-                heightAccumulator += (decimal)SlicerFile[floorLayerIndex + 1].PositionZ - (decimal)SlicerFile[floorLayerIndex].PositionZ;
+                    heightAccumulator += (decimal)SlicerFile[floorLayerIndex + 1].PositionZ - (decimal)SlicerFile[floorLayerIndex].PositionZ;
+                }
+
+                if (heightAccumulator <= FloorCeilThickness) return true;
+
+                heightAccumulator = (decimal)SlicerFile[index].LayerHeight;
+                for (var ceilLayerIndex = index + 1; heightAccumulator <= FloorCeilThickness && ceilLayerIndex <= SlicerFile.LastLayerIndex; ceilLayerIndex++)
+                {
+                    using var ceilMat = clonedLayers[ceilLayerIndex].LayerMat;
+                    using var ceilMatRoi = GetRoiOrVolumeBounds(ceilMat);
+
+                    CvInvoke.BitwiseAnd(surfaceMat, ceilMatRoi, surfaceMat);
+
+                    heightAccumulator += (decimal)SlicerFile[ceilLayerIndex].PositionZ - (decimal)SlicerFile[ceilLayerIndex - 1].PositionZ;
+                }
+
+                if (heightAccumulator <= FloorCeilThickness) return true;
             }
 
-            if (heightAccumulator <= FloorCeilThickness) return true;
 
-            heightAccumulator = (decimal)SlicerFile[index].LayerHeight;
-            for (var ceilLayerIndex = index + 1; heightAccumulator <= FloorCeilThickness && ceilLayerIndex <= SlicerFile.LastLayerIndex; ceilLayerIndex++)
-            {
-                using var ceilMat = clonedLayers[ceilLayerIndex].LayerMat;
-                using var ceilMatRoi = GetRoiOrVolumeBounds(ceilMat);
+            //patternMask.Save("D:\\pattern.png");
+            CvInvoke.Erode(target, erode, kernel, EmguCvExtensions.AnchorCenter, WallThickness, BorderType.Reflect101, default);
 
-                CvInvoke.BitwiseAnd(surfaceMat, ceilMatRoi, surfaceMat);
-
-                heightAccumulator += (decimal)SlicerFile[ceilLayerIndex].PositionZ - (decimal)SlicerFile[ceilLayerIndex - 1].PositionZ;
-            }
-
-            if (heightAccumulator <= FloorCeilThickness) return true;
-        }
-
-
-        //patternMask.Save("D:\\pattern.png");
-        CvInvoke.Erode(target, erode, kernel, EmguCvExtensions.AnchorCenter, WallThickness, BorderType.Reflect101, default);
-
-        CvInvoke.BitwiseAnd(erode, surfaceMat, erode, mask);
-        patternMask!.CopyTo(target, erode);
+            CvInvoke.BitwiseAnd(erode, surfaceMat, erode, mask);
+            patternMask!.CopyTo(target, erode);
         //target.SetTo(EmguCvExtensions.BlackColor, erode);
         //erode.CopyTo(target);
         //CvInvoke.BitwiseOr(target, patternMask, target, erode);
@@ -517,12 +541,15 @@ public sealed partial class OperationInfill : Operation, IEquatable<OperationInf
         //CvInvoke.BitwiseAnd(erode, patternMask, target, mask);
         //CvInvoke.Add(target, diff, target, mask);
 
-        if (disposeTargetMask)
-        {
-            patternMask.Dispose();
+            return true;
         }
-
-        return true;
+        finally
+        {
+            if (disposeTargetMask)
+            {
+                patternMask?.Dispose();
+            }
+        }
     }
 
     public Mat GetHoneycombMask(Size targetSize)

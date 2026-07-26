@@ -647,7 +647,10 @@ public sealed class VDTFile : FileFormat
             throw new FileLoadException($"{FileManifestName} not found", FileFullPath);
         }
 
-        ManifestFile = JsonSerializer.Deserialize<VDTManifest>(entry.Open())!;
+        using (var stream = entry.Open())
+        {
+            ManifestFile = JsonSerializer.Deserialize<VDTManifest>(stream)!;
+        }
 
         Init((uint) ManifestFile.Layers!.Length, DecodeType == FileDecodeType.Partial);
 

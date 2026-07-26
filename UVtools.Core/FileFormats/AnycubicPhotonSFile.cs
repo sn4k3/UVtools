@@ -7,6 +7,7 @@
  */
 
 using BinarySerialization;
+using DotNext.Buffers;
 using Emgu.CV;
 using System;
 using System.Collections.Generic;
@@ -192,61 +193,70 @@ public sealed class AnycubicPhotonSFile : FileFormat
 
         public unsafe byte[] Encode(Mat mat)
         {
-            List<byte> rawData = [];
             var span = mat.GetReadOnlySpanOfBytes();
-
-            var rep = 0;
-            byte color = 0;
-            var totalPixels = 0;
-
-            void AddRep()
+            var minimumEncodedLength = Math.Max(
+                256,
+                span.Length / RLEEncodingLimit + (span.Length % RLEEncodingLimit == 0 ? 0 : 1));
+            var rawData = new BufferWriterSlim<byte>(minimumEncodedLength);
+            try
             {
-                if (rep <= 0) return;
+                var rep = 0;
+                byte color = 0;
+                var totalPixels = 0;
 
-                totalPixels += rep;
-                rep--;
-                var rle = (byte)(((rep & 1) > 0 ? 128 : 0) |
-                                 ((rep & 2) > 0 ? 64 : 0) |
-                                 ((rep & 4) > 0 ? 32 : 0) |
-                                 ((rep & 8) > 0 ? 16 : 0) |
-                                 ((rep & 16) > 0 ? 8 : 0) |
-                                 ((rep & 32) > 0 ? 4 : 0) |
-                                 ((rep & 64) > 0 ? 2 : 0) | color);
-
-                rawData.Add(rle);
-            }
-
-            for (var i = 0; i < span.Length; i++)
-            {
-                var thisColor = span[i] <= 127 ? byte.MinValue : (byte)1; // Sanitize no AA
-                if (thisColor != color)
+                static void AddRep(ref BufferWriterSlim<byte> rawData, ref int rep, byte color, ref int totalPixels)
                 {
-                    AddRep();
-                    color = thisColor; // Sanitize no AA
-                    rep = 1;
+                    if (rep <= 0) return;
+
+                    totalPixels += rep;
+                    rep--;
+                    var rle = (byte)(((rep & 1) > 0 ? 128 : 0) |
+                                     ((rep & 2) > 0 ? 64 : 0) |
+                                     ((rep & 4) > 0 ? 32 : 0) |
+                                     ((rep & 8) > 0 ? 16 : 0) |
+                                     ((rep & 16) > 0 ? 8 : 0) |
+                                     ((rep & 32) > 0 ? 4 : 0) |
+                                     ((rep & 64) > 0 ? 2 : 0) | color);
+
+                    rawData.Add(rle);
                 }
-                else
+
+                for (var i = 0; i < span.Length; i++)
                 {
-                    rep++;
-                    if (rep == RLEEncodingLimit)
+                    var thisColor = span[i] <= 127 ? byte.MinValue : (byte)1; // Sanitize no AA
+                    if (thisColor != color)
                     {
-                        AddRep();
-                        rep = 0;
+                        AddRep(ref rawData, ref rep, color, ref totalPixels);
+                        color = thisColor; // Sanitize no AA
+                        rep = 1;
+                    }
+                    else
+                    {
+                        rep++;
+                        if (rep == RLEEncodingLimit)
+                        {
+                            AddRep(ref rawData, ref rep, color, ref totalPixels);
+                            rep = 0;
+                        }
                     }
                 }
+
+                AddRep(ref rawData, ref rep, color, ref totalPixels);
+
+                if (totalPixels != span.Length)
+                {
+                    throw new FileLoadException(
+                        $"Error image ran shortly or off the end, expecting {span.Length} pixels, got {totalPixels} pixels.");
+                }
+
+                EncodedRle = rawData.WrittenSpan.ToArray();
+                RleDataSize = (uint)EncodedRle.Length;
+                return EncodedRle;
             }
-
-            AddRep();
-
-            if (totalPixels != span.Length)
+            finally
             {
-                throw new FileLoadException(
-                    $"Error image ran shortly or off the end, expecting {span.Length} pixels, got {totalPixels} pixels.");
+                rawData.Dispose();
             }
-
-            EncodedRle = rawData.ToArray();
-            RleDataSize = (uint)EncodedRle.Length;
-            return EncodedRle;
         }
 
         public Mat Decode(bool consumeRle = true)
@@ -274,6 +284,12 @@ public sealed class AnycubicPhotonSFile : FileFormat
                      ((run & 8) > 0 ? 16 : 0) |
                      ((run & 4) > 0 ? 32 : 0) |
                      ((run & 2) > 0 ? 64 : 0)) + 1;
+
+                if (numPixelsInRun > imageLength - pixelPos)
+                {
+                    mat.Dispose();
+                    throw new FileLoadException($"Error image ran off the end, expecting {imageLength} pixels.");
+                }
 
                 mat.FillSpan(ref pixelPos, numPixelsInRun, brightness);
 

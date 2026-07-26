@@ -13,7 +13,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
-using System.Text.RegularExpressions;
 using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
@@ -51,7 +50,7 @@ public class ExcellonDrillFormat
 
         public override string ToString()
         {
-            return $"T{Index}C{Diameter}";
+            return FormattableString.Invariant($"T{Index}C{Diameter}");
         }
     }
 
@@ -71,8 +70,27 @@ public class ExcellonDrillFormat
 
         public override string ToString()
         {
-            return $"X{Position.X}Y{Position.Y}";
+            return FormattableString.Invariant($"X{Position.X}Y{Position.Y}");
         }
+    }
+
+    public class Slot
+    {
+        public Tool Tool { get; init; }
+        public PointF Start { get; init; }
+        public PointF End { get; init; }
+        public float Diameter => Tool.Diameter;
+
+        public Slot(Tool tool, PointF start, PointF end)
+        {
+            Tool = tool;
+            Start = start;
+            End = end;
+        }
+
+        public override string ToString()
+            => FormattableString.Invariant(
+                $"X{Start.X}Y{Start.Y}G85X{End.X}Y{End.Y}");
     }
 
     #endregion
@@ -133,6 +151,7 @@ public class ExcellonDrillFormat
     public Dictionary<uint, Tool> Tools { get; init; } = new();
 
     public List<Drill> Drills { get; init; } = [];
+    public List<Slot> Slots { get; init; } = [];
 
     private SizeF XYppmm { get; set; }
 
@@ -155,7 +174,12 @@ public class ExcellonDrillFormat
     /// Gets or sets the scale to apply to each shape drawing size.
     /// Positions and vectors aren't affected by this.
     /// </summary>
-    public double SizeScale { get; set; } = 1;
+    private double _sizeScale = 1;
+    public double SizeScale
+    {
+        get => _sizeScale;
+        set => _sizeScale = double.IsFinite(value) && value > 0 ? value : 1;
+    }
 
     public MidpointRoundingType SizeMidpointRounding { get; set; } = MidpointRoundingType.AwayFromZero;
 
@@ -184,14 +208,20 @@ public class ExcellonDrillFormat
 
         Tools.Clear();
         Drills.Clear();
+        Slots.Clear();
+        FormatVersion = 2;
+        UnitType = ExcellonDrillUnitType.Millimeter;
+        ZerosIncludeType = ExcellonDrillZerosIncludeType.Leading;
 
-        bool endOfHeader = false;
-        bool drillMode = true;
-        uint selectedToolIndex = 0;
+        var endOfHeader = false;
+        var drillMode = true;
+        var routeDraw = false;
+        var incrementalCoordinates = false;
+        uint? selectedToolIndex = null;
 
         float x = 0, y = 0;
-        int integerDigits = 0;
-        int fractionDigits = 0;
+        var integerDigits = 0;
+        var fractionDigits = 0;
 
         while ((line = tr.ReadLine()?.Trim()) is not null)
         {
@@ -199,14 +229,20 @@ public class ExcellonDrillFormat
 
             if (line is "M30") break; // End
 
-            if (line.StartsWith("FMAT,"))
+            if (line.StartsWith("FMAT,", StringComparison.Ordinal))
             {
                 var split = line.Split(',', StringSplitOptions.TrimEntries);
-                FormatVersion = uint.Parse(split[1]);
+                if (split.Length > 1 &&
+                    uint.TryParse(split[1], NumberStyles.None,
+                        CultureInfo.InvariantCulture, out var formatVersion))
+                {
+                    FormatVersion = formatVersion;
+                }
                 continue;
             }
 
-            if (line.StartsWith("METRIC") || line.StartsWith("INCH"))
+            if (line.StartsWith("METRIC", StringComparison.Ordinal) ||
+                line.StartsWith("INCH", StringComparison.Ordinal))
             {
                 var split = line.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                 UnitType = split[0] == "METRIC" ? ExcellonDrillUnitType.Millimeter : ExcellonDrillUnitType.Inch;
@@ -225,6 +261,24 @@ public class ExcellonDrillFormat
                     ZerosIncludeType = ExcellonDrillZerosIncludeType.None;
                 }
 
+                if (split.Length >= 3 && integerDigits == 0)
+                {
+                    var decimalIndex = split[2].IndexOf('.');
+                    if (decimalIndex > 0)
+                    {
+                        integerDigits = decimalIndex;
+                        fractionDigits = split[2].Length - decimalIndex - 1;
+                    }
+                }
+
+                continue;
+            }
+
+            if (line is "M71" or "M72")
+            {
+                UnitType = line == "M71"
+                    ? ExcellonDrillUnitType.Millimeter
+                    : ExcellonDrillUnitType.Inch;
                 continue;
             }
 
@@ -233,13 +287,23 @@ public class ExcellonDrillFormat
                 line = line[13..];
                 var split = line.Split(':', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                 if (split.Length < 2) continue;
-                int.TryParse(split[0], out integerDigits);
-                int.TryParse(split[0], out fractionDigits);
+                int.TryParse(split[0], NumberStyles.None,
+                    CultureInfo.InvariantCulture, out integerDigits);
+                int.TryParse(split[1], NumberStyles.None,
+                    CultureInfo.InvariantCulture, out fractionDigits);
+                continue;
             }
 
-            if (line is "ICI" or "ICI,ON")
+            if (line is "ICI" or "ICI,ON" or "G91")
             {
-                throw new NotImplementedException("ICI (Incremental input of program coordinates) is not yet implemented, please use absolute coordinate system.");
+                incrementalCoordinates = true;
+                continue;
+            }
+
+            if (line is "ICI,OFF" or "G90")
+            {
+                incrementalCoordinates = false;
+                continue;
             }
 
             if (line is "%" or "M95")
@@ -251,6 +315,13 @@ public class ExcellonDrillFormat
             if (line is "G81" or "G05")
             {
                 drillMode = true;
+                routeDraw = false;
+                continue;
+            }
+
+            if (line is "M15" or "M16")
+            {
+                routeDraw = line == "M15";
                 continue;
             }
 
@@ -259,126 +330,277 @@ public class ExcellonDrillFormat
             {
                 if (!endOfHeader)
                 {
-                    var match = Regex.Match(line, @"^T([0-9]+).*C(([0-9]*[.])?[0-9]+)");
-                    if (match is
-                        {
-                            Success: true,
-                            Groups.Count: >= 4
-                        })
+                    if (TryParseTool(line, out var tool))
                     {
-                        var index = uint.Parse(match.Groups[1].Value);
-                        var diameter = float.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
-                        var tool = new Tool(index, diameter);
-                        Tools.Add(index, tool);
+                        Tools[tool.Index] = tool;
                     }
                 }
                 else
                 {
-                    selectedToolIndex = uint.Parse(line[1..]);
-                }
+                    if (TryParseTool(line, out var inlineTool))
+                    {
+                        Tools[inlineTool.Index] = inlineTool;
+                        selectedToolIndex = inlineTool.Index;
+                        continue;
+                    }
 
+                    var indexEnd = 1;
+                    while (indexEnd < line.Length && char.IsAsciiDigit(line[indexEnd]))
+                    {
+                        indexEnd++;
+                    }
+
+                    if (indexEnd > 1 &&
+                        uint.TryParse(line.AsSpan(1, indexEnd - 1), NumberStyles.None,
+                            CultureInfo.InvariantCulture, out var toolIndex))
+                    {
+                        selectedToolIndex = toolIndex;
+                    }
+                }
 
                 continue;
             }
 
-            // Drill coordinate
-            if (line[0] == 'X' || line[0] == 'Y')
+            if (line[0] == ';') continue;
+
+            var slotCommandIndex = line.IndexOf("G85", StringComparison.Ordinal);
+            if (slotCommandIndex >= 0)
             {
-                if(!drillMode) continue;
-
-                var match = Regex.Match(line, @"^X-?(([0-9]*[.])?[0-9]+)");
-                if (match is
-                    {
-                        Success: true,
-                        Groups.Count: >= 2
-                    })
+                var current = new PointF(x, y);
+                var startCommand = line[..slotCommandIndex];
+                var endCommand = line[(slotCommandIndex + 3)..];
+                if (!TryParsePosition(startCommand, current, incrementalCoordinates,
+                        integerDigits, fractionDigits, out var start, out var hasStart) ||
+                    !TryParsePosition(endCommand, hasStart ? start : current,
+                        incrementalCoordinates, integerDigits, fractionDigits,
+                        out var end, out var hasEnd) ||
+                    !hasEnd)
                 {
-                    if (match.Groups[1].Value.Contains('.'))
-                    {
-                        x = float.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
-                    }
-                    else
-                    {
-                        switch (ZerosIncludeType)
-                        {
-                            case ExcellonDrillZerosIncludeType.None:
-                            case ExcellonDrillZerosIncludeType.Leading:
-                                if (integerDigits > 0)
-                                {
-                                    var number = match.Groups[1].Value.Insert(integerDigits, ".");
-                                    x = float.Parse(number, CultureInfo.InvariantCulture);
-                                }
-                                else
-                                {
-                                    x = ValueToCoordinate(float.Parse(match.Groups[1].Value.PadRight(PaddingZeros, '0'), CultureInfo.InvariantCulture));
-                                }
-                                break;
-                            case ExcellonDrillZerosIncludeType.Trail:
-                                if (fractionDigits > 0)
-                                {
-                                    var number = match.Groups[1].Value.Insert(match.Groups[1].Value.Length - fractionDigits, ".");
-                                    x = float.Parse(number, CultureInfo.InvariantCulture);
-                                }
-                                else
-                                {
-                                    x = ValueToCoordinate(float.Parse(match.Groups[1].Value.PadLeft(PaddingZeros, '0'), CultureInfo.InvariantCulture));
-                                }
-                                break;
-                        }
-                    }
-
-
+                    continue;
                 }
 
-                match = Regex.Match(line, @"Y-?(([0-9]*[.])?[0-9]+)");
-                if (match is
-                    {
-                        Success: true,
-                        Groups.Count: >= 2
-                    })
+                start = hasStart ? start : current;
+                if (selectedToolIndex is { } slotToolIndex &&
+                    Tools.TryGetValue(slotToolIndex, out var slotTool) &&
+                    start != end)
                 {
-                    if (match.Groups[1].Value.Contains('.'))
-                    {
-                        y = float.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
-                    }
-                    else
-                    {
-                        switch (ZerosIncludeType)
-                        {
-                            case ExcellonDrillZerosIncludeType.None:
-                            case ExcellonDrillZerosIncludeType.Leading:
-                                if (integerDigits > 0)
-                                {
-                                    var number = match.Groups[1].Value.Insert(integerDigits, ".");
-                                    y = float.Parse(number, CultureInfo.InvariantCulture);
-                                }
-                                else
-                                {
-                                    y = ValueToCoordinate(float.Parse(match.Groups[1].Value.PadRight(PaddingZeros, '0'), CultureInfo.InvariantCulture));
-                                }
-                                break;
-                            case ExcellonDrillZerosIncludeType.Trail:
-                                if (fractionDigits > 0)
-                                {
-                                    var number = match.Groups[1].Value.Insert(match.Groups[1].Value.Length - fractionDigits, ".");
-                                    y = float.Parse(number, CultureInfo.InvariantCulture);
-                                }
-                                else
-                                {
-                                    y = ValueToCoordinate(float.Parse(match.Groups[1].Value.PadLeft(PaddingZeros, '0'), CultureInfo.InvariantCulture));
-                                }
-                                break;
-                        }
-                    }
-
+                    Slots.Add(new Slot(slotTool, start, end));
                 }
 
-                var drill = new Drill(Tools[selectedToolIndex], new PointF(x, y));
-                Drills.Add(drill);
-
+                x = end.X;
+                y = end.Y;
                 continue;
             }
+
+            if (line[0] == 'R' &&
+                TryParseRepeat(line, integerDigits, fractionDigits, out var repeatCount,
+                    out var repeatOffset) &&
+                selectedToolIndex is { } repeatToolIndex &&
+                Tools.TryGetValue(repeatToolIndex, out var repeatTool))
+            {
+                for (var repeat = 0; repeat < repeatCount; repeat++)
+                {
+                    x += repeatOffset.X;
+                    y += repeatOffset.Y;
+                    Drills.Add(new Drill(repeatTool, new PointF(x, y)));
+                }
+                continue;
+            }
+
+            var coordinateCommand = line;
+            if (line.StartsWith("G00", StringComparison.Ordinal))
+            {
+                drillMode = false;
+                routeDraw = false;
+                coordinateCommand = line[3..];
+            }
+            else if (line.StartsWith("G01", StringComparison.Ordinal))
+            {
+                drillMode = false;
+                routeDraw = true;
+                coordinateCommand = line[3..];
+            }
+            else if (line.StartsWith("G02", StringComparison.Ordinal) ||
+                     line.StartsWith("G03", StringComparison.Ordinal))
+            {
+                drillMode = false;
+                routeDraw = false;
+                coordinateCommand = line[3..];
+            }
+            else if (line.StartsWith("G05", StringComparison.Ordinal) ||
+                     line.StartsWith("G81", StringComparison.Ordinal))
+            {
+                drillMode = true;
+                routeDraw = false;
+                coordinateCommand = line[3..];
+            }
+
+            var previous = new PointF(x, y);
+            if (!TryParsePosition(coordinateCommand, previous, incrementalCoordinates,
+                    integerDigits, fractionDigits, out var position, out var hasCoordinate) ||
+                !hasCoordinate)
+            {
+                continue;
+            }
+
+            if (selectedToolIndex is { } coordinateToolIndex &&
+                Tools.TryGetValue(coordinateToolIndex, out var coordinateTool))
+            {
+                if (drillMode)
+                {
+                    Drills.Add(new Drill(coordinateTool, position));
+                }
+                else if (routeDraw && previous != position)
+                {
+                    Slots.Add(new Slot(coordinateTool, previous, position));
+                }
+            }
+
+            x = position.X;
+            y = position.Y;
         }
+    }
+
+    private static bool TryParseTool(string line, out Tool tool)
+    {
+        tool = null!;
+        var indexEnd = 1;
+        while (indexEnd < line.Length && char.IsAsciiDigit(line[indexEnd]))
+        {
+            indexEnd++;
+        }
+
+        var diameterIndex = line.IndexOf('C', indexEnd);
+        if (indexEnd == 1 || diameterIndex < 0 ||
+            !uint.TryParse(line.AsSpan(1, indexEnd - 1), NumberStyles.None,
+                CultureInfo.InvariantCulture, out var index))
+        {
+            return false;
+        }
+
+        var diameterEnd = diameterIndex + 1;
+        while (diameterEnd < line.Length &&
+               (char.IsAsciiDigit(line[diameterEnd]) || line[diameterEnd] is '.' or '-' or '+'))
+        {
+            diameterEnd++;
+        }
+
+        if (diameterEnd == diameterIndex + 1 ||
+            !float.TryParse(line.AsSpan(diameterIndex + 1,
+                    diameterEnd - diameterIndex - 1), NumberStyles.Float,
+                CultureInfo.InvariantCulture, out var diameter) ||
+            !float.IsFinite(diameter) || diameter <= 0)
+        {
+            return false;
+        }
+
+        tool = new Tool(index, diameter);
+        return true;
+    }
+
+    private bool TryParsePosition(string line, PointF current, bool incremental,
+        int integerDigits, int fractionDigits, out PointF position,
+        out bool hasCoordinate)
+    {
+        position = current;
+        if (!TryReadCoordinate(line, 'X', integerDigits, fractionDigits,
+                out var parsedX, out var hasX) ||
+            !TryReadCoordinate(line, 'Y', integerDigits, fractionDigits,
+                out var parsedY, out var hasY))
+        {
+            hasCoordinate = false;
+            return false;
+        }
+
+        hasCoordinate = hasX || hasY;
+        if (!hasCoordinate) return true;
+
+        position = incremental
+            ? new PointF(current.X + (hasX ? parsedX : 0),
+                current.Y + (hasY ? parsedY : 0))
+            : new PointF(hasX ? parsedX : current.X,
+                hasY ? parsedY : current.Y);
+        return float.IsFinite(position.X) && float.IsFinite(position.Y);
+    }
+
+    private bool TryReadCoordinate(string line, char axis, int integerDigits,
+        int fractionDigits, out float coordinate, out bool found)
+    {
+        coordinate = 0;
+        var axisIndex = line.IndexOf(axis);
+        found = axisIndex >= 0;
+        if (!found) return true;
+
+        var valueStart = axisIndex + 1;
+        var valueEnd = valueStart;
+        if (valueEnd < line.Length && line[valueEnd] is '-' or '+') valueEnd++;
+        while (valueEnd < line.Length &&
+               (char.IsAsciiDigit(line[valueEnd]) || line[valueEnd] == '.'))
+        {
+            valueEnd++;
+        }
+
+        if (valueEnd == valueStart ||
+            (valueEnd == valueStart + 1 && line[valueStart] is '-' or '+'))
+        {
+            return false;
+        }
+
+        var value = line.AsSpan(valueStart, valueEnd - valueStart);
+        if (value.Contains('.'))
+        {
+            return float.TryParse(value, NumberStyles.Float,
+                       CultureInfo.InvariantCulture, out coordinate) &&
+                   float.IsFinite(coordinate);
+        }
+
+        var negative = value[0] == '-';
+        var positive = value[0] == '+';
+        var digits = negative || positive ? value[1..] : value;
+        var declaredFormat = integerDigits > 0 && fractionDigits > 0;
+        var totalDigits = declaredFormat
+            ? integerDigits + fractionDigits
+            : PaddingZeros;
+        var decimals = declaredFormat
+            ? fractionDigits
+            : UnitType == ExcellonDrillUnitType.Millimeter ? 3 : 4;
+        if (digits.Length == 0 || digits.Length > totalDigits ||
+            !long.TryParse(digits, NumberStyles.None,
+                CultureInfo.InvariantCulture, out var rawValue))
+        {
+            return false;
+        }
+
+        if (ZerosIncludeType is ExcellonDrillZerosIncludeType.None
+            or ExcellonDrillZerosIncludeType.Leading)
+        {
+            rawValue *= (long)Math.Pow(10, totalDigits - digits.Length);
+        }
+
+        var decoded = rawValue / Math.Pow(10, decimals);
+        if (negative) decoded = -decoded;
+        coordinate = (float)decoded;
+        return float.IsFinite(coordinate);
+    }
+
+    private bool TryParseRepeat(string line, int integerDigits, int fractionDigits,
+        out int count, out PointF offset)
+    {
+        count = 0;
+        offset = PointF.Empty;
+        var countEnd = 1;
+        while (countEnd < line.Length && char.IsAsciiDigit(line[countEnd]))
+        {
+            countEnd++;
+        }
+
+        return countEnd > 1 &&
+               int.TryParse(line.AsSpan(1, countEnd - 1), NumberStyles.None,
+                   CultureInfo.InvariantCulture, out count) &&
+               count is > 0 and <= 1_000_000 &&
+               TryParsePosition(line[countEnd..], PointF.Empty, true,
+                   integerDigits, fractionDigits, out offset, out var hasCoordinate) &&
+               hasCoordinate;
     }
 
     public float ValueToCoordinate(float value) =>
@@ -425,7 +647,7 @@ public class ExcellonDrillFormat
 
     public Size SizeMmToPx(float sizeMmX, float sizeMmY)
         => new ((int)Math.Max(1, Math.Round(sizeMmX * XYppmm.Width * SizeScale, (MidpointRounding)SizeMidpointRounding)),
-            (int)Math.Max(1, Math.Round(sizeMmX * XYppmm.Height * SizeScale, (MidpointRounding)SizeMidpointRounding)));
+            (int)Math.Max(1, Math.Round(sizeMmY * XYppmm.Height * SizeScale, (MidpointRounding)SizeMidpointRounding)));
     #endregion
 
     #region Static methods
@@ -433,15 +655,34 @@ public class ExcellonDrillFormat
     {
         document.Load(filePath);
 
+        var color = document.InversePolarity
+            ? EmguCvExtensions.WhiteColor
+            : EmguCvExtensions.BlackColor;
+        var lineType = enableAntiAliasing
+            ? LineType.AntiAlias
+            : LineType.EightConnected;
+
+        foreach (var slot in document.Slots)
+        {
+            var diameterMillimeters = document.GetMillimeters(slot.Diameter);
+            var radius = document.SizeMmToPx(
+                diameterMillimeters / 2, diameterMillimeters / 2);
+            var start = document.PositionMmToPx(document.GetMillimeters(slot.Start));
+            var end = document.PositionMmToPx(document.GetMillimeters(slot.End));
+            CvInvoke.Line(mat, start, end, color,
+                EmguCvExtensions.CorrectThickness(
+                    document.SizeMmToPx(diameterMillimeters)),
+                lineType);
+            mat.DrawCircle(start, radius, color, -1, lineType);
+            mat.DrawCircle(end, radius, color, -1, lineType);
+        }
+
         foreach (var drill in document.Drills)
         {
             var radiusMillimeters = document.GetMillimeters(drill.Diameter / 2);
             var position = document.PositionMmToPx(document.GetMillimeters(drill.Position));
             var radius = document.SizeMmToPx(radiusMillimeters, radiusMillimeters);
-            mat.DrawCircle(position, radius,
-                document.InversePolarity ? EmguCvExtensions.WhiteColor : EmguCvExtensions.BlackColor,
-                -1,
-                enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+            mat.DrawCircle(position, radius, color, -1, lineType);
         }
     }
 

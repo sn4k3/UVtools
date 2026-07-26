@@ -72,10 +72,39 @@ public sealed partial class OperationLayerExportMesh : Operation
     public override string? ValidateInternally()
     {
         var sb = new StringBuilder();
+        var baseValidation = base.ValidateInternally();
+        if (!string.IsNullOrWhiteSpace(baseValidation))
+        {
+            sb.AppendLine(baseValidation);
+        }
 
         if (MeshFile.FindFileExtension(FilePath) is null)
         {
             sb.AppendLine("The used file extension is invalid.");
+        }
+
+        if (!Enum.IsDefined(Quality))
+        {
+            sb.AppendLine("The selected mesh quality is invalid.");
+        }
+
+        if (!Enum.IsDefined(RotateDirection))
+        {
+            sb.AppendLine("The selected rotation is invalid.");
+        }
+
+        if (!Enum.IsDefined(FlipDirection))
+        {
+            sb.AppendLine("The selected flip direction is invalid.");
+        }
+
+        if (!SlicerFile.HaveLayers)
+        {
+            sb.AppendLine("The file has no layers to export.");
+        }
+        else if (SlicerFile.BoundingRectangle.IsEmpty)
+        {
+            sb.AppendLine("The file has no model pixels to export.");
         }
 
         return sb.ToString();
@@ -134,7 +163,13 @@ public sealed partial class OperationLayerExportMesh : Operation
     protected override unsafe bool ExecuteInternally(OperationProgress progress)
     {
         var fileExtension = MeshFile.FindFileExtension(FilePath);
-        if (fileExtension is null) return false;
+        if (fileExtension is null ||
+            !Enum.IsDefined(Quality) ||
+            !Enum.IsDefined(RotateDirection) ||
+            !Enum.IsDefined(FlipDirection))
+        {
+            return false;
+        }
 
         //using var meshFile = fileExtension.FileFormatType.CreateInstance<MeshFile>(FilePath, FileMode.Create);
         //new Voxelizer().CreateVoxelMesh(fileExtension.FileFormatType, SlicerFile, FilePath, progress);
@@ -148,14 +183,20 @@ public sealed partial class OperationLayerExportMesh : Operation
          */
 
         /* Basic information for the file, how many layers, how big should each voxel be) */
+        var qualityScale = (byte)Quality;
         var pixelSize = SlicerFile.PixelSize;
-        float xWidth = (pixelSize.Width > 0 ? pixelSize.Width : 0.035f) * (byte)Quality;
-        float yWidth = (pixelSize.Height > 0 ? pixelSize.Height : 0.035f) * (byte)Quality;
+        float xWidth = (pixelSize.Width > 0 ? pixelSize.Width : 0.035f) * qualityScale;
+        float yWidth = (pixelSize.Height > 0 ? pixelSize.Height : 0.035f) * qualityScale;
+        if (RotateDirection is RotateDirection.Rotate90Clockwise or RotateDirection.Rotate90CounterClockwise)
+        {
+            (xWidth, yWidth) = (yWidth, xWidth);
+        }
 
         //var totalLayerCount = SlicerFile.LayerCount;
         var distinctLayers = SlicerFile.GetDistinctLayersByPositionZ(LayerIndexStart, LayerIndexEnd).ToArray();
-
-
+        if (distinctLayers.Length == 0) return false;
+        var modelBoundingRectangle = SlicerFile.BoundingRectangle;
+        if (modelBoundingRectangle.IsEmpty) return false;
 
         /* work around the mirror effect, this is caused by the voxel algorithm assuming 0,0 is bottom left, when 0,0 is top left for a Mat
          * ideally we would fix the algorithm itself but that's more invovled. for the time being we'll just flip it verticaly. */
@@ -172,10 +213,54 @@ public sealed partial class OperationLayerExportMesh : Operation
         {
             AutoDispose = true,
             AutoDisposeKeepLast = 1,
-            Rotate = RotateDirection,
-            Flip = workAroundFlip,
             StripAntiAliasing = StripAntiAliasing
         };
+
+        Mat PrepareLayer(uint layerIndex)
+        {
+            using var mat = SlicerFile.GetMergedMatForSequentialPositionedLayers(layerIndex, cacheManager);
+            using var matRoi = mat.Roi(modelBoundingRectangle);
+            var prepared = matRoi.Clone();
+
+            try
+            {
+                if (workAroundFlip != FlipDirection.None)
+                {
+                    CvInvoke.Flip(prepared, prepared, (FlipType)workAroundFlip);
+                }
+
+                if (RotateDirection != RotateDirection.None)
+                {
+                    CvInvoke.Rotate(prepared, prepared, (RotateFlags)RotateDirection);
+                }
+            }
+            catch
+            {
+                prepared.Dispose();
+                throw;
+            }
+
+            if (qualityScale <= 1)
+            {
+                return prepared;
+            }
+
+            var resized = new Mat();
+            try
+            {
+                CvInvoke.Resize(prepared, resized, Size.Empty, 1.0 / qualityScale, 1.0 / qualityScale, Inter.Area);
+                return resized;
+            }
+            catch
+            {
+                resized.Dispose();
+                throw;
+            }
+            finally
+            {
+                prepared.Dispose();
+            }
+        }
 
         /*const float threshold = 0.5f;
 
@@ -228,59 +313,27 @@ public sealed partial class OperationLayerExportMesh : Operation
         /* For the 1st stage, we maintain up to 3 mats, the current layer, the one below us, and the one above us
          * (below will be null when current layer is 0, above will be null when currentlayer is layercount-1) */
         /* We init the aboveLayer to the first layer, in the loop coming up we shift above->current->below, so this effectively inits current layer */
-        Mat? aboveLayer;
-        using (var mat = SlicerFile.GetMergedMatForSequentialPositionedLayers(distinctLayers[0].Index, cacheManager))
-        {
-            using var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
-
-            if ((byte)Quality > 1)
-            {
-                aboveLayer = new Mat();
-                CvInvoke.Resize(matRoi, aboveLayer, Size.Empty, 1.0 / (int)Quality, 1.0 / (int)Quality, Inter.Area);
-            }
-            else
-            {
-                aboveLayer = matRoi.Clone(); /* clone and then dispose of the ROI mat, not efficient but keeps the GetPixelPos working and clean */
-            }
-        }
+        Mat? aboveLayer = PrepareLayer(distinctLayers[0].Index);
 
         Mat? curLayer = null;
-        Mat? belowLayer;
+        Mat? belowLayer = null;
 
         /* List of faces to process, great for debugging if you are haveing issues with a face of particular orientation. */
         var facesToCheck = new[] { Voxelizer.FaceOrientation.Front, Voxelizer.FaceOrientation.Back, Voxelizer.FaceOrientation.Left, Voxelizer.FaceOrientation.Right, Voxelizer.FaceOrientation.Top, Voxelizer.FaceOrientation.Bottom };
 
         /* Init of other objects that will be used in subsequent stages */
         var rootFaces = new Voxelizer.UVFace?[distinctLayers.Length];
-        var layerFaceCounts = new uint[distinctLayers.Length];
         var layerTrees = new KdTree<float, Voxelizer.UVFace>[distinctLayers.Length];
-
-        void ExitCleanup()
-        {
-            /* dispose of everything */
-            for (var x = 0; x < layerTrees.Length; x++)
-            {
-                layerTrees[x] = null!;
-            }
-
-            layerTrees = null;
-
-            for (var x = 0; x < rootFaces.Length; x++)
-            {
-                if (rootFaces[x] is not null) rootFaces[x]!.FlatListNext = null;
-                rootFaces[x] = null!;
-            }
-            rootFaces = null;
-            GC.Collect();
-        }
 
         progress.Reset("layers", (uint)distinctLayers.Length);
         progress.Title = "Stage 1: Generating faces from layers";
         //progress.ItemCount = LayerRangeCount;
 
         /* Begin Stage 1, identifying all faces that are visible from outside the model */
-        for (uint layerIndex = 0; layerIndex < distinctLayers.Length; layerIndex++)
+        try
         {
+            for (uint layerIndex = 0; layerIndex < distinctLayers.Length; layerIndex++)
+            {
             Voxelizer.UVFace? currentFaceItem = null;
 
             /* Should contain a list of all found faces on this layer, keyed by the face orientation */
@@ -295,20 +348,7 @@ public sealed partial class OperationLayerExportMesh : Operation
             /* bring in a new aboveLayer if we need to */
             if (layerIndex < distinctLayers.Length - 1)
             {
-                using var mat = SlicerFile.GetMergedMatForSequentialPositionedLayers(distinctLayers[(int)layerIndex+1].Index, cacheManager);
-                using var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
-
-                if ((byte)Quality > 1)
-                {
-                    aboveLayer = new Mat();
-                    CvInvoke.Resize(matRoi, aboveLayer, Size.Empty, 1.0 / (int)Quality, 1.0 / (int)Quality, Inter.Area);
-                }
-                else
-                {
-                    aboveLayer = matRoi.Clone();
-                }
-
-                //CvInvoke.Threshold(aboveLayer, aboveLayer, 1, 255, ThresholdType.Binary);
+                aboveLayer = PrepareLayer(distinctLayers[(int)layerIndex+1].Index);
             }
             else
             {
@@ -316,7 +356,7 @@ public sealed partial class OperationLayerExportMesh : Operation
             }
 
             /* get image of pixels to do neighbor checks on */
-            var voxelLayer = Voxelizer.BuildVoxelLayerImage(curLayer!, aboveLayer, belowLayer);
+            using var voxelLayer = Voxelizer.BuildVoxelLayerImage(curLayer!, aboveLayer, belowLayer);
             var voxelSpan = voxelLayer.BytePointer;
 
             /* Seems to be faster to parallel on the Y and not the X */
@@ -325,9 +365,10 @@ public sealed partial class OperationLayerExportMesh : Operation
                 progress.PauseIfRequested();
                 /* Collects all the faces found for this thread, will be combined into the main dictionary later */
                 var threadDict = new Dictionary<Voxelizer.FaceOrientation, List<Point>>();
+                var pixelPos = voxelLayer.GetPixelPos(0, y);
                 for (var x = 0; x < curLayer.Width; x++)
                 {
-                    if (voxelSpan[voxelLayer.GetPixelPos(x, y)] == 0) continue;
+                    if (voxelSpan[pixelPos++] == 0) continue;
 
                     var faces = Voxelizer.GetOpenFaces(curLayer, x, y, belowLayer, aboveLayer);
                     if (faces == Voxelizer.FaceOrientation.None) continue;
@@ -383,7 +424,6 @@ public sealed partial class OperationLayerExportMesh : Operation
                             {
                                 /* This face is disconnected by at least 1 pixel from the chain we've been building */
                                 /* Create a UVFace for the current chain and reset to this one */
-                                layerFaceCounts[layerIndex]++;
                                 if (currentFaceItem is null)
                                 {
                                     rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight};
@@ -405,7 +445,6 @@ public sealed partial class OperationLayerExportMesh : Operation
                         {
                             /* this face isn't on the same Y row as previous, therefore it is disconnected. */
                             /* Create a UVFace for the current chain and reset to this one */
-                            layerFaceCounts[layerIndex]++;
                             if (currentFaceItem is null)
                             {
                                 rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
@@ -424,7 +463,6 @@ public sealed partial class OperationLayerExportMesh : Operation
                     }
                     /* we've gone through all the faces, add the final chain we've been building */
                     /* Create a UVFace for the final chain */
-                    layerFaceCounts[layerIndex]++;
                     if (currentFaceItem is null)
                     {
                         rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
@@ -460,7 +498,6 @@ public sealed partial class OperationLayerExportMesh : Operation
                             {
                                 /* This face is disconnected by at least 1 pixel from the chain we've been building */
                                 /* Create a UVFace for the current chain and reset to this one */
-                                layerFaceCounts[layerIndex]++;
                                 if (currentFaceItem is null)
                                 {
                                     rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
@@ -479,7 +516,6 @@ public sealed partial class OperationLayerExportMesh : Operation
                         {
                             /* this face is on a different column, cannot be part of the current chain we're building */
                             /* Create a UVFace for the current chain and reset to this one */
-                            layerFaceCounts[layerIndex]++;
                             if (currentFaceItem is null)
                             {
                                 rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
@@ -496,7 +532,6 @@ public sealed partial class OperationLayerExportMesh : Operation
                             curX = f.X;
                         }
                     }
-                    layerFaceCounts[layerIndex]++;
                     if (currentFaceItem is null)
                     {
                         rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
@@ -510,14 +545,28 @@ public sealed partial class OperationLayerExportMesh : Operation
                 }
             }
 
+            belowLayer?.Dispose();
+            belowLayer = null;
+
             progress++;
 
-            if (progress.Token.IsCancellationRequested)
-            {
-                ExitCleanup();
-                return false;
-            }
+                if (progress.Token.IsCancellationRequested)
+                {
+                    return false;
+                }
 
+            }
+        }
+        finally
+        {
+            belowLayer?.Dispose();
+            curLayer?.Dispose();
+            aboveLayer?.Dispose();
+        }
+
+        if (!rootFaces.Any(static face => face is not null))
+        {
+            return false;
         }
 
         progress.Title = "Stage 2: Building KD Trees";
@@ -532,7 +581,11 @@ public sealed partial class OperationLayerExportMesh : Operation
 
             /* Walk the linked list of UVFaces, adding them to the tree */
             var currentFaceItem = rootFaces[layerIndex];
-            if (currentFaceItem is null) return;
+            if (currentFaceItem is null)
+            {
+                progress.LockAndIncrement();
+                return;
+            }
             while (currentFaceItem.FlatListNext is not null)
             {
                 layerTrees[layerIndex].Add([(float)currentFaceItem.Type, currentFaceItem.FaceRect.X, currentFaceItem.FaceRect.Y
@@ -547,14 +600,11 @@ public sealed partial class OperationLayerExportMesh : Operation
 
         if (progress.Token.IsCancellationRequested)
         {
-            ExitCleanup();
             return false;
         }
 
         progress.Title = "Stage 3: Collapsing faces";
         progress.ProcessedItems = 0;
-        long collapseCount = 0;
-
         /* Begin Stage 3: Vertical collapse
          * Since we don't modify the lists/objects and only connect them via doubly linked list
          * we can process each layer independant of the others.
@@ -563,7 +613,11 @@ public sealed partial class OperationLayerExportMesh : Operation
         {
             progress.PauseIfRequested();
             /* if no faces on this layer... skip.... needed for empty layers */
-            if (layerTrees[i] is null) return;
+            if (layerTrees[i] is null)
+            {
+                progress.LockAndIncrement();
+                return;
+            }
 
             /* check each point in the current layers tree */
             foreach (var point in layerTrees[i])
@@ -607,7 +661,6 @@ public sealed partial class OperationLayerExportMesh : Operation
                     /* same coordinate, same width, safe to merge together. Do so by doubly linking the items */
                     point.Value.Parent = faceBelow;
                     faceBelow.Child = point.Value;
-                    collapseCount++;
                 }
             }
             progress.LockAndIncrement();
@@ -615,51 +668,63 @@ public sealed partial class OperationLayerExportMesh : Operation
 
         if (progress.Token.IsCancellationRequested)
         {
-            ExitCleanup();
             return false;
         }
 
         progress.Title = "Stage 4: Writing the file";
         progress.ProcessedItems = 0;
 
-        var tmpFile = PathExtensions.GetTemporaryFilePathWithExtension("stl", $"UVtools{Id}-");
-        using (var mesh = fileExtension.FileFormatType.CreateInstance<MeshFile>(tmpFile, FileMode.Create, MeshFileFormat, SlicerFile))
+        var tmpFile = PathExtensions.GetTemporaryFilePathWithExtension(fileExtension.Extension, $"UVtools{Id}-");
+        try
         {
-            mesh!.BeginWrite();
-
-            /* Begin Stage 4, generating triangles and saving to file */
-            for (var treeIndex = 0; treeIndex < layerTrees.Length; treeIndex++)
+            using (var mesh = fileExtension.FileFormatType.CreateInstance<MeshFile>(tmpFile, FileMode.Create, MeshFileFormat, SlicerFile)
+                              ?? throw new InvalidOperationException($"Unable to create mesh exporter for '.{fileExtension.Extension}'."))
             {
-                var tree = layerTrees[treeIndex];
-                if (tree is null) continue;
+                mesh.BeginWrite();
 
-                /* only process UVFaces that do not have a parent, these are the "root" faces that couldn't be combined with something above them */
-                foreach (var p in tree.Where(p => p.Value.Parent is null))
+                /* Begin Stage 4, generating triangles and saving to file */
+                for (var treeIndex = 0; treeIndex < layerTrees.Length; treeIndex++)
                 {
-                    /* generate the triangles */
-                    foreach (var f in Voxelizer.MakeFacetsForUVFace(p.Value, xWidth, yWidth,
-                                 distinctLayers[treeIndex].PositionZ))
+                    var tree = layerTrees[treeIndex];
+                    if (tree is not null)
                     {
-                        /* write to file */
-                        mesh.WriteTriangle(f.p1, f.p2, f.p3, f.normal);
+                        var layer = distinctLayers[treeIndex];
+                        var bottomPositionZ = MathF.Max(0, layer.PositionZ - layer.LayerHeight);
+
+                        /* only process UVFaces that do not have a parent, these are the "root" faces that couldn't be combined with something above them */
+                        foreach (var p in tree.Where(p => p.Value.Parent is null))
+                        {
+                            /* generate the triangles */
+                            foreach (var f in Voxelizer.MakeFacetsForUVFace(p.Value, xWidth, yWidth, bottomPositionZ))
+                            {
+                                /* write to file */
+                                mesh.WriteTriangle(f.p1, f.p2, f.p3, f.normal);
+                            }
+                        }
                     }
-                }
 
-                /* check for cancellation at every layer, and if so, close the file properly */
-                if (progress.Token.IsCancellationRequested)
-                {
-                    ExitCleanup();
-                    return false;
-                }
+                    if (progress.Token.IsCancellationRequested)
+                    {
+                        return false;
+                    }
 
-                progress++;
+                    progress++;
+                }
+                mesh.EndWrite();
             }
-            mesh.EndWrite();
+
+            if (progress.Token.IsCancellationRequested || !File.Exists(tmpFile)) return false;
+            File.Move(tmpFile, FilePath, true);
+
+            return true;
         }
-
-        if (!progress.Token.IsCancellationRequested && File.Exists(tmpFile)) File.Move(tmpFile, FilePath, true);
-
-        return !progress.Token.IsCancellationRequested;
+        finally
+        {
+            if (File.Exists(tmpFile))
+            {
+                File.Delete(tmpFile);
+            }
+        }
     }
 
 

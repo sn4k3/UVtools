@@ -125,11 +125,11 @@ public class Voxelizer
         layerBelow ??= curLayer.NewZeros();
 
         /* anything that is in the current layer but is not in the layer above, by definition has an exposed face */
-        var upperSubtract = new Mat();
+        using var upperSubtract = new Mat();
         CvInvoke.Subtract(curLayer, layerAbove, upperSubtract);
 
         /* anything that is in the current layer but is not in the layer below, by definition has an exposed face */
-        var lowerSubtract = new Mat();
+        using var lowerSubtract = new Mat();
         CvInvoke.Subtract(curLayer, layerBelow, lowerSubtract);
 
         /* Or all of these together to get the list of pixels that have exposed face(s) */

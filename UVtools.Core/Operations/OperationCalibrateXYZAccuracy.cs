@@ -640,6 +640,8 @@ public sealed partial class OperationCalibrateXYZAccuracy : Operation
         var newLayers = new Layer[LayerCount];
 
         var layers = GetLayers();
+        try
+        {
 
         var bottomLayer = new Layer(0, layers[0], SlicerFile)
         {
@@ -665,11 +667,6 @@ public sealed partial class OperationCalibrateXYZAccuracy : Operation
             progress++;
         }
 
-        foreach (var mat in layers)
-        {
-            mat.Dispose();
-        }
-
         if (SlicerFile.ThumbnailsCount > 0)
         {
             using var thumbnail = GetThumbnail();
@@ -686,7 +683,15 @@ public sealed partial class OperationCalibrateXYZAccuracy : Operation
             SlicerFile.Layers = newLayers;
         }, true);
 
-        return !progress.Token.IsCancellationRequested;
+            return !progress.Token.IsCancellationRequested;
+        }
+        finally
+        {
+            foreach (var mat in layers)
+            {
+                mat.Dispose();
+            }
+        }
     }
 
     #endregion

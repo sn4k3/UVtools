@@ -33,7 +33,8 @@ public class GCodeLayer
     private float? _retractSpeed2;
     private float _retractAcceleration2;
 
-    public bool IsValid => LayerIndex.HasValue;
+    public bool IsValid => LayerIndex is { } layerIndex &&
+                           layerIndex < SlicerFile.LayerCount;
 
     public FileFormat SlicerFile { get; }
     public List<(float Pos, float Speed, float Acceleration)> Movements = [];
@@ -168,16 +169,21 @@ public class GCodeLayer
         WaitTimeAfterCure = null;
         LiftHeight = null;
         LiftSpeed = null;
+        LiftAcceleration = 0;
         LiftHeight2 = null;
         LiftSpeed2 = null;
+        LiftAcceleration2 = 0;
         WaitTimeAfterLift = null;
         RetractSpeed = null;
+        RetractAcceleration = 0;
         RetractHeight2 = null;
         RetractSpeed2 = null;
+        RetractAcceleration2 = 0;
         LightPWM = null;
         Pause = false;
         ChangeResin = false;
         LightOffCount = 0;
+        WaitSyncDelayDetected = false;
     }
 
     public void AssignMovements(GCodeBuilder.GCodePositioningTypes positionType)
@@ -321,7 +327,11 @@ public class GCodeLayer
     /// </summary>
     public void SetLayer(bool reinit = false)
     {
-        if (!IsValid) return;
+        if (!IsValid)
+        {
+            if (reinit) Init();
+            return;
+        }
         uint layerIndex = LayerIndex!.Value;
         var layer = SlicerFile[layerIndex];
             
@@ -346,7 +356,8 @@ public class GCodeLayer
         layer.Pause = Pause;
         layer.ChangeResin = ChangeResin;
 
-        if (SlicerFile.GCode!.CommandWaitSyncDelay.Enabled && !WaitSyncDelayDetected) // Dirty fix of the value
+        if (SlicerFile.GCode?.CommandWaitSyncDelay.Enabled == true &&
+            !WaitSyncDelayDetected) // Dirty fix of the value
         {
             var syncTime = OperationCalculator.LightOffDelayC.CalculateSeconds(layer, 1.5f);
             if (syncTime < layer.WaitTimeBeforeCure)

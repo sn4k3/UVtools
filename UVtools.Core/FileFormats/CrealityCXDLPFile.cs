@@ -7,11 +7,13 @@
  */
 
 using BinarySerialization;
+using DotNext.Buffers;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
-using System.Collections.Generic;
+using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -318,15 +320,22 @@ public sealed class CrealityCXDLPFile : FileFormat
         [Ignore] public ushort StartX => (ushort)(((Coordinates[3] << 8) + Coordinates[4]) & 0x3FFF); // 14 bits
         [Ignore] public ushort Length => (ushort)(EndY - StartY);
 
-        public static byte[] GetBytes(ushort startY, ushort endY, ushort startX, byte gray)
+        public static void WriteBytes(Span<byte> bytes, ushort startY, ushort endY, ushort startX, byte gray)
         {
-            var bytes = new byte[CoordinateCount + 1];
+            if (bytes.Length < CoordinateCount + 1)
+                throw new ArgumentException($"The destination must contain at least {CoordinateCount + 1} bytes.", nameof(bytes));
             bytes[0] = (byte)((startY >> 5) & 0xFF);
             bytes[1] = (byte)(((startY << 3) + (endY >> 10)) & 0xFF);
             bytes[2] = (byte)((endY >> 2) & 0xFF);
             bytes[3] = (byte)(((endY << 6) + (startX >> 8)) & 0xFF);
             bytes[4] = (byte)startX;
             bytes[5] = gray;
+        }
+
+        public static byte[] GetBytes(ushort startY, ushort endY, ushort startX, byte gray)
+        {
+            var bytes = GC.AllocateUninitializedArray<byte>(CoordinateCount + 1);
+            WriteBytes(bytes, startY, endY, startX, gray);
             return bytes;
         }
 
@@ -730,72 +739,83 @@ public sealed class CrealityCXDLPFile : FileFormat
         }
 
         var layerLargestContourArea = new uint[LayerCount];
-        var layerBytes = new List<byte>[LayerCount];
+        var layerBytes = new MemoryOwner<byte>[LayerCount];
         var pixelArea = PixelArea;
         foreach (var batch in BatchLayersIndexes())
         {
-            Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
+            try
             {
-                progress.PauseIfRequested();
-                var layer = this[layerIndex];
-                using (var mat = layer.LayerMat)
+                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
-                    using var matRoi = mat.Roi(layer.BoundingRectangle);
-                    using var contours = matRoi.FindContours(RetrType.External);
-                    layerLargestContourArea[layerIndex] =
-                        (uint)(EmguContours.GetLargestContourArea(contours) * pixelArea * 1000);
-                    //Debug.WriteLine($"Area: {contourArea} ({contourArea * PixelArea * 1000})  BR: {max.Bounds.Area()} ({max.Bounds.Area() * PixelArea * 1000})");
+                    progress.PauseIfRequested();
+                    var layer = this[layerIndex];
+                    using var writer = new BufferWriterSlim<byte>(
+                        Math.Max(256, layer.BoundingRectangle.Width * 6 + 10));
+                    writer.Write(stackalloc byte[8]);
 
-                    var span = mat.GetReadOnlySpanOfBytes();
-
-                    layerBytes[layerIndex] = [];
-
-                    uint lineCount = 0;
-
-                    for (var x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++)
+                    using (var mat = layer.LayerMat)
                     {
-                        var y = layer.BoundingRectangle.Y;
-                        var startY = -1;
-                        byte lastColor = 0;
-                        for (; y < layer.BoundingRectangle.Bottom; y++)
-                        {
-                            var pos = mat.GetPixelPos(x, y);
-                            var color = span[pos];
+                        using var matRoi = mat.Roi(layer.BoundingRectangle);
+                        using var contours = matRoi.FindContours(RetrType.External);
+                        layerLargestContourArea[layerIndex] =
+                            (uint)(EmguContours.GetLargestContourArea(contours) * pixelArea * 1000);
 
-                            if (lastColor == color && color != 0) continue;
+                        var span = mat.GetReadOnlySpanOfBytes();
+                        uint lineCount = 0;
+
+                        for (var x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++)
+                        {
+                            var y = layer.BoundingRectangle.Y;
+                            var startY = -1;
+                            byte lastColor = 0;
+                            for (; y < layer.BoundingRectangle.Bottom; y++)
+                            {
+                                var pos = mat.GetPixelPos(x, y);
+                                var color = span[pos];
+
+                                if (lastColor == color && color != 0) continue;
+
+                                if (startY >= 0)
+                                {
+                                    LayerLine.WriteBytes(writer.GetSpan(6), (ushort)startY, (ushort)(y - 1),
+                                        (ushort)x, lastColor);
+                                    writer.Advance(6);
+                                    lineCount++;
+                                }
+
+                                startY = color == 0 ? -1 : y;
+                                lastColor = color;
+                            }
 
                             if (startY >= 0)
                             {
-                                layerBytes[layerIndex].AddRange(LayerLine.GetBytes((ushort)startY, (ushort)(y - 1),
-                                    (ushort)x, lastColor));
+                                LayerLine.WriteBytes(writer.GetSpan(6), (ushort)startY, (ushort)(y - 1),
+                                    (ushort)x, lastColor);
+                                writer.Advance(6);
                                 lineCount++;
                             }
-
-                            startY = color == 0 ? -1 : y;
-
-                            lastColor = color;
                         }
 
-                        if (startY >= 0)
-                        {
-                            layerBytes[layerIndex].AddRange(LayerLine.GetBytes((ushort)startY, (ushort)(y - 1),
-                                (ushort)x, lastColor));
-                            lineCount++;
-                        }
+                        writer.Write(pageBreak);
+                        var owner = writer.DetachOrCopyBuffer();
+                        BinaryPrimitives.WriteUInt32BigEndian(owner.Span, layerLargestContourArea[layerIndex]);
+                        BinaryPrimitives.WriteUInt32BigEndian(owner.Span[4..], lineCount);
+                        layerBytes[layerIndex] = owner;
                     }
 
-                    layerBytes[layerIndex].InsertRange(0,
-                        LayerDef.GetHeaderBytes(layerLargestContourArea[layerIndex], lineCount));
-                    layerBytes[layerIndex].AddRange(pageBreak);
+                    progress.LockAndIncrement();
+                });
+
+                foreach (var layerIndex in batch)
+                {
+                    outputFile.Write(layerBytes[layerIndex].Span);
+                    layerBytes[layerIndex].Dispose();
+                    layerBytes[layerIndex] = default;
                 }
-
-                progress.LockAndIncrement();
-            });
-
-            foreach (var layerIndex in batch)
+            }
+            finally
             {
-                outputFile.WriteBytes(layerBytes[layerIndex].ToArray());
-                layerBytes[layerIndex] = null!;
+                foreach (var layerIndex in batch) layerBytes[layerIndex].Dispose();
             }
         }
 
@@ -876,53 +896,55 @@ public sealed class CrealityCXDLPFile : FileFormat
         {
             progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
-            var linesBytes = new byte[LayerCount][];
+            var linesBytes = new MemoryOwner<byte>[LayerCount];
             foreach (var batch in BatchLayersIndexes())
             {
-                foreach (var layerIndex in batch)
+                try
                 {
-                    progress.PauseOrCancelIfRequested();
-
-                    inputFile.Seek(4, SeekOrigin.Current);
-                    var lineCount = BitExtensions.ToUIntBigEndian(inputFile.ReadBytes(4));
-
-                    linesBytes[layerIndex] = GC.AllocateUninitializedArray<byte>((int)lineCount * 6);
-                    inputFile.ReadBytes(linesBytes[layerIndex]);
-                    inputFile.Seek(2, SeekOrigin.Current);
-                }
-
-                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
-                {
-                    progress.PauseIfRequested();
-                    using (var mat = EmguCvExtensions.InitMat(Resolution))
+                    foreach (var layerIndex in batch)
                     {
-                        for (var i = 0; i < linesBytes[layerIndex].Length; i++)
+                        progress.PauseOrCancelIfRequested();
+                        inputFile.Seek(4, SeekOrigin.Current);
+                        var lineCount = inputFile.ReadUIntBigEndian();
+                        var byteLength = checked((int)lineCount * 6);
+                        if (byteLength > inputFile.Length - inputFile.Position - 2)
+                            throw new InvalidDataException("Layer line data exceeds the remaining file length.");
+
+                        if (byteLength > 0)
                         {
-                            LayerLine line = new()
-                            {
-                                Coordinates =
-                                {
-                                    [0] = linesBytes[layerIndex][i++],
-                                    [1] = linesBytes[layerIndex][i++],
-                                    [2] = linesBytes[layerIndex][i++],
-                                    [3] = linesBytes[layerIndex][i++],
-                                    [4] = linesBytes[layerIndex][i++]
-                                },
-                                Gray = linesBytes[layerIndex][i]
-                            };
-
-                            CvInvoke.Line(mat, new Point(line.StartX, line.StartY),
-                                new Point(line.StartX, line.EndY),
-                                new MCvScalar(line.Gray));
+                            linesBytes[layerIndex] = new MemoryOwner<byte>(ArrayPool<byte>.Shared, byteLength);
+                            inputFile.ReadExactly(linesBytes[layerIndex].Span);
                         }
-
-                        linesBytes[layerIndex] = null!;
-
-                        _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                        inputFile.Seek(2, SeekOrigin.Current);
                     }
 
-                    progress.LockAndIncrement();
-                });
+                    Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
+                    {
+                        progress.PauseIfRequested();
+                        using (var mat = EmguCvExtensions.InitMat(Resolution))
+                        {
+                            var lineData = linesBytes[layerIndex].Span;
+                            for (var i = 0; i < lineData.Length; i += 6)
+                            {
+                                var startY = (ushort)((((lineData[i] << 8) + lineData[i + 1]) >> 3) & 0x1FFF);
+                                var endY = (ushort)((((lineData[i + 1] << 16) + (lineData[i + 2] << 8) +
+                                                     lineData[i + 3]) >> 6) & 0x1FFF);
+                                var startX = (ushort)(((lineData[i + 3] << 8) + lineData[i + 4]) & 0x3FFF);
+
+                                CvInvoke.Line(mat, new Point(startX, startY), new Point(startX, endY),
+                                    new MCvScalar(lineData[i + 5]));
+                            }
+
+                            _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                        }
+
+                        progress.LockAndIncrement();
+                    });
+                }
+                finally
+                {
+                    foreach (var layerIndex in batch) linesBytes[layerIndex].Dispose();
+                }
             }
         }
         else // Partial read

@@ -6,9 +6,13 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
+using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
@@ -16,7 +20,15 @@ namespace UVtools.Core.MeshFormats;
 
 public class PLYMeshFile : MeshFile
 {
+    #region Constants
+    private const int AsciiVertexLineBufferSize = 160;
+    private const int AsciiFaceLineBufferSize = 36;
+    private const int BinaryVertexRecordSize = sizeof(float) * 3;
+    private const int BinaryFaceRecordSize = sizeof(byte) + sizeof(uint) * 3;
+    #endregion
+
     #region Members
+    private static readonly StandardFormat CoordinateFormat = new('F', 6);
     private readonly Dictionary<Vector3, uint> _vertexCache = new(VertexCacheSize);
     private FileStream _triangleStream = null!;
     private long _vertexCountWritePosition;
@@ -57,68 +69,10 @@ public class PLYMeshFile : MeshFile
 
     public override void WriteTriangle(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 normal)
     {
-        if (!_vertexCache.ContainsKey(p1))
-        {
-            if (FileFormat == MeshFileFormat.ASCII)
-            {
-                MeshStream.WriteLineLF($"{p1.X:F6} {p1.Y:F6} {p1.Z:F6}");
-            }
-            else
-            {
-                MeshStream.WriteFloatLittleEndian(p1.X);
-                MeshStream.WriteFloatLittleEndian(p1.Y);
-                MeshStream.WriteFloatLittleEndian(p1.Z);
-            }
-                
-            _vertexCache.Add(p1, VertexCount);
-            VertexCount++;
-        }
-
-        if (!_vertexCache.ContainsKey(p2))
-        {
-            if (FileFormat == MeshFileFormat.ASCII)
-            {
-                MeshStream.WriteLineLF($"{p2.X:F6} {p2.Y:F6} {p2.Z:F6}");
-            }
-            else
-            {
-                MeshStream.WriteFloatLittleEndian(p2.X);
-                MeshStream.WriteFloatLittleEndian(p2.Y);
-                MeshStream.WriteFloatLittleEndian(p2.Z);
-            }
-
-            _vertexCache.Add(p2, VertexCount);
-            VertexCount++;
-        }
-
-        if (!_vertexCache.ContainsKey(p3))
-        {
-            if (FileFormat == MeshFileFormat.ASCII)
-            {
-                MeshStream.WriteLineLF($"{p3.X:F6} {p3.Y:F6} {p3.Z:F6}");
-            }
-            else
-            {
-                MeshStream.WriteFloatLittleEndian(p3.X);
-                MeshStream.WriteFloatLittleEndian(p3.Y);
-                MeshStream.WriteFloatLittleEndian(p3.Z);
-            }
-
-            _vertexCache.Add(p3, VertexCount);
-            VertexCount++;
-        }
-
-        if (FileFormat == MeshFileFormat.ASCII)
-        {
-            _triangleStream.WriteLineLF($"3 {_vertexCache[p1]} {_vertexCache[p2]} {_vertexCache[p3]}");
-        }
-        else
-        {
-            _triangleStream.WriteByte(3);
-            _triangleStream.WriteUIntLittleEndian(_vertexCache[p1]);
-            _triangleStream.WriteUIntLittleEndian(_vertexCache[p2]);
-            _triangleStream.WriteUIntLittleEndian(_vertexCache[p3]);
-        }
+        var vertex1 = GetOrWriteVertex(p1);
+        var vertex2 = GetOrWriteVertex(p2);
+        var vertex3 = GetOrWriteVertex(p3);
+        WriteFace(vertex1, vertex2, vertex3);
 
         TriangleCount++;
             
@@ -143,6 +97,75 @@ public class PLYMeshFile : MeshFile
         MeshStream.Seek(_faceCountWritePosition - TriangleCount.DigitCount(), SeekOrigin.Begin);
         MeshStream.WriteString(TriangleCount.ToString());
         MeshStream.Seek(0, SeekOrigin.End);
+    }
+
+    private uint GetOrWriteVertex(Vector3 vertex)
+    {
+        ref var index = ref CollectionsMarshal.GetValueRefOrAddDefault(_vertexCache, vertex, out var exists);
+        if (exists)
+        {
+            return index;
+        }
+
+        index = VertexCount++;
+        if (FileFormat == MeshFileFormat.ASCII)
+        {
+            Span<byte> line = stackalloc byte[AsciiVertexLineBufferSize];
+            var writer = new MeshTextWriter(line);
+            writer.Append(vertex.X, CoordinateFormat);
+            writer.Append((byte)' ');
+            writer.Append(vertex.Y, CoordinateFormat);
+            writer.Append((byte)' ');
+            writer.Append(vertex.Z, CoordinateFormat);
+            writer.Append((byte)'\n');
+            writer.CopyTo(MeshStream);
+        }
+        else
+        {
+            Span<byte> record = stackalloc byte[BinaryVertexRecordSize];
+            BinaryPrimitives.WriteSingleLittleEndian(record, vertex.X);
+            BinaryPrimitives.WriteSingleLittleEndian(record[sizeof(float)..], vertex.Y);
+            BinaryPrimitives.WriteSingleLittleEndian(record[(sizeof(float) * 2)..], vertex.Z);
+            MeshStream.Write(record);
+        }
+
+        return index;
+    }
+
+    private void WriteFace(uint vertex1, uint vertex2, uint vertex3)
+    {
+        if (FileFormat == MeshFileFormat.ASCII)
+        {
+            Span<byte> line = stackalloc byte[AsciiFaceLineBufferSize];
+            var writer = new MeshTextWriter(line);
+            writer.Append("3 "u8);
+            writer.Append(vertex1);
+            writer.Append((byte)' ');
+            writer.Append(vertex2);
+            writer.Append((byte)' ');
+            writer.Append(vertex3);
+            writer.Append((byte)'\n');
+            writer.CopyTo(_triangleStream);
+        }
+        else
+        {
+            Span<byte> record = stackalloc byte[BinaryFaceRecordSize];
+            record[0] = 3;
+            BinaryPrimitives.WriteUInt32LittleEndian(record[1..], vertex1);
+            BinaryPrimitives.WriteUInt32LittleEndian(record[(1 + sizeof(uint))..], vertex2);
+            BinaryPrimitives.WriteUInt32LittleEndian(record[(1 + sizeof(uint) * 2)..], vertex3);
+            _triangleStream.Write(record);
+        }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _triangleStream?.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 
     #endregion

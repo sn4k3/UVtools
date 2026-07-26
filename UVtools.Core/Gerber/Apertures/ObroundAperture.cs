@@ -11,7 +11,6 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System.Drawing;
-using EmguExtensions;
 
 namespace UVtools.Core.Gerber.Apertures;
 
@@ -39,6 +38,8 @@ public class ObroundAperture : Aperture
 
     public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
+        if (Axes.Width <= 0 || Axes.Height <= 0) return;
+
         var location = Document.PositionMmToPx(at);
 
         // full (width,height) in pixels
@@ -96,48 +97,10 @@ public class ObroundAperture : Aperture
         // hole (unchanged)
         if (HoleDiameter > 0)
         {
-            var invertColor = color.Equals(EmguCvExtensions.BlackColor) ? EmguCvExtensions.WhiteColor : EmguCvExtensions.BlackColor;
             CvInvoke.Ellipse(mat,
                 location,
                 Document.SizeMmToPx(HoleDiameter / 2.0, HoleDiameter / 2.0),
-                0, 0, 360, invertColor, -1, lineType);
+                0, 0, 360, InvertColor(color), -1, lineType);
         }
-
-        return;
-
-        /*
-        var location = Document.PositionMmToPx(at);
-        // Calculate radius of the semicircles
-        var radius = Document.SizeMmToPx(Axes.Width / 2, Axes.Height / 2);
-        var radiusFromHeight = Document.SizeMmToPx(Axes.Height / 2, Axes.Height / 2);
-        var diameter = Document.SizeMmToPx(Axes.Width, Axes.Height);
-
-        // Calculate centers for the semicircles
-        var leftCircleCenter = location with { X = location.X - radius.Width + radiusFromHeight.Width };
-        var rightCircleCenter = location with { X = location.X + radius.Width - radiusFromHeight.Width };
-
-        // Draw the two semicircles
-        CvInvoke.Ellipse(mat, leftCircleCenter, radiusFromHeight, 0, 90, 270, color, -1, lineType);
-        CvInvoke.Ellipse(mat, rightCircleCenter, radiusFromHeight, 0, -90, 90, color, -1, lineType);
-
-        //CvInvoke.Ellipse(mat,
-        //    location,
-        //    radius,
-        //    0, 0, 360, color, -1, lineType);
-
-        // Draw the rectangle connecting the semicircles
-        var rect = new Rectangle(leftCircleCenter with { Y = location.Y - radius.Height },
-            diameter with { Width = diameter.Width - diameter.Height });
-        CvInvoke.Rectangle(mat, rect, color, -1, lineType);
-
-        if (HoleDiameter > 0)
-        {
-            var invertColor = color.Equals(EmguCvExtensions.BlackColor) ? EmguCvExtensions.WhiteColor : EmguCvExtensions.BlackColor;
-            CvInvoke.Ellipse(mat,
-                location,
-                Document.SizeMmToPx(HoleDiameter / 2.0, HoleDiameter / 2.0),
-                0, 0, 360, invertColor, -1, lineType);
-        }
-        */
     }
 }

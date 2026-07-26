@@ -9,6 +9,7 @@
 // https://github.com/cbiffle/catibo/blob/master/doc/cbddlp-ctb.adoc
 
 using BinarySerialization;
+using DotNext.Buffers;
 using Emgu.CV;
 using System;
 using System.Collections.Generic;
@@ -443,13 +444,13 @@ public sealed class PHZFile : FileFormat
 
         public unsafe Mat Decode(uint layerIndex, bool consumeData = true)
         {
-            var image = EmguCvExtensions.InitMat(Parent.Resolution);
-            var span = image.GetSpanOfBytes(0, 0);
-
             if (Parent.HeaderSettings.EncryptionKey > 0)
             {
                 LayerRleCryptBuffer(Parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle);
             }
+
+            var image = EmguCvExtensions.InitMat(Parent.Resolution);
+            var span = image.GetSpanOfBytes();
 
             var limit = image.Width * image.Height;
             var index = 0;
@@ -507,73 +508,91 @@ public sealed class PHZFile : FileFormat
 
         public void Encode(Mat image, uint layerIndex)
         {
-            List<byte> rawData = [];
-
-            //byte color = byte.MaxValue >> 1;
-            var color = byte.MaxValue;
-            uint stride = 0;
-
-            void AddRep()
+            static int GetMinimumRunEncodedLength(int pixels)
             {
-                rawData.Add((byte)(color | 0x80));
-                stride--;
-                var done = 0;
-                while (done < stride)
-                {
-                    var todo = 0x7d;
-
-                    if (stride - done < todo)
-                    {
-                        todo = (int)(stride - done);
-                    }
-
-                    rawData.Add((byte)todo);
-
-                    done += todo;
-                }
+                if (pixels <= 0) return 0;
+                var repeatedPixels = pixels - 1;
+                return 1 + repeatedPixels / 0x7d + (repeatedPixels % 0x7d == 0 ? 0 : 1);
             }
 
             var halfWidth = image.Width / 2;
-
-            //int pixel = 0;
-            for (var y = 0; y < image.Height; y++)
+            var minimumEncodedLength = Math.Max(
+                256,
+                checked(image.Height *
+                        (GetMinimumRunEncodedLength(halfWidth) +
+                         GetMinimumRunEncodedLength(image.Width - halfWidth))));
+            var rawData = new BufferWriterSlim<byte>(minimumEncodedLength);
+            try
             {
-                var span = image.GetRowSpanOfBytes(y);
-                for (var x = 0; x < span.Length; x++)
-                {
-                    var grey7 = (byte)((span[x] >> 1) & 0x7f);
-                    if (grey7 > 0x7c)
-                    {
-                        grey7 = 0x7c;
-                    }
 
-                    if (color == byte.MaxValue)
+                //byte color = byte.MaxValue >> 1;
+                var color = byte.MaxValue;
+                uint stride = 0;
+
+                static void AddRep(ref BufferWriterSlim<byte> rawData, uint stride, byte color)
+                {
+                    rawData.Add((byte)(color | 0x80));
+                    stride--;
+                    var done = 0;
+                    while (done < stride)
                     {
-                        color = grey7;
-                        stride = 1;
-                    }
-                    else if (grey7 != color || x == halfWidth)
-                    {
-                        AddRep();
-                        color = grey7;
-                        stride = 1;
-                    }
-                    else
-                    {
-                        stride++;
+                        var todo = 0x7d;
+
+                        if (stride - done < todo)
+                        {
+                            todo = (int)(stride - done);
+                        }
+
+                        rawData.Add((byte)todo);
+
+                        done += todo;
                     }
                 }
 
-                AddRep();
-                color = byte.MaxValue;
+                //int pixel = 0;
+                for (var y = 0; y < image.Height; y++)
+                {
+                    var span = image.GetRowSpanOfBytes(y);
+                    for (var x = 0; x < span.Length; x++)
+                    {
+                        var grey7 = (byte)((span[x] >> 1) & 0x7f);
+                        if (grey7 > 0x7c)
+                        {
+                            grey7 = 0x7c;
+                        }
+
+                        if (color == byte.MaxValue)
+                        {
+                            color = grey7;
+                            stride = 1;
+                        }
+                        else if (grey7 != color || x == halfWidth)
+                        {
+                            AddRep(ref rawData, stride, color);
+                            color = grey7;
+                            stride = 1;
+                        }
+                        else
+                        {
+                            stride++;
+                        }
+                    }
+
+                    AddRep(ref rawData, stride, color);
+                    color = byte.MaxValue;
+                }
+
+
+                EncodedRle = rawData.WrittenSpan.ToArray();
+                if (Parent.HeaderSettings.EncryptionKey > 0)
+                    LayerRleCryptBuffer(Parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle);
+
+                DataSize = (uint)EncodedRle.Length;
             }
-
-
-            EncodedRle = Parent.HeaderSettings.EncryptionKey > 0
-                ? LayerRleCrypt(Parent.HeaderSettings.EncryptionKey, layerIndex, rawData)
-                : rawData.ToArray();
-
-            DataSize = (uint)EncodedRle.Length;
+            finally
+            {
+                rawData.Dispose();
+            }
         }
 
         public override string ToString()

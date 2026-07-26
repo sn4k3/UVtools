@@ -231,9 +231,9 @@ public partial class OperationCalculator : Operation
         public static float CalculateSecondsLiftOnly(float liftHeight, float liftSpeed, float liftHeight2 = 0, float liftSpeed2 = 0, float extraWaitTime = 0)
         {
             var time = extraWaitTime;
-            if (liftHeight > 0 && liftSpeed > 0) time += MathF.Round(liftHeight / (liftSpeed / 60f) + extraWaitTime, 2);
-            if (liftHeight2 > 0 && liftSpeed2 > 0) time += MathF.Round(liftHeight2 / (liftSpeed2 / 60f) + extraWaitTime, 2);
-            return time;
+            if (liftHeight > 0 && liftSpeed > 0) time += liftHeight / (liftSpeed / 60f);
+            if (liftHeight2 > 0 && liftSpeed2 > 0) time += liftHeight2 / (liftSpeed2 / 60f);
+            return MathF.Round(time, 2);
         }
 
         public static uint CalculateMillisecondsLiftOnly(float liftHeight, float liftSpeed, float liftHeight2 = 0, float liftSpeed2 = 0, float extraWaitTime = 0) =>
@@ -289,12 +289,9 @@ public partial class OperationCalculator : Operation
             }
         } = 0.05m;
 
-        public decimal XYResolution => DisplayWidth > 0 || DisplayHeight > 0 ?
-            Math.Max(
-                DisplayWidth / ResolutionX,
-                DisplayHeight / ResolutionY
-            )
-            : 0;
+        public decimal XYResolution => Math.Max(
+            ResolutionX > 0 ? DisplayWidth / ResolutionX : 0,
+            ResolutionY > 0 ? DisplayHeight / ResolutionY : 0);
 
         public decimal XYResolutionUm => Math.Round(XYResolution * 1000, 2);
 

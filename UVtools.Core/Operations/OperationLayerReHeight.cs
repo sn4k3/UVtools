@@ -322,7 +322,7 @@ public sealed partial class OperationLayerReHeight : Operation
                             case OperationLayerReHeightAntiAliasingType.Difference:
                             {
                                 using var previousMat = SlicerFile[layerIndex + i - 1].LayerMat;
-                                var matXor = new Mat();
+                                using var matXor = new Mat();
                                 //CvInvoke.Threshold(previousMat, previousMat, 127, 255, ThresholdType.Binary);
                                 //CvInvoke.Threshold(nextMat, nextMat, 127, 255, ThresholdType.Binary);
                                 CvInvoke.BitwiseXor(previousMat, nextMat, matXor);
@@ -334,7 +334,6 @@ public sealed partial class OperationLayerReHeight : Operation
                                 }
                                 else
                                 {
-                                    CvInvoke.Add(matXorSum, matXorSum, matXorSum);
                                     CvInvoke.Add(matXorSum, matXor, matXorSum);
                                 }
 

@@ -32,7 +32,7 @@ public class MatCompressorLz4 : MatCompressor
     public override string Name => "K4os";
 
     /// <inheritdoc />
-    public override int MaximumCompressionLevel { get; } = (int)LZ4Level.L12_MAX; // 12
+    public override int MaximumCompressionLevel { get; } = (int)LZ4Level.L12_MAX;
 
     /// <inheritdoc />
     protected override int GetCompressionLevel(CompressionLevel compressionLevel)
@@ -51,21 +51,10 @@ public class MatCompressorLz4 : MatCompressor
     /// <inheritdoc />
     protected override byte[] CompressCore(Mat src, int compressionLevel)
     {
-        /*var options = LZ4CompressionOptions.Default with
-        {
-            CompressionLevel = compressionLevel,
-            ContentSize = (ulong)src.ByteCountInt64,
-            FavorDecompressionSpeed = 1 // Optimize for decompression
-        };
-
+        // The compressed length is unknown; keep sparse streaming to avoid a worst-case output allocation.
         using var buffer = CreateCompressionBuffer(src);
-        using (var compressStream = new LZ4Stream(CreateCompressionStream(buffer), options))
-        {
-            src.CopyTo(compressStream);
-        }*/
-
-        using var buffer = CreateCompressionBuffer(src);
-        using (var compressStream = LZ4Stream.Encode(CreateCompressionStream(buffer), (LZ4Level)compressionLevel))
+        using (var compressStream = LZ4Stream.Encode(CreateCompressionStream(buffer), (LZ4Level)compressionLevel,
+                   extraMemory: 0, leaveOpen: false))
         {
             src.CopyTo(compressStream);
         }
@@ -76,8 +65,14 @@ public class MatCompressorLz4 : MatCompressor
     /// <inheritdoc />
     protected override void DecompressCore(byte[] compressedBytes, Mat dst)
     {
-        using var compressedStream = new MemoryStream(compressedBytes, false);
-        using var decompressStream = LZ4Stream.Decode(compressedStream);
+        using var compressedStream = new MemoryStream(compressedBytes, writable: false);
+        using var decompressStream = LZ4Stream.Decode(
+            compressedStream, extraMemory: 0, leaveOpen: false);
         decompressStream.ReadExactly(dst.GetSpanOfBytes());
+        Span<byte> trailingByte = stackalloc byte[1];
+        if (decompressStream.Read(trailingByte) != 0)
+        {
+            throw new InvalidDataException("The LZ4 frame contains more data than the destination Mat.");
+        }
     }
 }

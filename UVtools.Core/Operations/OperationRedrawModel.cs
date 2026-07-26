@@ -213,7 +213,7 @@ public partial class OperationRedrawModel : Operation
                 if (contours.Size <= 0) return;
                 using var nextLayerMat = otherFile[layerIndex + 1].LayerMat;
                 using var nextLayerMatRoi = GetRoiOrDefault(nextLayerMat);
-                var fullSpan = fullMatRoi.GetSpanOfBytes(0, 0);
+                var fullSpan = fullMatRoi.GetSpanOfBytes();
                 var supportsSpan = supportsMat.GetReadOnlySpanOfBytes();
                 var nextSpan = nextLayerMatRoi.GetReadOnlySpanOfBytes();
                 for (int i = 0; i < contours.Size; i++)

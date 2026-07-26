@@ -9,9 +9,7 @@
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
-using System;
 using System.Drawing;
-using EmguExtensions;
 
 namespace UVtools.Core.Gerber.Apertures;
 
@@ -38,18 +36,19 @@ public class RectangleAperture : Aperture
 
     public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
+        if (Size.Width <= 0 || Size.Height <= 0) return;
+
         var location = Document.PositionMmToPx(at);
 
-        at = new PointF(Math.Max(0, at.X - Size.Width / 2), Math.Max(0, at.Y - Size.Height / 2));
+        at = new PointF(at.X - Size.Width / 2, at.Y - Size.Height / 2);
         CvInvoke.Rectangle(mat, new Rectangle(Document.PositionMmToPx(at), Document.SizeMmToPx(Size)), color, -1, lineType);
 
         if (HoleDiameter > 0)
         {
-            var invertColor = color.Equals(EmguCvExtensions.BlackColor) ? EmguCvExtensions.WhiteColor : EmguCvExtensions.BlackColor;
             CvInvoke.Ellipse(mat,
                 location,
                 Document.SizeMmToPx(HoleDiameter / 2.0, HoleDiameter / 2.0),
-                0, 0, 360, invertColor, -1, lineType);
+                0, 0, 360, InvertColor(color), -1, lineType);
         }
     }
 }

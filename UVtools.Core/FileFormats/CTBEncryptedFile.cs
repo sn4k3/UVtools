@@ -1,4 +1,5 @@
 ﻿using BinarySerialization;
+using DotNext.Buffers;
 using Emgu.CV;
 using System;
 using System.Collections.Concurrent;
@@ -26,8 +27,8 @@ public sealed class CTBEncryptedFile : FileFormat
 
     public const ushort RLEEncryptedMinimumLength = 512;
 
-    private const byte PERLAYER_SETTINGS_DISALLOW       = 0;
-    private const byte PERLAYER_SETTINGS_ALLOW          = 0x40;
+    private const byte PERLAYER_SETTINGS_DISALLOW = 0;
+    private const byte PERLAYER_SETTINGS_ALLOW = 0x40;
 
     private const string CTB_DISCLAIMER = "Layout and record format for the ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc..The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
     private const ushort CTB_DISCLAIMER_SIZE = 320;
@@ -41,7 +42,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
 
     public static readonly string Preamble = CryptExtensions.XORCipherString(System.Convert.FromBase64String(Secret0), About.Software);
-    private static readonly byte[] Bigfoot       = CryptExtensions.XORCipher(System.Convert.FromBase64String(Secret1), About.Software);
+    private static readonly byte[] Bigfoot = CryptExtensions.XORCipher(System.Convert.FromBase64String(Secret1), About.Software);
     private static readonly byte[] CookieMonster = CryptExtensions.XORCipher(System.Convert.FromBase64String(Secret2), About.Software);
 
     #endregion
@@ -347,162 +348,180 @@ public sealed class CTBEncryptedFile : FileFormat
         public Mat DecodeImage(uint layerIndex, bool consumeRle = true)
         {
             var mat = EmguCvExtensions.InitMat(Parent!.Resolution);
-            //var span = mat.GetBytePointer();
-
-            if (Parent.Settings.LayerXorKey > 0)
+            try
             {
-                ChituboxFile.LayerRleCryptBuffer(Parent.Settings.LayerXorKey, layerIndex, RLEData!);
-            }
+                //var span = mat.GetBytePointer();
 
-            int pixel = 0;
-            for (var n = 0; n < RLEData!.Length; n++)
-            {
-                byte code = RLEData[n];
-                int stride = 1;
-
-                if ((code & 0x80) == 0x80) // It's a run
+                if (Parent.Settings.LayerXorKey > 0)
                 {
-                    code &= 0x7f; // Get the run length
-                    n++;
+                    ChituboxFile.LayerRleCryptBuffer(Parent.Settings.LayerXorKey, layerIndex, RLEData!);
+                }
 
-                    var slen = RLEData[n];
+                int pixel = 0;
+                for (var n = 0; n < RLEData!.Length; n++)
+                {
+                    byte code = RLEData[n];
+                    int stride = 1;
 
-                    if ((slen & 0x80) == 0)
+                    if ((code & 0x80) == 0x80) // It's a run
                     {
-                        stride = slen;
-                    }
-                    else if ((slen & 0xc0) == 0x80)
-                    {
-                        stride = ((slen & 0x3f) << 8) + RLEData[n + 1];
+                        code &= 0x7f; // Get the run length
                         n++;
+
+                        var slen = RLEData[n];
+
+                        if ((slen & 0x80) == 0)
+                        {
+                            stride = slen;
+                        }
+                        else if ((slen & 0xc0) == 0x80)
+                        {
+                            stride = ((slen & 0x3f) << 8) + RLEData[n + 1];
+                            n++;
+                        }
+                        else if ((slen & 0xe0) == 0xc0)
+                        {
+                            stride = ((slen & 0x1f) << 16) + (RLEData[n + 1] << 8) + RLEData[n + 2];
+                            n += 2;
+                        }
+                        else if ((slen & 0xf0) == 0xe0)
+                        {
+                            stride = ((slen & 0xf) << 24) + (RLEData[n + 1] << 16) + (RLEData[n + 2] << 8) + RLEData[n + 3];
+                            n += 3;
+                        }
+                        else
+                        {
+                            throw new FileLoadException("Corrupted RLE data");
+                        }
                     }
-                    else if ((slen & 0xe0) == 0xc0)
+
+                    // Bit extend from 7-bit to 8-bit greymap
+                    if (code != 0)
                     {
-                        stride = ((slen & 0x1f) << 16) + (RLEData[n + 1] << 8) + RLEData[n + 2];
-                        n += 2;
+                        code = (byte)((code << 1) | 1);
                     }
-                    else if ((slen & 0xf0) == 0xe0)
+
+                    mat.FillSpan(ref pixel, stride, code);
+
+                    //if (stride <= 0) continue; // Nothing to do
+
+                    /*if (code == 0) // Ignore blacks, spare cycles
                     {
-                        stride = ((slen & 0xf) << 24) + (RLEData[n + 1] << 16) + (RLEData[n + 2] << 8) + RLEData[n + 3];
-                        n += 3;
-                    }
-                    else
+                        pixel += stride;
+                        continue;
+                    }*/
+
+                    /*for (; stride > 0; stride--)
                     {
-                        mat.Dispose();
-                        throw new FileLoadException("Corrupted RLE data");
-                    }
+                        span[pixel] = code;
+                        pixel++;
+                    }*/
                 }
 
-                // Bit extend from 7-bit to 8-bit greymap
-                if (code != 0)
-                {
-                    code = (byte)((code << 1) | 1);
-                }
+                if (consumeRle) RLEData = null;
 
-                mat.FillSpan(ref pixel, stride, code);
-
-                //if (stride <= 0) continue; // Nothing to do
-
-                /*if (code == 0) // Ignore blacks, spare cycles
-                {
-                    pixel += stride;
-                    continue;
-                }*/
-
-                /*for (; stride > 0; stride--)
-                {
-                    span[pixel] = code;
-                    pixel++;
-                }*/
+                return mat;
             }
-
-            if (consumeRle) RLEData = null;
-
-            return mat;
+            catch
+            {
+                mat.Dispose();
+                throw;
+            }
         }
 
         public unsafe byte[] EncodeImage(Mat image, uint layerIndex)
         {
-            List<byte> rawData = [];
-            byte color = byte.MaxValue >> 1;
-            uint stride = 0;
             var span = image.GetReadOnlySpanOfBytes();
-
-            void AddRep()
+            var rawData = new BufferWriterSlim<byte>(
+                FileFormat.GetRleBufferInitialCapacity(
+                    span.Length,
+                    estimatedPixelsPerRun: 128,
+                    encodedBytesPerRun: 2));
+            try
             {
-                if (stride == 0)
+                byte color = byte.MaxValue >> 1;
+                uint stride = 0;
+
+                static void AddRep(ref BufferWriterSlim<byte> rawData, uint stride, byte color)
                 {
-                    return;
+                    if (stride == 0)
+                    {
+                        return;
+                    }
+
+                    if (stride > 1)
+                    {
+                        color |= 0x80;
+                    }
+                    rawData.Add(color);
+
+                    if (stride <= 1)
+                    {
+                        // no run needed
+                        return;
+                    }
+
+                    if (stride <= 0x7f)
+                    {
+                        rawData.Add((byte)stride);
+                        return;
+                    }
+
+                    if (stride <= 0x3fff)
+                    {
+                        rawData.Add((byte)((stride >> 8) | 0x80));
+                        rawData.Add((byte)stride);
+                        return;
+                    }
+
+                    if (stride <= 0x1fffff)
+                    {
+                        rawData.Add((byte)((stride >> 16) | 0xc0));
+                        rawData.Add((byte)(stride >> 8));
+                        rawData.Add((byte)stride);
+                        return;
+                    }
+
+                    if (stride <= 0xfffffff)
+                    {
+                        rawData.Add((byte)((stride >> 24) | 0xe0));
+                        rawData.Add((byte)(stride >> 16));
+                        rawData.Add((byte)(stride >> 8));
+                        rawData.Add((byte)stride);
+                    }
                 }
 
-                if (stride > 1)
-                {
-                    color |= 0x80;
-                }
-                rawData.Add(color);
 
-                if (stride <= 1)
+                for (int pixel = 0; pixel < span.Length; pixel++)
                 {
-                    // no run needed
-                    return;
-                }
+                    var grey7 = (byte)(span[pixel] >> 1);
 
-                if (stride <= 0x7f)
-                {
-                    rawData.Add((byte)stride);
-                    return;
-                }
-
-                if (stride <= 0x3fff)
-                {
-                    rawData.Add((byte)((stride >> 8) | 0x80));
-                    rawData.Add((byte)stride);
-                    return;
+                    if (grey7 == color)
+                    {
+                        stride++;
+                    }
+                    else
+                    {
+                        AddRep(ref rawData, stride, color);
+                        color = grey7;
+                        stride = 1;
+                    }
                 }
 
-                if (stride <= 0x1fffff)
-                {
-                    rawData.Add((byte)((stride >> 16) | 0xc0));
-                    rawData.Add((byte)(stride >> 8));
-                    rawData.Add((byte)stride);
-                    return;
-                }
+                AddRep(ref rawData, stride, color);
 
-                if (stride <= 0xfffffff)
-                {
-                    rawData.Add((byte)((stride >> 24) | 0xe0));
-                    rawData.Add((byte)(stride >> 16));
-                    rawData.Add((byte)(stride >> 8));
-                    rawData.Add((byte)stride);
-                }
+                RLEData = rawData.WrittenSpan.ToArray();
+                if (Parent!.Settings.LayerXorKey > 0)
+                    ChituboxFile.LayerRleCryptBuffer(Parent.Settings.LayerXorKey, layerIndex, RLEData);
+
+                DataLength = (uint)RLEData.Length;
+
+                return RLEData;
             }
-
-
-            for (int pixel = 0; pixel < span.Length; pixel++)
+            finally
             {
-                var grey7 = (byte)(span[pixel] >> 1);
-
-                if (grey7 == color)
-                {
-                    stride++;
-                }
-                else
-                {
-                    AddRep();
-                    color = grey7;
-                    stride = 1;
-                }
+                rawData.Dispose();
             }
-
-            AddRep();
-
-            RLEData = Parent!.Settings.LayerXorKey > 0
-                ? ChituboxFile.LayerRleCrypt(Parent.Settings.LayerXorKey, layerIndex, rawData)
-                : rawData.ToArray();
-
-            DataLength = (uint)RLEData.Length;
-
-            return RLEData;
         }
 
         public override string ToString()
@@ -865,7 +884,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
     public override float BottomLiftHeight
     {
-        get => Math.Max(0,Settings.BottomLiftHeight - Settings.BottomLiftHeight2);
+        get => Math.Max(0, Settings.BottomLiftHeight - Settings.BottomLiftHeight2);
         set
         {
             value = MathF.Round(value, 2);
@@ -882,7 +901,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
     public override float LiftHeight
     {
-        get => Math.Max(0,Settings.LiftHeight - Settings.LiftHeight2);
+        get => Math.Max(0, Settings.LiftHeight - Settings.LiftHeight2);
         set
         {
             value = MathF.Round(value, 2);
@@ -1054,7 +1073,8 @@ public sealed class CTBEncryptedFile : FileFormat
             return Header.Version switch
             {
                 <= 4 => [Header, Settings],
-                /*v5*/_ => [Header, Settings, ResinParametersSettings]
+                /*v5*/
+                _ => [Header, Settings, ResinParametersSettings]
             };
         }
     }
@@ -1248,7 +1268,7 @@ public sealed class CTBEncryptedFile : FileFormat
                     else
                     {
                         using var mat = layerDef.DecodeImage((uint)layerIndex);
-                        _layers[layerIndex] = new Layer((uint) layerIndex, mat, this);
+                        _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
                     }
 
                     progress.LockAndIncrement();
@@ -1522,13 +1542,21 @@ public sealed class CTBEncryptedFile : FileFormat
     #region Static Methods
     public static void CryptFile(string filePath)
     {
-        using var msReader = new MemoryStream(File.ReadAllBytes(filePath));
-        using var msWriter = new MemoryStream();
-        msReader.CopyTo(msWriter);
-        msWriter.Position = 0;
-        msReader.Position = 0;
-        var writer = new BinaryWriter(msWriter);
-        var reader = new BinaryReader(msReader);
+        var cryptedFile = File.ReadAllBytes(filePath);
+        using var msReader = new MemoryStream(cryptedFile, false);
+        using var msWriter = new MemoryStream(cryptedFile, true);
+        using var writer = new BinaryWriter(msWriter);
+        using var reader = new BinaryReader(msReader);
+
+        void PassThrough(long count)
+        {
+            if (count < 0 || count > msReader.Length - msReader.Position ||
+                count > msWriter.Length - msWriter.Position)
+                throw new InvalidDataException("Invalid CTB section offset or length.");
+
+            msReader.Seek(count, SeekOrigin.Current);
+            msWriter.Seek(count, SeekOrigin.Current);
+        }
 
         /* magic */
         var magic = reader.ReadUInt32();
@@ -1555,8 +1583,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
         /* pass through rest of data until encrypted header */
         var bytesToPassthru = headerOffset - msReader.Position;
-        var temp = reader.ReadBytes((int)bytesToPassthru);
-        writer.Write(temp);
+        PassThrough(bytesToPassthru);
         uint printerNameLength = 0;
 
         var originalHeader = reader.ReadBytes((int)headerLength);
@@ -1589,10 +1616,10 @@ public sealed class CTBEncryptedFile : FileFormat
 
         /* how many bytes from current position till the next offset */
         bytesToPassthru = nextOffset - msReader.Position;
-        writer.Write(reader.ReadBytes((int)bytesToPassthru));
+        PassThrough(bytesToPassthru);
 
         /* passthrough this whole block */
-        writer.Write(reader.ReadBytes((int)nextLength));
+        PassThrough(nextLength);
 
         /* pass throught the next 2 dwords */
         writer.Write(reader.ReadUInt32());
@@ -1607,14 +1634,13 @@ public sealed class CTBEncryptedFile : FileFormat
 
         /* how many bytes from current position till the next offset */
         bytesToPassthru = nextOffset - msReader.Position;
-        writer.Write(reader.ReadBytes((int)bytesToPassthru));
+        PassThrough(bytesToPassthru);
 
         /* passthrough this whole block */
-        writer.Write(reader.ReadBytes((int)nextLength));
+        PassThrough(nextLength);
 
         /* passes printer name and disclaimer */
-        var x = reader.ReadBytes((int)(CTB_DISCLAIMER_SIZE + printerNameLength));
-        writer.Write(x);
+        PassThrough(checked((long)CTB_DISCLAIMER_SIZE + printerNameLength));
 
         /* we're at the layer offset table now */
         var layerOffsets = new List<ulong>();
@@ -1630,10 +1656,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
         msReader.Position = (int)startOfTable;
 
-        /* copy the rest of the file to the output memory stream, we'll decrypt layers next */
-        writer.Write(reader.ReadBytes((int)(msReader.Length - msReader.Position)));
-
-        byte[] cryptedFile = msWriter.ToArray();
+        /* The unchanged remainder is already present in the shared backing buffer. */
         var layerCounter = 0;
         foreach (var offset in layerOffsets)
         {

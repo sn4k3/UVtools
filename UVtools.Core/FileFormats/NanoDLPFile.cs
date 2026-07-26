@@ -936,7 +936,7 @@ public sealed class NanoDLPFile : FileFormat
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
 
-        SlicerManifest.DisplayController = LayerImageFormat is ImageFormat.Png8 or ImageFormat.Png24RgbAA or ImageFormat.Png24RgbAA ? (byte)1 : byte.MinValue;
+        SlicerManifest.DisplayController = LayerImageFormat is ImageFormat.Png8 or ImageFormat.Png24BgrAA or ImageFormat.Png24RgbAA ? (byte)1 : byte.MinValue;
 
         outputFile.CreateEntryFromSerializeJson(MetaManifestFileName, MetaManifest, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);
         outputFile.CreateEntryFromSerializeJson(SlicerManifestFileName, SlicerManifest, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);

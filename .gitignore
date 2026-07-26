@@ -483,3 +483,4 @@ publish/
 manifests/
 
 .*-build-tasks/
+.dotnet-home/

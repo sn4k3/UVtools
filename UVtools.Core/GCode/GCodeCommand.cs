@@ -7,11 +7,14 @@
  */
 
 using System;
+using System.Globalization;
 
 namespace UVtools.Core.GCode;
 
-public class GCodeCommand
+public class GCodeCommand : IEquatable<GCodeCommand>
 {
+    private string _command = string.Empty;
+
     /// <summary>
     /// Gets or sets if this command is enabled
     /// </summary>
@@ -20,7 +23,11 @@ public class GCodeCommand
     /// <summary>
     /// Gets or sets the command name
     /// </summary>
-    public string Command { get; set; }
+    public string Command
+    {
+        get => _command;
+        set => _command = value ?? string.Empty;
+    }
 
     /// <summary>
     /// Gets ir sets the command alias
@@ -71,7 +78,7 @@ public class GCodeCommand
         if (!string.IsNullOrWhiteSpace(Arguments))
             result += $" {Arguments}";
 
-        if (result[0] == ';') return result;
+        if (result.Length == 0 || result[0] == ';') return result;
 
         var comment = string.IsNullOrWhiteSpace(overrideComment) ? Comment : overrideComment;
         if (showComment && !string.IsNullOrWhiteSpace(comment))
@@ -86,10 +93,10 @@ public class GCodeCommand
         return result;
     }
     public string ToString(bool showComment, bool showTailComma = true, params object[] args) =>
-        string.Format(ToString(showComment, showTailComma), args);
+        string.Format(CultureInfo.InvariantCulture, ToString(showComment, showTailComma), args);
     public string ToStringOverrideComment(string comment, params object[] args) => ToStringOverrideComment(true, true, comment, args);
     public string ToStringOverrideComment(bool showComment, bool showTailComma, string? comment, params object[] args) =>
-        string.Format(ToString(showComment, showTailComma, comment), args);
+        string.Format(CultureInfo.InvariantCulture, ToString(showComment, showTailComma, comment), args);
     public string ToString(params object[] args) => ToString(true, true, args);
     public string ToStringWithoutComments() => ToString(false, false);
     public string ToStringWithoutComments(params object[] args) => ToString(false, false, args);
@@ -104,9 +111,11 @@ public class GCodeCommand
         return result;
     }
 
-    protected bool Equals(GCodeCommand other)
+    public bool Equals(GCodeCommand? other)
     {
-        return Command == other.Command;
+        return other is not null &&
+               other.GetType() == GetType() &&
+               string.Equals(Command, other.Command, StringComparison.Ordinal);
     }
 
     public override bool Equals(object? obj)
@@ -114,11 +123,11 @@ public class GCodeCommand
         if (ReferenceEquals(null, obj)) return false;
         if (ReferenceEquals(this, obj)) return true;
         if (obj.GetType() != this.GetType()) return false;
-        return Equals((GCodeCommand) obj);
+        return Equals((GCodeCommand)obj);
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Command, Arguments);
+        return StringComparer.Ordinal.GetHashCode(Command);
     }
 }

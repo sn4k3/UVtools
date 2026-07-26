@@ -7,6 +7,7 @@
  */
 
 using BinarySerialization;
+using DotNext.Buffers;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using System;
@@ -36,7 +37,7 @@ public sealed class LGSFile : FileFormat
         /// <summary>
         /// Gets the model name
         /// </summary>
-        [FieldOrder(0)] [FieldLength(8)] public string Name { get; set; } = NameValue; // 0x00:
+        [FieldOrder(0)][FieldLength(8)] public string Name { get; set; } = NameValue; // 0x00:
         [FieldOrder(1)] public uint Uint_08 { get; set; } = 1; // 0x08: 0xff000001 ?
         [FieldOrder(2)] public uint Uint_0c { get; set; } = 1; // 0x0c: 1 ?
         [FieldOrder(3)] public uint PrinterModel { get; set; } = 30; // 10, 30, 120, 4000 (4k), 4500 (4k mono)
@@ -149,54 +150,66 @@ public sealed class LGSFile : FileFormat
 
         public unsafe byte[] Encode(Mat mat)
         {
-            List<byte> rawData = [];
-            List<byte> chunk = [];
-
-            if (Parent.HeaderSettings.PrinterModel is 4000 or 4500)
+            var rotateImage = Parent.HeaderSettings.PrinterModel is 4000 or 4500;
+            if (rotateImage)
             {
                 CvInvoke.Rotate(mat, mat, RotateFlags.Rotate90Clockwise);
             }
 
             var spanMat = mat.GetReadOnlySpanOfBytes(0, 0);
-
-            uint span = 0;
-            byte lc = 0;
-
-            void addSpan(){
-                chunk.Clear();
-                for (; span > 0; span >>= 4) {
-                    chunk.Insert(0, (byte)((byte)(span & 0xf) | (lc & 0xf0)));
-                }
-                rawData.AddRange(chunk.ToArray());
-            }
-
-            for (int i = 0; i < spanMat.Length; i++)
+            var rawData = new BufferWriterSlim<byte>(
+                FileFormat.GetRleBufferInitialCapacity(
+                    spanMat.Length,
+                    estimatedPixelsPerRun: 128,
+                    encodedBytesPerRun: 2));
+            try
             {
-                byte c = (byte) (spanMat[i] & 0xf0);
+                uint span = 0;
+                byte lc = 0;
 
-                if (c == lc)
+                static void AddSpan(ref BufferWriterSlim<byte> rawData, uint span, byte color)
                 {
-                    span++;
-                }
-                else
-                {
-                    addSpan();
-                    span = 1;
+                    Span<byte> chunk = stackalloc byte[8];
+                    var index = chunk.Length;
+                    for (; span > 0; span >>= 4)
+                    {
+                        chunk[--index] = (byte)((span & 0xf) | (uint)(color & 0xf0));
+                    }
+
+                    rawData.Write(chunk[index..]);
                 }
 
-                lc = c;
+                for (int i = 0; i < spanMat.Length; i++)
+                {
+                    byte c = (byte)(spanMat[i] & 0xf0);
+
+                    if (c == lc)
+                    {
+                        span++;
+                    }
+                    else
+                    {
+                        AddSpan(ref rawData, span, lc);
+                        span = 1;
+                    }
+
+                    lc = c;
+                }
+
+                AddSpan(ref rawData, span, lc);
+                EncodedRle = rawData.WrittenSpan.ToArray();
+                DataSize = (uint)EncodedRle.Length;
+
+                return EncodedRle;
             }
-
-            addSpan();
-            EncodedRle = rawData.ToArray();
-            DataSize = (uint) EncodedRle.Length;
-
-            if (Parent.HeaderSettings.PrinterModel is 4000 or 4500)
+            finally
             {
-                CvInvoke.Rotate(mat, mat, RotateFlags.Rotate90CounterClockwise);
+                rawData.Dispose();
+                if (rotateImage)
+                {
+                    CvInvoke.Rotate(mat, mat, RotateFlags.Rotate90CounterClockwise);
+                }
             }
-
-            return EncodedRle;
         }
 
         public Mat Decode(bool consumeRle = true)
@@ -204,53 +217,61 @@ public sealed class LGSFile : FileFormat
             // lgs10/30 -------->
             // lgs120/4k From Y bottom to top Y
             var mat = EmguCvExtensions.InitMat(Parent.HeaderSettings.PrinterModel is 4000 or 4500 ? Parent.Resolution.Exchange() : Parent.Resolution);
-            //var matSpan = mat.GetBytePointer();
-            var imageLength = mat.ByteCountInt32;
-
-            int pixelPos = 0;
-
-            for (var i = 0; i < EncodedRle.Length; i++)
+            try
             {
-                var b = EncodedRle[i];
-                byte colorNibble = (byte)(b >> 4);
-                byte color = (byte)(colorNibble << 4 | colorNibble);
-                int repeat = b & 0xf;
+                //var matSpan = mat.GetBytePointer();
+                var imageLength = mat.ByteCountInt32;
 
-                while (i + 1 < EncodedRle.Length && (EncodedRle[i + 1] >> 4) == colorNibble)
+                int pixelPos = 0;
+
+                for (var i = 0; i < EncodedRle.Length; i++)
                 {
-                    i++;
-                    repeat = (repeat << 4) | (EncodedRle[i] & 0xf);
+                    var b = EncodedRle[i];
+                    byte colorNibble = (byte)(b >> 4);
+                    byte color = (byte)(colorNibble << 4 | colorNibble);
+                    int repeat = b & 0xf;
+
+                    while (i + 1 < EncodedRle.Length && (EncodedRle[i + 1] >> 4) == colorNibble)
+                    {
+                        i++;
+                        repeat = (repeat << 4) | (EncodedRle[i] & 0xf);
+                    }
+
+                    if (pixelPos >= imageLength)
+                    {
+                        throw new FileLoadException($"Too much buffer, expected: {imageLength}, got: {pixelPos}");
+                    }
+
+                    mat.FillSpan(ref pixelPos, repeat, color);
+
+                    //if (repeat <= 0) continue;
+                    /*while (repeat-- > 0)
+                    {
+                        matSpan[pixel++] = color;
+                    }*/
+
                 }
 
-                if (pixelPos >= imageLength)
+                if (pixelPos != imageLength)
                 {
-                    throw new FileLoadException($"Too much buffer, expected: {imageLength}, got: {pixelPos}");
+                    throw new FileLoadException($"Incomplete buffer, expected: {imageLength}, got: {pixelPos}");
                 }
 
-                mat.FillSpan(ref pixelPos, repeat, color);
+                if (consumeRle)
+                    EncodedRle = null!;
 
-                //if (repeat <= 0) continue;
-                /*while (repeat-- > 0)
+                if (Parent.HeaderSettings.PrinterModel is 4000 or 4500)
                 {
-                    matSpan[pixel++] = color;
-                }*/
+                    CvInvoke.Rotate(mat, mat, RotateFlags.Rotate90CounterClockwise);
+                }
 
+                return mat;
             }
-
-            if (pixelPos != imageLength)
+            catch
             {
-                throw new FileLoadException($"Incomplete buffer, expected: {imageLength}, got: {pixelPos}");
+                mat.Dispose();
+                throw;
             }
-
-            if (consumeRle)
-                EncodedRle = null!;
-
-            if (Parent.HeaderSettings.PrinterModel is 4000 or 4500)
-            {
-                CvInvoke.Rotate(mat, mat, RotateFlags.Rotate90CounterClockwise);
-            }
-
-            return mat;
         }
     }
     #endregion
@@ -293,7 +314,7 @@ public sealed class LGSFile : FileFormat
 
     public override uint ResolutionX
     {
-        get => (uint) HeaderSettings.ResolutionX;
+        get => (uint)HeaderSettings.ResolutionX;
         set
         {
             HeaderSettings.ResolutionX = value;
@@ -359,10 +380,10 @@ public sealed class LGSFile : FileFormat
 
     public override ushort BottomLayerCount
     {
-        get => (ushort) (HeaderSettings.BottomHeight / LayerHeight);
+        get => (ushort)(HeaderSettings.BottomHeight / LayerHeight);
         set
         {
-            if(LayerHeight > 0) HeaderSettings.BottomHeight = value * LayerHeight;
+            if (LayerHeight > 0) HeaderSettings.BottomHeight = value * LayerHeight;
             base.BottomLayerCount = value;
         }
     }
@@ -466,7 +487,7 @@ public sealed class LGSFile : FileFormat
         else if (FileEndsWith(".lgs4k")) // Longer Orange 4K & Mono
         {
             MachineZ = 190;
-            if(HeaderSettings.PrinterModel is not 4000 and not 4500) HeaderSettings.PrinterModel = 4500;
+            if (HeaderSettings.PrinterModel is not 4000 and not 4500) HeaderSettings.PrinterModel = 4500;
         }
 
         //uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);

@@ -129,8 +129,9 @@ public partial class OperationResize : Operation
         if (_x <= 0 || Y <= 0) return false;
         if (_x == 100 && Y == 100) return false;
 
-        decimal xSteps = Math.Abs(100 - _x) / (LayerIndexEnd - LayerIndexStart + 1);
-        decimal ySteps = Math.Abs(100 - Y) / (LayerIndexEnd - LayerIndexStart + 1);
+        var fadeSteps = Math.Max(1, LayerRangeCount - 1);
+        decimal xSteps = Math.Abs(100 - _x) / fadeSteps;
+        decimal ySteps = Math.Abs(100 - Y) / fadeSteps;
 
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {

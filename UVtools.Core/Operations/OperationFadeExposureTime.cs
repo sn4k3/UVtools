@@ -100,7 +100,7 @@ public partial class OperationFadeExposureTime : Operation
         set
         {
             if (!SetProperty(ref _layerCount, Math.Min(value, SlicerFile.LayerCount - LayerIndexStart))) return;
-            LayerIndexEnd = LayerIndexStart + _layerCount - 1;
+            LayerIndexEnd = _layerCount == 0 ? LayerIndexStart : LayerIndexStart + _layerCount - 1;
             OnPropertyChanged(nameof(MaximumLayerCount));
             OnPropertyChanged(nameof(IncrementValue));
         }
@@ -148,7 +148,7 @@ public partial class OperationFadeExposureTime : Operation
         if (_fromExposureTime <= 0) _fromExposureTime = (decimal)SlicerFile.BottomExposureTime;
         if (_toExposureTime <= 0) _toExposureTime = (decimal)SlicerFile.ExposureTime;
 
-        LayerIndexEnd = LayerIndexStart + _layerCount - 1; // Sync
+        LayerIndexEnd = _layerCount == 0 ? LayerIndexStart : LayerIndexStart + _layerCount - 1; // Sync
     }
 
     #endregion
@@ -175,6 +175,7 @@ public partial class OperationFadeExposureTime : Operation
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
+        if (_layerCount == 0) return false;
         LayerIndexEnd = LayerIndexStart + _layerCount - 1; // Sanitize
 
         if (SlicerFile.TransitionLayerType == FileFormat.TransitionLayerTypes.Firmware && DisableFirmwareTransitionLayers)
@@ -196,6 +197,7 @@ public partial class OperationFadeExposureTime : Operation
             progress.PauseOrCancelIfRequested();
             exposure += increment;
             SlicerFile[layerIndex].ExposureTime = (float)exposure;
+            progress++;
         }
 
         return !progress.Token.IsCancellationRequested;

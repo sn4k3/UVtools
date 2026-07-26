@@ -13,10 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
-using System.Globalization;
-using System.Text.RegularExpressions;
 using EmguExtensions;
-using UVtools.Core.Extensions;
 using ZLinq;
 
 namespace UVtools.Core.Gerber.Primitives;
@@ -48,7 +45,7 @@ public class OutlinePrimitive : Primitive
     /// 2
     /// </summary>
     public string VerticesCountExpression { get; set; } = string.Empty;
-    public ushort VerticesCount => (ushort) Coordinates.Length;
+    public ushort VerticesCount => Coordinates.Length == 0 ? (ushort)0 : (ushort)(Coordinates.Length - 1);
 
     /// <summary>
     /// subsequent X and Y coordinates.
@@ -69,31 +66,31 @@ public class OutlinePrimitive : Primitive
 
     protected OutlinePrimitive(GerberFormat document) : base(document) { }
 
-    public OutlinePrimitive(GerberFormat document, string exposureExpression, string[] coordinatesExpression, string rotationExpression) : base(document)
+    public OutlinePrimitive(GerberFormat document, string exposureExpression,
+        string verticesCountExpression, string[] coordinatesExpression,
+        string rotationExpression) : base(document)
     {
         ExposureExpression = exposureExpression;
+        VerticesCountExpression = verticesCountExpression;
         CoordinatesExpression = coordinatesExpression;
-        RotationExpression = rotationExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase); ;
+        RotationExpression = rotationExpression;
     }
 
 
     public override void DrawFlashD3(Mat mat, PointF at, LineType lineType = LineType.EightConnected)
     {
-        if (Coordinates.Length < 3) return;
+        if (!IsParsed || Coordinates.Length < 4) return;
 
-        if (Rotation != 0)
+        var points = new List<Point>(Coordinates.Length);
+        for (var index = 0; index < Coordinates.Length; index++)
         {
-            //throw new NotImplementedException($"{Name} primitive with code {Code} have a rotation value of {Rotation} which is not implemented. Open a issue regarding this problem and provide a sample file to be able to implement rotation correctly on this primitive.");
+            var coordinate = RotateAroundMacroOrigin(Coordinates[index].X, Coordinates[index].Y, Rotation);
+            var point = Document.PositionMmToPx(at.X + coordinate.X, at.Y + coordinate.Y);
+            if (points.Count == 0 || points[^1] != point) points.Add(point);
         }
 
-        var points = new List<Point>();
-        for (int i = 0; i < Coordinates.Length-1; i++)
-        {
-            var point = new PointF(at.X + Coordinates[i].X, at.Y + Coordinates[i].Y).Rotate(-Rotation, at);
-            var pt = Document.PositionMmToPx(point);
-            if(points.Count > 0 && points[^1] == pt) continue; // Prevent series of duplicates
-            points.Add(pt);
-        }
+        if (points.Count > 1 && points[0] == points[^1]) points.RemoveAt(points.Count - 1);
+        if (points.Count < 3) return;
 
         using var vec = new VectorOfPoint(points.ToArray());
         CvInvoke.FillPoly(mat, vec, Document.GetPolarityColor(Exposure), lineType);
@@ -101,51 +98,37 @@ public class OutlinePrimitive : Primitive
 
     public override void ParseExpressions(params string[] args)
     {
-        string csharpExp;
-        float num;
-        var exp = new DataTable();
+        IsParsed = false;
+        if (CoordinatesExpression.Length < 8 || CoordinatesExpression.Length % 2 != 0) return;
 
-        if (byte.TryParse(ExposureExpression, out var exposure)) Exposure = exposure;
-        else
+        using var evaluator = new DataTable();
+        if (!TryEvaluateByte(evaluator, ExposureExpression, args, 0, 1, out var exposure) ||
+            !TryEvaluateExpression(evaluator, VerticesCountExpression, args, out var verticesCount) ||
+            verticesCount < 3 ||
+            verticesCount > ushort.MaxValue ||
+            verticesCount != Math.Truncate(verticesCount) ||
+            Math.Round(verticesCount, MidpointRounding.AwayFromZero) != CoordinatesExpression.Length / 2 - 1 ||
+            !TryEvaluateExpression(evaluator, RotationExpression, args, out var rotation) ||
+            rotation is < float.MinValue or > float.MaxValue)
         {
-            csharpExp = string.Format(Regex.Replace(ExposureExpression, @"\$([0-9]+)", "{$1}"), args);
-            var temp = exp.Compute(csharpExp, null);
-            if (temp is not DBNull) Exposure = Convert.ToByte(temp);
+            return;
         }
 
-        float? x = null;
-        var coordinates = new List<PointF>();
-        foreach (var coordinate in CoordinatesExpression)
+        var coordinates = new PointF[CoordinatesExpression.Length / 2];
+        for (var index = 0; index < CoordinatesExpression.Length; index += 2)
         {
-            if (!float.TryParse(coordinate, NumberStyles.Float, CultureInfo.InvariantCulture, out num))
+            if (!TryEvaluateLength(evaluator, CoordinatesExpression[index], args, out var x) ||
+                !TryEvaluateLength(evaluator, CoordinatesExpression[index + 1], args, out var y))
             {
-                csharpExp = string.Format(Regex.Replace(coordinate, @"\$([0-9]+)", "{$1}"), args);
-                var temp = exp.Compute(csharpExp, null);
-                if (temp is not DBNull) num = Convert.ToSingle(temp);
+                return;
             }
 
-            if (x is null)
-            {
-                x = num;
-            }
-            else
-            {
-                coordinates.Add(Document.GetMillimeters(new PointF(x.Value, num)));
-                x = null;
-            }
+            coordinates[index / 2] = new PointF(x, y);
         }
 
-        Coordinates = coordinates.ToArray();
-
-        if (float.TryParse(RotationExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Rotation = (short)num;
-        else
-        {
-            csharpExp = Regex.Replace(RotationExpression, @"\$([0-9]+)", "{$1}");
-            csharpExp = string.Format(csharpExp, args);
-            var temp = exp.Compute(csharpExp, null);
-            if (temp is not DBNull) Rotation = Convert.ToSingle(temp);
-        }
-
+        Exposure = exposure;
+        Coordinates = coordinates;
+        Rotation = (float)rotation;
         IsParsed = true;
     }
 

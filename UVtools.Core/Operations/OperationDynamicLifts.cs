@@ -179,28 +179,10 @@ public sealed partial class OperationDynamicLifts : Operation
         set => SetProperty(ref _fastestLiftSpeed, MathF.Round(value, 2));
     }
 
-    //public uint MinBottomLayerPixels => SlicerFile.Where(layer => layer.IsBottomLayer && !layer.IsEmpty && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd).Max(layer => layer.NonZeroPixelCount);
-    public uint MinBottomLayerPixels => SlicerFile.AsValueEnumerable()
-        .Where(layer => layer.IsBottomLayer && !layer.IsEmpty && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd)
-        .Select(layer => layer.NonZeroPixelCount)
-        .Min();
-
-    //public uint MinNormalLayerPixels => SlicerFile.Where(layer => layer.IsNormalLayer && !layer.IsEmpty && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd).Max(layer => layer.NonZeroPixelCount);
-    public uint MinNormalLayerPixels => SlicerFile.AsValueEnumerable()
-        .Where(layer => layer.IsNormalLayer && !layer.IsEmpty && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd)
-        .Select(layer => layer.NonZeroPixelCount)
-        .Min();
-
-    //public uint MaxBottomLayerPixels => SlicerFile.Where(layer => layer.IsBottomLayer && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd).Max(layer => layer.NonZeroPixelCount);
-    public uint MaxBottomLayerPixels => SlicerFile.AsValueEnumerable()
-        .Where(layer => layer.IsBottomLayer && !layer.IsEmpty && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd)
-        .Select(layer => layer.NonZeroPixelCount)
-        .Max();
-    //public uint MaxNormalLayerPixels => SlicerFile.Where(layer => layer.IsNormalLayer && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd).Max(layer => layer.NonZeroPixelCount);
-    public uint MaxNormalLayerPixels => SlicerFile.AsValueEnumerable()
-        .Where(layer => layer.IsNormalLayer && !layer.IsEmpty && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd)
-        .Select(layer => layer.NonZeroPixelCount)
-        .Max();
+    public uint MinBottomLayerPixels => GetPixelStats(true).Min;
+    public uint MinNormalLayerPixels => GetPixelStats(false).Min;
+    public uint MaxBottomLayerPixels => GetPixelStats(true).Max;
+    public uint MaxNormalLayerPixels => GetPixelStats(false).Max;
 
     #endregion
 
@@ -235,74 +217,36 @@ public sealed partial class OperationDynamicLifts : Operation
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
-        uint minBottomPixels = 0;
-        uint minNormalPixels = 0;
-        uint maxBottomPixels = 0;
-        uint maxNormalPixels = 0;
-
-        try
-        {
-            minBottomPixels = MinBottomLayerPixels;
-        }
-        catch
-        {
-        }
-
-        try
-        {
-            minNormalPixels = MinNormalLayerPixels;
-        }
-        catch
-        {
-        }
-
-        try
-        {
-            maxBottomPixels = MaxBottomLayerPixels;
-        }
-        catch
-        {
-        }
-
-        try
-        {
-            maxNormalPixels = MaxNormalLayerPixels;
-        }
-        catch
-        {
-        }
-
-        float liftHeight = 0;
-        float liftSpeed = 0;
-
-        //uint max = (from layer in SlicerFile where !layer.IsBottomLayer where !layer.IsEmpty where layer.Index >= LayerIndexStart where layer.Index <= LayerIndexEnd select layer).Aggregate<Layer, uint>(0, (current, layer) => Math.Max(layer.NonZeroPixelCount, current));
+        var bottomStats = GetPixelStats(true);
+        var normalStats = GetPixelStats(false);
 
         for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
         {
             progress.PauseOrCancelIfRequested();
             var calculateLayer = SlicerFile[layerIndex == 0 ? 0 : layerIndex - 1];
             var setLayer = SlicerFile[layerIndex];
+            var stats = setLayer.IsBottomLayer ? bottomStats : normalStats;
+            var pixelRatio = SetMethod == DynamicLiftsSetMethod.FullRange
+                ? stats.Max > stats.Min
+                    ? Math.Clamp((calculateLayer.NonZeroPixelCount - (double)stats.Min) / (stats.Max - stats.Min), 0, 1)
+                    : stats.Max > 0 ? 1 : 0
+                : stats.Max > 0
+                    ? Math.Clamp(calculateLayer.NonZeroPixelCount / (double)stats.Max, 0, 1)
+                    : 0;
 
-
-            // Height
-            // min - largestpixelcount
-            //  x  - pixelcount
-
-            // Speed
-            // max - minpixelCount
-            //  x  - pixelcount
+            float liftHeight;
+            float liftSpeed;
             if (setLayer.IsBottomLayer)
             {
                 switch (SetMethod)
                 {
                     case DynamicLiftsSetMethod.Traditional:
-                        liftHeight = Math.Clamp(_largestBottomLiftHeight * calculateLayer.NonZeroPixelCount / maxBottomPixels, _smallestBottomLiftHeight, _largestBottomLiftHeight);
-                        liftSpeed = Math.Clamp(_fastestBottomLiftSpeed - (_fastestBottomLiftSpeed * calculateLayer.NonZeroPixelCount / maxBottomPixels), _slowestBottomLiftSpeed, _fastestBottomLiftSpeed);
+                        liftHeight = Math.Clamp(_largestBottomLiftHeight * (float)pixelRatio, _smallestBottomLiftHeight, _largestBottomLiftHeight);
+                        liftSpeed = Math.Clamp(_fastestBottomLiftSpeed * (1 - (float)pixelRatio), _slowestBottomLiftSpeed, _fastestBottomLiftSpeed);
                         break;
                     case DynamicLiftsSetMethod.FullRange:
-                        var pixelRatio = (calculateLayer.NonZeroPixelCount - minBottomPixels) / (float)(maxBottomPixels - minBottomPixels); // pixel_ratio is between 0 and 1
-                        liftHeight = Math.Clamp(_smallestBottomLiftHeight + (_largestBottomLiftHeight - _smallestBottomLiftHeight) * pixelRatio, _smallestBottomLiftHeight, _largestBottomLiftHeight);
-                        liftSpeed = Math.Clamp(_fastestBottomLiftSpeed - (_fastestBottomLiftSpeed - _slowestBottomLiftSpeed) * pixelRatio, _slowestBottomLiftSpeed, _fastestBottomLiftSpeed);
+                        liftHeight = Math.Clamp(_smallestBottomLiftHeight + (_largestBottomLiftHeight - _smallestBottomLiftHeight) * (float)pixelRatio, _smallestBottomLiftHeight, _largestBottomLiftHeight);
+                        liftSpeed = Math.Clamp(_fastestBottomLiftSpeed - (_fastestBottomLiftSpeed - _slowestBottomLiftSpeed) * (float)pixelRatio, _slowestBottomLiftSpeed, _fastestBottomLiftSpeed);
                         break;
                     default:
                         throw new NotImplementedException(nameof(SetMethod));
@@ -314,31 +258,42 @@ public sealed partial class OperationDynamicLifts : Operation
                 switch (SetMethod)
                 {
                     case DynamicLiftsSetMethod.Traditional:
-                        liftHeight = Math.Clamp(_largestLiftHeight * calculateLayer.NonZeroPixelCount / maxNormalPixels, _smallestLiftHeight, _largestLiftHeight);
-                        liftSpeed = Math.Clamp(_fastestLiftSpeed - _fastestLiftSpeed * calculateLayer.NonZeroPixelCount / maxNormalPixels, _slowestLiftSpeed, _fastestLiftSpeed);
+                        liftHeight = Math.Clamp(_largestLiftHeight * (float)pixelRatio, _smallestLiftHeight, _largestLiftHeight);
+                        liftSpeed = Math.Clamp(_fastestLiftSpeed * (1 - (float)pixelRatio), _slowestLiftSpeed, _fastestLiftSpeed);
                         break;
                     case DynamicLiftsSetMethod.FullRange:
-                        var pixelRatio = (calculateLayer.NonZeroPixelCount - minNormalPixels) / (float)(maxNormalPixels - minNormalPixels); // pixel_ratio is between 0 and 1
-                        liftHeight = Math.Clamp(_smallestLiftHeight + (_largestLiftHeight - _smallestLiftHeight) * pixelRatio, _smallestLiftHeight, _largestLiftHeight);
-                        liftSpeed =  Math.Clamp(_fastestLiftSpeed - (_fastestLiftSpeed - _slowestLiftSpeed) * pixelRatio, _slowestLiftSpeed, _fastestLiftSpeed);
+                        liftHeight = Math.Clamp(_smallestLiftHeight + (_largestLiftHeight - _smallestLiftHeight) * (float)pixelRatio, _smallestLiftHeight, _largestLiftHeight);
+                        liftSpeed = Math.Clamp(_fastestLiftSpeed - (_fastestLiftSpeed - _slowestLiftSpeed) * (float)pixelRatio, _slowestLiftSpeed, _fastestLiftSpeed);
                         break;
                     default:
                         throw new NotImplementedException(nameof(SetMethod));
                 }
             }
 
-            if (!float.IsNaN(liftHeight))
-            {
-                setLayer.RetractHeight2 = 0;
-                setLayer.LiftHeightTotal = MathF.Round(liftHeight, 1);
-                if (!float.IsNaN(liftSpeed)) setLayer.LiftSpeed = MathF.Round(liftSpeed, 1);
-            }
-
-
+            setLayer.RetractHeight2 = 0;
+            setLayer.LiftHeightTotal = MathF.Round(liftHeight, 1);
+            setLayer.LiftSpeed = MathF.Round(liftSpeed, 1);
             progress++;
         }
 
         return !progress.Token.IsCancellationRequested;
+    }
+
+    private (uint Min, uint Max) GetPixelStats(bool isBottom)
+    {
+        var min = uint.MaxValue;
+        uint max = 0;
+        var found = false;
+        for (var layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
+        {
+            var layer = SlicerFile[layerIndex];
+            if (layer.IsEmpty || layer.IsBottomLayer != isBottom) continue;
+            min = Math.Min(min, layer.NonZeroPixelCount);
+            max = Math.Max(max, layer.NonZeroPixelCount);
+            found = true;
+        }
+
+        return found ? (min, max) : (0, 0);
     }
 
     public Layer? GetSmallestLayer(bool isBottom)

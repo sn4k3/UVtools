@@ -228,7 +228,7 @@ public partial class OperationDoubleExposure : Operation
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
-            var firstLayer = SlicerFile[layerIndex];
+            var firstLayer = SlicerFile[layerIndex].Clone();
             var secondLayer = firstLayer.Clone();
             var isBottomLayer = firstLayer.IsBottomLayer;
 
@@ -279,29 +279,28 @@ public partial class OperationDoubleExposure : Operation
                 {
                     Mat? firstMat = null;
                     Mat? secondMat = null;
-                    if (firstErodeIterations > 0)
+                    try
                     {
-                        int tempIterations = firstErodeIterations;
-                        var kernel = Kernel.GetKernel(ref tempIterations);
-                        firstMat = new Mat();
-                        CvInvoke.Erode(mat, firstMat, kernel, EmguCvExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
-                        firstLayer.LayerMat = firstMat;
-                    }
-
-                    if (secondErodeIterations > 0)
-                    {
-                        int tempIterations = secondErodeIterations;
-                        var kernel = Kernel.GetKernel(ref tempIterations);
-                        secondMat = new Mat();
-                        CvInvoke.Erode(mat, secondMat, kernel, EmguCvExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
-                    }
-
-                    if(firstMat is not null && SecondLayerDifference)
-                    {
-                        if (firstErodeIterations + SecondLayerDifferenceOverlapErodeIterations != secondErodeIterations)
+                        if (firstErodeIterations > 0)
                         {
-                            if (SecondLayerDifferenceOverlapErodeIterations > 0 &&
-                                firstErodeIterations + SecondLayerDifferenceOverlapErodeIterations != secondErodeIterations)
+                            int tempIterations = firstErodeIterations;
+                            var kernel = Kernel.GetKernel(ref tempIterations);
+                            firstMat = new Mat();
+                            CvInvoke.Erode(mat, firstMat, kernel, EmguCvExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
+                            firstLayer.LayerMat = firstMat;
+                        }
+
+                        if (secondErodeIterations > 0)
+                        {
+                            int tempIterations = secondErodeIterations;
+                            var kernel = Kernel.GetKernel(ref tempIterations);
+                            secondMat = new Mat();
+                            CvInvoke.Erode(mat, secondMat, kernel, EmguCvExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
+                        }
+
+                        if(firstMat is not null && SecondLayerDifference)
+                        {
+                            if (SecondLayerDifferenceOverlapErodeIterations > 0)
                             {
                                 int tempIterations = SecondLayerDifferenceOverlapErodeIterations;
                                 var kernel = Kernel.GetKernel(ref tempIterations);
@@ -312,14 +311,16 @@ public partial class OperationDoubleExposure : Operation
                             CvInvoke.AbsDiff(firstMat, secondMat ?? mat, mat);
                             secondLayer.LayerMat = mat;
                         }
+                        else if (secondMat is not null)
+                        {
+                            secondLayer.LayerMat = secondMat;
+                        }
                     }
-                    else if (secondMat is not null)
+                    finally
                     {
-                        secondLayer.LayerMat = secondMat;
+                        firstMat?.Dispose();
+                        secondMat?.Dispose();
                     }
-
-                    firstMat?.Dispose();
-                    secondMat?.Dispose();
                 }
             }
 
@@ -337,6 +338,7 @@ public partial class OperationDoubleExposure : Operation
             layers[i + LayerRangeCount] = SlicerFile[i];
         }
 
+        if (progress.Token.IsCancellationRequested) return false;
         SlicerFile.SuppressRebuildPropertiesWork(() =>
         {
             SlicerFile.BottomLayerCount = (ushort)bottomLayers;

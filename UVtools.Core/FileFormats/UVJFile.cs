@@ -586,7 +586,10 @@ public sealed class UVJFile : FileFormat
             throw new FileLoadException($"{FileConfigName} not found", FileFullPath);
         }
 
-        JsonSettings = JsonSerializer.Deserialize<Settings>(entry.Open())!;
+        using (var stream = entry.Open())
+        {
+            JsonSettings = JsonSerializer.Deserialize<Settings>(stream)!;
+        }
         Init(JsonSettings.Properties.Size.Layers, DecodeType == FileDecodeType.Partial);
 
         DecodeThumbnailsFromZip(inputFile, progress, FilePreviewTinyName, FilePreviewHugeName);

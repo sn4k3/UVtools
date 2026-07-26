@@ -12,7 +12,6 @@ using System.IO;
 using System.Numerics;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
-using ZLinq;
 
 namespace UVtools.Core.MeshFormats;
 
@@ -37,10 +36,28 @@ public abstract class MeshFile : IDisposable
 
     public static string HeaderComment => $"Exported from {About.SoftwareWithVersion} @ {DateTime.UtcNow:u}";
 
-    public static FileExtension? FindFileExtension(string filePath)
+    public static FileExtension? FindFileExtension(string? filePath)
     {
-        var ext = Path.GetExtension(filePath);
-        return AvailableMeshFiles.AsValueEnumerable().FirstOrDefault(fileExtension => $".{fileExtension.Extension}" == ext);
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            return null;
+        }
+
+        var extension = Path.GetExtension(filePath);
+        if (extension.Length <= 1)
+        {
+            return null;
+        }
+
+        foreach (var fileExtension in AvailableMeshFiles)
+        {
+            if (extension.AsSpan(1).Equals(fileExtension.Extension, StringComparison.OrdinalIgnoreCase))
+            {
+                return fileExtension;
+            }
+        }
+
+        return null;
     }
 
     public static MeshFile? CreateInstance(string filePath, FileMode fileMode, MeshFileFormat fileFormat = MeshFileFormat.BINARY, FileFormat? slicerFile = null)
@@ -136,7 +153,16 @@ public abstract class MeshFile : IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
-        MeshStream?.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            MeshStream.Dispose();
+        }
     }
     #endregion
 }

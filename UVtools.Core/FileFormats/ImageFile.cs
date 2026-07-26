@@ -27,7 +27,7 @@ public sealed class ImageFile : FileFormat
         new (typeof(ImageFile), "sr", "SR: Sun raster"),
         new (typeof(ImageFile), "ras", "RAS: Sun raster")
     ];
-    
+
     public override float DisplayWidth
     {
         get => ResolutionX;
@@ -53,16 +53,24 @@ public sealed class ImageFile : FileFormat
     protected override void DecodeInternally(OperationProgress progress)
     {
         using var mat = CvInvoke.Imread(FileFullPath, ImreadModes.Grayscale);
-        
+
         const byte startDivisor = 2;
         for (int i = 0; i < 4; i++)
         {
             var thumbnail = new Mat();
-            var divisor = (i + 1) * startDivisor;
-            CvInvoke.Resize(mat, thumbnail, new Size(mat.Width / divisor, mat.Height / divisor));
-            Thumbnails.Add(thumbnail);
+            try
+            {
+                var divisor = (i + 1) * startDivisor;
+                CvInvoke.Resize(mat, thumbnail, new Size(mat.Width / divisor, mat.Height / divisor));
+                Thumbnails.Add(thumbnail);
+            }
+            catch
+            {
+                thumbnail.Dispose();
+                throw;
+            }
         }
-        
+
         /*if (ImageMat.NumberOfChannels > 1)
         {
             CvInvoke.CvtColor(ImageMat, ImageMat, ColorConversion.Bgr2Gray);
@@ -83,5 +91,5 @@ public sealed class ImageFile : FileFormat
         throw new NotSupportedException();
     }
 
-        
+
 }

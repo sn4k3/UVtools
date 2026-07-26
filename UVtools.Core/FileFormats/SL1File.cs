@@ -741,8 +741,8 @@ public sealed class SL1File : FileFormat
             BottomRetractAcceleration2 = LookupCustomValue(Keyword_BottomRetractAcceleration2, 0);
             RetractSpeed2 = LookupCustomValue(Keyword_RetractSpeed2, DefaultRetractSpeed2);
             RetractAcceleration2 = LookupCustomValue(Keyword_RetractAcceleration2, 0);
-            BottomLightPWM = LookupCustomValue(Keyword_BottomLightPWM, DefaultLightPWM);
-            LightPWM = LookupCustomValue(Keyword_LightPWM, DefaultBottomLightPWM);
+            BottomLightPWM = LookupCustomValue(Keyword_BottomLightPWM, DefaultBottomLightPWM);
+            LightPWM = LookupCustomValue(Keyword_LightPWM, DefaultLightPWM);
         });
 
         Init(OutputConfigSettings.NumSlow + OutputConfigSettings.NumFast, DecodeType == FileDecodeType.Partial);

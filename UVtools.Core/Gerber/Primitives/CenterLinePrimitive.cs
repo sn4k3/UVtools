@@ -11,10 +11,7 @@ using Emgu.CV.CvEnum;
 using System;
 using System.Data;
 using System.Drawing;
-using System.Globalization;
-using System.Text.RegularExpressions;
 using EmguExtensions;
-using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Gerber.Primitives;
 
@@ -28,7 +25,7 @@ public class CenterLinePrimitive : Primitive
     #endregion
 
     #region Properties
-    public override string Name => "VectorLine";
+    public override string Name => "CenterLine";
 
     /// <summary>
     /// Exposure off/on (0/1)
@@ -94,72 +91,34 @@ public class CenterLinePrimitive : Primitive
         if (!IsParsed) return;
         if (Width <= 0 || Height <= 0) return;
 
-        mat.DrawRotatedRectangle(Document.SizeMmToPx(Width, Height), Document.PositionMmToPx(at.X + CenterX, at.Y + CenterY), Document.GetPolarityColor(Exposure), (int) Rotation, -1, lineType);
+        var center = RotateAroundMacroOrigin(CenterX, CenterY, Rotation);
+        mat.DrawRotatedRectangle(Document.SizeMmToPx(Width, Height),
+            Document.PositionMmToPx(at.X + center.X, at.Y + center.Y),
+            Document.GetPolarityColor(Exposure),
+            -(int)Math.Round(Rotation % 360, MidpointRounding.AwayFromZero), -1, lineType);
     }
 
     public override void ParseExpressions(params string[] args)
     {
-        string csharpExp;
-        float num;
-        var exp = new DataTable();
-
-        if (byte.TryParse(ExposureExpression, out var exposure)) Exposure = exposure;
-        else
+        IsParsed = false;
+        using var evaluator = new DataTable();
+        if (!TryEvaluateByte(evaluator, ExposureExpression, args, 0, 1, out var exposure) ||
+            !TryEvaluateLength(evaluator, WidthExpression, args, out var width) ||
+            !TryEvaluateLength(evaluator, HeightExpression, args, out var height) ||
+            !TryEvaluateLength(evaluator, CenterXExpression, args, out var centerX) ||
+            !TryEvaluateLength(evaluator, CenterYExpression, args, out var centerY) ||
+            !TryEvaluateExpression(evaluator, RotationExpression, args, out var rotation) ||
+            rotation is < float.MinValue or > float.MaxValue)
         {
-            csharpExp = string.Format(Regex.Replace(ExposureExpression, @"\$([0-9]+)", "{$1}"), args);
-            var temp = exp.Compute(csharpExp, null);
-            if(temp is not DBNull) Exposure = Convert.ToByte(temp);
+            return;
         }
 
-        if (float.TryParse(WidthExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Width = num;
-        else
-        {
-            csharpExp = Regex.Replace(WidthExpression, @"\$([0-9]+)", "{$1}");
-            csharpExp = string.Format(csharpExp, args);
-            var temp = exp.Compute(csharpExp, null);
-            if (temp is not DBNull) Width = Convert.ToSingle(temp);
-        }
-        Width = Document.GetMillimeters(Width);
-
-        if (float.TryParse(HeightExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Height = num;
-        else
-        {
-            csharpExp = Regex.Replace(HeightExpression, @"\$([0-9]+)", "{$1}");
-            csharpExp = string.Format(csharpExp, args);
-            var temp = exp.Compute(csharpExp, null);
-            if (temp is not DBNull) Height = Convert.ToSingle(temp);
-        }
-        Height = Document.GetMillimeters(Height);
-
-        if (float.TryParse(CenterXExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) CenterX = num;
-        else
-        {
-            csharpExp = Regex.Replace(CenterXExpression, @"\$([0-9]+)", "{$1}");
-            csharpExp = string.Format(csharpExp, args);
-            var temp = exp.Compute(csharpExp, null);
-            if (temp is not DBNull) CenterX = Convert.ToSingle(temp);
-        }
-        CenterX = Document.GetMillimeters(CenterX);
-
-        if (float.TryParse(CenterYExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) CenterY = num;
-        else
-        {
-            csharpExp = Regex.Replace(CenterYExpression, @"\$([0-9]+)", "{$1}");
-            csharpExp = string.Format(csharpExp, args);
-            var temp = exp.Compute(csharpExp, null);
-            if (temp is not DBNull) CenterY = Convert.ToSingle(temp);
-        }
-        CenterY = Document.GetMillimeters(CenterY);
-
-        if (float.TryParse(RotationExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Rotation = (short)num;
-        else
-        {
-            csharpExp = Regex.Replace(RotationExpression, @"\$([0-9]+)", "{$1}");
-            csharpExp = string.Format(csharpExp, args);
-            var temp = exp.Compute(csharpExp, null);
-            if (temp is not DBNull) Rotation = Convert.ToSingle(temp);
-        }
-
+        Exposure = exposure;
+        Width = width;
+        Height = height;
+        CenterX = centerX;
+        CenterY = centerY;
+        Rotation = (float)rotation;
         IsParsed = true;
     }
 }

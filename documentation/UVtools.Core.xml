@@ -346,7 +346,7 @@
             Gets or sets to inverse the polarity on drawing
             </summary>
         </member>
-        <member name="P:UVtools.Core.Excellon.ExcellonDrillFormat.SizeScale">
+        <member name="F:UVtools.Core.Excellon.ExcellonDrillFormat._sizeScale">
             <summary>
             Gets or sets the scale to apply to each shape drawing size.
             Positions and vectors aren't affected by this.
@@ -2109,6 +2109,66 @@
             </summary>
             <inheritdoc/>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.NotifyAspectChange">
+            <summary>
+            Raise notification for aspect changes, like <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/>, <see cref="P:UVtools.Core.FileFormats.FileFormat.Display"/> and relatives
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier">
+            <summary>
+            Available Print Parameters to modify
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.Name">
+            <summary>
+            Gets the name
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.Description">
+            <summary>
+            Gets the description
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.ValueUnit">
+            <summary>
+            Gets the value unit
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.Minimum">
+            <summary>
+            Gets the minimum value
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.Maximum">
+            <summary>
+            Gets the maximum value
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.Increment">
+            <summary>
+            Gets the incrementing value for the dropdown
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.DecimalPlates">
+            <summary>
+            Gets the number of decimal plates
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.OldValue">
+            <summary>
+            Gets or sets the current / old value
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.NewValue">
+            <summary>
+            Gets or sets the new value
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.HasChanged">
+            <summary>
+            Gets if the value has changed
+            </summary>
+        </member>
         <member name="F:UVtools.Core.FileFormats.FileFormat.DisplayFloatPrecision">
             <summary>
             Gets the decimal precision for display properties
@@ -2167,61 +2227,6 @@
         <member name="F:UVtools.Core.FileFormats.FileFormat.ImageFormat.Png24RgbAA">
             <summary>
             eg: Uniformation GKone, Athena 12K
-            </summary>
-        </member>
-        <member name="T:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier">
-            <summary>
-            Available Print Parameters to modify
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.Name">
-            <summary>
-            Gets the name
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.Description">
-            <summary>
-            Gets the description
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.ValueUnit">
-            <summary>
-            Gets the value unit
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.Minimum">
-            <summary>
-            Gets the minimum value
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.Maximum">
-            <summary>
-            Gets the maximum value
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.Increment">
-            <summary>
-            Gets the incrementing value for the dropdown
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.DecimalPlates">
-            <summary>
-            Gets the number of decimal plates
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.OldValue">
-            <summary>
-            Gets or sets the current / old value
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.NewValue">
-            <summary>
-            Gets or sets the new value
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier.HasChanged">
-            <summary>
-            Gets if the value has changed
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.AvailableFormats">
@@ -3335,11 +3340,6 @@
             </summary>
             <param name="index">Layer index</param>
             <returns></returns>
-        </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.NotifyAspectChange">
-            <summary>
-            Raise notification for aspect changes, like <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/>, <see cref="P:UVtools.Core.FileFormats.FileFormat.Display"/> and relatives
-            </summary>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.Clear">
             <summary>
@@ -6540,6 +6540,11 @@
         <member name="M:UVtools.Core.MeshFormats.MeshFile.Dispose">
             <inheritdoc />
         </member>
+        <member name="T:UVtools.Core.MeshFormats.MeshTextWriter">
+            <summary>
+            A writer for mesh text data that writes to a provided buffer.
+            </summary>
+        </member>
         <member name="T:UVtools.Core.Network.MappedDevice">
             <inheritdoc/>
         </member>
@@ -9701,6 +9706,11 @@
         </member>
         <member name="P:UVtools.Core.Suggestions.SuggestionModelPosition.MaximumLeftRightMargin">
             <inheritdoc/>
+        </member>
+        <member name="M:UVtools.Core.Suggestions.SuggestionModelPosition.OnAnchorTypeChanged(UVtools.Core.Suggestions.SuggestionModelPosition.SuggestionModelAnchor)">
+            <summary>Executes the logic for when <see cref="P:UVtools.Core.Suggestions.SuggestionModelPosition.AnchorType"/> just changed.</summary>
+            <param name="value">The new property value that was set.</param>
+            <remarks>This method is invoked right after the value of <see cref="P:UVtools.Core.Suggestions.SuggestionModelPosition.AnchorType"/> is changed.</remarks>
         </member>
         <member name="T:UVtools.Core.Suggestions.SuggestionTransitionLayerCount">
             <inheritdoc/>

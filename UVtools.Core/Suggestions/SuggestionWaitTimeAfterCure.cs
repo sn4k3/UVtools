@@ -51,8 +51,8 @@ public sealed partial class SuggestionWaitTimeAfterCure : Suggestion
                 case SuggestionApplyWhen.OutsideLimits:
                     if (SlicerFile.CanUseBottomWaitTimeAfterCure)
                     {
-                        if ((decimal)SlicerFile.BottomWaitTimeAfterCure < MinimumWaitTimeAfterCure ||
-                            (decimal)SlicerFile.BottomWaitTimeAfterCure > MaximumWaitTimeAfterCure) return false;
+                        if ((decimal)SlicerFile.BottomWaitTimeAfterCure < MinimumBottomWaitTimeAfterCure ||
+                            (decimal)SlicerFile.BottomWaitTimeAfterCure > MaximumBottomWaitTimeAfterCure) return false;
                     }
                     if (SlicerFile.CanUseWaitTimeAfterCure)
                     {
@@ -70,8 +70,14 @@ public sealed partial class SuggestionWaitTimeAfterCure : Suggestion
                             }
                             else
                             {
-                                if ((decimal) layer.WaitTimeAfterCure < MinimumWaitTimeAfterCure ||
-                                    (decimal) layer.WaitTimeAfterCure > MaximumWaitTimeAfterCure) return false;
+                                var minimum = layer.IsBottomLayer
+                                    ? MinimumBottomWaitTimeAfterCure
+                                    : MinimumWaitTimeAfterCure;
+                                var maximum = layer.IsBottomLayer
+                                    ? MaximumBottomWaitTimeAfterCure
+                                    : MaximumWaitTimeAfterCure;
+                                if ((decimal)layer.WaitTimeAfterCure < minimum ||
+                                    (decimal)layer.WaitTimeAfterCure > maximum) return false;
                             }
                         }
                     }
@@ -103,7 +109,7 @@ public sealed partial class SuggestionWaitTimeAfterCure : Suggestion
                     }
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    return false;
             }
                 
             return true;
@@ -160,11 +166,11 @@ public sealed partial class SuggestionWaitTimeAfterCure : Suggestion
         {
             if (SlicerFile.CanUseLayerWaitTimeAfterCure || SlicerFile is {CanUseBottomWaitTimeAfterCure: true, CanUseWaitTimeAfterCure: true})
             {
-                return $"{Title}: {SlicerFile.BottomWaitTimeAfterCure}/{SlicerFile.WaitTimeAfterCure}s » {CalculateWaitTime(LayerGroup.Bottom, (decimal) SlicerFile.BottomWaitTimeAfterCure)}/{CalculateWaitTime(LayerGroup.Normal, (decimal) SlicerFile.WaitTimeAfterCure)}s";
+                return $"{Title}: {SlicerFile.BottomWaitTimeAfterCure}/{SlicerFile.WaitTimeAfterCure}s » {CalculateWaitTime(LayerGroup.Bottom, (decimal) SlicerFile.BottomExposureTime)}/{CalculateWaitTime(LayerGroup.Normal, (decimal) SlicerFile.ExposureTime)}s";
             }
 
             // Single property
-            return $"{Title}: {SlicerFile.WaitTimeAfterCure}s » {CalculateWaitTime(LayerGroup.Normal, (decimal)SlicerFile.WaitTimeAfterCure)}s";
+            return $"{Title}: {SlicerFile.WaitTimeAfterCure}s » {CalculateWaitTime(LayerGroup.Normal, (decimal)SlicerFile.ExposureTime)}s";
         }
     }
 
@@ -179,49 +185,49 @@ public sealed partial class SuggestionWaitTimeAfterCure : Suggestion
     public decimal FixedBottomWaitTimeAfterCure
     {
         get;
-        set => SetProperty(ref field, Math.Round(value, 2));
+        set => SetProperty(ref field, Math.Round(Math.Max(0, value), 2));
     } = 7;
 
     public decimal FixedWaitTimeAfterCure
     {
         get;
-        set => SetProperty(ref field, Math.Round(value, 2));
+        set => SetProperty(ref field, Math.Round(Math.Max(0, value), 2));
     } = 1;
 
     public decimal ProportionalWaitTimeAfterCure
     {
         get;
-        set => SetProperty(ref field, Math.Round(value, 2));
+        set => SetProperty(ref field, Math.Round(Math.Max(0, value), 2));
     } = 1;
 
     public decimal ProportionalExposureTime
     {
         get;
-        set => SetProperty(ref field, Math.Round(value, 2));
+        set => SetProperty(ref field, Math.Round(Math.Max(0, value), 2));
     } = 3;
         
     public decimal MinimumBottomWaitTimeAfterCure
     {
         get;
-        set => SetProperty(ref field, Math.Round(value, 2));
+        set => SetProperty(ref field, Math.Round(Math.Max(0, value), 2));
     } = 3;
 
     public decimal MinimumWaitTimeAfterCure
     {
         get;
-        set => SetProperty(ref field, Math.Round(value, 2));
+        set => SetProperty(ref field, Math.Round(Math.Max(0, value), 2));
     } = 1;
 
     public decimal MaximumBottomWaitTimeAfterCure
     {
         get;
-        set => SetProperty(ref field, Math.Round(value, 2));
+        set => SetProperty(ref field, Math.Round(Math.Max(0, value), 2));
     } = 20;
 
     public decimal MaximumWaitTimeAfterCure
     {
         get;
-        set => SetProperty(ref field, Math.Round(value, 2));
+        set => SetProperty(ref field, Math.Round(Math.Max(0, value), 2));
     } = 12;
 
     #endregion
@@ -240,6 +246,11 @@ public sealed partial class SuggestionWaitTimeAfterCure : Suggestion
     public override string? Validate()
     {
         var sb = new StringBuilder();
+
+        if (!Enum.IsDefined(SetType))
+        {
+            sb.AppendLine("The set type is invalid");
+        }
 
         if (MinimumBottomWaitTimeAfterCure > MaximumBottomWaitTimeAfterCure)
         {
@@ -273,20 +284,27 @@ public sealed partial class SuggestionWaitTimeAfterCure : Suggestion
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
-        if (SlicerFile.CanUseBottomWaitTimeAfterCure)
+        progress.PauseOrCancelIfRequested();
+        SlicerFile.SuppressRebuildPropertiesWork(() =>
         {
-            SlicerFile.BottomWaitTimeAfterCure = CalculateWaitTime(LayerGroup.Bottom, (decimal)SlicerFile.BottomExposureTime);
-        }
-        if (SlicerFile.CanUseWaitTimeAfterCure)
-        {
-            SlicerFile.WaitTimeAfterCure = CalculateWaitTime(LayerGroup.Normal, (decimal)SlicerFile.ExposureTime);
-        }
+            if (SlicerFile.CanUseBottomWaitTimeAfterCure)
+            {
+                SlicerFile.BottomWaitTimeAfterCure = CalculateWaitTime(LayerGroup.Bottom, (decimal)SlicerFile.BottomExposureTime);
+            }
+            if (SlicerFile.CanUseWaitTimeAfterCure)
+            {
+                SlicerFile.WaitTimeAfterCure = CalculateWaitTime(LayerGroup.Normal, (decimal)SlicerFile.ExposureTime);
+            }
+        });
     
         if (SlicerFile.CanUseLayerWaitTimeAfterCure)
         {
+            progress.Reset("layers", SlicerFile.LayerCount);
             foreach (var layer in SlicerFile)
             {
+                progress.PauseOrCancelIfRequested();
                 layer.WaitTimeAfterCure = layer.IsDummy ? 0 : CalculateWaitTime(layer.IsBottomLayer ? LayerGroup.Bottom : LayerGroup.Normal, (decimal) layer.ExposureTime);
+                progress++;
             }
         }
 
@@ -296,19 +314,35 @@ public sealed partial class SuggestionWaitTimeAfterCure : Suggestion
 
     public float CalculateWaitTime(LayerGroup layerGroup, decimal exposureTime)
     {
+        if (!Enum.IsDefined(SetType) ||
+            SetType == SuggestionWaitTimeAfterCureSetType.ProportionalExposure &&
+            ProportionalExposureTime <= 0)
+        {
+            return 0;
+        }
+
         return SetType switch
         {
-            SuggestionWaitTimeAfterCureSetType.Fixed => (float) (layerGroup == LayerGroup.Bottom
+            SuggestionWaitTimeAfterCureSetType.Fixed => (float)ClampWaitTime(layerGroup == LayerGroup.Bottom
                 ? FixedBottomWaitTimeAfterCure
-                : FixedWaitTimeAfterCure),
+                : FixedWaitTimeAfterCure, layerGroup),
             SuggestionWaitTimeAfterCureSetType.ProportionalExposure => 
-                (float)Math.Clamp(
+                (float)ClampWaitTime(
                     Math.Round(exposureTime * ProportionalWaitTimeAfterCure / ProportionalExposureTime, 2),
-                    layerGroup == LayerGroup.Bottom ? MinimumBottomWaitTimeAfterCure : MinimumWaitTimeAfterCure,
-                    layerGroup == LayerGroup.Bottom ? MaximumBottomWaitTimeAfterCure : MaximumWaitTimeAfterCure
-                ),
-            _ => throw new ArgumentOutOfRangeException()
+                    layerGroup),
+            _ => 0
         };
+    }
+
+    private decimal ClampWaitTime(decimal value, LayerGroup layerGroup)
+    {
+        var minimum = layerGroup == LayerGroup.Bottom
+            ? MinimumBottomWaitTimeAfterCure
+            : MinimumWaitTimeAfterCure;
+        var maximum = layerGroup == LayerGroup.Bottom
+            ? MaximumBottomWaitTimeAfterCure
+            : MaximumWaitTimeAfterCure;
+        return Math.Clamp(value, Math.Min(minimum, maximum), Math.Max(minimum, maximum));
     }
 
     #endregion

@@ -117,7 +117,7 @@ public sealed partial class OperationLayerExportGif : Operation
     [NotifyPropertyChangedFor(nameof(GifDurationSeconds))]
     public partial byte FPS { get; set; } = 30;
 
-    public int FPSToMilliseconds => 1000 / FPS;
+    public int FPSToMilliseconds => 1000 / Math.Max(1, (int)FPS);
 
     [ObservableProperty]
     public partial ushort Repeats { get; set; }
@@ -128,7 +128,7 @@ public sealed partial class OperationLayerExportGif : Operation
     [NotifyPropertyChangedFor(nameof(GifDurationSeconds))]
     public partial ushort Skip { get; set; }
 
-    public uint TotalLayers => (uint)(LayerRangeCount / (float) (Skip + 1));
+    public uint TotalLayers => (LayerRangeCount + Skip) / (uint)(Skip + 1);
 
     public uint GifDurationMilliseconds => (uint)(TotalLayers * FPSToMilliseconds);
     public float GifDurationSeconds => MathF.Round(GifDurationMilliseconds / 1000.0f, 2);
@@ -197,91 +197,89 @@ public sealed partial class OperationLayerExportGif : Operation
         }
 
         var roiSize = GetRoiSizeOrDefault();
-        var imgSize = new Size((int)(roiSize.Width * ScaleFactor), (int)(roiSize.Height * ScaleFactor));
-        var finalSize = Size.Empty;
+        var imgSize = new Size(
+            Math.Max(1, (int)(roiSize.Width * ScaleFactor)),
+            Math.Max(1, (int)(roiSize.Height * ScaleFactor)));
+        var finalSize = RotateDirection is RotateDirection.Rotate90Clockwise or RotateDirection.Rotate90CounterClockwise
+            ? new Size(imgSize.Height, imgSize.Width)
+            : imgSize;
 
         Image<L8>? gif = null;
-
-        var delay = FPSToMilliseconds / 10;
-        var layerBuffer = new byte[TotalLayers][];
-        var batches = ValueEnumerable.Range(0, (int)TotalLayers).Chunk(FileFormat.DefaultParallelBatchCount);
-        foreach (var batch in batches)
+        try
         {
-            Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), i =>
+            var delay = Math.Max(1, FPSToMilliseconds / 10);
+            var layerBuffer = new byte[TotalLayers][];
+            var batches = ValueEnumerable.Range(0, (int)TotalLayers).Chunk(FileFormat.DefaultParallelBatchCount);
+            foreach (var batch in batches)
             {
-                progress.PauseIfRequested();
-                uint layerIndex = (uint)(LayerIndexStart + i * (Skip + 1));
-                var layer = SlicerFile[layerIndex];
-                using var mat = layer.LayerMat;
-                using var matRoi = GetRoiOrDefault(mat);
-
-                if (_scale != 100)
+                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), i =>
                 {
-                    CvInvoke.Resize(matRoi, matRoi, imgSize);
+                    progress.PauseIfRequested();
+                    uint layerIndex = (uint)(LayerIndexStart + i * (Skip + 1));
+                    var layer = SlicerFile[layerIndex];
+                    using var mat = layer.LayerMat;
+                    using var matRoi = GetRoiOrDefault(mat);
+
+                    if (_scale != 100)
+                    {
+                        CvInvoke.Resize(matRoi, matRoi, imgSize);
+                    }
+
+                    if (FlipDirection != FlipDirection.None)
+                    {
+                        CvInvoke.Flip(matRoi, matRoi, (FlipType)FlipDirection);
+                    }
+
+                    if (RotateDirection != RotateDirection.None)
+                    {
+                        CvInvoke.Rotate(matRoi, matRoi, (RotateFlags)RotateDirection);
+                    }
+
+                    if (RenderLayerCount)
+                    {
+                        int baseLine = 0;
+                        var text = string.Format($"{{0:D{SlicerFile.LayerDigits}}}/{{1}}",
+                            layerIndex,
+                            SlicerFile.LayerCount - 1);
+                        var fontSize = CvInvoke.GetTextSize(text, fontFace, fontScale, fontThickness, ref baseLine);
+
+                        Point point = new(
+                            matRoi.Width / 2 - fontSize.Width / 2,
+                            70);
+                        CvInvoke.PutText(matRoi, text, point, fontFace, fontScale, textColor, fontThickness, LineType.AntiAlias);
+                    }
+
+                    layerBuffer[i] = matRoi.ToArray();
+                    progress.LockAndIncrement();
+                });
+
+                if (gif is null)
+                {
+                    gif = new Image<L8>(finalSize.Width, finalSize.Height);
+                    var gifMetaData = gif.Metadata.GetGifMetadata();
+                    gifMetaData.RepeatCount = Repeats;
+
+                    var metadata = gif.Frames.RootFrame.Metadata.GetGifMetadata();
+                    metadata.FrameDelay = delay;
                 }
 
-                if (FlipDirection != FlipDirection.None)
+                foreach (var i in batch)
                 {
-                    CvInvoke.Flip(matRoi, matRoi, (FlipType)FlipDirection);
+                    // Create a color image, which will be added to the gif.
+                    using var image = Image.LoadPixelData<L8>(layerBuffer[i], finalSize.Width, finalSize.Height);
+                    layerBuffer[i] = null!;
+
+                    // Set the delay until the next image is displayed.
+                    var metadata = image.Frames.RootFrame.Metadata.GetGifMetadata();
+                    metadata.FrameDelay = delay;
+                    metadata.DisposalMode = FrameDisposalMode.RestoreToBackground;
+
+                    // Add the color image to the gif.
+                    gif.Frames.AddFrame(image.Frames.RootFrame);
+
+                    progress.PauseOrCancelIfRequested();
                 }
-
-                if (RotateDirection != RotateDirection.None)
-                {
-                    CvInvoke.Rotate(matRoi, matRoi, (RotateFlags)RotateDirection);
-                }
-
-                if (RenderLayerCount)
-                {
-                    int baseLine = 0;
-                    var text = string.Format($"{{0:D{SlicerFile.LayerDigits}}}/{{1}}",
-                        layerIndex,
-                        SlicerFile.LayerCount - 1);
-                    var fontSize = CvInvoke.GetTextSize(text, fontFace, fontScale, fontThickness, ref baseLine);
-
-                    Point point = new(
-                        matRoi.Width / 2 - fontSize.Width / 2,
-                        70);
-                    CvInvoke.PutText(matRoi, text, point, fontFace, fontScale, textColor, fontThickness, LineType.AntiAlias);
-                }
-
-                //ApplyMask(matOriginal, matRoi);
-
-                if (finalSize == Size.Empty)
-                {
-                    finalSize = matRoi.Size;
-                }
-
-                layerBuffer[i] = matRoi.ToArray();
-                progress.LockAndIncrement();
-            });
-
-            if (gif is null)
-            {
-                gif = new Image<L8>(imgSize.Width, imgSize.Height);
-                var gifMetaData = gif.Metadata.GetGifMetadata();
-                gifMetaData.RepeatCount = Repeats;
-
-                var metadata = gif.Frames.RootFrame.Metadata.GetGifMetadata();
-                metadata.FrameDelay = delay;
             }
-
-            foreach (var i in batch)
-            {
-                // Create a color image, which will be added to the gif.
-                using var image = Image.LoadPixelData<L8>(layerBuffer[i], finalSize.Width, finalSize.Height);
-                layerBuffer[i] = null!;
-
-                // Set the delay until the next image is displayed.
-                var metadata = image.Frames.RootFrame.Metadata.GetGifMetadata();
-                metadata.FrameDelay = delay;
-                metadata.DisposalMode = FrameDisposalMode.RestoreToBackground;
-
-                // Add the color image to the gif.
-                gif.Frames.AddFrame(image.Frames.RootFrame);
-
-                progress.PauseOrCancelIfRequested();
-            }
-        }
 
         /*Parallel.For(0, TotalLayers, CoreSettings.GetParallelOptions(progress), i =>
         {
@@ -358,24 +356,22 @@ public sealed partial class OperationLayerExportGif : Operation
         }
         */
 
-        progress.Reset("Saving GIF to file");
+            progress.Reset("Saving GIF to file");
 
-        if (!progress.Token.IsCancellationRequested && gif is not null)
-        {
-            try
+            if (!progress.Token.IsCancellationRequested && gif is not null)
             {
                 gif.Frames.RemoveFrame(0);
                 gif.SaveAsGif(FilePath);
             }
-            catch (Exception)
-            {
-                File.Delete(FilePath);
-            }
-            finally
-            {
-                gif.Dispose();
-            }
-
+        }
+        catch
+        {
+            File.Delete(FilePath);
+            throw;
+        }
+        finally
+        {
+            gif?.Dispose();
         }
 
         return !progress.Token.IsCancellationRequested;

@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Buffers.Binary;
 using System.IO;
 using System.Text;
 using BinarySerialization;
@@ -61,60 +62,92 @@ public static class FileStreamExtensions
 
     public static uint ReadUShortLittleEndian(this FileStream fs, int offset = 0)
     {
-        return BitExtensions.ToUShortLittleEndian(fs.ReadBytes(2, offset));
+        if (offset != 0) return BitExtensions.ToUShortLittleEndian(fs.ReadBytes(2, offset));
+        Span<byte> bytes = stackalloc byte[sizeof(ushort)];
+        fs.ReadExactly(bytes);
+        return BinaryPrimitives.ReadUInt16LittleEndian(bytes);
     }
 
     public static uint ReadUShortBigEndian(this FileStream fs, int offset = 0)
     {
-        return BitExtensions.ToUShortBigEndian(fs.ReadBytes(2, offset));
+        if (offset != 0) return BitExtensions.ToUShortBigEndian(fs.ReadBytes(2, offset));
+        Span<byte> bytes = stackalloc byte[sizeof(ushort)];
+        fs.ReadExactly(bytes);
+        return BinaryPrimitives.ReadUInt16BigEndian(bytes);
     }
 
     public static uint ReadUIntLittleEndian(this FileStream fs, int offset = 0)
     {
-        return BitExtensions.ToUIntLittleEndian(fs.ReadBytes(4, offset));
+        if (offset != 0) return BitExtensions.ToUIntLittleEndian(fs.ReadBytes(4, offset));
+        Span<byte> bytes = stackalloc byte[sizeof(uint)];
+        fs.ReadExactly(bytes);
+        return BinaryPrimitives.ReadUInt32LittleEndian(bytes);
     }
 
     public static uint ReadUIntBigEndian(this FileStream fs, int offset = 0)
     {
-        return BitExtensions.ToUIntBigEndian(fs.ReadBytes(4, offset));
+        if (offset != 0) return BitExtensions.ToUIntBigEndian(fs.ReadBytes(4, offset));
+        Span<byte> bytes = stackalloc byte[sizeof(uint)];
+        fs.ReadExactly(bytes);
+        return BinaryPrimitives.ReadUInt32BigEndian(bytes);
     }
 
     public static void WriteUShortLittleEndian(this FileStream fs, ushort value, int offset = 0)
     {
-        fs.WriteBytes(BitExtensions.ToBytesLittleEndian(value), offset);
+        Span<byte> bytes = stackalloc byte[sizeof(ushort)];
+        BinaryPrimitives.WriteUInt16LittleEndian(bytes, value);
+        if (offset == 0) fs.Write(bytes);
+        else fs.WriteBytes(bytes.ToArray(), offset);
     }
 
     public static void WriteUShortBigEndian(this FileStream fs, ushort value, int offset = 0)
     {
-        fs.WriteBytes(BitExtensions.ToBytesBigEndian(value), offset);
+        Span<byte> bytes = stackalloc byte[sizeof(ushort)];
+        BinaryPrimitives.WriteUInt16BigEndian(bytes, value);
+        if (offset == 0) fs.Write(bytes);
+        else fs.WriteBytes(bytes.ToArray(), offset);
     }
 
     public static void WriteUIntLittleEndian(this FileStream fs, uint value, int offset = 0)
     {
-        fs.WriteBytes(BitExtensions.ToBytesLittleEndian(value), offset);
+        Span<byte> bytes = stackalloc byte[sizeof(uint)];
+        BinaryPrimitives.WriteUInt32LittleEndian(bytes, value);
+        if (offset == 0) fs.Write(bytes);
+        else fs.WriteBytes(bytes.ToArray(), offset);
     }
 
     public static void WriteUIntBigEndian(this FileStream fs, uint value, int offset = 0)
     {
-        fs.WriteBytes(BitExtensions.ToBytesBigEndian(value), offset);
+        Span<byte> bytes = stackalloc byte[sizeof(uint)];
+        BinaryPrimitives.WriteUInt32BigEndian(bytes, value);
+        if (offset == 0) fs.Write(bytes);
+        else fs.WriteBytes(bytes.ToArray(), offset);
     }
 
     public static void WriteFloatLittleEndian(this FileStream fs, float value, int offset = 0)
     {
-        var bytes = BitConverter.GetBytes(value);
-        if (!BitConverter.IsLittleEndian) Array.Reverse(bytes); //reverse it so we get little endian.
-        fs.WriteBytes(BitConverter.GetBytes(value), offset);
+        Span<byte> bytes = stackalloc byte[sizeof(float)];
+        BinaryPrimitives.WriteSingleLittleEndian(bytes, value);
+        if (offset == 0) fs.Write(bytes);
+        else fs.WriteBytes(bytes.ToArray(), offset);
     }
 
     public static void WriteFloatBigEndian(this FileStream fs, float value, int offset = 0)
     {
-        var bytes = BitConverter.GetBytes(value);
-        if (BitConverter.IsLittleEndian) Array.Reverse(bytes); //reverse it so we get big endian.
-        fs.WriteBytes(BitConverter.GetBytes(value), offset);
+        Span<byte> bytes = stackalloc byte[sizeof(float)];
+        BinaryPrimitives.WriteSingleBigEndian(bytes, value);
+        if (offset == 0) fs.Write(bytes);
+        else fs.WriteBytes(bytes.ToArray(), offset);
     }
 
     public static uint WriteStream(this FileStream fs, MemoryStream stream, int offset = 0)
     {
+        if (offset == 0)
+        {
+            stream.WriteTo(fs);
+            return checked((uint)stream.Length);
+        }
+
         return fs.WriteBytes(stream.ToArray(), offset);
     }
 

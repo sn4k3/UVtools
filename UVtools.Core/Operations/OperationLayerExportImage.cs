@@ -159,36 +159,31 @@ public sealed partial class OperationLayerExportImage : Operation
         {
             progress.PauseIfRequested();
             using var mat = SlicerFile[layerIndex].LayerMat;
-            var matRoi = mat;
-            bool needDispose = false;
-            if (CropByROI && HaveROI)
-            {
-                matRoi = GetRoiOrDefault(mat);
-                needDispose = true;
-            }
+            using var croppedMat = CropByROI && HaveROI ? GetRoiOrDefault(mat) : null;
+            var target = croppedMat ?? mat;
 
             if (FlipDirection != FlipDirection.None)
             {
-                CvInvoke.Flip(matRoi, matRoi, (FlipType)FlipDirection);
+                CvInvoke.Flip(target, target, (FlipType)FlipDirection);
             }
 
             if (RotateDirection != RotateDirection.None)
             {
-                CvInvoke.Rotate(matRoi, matRoi, (RotateFlags)RotateDirection);
+                CvInvoke.Rotate(target, target, (RotateFlags)RotateDirection);
             }
 
             var filename = SlicerFile[layerIndex].FormatFileName(Filename, PadLayerIndex ? SlicerFile.LayerDigits : byte.MinValue, IndexStartNumber.Zero, string.Empty);
-            var fileFullPath = Path.Combine(OutputFolder, $"{filename}.{ImageType.ToString().ToLower()}");
+            var fileFullPath = Path.Combine(OutputFolder, $"{filename}.{ImageType.ToString().ToLowerInvariant()}");
 
             if (ImageType != LayerExportImageTypes.SVG)
             {
-                matRoi.Save(fileFullPath);
+                target.Save(fileFullPath);
             }
             else
             {
                 // SVG
 
-                var paths = matRoi.GetSvgPath(ChainApproxMethod.ChainApproxTc89Kcos);
+                var paths = target.GetSvgPath(ChainApproxMethod.ChainApproxTc89Kcos);
 
                 using TextWriter tw = new StreamWriter(fileFullPath);
                 tw.WriteLine("<!--");
@@ -204,9 +199,9 @@ public sealed partial class OperationLayerExportImage : Operation
                              $"data-name=\"{slicedFileNameNoExt}_{filename}\" " +
                              //"x=\"0\" " +
                              //"y=\"0\" " +
-                             $"width=\"{matRoi.Width}\" " +
-                             $"height=\"{matRoi.Height}\" " +
-                             $"viewBox=\"0 0 {matRoi.Width} {matRoi.Height}\">");
+                             $"width=\"{target.Width}\" " +
+                             $"height=\"{target.Height}\" " +
+                             $"viewBox=\"0 0 {target.Width} {target.Height}\">");
                 tw.WriteLine("\t<defs>");
                 tw.WriteLine("\t\t<style>");
                 //tw.WriteLine("\t\tsvg { background-color: #000000; }");
@@ -219,7 +214,7 @@ public sealed partial class OperationLayerExportImage : Operation
                 tw.WriteLine($"\t<title>{slicedFileNameNoExt} #{layerIndex}</title>");
 
                 tw.WriteLine($"\t<g id=\"layer{layerIndex}\">");
-                tw.WriteLine($"\t<rect class=\"background\" width=\"{mat.Width}\" height=\"{mat.Height}\"/>");
+                tw.WriteLine($"\t<rect class=\"background\" width=\"{target.Width}\" height=\"{target.Height}\"/>");
 
                 foreach (var path in paths)
                 {
@@ -260,8 +255,6 @@ public sealed partial class OperationLayerExportImage : Operation
 
                 tw.WriteLine("\t</g>");
                 tw.WriteLine("</svg>");
-
-                if (needDispose) matRoi.Dispose();
             }
 
             progress.LockAndIncrement();

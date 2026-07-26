@@ -7,6 +7,7 @@
  */
 
 using BinarySerialization;
+using DotNext.Buffers;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
@@ -502,12 +503,12 @@ public sealed class FlashForgeSVGXFile : FileFormat
             float maxx = SVGDocument.PrintParameters.PrintRange.MaxX;
             float maxy = SVGDocument.PrintParameters.PrintRange.MaxY;
 
-            var path = new StringBuilder();
+            using var path = new SparseBufferWriter<char>();
             for (int i = 0; i < contours.Size; i++)
             {
                 if (hierarchy[i, EmguContour.HierarchyParent] == -1) // Top hierarchy
                 {
-                    if (path.Length > 0)
+                    if (path.WrittenCount > 0)
                     {
                         groups[layerIndex].Paths.Add(new FlashForgeSVGXSvgPath(path.ToString()));
                     }
@@ -518,7 +519,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
                 }
                 else
                 {
-                    path.Append(' ');
+                    path.Add(' ');
                 }
 
                 var mmX = MathF.Round(contours[i][0].X / ppmm.Width - halfDisplay.Width, 3);
@@ -529,22 +530,29 @@ public sealed class FlashForgeSVGXFile : FileFormat
                 maxx = Math.Max(maxx, mmX);
                 maxy = Math.Max(maxy, mmY);
 
-                path.Append($"M {mmX} {mmY} L");
+                path.Write("M ");
+                AppendSvgCoordinate(path, mmX);
+                path.Add(' ');
+                AppendSvgCoordinate(path, mmY);
+                path.Write(" L");
                 for (int x = 1; x < contours[i].Size; x++)
                 {
                     mmX = MathF.Round(contours[i][x].X / ppmm.Width - halfDisplay.Width, 3);
                     mmY = MathF.Round(contours[i][x].Y / ppmm.Height - halfDisplay.Height, 3);
-                    path.Append($" {mmX} {mmY}");
+                    path.Add(' ');
+                    AppendSvgCoordinate(path, mmX);
+                    path.Add(' ');
+                    AppendSvgCoordinate(path, mmY);
 
                     minx = Math.Min(minx, mmX);
                     miny = Math.Min(miny, mmY);
                     maxx = Math.Max(maxx, mmX);
                     maxy = Math.Max(maxy, mmY);
                 }
-                path.Append(" Z");
+                path.Write(" Z");
             }
 
-            if (path.Length > 0) // Left over
+            if (path.WrittenCount > 0) // Left over
             {
                 groups[layerIndex].Paths.Add(new FlashForgeSVGXSvgPath(path.ToString()));
             }
@@ -574,6 +582,17 @@ public sealed class FlashForgeSVGXFile : FileFormat
         Debug.WriteLine("-End-");
     }
 
+    private static void AppendSvgCoordinate(SparseBufferWriter<char> writer, float value)
+    {
+        Span<char> buffer = stackalloc char[32];
+        if (!value.TryFormat(buffer, out var charsWritten, provider: CultureInfo.InvariantCulture))
+        {
+            throw new InvalidOperationException("Unable to format SVG coordinate.");
+        }
+
+        writer.Write(buffer[..charsWritten]);
+    }
+
     protected override void DecodeInternally(OperationProgress progress)
     {
         using var inputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Read);
@@ -594,8 +613,17 @@ public sealed class FlashForgeSVGXFile : FileFormat
             if (previewAddresses[i] == 0) continue;
             inputFile.Seek(previewAddresses[i], SeekOrigin.Begin);
             var preview = Helpers.Deserialize<Preview>(inputFile);
-            Thumbnails.Add(DecodeImage(DATATYPE_BGR888, preview.BGR, preview.ResolutionX, preview.ResolutionY));
-            CvInvoke.Flip(Thumbnails[i], Thumbnails[i], FlipType.Vertical);
+            var thumbnail = DecodeImage(DATATYPE_BGR888, preview.BGR, preview.ResolutionX, preview.ResolutionY);
+            try
+            {
+                CvInvoke.Flip(thumbnail, thumbnail, FlipType.Vertical);
+                Thumbnails.Add(thumbnail);
+            }
+            catch
+            {
+                thumbnail.Dispose();
+                throw;
+            }
             Debug.WriteLine($"Preview[{i}] -> {preview}");
             progress++;
         }

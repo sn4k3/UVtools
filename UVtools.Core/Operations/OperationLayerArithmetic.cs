@@ -151,6 +151,7 @@ public partial class OperationLayerArithmetic : Operation
         {
             var group = new ArithmeticOperationGroup();
             var splitSentence = sentence.Split('=');
+            if (splitSentence.Length > 2) return false;
             var operations = splitSentence[0];
             if (splitSentence.Length >= 2)
             {
@@ -163,6 +164,7 @@ public partial class OperationLayerArithmetic : Operation
                     {
                         uint.TryParse(rangeSplit[0], out var startLayer);
                         if (!uint.TryParse(rangeSplit[1], out var endLayer)) endLayer = SlicerFile.LastLayerIndex;
+                        if (startLayer > SlicerFile.LastLayerIndex) continue;
                         SlicerFile.SanitizeLayerIndex(ref endLayer);
                         for (var index = startLayer; index <= endLayer; index++)
                         {
@@ -173,6 +175,7 @@ public partial class OperationLayerArithmetic : Operation
                     }
 
                     if (!uint.TryParse(layer, out var layerIndex)) continue;
+                    if (layerIndex > SlicerFile.LastLayerIndex) continue;
                     if (group.SetLayers.Contains(layerIndex)) continue;
                     group.SetLayers.Add(layerIndex);
                 }
@@ -268,10 +271,28 @@ public partial class OperationLayerArithmetic : Operation
                         CvInvoke.Subtract(resultRoi, imageRoi, resultRoi, imageMask);
                         break;
                     case LayerArithmeticOperators.Multiply:
-                        CvInvoke.Multiply(resultRoi, imageRoi, resultRoi, EmguCvExtensions.NormalizedByteScale);
+                        if (imageMask is null)
+                        {
+                            CvInvoke.Multiply(resultRoi, imageRoi, resultRoi, EmguCvExtensions.NormalizedByteScale);
+                        }
+                        else
+                        {
+                            using var multiplied = new Mat();
+                            CvInvoke.Multiply(resultRoi, imageRoi, multiplied, EmguCvExtensions.NormalizedByteScale);
+                            multiplied.CopyTo(resultRoi, imageMask);
+                        }
                         break;
                     case LayerArithmeticOperators.Divide:
-                        CvInvoke.Divide(resultRoi, imageRoi, resultRoi);
+                        if (imageMask is null)
+                        {
+                            CvInvoke.Divide(resultRoi, imageRoi, resultRoi);
+                        }
+                        else
+                        {
+                            using var divided = new Mat();
+                            CvInvoke.Divide(resultRoi, imageRoi, divided);
+                            divided.CopyTo(resultRoi, imageMask);
+                        }
                         break;
                     case LayerArithmeticOperators.BitwiseAnd:
                         CvInvoke.BitwiseAnd(resultRoi, imageRoi, resultRoi, imageMask);
@@ -283,7 +304,16 @@ public partial class OperationLayerArithmetic : Operation
                         CvInvoke.BitwiseXor(resultRoi, imageRoi, resultRoi, imageMask);
                         break;
                     case LayerArithmeticOperators.AbsDiff:
-                        CvInvoke.AbsDiff(resultRoi, imageRoi, resultRoi);
+                        if (imageMask is null)
+                        {
+                            CvInvoke.AbsDiff(resultRoi, imageRoi, resultRoi);
+                        }
+                        else
+                        {
+                            using var difference = new Mat();
+                            CvInvoke.AbsDiff(resultRoi, imageRoi, difference);
+                            difference.CopyTo(resultRoi, imageMask);
+                        }
                         break;
                 }
 

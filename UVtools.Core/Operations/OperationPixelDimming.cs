@@ -84,7 +84,7 @@ public partial class OperationPixelDimming : Operation
             var lines = item.Text.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             for (var row = 0; row < lines.Length; row++)
             {
-                var bytes = lines[row].Split(' ');
+                var bytes = lines[row].Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (row == 0)
                 {
                     item.Pattern = new Matrix<byte>(lines.Length, bytes.Length);
@@ -235,16 +235,18 @@ public partial class OperationPixelDimming : Operation
         var span = mat.BytePointer;
         Parallel.For(0, mat.Height, CoreSettings.ParallelOptions, y =>
         {
-            result[y] = string.Empty;
+            var row = new StringBuilder(mat.Width * 4);
+            var pixelPos = mat.GetPixelPos(0, y);
             for (int x = 0; x < mat.Width; x++)
             {
-                result[y] += $"{span[mat.GetPixelPos(x, y)]} ";
+                if (x > 0) row.Append(' ');
+                row.Append(span[pixelPos++]);
             }
 
-            result[y] = result[y].Trim();
+            result[y] = row.ToString();
         });
 
-        StringBuilder sb = new();
+        var sb = new StringBuilder();
         foreach (var s in result)
         {
             sb.AppendLine(s);
@@ -573,8 +575,10 @@ public partial class OperationPixelDimming : Operation
         using var matAlternatePattern = blankMat.NewZeros();
         using var target = GetRoiOrDefault(blankMat);
 
-        CvInvoke.Repeat(Pattern, target.Rows / Pattern.Rows + 1, target.Cols / Pattern.Cols + 1, matPattern);
-        CvInvoke.Repeat(AlternatePattern, target.Rows / AlternatePattern.Rows + 1, target.Cols / AlternatePattern.Cols + 1, matAlternatePattern);
+        CvInvoke.Repeat(Pattern, (target.Rows + Pattern.Rows - 1) / Pattern.Rows,
+            (target.Cols + Pattern.Cols - 1) / Pattern.Cols, matPattern);
+        CvInvoke.Repeat(AlternatePattern, (target.Rows + AlternatePattern.Rows - 1) / AlternatePattern.Rows,
+            (target.Cols + AlternatePattern.Cols - 1) / AlternatePattern.Cols, matAlternatePattern);
 
         using var patternMask = new Mat(matPattern, new Rectangle(0, 0, target.Width, target.Height));
         using var alternatePatternMask = new Mat(matAlternatePattern, new Rectangle(0, 0, target.Width, target.Height));
@@ -622,7 +626,7 @@ public partial class OperationPixelDimming : Operation
 
         using Mat erode = new();
         //using Mat diff = new();
-        var original = mat.Clone();
+        using var original = mat.Clone();
         using var originalRoi = GetRoiOrDefault(original);
         using var target = GetRoiOrDefault(mat);
         using var mask = GetMask(mat);

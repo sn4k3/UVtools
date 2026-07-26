@@ -71,10 +71,10 @@ public sealed partial class OperationLayerImport : Operation
         "Import layers from local files into the model at a selected layer height.\n" +
         "NOTE: Imported images must be greyscale and have the same resolution as the model.";
 
-    public override string ConfirmationText => $"{ImportType} import {Count} file{(Count>=1?"s":"")}?";
+    public override string ConfirmationText => $"{ImportType} import {Count} file{(Count >= 1 ? "s" : "")}?";
 
     public override string ProgressTitle =>
-        $"{ImportType} importing {Count} file{(Count>=1 ? "s" : "")}";
+        $"{ImportType} importing {Count} file{(Count >= 1 ? "s" : "")}";
 
     public override string ProgressAction => "Imported layers";
 
@@ -224,7 +224,8 @@ public sealed partial class OperationLayerImport : Operation
     protected override bool ExecuteInternally(OperationProgress progress)
     {
         progress.ItemCount = 0;
-        var result = SlicerFile.SuppressRebuildPropertiesWork(() => {
+        var result = SlicerFile.SuppressRebuildPropertiesWork(() =>
+        {
             var fileFormats = new List<FileFormat>();
             var keyImage = new List<KeyValuePair<uint, string>>();
             int lastProcessedLayerIndex = -1;
@@ -232,7 +233,7 @@ public sealed partial class OperationLayerImport : Operation
             // Order raw images
             for (int i = 0; i < Count; i++)
             {
-                if(!ValidImageExtensions.AsValueEnumerable().Any(extension => Files[i].IsExtension(extension))) continue;
+                if (!ValidImageExtensions.AsValueEnumerable().Any(extension => Files[i].IsExtension(extension))) continue;
                 keyImage.Add(new KeyValuePair<uint, string>((uint)keyImage.Count, Files[i].FilePath));
             }
 
@@ -274,229 +275,237 @@ public sealed partial class OperationLayerImport : Operation
                 fileFormats.Add(fileFormat);
             }
 
-            progress.PauseOrCancelIfRequested();
-
-            if (fileFormats.Count == 0) return false;
-
-            if (ImportType == ImportTypes.Stack)
-            {
-                new OperationMove(SlicerFile, Anchor.TopLeft).Execute(progress);
-            }
-
             int importedFormats = 0;
-
-            foreach (var fileFormat in fileFormats)
+            try
             {
-                if (fileFormat.FileFullPath != ImageFileVirtualFormatPath)
+                progress.PauseOrCancelIfRequested();
+
+                if (fileFormats.Count == 0) return false;
+
+                if (ImportType == ImportTypes.Stack)
                 {
-                    if (!fileFormat.CanDecode) continue;
-                    fileFormat.Decode(fileFormat.FileFullPath, progress);
+                    new OperationMove(SlicerFile, Anchor.TopLeft).Execute(progress);
                 }
 
-                var boundingRectangle = SlicerFile.GetBoundingRectangle(progress);
-                var fileFormatBoundingRectangle = fileFormat.GetBoundingRectangle(progress);
-                var roiRectangle = Rectangle.Empty;
-
-                // Check if is possible to process this file
-                switch (ImportType)
+                foreach (var fileFormat in fileFormats)
                 {
-                    case ImportTypes.Insert:
-                        if (SlicerFile.Resolution != fileFormat.Resolution &&
-                            (SlicerFile.Resolution.Width < fileFormatBoundingRectangle.Width ||
-                             SlicerFile.Resolution.Height < fileFormatBoundingRectangle.Height)) continue;
-                        SlicerFile.ReallocateInsert(StartLayerIndex, fileFormat.LayerCount, fixPositionZ:true);
-                        importedFormats++;
-                        break;
-                    case ImportTypes.Replace:
-                    case ImportTypes.Stack:
-                        if (SlicerFile.Resolution != fileFormat.Resolution &&
-                            (SlicerFile.Resolution.Width < fileFormatBoundingRectangle.Width ||
-                             SlicerFile.Resolution.Height < fileFormatBoundingRectangle.Height)) continue;
+                    if (fileFormat.FileFullPath != ImageFileVirtualFormatPath)
+                    {
+                        if (!fileFormat.CanDecode) continue;
+                        fileFormat.Decode(fileFormat.FileFullPath, progress);
+                    }
 
-                        //if(fileFormatBoundingRectangle.Width >= SlicerFile.ResolutionX || fileFormatBoundingRectangle.Height >= SlicerFile.ResolutionY)
-                        //    continue;
+                    var boundingRectangle = SlicerFile.GetBoundingRectangle(progress);
+                    var fileFormatBoundingRectangle = fileFormat.GetBoundingRectangle(progress);
+                    var roiRectangle = Rectangle.Empty;
 
-                        if (ImportType == ImportTypes.Stack)
-                        {
-                            int x = 0;
-                            int y = 0;
-
-                            if (SlicerFile.IsPixelInsideXBounds(boundingRectangle.Right + StackMargin + fileFormatBoundingRectangle.Width))
-                            {
-                                x = boundingRectangle.Right + StackMargin;
-                            }
-                            else
-                            {
-                                y = boundingRectangle.Bottom + StackMargin;
-                            }
-
-                            if (!SlicerFile.IsPixelInsideXBounds(x + fileFormatBoundingRectangle.Width))
-                                continue;
-                            if (!SlicerFile.IsPixelInsideYBounds(y + fileFormatBoundingRectangle.Height))
-                                continue;
-
-                            roiRectangle = fileFormatBoundingRectangle with {X = x, Y = y};
-                        }
-
-                        if (ExtendBeyondLayerCount)
-                        {
-                            int layerCountDifference = (int)(StartLayerIndex + fileFormat.LayerCount - SlicerFile.LayerCount);
-                            if (layerCountDifference > 0)
-                            {
-                                SlicerFile.ReallocateEnd((uint)layerCountDifference);
-                            }
-                        }
-
-                        importedFormats++;
-                        break;
-                    case ImportTypes.MergeSum:
-                    case ImportTypes.MergeMax:
-                        if (SlicerFile.Resolution != fileFormat.Resolution) continue;
-                        if (ExtendBeyondLayerCount)
-                        {
-                            int layerCountDifference = (int)(StartLayerIndex + fileFormat.LayerCount - SlicerFile.LayerCount);
-                            if (layerCountDifference > 0)
-                            {
-                                SlicerFile.ReallocateEnd((uint)layerCountDifference);
-                            }
-                        }
-                        importedFormats++;
-                        break;
-                    case ImportTypes.Subtract:
-                    case ImportTypes.AbsDiff:
-                    case ImportTypes.BitwiseAnd:
-                    case ImportTypes.BitwiseOr:
-                    case ImportTypes.BitwiseXOr:
-                        if (SlicerFile.Resolution != fileFormat.Resolution) continue;
-                        importedFormats++;
-                        break;
-                }
-
-                progress.Reset(ProgressAction, fileFormat.LayerCount);
-                Parallel.For(0, fileFormat.LayerCount, CoreSettings.GetParallelOptions(progress), i =>
-                {
-                    progress.PauseIfRequested();
-                    uint layerIndex = (uint)(StartLayerIndex + i);
-
+                    // Check if is possible to process this file
                     switch (ImportType)
                     {
                         case ImportTypes.Insert:
-                        {
-                            if (layerIndex >= SlicerFile.LayerCount) return;
-                            if (SlicerFile.Resolution == fileFormat.Resolution)
-                            {
-                                fileFormat[i].CopyImageTo(SlicerFile[layerIndex]);
-                                break;
-                            }
-
-                            using var mat = fileFormat[i].LayerMat;
-                            using var matRoi = mat.NewFromRoiToCenter(SlicerFile.Resolution, fileFormatBoundingRectangle);
-                            SlicerFile[layerIndex].LayerMat = matRoi;
-
+                            if (SlicerFile.Resolution != fileFormat.Resolution &&
+                                (SlicerFile.Resolution.Width < fileFormatBoundingRectangle.Width ||
+                                 SlicerFile.Resolution.Height < fileFormatBoundingRectangle.Height)) continue;
+                            SlicerFile.ReallocateInsert(StartLayerIndex, fileFormat.LayerCount, fixPositionZ: true);
+                            importedFormats++;
                             break;
-                        }
                         case ImportTypes.Replace:
-                        {
-                            if (layerIndex >= SlicerFile.LayerCount) return;
-                            if (SlicerFile.Resolution == fileFormat.Resolution)
+                        case ImportTypes.Stack:
+                            if (SlicerFile.Resolution != fileFormat.Resolution &&
+                                (SlicerFile.Resolution.Width < fileFormatBoundingRectangle.Width ||
+                                 SlicerFile.Resolution.Height < fileFormatBoundingRectangle.Height)) continue;
+
+                            //if(fileFormatBoundingRectangle.Width >= SlicerFile.ResolutionX || fileFormatBoundingRectangle.Height >= SlicerFile.ResolutionY)
+                            //    continue;
+
+                            if (ImportType == ImportTypes.Stack)
                             {
-                                fileFormat[i].CopyImageTo(SlicerFile[layerIndex]);
-                                break;
+                                int x = 0;
+                                int y = 0;
+
+                                if (SlicerFile.IsPixelInsideXBounds(boundingRectangle.Right + StackMargin + fileFormatBoundingRectangle.Width))
+                                {
+                                    x = boundingRectangle.Right + StackMargin;
+                                }
+                                else
+                                {
+                                    y = boundingRectangle.Bottom + StackMargin;
+                                }
+
+                                if (!SlicerFile.IsPixelInsideXBounds(x + fileFormatBoundingRectangle.Width))
+                                    continue;
+                                if (!SlicerFile.IsPixelInsideYBounds(y + fileFormatBoundingRectangle.Height))
+                                    continue;
+
+                                roiRectangle = fileFormatBoundingRectangle with { X = x, Y = y };
                             }
 
-                            using var mat = fileFormat[i].LayerMat;
-                            using var matRoi = mat.NewFromRoiToCenter(SlicerFile.Resolution, fileFormatBoundingRectangle);
-                            SlicerFile[layerIndex].LayerMat = matRoi;
-                            break;
-                        }
-                        case ImportTypes.Stack:
-                        {
-                            if (layerIndex >= SlicerFile.LayerCount) return;
-                            using var mat = SlicerFile[layerIndex].LayerMat;
-                            using var importMat = fileFormat[i].LayerMat;
-                            var matRoi = new Mat(mat, roiRectangle);
-                            var importMatRoi = new Mat(importMat, fileFormatBoundingRectangle);
-                            importMatRoi.CopyTo(matRoi);
-                            SlicerFile[layerIndex].LayerMat = mat;
+                            if (ExtendBeyondLayerCount)
+                            {
+                                int layerCountDifference = (int)(StartLayerIndex + fileFormat.LayerCount - SlicerFile.LayerCount);
+                                if (layerCountDifference > 0)
+                                {
+                                    SlicerFile.ReallocateEnd((uint)layerCountDifference);
+                                }
+                            }
 
+                            importedFormats++;
                             break;
-                        }
                         case ImportTypes.MergeSum:
-                        {
-                            if (layerIndex >= SlicerFile.LayerCount) return;
-                            using var originalMat = SlicerFile[layerIndex].LayerMat;
-                            using var newMat = fileFormat[i].LayerMat;
-                            CvInvoke.Add(originalMat, newMat, newMat);
-                            SlicerFile[layerIndex].LayerMat = newMat;
-                            break;
-                        }
                         case ImportTypes.MergeMax:
-                        {
-                            if (layerIndex >= SlicerFile.LayerCount) return;
-                            using var originalMat = SlicerFile[layerIndex].LayerMat;
-                            using var newMat = fileFormat[i].LayerMat;
-                            CvInvoke.Max(originalMat, newMat, newMat);
-                            SlicerFile[layerIndex].LayerMat = newMat;
+                            if (SlicerFile.Resolution != fileFormat.Resolution) continue;
+                            if (ExtendBeyondLayerCount)
+                            {
+                                int layerCountDifference = (int)(StartLayerIndex + fileFormat.LayerCount - SlicerFile.LayerCount);
+                                if (layerCountDifference > 0)
+                                {
+                                    SlicerFile.ReallocateEnd((uint)layerCountDifference);
+                                }
+                            }
+                            importedFormats++;
                             break;
-                        }
                         case ImportTypes.Subtract:
-                        {
-                            if (layerIndex >= SlicerFile.LayerCount) return;
-                            using var originalMat = SlicerFile[layerIndex].LayerMat;
-                            using var newMat = fileFormat[i].LayerMat;
-                            CvInvoke.Subtract(originalMat, newMat, newMat);
-                            SlicerFile[layerIndex].LayerMat = newMat;
-                            break;
-                        }
                         case ImportTypes.AbsDiff:
-                        {
-                            if (layerIndex >= SlicerFile.LayerCount) return;
-                            using var originalMat = SlicerFile[layerIndex].LayerMat;
-                            using var newMat = fileFormat[i].LayerMat;
-                            CvInvoke.AbsDiff(originalMat, newMat, newMat);
-                            SlicerFile[layerIndex].LayerMat = newMat;
-                            break;
-                        }
                         case ImportTypes.BitwiseAnd:
-                        {
-                            if (layerIndex >= SlicerFile.LayerCount) return;
-                            using var originalMat = SlicerFile[layerIndex].LayerMat;
-                            using var newMat = fileFormat[i].LayerMat;
-                            CvInvoke.BitwiseAnd(originalMat, newMat, newMat);
-                            SlicerFile[layerIndex].LayerMat = newMat;
-                            break;
-                        }
                         case ImportTypes.BitwiseOr:
-                        {
-                            if (layerIndex >= SlicerFile.LayerCount) return;
-                            using var originalMat = SlicerFile[layerIndex].LayerMat;
-                            using var newMat = fileFormat[i].LayerMat;
-                            CvInvoke.BitwiseOr(originalMat, newMat, newMat);
-                            SlicerFile[layerIndex].LayerMat = newMat;
-                            break;
-                        }
                         case ImportTypes.BitwiseXOr:
-                        {
-                            if (layerIndex >= SlicerFile.LayerCount) return;
-                            using var originalMat = SlicerFile[layerIndex].LayerMat;
-                            using var newMat = fileFormat[i].LayerMat;
-                            CvInvoke.BitwiseXor(originalMat, newMat, newMat);
-                            SlicerFile[layerIndex].LayerMat = newMat;
+                            if (SlicerFile.Resolution != fileFormat.Resolution) continue;
+                            importedFormats++;
                             break;
-                        }
-                        default:
-                            throw new ArgumentOutOfRangeException();
                     }
 
-
-                    lock (progress.Mutex)
+                    progress.Reset(ProgressAction, fileFormat.LayerCount);
+                    Parallel.For(0, fileFormat.LayerCount, CoreSettings.GetParallelOptions(progress), i =>
                     {
-                        lastProcessedLayerIndex = Math.Max(lastProcessedLayerIndex, (int)layerIndex);
-                        progress++;
-                    }
-                });
+                        progress.PauseIfRequested();
+                        uint layerIndex = (uint)(StartLayerIndex + i);
 
-                fileFormat.Dispose();
+                        switch (ImportType)
+                        {
+                            case ImportTypes.Insert:
+                                {
+                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    if (SlicerFile.Resolution == fileFormat.Resolution)
+                                    {
+                                        fileFormat[i].CopyImageTo(SlicerFile[layerIndex]);
+                                        break;
+                                    }
+
+                                    using var mat = fileFormat[i].LayerMat;
+                                    using var matRoi = mat.NewFromRoiToCenter(SlicerFile.Resolution, fileFormatBoundingRectangle);
+                                    SlicerFile[layerIndex].LayerMat = matRoi;
+
+                                    break;
+                                }
+                            case ImportTypes.Replace:
+                                {
+                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    if (SlicerFile.Resolution == fileFormat.Resolution)
+                                    {
+                                        fileFormat[i].CopyImageTo(SlicerFile[layerIndex]);
+                                        break;
+                                    }
+
+                                    using var mat = fileFormat[i].LayerMat;
+                                    using var matRoi = mat.NewFromRoiToCenter(SlicerFile.Resolution, fileFormatBoundingRectangle);
+                                    SlicerFile[layerIndex].LayerMat = matRoi;
+                                    break;
+                                }
+                            case ImportTypes.Stack:
+                                {
+                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    using var mat = SlicerFile[layerIndex].LayerMat;
+                                    using var importMat = fileFormat[i].LayerMat;
+                                    using var matRoi = new Mat(mat, roiRectangle);
+                                    using var importMatRoi = new Mat(importMat, fileFormatBoundingRectangle);
+                                    importMatRoi.CopyTo(matRoi);
+                                    SlicerFile[layerIndex].LayerMat = mat;
+
+                                    break;
+                                }
+                            case ImportTypes.MergeSum:
+                                {
+                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    using var originalMat = SlicerFile[layerIndex].LayerMat;
+                                    using var newMat = fileFormat[i].LayerMat;
+                                    CvInvoke.Add(originalMat, newMat, newMat);
+                                    SlicerFile[layerIndex].LayerMat = newMat;
+                                    break;
+                                }
+                            case ImportTypes.MergeMax:
+                                {
+                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    using var originalMat = SlicerFile[layerIndex].LayerMat;
+                                    using var newMat = fileFormat[i].LayerMat;
+                                    CvInvoke.Max(originalMat, newMat, newMat);
+                                    SlicerFile[layerIndex].LayerMat = newMat;
+                                    break;
+                                }
+                            case ImportTypes.Subtract:
+                                {
+                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    using var originalMat = SlicerFile[layerIndex].LayerMat;
+                                    using var newMat = fileFormat[i].LayerMat;
+                                    CvInvoke.Subtract(originalMat, newMat, newMat);
+                                    SlicerFile[layerIndex].LayerMat = newMat;
+                                    break;
+                                }
+                            case ImportTypes.AbsDiff:
+                                {
+                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    using var originalMat = SlicerFile[layerIndex].LayerMat;
+                                    using var newMat = fileFormat[i].LayerMat;
+                                    CvInvoke.AbsDiff(originalMat, newMat, newMat);
+                                    SlicerFile[layerIndex].LayerMat = newMat;
+                                    break;
+                                }
+                            case ImportTypes.BitwiseAnd:
+                                {
+                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    using var originalMat = SlicerFile[layerIndex].LayerMat;
+                                    using var newMat = fileFormat[i].LayerMat;
+                                    CvInvoke.BitwiseAnd(originalMat, newMat, newMat);
+                                    SlicerFile[layerIndex].LayerMat = newMat;
+                                    break;
+                                }
+                            case ImportTypes.BitwiseOr:
+                                {
+                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    using var originalMat = SlicerFile[layerIndex].LayerMat;
+                                    using var newMat = fileFormat[i].LayerMat;
+                                    CvInvoke.BitwiseOr(originalMat, newMat, newMat);
+                                    SlicerFile[layerIndex].LayerMat = newMat;
+                                    break;
+                                }
+                            case ImportTypes.BitwiseXOr:
+                                {
+                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    using var originalMat = SlicerFile[layerIndex].LayerMat;
+                                    using var newMat = fileFormat[i].LayerMat;
+                                    CvInvoke.BitwiseXor(originalMat, newMat, newMat);
+                                    SlicerFile[layerIndex].LayerMat = newMat;
+                                    break;
+                                }
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+
+
+                        lock (progress.Mutex)
+                        {
+                            lastProcessedLayerIndex = Math.Max(lastProcessedLayerIndex, (int)layerIndex);
+                            progress++;
+                        }
+                    });
+
+                }
+            }
+            finally
+            {
+                foreach (var fileFormat in fileFormats)
+                {
+                    fileFormat.Dispose();
+                }
             }
 
 

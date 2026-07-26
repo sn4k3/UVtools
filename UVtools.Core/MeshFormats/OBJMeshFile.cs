@@ -6,9 +6,12 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
@@ -18,9 +21,12 @@ public class OBJMeshFile : MeshFile
 {
     #region Constants
     public const string DefaultObjectName = "Object.1";
+    private const int VertexLineBufferSize = 160;
+    private const int FaceLineBufferSize = 36;
     #endregion
 
     #region Members
+    private static readonly StandardFormat CoordinateFormat = new('F', 6);
     private readonly Dictionary<Vector3, uint> _vertexCache = new(VertexCacheSize);
     private FileStream _triangleStream = null!;
     #endregion
@@ -41,36 +47,18 @@ public class OBJMeshFile : MeshFile
         /* Create a stream to store the triangles (faces) as they come through */
         _triangleStream = new FileStream(PathExtensions.GetTemporaryFilePathWithExtension("trig", $"{About.Software}_"), FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.DeleteOnClose);
             
-        MeshStream.WriteLine($"# {HeaderComment}");
-        MeshStream.WriteLine($"o {ObjectName}");
-        MeshStream.WriteLine();
-        MeshStream.WriteLine("# List of geometric vertices, with (x, y, z [,w]) coordinates, w is optional and defaults to 1.0");
+        MeshStream.WriteLineLF($"# {HeaderComment}");
+        MeshStream.WriteLineLF($"o {ObjectName}");
+        MeshStream.WriteLineLF();
+        MeshStream.WriteLineLF("# List of geometric vertices, with (x, y, z [,w]) coordinates, w is optional and defaults to 1.0");
     }
 
     public override void WriteTriangle(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 normal)
     {
-        if (!_vertexCache.ContainsKey(p1))
-        {
-            MeshStream.WriteLine($"v {p1.X:F6} {p1.Y:F6} {p1.Z:F6}");
-            VertexCount++;
-            _vertexCache.Add(p1, VertexCount);
-        }
-
-        if (!_vertexCache.ContainsKey(p2))
-        {
-            MeshStream.WriteLine($"v {p2.X:F6} {p2.Y:F6} {p2.Z:F6}");
-            VertexCount++;
-            _vertexCache.Add(p2, VertexCount);
-        }
-
-        if (!_vertexCache.ContainsKey(p3))
-        {
-            MeshStream.WriteLine($"v {p3.X:F6} {p3.Y:F6} {p3.Z:F6}");
-            VertexCount++;
-            _vertexCache.Add(p3, VertexCount);
-        }
-
-        _triangleStream.WriteLine($"f {_vertexCache[p1]} {_vertexCache[p2]} {_vertexCache[p3]}");
+        var vertex1 = GetOrWriteVertex(p1);
+        var vertex2 = GetOrWriteVertex(p2);
+        var vertex3 = GetOrWriteVertex(p3);
+        WriteFace(vertex1, vertex2, vertex3);
 
         TriangleCount++;
             
@@ -86,16 +74,64 @@ public class OBJMeshFile : MeshFile
     {
         _vertexCache.Clear();
 
-        MeshStream.WriteLine();
-        MeshStream.WriteLine("# Polygonal face elements");
+        MeshStream.WriteLineLF();
+        MeshStream.WriteLineLF("# Polygonal face elements");
 
         _triangleStream.Seek(0, SeekOrigin.Begin);
         _triangleStream.CopyTo(MeshStream);
         _triangleStream.Dispose();
 
-        MeshStream.WriteLine();
-        MeshStream.WriteLine($"# Triangles: {TriangleCount}");
-        MeshStream.WriteLine($"# Unique Vertexes: {VertexCount}");
+        MeshStream.WriteLineLF();
+        MeshStream.WriteLineLF($"# Triangles: {TriangleCount}");
+        MeshStream.WriteLineLF($"# Unique Vertexes: {VertexCount}");
+    }
+
+    private uint GetOrWriteVertex(Vector3 vertex)
+    {
+        ref var index = ref CollectionsMarshal.GetValueRefOrAddDefault(_vertexCache, vertex, out var exists);
+        if (exists)
+        {
+            return index;
+        }
+
+        index = ++VertexCount;
+
+        Span<byte> line = stackalloc byte[VertexLineBufferSize];
+        var writer = new MeshTextWriter(line);
+        writer.Append("v "u8);
+        writer.Append(vertex.X, CoordinateFormat);
+        writer.Append((byte)' ');
+        writer.Append(vertex.Y, CoordinateFormat);
+        writer.Append((byte)' ');
+        writer.Append(vertex.Z, CoordinateFormat);
+        writer.Append((byte)'\n');
+        writer.CopyTo(MeshStream);
+
+        return index;
+    }
+
+    private void WriteFace(uint vertex1, uint vertex2, uint vertex3)
+    {
+        Span<byte> line = stackalloc byte[FaceLineBufferSize];
+        var writer = new MeshTextWriter(line);
+        writer.Append("f "u8);
+        writer.Append(vertex1);
+        writer.Append((byte)' ');
+        writer.Append(vertex2);
+        writer.Append((byte)' ');
+        writer.Append(vertex3);
+        writer.Append((byte)'\n');
+        writer.CopyTo(_triangleStream);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _triangleStream?.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 
     #endregion

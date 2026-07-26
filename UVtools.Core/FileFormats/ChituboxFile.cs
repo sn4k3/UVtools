@@ -9,6 +9,7 @@
 // https://github.com/cbiffle/catibo/blob/master/doc/cbddlp-ctb.adoc
 
 using BinarySerialization;
+using DotNext.Buffers;
 using Emgu.CV;
 using System;
 using System.Collections.Generic;
@@ -38,12 +39,12 @@ public sealed class ChituboxFile : FileFormat
 
     public const byte RLE8EncodingLimit = 0x7d; // 125;
 
-    private const byte PERLAYER_SETTINGS_DISALLOW =     0;
-    private const byte PERLAYER_SETTINGS_CBDDLP =    0x10;
-    private const byte PERLAYER_SETTINGS_CTBv2 =     0x20; // 15 for ctb v2 files and others (This disallow per layer settings)
-    private const byte PERLAYER_SETTINGS_CTBv3 =     0x30; // 536870927 for ctb v3 files (This allow per layer settings, while 15 don't)
-    private const byte PERLAYER_SETTINGS_CTBv4 =     0x40; // 1073741839 for ctb v4 files (This allow per layer settings, while 15 don't)
-    private const byte PERLAYER_SETTINGS_CTBv5 =     0x50; // 1073741839 for ctb v5 files (This allow per layer settings, while 15 don't)
+    private const byte PERLAYER_SETTINGS_DISALLOW = 0;
+    private const byte PERLAYER_SETTINGS_CBDDLP = 0x10;
+    private const byte PERLAYER_SETTINGS_CTBv2 = 0x20; // 15 for ctb v2 files and others (This disallow per layer settings)
+    private const byte PERLAYER_SETTINGS_CTBv3 = 0x30; // 536870927 for ctb v3 files (This allow per layer settings, while 15 don't)
+    private const byte PERLAYER_SETTINGS_CTBv4 = 0x40; // 1073741839 for ctb v4 files (This allow per layer settings, while 15 don't)
+    private const byte PERLAYER_SETTINGS_CTBv5 = 0x50; // 1073741839 for ctb v5 files (This allow per layer settings, while 15 don't)
 
     private const string CTBv4_DISCLAIMER = "Layout and record format for the ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc..The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
     private const ushort CTBv4_DISCLAIMER_SIZE = 320;
@@ -67,7 +68,7 @@ public sealed class ChituboxFile : FileFormat
         /// 0x12fd_0019 for cbddlp
         /// 0x12fd_0086 for ctb
         /// </summary>
-        [FieldOrder(0)]  public uint Magic     { get; set; }
+        [FieldOrder(0)] public uint Magic { get; set; }
 
         /// <summary>
         /// Gets the software version
@@ -77,35 +78,35 @@ public sealed class ChituboxFile : FileFormat
         /// <summary>
         /// Gets dimensions of the printer’s X output volume, in millimeters.
         /// </summary>
-        [FieldOrder(2)]  public float BedSizeX { get; set; }
+        [FieldOrder(2)] public float BedSizeX { get; set; }
 
         /// <summary>
         /// Gets dimensions of the printer’s Y output volume, in millimeters.
         /// </summary>
-        [FieldOrder(3)]  public float BedSizeY { get; set; }
+        [FieldOrder(3)] public float BedSizeY { get; set; }
 
         /// <summary>
         /// Gets dimensions of the printer’s Z output volume, in millimeters.
         /// </summary>
-        [FieldOrder(4)]  public float BedSizeZ { get; set; }
+        [FieldOrder(4)] public float BedSizeZ { get; set; }
 
-        [FieldOrder(5)]  public uint Unknown1  { get; set; }
-        [FieldOrder(6)]  public uint Unknown2  { get; set; }
+        [FieldOrder(5)] public uint Unknown1 { get; set; }
+        [FieldOrder(6)] public uint Unknown2 { get; set; }
 
         /// <summary>
         /// Gets the height of the model described by this file, in millimeters.
         /// </summary>
-        [FieldOrder(7)]  public float TotalHeightMillimeter { get; set; }
+        [FieldOrder(7)] public float TotalHeightMillimeter { get; set; }
 
         /// <summary>
         /// Gets the layer height setting used at slicing, in millimeters. Actual height used by the machine is in the layer table.
         /// </summary>
-        [FieldOrder(8)]  public float LayerHeightMillimeter  { get; set; }
+        [FieldOrder(8)] public float LayerHeightMillimeter { get; set; }
 
         /// <summary>
         /// Gets the exposure time setting used at slicing, in seconds, for normal (non-bottom) layers, respectively. Actual time used by the machine is in the layer table.
         /// </summary>
-        [FieldOrder(9)]  public float LayerExposureSeconds  { get; set; }
+        [FieldOrder(9)] public float LayerExposureSeconds { get; set; }
 
         /// <summary>
         /// Gets the exposure time setting used at slicing, in seconds, for bottom layers. Actual time used by the machine is in the layer table.
@@ -115,7 +116,7 @@ public sealed class ChituboxFile : FileFormat
         /// <summary>
         /// Gets the light off time setting used at slicing, for normal layers, in seconds. Actual time used by the machine is in the layer table. Note that light_off_time_s appears in both the file header and ExtConfig.
         /// </summary>
-        [FieldOrder(11)] public float LightOffDelay     { get; set; }
+        [FieldOrder(11)] public float LightOffDelay { get; set; }
 
         /// <summary>
         /// Gets number of layers configured as "bottom." Note that this field appears in both the file header and ExtConfig..
@@ -125,12 +126,12 @@ public sealed class ChituboxFile : FileFormat
         /// <summary>
         /// Gets the printer resolution along X axis, in pixels. This information is critical to correctly decoding layer images.
         /// </summary>
-        [FieldOrder(13)] public uint ResolutionX       { get; set; }
+        [FieldOrder(13)] public uint ResolutionX { get; set; }
 
         /// <summary>
         /// Gets the printer resolution along Y axis, in pixels. This information is critical to correctly decoding layer images.
         /// </summary>
-        [FieldOrder(14)] public uint ResolutionY       { get; set; }
+        [FieldOrder(14)] public uint ResolutionY { get; set; }
 
         /// <summary>
         /// Gets the file offsets of ImageHeader records describing the larger preview images.
@@ -226,56 +227,56 @@ public sealed class ChituboxFile : FileFormat
         /// <summary>
         /// Gets the speed at which to lift the build platform away from the vat after bottom layers, in millimeters per minute.
         /// </summary>
-        [FieldOrder(1)]  public float BottomLiftSpeed     { get; set; } = DefaultBottomLiftSpeed;
+        [FieldOrder(1)] public float BottomLiftSpeed { get; set; } = DefaultBottomLiftSpeed;
 
         /// <summary>
         /// Gets the distance to lift the build platform away from the vat after normal layers, in millimeters.
         /// </summary>
-        [FieldOrder(2)]  public float LiftHeight          { get; set; } = DefaultLayerHeight;
+        [FieldOrder(2)] public float LiftHeight { get; set; } = DefaultLayerHeight;
 
         /// <summary>
         /// Gets the speed at which to lift the build platform away from the vat after normal layers, in millimeters per minute.
         /// </summary>
-        [FieldOrder(3)]  public float LiftSpeed        { get; set; } = DefaultLiftSpeed;
+        [FieldOrder(3)] public float LiftSpeed { get; set; } = DefaultLiftSpeed;
 
         /// <summary>
         /// Gets the speed to use when the build platform re-approaches the vat after lift, in millimeters per minute.
         /// </summary>
-        [FieldOrder(4)]  public float RetractSpeed        { get; set; } = DefaultRetractSpeed;
+        [FieldOrder(4)] public float RetractSpeed { get; set; } = DefaultRetractSpeed;
 
         /// <summary>
         /// Gets the estimated required resin, measured in milliliters. The volume number is derived from the model.
         /// </summary>
-        [FieldOrder(5)]  public float VolumeMl            { get; set; }
+        [FieldOrder(5)] public float VolumeMl { get; set; }
 
         /// <summary>
         /// Gets the estimated grams, derived from volume using configured factors for density.
         /// </summary>
-        [FieldOrder(6)]  public float WeightG             { get; set; }
+        [FieldOrder(6)] public float WeightG { get; set; }
 
         /// <summary>
         /// Gets the estimated cost based on currency unit the user had configured. Derived from volume using configured factors for density and cost.
         /// </summary>
-        [FieldOrder(7)]  public float CostDollars         { get; set; }
+        [FieldOrder(7)] public float CostDollars { get; set; }
 
         /// <summary>
         /// Gets the light off time setting used at slicing, for bottom layers, in seconds. Actual time used by the machine is in the layer table. Note that light_off_time_s appears in both the file header and ExtConfig.
         /// </summary>
-        [FieldOrder(8)]  public float BottomLightOffDelay { get; set; }
+        [FieldOrder(8)] public float BottomLightOffDelay { get; set; }
 
         /// <summary>
         /// Gets the light off time setting used at slicing, for normal layers, in seconds. Actual time used by the machine is in the layer table. Note that light_off_time_s appears in both the file header and ExtConfig.
         /// </summary>
-        [FieldOrder(9)]  public float LightOffDelay       { get; set; }
+        [FieldOrder(9)] public float LightOffDelay { get; set; }
 
         /// <summary>
         /// Gets number of layers configured as "bottom." Note that this field appears in both the file header and ExtConfig.
         /// </summary>
-        [FieldOrder(10)] public uint BottomLayerCount     { get; set; } = DefaultBottomLayerCount;
-        [FieldOrder(11)] public uint Padding1             { get; set; }
-        [FieldOrder(12)] public uint Padding2             { get; set; }
-        [FieldOrder(13)] public uint Padding3             { get; set; }
-        [FieldOrder(14)] public uint Padding4             { get; set; }
+        [FieldOrder(10)] public uint BottomLayerCount { get; set; } = DefaultBottomLayerCount;
+        [FieldOrder(11)] public uint Padding1 { get; set; }
+        [FieldOrder(12)] public uint Padding2 { get; set; }
+        [FieldOrder(13)] public uint Padding3 { get; set; }
+        [FieldOrder(14)] public uint Padding4 { get; set; }
 
         public override string ToString()
         {
@@ -289,11 +290,11 @@ public sealed class ChituboxFile : FileFormat
     public class SlicerInfo
     {
         [FieldOrder(0)] public float BottomLiftHeight2 { get; set; }
-        [FieldOrder(1)] public float BottomLiftSpeed2  { get; set; }
-        [FieldOrder(2)] public float LiftHeight2       { get; set; }
-        [FieldOrder(3)] public float LiftSpeed2        { get; set; }
-        [FieldOrder(4)] public float RetractHeight2    { get; set; }
-        [FieldOrder(5)] public float RetractSpeed2     { get; set; }
+        [FieldOrder(1)] public float BottomLiftSpeed2 { get; set; }
+        [FieldOrder(2)] public float LiftHeight2 { get; set; }
+        [FieldOrder(3)] public float LiftSpeed2 { get; set; }
+        [FieldOrder(4)] public float RetractHeight2 { get; set; }
+        [FieldOrder(5)] public float RetractSpeed2 { get; set; }
         [FieldOrder(6)] public float RestTimeAfterLift { get; set; }
 
         /// <summary>
@@ -337,11 +338,11 @@ public sealed class ChituboxFile : FileFormat
         /// </summary>17170480
         [FieldOrder(14)] public uint SoftwareVersion { get; set; } = 0x1090000; // ctb v3 = 0x1060300 (1.6.3) | ctb v4 = 0x1090000 (1.9.0) | ctb v5 = 0x2000000 (2.0.0)
         [FieldOrder(15)] public float RestTimeAfterRetract { get; set; }
-        [FieldOrder(16)] public float RestTimeAfterLift2   { get; set; }
+        [FieldOrder(16)] public float RestTimeAfterLift2 { get; set; }
         [FieldOrder(17)] public uint TransitionLayerCount { get; set; } // CTB not all printers
         [FieldOrder(18)] public uint PrintParametersV4Address { get; set; } // V4 Only
-        [FieldOrder(19)] public uint Padding2         { get; set; }
-        [FieldOrder(20)] public uint Padding3         { get; set; }
+        [FieldOrder(19)] public uint Padding2 { get; set; }
+        [FieldOrder(20)] public uint Padding3 { get; set; }
 
         /// <summary>
         /// Gets the machine name. string is not nul-terminated. But on CTBv5 it is null-terminated.
@@ -528,10 +529,10 @@ public sealed class ChituboxFile : FileFormat
         /// </summary>
         [FieldOrder(3)] public uint ImageLength { get; set; }
 
-        [FieldOrder(4)] public uint Unknown1    { get; set; }
-        [FieldOrder(5)] public uint Unknown2    { get; set; }
-        [FieldOrder(6)] public uint Unknown3    { get; set; }
-        [FieldOrder(7)] public uint Unknown4    { get; set; }
+        [FieldOrder(4)] public uint Unknown1 { get; set; }
+        [FieldOrder(5)] public uint Unknown2 { get; set; }
+        [FieldOrder(6)] public uint Unknown3 { get; set; }
+        [FieldOrder(7)] public uint Unknown4 { get; set; }
 
 
         public override string ToString()
@@ -550,12 +551,12 @@ public sealed class ChituboxFile : FileFormat
         /// <summary>
         /// Gets the build platform Z position for this layer, measured in millimeters.
         /// </summary>
-        [FieldOrder(0)] public float PositionZ       { get; set; }
+        [FieldOrder(0)] public float PositionZ { get; set; }
 
         /// <summary>
         /// Gets the exposure time for this layer, in seconds.
         /// </summary>
-        [FieldOrder(1)] public float ExposureTime    { get; set; }
+        [FieldOrder(1)] public float ExposureTime { get; set; }
 
         /// <summary>
         /// Gets how long to keep the light off after exposing this layer, in seconds.
@@ -565,16 +566,16 @@ public sealed class ChituboxFile : FileFormat
         /// <summary>
         /// Gets the layer image offset to encoded layer data, and its length in bytes.
         /// </summary>
-        [FieldOrder(3)] public uint DataAddress      { get; set; }
+        [FieldOrder(3)] public uint DataAddress { get; set; }
 
         /// <summary>
         /// Gets the layer image length in bytes.
         /// </summary>
-        [FieldOrder(4)] public uint DataSize         { get; set; }
-        [FieldOrder(5)] public uint PageNumber       { get; set; }
-        [FieldOrder(6)] public uint TableSize        { get; set; } = TABLE_SIZE;
-        [FieldOrder(7)] public uint Unknown3         { get; set; }
-        [FieldOrder(8)] public uint Unknown4         { get; set; }
+        [FieldOrder(4)] public uint DataSize { get; set; }
+        [FieldOrder(5)] public uint PageNumber { get; set; }
+        [FieldOrder(6)] public uint TableSize { get; set; } = TABLE_SIZE;
+        [FieldOrder(7)] public uint Unknown3 { get; set; }
+        [FieldOrder(8)] public uint Unknown4 { get; set; }
 
 
         [Ignore] public byte[]? EncodedRle { get; set; }
@@ -626,132 +627,134 @@ public sealed class ChituboxFile : FileFormat
 
         public static unsafe Mat DecodeCbddlpImage(ChituboxFile parent, uint layerIndex)
         {
+            if (parent.AntiAliasing == 0)
+                throw new FileLoadException("Anti-aliasing level cannot be zero.");
+
             var image = EmguCvExtensions.InitMat(parent.Resolution);
-            var span = image.GetSpanOfBytes(0, 0);
-
-            for (byte bit = 0; bit < parent.AntiAliasing; bit++)
+            try
             {
-                var layer = parent.LayerDefinitions![bit, layerIndex];
+                var span = image.GetSpanOfBytes();
 
-                int n = 0;
-                for (int index = 0; index < layer.DataSize; index++)
+                for (byte bit = 0; bit < parent.AntiAliasing; bit++)
                 {
-                    // Lower 7 bits is the repeat count for the bit (0..127)
-                    int reps = layer.EncodedRle![index] & 0x7f;
+                    var layer = parent.LayerDefinitions![bit, layerIndex];
 
-                    // We only need to set the non-zero pixels
-                    // High bit is on for white, off for black
-                    if ((layer.EncodedRle[index] & 0x80) != 0)
+                    int n = 0;
+                    for (int index = 0; index < layer.DataSize; index++)
                     {
-                        for (int i = 0; i < reps; i++)
+                        // Lower 7 bits is the repeat count for the bit (0..127)
+                        int reps = layer.EncodedRle![index] & 0x7f;
+                        if (reps > span.Length - n)
+                            throw new FileLoadException("Error image ran off the end");
+
+                        // We only need to set the non-zero pixels
+                        // High bit is on for white, off for black
+                        if ((layer.EncodedRle[index] & 0x80) != 0)
                         {
-                            span[n + i]++;
+                            for (int i = 0; i < reps; i++)
+                            {
+                                span[n + i]++;
+                            }
+                        }
+
+                        n += reps;
+
+                        if (n == span.Length)
+                        {
+                            break;
                         }
                     }
 
-                    n += reps;
-
-                    if (n == span.Length)
-                    {
-                        break;
-                    }
-
-                    if (n > span.Length)
-                    {
-                        image.Dispose();
-                        throw new FileLoadException("Error image ran off the end");
-                    }
                 }
-            }
 
-            for (int i = 0; i < span.Length; i++)
-            {
-                int newC = span[i] * (256 / parent.AntiAliasing);
-
-                if (newC > 0)
+                for (int i = 0; i < span.Length; i++)
                 {
-                    newC--;
+                    int newC = span[i] * (256 / parent.AntiAliasing);
+
+                    if (newC > 0)
+                    {
+                        newC--;
+                    }
+
+                    span[i] = (byte)newC;
                 }
 
-                span[i] = (byte) newC;
+                return image;
             }
-
-            return image;
+            catch
+            {
+                image.Dispose();
+                throw;
+            }
         }
 
         private Mat DecodeCtbImage(uint layerIndex)
         {
             var mat = EmguCvExtensions.InitMat(Parent!.Resolution);
-            //var span = mat.GetBytePointer();
-
-            if (Parent.HeaderSettings.EncryptionKey > 0)
+            try
             {
-                LayerRleCryptBuffer(Parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle!);
-            }
+                //var span = mat.GetBytePointer();
 
-            int pixel = 0;
-            for (var n = 0; n < EncodedRle!.Length; n++)
-            {
-                byte code = EncodedRle[n];
-                int stride = 1;
-
-                if ((code & 0x80) == 0x80) // It's a run
+                if (Parent.HeaderSettings.EncryptionKey > 0)
                 {
-                    code &= 0x7f; // Get the run length
-                    n++;
+                    LayerRleCryptBuffer(Parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle!);
+                }
 
-                    var slen = EncodedRle[n];
+                int pixel = 0;
+                for (var n = 0; n < EncodedRle!.Length; n++)
+                {
+                    byte code = EncodedRle[n];
+                    int stride = 1;
 
-                    if ((slen & 0x80) == 0)
+                    if ((code & 0x80) == 0x80) // It's a run
                     {
-                        stride = slen;
-                    }
-                    else if ((slen & 0xc0) == 0x80)
-                    {
-                        stride = ((slen & 0x3f) << 8) + EncodedRle[n + 1];
+                        code &= 0x7f; // Get the run length
                         n++;
+
+                        var slen = EncodedRle[n];
+
+                        if ((slen & 0x80) == 0)
+                        {
+                            stride = slen;
+                        }
+                        else if ((slen & 0xc0) == 0x80)
+                        {
+                            stride = ((slen & 0x3f) << 8) + EncodedRle[n + 1];
+                            n++;
+                        }
+                        else if ((slen & 0xe0) == 0xc0)
+                        {
+                            stride = ((slen & 0x1f) << 16) + (EncodedRle[n + 1] << 8) + EncodedRle[n + 2];
+                            n += 2;
+                        }
+                        else if ((slen & 0xf0) == 0xe0)
+                        {
+                            stride = ((slen & 0xf) << 24) + (EncodedRle[n + 1] << 16) + (EncodedRle[n + 2] << 8) + EncodedRle[n + 3];
+                            n += 3;
+                        }
+                        else
+                        {
+                            throw new FileLoadException("Corrupted RLE data");
+                        }
                     }
-                    else if ((slen & 0xe0) == 0xc0)
+
+                    // Bit extend from 7-bit to 8-bit greymap
+                    if (code != 0)
                     {
-                        stride = ((slen & 0x1f) << 16) + (EncodedRle[n + 1] << 8) + EncodedRle[n + 2];
-                        n += 2;
+                        code = (byte)((code << 1) | 1);
                     }
-                    else if ((slen & 0xf0) == 0xe0)
-                    {
-                        stride = ((slen & 0xf) << 24) + (EncodedRle[n + 1] << 16) + (EncodedRle[n + 2] << 8) + EncodedRle[n + 3];
-                        n += 3;
-                    }
-                    else
-                    {
-                        mat.Dispose();
-                        throw new FileLoadException("Corrupted RLE data");
-                    }
+
+                    mat.FillSpan(ref pixel, stride, code);
                 }
 
-                // Bit extend from 7-bit to 8-bit greymap
-                if (code != 0)
-                {
-                    code = (byte)((code << 1) | 1);
-                }
-
-                mat.FillSpan(ref pixel, stride, code);
-
-                //if (stride <= 0) continue; // Nothing to do
-
-                /*if (code == 0) // Ignore blacks, spare cycles
-                {
-                    pixel += stride;
-                    continue;
-                }*/
-
-                /*for (; stride > 0; stride--)
-                {
-                    span[pixel] = code;
-                    pixel++;
-                }*/
+                return mat;
+            }
+            catch
+            {
+                mat.Dispose();
+                throw;
             }
 
-            return mat;
         }
 
         public byte[] Encode(Mat image, byte aaIndex, uint layerIndex)
@@ -761,148 +764,168 @@ public sealed class ChituboxFile : FileFormat
 
         public unsafe byte[] EncodeCbddlpImage(Mat image, byte bit)
         {
-            List<byte> rawData = [];
-            var span = image.GetSpanOfBytes(0, 0);
-
-            bool obit = false;
-            int rep = 0;
-
-            //ngrey:= uint16(r | g | b)
-            // thresholds:
-            // aa 1:  127
-            // aa 2:  255 127
-            // aa 4:  255 191 127 63
-            // aa 8:  255 223 191 159 127 95 63 31
-            byte threshold = (byte)(256 / Parent!.AntiAliasing * bit - 1);
-
-            void AddRep()
+            var span = image.GetSpanOfBytes();
+            var minimumEncodedLength = Math.Max(
+                256,
+                span.Length / RLE8EncodingLimit + (span.Length % RLE8EncodingLimit == 0 ? 0 : 1));
+            var rawData = new BufferWriterSlim<byte>(minimumEncodedLength);
+            try
             {
-                if (rep <= 0) return;
+                bool obit = false;
+                int rep = 0;
 
-                byte by = (byte)rep;
+                //ngrey:= uint16(r | g | b)
+                // thresholds:
+                // aa 1:  127
+                // aa 2:  255 127
+                // aa 4:  255 191 127 63
+                // aa 8:  255 223 191 159 127 95 63 31
+                byte threshold = (byte)(256 / Parent!.AntiAliasing * bit - 1);
 
-                if (obit)
+                static void AddRep(ref BufferWriterSlim<byte> rawData, int rep, bool obit)
                 {
-                    by |= 0x80;
-                    //bitsOn += uint(rep)
+                    if (rep <= 0) return;
+
+                    byte by = (byte)rep;
+
+                    if (obit)
+                    {
+                        by |= 0x80;
+                        //bitsOn += uint(rep)
+                    }
+
+                    rawData.Add(by);
                 }
 
-                rawData.Add(by);
-            }
-
-            for (int pixel = 0; pixel < span.Length; pixel++)
-            {
-                var nbit = span[pixel] >= threshold;
-
-                if (nbit == obit)
+                for (int pixel = 0; pixel < span.Length; pixel++)
                 {
-                    rep++;
+                    var nbit = span[pixel] >= threshold;
 
-                    if (rep == RLE8EncodingLimit)
+                    if (nbit == obit)
                     {
-                        AddRep();
-                        rep = 0;
+                        rep++;
+
+                        if (rep == RLE8EncodingLimit)
+                        {
+                            AddRep(ref rawData, rep, obit);
+                            rep = 0;
+                        }
+                    }
+                    else
+                    {
+                        AddRep(ref rawData, rep, obit);
+                        obit = nbit;
+                        rep = 1;
                     }
                 }
-                else
-                {
-                    AddRep();
-                    obit = nbit;
-                    rep = 1;
-                }
+
+                // Collect stragglers
+                AddRep(ref rawData, rep, obit);
+
+                EncodedRle = rawData.WrittenSpan.ToArray();
+                DataSize = (uint)EncodedRle.Length;
+
+                return EncodedRle;
             }
-
-            // Collect stragglers
-            AddRep();
-
-            EncodedRle = rawData.ToArray();
-            DataSize = (uint) EncodedRle.Length;
-
-            return EncodedRle;
+            finally
+            {
+                rawData.Dispose();
+            }
         }
 
         private unsafe byte[] EncodeCtbImage(Mat image, uint layerIndex)
         {
-            List<byte> rawData = [];
-            byte color = byte.MaxValue >> 1;
-            uint stride = 0;
-            var span = image.GetSpanOfBytes(0, 0);
-
-            void AddRep()
+            var span = image.GetSpanOfBytes();
+            var rawData = new BufferWriterSlim<byte>(
+                FileFormat.GetRleBufferInitialCapacity(
+                    span.Length,
+                    estimatedPixelsPerRun: 128,
+                    encodedBytesPerRun: 2));
+            try
             {
-                if (stride == 0)
+                byte color = byte.MaxValue >> 1;
+                uint stride = 0;
+
+                static void AddRep(ref BufferWriterSlim<byte> rawData, uint stride, byte color)
                 {
-                    return;
+                    if (stride == 0)
+                    {
+                        return;
+                    }
+
+                    if (stride > 1)
+                    {
+                        color |= 0x80;
+                    }
+                    rawData.Add(color);
+
+                    if (stride <= 1)
+                    {
+                        // no run needed
+                        return;
+                    }
+
+                    if (stride <= 0x7f)
+                    {
+                        rawData.Add((byte)stride);
+                        return;
+                    }
+
+                    if (stride <= 0x3fff)
+                    {
+                        rawData.Add((byte)((stride >> 8) | 0x80));
+                        rawData.Add((byte)stride);
+                        return;
+                    }
+
+                    if (stride <= 0x1fffff)
+                    {
+                        rawData.Add((byte)((stride >> 16) | 0xc0));
+                        rawData.Add((byte)(stride >> 8));
+                        rawData.Add((byte)stride);
+                        return;
+                    }
+
+                    if (stride <= 0xfffffff)
+                    {
+                        rawData.Add((byte)((stride >> 24) | 0xe0));
+                        rawData.Add((byte)(stride >> 16));
+                        rawData.Add((byte)(stride >> 8));
+                        rawData.Add((byte)stride);
+                    }
                 }
 
-                if (stride > 1)
-                {
-                    color |= 0x80;
-                }
-                rawData.Add(color);
 
-                if (stride <= 1)
+                for (int pixel = 0; pixel < span.Length; pixel++)
                 {
-                    // no run needed
-                    return;
-                }
+                    var grey7 = (byte)(span[pixel] >> 1);
 
-                if (stride <= 0x7f)
-                {
-                    rawData.Add((byte)stride);
-                    return;
-                }
-
-                if (stride <= 0x3fff)
-                {
-                    rawData.Add((byte)((stride >> 8) | 0x80));
-                    rawData.Add((byte)stride);
-                    return;
+                    if (grey7 == color)
+                    {
+                        stride++;
+                    }
+                    else
+                    {
+                        AddRep(ref rawData, stride, color);
+                        color = grey7;
+                        stride = 1;
+                    }
                 }
 
-                if (stride <= 0x1fffff)
-                {
-                    rawData.Add((byte)((stride >> 16) | 0xc0));
-                    rawData.Add((byte)(stride >> 8));
-                    rawData.Add((byte)stride);
-                    return;
-                }
+                AddRep(ref rawData, stride, color);
 
-                if (stride <= 0xfffffff)
-                {
-                    rawData.Add((byte)((stride >> 24) | 0xe0));
-                    rawData.Add((byte)(stride >> 16));
-                    rawData.Add((byte)(stride >> 8));
-                    rawData.Add((byte)stride);
-                }
+                EncodedRle = rawData.WrittenSpan.ToArray();
+                if (Parent!.HeaderSettings.EncryptionKey > 0)
+                    LayerRleCryptBuffer(Parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle);
+
+                DataSize = (uint)EncodedRle.Length;
+
+                return EncodedRle;
             }
-
-
-            for (int pixel = 0; pixel < span.Length; pixel++)
+            finally
             {
-                var grey7 = (byte) (span[pixel] >> 1);
-
-                if (grey7 == color)
-                {
-                    stride++;
-                }
-                else
-                {
-                    AddRep();
-                    color = grey7;
-                    stride = 1;
-                }
+                rawData.Dispose();
             }
-
-            AddRep();
-
-            EncodedRle = Parent!.HeaderSettings.EncryptionKey > 0
-                ? LayerRleCrypt(Parent.HeaderSettings.EncryptionKey, layerIndex, rawData)
-                : rawData.ToArray();
-
-            DataSize = (uint)EncodedRle.Length;
-
-            return EncodedRle;
         }
 
         public override string ToString()
@@ -964,7 +987,7 @@ public sealed class ChituboxFile : FileFormat
 
             if (layerDef.DataSize > 0)
             {
-                TotalSize = (uint) (Helpers.Serializer.SizeOf(this) + layerDef.DataSize);
+                TotalSize = (uint)(Helpers.Serializer.SizeOf(this) + layerDef.DataSize);
             }
         }
 
@@ -1123,7 +1146,8 @@ public sealed class ChituboxFile : FileFormat
 
 
 
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers
+    {
         get
         {
             if (!IsCtbFile || !IsPerLayerSettingsAllowed) return base.PrintParameterPerLayerModifiers; // Only ctb files
@@ -1255,14 +1279,14 @@ public sealed class ChituboxFile : FileFormat
 
     public override byte AntiAliasing
     {
-        get => (byte) (IsCtbFile ? SlicerInfoSettings.AntiAliasLevel : HeaderSettings.AntiAliasLevel);
+        get => (byte)(IsCtbFile ? SlicerInfoSettings.AntiAliasLevel : HeaderSettings.AntiAliasLevel);
         set
         {
             if (IsCtbFile)
             {
                 base.AntiAliasing = (byte)(SlicerInfoSettings.AntiAliasLevel = Math.Clamp(value, 1u, 16u));
             }
-            else if(IsCbddlpFile)
+            else if (IsCbddlpFile)
             {
                 base.AntiAliasing = (byte)(SlicerInfoSettings.AntiAliasLevel = HeaderSettings.AntiAliasLevel = Math.Clamp(value, 1u, 16u));
                 ValidateAntiAliasingLevel();
@@ -1294,8 +1318,8 @@ public sealed class ChituboxFile : FileFormat
 
     public override ushort BottomLayerCount
     {
-        get => (ushort) HeaderSettings.BottomLayersCount;
-        set => base.BottomLayerCount = (ushort) (HeaderSettings.BottomLayersCount = PrintParametersSettings.BottomLayerCount = value);
+        get => (ushort)HeaderSettings.BottomLayersCount;
+        set => base.BottomLayerCount = (ushort)(HeaderSettings.BottomLayersCount = PrintParametersSettings.BottomLayerCount = value);
     }
 
     public override TransitionLayerTypes TransitionLayerType => TransitionLayerTypes.Software;
@@ -1441,7 +1465,7 @@ public sealed class ChituboxFile : FileFormat
     {
         get
         {
-            if(HeaderSettings.Version <= 3) return PrintParametersSettings.LiftHeight;
+            if (HeaderSettings.Version <= 3) return PrintParametersSettings.LiftHeight;
             return Math.Max(0, PrintParametersSettings.LiftHeight - SlicerInfoSettings.LiftHeight2);
         }
         set
@@ -1587,13 +1611,13 @@ public sealed class ChituboxFile : FileFormat
     public override byte BottomLightPWM
     {
         get => (byte)HeaderSettings.BottomLightPWM;
-        set => base.BottomLightPWM = (byte) (HeaderSettings.BottomLightPWM = value);
+        set => base.BottomLightPWM = (byte)(HeaderSettings.BottomLightPWM = value);
     }
 
     public override byte LightPWM
     {
         get => (byte)HeaderSettings.LightPWM;
-        set => base.LightPWM = (byte) (HeaderSettings.LightPWM = value);
+        set => base.LightPWM = (byte)(HeaderSettings.LightPWM = value);
     }
 
     public override float PrintTime
@@ -1649,7 +1673,8 @@ public sealed class ChituboxFile : FileFormat
                 <= 1 => [HeaderSettings],
                 <= 3 => [HeaderSettings, PrintParametersSettings, SlicerInfoSettings],
                 <= 4 => [HeaderSettings, PrintParametersSettings, SlicerInfoSettings, PrintParametersV4Settings],
-            /*v5*/ _ => [HeaderSettings, PrintParametersSettings, SlicerInfoSettings, PrintParametersV4Settings, ResinParametersSettings]
+                /*v5*/
+                _ => [HeaderSettings, PrintParametersSettings, SlicerInfoSettings, PrintParametersV4Settings, ResinParametersSettings]
             };
         }
     }
@@ -1805,7 +1830,7 @@ public sealed class ChituboxFile : FileFormat
         for (byte i = 0; i < thumbnails.Length; i++)
         {
             var image = thumbnails[i];
-            if(image is null) continue;
+            if (image is null) continue;
             var previewBytes = EncodeChituImageRGB15Rle(image);
             if (previewBytes.Length == 0) continue;
 
@@ -1840,14 +1865,14 @@ public sealed class ChituboxFile : FileFormat
 
             if (IsCtbFile)
             {
-                HeaderSettings.SlicerOffset = (uint) outputFile.Position;
+                HeaderSettings.SlicerOffset = (uint)outputFile.Position;
                 HeaderSettings.SlicerSize = (uint)(Helpers.Serializer.SizeOf(SlicerInfoSettings) - MachineName.Length);
 
                 SlicerInfoSettings.MachineNameAddress = HeaderSettings.SlicerOffset + HeaderSettings.SlicerSize;
 
                 if (HeaderSettings.Version >= 4)
                 {
-                    SlicerInfoSettings.PrintParametersV4Address = (uint) (HeaderSettings.SlicerOffset
+                    SlicerInfoSettings.PrintParametersV4Address = (uint)(HeaderSettings.SlicerOffset
                                                                           + Helpers.Serializer.SizeOf(SlicerInfoSettings)
                                                                           + (IsGkTwoFile ? CTBv4_GKtwo_DISCLAIMER_SIZE : CTBv4_DISCLAIMER_SIZE));
                 }
@@ -2094,7 +2119,7 @@ public sealed class ChituboxFile : FileFormat
                 LayerDefinitions[aaIndex, layerIndex] = layerDef;
                 LayerDefinitions[aaIndex, layerIndex].Parent = this;
 
-                layerOffset += (uint) Helpers.Serializer.SizeOf(layerDef);
+                layerOffset += (uint)Helpers.Serializer.SizeOf(layerDef);
                 Debug.Write($"LAYER {layerIndex} -> ");
                 Debug.WriteLine(layerDef);
 
@@ -2175,7 +2200,7 @@ public sealed class ChituboxFile : FileFormat
         outputFile.Seek(0, SeekOrigin.Begin);
         outputFile.WriteSerialize(HeaderSettings);
 
-        if (HeaderSettings is {Version: >= 2, PrintParametersOffsetAddress: > 0})
+        if (HeaderSettings is { Version: >= 2, PrintParametersOffsetAddress: > 0 })
         {
             outputFile.Seek(HeaderSettings.PrintParametersOffsetAddress, SeekOrigin.Begin);
             outputFile.WriteSerialize(PrintParametersSettings);

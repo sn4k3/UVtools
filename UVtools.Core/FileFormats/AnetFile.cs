@@ -7,6 +7,7 @@
  */
 
 using BinarySerialization;
+using DotNext.Buffers;
 using Emgu.CV;
 using System;
 using System.Collections.Generic;
@@ -250,11 +251,14 @@ public sealed class AnetFile : FileFormat
                 return (uint)Math.Ceiling(Math.Log2(repeats));
             }
 
-            void SetBits(List<byte> data, uint pos, uint value, uint count = 1)
+            static void SetBits(ref BufferWriterSlim<byte> data, uint pos, uint value, uint count = 1)
             {
-                if (data.Count * 8 < pos + count)
+                var requiredLength = checked((int)((pos + count + 7) / 8));
+                if (data.WrittenCount < requiredLength)
                 {
-                    data.AddRange(new byte[(pos + count + 7 - data.Count * 8) / 8]);
+                    var additionalLength = requiredLength - data.WrittenCount;
+                    data.GetSpan(additionalLength)[..additionalLength].Clear();
+                    data.Advance(additionalLength);
                 }
 
                 for (var off = (int)(pos + count - 1); off + 1 > pos; --off)
@@ -276,45 +280,52 @@ public sealed class AnetFile : FileFormat
             uint singleColorLength = 0;
             uint compressedPos = 33;
 
-            var rawData = new List<byte>();
             var spanMat = mat.GetReadOnlySpanOfBytes();
-
-            var isWhitePrev = spanMat[0] > 127;
-
-            SetBits(rawData, 0, (uint)mat.Width, 16);
-            SetBits(rawData, 16, (uint)mat.Height, 16);
-            SetBits(rawData, 32, isWhitePrev ? 1u : 0u);
-
-            for (var i = 0; i < spanMat.Length; i++)
+            var rawData = new BufferWriterSlim<byte>(
+                FileFormat.GetRleBufferInitialCapacity(spanMat.Length));
+            try
             {
-                var isWhiteCurrent = spanMat[i] > 127; // No AA
+                var isWhitePrev = spanMat[0] > 127;
 
-                if (isWhiteCurrent)
+                SetBits(ref rawData, 0, (uint)mat.Width, 16);
+                SetBits(ref rawData, 16, (uint)mat.Height, 16);
+                SetBits(ref rawData, 32, isWhitePrev ? 1u : 0u);
+
+                for (var i = 0; i < spanMat.Length; i++)
                 {
-                    WhitePixelsCount++;
+                    var isWhiteCurrent = spanMat[i] > 127; // No AA
+
+                    if (isWhiteCurrent)
+                    {
+                        WhitePixelsCount++;
+                    }
+
+                    if (isWhiteCurrent == isWhitePrev)
+                    {
+                        singleColorLength++;
+                    }
+
+                    if (isWhiteCurrent != isWhitePrev || i == spanMat.Length - 1)
+                    {
+                        isWhitePrev = isWhiteCurrent;
+                        var repeatsSize = ComputeRepeatsSize(singleColorLength);
+                        SetBits(ref rawData, compressedPos, repeatsSize, 5);
+                        SetBits(ref rawData, compressedPos + 5, singleColorLength, repeatsSize + 1);
+                        compressedPos += 6 + repeatsSize;
+                        singleColorLength = 1;
+                    }
                 }
 
-                if (isWhiteCurrent == isWhitePrev)
-                {
-                    singleColorLength++;
-                }
+                EncodedRle = rawData.WrittenSpan.ToArray();
+                RleBytesCount = (uint)EncodedRle.Length;
+                BitsCount = compressedPos;
 
-                if (isWhiteCurrent != isWhitePrev || i == spanMat.Length - 1)
-                {
-                    isWhitePrev = isWhiteCurrent;
-                    var repeatsSize = ComputeRepeatsSize(singleColorLength);
-                    SetBits(rawData, compressedPos, repeatsSize, 5);
-                    SetBits(rawData, compressedPos + 5, singleColorLength, repeatsSize + 1);
-                    compressedPos += 6 + repeatsSize;
-                    singleColorLength = 1;
-                }
+                return EncodedRle;
             }
-
-            EncodedRle = rawData.ToArray();
-            RleBytesCount = (uint)EncodedRle.Length;
-            BitsCount = compressedPos;
-
-            return EncodedRle;
+            finally
+            {
+                rawData.Dispose();
+            }
         }
 
         public Mat Decode(out uint resolutionX, out uint resolutionY, bool consumeRle = true)
@@ -350,24 +361,34 @@ public sealed class AnetFile : FileFormat
             resolutionY = GetBits(16, 16);
 
             var mat = EmguCvExtensions.InitMat(new Size((int)resolutionX, (int)resolutionY));
-            var imageLength = mat.ByteCountInt32;
-
-            var brightness = (byte)(GetBits(32) == 1 ? 0xff : 0x0);
-
-            var pixelPos = 0;
-            uint bitPos = 33;
-            while (pixelPos < imageLength)
+            try
             {
-                var keySize = GetBits(bitPos, 5);
-                var stripSize = GetBits(bitPos + 5, keySize + 1);
-                bitPos += keySize + 6;
-                mat.FillSpan(ref pixelPos, (int)stripSize, brightness);
-                brightness = (byte)~brightness;
+                var imageLength = mat.ByteCountInt32;
+
+                var brightness = (byte)(GetBits(32) == 1 ? 0xff : 0x0);
+
+                var pixelPos = 0;
+                uint bitPos = 33;
+                while (pixelPos < imageLength)
+                {
+                    var keySize = GetBits(bitPos, 5);
+                    var stripSize = GetBits(bitPos + 5, keySize + 1);
+                    bitPos += keySize + 6;
+                    if (stripSize > imageLength - pixelPos)
+                        throw new FileLoadException("RLE data exceeds the image bounds.");
+                    mat.FillSpan(ref pixelPos, (int)stripSize, brightness);
+                    brightness = (byte)~brightness;
+                }
+
+                if (consumeRle) EncodedRle = null!;
+
+                return mat;
             }
-
-            if (consumeRle) EncodedRle = null!;
-
-            return mat;
+            catch
+            {
+                mat.Dispose();
+                throw;
+            }
         }
     }
 

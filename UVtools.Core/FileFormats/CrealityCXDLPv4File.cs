@@ -7,6 +7,7 @@
  */
 
 using BinarySerialization;
+using DotNext.Buffers;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using System;
@@ -553,159 +554,176 @@ public sealed class CrealityCXDLPv4File : FileFormat
             }
 
             var mat = parent.CreateMat();
-
-            if (parent.HeaderSettings.EncryptionKey > 0)
+            try
             {
-                LayerRleCryptBuffer(parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle!);
-            }
-
-            var pixel = 0;
-            for (var n = 0; n < EncodedRle!.Length; n++)
-            {
-                var code = EncodedRle[n];
-                var stride = 1;
-
-                if ((code & 0x80) == 0x80) // It's a run
+                if (parent.HeaderSettings.EncryptionKey > 0)
                 {
-                    code &= 0x7f; // Get the run length
-                    n++;
+                    LayerRleCryptBuffer(parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle!);
+                }
 
-                    var slen = EncodedRle[n];
+                var pixel = 0;
+                for (var n = 0; n < EncodedRle!.Length; n++)
+                {
+                    var code = EncodedRle[n];
+                    var stride = 1;
 
-                    if ((slen & 0x80) == 0)
+                    if ((code & 0x80) == 0x80) // It's a run
                     {
-                        stride = slen;
-                    }
-                    else if ((slen & 0xc0) == 0x80)
-                    {
-                        stride = ((slen & 0x3f) << 8) + EncodedRle[n + 1];
+                        code &= 0x7f; // Get the run length
                         n++;
+
+                        var slen = EncodedRle[n];
+
+                        if ((slen & 0x80) == 0)
+                        {
+                            stride = slen;
+                        }
+                        else if ((slen & 0xc0) == 0x80)
+                        {
+                            stride = ((slen & 0x3f) << 8) + EncodedRle[n + 1];
+                            n++;
+                        }
+                        else if ((slen & 0xe0) == 0xc0)
+                        {
+                            stride = ((slen & 0x1f) << 16) + (EncodedRle[n + 1] << 8) + EncodedRle[n + 2];
+                            n += 2;
+                        }
+                        else if ((slen & 0xf0) == 0xe0)
+                        {
+                            stride = ((slen & 0xf) << 24) + (EncodedRle[n + 1] << 16) + (EncodedRle[n + 2] << 8) +
+                                     EncodedRle[n + 3];
+                            n += 3;
+                        }
+                        else
+                        {
+                            throw new FileLoadException("Corrupted RLE data");
+                        }
                     }
-                    else if ((slen & 0xe0) == 0xc0)
+
+                    // Bit extend from 7-bit to 8-bit greymap
+                    if (code != 0)
                     {
-                        stride = ((slen & 0x1f) << 16) + (EncodedRle[n + 1] << 8) + EncodedRle[n + 2];
-                        n += 2;
+                        code = (byte)((code << 1) | 1);
                     }
-                    else if ((slen & 0xf0) == 0xe0)
+
+                    mat.FillSpan(ref pixel, stride, code);
+
+                    //if (stride <= 0) continue; // Nothing to do
+
+                    /*if (code == 0) // Ignore blacks, spare cycles
                     {
-                        stride = ((slen & 0xf) << 24) + (EncodedRle[n + 1] << 16) + (EncodedRle[n + 2] << 8) +
-                                 EncodedRle[n + 3];
-                        n += 3;
-                    }
-                    else
+                        pixel += stride;
+                        continue;
+                    }*/
+
+                    /*for (; stride > 0; stride--)
                     {
-                        mat.Dispose();
-                        throw new FileLoadException("Corrupted RLE data");
-                    }
+                        span[pixel] = code;
+                        pixel++;
+                    }*/
                 }
 
-                // Bit extend from 7-bit to 8-bit greymap
-                if (code != 0)
-                {
-                    code = (byte)((code << 1) | 1);
-                }
-
-                mat.FillSpan(ref pixel, stride, code);
-
-                //if (stride <= 0) continue; // Nothing to do
-
-                /*if (code == 0) // Ignore blacks, spare cycles
-                {
-                    pixel += stride;
-                    continue;
-                }*/
-
-                /*for (; stride > 0; stride--)
-                {
-                    span[pixel] = code;
-                    pixel++;
-                }*/
+                return mat;
             }
-
-            return mat;
+            catch
+            {
+                mat.Dispose();
+                throw;
+            }
         }
 
         public unsafe byte[] Encode(CrealityCXDLPv4File parent, Mat image, uint layerIndex)
         {
-            List<byte> rawData = [];
-            byte color = byte.MaxValue >> 1;
-            uint stride = 0;
             var span = image.GetReadOnlySpanOfBytes();
-
-            void AddRep()
+            var rawData = new BufferWriterSlim<byte>(
+                FileFormat.GetRleBufferInitialCapacity(
+                    span.Length,
+                    estimatedPixelsPerRun: 128,
+                    encodedBytesPerRun: 2));
+            try
             {
-                if (stride == 0)
+                byte color = byte.MaxValue >> 1;
+                uint stride = 0;
+
+                static void AddRep(ref BufferWriterSlim<byte> rawData, uint stride, byte color)
                 {
-                    return;
+                    if (stride == 0)
+                    {
+                        return;
+                    }
+
+                    if (stride > 1)
+                    {
+                        color |= 0x80;
+                    }
+
+                    rawData.Add(color);
+
+                    if (stride <= 1)
+                    {
+                        // no run needed
+                        return;
+                    }
+
+                    if (stride <= 0x7f)
+                    {
+                        rawData.Add((byte)stride);
+                        return;
+                    }
+
+                    if (stride <= 0x3fff)
+                    {
+                        rawData.Add((byte)((stride >> 8) | 0x80));
+                        rawData.Add((byte)stride);
+                        return;
+                    }
+
+                    if (stride <= 0x1fffff)
+                    {
+                        rawData.Add((byte)((stride >> 16) | 0xc0));
+                        rawData.Add((byte)(stride >> 8));
+                        rawData.Add((byte)stride);
+                        return;
+                    }
+
+                    if (stride <= 0xfffffff)
+                    {
+                        rawData.Add((byte)((stride >> 24) | 0xe0));
+                        rawData.Add((byte)(stride >> 16));
+                        rawData.Add((byte)(stride >> 8));
+                        rawData.Add((byte)stride);
+                    }
                 }
 
-                if (stride > 1)
+
+                for (var pixel = 0; pixel < span.Length; pixel++)
                 {
-                    color |= 0x80;
+                    var grey7 = (byte)(span[pixel] >> 1);
+
+                    if (grey7 == color)
+                    {
+                        stride++;
+                    }
+                    else
+                    {
+                        AddRep(ref rawData, stride, color);
+                        color = grey7;
+                        stride = 1;
+                    }
                 }
 
-                rawData.Add(color);
+                AddRep(ref rawData, stride, color);
 
-                if (stride <= 1)
-                {
-                    // no run needed
-                    return;
-                }
+                EncodedRle = rawData.WrittenSpan.ToArray();
+                if (parent.HeaderSettings.EncryptionKey > 0)
+                    LayerRleCryptBuffer(parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle);
 
-                if (stride <= 0x7f)
-                {
-                    rawData.Add((byte)stride);
-                    return;
-                }
-
-                if (stride <= 0x3fff)
-                {
-                    rawData.Add((byte)((stride >> 8) | 0x80));
-                    rawData.Add((byte)stride);
-                    return;
-                }
-
-                if (stride <= 0x1fffff)
-                {
-                    rawData.Add((byte)((stride >> 16) | 0xc0));
-                    rawData.Add((byte)(stride >> 8));
-                    rawData.Add((byte)stride);
-                    return;
-                }
-
-                if (stride <= 0xfffffff)
-                {
-                    rawData.Add((byte)((stride >> 24) | 0xe0));
-                    rawData.Add((byte)(stride >> 16));
-                    rawData.Add((byte)(stride >> 8));
-                    rawData.Add((byte)stride);
-                }
+                return EncodedRle;
             }
-
-
-            for (var pixel = 0; pixel < span.Length; pixel++)
+            finally
             {
-                var grey7 = (byte)(span[pixel] >> 1);
-
-                if (grey7 == color)
-                {
-                    stride++;
-                }
-                else
-                {
-                    AddRep();
-                    color = grey7;
-                    stride = 1;
-                }
+                rawData.Dispose();
             }
-
-            AddRep();
-
-            EncodedRle = parent.HeaderSettings.EncryptionKey > 0
-                ? LayerRleCrypt(parent.HeaderSettings.EncryptionKey, layerIndex, rawData)
-                : rawData.ToArray();
-
-            return EncodedRle;
         }
 
         public override string ToString()

@@ -11,8 +11,6 @@ using Emgu.CV.CvEnum;
 using System;
 using System.Data;
 using System.Drawing;
-using System.Globalization;
-using System.Text.RegularExpressions;
 
 namespace UVtools.Core.Gerber.Primitives;
 
@@ -83,64 +81,31 @@ public class CirclePrimitive : Primitive
         if (!IsParsed) return;
         if (Diameter <= 0) return;
 
-        //CvInvoke.Circle(mat, Document.PositionMmToPx(at.X + CenterX, at.Y + CenterY), Document.SizeMmToPx(Diameter / 2), Document.GetPolarityColor(Exposure), -1, lineType);
-        CvInvoke.Ellipse(mat, Document.PositionMmToPx(at.X + CenterX, at.Y + CenterY), Document.SizeMmToPx(Diameter / 2.0, Diameter / 2.0), 0, 0, 360, Document.GetPolarityColor(Exposure), -1, lineType);
+        var center = RotateAroundMacroOrigin(CenterX, CenterY, Rotation);
+        CvInvoke.Ellipse(mat, Document.PositionMmToPx(at.X + center.X, at.Y + center.Y),
+            Document.SizeMmToPx(Diameter / 2.0, Diameter / 2.0), 0, 0, 360,
+            Document.GetPolarityColor(Exposure), -1, lineType);
     }
 
     public override void ParseExpressions(params string[] args)
     {
-        string csharpExp;
-        float num;
-        var exp = new DataTable();
-
-        if (byte.TryParse(ExposureExpression, out var exposure)) Exposure = exposure;
-        else
+        IsParsed = false;
+        using var evaluator = new DataTable();
+        if (!TryEvaluateByte(evaluator, ExposureExpression, args, 0, 1, out var exposure) ||
+            !TryEvaluateLength(evaluator, DiameterExpression, args, out var diameter) ||
+            !TryEvaluateLength(evaluator, CenterXExpression, args, out var centerX) ||
+            !TryEvaluateLength(evaluator, CenterYExpression, args, out var centerY) ||
+            !TryEvaluateExpression(evaluator, RotationExpression, args, out var rotation) ||
+            rotation is < float.MinValue or > float.MaxValue)
         {
-            csharpExp = string.Format(Regex.Replace(ExposureExpression, @"\$([0-9]+)", "{$1}"), args);
-            var temp = exp.Compute(csharpExp, null);
-            if (temp is not DBNull) Exposure = Convert.ToByte(temp);
+            return;
         }
 
-        if (float.TryParse(DiameterExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Diameter = num;
-        else
-        {
-            csharpExp = Regex.Replace(DiameterExpression, @"\$([0-9]+)", "{$1}");
-            csharpExp = string.Format(csharpExp, args);
-            var temp = exp.Compute(csharpExp, null);
-            if (temp is not DBNull) Diameter = Convert.ToSingle(temp);
-        }
-        Diameter = Document.GetMillimeters(Diameter);
-
-        if (float.TryParse(CenterXExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) CenterX = num;
-        else
-        {
-            csharpExp = Regex.Replace(CenterXExpression, @"\$([0-9]+)", "{$1}");
-            csharpExp = string.Format(csharpExp, args);
-            var temp = exp.Compute(csharpExp, null);
-            if (temp is not DBNull) CenterX = Convert.ToSingle(temp);
-        }
-        CenterX = Document.GetMillimeters(CenterX);
-
-        if (float.TryParse(CenterYExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) CenterY = num;
-        else
-        {
-            csharpExp = Regex.Replace(CenterYExpression, @"\$([0-9]+)", "{$1}");
-            csharpExp = string.Format(csharpExp, args);
-            var temp = exp.Compute(csharpExp, null);
-            if (temp is not DBNull) CenterY = Convert.ToSingle(temp);
-        }
-        CenterY = Document.GetMillimeters(CenterY);
-
-
-        if (float.TryParse(RotationExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Rotation = (short)num;
-        else
-        {
-            csharpExp = Regex.Replace(RotationExpression, @"\$([0-9]+)", "{$1}");
-            csharpExp = string.Format(csharpExp, args);
-            var temp = exp.Compute(csharpExp, null);
-            if (temp is not DBNull) Rotation = Convert.ToSingle(temp);
-        }
-
+        Exposure = exposure;
+        Diameter = diameter;
+        CenterX = centerX;
+        CenterY = centerY;
+        Rotation = (float)rotation;
         IsParsed = true;
     }
 }

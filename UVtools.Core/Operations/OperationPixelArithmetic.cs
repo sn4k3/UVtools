@@ -6,11 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Emgu.CV;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
-using EmguExtensions;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -18,12 +13,16 @@ using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
+using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations;
-
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 public partial class OperationPixelArithmetic : Operation
@@ -33,28 +32,29 @@ public partial class OperationPixelArithmetic : Operation
 
     public enum PixelArithmeticIgnoreAreaOperator
     {
-        [Description("Smaller than")]
-        SmallerThan,
-        [Description("Larger than")]
-        LargerThan
+        [Description("Smaller than")] SmallerThan,
+        [Description("Larger than")] LargerThan
     }
 
     #endregion
 
     #region Subclasses
-    class StringMatrix
-    {
-        public string Text { get; }
-        public Matrix<byte> Pattern { get; set; } = null!;
 
+    private class StringMatrix
+    {
         public StringMatrix(string text)
         {
             Text = text;
         }
+
+        public string Text { get; }
+        public Matrix<byte> Pattern { get; set; } = null!;
     }
+
     #endregion
 
     #region Members
+
     private float _valueStep;
     private ushort _noisePixelArea = 1;
     private byte _noisePasses = 1;
@@ -62,64 +62,86 @@ public partial class OperationPixelArithmetic : Operation
     #endregion
 
     #region Enums
+
     public enum PixelArithmeticOperators : byte
     {
-        [Description("Set: to a brightness")]
-        Set,
+        [Description("Set: to a brightness")] Set,
+
         [Description("Add: with a brightness")]
         Add,
+
         [Description("Subtract: with a brightness")]
         Subtract,
+
         [Description("Multiply: with a brightness")]
         Multiply,
+
         [Description("Divide: with a brightness")]
         Divide,
+
         //[Description("Exponential: pixels by a brightness")]
         //Exponential,
         [Description("Minimum: set to a brightness if is lower than the current pixel")]
         Minimum,
+
         [Description("Maximum: set to a brightness if is higher than the current pixel")]
         Maximum,
+
         [Description("Bitwise Not: invert pixels")]
         BitwiseNot,
+
         [Description("Bitwise And: with a brightness")]
         BitwiseAnd,
+
         [Description("Bitwise Or: with a brightness")]
         BitwiseOr,
+
         [Description("Bitwise Xor: with a brightness")]
         BitwiseXor,
+
         [Description("AbsDiff: perform a absolute difference between pixel and brightness")]
         AbsDiff,
+
         [Description("Corrode: Diffuse pixels using uniform random noise")]
         Corrode,
+
         [Description("Threshold: between a minimum/maximum brightness")]
         Threshold,
+
         [Description("Keep Region: in the selected ROI or masks")]
         KeepRegion,
+
         [Description("Discard Region: in the selected ROI or masks")]
-        DiscardRegion,
+        DiscardRegion
     }
 
     public enum PixelArithmeticApplyMethod : byte
     {
         [Description("All: Apply to all pixels within the layer")]
         All,
+
         [Description("Model: Apply only to model pixels")]
         Model,
+
         [Description("Model surface: Apply only to model surface/visible pixels")]
         ModelSurface,
+
         [Description("Model surface & inset: Apply only to model surface/visible pixels and within a inset from walls")]
         ModelSurfaceAndInset,
+
         [Description("Model inner: Apply only to model pixels within a margin from walls")]
         ModelInner,
+
         [Description("Model walls: Apply only to model walls with a set thickness")]
-        ModelWalls,
+        ModelWalls
         //[Description("Model walls minimum: Apply only to model walls where walls must have at least a minimum set thickness")]
         //ModelWallsMinimum
     }
+
     #endregion
 
     #region Overrides
+
     public override string IconClass => "CircleOpacity";
     public override string Title => "Pixel arithmetic";
 
@@ -128,14 +150,18 @@ public partial class OperationPixelArithmetic : Operation
 
     public override string ConfirmationText =>
         $"arithmetic {Operator}" +
-        (ValueEnabled && !UsePattern ? $"={Value}{(_valueStep != 0 ? $" Step={_valueStep}" : string.Empty)}" : string.Empty) +
+        (ValueEnabled && !UsePattern
+            ? $"={Value}{(_valueStep != 0 ? $" Step={_valueStep}" : string.Empty)}"
+            : string.Empty) +
         (UsePattern && IsUsePatternVisible ? " with pattern" : string.Empty) +
         (Operator is PixelArithmeticOperators.Threshold ? $"/{ThresholdMaxValue}" : string.Empty)
         + $" layers from {LayerIndexStart} through {LayerIndexEnd}";
 
     public override string ProgressTitle =>
-        $"Arithmetic {Operator}"+
-        (ValueEnabled && !UsePattern ? $"={Value}{(_valueStep != 0 ? $" Step={_valueStep}" : string.Empty)}" : string.Empty) +
+        $"Arithmetic {Operator}" +
+        (ValueEnabled && !UsePattern
+            ? $"={Value}{(_valueStep != 0 ? $" Step={_valueStep}" : string.Empty)}"
+            : string.Empty) +
         (UsePattern && IsUsePatternVisible ? " with pattern" : string.Empty) +
         $" layers from {LayerIndexStart} through {LayerIndexEnd}";
 
@@ -159,10 +185,10 @@ public partial class OperationPixelArithmetic : Operation
                      or PixelArithmeticOperators.BitwiseOr
                      or PixelArithmeticOperators.BitwiseXor
                      or PixelArithmeticOperators.AbsDiff
-                 && (Value + _valueStep) == 0)
-            /*||
-                 (Operator is PixelArithmeticOperators.Exponential && Value == 1)
-                 )*/
+                 && Value + _valueStep == 0)
+        /*||
+             (Operator is PixelArithmeticOperators.Exponential && Value == 1)
+             )*/
         {
             sb.AppendLine($"{Operator} by {Value} will have no effect.");
         }
@@ -190,16 +216,17 @@ public partial class OperationPixelArithmetic : Operation
             var stringMatrix = new[]
             {
                 new StringMatrix(PatternText),
-                new StringMatrix(PatternTextAlternate),
+                new StringMatrix(PatternTextAlternate)
             };
 
             foreach (var item in stringMatrix)
             {
                 if (string.IsNullOrWhiteSpace(item.Text)) continue;
-                var lines = item.Text.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                var lines = item.Text.Split('\n',
+                    StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                 for (var row = 0; row < lines.Length; row++)
                 {
-                    var bytes = lines[row].Split(' ');
+                    var bytes = lines[row].Split(' ', StringSplitOptions.RemoveEmptyEntries);
                     if (row == 0)
                     {
                         item.Pattern = new Matrix<byte>(lines.Length, bytes.Length);
@@ -208,12 +235,13 @@ public partial class OperationPixelArithmetic : Operation
                     {
                         if (item.Pattern.Cols != bytes.Length)
                         {
-                            sb.AppendLine($"Row {row + 1} have invalid number of pixels, the pattern must have equal pixel count per line, per defined on line 1");
+                            sb.AppendLine(
+                                $"Row {row + 1} have invalid number of pixels, the pattern must have equal pixel count per line, per defined on line 1");
                             return sb.ToString();
                         }
                     }
 
-                    for (int col = 0; col < bytes.Length; col++)
+                    for (var col = 0; col < bytes.Length; col++)
                     {
                         if (byte.TryParse(bytes[col], out var value))
                         {
@@ -249,6 +277,7 @@ public partial class OperationPixelArithmetic : Operation
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
+
     #endregion
 
     #region Properties
@@ -283,32 +312,26 @@ public partial class OperationPixelArithmetic : Operation
         }
     }
 
-    [ObservableProperty]
-    public partial uint WallThicknessStart { get; set; } = 20;
+    [ObservableProperty] public partial uint WallThicknessStart { get; set; } = 20;
+
+    [ObservableProperty] public partial uint WallThicknessEnd { get; set; } = 20;
+
+    [ObservableProperty] public partial bool WallChamfer { get; set; }
 
     [ObservableProperty]
-    public partial uint WallThicknessEnd { get; set; } = 20;
+    public partial PixelArithmeticIgnoreAreaOperator IgnoreAreaOperator { get; set; } =
+        PixelArithmeticIgnoreAreaOperator.SmallerThan;
 
-    [ObservableProperty]
-    public partial bool WallChamfer { get; set; }
-
-    [ObservableProperty]
-    public partial PixelArithmeticIgnoreAreaOperator IgnoreAreaOperator { get; set; } = PixelArithmeticIgnoreAreaOperator.SmallerThan;
-
-    [ObservableProperty]
-    public partial uint IgnoreAreaThreshold { get; set; }
+    [ObservableProperty] public partial uint IgnoreAreaThreshold { get; set; }
 
 
     public bool IsCorrodeVisible => Operator is PixelArithmeticOperators.Corrode;
 
-    [ObservableProperty]
-    public partial short NoiseMinOffset { get; set; } = -128;
+    [ObservableProperty] public partial short NoiseMinOffset { get; set; } = -128;
 
-    [ObservableProperty]
-    public partial short NoiseMaxOffset { get; set; } = 128;
+    [ObservableProperty] public partial short NoiseMaxOffset { get; set; } = 128;
 
-    [ObservableProperty]
-    public partial byte NoiseThreshold { get; set; }
+    [ObservableProperty] public partial byte NoiseThreshold { get; set; }
 
     public ushort NoisePixelArea
     {
@@ -343,25 +366,20 @@ public partial class OperationPixelArithmetic : Operation
         is not PixelArithmeticOperators.BitwiseNot
         and not PixelArithmeticOperators.KeepRegion
         and not PixelArithmeticOperators.DiscardRegion
-        and not PixelArithmeticOperators.Corrode
-    ;
+        and not PixelArithmeticOperators.Corrode;
 
     public bool IsUsePatternVisible => Operator
         is not PixelArithmeticOperators.Threshold
         and not PixelArithmeticOperators.BitwiseNot
         and not PixelArithmeticOperators.KeepRegion
         and not PixelArithmeticOperators.DiscardRegion
-        and not PixelArithmeticOperators.Corrode
-    ;
+        and not PixelArithmeticOperators.Corrode;
 
-    [ObservableProperty]
-    public partial bool UsePattern { get; set; }
+    [ObservableProperty] public partial bool UsePattern { get; set; }
 
-    [ObservableProperty]
-    public partial ThresholdType ThresholdType { get; set; } = ThresholdType.Binary;
+    [ObservableProperty] public partial ThresholdType ThresholdType { get; set; } = ThresholdType.Binary;
 
-    [ObservableProperty]
-    public partial byte ThresholdMaxValue { get; set; } = 255;
+    [ObservableProperty] public partial byte ThresholdMaxValue { get; set; } = 255;
 
     public bool IsThresholdVisible => Operator is PixelArithmeticOperators.Threshold;
 
@@ -376,28 +394,19 @@ public partial class OperationPixelArithmetic : Operation
         and not PixelArithmeticOperators.Threshold
         ;*/
 
-    [ObservableProperty]
-    public partial ushort PatternAlternatePerLayersNumber { get; set; } = 1;
+    [ObservableProperty] public partial ushort PatternAlternatePerLayersNumber { get; set; } = 1;
 
-    [ObservableProperty]
-    public partial bool PatternInvert { get; set; }
+    [ObservableProperty] public partial bool PatternInvert { get; set; }
 
-    [ObservableProperty]
-    public partial string PatternText { get; set; } = null!;
+    [ObservableProperty] public partial string PatternText { get; set; } = null!;
 
-    [ObservableProperty]
-    public partial string PatternTextAlternate { get; set; } = null!;
+    [ObservableProperty] public partial string PatternTextAlternate { get; set; } = null!;
 
-    [XmlIgnore]
-    [ObservableProperty]
-    public partial Matrix<byte> Pattern { get; set; } = null!;
+    [XmlIgnore][ObservableProperty] public partial Matrix<byte> Pattern { get; set; } = null!;
 
-    [XmlIgnore]
-    [ObservableProperty]
-    public partial Matrix<byte>? PatternAlternate { get; set; }
+    [XmlIgnore][ObservableProperty] public partial Matrix<byte>? PatternAlternate { get; set; }
 
-    [ObservableProperty]
-    public partial byte PatternGenMinBrightness { get; set; }
+    [ObservableProperty] public partial byte PatternGenMinBrightness { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PatternGenBrightnessPercent))]
@@ -405,11 +414,9 @@ public partial class OperationPixelArithmetic : Operation
 
     public float PatternGenBrightnessPercent => Helpers.BrightnessToPercent(PatternGenBrightness);
 
-    [ObservableProperty]
-    public partial byte PatternGenInfillThickness { get; set; } = 10;
+    [ObservableProperty] public partial byte PatternGenInfillThickness { get; set; } = 10;
 
-    [ObservableProperty]
-    public partial byte PatternGenInfillSpacing { get; set; } = 20;
+    [ObservableProperty] public partial byte PatternGenInfillSpacing { get; set; } = 20;
 
     public KernelConfiguration Kernel { get; set; } = new();
 
@@ -417,9 +424,13 @@ public partial class OperationPixelArithmetic : Operation
 
     #region Constructor
 
-    public OperationPixelArithmetic() { }
+    public OperationPixelArithmetic()
+    {
+    }
 
-    public OperationPixelArithmetic(FileFormat slicerFile) : base(slicerFile) { }
+    public OperationPixelArithmetic(FileFormat slicerFile) : base(slicerFile)
+    {
+    }
 
     #endregion
 
@@ -427,7 +438,9 @@ public partial class OperationPixelArithmetic : Operation
 
     private Size GetMatSizeCropped(Mat? mat = null)
     {
-        return ApplyMethod == PixelArithmeticApplyMethod.All ? GetRoiSizeOrDefault(mat) : GetRoiSizeOrDefault(OriginalBoundingRectangle);
+        return ApplyMethod == PixelArithmeticApplyMethod.All
+            ? GetRoiSizeOrDefault(mat)
+            : GetRoiSizeOrDefault(OriginalBoundingRectangle);
     }
 
     private Mat GetMatRoiCropped(Mat mat)
@@ -439,8 +452,8 @@ public partial class OperationPixelArithmetic : Operation
     {
         Mat? patternMat = null;
         Mat? patternAlternateMat = null;
-        Mat patternMatMask = null!;
-        Mat patternAlternateMatMask = null!;
+        Mat? patternMatMask = null;
+        Mat? patternAlternateMatMask = null;
 
         if (UsePattern && IsUsePatternVisible)
         {
@@ -451,7 +464,7 @@ public partial class OperationPixelArithmetic : Operation
                     [0, 0] = 0,
                     [0, 1] = 127,
                     [1, 0] = 127,
-                    [1, 1] = 0,
+                    [1, 1] = 0
                 };
 
                 PatternAlternate ??= new Matrix<byte>(2, 2)
@@ -459,19 +472,21 @@ public partial class OperationPixelArithmetic : Operation
                     [0, 0] = 127,
                     [0, 1] = 0,
                     [1, 0] = 0,
-                    [1, 1] = 127,
+                    [1, 1] = 127
                 };
             }
 
             PatternAlternate ??= Pattern;
 
-            var target = new Mat(GetMatSizeCropped(), DepthType.Cv8U, 1);
+            using var target = new Mat(GetMatSizeCropped(), DepthType.Cv8U, 1);
             if (target.IsEmpty) return false;
             patternMat = target.NewZeros();
             patternAlternateMat = target.NewZeros();
 
-            CvInvoke.Repeat(Pattern, (int)Math.Ceiling((double)target.Rows / Pattern.Rows), (int)Math.Ceiling((double)target.Cols / Pattern.Cols), patternMat);
-            CvInvoke.Repeat(PatternAlternate, (int)Math.Ceiling((double)target.Rows / PatternAlternate.Rows), (int)Math.Ceiling((double)target.Cols / PatternAlternate.Cols), patternAlternateMat);
+            CvInvoke.Repeat(Pattern, (int)Math.Ceiling((double)target.Rows / Pattern.Rows),
+                (int)Math.Ceiling((double)target.Cols / Pattern.Cols), patternMat);
+            CvInvoke.Repeat(PatternAlternate, (int)Math.Ceiling((double)target.Rows / PatternAlternate.Rows),
+                (int)Math.Ceiling((double)target.Cols / PatternAlternate.Cols), patternAlternateMat);
 
             patternMatMask = patternMat.Roi(target);
             patternAlternateMatMask = patternAlternateMat.Roi(target);
@@ -488,361 +503,410 @@ public partial class OperationPixelArithmetic : Operation
         }
 
 
-        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
+        try
         {
-            progress.PauseIfRequested();
-
-            var layer = SlicerFile[layerIndex];
-            using (var mat = layer.LayerMat)
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
-                using var original = mat.Clone();
-                using var originalRoi = GetMatRoiCropped(original);
-                using var target = GetMatRoiCropped(mat);
-                Mat tempMat;
+                progress.PauseIfRequested();
 
-                if (UsePattern && IsUsePatternVisible)
+                var layer = SlicerFile[layerIndex];
+                using (var mat = layer.LayerMat)
                 {
-                    tempMat = IsNormalPattern((uint)layerIndex) ? patternMatMask : patternAlternateMatMask;
-                }
-                else if(_valueStep == 0)
-                {
-                    tempMat = patternMatMask;
-                }
-                else
-                {
-                    var layerStep = layerIndex - LayerIndexStart;
-                    var valueStepped = Math.Clamp(MathF.Round(Value + _valueStep * layerStep, MidpointRounding.AwayFromZero), 0, 255);
-                    tempMat = EmguCvExtensions.InitMat(GetMatSizeCropped(), new MCvScalar(valueStepped));
-                }
+                    using var original = mat.Clone();
+                    using var originalRoi = GetMatRoiCropped(original);
+                    using var target = GetMatRoiCropped(mat);
+                    using var steppedValueMat = _valueStep == 0
+                        ? null
+                        : EmguCvExtensions.InitMat(
+                            GetMatSizeCropped(),
+                            new MCvScalar(Math.Clamp(
+                                MathF.Round(Value + _valueStep * (layerIndex - LayerIndexStart),
+                                    MidpointRounding.AwayFromZero),
+                                0,
+                                255)));
+                    Mat tempMat;
 
-                Mat? applyMask;
+                    if (UsePattern && IsUsePatternVisible)
+                    {
+                        tempMat = IsNormalPattern((uint)layerIndex) ? patternMatMask! : patternAlternateMatMask!;
+                    }
+                    else if (_valueStep == 0)
+                    {
+                        tempMat = patternMatMask!;
+                    }
+                    else
+                    {
+                        tempMat = steppedValueMat!;
+                    }
 
-                int wallThickness = FileFormat.MutateGetIterationChamfer(
-                    (uint)layerIndex,
-                    LayerIndexStart,
-                    LayerIndexEnd,
-                    (int)WallThicknessStart,
-                    (int)WallThicknessEnd,
-                    WallChamfer
-                );
+                    Mat? applyMask;
 
-                switch (ApplyMethod)
-                {
-                    case PixelArithmeticApplyMethod.All:
-                        applyMask = null;
-                        break;
-                    case PixelArithmeticApplyMethod.Model:
-                        applyMask = target.Clone();
-                        break;
-                    case PixelArithmeticApplyMethod.ModelSurface:
-                    case PixelArithmeticApplyMethod.ModelSurfaceAndInset:
-                        if (layerIndex == SlicerFile.LastLayerIndex)
-                        {
+                    var wallThickness = FileFormat.MutateGetIterationChamfer(
+                        (uint)layerIndex,
+                        LayerIndexStart,
+                        LayerIndexEnd,
+                        (int)WallThicknessStart,
+                        (int)WallThicknessEnd,
+                        WallChamfer
+                    );
+
+                    switch (ApplyMethod)
+                    {
+                        case PixelArithmeticApplyMethod.All:
+                            applyMask = null;
+                            break;
+                        case PixelArithmeticApplyMethod.Model:
                             applyMask = target.Clone();
-                        }
-                        else
+                            break;
+                        case PixelArithmeticApplyMethod.ModelSurface:
+                        case PixelArithmeticApplyMethod.ModelSurfaceAndInset:
+                            if (layerIndex == SlicerFile.LastLayerIndex)
+                            {
+                                applyMask = target.Clone();
+                            }
+                            else
+                            {
+                                applyMask = new Mat();
+
+                                // Difference
+                                using var nextMat = SlicerFile[layerIndex + 1].LayerMat;
+                                using var nextMatRoi = GetMatRoiCropped(nextMat);
+                                CvInvoke.Subtract(target, nextMatRoi, applyMask);
+
+                                // 1px walls
+                                using var erode = new Mat();
+                                var iterations = 1;
+                                var kernel = Kernel.GetKernel(ref iterations);
+                                CvInvoke.Erode(target, erode, kernel, EmguCvExtensions.AnchorCenter, iterations,
+                                    BorderType.Reflect101, default);
+                                CvInvoke.Subtract(target, erode, erode);
+                                CvInvoke.Add(applyMask, erode, applyMask);
+
+
+                                // Inset from walls
+                                if (ApplyMethod == PixelArithmeticApplyMethod.ModelSurfaceAndInset && wallThickness - 1 > 0)
+                                {
+                                    iterations = wallThickness - 1;
+                                    kernel = Kernel.GetKernel(ref iterations);
+                                    CvInvoke.Dilate(applyMask, erode, kernel, EmguCvExtensions.AnchorCenter, iterations,
+                                        BorderType.Reflect101, default);
+                                    erode.CopyTo(applyMask, target);
+                                }
+                            }
+
+                            break;
+                        case PixelArithmeticApplyMethod.ModelInner:
+                            {
+                                if (wallThickness <= 0)
+                                {
+                                    applyMask = target.Clone();
+                                    break;
+                                }
+
+                                applyMask = new Mat();
+                                var iterations = wallThickness;
+                                var kernel = Kernel.GetKernel(ref iterations);
+                                CvInvoke.Erode(target, applyMask, kernel, EmguCvExtensions.AnchorCenter, iterations,
+                                    BorderType.Reflect101, default);
+                                break;
+                            }
+                        case PixelArithmeticApplyMethod.ModelWalls:
+                            {
+                                if (wallThickness <= 0) // No effect, skip
+                                {
+                                    progress.LockAndIncrement();
+                                    return;
+                                }
+
+                                using var erode = new Mat();
+                                applyMask = target.Clone();
+                                var iterations = wallThickness;
+                                var kernel = Kernel.GetKernel(ref iterations);
+                                CvInvoke.Erode(target, erode, kernel, EmguCvExtensions.AnchorCenter, iterations,
+                                    BorderType.Reflect101, default);
+                                applyMask.SetTo(EmguCvExtensions.BlackColor, erode);
+                                break;
+                            }
+                        /*case PixelArithmeticApplyMethod.ModelWallsMinimum:
                         {
-                            applyMask = new Mat();
+                            if (wallThickness <= 0) // No effect, skip
+                            {
+                                progress.LockAndIncrement();
+                                return;
+                            }
 
-                            // Difference
-                            using var nextMat = SlicerFile[layerIndex + 1].LayerMat;
-                            using var nextMatRoi = GetMatRoiCropped(nextMat);
-                            CvInvoke.Subtract(target, nextMatRoi, applyMask);
-
-                            // 1px walls
                             using var erode = new Mat();
-                            int iterations = 1;
-                            var kernel = Kernel.GetKernel(ref iterations);
-                            CvInvoke.Erode(target, erode, kernel, EmguCvExtensions.AnchorCenter, iterations, BorderType.Reflect101, default);
-                            CvInvoke.Subtract(target, erode, erode);
-                            CvInvoke.Add(applyMask, erode, applyMask);
-
-
-                            // Inset from walls
-                            if (ApplyMethod == PixelArithmeticApplyMethod.ModelSurfaceAndInset && (wallThickness-1) > 0)
-                            {
-                                iterations = wallThickness - 1;
-                                kernel = Kernel.GetKernel(ref iterations);
-                                CvInvoke.Dilate(applyMask, erode, kernel, EmguCvExtensions.AnchorCenter, iterations, BorderType.Reflect101, default);
-                                erode.CopyTo(applyMask, target);
-                            }
-                        }
-
-                        break;
-                    case PixelArithmeticApplyMethod.ModelInner:
-                    {
-                        if (wallThickness <= 0)
-                        {
+                            using var erodeInv = new Mat();
                             applyMask = target.Clone();
-                            break;
-                        }
-
-                        applyMask = new Mat();
-                        int iterations = wallThickness;
-                        var kernel = Kernel.GetKernel(ref iterations);
-                        CvInvoke.Erode(target, applyMask, kernel, EmguCvExtensions.AnchorCenter, iterations, BorderType.Reflect101, default);
-                        break;
-                    }
-                    case PixelArithmeticApplyMethod.ModelWalls:
-                    {
-                        if (wallThickness <= 0) // No effect, skip
-                        {
-                            progress.LockAndIncrement();
-                            return;
-                        }
-
-                        using var erode = new Mat();
-                        applyMask = target.Clone();
-                        int iterations = wallThickness;
-                        var kernel = Kernel.GetKernel(ref iterations);
-                        CvInvoke.Erode(target, erode, kernel, EmguCvExtensions.AnchorCenter, iterations, BorderType.Reflect101, default);
-                        applyMask.SetTo(EmguCvExtensions.BlackColor, erode);
-                        break;
-                    }
-                    /*case PixelArithmeticApplyMethod.ModelWallsMinimum:
-                    {
-                        if (wallThickness <= 0) // No effect, skip
-                        {
-                            progress.LockAndIncrement();
-                            return;
-                        }
-
-                        using var erode = new Mat();
-                        using var erodeInv = new Mat();
-                        applyMask = target.Clone();
-                        target.Save($"D:\\wallmin\\original{layerIndex}.png");
-                        CvInvoke.Erode(target, erode, kernel, anchor, wallThickness, BorderType.Reflect101, default);
-                        erode.Save($"D:\\wallmin\\erode{layerIndex}.png");
-                        CvInvoke.Dilate(erode, erode, kernel, anchor, wallThickness, BorderType.Reflect101, default);
-                        erode.Save($"D:\\wallmin\\dilate{layerIndex}.png");
-                            //CvInvoke.BitwiseXor(target, erode, applyMask);
-                            //applyMask.Save($"D:\\wallmin\\bitwiseXor{layerIndex}.png");
-                            CvInvoke.BitwiseNot(erode, erodeInv);
-                            erodeInv.Save($"D:\\wallmin\\erodeInv{layerIndex}.png");
-                            CvInvoke.BitwiseXor(target, erode, erode, erodeInv);
-                            erode.Save($"D:\\wallmin\\BitwiseXor{layerIndex}.png");
-                            applyMask.SetTo(EmguCvExtensions.BlackColor, erode);
-                            applyMask.Save($"D:\\wallmin\\applymask{layerIndex}.png");
-                            break;
-                    }*/
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-
-                switch (Operator)
-                {
-                    case PixelArithmeticOperators.Set:
-                        tempMat.CopyTo(target, applyMask);
-                        break;
-                    case PixelArithmeticOperators.Add:
-                        CvInvoke.Add(target, tempMat, target, applyMask);
-                        break;
-                    case PixelArithmeticOperators.Subtract:
-                        if (layer.IsEmpty)
-                        {
-                            progress.LockAndIncrement();
-                            return;
-                        }
-                        CvInvoke.Subtract(target, tempMat, target, applyMask);
-                        break;
-                    case PixelArithmeticOperators.Multiply:
-                        if (layer.IsEmpty)
-                        {
-                            progress.LockAndIncrement();
-                            return;
-                        }
-                        CvInvoke.Multiply(target, tempMat, target, EmguCvExtensions.NormalizedByteScale);
-                        if (ApplyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
-                        break;
-                    case PixelArithmeticOperators.Divide:
-                        if (layer.IsEmpty)
-                        {
-                            progress.LockAndIncrement();
-                            return;
-                        }
-                        CvInvoke.Divide(target, tempMat, target);
-                        if (ApplyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
-                        break;
-                    /*case PixelArithmeticOperators.Exponential:
-                        CvInvoke.Pow(target, Value, tempMat);
-                        if(!_affectBackPixels) ApplyMask(original, mat, original);
-                        break;*/
-                    case PixelArithmeticOperators.Minimum:
-                        if (layer.IsEmpty)
-                        {
-                            progress.LockAndIncrement();
-                            return;
-                        }
-                        CvInvoke.Min(target, tempMat, target);
-                        if (ApplyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
-                        break;
-                    case PixelArithmeticOperators.Maximum:
-                        CvInvoke.Max(target, tempMat, target);
-                        if (ApplyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
-                        break;
-                    case PixelArithmeticOperators.BitwiseNot:
-                        CvInvoke.BitwiseNot(target, target, applyMask);
-                        break;
-                    case PixelArithmeticOperators.BitwiseAnd:
-                        if (layer.IsEmpty)
-                        {
-                            progress.LockAndIncrement();
-                            return;
-                        }
-                        CvInvoke.BitwiseAnd(target, tempMat, target, applyMask);
-                        break;
-                    case PixelArithmeticOperators.BitwiseOr:
-                        CvInvoke.BitwiseOr(target, tempMat, target, applyMask);
-                        break;
-                    case PixelArithmeticOperators.BitwiseXor:
-                        CvInvoke.BitwiseXor(target, tempMat, target, applyMask);
-                        break;
-                    case PixelArithmeticOperators.AbsDiff:
-                        if (layer.IsEmpty)
-                        {
-                            progress.LockAndIncrement();
-                            return;
-                        }
-                        CvInvoke.AbsDiff(target, tempMat, target);
-                        if (ApplyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
-                        break;
-                    case PixelArithmeticOperators.Threshold:
-                        var tempThreshold = ThresholdType;
-                        if (ThresholdType is ThresholdType.Otsu or ThresholdType.Triangle) tempThreshold = ThresholdType.Binary | tempThreshold;
-                        CvInvoke.Threshold(target, target, Value, ThresholdMaxValue, tempThreshold);
-                        if (ApplyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
-                        break;
-                    case PixelArithmeticOperators.Corrode:
-                        if (layer.IsEmpty)
-                        {
-                            progress.LockAndIncrement();
-                            return;
-                        }
-                        var span = mat.GetSpanOfBytes(0, 0);
-
-                        var bounds = HaveROI ? ROI : layer.BoundingRectangle;
-
-                        for (var y = bounds.Y; y < bounds.Bottom; y += _noisePixelArea)
-                        for (var x = bounds.X; x < bounds.Right; x += _noisePixelArea)
-                        {
-                            byte zoneBrightness = 0;
-                            for (var y1 = y; y1 < y + _noisePixelArea && y1 < bounds.Bottom && zoneBrightness < byte.MaxValue; y1++)
-                            {
-                                var pixelPos = mat.GetPixelPos(x, y1);
-                                for (var x1 = x; x1 < x + _noisePixelArea && x1 < bounds.Right && zoneBrightness < byte.MaxValue; x1++)
-                                {
-                                    zoneBrightness = Math.Max(zoneBrightness, span[pixelPos++]);
-                                }
-                            }
-
-                            if (zoneBrightness <= NoiseThreshold) continue;
-                            byte brightness = zoneBrightness;
-
-                            for (ushort i = 0; i < _noisePasses; i++)
-                            {
-                                brightness = (byte)Math.Clamp(Random.Shared.Next(NoiseMinOffset, NoiseMaxOffset + 1) + brightness, byte.MinValue, byte.MaxValue);
-                            }
-
-                            //byte brightness = (byte)Math.Clamp(RandomNumberGenerator.GetInt32(NoiseMinOffset, NoiseMaxOffset + 1) + zoneBrightness, byte.MinValue, byte.MaxValue);
-                            for (var y1 = y; y1 < y + _noisePixelArea && y1 < bounds.Bottom; y1++)
-                            {
-                                var pixelPos = mat.GetPixelPos(x, y1);
-                                for (var x1 = x; x1 < x + _noisePixelArea && x1 < bounds.Right; x1++)
-                                {
-
-                                    if (span[pixelPos] <= NoiseThreshold) continue;
-                                    span[pixelPos++] = brightness;
-                                }
-                            }
-                        }
-
-                        if (ApplyMethod is not PixelArithmeticApplyMethod.All and not PixelArithmeticApplyMethod.Model) ApplyMask(originalRoi, target, applyMask);
-
-
-                        // old method
-                        /*if (HaveROI)
-                        {
-                            for (var y = ROI.Y; y < ROI.Bottom; y++)
-                            for (var x = ROI.X; x < ROI.Right; x++)
-                            {
-                                var pos = mat.GetPixelPos(x, y);
-                                if (span[pos] <= NoiseThreshold) continue;
-                                span[pos] = (byte)Math.Clamp(RandomNumberGenerator.GetInt32(NoiseMinOffset, NoiseMaxOffset + 1) + span[pos], byte.MinValue, byte.MaxValue);
-                            }
-
-                            if (ApplyMethod
-                                is not PixelArithmeticApplyMethod.All
-                                and not PixelArithmeticApplyMethod.Model)
-                                ApplyMask(originalRoi, target, applyMask);
-                        }
-                        else // Whole image
-                        {
-                            var spanMask = applyMask is null ? span : applyMask.GetDataByteSpan();
-
-                            for (var i = 0; i < span.Length; i++)
-                            {
-                                //if (span[i] <= NoiseThreshold || spanMask[i] == 0) continue;
-                                //span[i] = (byte)Math.Clamp(RandomNumberGenerator.GetInt32(NoiseMinOffset, NoiseMaxOffset + 1) + span[i], byte.MinValue, byte.MaxValue);
-                                span[i] = (byte)Math.Clamp(random.Next(NoiseMinOffset, NoiseMaxOffset + 1) + span[i], byte.MinValue, byte.MaxValue);
-                            }
+                            target.Save($"D:\\wallmin\\original{layerIndex}.png");
+                            CvInvoke.Erode(target, erode, kernel, anchor, wallThickness, BorderType.Reflect101, default);
+                            erode.Save($"D:\\wallmin\\erode{layerIndex}.png");
+                            CvInvoke.Dilate(erode, erode, kernel, anchor, wallThickness, BorderType.Reflect101, default);
+                            erode.Save($"D:\\wallmin\\dilate{layerIndex}.png");
+                                //CvInvoke.BitwiseXor(target, erode, applyMask);
+                                //applyMask.Save($"D:\\wallmin\\bitwiseXor{layerIndex}.png");
+                                CvInvoke.BitwiseNot(erode, erodeInv);
+                                erodeInv.Save($"D:\\wallmin\\erodeInv{layerIndex}.png");
+                                CvInvoke.BitwiseXor(target, erode, erode, erodeInv);
+                                erode.Save($"D:\\wallmin\\BitwiseXor{layerIndex}.png");
+                                applyMask.SetTo(EmguCvExtensions.BlackColor, erode);
+                                applyMask.Save($"D:\\wallmin\\applymask{layerIndex}.png");
+                                break;
                         }*/
-
-                        break;
-                    case PixelArithmeticOperators.KeepRegion:
-                    {
-                        if (layer.IsEmpty)
-                        {
-                            progress.LockAndIncrement();
-                            return;
-                        }
-                        using var targetClone = target.Clone();
-                        original.SetTo(EmguCvExtensions.BlackColor);
-                        mat.SetTo(EmguCvExtensions.BlackColor);
-                        targetClone.CopyTo(target);
-                        break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
-                    case PixelArithmeticOperators.DiscardRegion:
-                        if (layer.IsEmpty)
+
+                    try
+                    {
+                        switch (Operator)
                         {
-                            progress.LockAndIncrement();
-                            return;
+                            case PixelArithmeticOperators.Set:
+                                tempMat.CopyTo(target, applyMask);
+                                break;
+                            case PixelArithmeticOperators.Add:
+                                CvInvoke.Add(target, tempMat, target, applyMask);
+                                break;
+                            case PixelArithmeticOperators.Subtract:
+                                if (layer.IsEmpty)
+                                {
+                                    progress.LockAndIncrement();
+                                    return;
+                                }
+
+                                CvInvoke.Subtract(target, tempMat, target, applyMask);
+                                break;
+                            case PixelArithmeticOperators.Multiply:
+                                if (layer.IsEmpty)
+                                {
+                                    progress.LockAndIncrement();
+                                    return;
+                                }
+
+                                CvInvoke.Multiply(target, tempMat, target, EmguCvExtensions.NormalizedByteScale);
+                                if (ApplyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
+                                break;
+                            case PixelArithmeticOperators.Divide:
+                                if (layer.IsEmpty)
+                                {
+                                    progress.LockAndIncrement();
+                                    return;
+                                }
+
+                                CvInvoke.Divide(target, tempMat, target);
+                                if (ApplyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
+                                break;
+                            /*case PixelArithmeticOperators.Exponential:
+                                CvInvoke.Pow(target, Value, tempMat);
+                                if(!_affectBackPixels) ApplyMask(original, mat, original);
+                                break;*/
+                            case PixelArithmeticOperators.Minimum:
+                                if (layer.IsEmpty)
+                                {
+                                    progress.LockAndIncrement();
+                                    return;
+                                }
+
+                                CvInvoke.Min(target, tempMat, target);
+                                if (ApplyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
+                                break;
+                            case PixelArithmeticOperators.Maximum:
+                                CvInvoke.Max(target, tempMat, target);
+                                if (ApplyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
+                                break;
+                            case PixelArithmeticOperators.BitwiseNot:
+                                CvInvoke.BitwiseNot(target, target, applyMask);
+                                break;
+                            case PixelArithmeticOperators.BitwiseAnd:
+                                if (layer.IsEmpty)
+                                {
+                                    progress.LockAndIncrement();
+                                    return;
+                                }
+
+                                CvInvoke.BitwiseAnd(target, tempMat, target, applyMask);
+                                break;
+                            case PixelArithmeticOperators.BitwiseOr:
+                                CvInvoke.BitwiseOr(target, tempMat, target, applyMask);
+                                break;
+                            case PixelArithmeticOperators.BitwiseXor:
+                                CvInvoke.BitwiseXor(target, tempMat, target, applyMask);
+                                break;
+                            case PixelArithmeticOperators.AbsDiff:
+                                if (layer.IsEmpty)
+                                {
+                                    progress.LockAndIncrement();
+                                    return;
+                                }
+
+                                CvInvoke.AbsDiff(target, tempMat, target);
+                                if (ApplyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
+                                break;
+                            case PixelArithmeticOperators.Threshold:
+                                var tempThreshold = ThresholdType;
+                                if (ThresholdType is ThresholdType.Otsu or ThresholdType.Triangle)
+                                    tempThreshold = ThresholdType.Binary | tempThreshold;
+                                CvInvoke.Threshold(target, target, Value, ThresholdMaxValue, tempThreshold);
+                                if (ApplyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
+                                break;
+                            case PixelArithmeticOperators.Corrode:
+                                if (layer.IsEmpty)
+                                {
+                                    progress.LockAndIncrement();
+                                    return;
+                                }
+
+                                var span = mat.GetSpanOfBytes();
+
+                                var bounds = HaveROI ? ROI : layer.BoundingRectangle;
+
+                                for (var y = bounds.Y; y < bounds.Bottom; y += _noisePixelArea)
+                                    for (var x = bounds.X; x < bounds.Right; x += _noisePixelArea)
+                                    {
+                                        byte zoneBrightness = 0;
+                                        for (var y1 = y;
+                                             y1 < y + _noisePixelArea && y1 < bounds.Bottom && zoneBrightness < byte.MaxValue;
+                                             y1++)
+                                        {
+                                            var pixelPos = mat.GetPixelPos(x, y1);
+                                            for (var x1 = x;
+                                                 x1 < x + _noisePixelArea && x1 < bounds.Right && zoneBrightness < byte.MaxValue;
+                                                 x1++)
+                                            {
+                                                zoneBrightness = Math.Max(zoneBrightness, span[pixelPos++]);
+                                            }
+                                        }
+
+                                        if (zoneBrightness <= NoiseThreshold) continue;
+                                        var brightness = zoneBrightness;
+
+                                        for (ushort i = 0; i < _noisePasses; i++)
+                                        {
+                                            brightness =
+                                                (byte)Math.Clamp(
+                                                    Random.Shared.Next(NoiseMinOffset, NoiseMaxOffset + 1) + brightness,
+                                                    byte.MinValue, byte.MaxValue);
+                                        }
+
+                                        //byte brightness = (byte)Math.Clamp(RandomNumberGenerator.GetInt32(NoiseMinOffset, NoiseMaxOffset + 1) + zoneBrightness, byte.MinValue, byte.MaxValue);
+                                        for (var y1 = y; y1 < y + _noisePixelArea && y1 < bounds.Bottom; y1++)
+                                        {
+                                            var pixelPos = mat.GetPixelPos(x, y1);
+                                            for (var x1 = x; x1 < x + _noisePixelArea && x1 < bounds.Right; x1++)
+                                            {
+                                                if (span[pixelPos] > NoiseThreshold)
+                                                    span[pixelPos] = brightness;
+                                                pixelPos++;
+                                            }
+                                        }
+                                    }
+
+                                if (ApplyMethod is not PixelArithmeticApplyMethod.All and not PixelArithmeticApplyMethod.Model)
+                                    ApplyMask(originalRoi, target, applyMask);
+
+
+                                // old method
+                                /*if (HaveROI)
+                                {
+                                    for (var y = ROI.Y; y < ROI.Bottom; y++)
+                                    for (var x = ROI.X; x < ROI.Right; x++)
+                                    {
+                                        var pos = mat.GetPixelPos(x, y);
+                                        if (span[pos] <= NoiseThreshold) continue;
+                                        span[pos] = (byte)Math.Clamp(RandomNumberGenerator.GetInt32(NoiseMinOffset, NoiseMaxOffset + 1) + span[pos], byte.MinValue, byte.MaxValue);
+                                    }
+
+                                    if (ApplyMethod
+                                        is not PixelArithmeticApplyMethod.All
+                                        and not PixelArithmeticApplyMethod.Model)
+                                        ApplyMask(originalRoi, target, applyMask);
+                                }
+                                else // Whole image
+                                {
+                                    var spanMask = applyMask is null ? span : applyMask.GetDataByteSpan();
+
+                                    for (var i = 0; i < span.Length; i++)
+                                    {
+                                        //if (span[i] <= NoiseThreshold || spanMask[i] == 0) continue;
+                                        //span[i] = (byte)Math.Clamp(RandomNumberGenerator.GetInt32(NoiseMinOffset, NoiseMaxOffset + 1) + span[i], byte.MinValue, byte.MaxValue);
+                                        span[i] = (byte)Math.Clamp(random.Next(NoiseMinOffset, NoiseMaxOffset + 1) + span[i], byte.MinValue, byte.MaxValue);
+                                    }
+                                }*/
+
+                                break;
+                            case PixelArithmeticOperators.KeepRegion:
+                                {
+                                    if (layer.IsEmpty)
+                                    {
+                                        progress.LockAndIncrement();
+                                        return;
+                                    }
+
+                                    using var targetClone = target.Clone();
+                                    original.SetTo(EmguCvExtensions.BlackColor);
+                                    mat.SetTo(EmguCvExtensions.BlackColor);
+                                    targetClone.CopyTo(target);
+                                    break;
+                                }
+                            case PixelArithmeticOperators.DiscardRegion:
+                                if (layer.IsEmpty)
+                                {
+                                    progress.LockAndIncrement();
+                                    return;
+                                }
+
+                                target.SetTo(EmguCvExtensions.BlackColor);
+                                break;
+                            default:
+                                throw new NotImplementedException();
                         }
-                        target.SetTo(EmguCvExtensions.BlackColor);
-                        break;
-                    default:
-                        throw new NotImplementedException();
+
+                        switch (IgnoreAreaOperator)
+                        {
+                            case PixelArithmeticIgnoreAreaOperator.SmallerThan:
+                                originalRoi.CopyAreasSmallerThan(IgnoreAreaThreshold, target);
+                                break;
+                            case PixelArithmeticIgnoreAreaOperator.LargerThan:
+                                originalRoi.CopyAreasLargerThan(IgnoreAreaThreshold, target);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException(nameof(IgnoreAreaOperator));
+                        }
+
+                        ApplyMask(original, mat);
+
+                        SlicerFile[layerIndex].LayerMat = mat;
+                    }
+                    finally
+                    {
+                        if (applyMask is not null && !ReferenceEquals(applyMask, target)) applyMask.Dispose();
+                    }
+
                 }
 
-                switch (IgnoreAreaOperator)
-                {
-                    case PixelArithmeticIgnoreAreaOperator.SmallerThan:
-                        originalRoi.CopyAreasSmallerThan(IgnoreAreaThreshold, target);
-                        break;
-                    case PixelArithmeticIgnoreAreaOperator.LargerThan:
-                        originalRoi.CopyAreasLargerThan(IgnoreAreaThreshold, target);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(IgnoreAreaOperator));
-                }
-                ApplyMask(original, mat);
-
-                SlicerFile[layerIndex].LayerMat = mat;
-
-                if (applyMask is not null && !ReferenceEquals(applyMask, target)) applyMask.Dispose();
-            }
-
-            progress.LockAndIncrement();
-        });
-
-        patternMat?.Dispose();
-        patternAlternateMat?.Dispose();
+                progress.LockAndIncrement();
+            });
+        }
+        finally
+        {
+            patternMatMask?.Dispose();
+            patternAlternateMatMask?.Dispose();
+            patternMat?.Dispose();
+            patternAlternateMat?.Dispose();
+        }
 
         return !progress.Token.IsCancellationRequested;
     }
 
-    public bool IsNormalPattern(uint layerIndex) => layerIndex / PatternAlternatePerLayersNumber % 2 == 0;
+    public bool IsNormalPattern(uint layerIndex)
+    {
+        return layerIndex / Math.Max((ushort)1, PatternAlternatePerLayersNumber) % 2 == 0;
+    }
 
-    public bool IsAlternatePattern(uint layerIndex) => !IsNormalPattern(layerIndex);
+    public bool IsAlternatePattern(uint layerIndex)
+    {
+        return !IsNormalPattern(layerIndex);
+    }
 
     public void PresetElephantFootCompensation()
     {
@@ -912,17 +976,18 @@ public partial class OperationPixelArithmetic : Operation
         var span = mat.BytePointer;
         Parallel.For(0, mat.Height, CoreSettings.ParallelOptions, y =>
         {
-            result[y] = string.Empty;
+            var row = new StringBuilder(mat.Width * 4);
             var pixelPos = mat.GetPixelPos(0, y);
-            for (int x = 0; x < mat.Width; x++)
+            for (var x = 0; x < mat.Width; x++)
             {
-                result[y] += $"{span[pixelPos++]} ";
+                if (x > 0) row.Append(' ');
+                row.Append(span[pixelPos++]);
             }
 
-            result[y] = result[y].Trim();
+            result[y] = row.ToString();
         });
 
-        StringBuilder sb = new();
+        var sb = new StringBuilder();
         foreach (var s in result)
         {
             sb.AppendLine(s);
@@ -949,11 +1014,14 @@ public partial class OperationPixelArithmetic : Operation
         {
             Debug.WriteLine(e);
         }
-
     }
 
 
-    public void GeneratePattern(object pattern) => GeneratePattern(pattern.ToString()!);
+    public void GeneratePattern(object pattern)
+    {
+        GeneratePattern(pattern.ToString()!);
+    }
+
     public void GeneratePattern(string pattern)
     {
         if (pattern == "Chessboard")
@@ -1113,12 +1181,17 @@ public partial class OperationPixelArithmetic : Operation
         }
     }
 
-    public void GenerateInfill(object pattern) => GenerateInfill(pattern.ToString()!);
+    public void GenerateInfill(object pattern)
+    {
+        GenerateInfill(pattern.ToString()!);
+    }
+
     public void GenerateInfill(string pattern)
     {
         if (pattern == "Rectilinear")
         {
-            PatternText = ("255\n".Repeat(PatternGenInfillSpacing) + "0\n".Repeat(PatternGenInfillThickness)).Trim('\n', '\r');
+            PatternText =
+                ("255\n".Repeat(PatternGenInfillSpacing) + "0\n".Repeat(PatternGenInfillThickness)).Trim('\n', '\r');
             PatternTextAlternate = null!;
             return;
         }
@@ -1173,7 +1246,7 @@ public partial class OperationPixelArithmetic : Operation
             var zeros = Math.Max(0, PatternGenInfillSpacing - PatternGenInfillThickness * 2);
 
             // Pillar
-            for (int i = 0; i < PatternGenInfillThickness; i++)
+            for (var i = 0; i < PatternGenInfillThickness; i++)
             {
                 p1 += "0 ".Repeat(PatternGenInfillThickness);
                 p1 += "255 ".Repeat(zeros);
@@ -1181,13 +1254,13 @@ public partial class OperationPixelArithmetic : Operation
                 p1 = p1.Trim() + '\n';
             }
 
-            for (int i = 0; i < zeros; i++)
+            for (var i = 0; i < zeros; i++)
             {
                 p1 += "255 ".Repeat(PatternGenInfillSpacing);
                 p1 = p1.Trim() + '\n';
             }
 
-            for (int i = 0; i < PatternGenInfillThickness; i++)
+            for (var i = 0; i < PatternGenInfillThickness; i++)
             {
                 p1 += "0 ".Repeat(PatternGenInfillThickness);
                 p1 += "255 ".Repeat(zeros);
@@ -1196,13 +1269,13 @@ public partial class OperationPixelArithmetic : Operation
             }
 
             // Square
-            for (int i = 0; i < PatternGenInfillThickness; i++)
+            for (var i = 0; i < PatternGenInfillThickness; i++)
             {
                 p2 += "0 ".Repeat(PatternGenInfillSpacing);
                 p2 = p2.Trim() + '\n';
             }
 
-            for (int i = 0; i < zeros; i++)
+            for (var i = 0; i < zeros; i++)
             {
                 p2 += "0 ".Repeat(PatternGenInfillThickness);
                 p2 += "255 ".Repeat(zeros);
@@ -1210,12 +1283,11 @@ public partial class OperationPixelArithmetic : Operation
                 p2 = p2.Trim() + '\n';
             }
 
-            for (int i = 0; i < PatternGenInfillThickness; i++)
+            for (var i = 0; i < PatternGenInfillThickness; i++)
             {
                 p2 += "0 ".Repeat(PatternGenInfillSpacing);
                 p2 = p2.Trim() + '\n';
             }
-
 
 
             PatternText = p1.Trim('\n', '\r');
@@ -1230,15 +1302,29 @@ public partial class OperationPixelArithmetic : Operation
 
     protected bool Equals(OperationPixelArithmetic other)
     {
-        return Operator == other.Operator && ApplyMethod == other.ApplyMethod && WallThicknessStart == other.WallThicknessStart && WallThicknessEnd == other.WallThicknessEnd && WallChamfer == other.WallChamfer && IgnoreAreaOperator == other.IgnoreAreaOperator && IgnoreAreaThreshold == other.IgnoreAreaThreshold && Value == other.Value && UsePattern == other.UsePattern && ThresholdType == other.ThresholdType && ThresholdMaxValue == other.ThresholdMaxValue && PatternAlternatePerLayersNumber == other.PatternAlternatePerLayersNumber && PatternInvert == other.PatternInvert && PatternText == other.PatternText && PatternTextAlternate == other.PatternTextAlternate && PatternGenMinBrightness == other.PatternGenMinBrightness && PatternGenBrightness == other.PatternGenBrightness && PatternGenInfillThickness == other.PatternGenInfillThickness && PatternGenInfillSpacing == other.PatternGenInfillSpacing && NoiseMinOffset == other.NoiseMinOffset && NoiseMaxOffset == other.NoiseMaxOffset && NoiseThreshold == other.NoiseThreshold && _noisePixelArea == other._noisePixelArea && _noisePasses == other._noisePasses;
+        return Operator == other.Operator && ApplyMethod == other.ApplyMethod &&
+               WallThicknessStart == other.WallThicknessStart && WallThicknessEnd == other.WallThicknessEnd &&
+               WallChamfer == other.WallChamfer && IgnoreAreaOperator == other.IgnoreAreaOperator &&
+               IgnoreAreaThreshold == other.IgnoreAreaThreshold && Value == other.Value &&
+               UsePattern == other.UsePattern && ThresholdType == other.ThresholdType &&
+               ThresholdMaxValue == other.ThresholdMaxValue &&
+               PatternAlternatePerLayersNumber == other.PatternAlternatePerLayersNumber &&
+               PatternInvert == other.PatternInvert && PatternText == other.PatternText &&
+               PatternTextAlternate == other.PatternTextAlternate &&
+               PatternGenMinBrightness == other.PatternGenMinBrightness &&
+               PatternGenBrightness == other.PatternGenBrightness &&
+               PatternGenInfillThickness == other.PatternGenInfillThickness &&
+               PatternGenInfillSpacing == other.PatternGenInfillSpacing && NoiseMinOffset == other.NoiseMinOffset &&
+               NoiseMaxOffset == other.NoiseMaxOffset && NoiseThreshold == other.NoiseThreshold &&
+               _noisePixelArea == other._noisePixelArea && _noisePasses == other._noisePasses;
     }
 
     public override bool Equals(object? obj)
     {
         if (ReferenceEquals(null, obj)) return false;
         if (ReferenceEquals(this, obj)) return true;
-        if (obj.GetType() != this.GetType()) return false;
-        return Equals((OperationPixelArithmetic) obj);
+        if (obj.GetType() != GetType()) return false;
+        return Equals((OperationPixelArithmetic)obj);
     }
 
     #endregion

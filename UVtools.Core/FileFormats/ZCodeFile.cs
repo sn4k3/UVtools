@@ -10,7 +10,6 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.OpenSsl;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
@@ -513,8 +512,10 @@ public sealed class ZCodeFile : FileFormat
 
                 byte[] data = System.Convert.FromBase64String(line);
                 var decodedBytes = encryptEngine.ProcessBlock(data, 0, data.Length);
-                decodedBytes = decodedBytes.AsValueEnumerable().Skip(2).SkipWhile(b => b is 255 or 0).ToArray();
-                GCode!.AppendLine(Encoding.UTF8.GetString(decodedBytes));
+                var decodedSpan = decodedBytes.AsSpan(2);
+                var textOffset = 0;
+                while (textOffset < decodedSpan.Length && decodedSpan[textOffset] is 255 or 0) textOffset++;
+                GCode!.AppendLine(Encoding.UTF8.GetString(decodedSpan[textOffset..]));
 
                 progress++;
             }
@@ -555,6 +556,7 @@ public sealed class ZCodeFile : FileFormat
         var keyParameter = (AsymmetricKeyParameter)new PemReader(txtreader).ReadObject();
         encryptEngine.Init(true, keyParameter);
 
+        var padData = GC.AllocateUninitializedArray<byte>(64);
         using StringReader sr = new(GCodeStr!);
         while (sr.ReadLine() is { } line)
         {
@@ -562,24 +564,21 @@ public sealed class ZCodeFile : FileFormat
             if (line == string.Empty || line[0] == ';') continue; // No empty lines nor comment start lines
             progress += (uint)line.Length;
 
-            var data = Encoding.UTF8.GetBytes(line);
-            List<byte> padData = new(64) {0, 1, 0};
-            padData.AddRange(data);
-
-            if (padData.Count > 64)
+            var byteCount = Encoding.UTF8.GetByteCount(line);
+            if (byteCount > 61)
             {
-                throw new ArgumentOutOfRangeException($"Too long gcode line to encrypt, got: {padData.Count} bytes while expecting less than 64 bytes");
+                throw new ArgumentOutOfRangeException(
+                    $"Too long gcode line to encrypt, got: {byteCount + 3} bytes while expecting less than 64 bytes");
             }
 
-            while (padData.Count < 64)
-            {
-                padData.Insert(2, 255);
-            }
+            padData[0] = 0;
+            padData[1] = 1;
+            var paddingLength = 61 - byteCount;
+            padData.AsSpan(2, paddingLength).Fill(255);
+            padData[2 + paddingLength] = 0;
+            Encoding.UTF8.GetBytes(line, padData.AsSpan(3 + paddingLength));
 
-            var padDataArray = padData.ToArray();
-            //Debug.WriteLine(string.Join(", ", padDataArray));
-
-            var encodedBytes = encryptEngine.ProcessBlock(padDataArray, 0, padDataArray.Length);
+            var encodedBytes = encryptEngine.ProcessBlock(padData, 0, padData.Length);
             sb.AppendLine(System.Convert.ToBase64String(encodedBytes));
         }
 

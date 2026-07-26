@@ -114,6 +114,10 @@ public partial class OperationLithophane : Operation
                 sb.AppendLine("Start threshold can't be higher than end threshold");
             }
         }
+        if (_layerHeight <= 0)
+        {
+            sb.AppendLine("The layer height must be greater than zero.");
+        }
 
         return sb.ToString();
     }
@@ -265,10 +269,11 @@ public partial class OperationLithophane : Operation
         if (!FileExists) return null;
         try
         {
-            var mat = CvInvoke.Imread(FilePath, ImreadModes.Grayscale);
-            if (InvertColor) CvInvoke.BitwiseNot(mat, mat);
-            mat = mat.RoiFromBoundingRectangle(out _);
-            return mat.Size == Size.Empty ? null : mat;
+            using var source = CvInvoke.Imread(FilePath, ImreadModes.Grayscale);
+            if (InvertColor) CvInvoke.BitwiseNot(source, source);
+            var mat = source.RoiFromBoundingRectangle(out _);
+            if (mat.Size != Size.Empty) return mat;
+            mat.Dispose();
         }
         catch
         {
@@ -420,7 +425,7 @@ public partial class OperationLithophane : Operation
                 CvInvoke.GaussianBlur(layerMat, layerMat, new Size(3, 3), 0);
             }
             var layer = new Layer(layerMat, SlicerFile);
-            thresholdLayers = layer.Clone((uint)(_lithophaneHeight / _layerHeight));
+            thresholdLayers = layer.Clone(Math.Max(1, (uint)Math.Ceiling(_lithophaneHeight / _layerHeight)));
         }
 
         if (BaseType != LithophaneBaseType.None && _baseThickness > 0)

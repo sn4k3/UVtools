@@ -7,6 +7,7 @@
  */
 
 using BinarySerialization;
+using DotNext.Buffers;
 using Emgu.CV;
 using System;
 using System.Collections.Generic;
@@ -360,147 +361,168 @@ public sealed class OSFFile : FileFormat
 
         internal unsafe void EncodeImage(Mat mat, Layer layer)
         {
-            List<byte> rawData = [];
-            byte color = 0;
-            uint stride = 0;
-            var span = mat.GetReadOnlySpanOfBytes();
-            var imageLength = mat.ByteCountInt32;
-            var step = mat.RealStep;
-            uint lines = 0;
-
-            void AddRep()
+            var rawData = new BufferWriterSlim<byte>(
+                FileFormat.GetRleBufferInitialCapacity(
+                    mat.ByteCountInt32,
+                    estimatedPixelsPerRun: 128,
+                    encodedBytesPerRun: 2));
+            try
             {
-                switch (stride)
+                byte color = 0;
+                uint stride = 0;
+                var span = mat.GetReadOnlySpanOfBytes();
+                var imageLength = mat.ByteCountInt32;
+                var step = mat.RealStep;
+                uint lines = 0;
+
+                static void AddRep(
+                    ref BufferWriterSlim<byte> rawData,
+                    uint stride,
+                    byte color,
+                    ref uint lines)
                 {
-                    case 0:
+                    switch (stride)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            color &= 0xfe;
+                            break;
+                        case > 1:
+                            color |= 0x01;
+                            break;
+                    }
+
+                    lines++;
+                    rawData.Add(color);
+
+                    if (stride <= 1)
+                    {
+                        // no run needed
                         return;
-                    case 1:
-                        color &= 0xfe;
-                        break;
-                    case > 1:
-                        color |= 0x01;
-                        break;
+                    }
+
+                    if (stride <= 0x7f)
+                    {
+                        rawData.Add((byte)stride);
+                        return;
+                    }
+
+                    if (stride <= 0x3fff)
+                    {
+                        rawData.Add((byte)((stride >> 8) | 0x80));
+                        rawData.Add((byte)stride);
+                        return;
+                    }
+
+                    if (stride <= 0x1fffff)
+                    {
+                        rawData.Add((byte)((stride >> 16) | 0xc0));
+                        rawData.Add((byte)(stride >> 8));
+                        rawData.Add((byte)stride);
+                        return;
+                    }
+
+                    if (stride <= 0xfffffff)
+                    {
+                        rawData.Add((byte)((stride >> 24) | 0xe0));
+                        rawData.Add((byte)(stride >> 16));
+                        rawData.Add((byte)(stride >> 8));
+                        rawData.Add((byte)stride);
+                    }
                 }
 
-                lines++;
-                rawData.Add(color);
-
-                if (stride <= 1)
+                for (var pixel = StartY * step; pixel <= layer.LastPixelIndex; pixel++)
                 {
-                    // no run needed
-                    return;
+                    var grey = span[pixel];
+
+                    if (grey == color)
+                    {
+                        stride++;
+                    }
+                    else
+                    {
+                        AddRep(ref rawData, stride, color, ref lines);
+                        color = grey;
+                        stride = 1;
+                    }
                 }
 
-                if (stride <= 0x7f)
-                {
-                    rawData.Add((byte)stride);
-                    return;
-                }
+                // Left-over
+                if (color != 0) AddRep(ref rawData, stride, color, ref lines);
+                stride = (uint)((imageLength - layer.LastPixelIndex - 1) % step);
+                color = 0;
+                AddRep(ref rawData, stride, color, ref lines);
 
-                if (stride <= 0x3fff)
-                {
-                    rawData.Add((byte)((stride >> 8) | 0x80));
-                    rawData.Add((byte)stride);
-                    return;
-                }
+                NumberOfLines = lines;
 
-                if (stride <= 0x1fffff)
-                {
-                    rawData.Add((byte)((stride >> 16) | 0xc0));
-                    rawData.Add((byte)(stride >> 8));
-                    rawData.Add((byte)stride);
-                    return;
-                }
-
-                if (stride <= 0xfffffff)
-                {
-                    rawData.Add((byte)((stride >> 24) | 0xe0));
-                    rawData.Add((byte)(stride >> 16));
-                    rawData.Add((byte)(stride >> 8));
-                    rawData.Add((byte)stride);
-                }
+                EncodedRle = rawData.WrittenSpan.ToArray();
             }
-
-            for (var pixel = StartY * step; pixel <= layer.LastPixelIndex; pixel++)
+            finally
             {
-                var grey = span[pixel];
-
-                if (grey == color)
-                {
-                    stride++;
-                }
-                else
-                {
-                    AddRep();
-                    color = grey;
-                    stride = 1;
-                }
+                rawData.Dispose();
             }
-
-            // Left-over
-            if (color != 0) AddRep();
-            stride = (uint)((imageLength - layer.LastPixelIndex - 1) % step);
-            color = 0;
-            AddRep();
-
-            NumberOfLines = lines;
-
-            EncodedRle = rawData.ToArray();
         }
 
         internal Mat DecodeImage(OSFFile parent)
         {
             var mat = parent.CreateMat();
             if (NumberOfLines == 0) return mat;
-
-            var pixel = (int)(StartY * parent.ResolutionX);
-            for (var n = 0; n < EncodedRle.Length; n++)
+            try
             {
-                var code = EncodedRle[n];
-                var stride = 1;
-
-                if ((code & 0x01) == 0x01) // It's a run
+                var pixel = checked((int)(StartY * parent.ResolutionX));
+                for (var n = 0; n < EncodedRle.Length; n++)
                 {
-                    code &= 0xfe; // Get the grey value
-                    var slen = EncodedRle[++n];
+                    var code = EncodedRle[n];
+                    var stride = 1;
 
-                    if ((slen & 0x80) == 0)
+                    if ((code & 0x01) == 0x01) // It's a run
                     {
-                        stride = slen;
+                        code &= 0xfe; // Get the grey value
+                        var slen = EncodedRle[++n];
+
+                        if ((slen & 0x80) == 0)
+                        {
+                            stride = slen;
+                        }
+                        else if ((slen & 0xc0) == 0x80)
+                        {
+                            stride = ((slen & 0x3f) << 8) + EncodedRle[n + 1];
+                            n++;
+                        }
+                        else if ((slen & 0xe0) == 0xc0)
+                        {
+                            stride = ((slen & 0x1f) << 16) + (EncodedRle[n + 1] << 8) + EncodedRle[n + 2];
+                            n += 2;
+                        }
+                        else if ((slen & 0xf0) == 0xe0)
+                        {
+                            stride = ((slen & 0xf) << 24) + (EncodedRle[n + 1] << 16) + (EncodedRle[n + 2] << 8) +
+                                     EncodedRle[n + 3];
+                            n += 3;
+                        }
+                        else
+                        {
+                            throw new FileLoadException("Corrupted RLE data");
+                        }
                     }
-                    else if ((slen & 0xc0) == 0x80)
+
+                    // Bit extend from 7-bit to 8-bit greymap
+                    if (code != 0)
                     {
-                        stride = ((slen & 0x3f) << 8) + EncodedRle[n + 1];
-                        n++;
+                        code = (byte)(code | 1);
                     }
-                    else if ((slen & 0xe0) == 0xc0)
-                    {
-                        stride = ((slen & 0x1f) << 16) + (EncodedRle[n + 1] << 8) + EncodedRle[n + 2];
-                        n += 2;
-                    }
-                    else if ((slen & 0xf0) == 0xe0)
-                    {
-                        stride = ((slen & 0xf) << 24) + (EncodedRle[n + 1] << 16) + (EncodedRle[n + 2] << 8) +
-                                 EncodedRle[n + 3];
-                        n += 3;
-                    }
-                    else
-                    {
-                        mat.Dispose();
-                        throw new FileLoadException("Corrupted RLE data");
-                    }
+
+                    mat.FillSpan(ref pixel, stride, code);
                 }
 
-                // Bit extend from 7-bit to 8-bit greymap
-                if (code != 0)
-                {
-                    code = (byte)(code | 1);
-                }
-
-                mat.FillSpan(ref pixel, stride, code);
+                return mat;
             }
-
-            return mat;
+            catch
+            {
+                mat.Dispose();
+                throw;
+            }
         }
     }
 
@@ -996,14 +1018,15 @@ public sealed class OSFFile : FileFormat
         {
             inputFile.Seek(Header.HeaderLength, SeekOrigin.Begin);
             var layerDef = new OSFLayerDef[LayerCount];
-            var rle = new List<byte>();
             progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
             foreach (var batch in BatchLayersIndexes())
             {
+                using var rle = new BufferWriterSlim<byte>(4 * 1024);
                 foreach (var layerIndex in batch)
                 {
                     progress.PauseOrCancelIfRequested();
+                    rle.Clear(reuseBuffer: true);
 
                     //Debug.WriteLine($"{layerIndex}: {inputFile.Position}");
                     layerDef[layerIndex] = Helpers.Deserialize<OSFLayerDef>(inputFile);
@@ -1034,11 +1057,15 @@ public sealed class OSFFile : FileFormat
                             }
                             else if ((slen & 0xe0) == 0xc0)
                             {
-                                rle.AddRange(inputFile.ReadBytes(2));
+                                var destination = rle.GetSpan(2);
+                                inputFile.ReadExactly(destination[..2]);
+                                rle.Advance(2);
                             }
                             else if ((slen & 0xf0) == 0xe0)
                             {
-                                rle.AddRange(inputFile.ReadBytes(3));
+                                var destination = rle.GetSpan(3);
+                                inputFile.ReadExactly(destination[..3]);
+                                rle.Advance(3);
                             }
                             else
                             {
@@ -1051,8 +1078,7 @@ public sealed class OSFFile : FileFormat
                         }
                     }
 
-                    layerDef[layerIndex].EncodedRle = rle.ToArray();
-                    rle.Clear();
+                    layerDef[layerIndex].EncodedRle = rle.WrittenSpan.ToArray();
                 }
 
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>

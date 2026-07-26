@@ -6,12 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using CommunityToolkit.Diagnostics;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
-using EmguExtensions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -28,6 +22,14 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using BinarySerialization;
+using CommunityToolkit.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
+using DotNext.Buffers;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
+using EmguExtensions;
 using UVtools.Core.Exceptions;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
@@ -37,7 +39,6 @@ using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
 using ZLinq;
-using BinarySerialization;
 using Timer = System.Timers.Timer;
 
 namespace UVtools.Core.FileFormats;
@@ -73,164 +74,220 @@ public enum PerLayerSettingsModes : byte
 /// </summary>
 public abstract partial class FileFormat : ObservableObject, IDisposable, IEquatable<FileFormat>, IList<Layer>
 {
-    #region Constants
+    #region Notification
 
     /// <summary>
-    /// Gets the decimal precision for display properties
+    /// Raise notification for aspect changes, like <see cref="Resolution"/>, <see cref="Display"/> and relatives
     /// </summary>
-    public const byte DisplayFloatPrecision = 3;
-
-    public const SpeedUnit CoreSpeedUnit = SpeedUnit.MillimetersPerMinute;
-    public const string TemporaryFileAppend = ".tmp";
-    public const ushort ExtraPrintTime = 300;
-
-    private const string ExtractConfigFileName = "Configuration";
-    private const string ExtractConfigFileExtension = "ini";
-
-
-    public const float DefaultLayerHeight = 0.05f;
-    public const ushort DefaultBottomLayerCount = 4;
-    public const ushort DefaultTransitionLayerCount = 0;
-
-    public const float DefaultBottomExposureTime = 30;
-    public const float DefaultExposureTime = 3;
-
-    public const float DefaultBottomLiftHeight = 6;
-    public const float DefaultLiftHeight = 6;
-    public const float DefaultBottomLiftSpeed = 100;
-    public const float DefaultLiftSpeed = 100;
-
-    public const float DefaultBottomLiftHeight2 = 0;
-    public const float DefaultLiftHeight2 = 0;
-    public const float DefaultBottomLiftSpeed2 = 300;
-    public const float DefaultLiftSpeed2 = 300;
-
-
-    public const float DefaultBottomRetractSpeed = 100;
-    public const float DefaultRetractSpeed = 100;
-    public const float DefaultBottomRetractHeight2 = 0;
-    public const float DefaultRetractHeight2 = 0;
-    public const float DefaultBottomRetractSpeed2 = 80;
-    public const float DefaultRetractSpeed2 = 80;
-
-    public const byte DefaultBottomLightPWM = 255;
-    public const byte DefaultLightPWM = 255;
-
-    public const string DefaultMachineName = "Unknown";
-    public const string DefaultResinName = "Unknown";
-
-    public const byte MaximumAntiAliasing = 16;
-
-    private const ushort QueueTimerPrintTime = 250; // ms
-
-    public const string DATATYPE_PNG = "PNG";
-    public const string DATATYPE_JPG = "JPG";
-    public const string DATATYPE_JPEG = "JPEG";
-    public const string DATATYPE_JP2 = "JP2";
-    public const string DATATYPE_BMP = "BMP";
-    public const string DATATYPE_TIF = "TIF";
-    public const string DATATYPE_TIFF = "TIFF";
-    public const string DATATYPE_PPM = "PPM";
-    public const string DATATYPE_PMG = "PMG";
-    public const string DATATYPE_SR = "SR";
-    public const string DATATYPE_RAS = "RAS";
-
-    public const string DATATYPE_RGB555 = "RGB555";
-    public const string DATATYPE_RGB565 = "RGB565";
-    public const string DATATYPE_RGB555_BE = "RGB555-BE";
-    public const string DATATYPE_RGB565_BE = "RGB565-BE";
-    public const string DATATYPE_RGB888 = "RGB888";
-
-
-    public const string DATATYPE_BGR555 = "BGR555";
-    public const string DATATYPE_BGR565 = "BGR565";
-    public const string DATATYPE_BGR555_BE = "BGR555-BE";
-    public const string DATATYPE_BGR565_BE = "BGR565-BE";
-    public const string DATATYPE_BGR888 = "BGR888";
-
-    /// <summary>
-    /// Gets the default batch count to process layers in parallel
-    /// </summary>
-    public static int DefaultParallelBatchCount => (CoreSettings.MaxDegreeOfParallelism > 0
-        ? CoreSettings.MaxDegreeOfParallelism
-        : Environment.ProcessorCount) * 10;
+    protected void NotifyAspectChange()
+    {
+        OnPropertyChanged(nameof(Ppmm));
+        OnPropertyChanged(nameof(PpmmMax));
+        OnPropertyChanged(nameof(PixelSizeMicrons));
+        OnPropertyChanged(nameof(PixelArea));
+        OnPropertyChanged(nameof(PixelAreaMicrons));
+        OnPropertyChanged(nameof(PixelSizeMicronsMax));
+        OnPropertyChanged(nameof(PixelSize));
+        OnPropertyChanged(nameof(PixelSizeMax));
+    }
 
     #endregion
 
-    #region Enums
+    #region Draw Modifications
 
-    /// <summary>
-    /// Enumeration of file format types
-    /// </summary>
-    public enum FileFormatType : byte
+    public void DrawModifications(IList<PixelOperation> drawings, OperationProgress? progress = null)
     {
-        Archive,
-        Binary,
-        Text
-    }
+        progress ??= new OperationProgress();
+        progress.Reset("Drawings", (uint)drawings.Count);
 
-    /// <summary>
-    /// Enumeration of file thumbnail size types
-    /// </summary>
-    public enum FileThumbnailSize : byte
-    {
-        Small = 0,
-        Large
-    }
+        var group1 = drawings
+            .Where(operation => operation.OperationType
+                is PixelOperation.PixelOperationType.Drawing
+                or PixelOperation.PixelOperationType.Text
+                or PixelOperation.PixelOperationType.Fill)
+            .GroupBy(operation => operation.LayerIndex);
 
-    public enum TransitionLayerTypes : byte
-    {
-        /// <summary>
-        /// Firmware transition layers are handled by printer firmware
-        /// </summary>
-        Firmware,
+        Parallel.ForEach(group1, CoreSettings.GetParallelOptions(progress), layerOperationGroup =>
+        {
+            progress.PauseIfRequested();
+            var layer = this[layerOperationGroup.Key];
+            using var mat = layer.LayerMat;
 
-        /// <summary>
-        /// Software transition layers are handled by software and written on layer data
-        /// </summary>
-        Software
-    }
+            foreach (var operation in layerOperationGroup)
+            {
+                if (operation.OperationType == PixelOperation.PixelOperationType.Drawing)
+                {
+                    if (operation is not PixelDrawing operationDrawing) continue;
+                    if (operationDrawing.BrushSize == 1)
+                    {
+                        mat.SetByte(operation.Location.X, operation.Location.Y, operationDrawing.Brightness);
+                        continue;
+                    }
 
-    /// <summary>
-    /// File decode type
-    /// </summary>
-    public enum FileDecodeType : byte
-    {
-        /// <summary>
-        /// Decodes all the file information and caches layer images
-        /// </summary>
-        Full,
+                    var pixelWidth = PixelWidth;
+                    var pixelHeigth = PixelHeight;
+                    var diameter = PixelsToNormalizedPitchF(operationDrawing.BrushSize);
 
-        /// <summary>
-        /// Decodes only the information in the file and thumbnails, no layer image is read nor cached, fast
-        /// </summary>
-        Partial
-    }
+                    mat.DrawAlignedPolygon((byte)operationDrawing.BrushShape, diameter,
+                        operationDrawing.Location,
+                        new MCvScalar(operationDrawing.Brightness), operationDrawing.RotationAngle,
+                        operationDrawing.Thickness, operationDrawing.LineType);
+                    /*switch (operationDrawing.BrushShape)
+                        {
+                            case PixelDrawing.BrushShapeType.Square:
+                                CvInvoke.Rectangle(mat, operationDrawing.Rectangle, new MCvScalar(operationDrawing.Brightness), operationDrawing.Thickness, operationDrawing.LineType);
+                                break;
+                            case PixelDrawing.BrushShapeType.Circle:
+                                CvInvoke.Circle(mat, operation.Location, operationDrawing.BrushSize / 2,
+                                    new MCvScalar(operationDrawing.Brightness), operationDrawing.Thickness, operationDrawing.LineType);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }*/
+                }
+                else if (operation.OperationType == PixelOperation.PixelOperationType.Text)
+                {
+                    if (operation is not PixelText operationText) continue;
+                    mat.PutTextRotated(operationText.Text, operationText.Location, operationText.Font,
+                        operationText.FontScale, new MCvScalar(operationText.Brightness), operationText.Thickness,
+                        operationText.LineType, operationText.Mirror, operationText.LineAlignment,
+                        (double)operationText.Angle);
+                }
+                else if (operation.OperationType == PixelOperation.PixelOperationType.Fill)
+                {
+                    if (operation is not PixelFill operationFill) continue;
+                    var pixel = mat.GetByte(operation.Location);
+                    if (!operationFill.IsAdd && pixel == 0) continue;
 
-    /// <summary>
-    /// Image data type
-    /// </summary>
-    public enum ImageFormat : byte
-    {
-        Custom,
-        Rle,
-        GCode,
+                    using var vec = layer.Contours.GetContoursInside(operation.Location);
 
-        Png8,
-        Png24,
-        Png32,
+                    if (vec.Size > 0)
+                    {
+                        CvInvoke.DrawContours(mat, vec, -1, new MCvScalar(operationFill.Brightness), -1);
+                    }
+                }
+            }
 
-        /// <summary>
-        /// eg: Nova Bene4, Elfin Mono SE, Whale 1/2
-        /// </summary>
-        Png24BgrAA,
+            layer.LayerMat = mat;
+            progress.LockAndIncrement();
+        });
 
-        /// <summary>
-        /// eg: Uniformation GKone, Athena 12K
-        /// </summary>
-        Png24RgbAA,
+        var group2 = drawings
+            .Where(operation => operation.OperationType
+                is PixelOperation.PixelOperationType.Supports
+                or PixelOperation.PixelOperationType.DrainHole)
+            .GroupBy(operation => operation.LayerIndex)
+            .OrderByDescending(group => group.Key);
 
-        Svg
+        if (group2.Any())
+        {
+            using var matCache = new MatCacheManager(this, 0, group2.First().Key)
+            {
+                AutoDispose = true,
+                Direction = false
+            };
+            foreach (var layerOperationGroup in group2)
+            {
+                var toProcess = layerOperationGroup.ToList();
+                var drawnSupportLayers = 0;
+                var drawnDrainHoleLayers = 0;
+                for (var operationLayer = (int)layerOperationGroup.Key - 1;
+                     operationLayer >= 0 && toProcess.Count > 0;
+                     operationLayer--)
+                {
+                    var layer = this[operationLayer];
+                    var mat = matCache.Get1((uint)operationLayer);
+                    var isMatModified = false;
+
+                    for (var i = toProcess.Count - 1; i >= 0; i--)
+                    {
+                        progress.PauseOrCancelIfRequested();
+                        var operation = toProcess[i];
+                        if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
+                        {
+                            var operationSupport = (PixelSupport)operation;
+
+                            var radius = (operationLayer > 10
+                                ? Math.Min(operationSupport.TipDiameter + drawnSupportLayers,
+                                    operationSupport.PillarDiameter)
+                                : operationSupport.BaseDiameter) / 2;
+                            uint whitePixels;
+
+                            var yStart = Math.Max(0, operation.Location.Y - operationSupport.TipDiameter / 2);
+                            var xStart = Math.Max(0, operation.Location.X - operationSupport.TipDiameter / 2);
+
+                            var tipDiameter = PixelsToNormalizedPitch(operationSupport.TipDiameter);
+                            var tipRadius = PixelsToNormalizedPitch(operationSupport.TipDiameter / 2);
+                            var pillarDiameter = PixelsToNormalizedPitch(operationSupport.PillarDiameter);
+
+                            using (var matCircleRoi = new Mat(mat,
+                                       new Rectangle(xStart, yStart, tipDiameter.Width, tipDiameter.Height)))
+                            {
+                                using var matCircleMask = matCircleRoi.NewZeros();
+                                matCircleMask.DrawCircle(tipRadius.ToPoint(), tipRadius,
+                                    new MCvScalar(operation.PixelBrightness), -1);
+                                CvInvoke.BitwiseAnd(matCircleRoi, matCircleMask, matCircleMask);
+                                whitePixels = (uint)CvInvoke.CountNonZero(matCircleMask);
+                            }
+
+                            if (whitePixels >= Math.Pow(operationSupport.TipDiameter, 2) / 3)
+                            {
+                                //CvInvoke.Circle(mat, operation.Location, radius, new MCvScalar(255), -1);
+                                if (drawnSupportLayers == 0) continue; // Supports nonexistent, keep digging
+                                toProcess.RemoveAt(i);
+                                continue; // White area end supporting
+                            }
+
+                            mat.DrawCircle(operation.Location, PixelsToNormalizedPitch(radius),
+                                new MCvScalar(operation.PixelBrightness), -1, operationSupport.LineType);
+                            isMatModified = true;
+                            drawnSupportLayers++;
+                        }
+                        else if (operation.OperationType == PixelOperation.PixelOperationType.DrainHole)
+                        {
+                            var operationDrainHole = (PixelDrainHole)operation;
+
+                            var diameterPitched = PixelsToNormalizedPitch(operationDrainHole.Diameter);
+                            var radius = PixelsToNormalizedPitch(operationDrainHole.Diameter / 2);
+                            uint blackPixels;
+
+                            var xStart = Math.Max(0, operation.Location.X - radius.Width);
+                            var yStart = Math.Max(0, operation.Location.Y - radius.Height);
+
+                            using (var matCircleRoi = new Mat(mat,
+                                       new Rectangle(xStart, yStart, diameterPitched.Width, diameterPitched.Height)))
+                            {
+                                using var matCircleRoiInv = new Mat();
+                                CvInvoke.Threshold(matCircleRoi, matCircleRoiInv, 100, 255, ThresholdType.BinaryInv);
+                                using var matCircleMask = matCircleRoi.NewZeros();
+                                matCircleMask.DrawCircle(radius.ToPoint(), radius, EmguCvExtensions.WhiteColor, -1);
+                                CvInvoke.BitwiseAnd(matCircleRoiInv, matCircleMask, matCircleMask);
+                                blackPixels = (uint)CvInvoke.CountNonZero(matCircleMask);
+                            }
+
+                            if (blackPixels >= Math.Pow(operationDrainHole.Diameter, 2) / 3) // Enough area to drain?
+                            {
+                                if (drawnDrainHoleLayers == 0) continue; // Drill not found a target yet, keep digging
+                                toProcess.RemoveAt(i);
+                                continue; // Stop drill drain found!
+                            }
+
+                            mat.DrawCircle(operation.Location, radius, EmguCvExtensions.BlackColor, -1,
+                                operationDrainHole.LineType);
+                            isMatModified = true;
+                            drawnDrainHoleLayers++;
+                        }
+                    }
+
+                    if (isMatModified)
+                    {
+                        layer.LayerMat = mat;
+                    }
+                }
+
+                progress += (uint)layerOperationGroup.Count();
+            }
+        }
     }
 
     #endregion
@@ -242,6 +299,22 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
     /// </summary>
     public class PrintParameterModifier
     {
+        #region Constructor
+
+        public PrintParameterModifier(string name, string? description = null, string? valueUnit = null,
+            decimal minimum = 0, decimal maximum = 1000, decimal increment = 0.5m, byte decimalPlates = 2)
+        {
+            Name = name;
+            Description = description ?? $"Modify '{name}'";
+            ValueUnit = valueUnit ?? string.Empty;
+            Minimum = minimum;
+            Maximum = maximum;
+            Increment = decimalPlates == 0 ? Math.Max(1, increment) : increment;
+            DecimalPlates = decimalPlates;
+        }
+
+        #endregion
+
         #region Instances
 
         public static PrintParameterModifier PositionZ { get; } = new("Position Z", "Layer absolute Z position", "mm",
@@ -455,22 +528,6 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
 
         #endregion
 
-        #region Constructor
-
-        public PrintParameterModifier(string name, string? description = null, string? valueUnit = null,
-            decimal minimum = 0, decimal maximum = 1000, decimal increment = 0.5m, byte decimalPlates = 2)
-        {
-            Name = name;
-            Description = description ?? $"Modify '{name}'";
-            ValueUnit = valueUnit ?? string.Empty;
-            Minimum = minimum;
-            Maximum = maximum;
-            Increment = decimalPlates == 0 ? Math.Max(1, increment) : increment;
-            DecimalPlates = decimalPlates;
-        }
-
-        #endregion
-
         #region Overrides
 
         protected bool Equals(PrintParameterModifier other)
@@ -503,6 +560,168 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         }
 
         #endregion
+    }
+
+    #endregion
+
+    #region Constants
+
+    /// <summary>
+    /// Gets the decimal precision for display properties
+    /// </summary>
+    public const byte DisplayFloatPrecision = 3;
+
+    public const SpeedUnit CoreSpeedUnit = SpeedUnit.MillimetersPerMinute;
+    public const string TemporaryFileAppend = ".tmp";
+    public const ushort ExtraPrintTime = 300;
+
+    private const string ExtractConfigFileName = "Configuration";
+    private const string ExtractConfigFileExtension = "ini";
+
+
+    public const float DefaultLayerHeight = 0.05f;
+    public const ushort DefaultBottomLayerCount = 4;
+    public const ushort DefaultTransitionLayerCount = 0;
+
+    public const float DefaultBottomExposureTime = 30;
+    public const float DefaultExposureTime = 3;
+
+    public const float DefaultBottomLiftHeight = 6;
+    public const float DefaultLiftHeight = 6;
+    public const float DefaultBottomLiftSpeed = 100;
+    public const float DefaultLiftSpeed = 100;
+
+    public const float DefaultBottomLiftHeight2 = 0;
+    public const float DefaultLiftHeight2 = 0;
+    public const float DefaultBottomLiftSpeed2 = 300;
+    public const float DefaultLiftSpeed2 = 300;
+
+
+    public const float DefaultBottomRetractSpeed = 100;
+    public const float DefaultRetractSpeed = 100;
+    public const float DefaultBottomRetractHeight2 = 0;
+    public const float DefaultRetractHeight2 = 0;
+    public const float DefaultBottomRetractSpeed2 = 80;
+    public const float DefaultRetractSpeed2 = 80;
+
+    public const byte DefaultBottomLightPWM = 255;
+    public const byte DefaultLightPWM = 255;
+
+    public const string DefaultMachineName = "Unknown";
+    public const string DefaultResinName = "Unknown";
+
+    public const byte MaximumAntiAliasing = 16;
+
+    private const ushort QueueTimerPrintTime = 250; // ms
+
+    public const string DATATYPE_PNG = "PNG";
+    public const string DATATYPE_JPG = "JPG";
+    public const string DATATYPE_JPEG = "JPEG";
+    public const string DATATYPE_JP2 = "JP2";
+    public const string DATATYPE_BMP = "BMP";
+    public const string DATATYPE_TIF = "TIF";
+    public const string DATATYPE_TIFF = "TIFF";
+    public const string DATATYPE_PPM = "PPM";
+    public const string DATATYPE_PMG = "PMG";
+    public const string DATATYPE_SR = "SR";
+    public const string DATATYPE_RAS = "RAS";
+
+    public const string DATATYPE_RGB555 = "RGB555";
+    public const string DATATYPE_RGB565 = "RGB565";
+    public const string DATATYPE_RGB555_BE = "RGB555-BE";
+    public const string DATATYPE_RGB565_BE = "RGB565-BE";
+    public const string DATATYPE_RGB888 = "RGB888";
+
+
+    public const string DATATYPE_BGR555 = "BGR555";
+    public const string DATATYPE_BGR565 = "BGR565";
+    public const string DATATYPE_BGR555_BE = "BGR555-BE";
+    public const string DATATYPE_BGR565_BE = "BGR565-BE";
+    public const string DATATYPE_BGR888 = "BGR888";
+
+    /// <summary>
+    /// Gets the default batch count to process layers in parallel
+    /// </summary>
+    public static int DefaultParallelBatchCount => (CoreSettings.MaxDegreeOfParallelism > 0
+        ? CoreSettings.MaxDegreeOfParallelism
+        : Environment.ProcessorCount) * 10;
+
+    #endregion
+
+    #region Enums
+
+    /// <summary>
+    /// Enumeration of file format types
+    /// </summary>
+    public enum FileFormatType : byte
+    {
+        Archive,
+        Binary,
+        Text
+    }
+
+    /// <summary>
+    /// Enumeration of file thumbnail size types
+    /// </summary>
+    public enum FileThumbnailSize : byte
+    {
+        Small = 0,
+        Large
+    }
+
+    public enum TransitionLayerTypes : byte
+    {
+        /// <summary>
+        /// Firmware transition layers are handled by printer firmware
+        /// </summary>
+        Firmware,
+
+        /// <summary>
+        /// Software transition layers are handled by software and written on layer data
+        /// </summary>
+        Software
+    }
+
+    /// <summary>
+    /// File decode type
+    /// </summary>
+    public enum FileDecodeType : byte
+    {
+        /// <summary>
+        /// Decodes all the file information and caches layer images
+        /// </summary>
+        Full,
+
+        /// <summary>
+        /// Decodes only the information in the file and thumbnails, no layer image is read nor cached, fast
+        /// </summary>
+        Partial
+    }
+
+    /// <summary>
+    /// Image data type
+    /// </summary>
+    public enum ImageFormat : byte
+    {
+        Custom,
+        Rle,
+        GCode,
+
+        Png8,
+        Png24,
+        Png32,
+
+        /// <summary>
+        /// eg: Nova Bene4, Elfin Mono SE, Whale 1/2
+        /// </summary>
+        Png24BgrAA,
+
+        /// <summary>
+        /// eg: Uniformation GKone, Athena 12K
+        /// </summary>
+        Png24RgbAA,
+
+        Svg
     }
 
     #endregion
@@ -793,6 +1012,20 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         return Math.Round(value, DisplayFloatPrecision);
     }
 
+    internal static int GetRleBufferInitialCapacity(
+        int pixelCount,
+        int estimatedPixelsPerRun = 128,
+        int encodedBytesPerRun = 1)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(pixelCount);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(estimatedPixelsPerRun, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(encodedBytesPerRun, 0);
+
+        var runCount = pixelCount / estimatedPixelsPerRun +
+                       (pixelCount % estimatedPixelsPerRun == 0 ? 0 : 1);
+        return Math.Max(256, checked(runCount * encodedBytesPerRun));
+    }
+
     /// <summary>
     /// Copy parameters from one file to another
     /// </summary>
@@ -962,8 +1195,16 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
            )
         {
             var mat = new Mat();
-            CvInvoke.Imdecode(bytes, ImreadModes.Unchanged, mat);
-            return mat;
+            try
+            {
+                CvInvoke.Imdecode(bytes, ImreadModes.Unchanged, mat);
+                return mat;
+            }
+            catch
+            {
+                mat.Dispose();
+                throw;
+            }
         }
 
         if (dataType
@@ -979,8 +1220,14 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
             or DATATYPE_BGR888
            )
         {
+            var bytesPerPixel = dataType is DATATYPE_RGB888 or DATATYPE_BGR888 ? 3 : 2;
+            var expectedByteCount = checked(resolution.Width * resolution.Height * bytesPerPixel);
+            if (bytes.Length < expectedByteCount)
+                throw new InvalidDataException(
+                    $"{dataType} image data is truncated: got {bytes.Length} bytes, expected {expectedByteCount}.");
+
             var mat = new Mat(resolution, DepthType.Cv8U, 3);
-            var span = mat.GetSpanOfBytes(0, 0);
+            var span = mat.GetSpanOfBytes();
             var pixel = 0;
             var i = 0;
             while (i < bytes.Length && pixel < span.Length)
@@ -1085,80 +1332,88 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         const ushort REPEATRGB15MASK = 0x20;
         const ushort RLE16EncodingLimit = 0xFFF;
 
-        var rle = new List<byte>();
         var span = image.GetReadOnlySpanOfBytes();
-
-        ushort color15 = 0;
-        uint rep = 0;
-
-        void RleRGB15()
+        var pixelCount = span.Length / image.NumberOfChannels;
+        var rle = new BufferWriterSlim<byte>(
+            GetRleBufferInitialCapacity(pixelCount, estimatedPixelsPerRun: 128, encodedBytesPerRun: 2));
+        try
         {
-            switch (rep)
+            ushort color15 = 0;
+            uint rep = 0;
+
+            static void RleRGB15(ref BufferWriterSlim<byte> rle, uint rep, ushort color15)
             {
-                case 0:
-                    return;
-                case 1:
-                    rle.Add((byte)(color15 & ~REPEATRGB15MASK));
-                    rle.Add((byte)((color15 & ~REPEATRGB15MASK) >> 8));
-                    return;
-                case 2:
-                    for (var i = 0; i < 2; i++)
-                    {
+                switch (rep)
+                {
+                    case 0:
+                        return;
+                    case 1:
                         rle.Add((byte)(color15 & ~REPEATRGB15MASK));
                         rle.Add((byte)((color15 & ~REPEATRGB15MASK) >> 8));
-                    }
+                        return;
+                    case 2:
+                        for (var i = 0; i < 2; i++)
+                        {
+                            rle.Add((byte)(color15 & ~REPEATRGB15MASK));
+                            rle.Add((byte)((color15 & ~REPEATRGB15MASK) >> 8));
+                        }
 
-                    return;
-                default:
-                    rle.Add((byte)(color15 | REPEATRGB15MASK));
-                    rle.Add((byte)((color15 | REPEATRGB15MASK) >> 8));
-                    rle.Add((byte)((rep - 1) | 0x3000));
-                    rle.Add((byte)(((rep - 1) | 0x3000) >> 8));
-                    return;
-            }
-        }
-
-        var pixel = 0;
-        while (pixel < span.Length)
-        {
-            var b = span[pixel++];
-            byte g;
-            byte r;
-
-            if (image.NumberOfChannels == 1) // 8 bit safe-guard
-            {
-                r = g = b;
-            }
-            else
-            {
-                g = span[pixel++];
-                r = span[pixel++];
-            }
-
-            if (image.NumberOfChannels == 4) pixel++; // skip alpha
-
-            var ncolor15 = (ushort)((b >> 3) | ((g >> 2) << 5) | ((r >> 3) << 11));
-
-            if (ncolor15 == color15)
-            {
-                rep++;
-                if (rep == RLE16EncodingLimit)
-                {
-                    RleRGB15();
-                    rep = 0;
+                        return;
+                    default:
+                        rle.Add((byte)(color15 | REPEATRGB15MASK));
+                        rle.Add((byte)((color15 | REPEATRGB15MASK) >> 8));
+                        rle.Add((byte)((rep - 1) | 0x3000));
+                        rle.Add((byte)(((rep - 1) | 0x3000) >> 8));
+                        return;
                 }
             }
-            else
+
+            var pixel = 0;
+            while (pixel < span.Length)
             {
-                RleRGB15();
-                color15 = ncolor15;
-                rep = 1;
+                var b = span[pixel++];
+                byte g;
+                byte r;
+
+                if (image.NumberOfChannels == 1) // 8 bit safe-guard
+                {
+                    r = g = b;
+                }
+                else
+                {
+                    g = span[pixel++];
+                    r = span[pixel++];
+                }
+
+                if (image.NumberOfChannels == 4) pixel++; // skip alpha
+
+                var ncolor15 = (ushort)((b >> 3) | ((g >> 2) << 5) | ((r >> 3) << 11));
+
+                if (ncolor15 == color15)
+                {
+                    rep++;
+                    if (rep == RLE16EncodingLimit)
+                    {
+                        RleRGB15(ref rle, rep, color15);
+                        rep = 0;
+                    }
+                }
+                else
+                {
+                    RleRGB15(ref rle, rep, color15);
+                    color15 = ncolor15;
+                    rep = 1;
+                }
             }
+
+            RleRGB15(ref rle, rep, color15);
+
+            return rle.WrittenSpan.ToArray();
         }
-
-        RleRGB15();
-
-        return rle.ToArray();
+        finally
+        {
+            rle.Dispose();
+        }
     }
 
     public static Mat DecodeChituImageRGB15Rle(byte[] rle, Size resolution)
@@ -1166,37 +1421,51 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         const ushort REPEATRGB15MASK = 0x20;
 
         var mat = new Mat(resolution, DepthType.Cv8U, 3);
-        var span = mat.GetSpanOfBytes(0, 0);
-
-        var pixel = 0;
-        for (uint i = 0; i < rle.Length; i++)
+        try
         {
-            var dot = BitExtensions.ToUShortLittleEndian(rle[i], rle[++i]);
-            var red = (byte)(((dot >> 11) & 0x1F) << 3);
-            var green = (byte)(((dot >> 6) & 0x1F) << 3);
-            var blue = (byte)((dot & 0x1F) << 3);
-            var repeat = 1;
-            if ((dot & REPEATRGB15MASK) == REPEATRGB15MASK)
+            var span = mat.GetSpanOfBytes();
+            var pixel = 0;
+            for (var i = 0; i < rle.Length; i++)
             {
-                repeat += (rle[++i] & 0xFF) | ((rle[++i] & 0x0F) << 8);
+                if (i + 1 >= rle.Length)
+                    throw new InvalidDataException("Truncated Chitubox RGB15 pixel.");
+
+                var dot = BitExtensions.ToUShortLittleEndian(rle[i], rle[++i]);
+                var red = (byte)(((dot >> 11) & 0x1F) << 3);
+                var green = (byte)(((dot >> 6) & 0x1F) << 3);
+                var blue = (byte)((dot & 0x1F) << 3);
+                var repeat = 1;
+                if ((dot & REPEATRGB15MASK) == REPEATRGB15MASK)
+                {
+                    if (i + 2 >= rle.Length)
+                        throw new InvalidDataException("Truncated Chitubox RGB15 repeat.");
+                    repeat += (rle[++i] & 0xFF) | ((rle[++i] & 0x0F) << 8);
+                }
+
+                if (repeat > (span.Length - pixel) / 3)
+                    throw new InvalidDataException("Chitubox RGB15 data exceeds the image bounds.");
+
+                for (var n = 0; n < repeat; n++)
+                {
+                    span[pixel++] = blue;
+                    span[pixel++] = green;
+                    span[pixel++] = red;
+                }
             }
 
-
-            for (var n = 0; n < repeat; n++)
+            var diff = span.Length - pixel;
+            if (diff > 0)
             {
-                span[pixel++] = blue;
-                span[pixel++] = green;
-                span[pixel++] = red;
+                mat.GetSpanOfBytes(pixel, diff).Clear();
             }
-        }
 
-        var diff = span.Length - pixel;
-        if (diff > 0) // Fill leftovers
+            return mat;
+        }
+        catch
         {
-            mat.GetSpanOfBytes(diff, pixel).Clear();
+            mat.Dispose();
+            throw;
         }
-
-        return mat;
     }
 
     public static Mat DecodeChituImageRGB15Rle(byte[] rle, uint resolutionX, uint resolutionY)
@@ -2584,7 +2853,8 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         get => _transitionLayerCount;
         set
         {
-            SetPropertyAndNotify(ref _transitionLayerCount, (ushort)Math.Min(value, MaximumPossibleTransitionLayerCount));
+            SetPropertyAndNotify(ref _transitionLayerCount,
+                (ushort)Math.Min(value, MaximumPossibleTransitionLayerCount));
             OnPropertyChanged(nameof(HaveTransitionLayers));
             OnPropertyChanged(nameof(TransitionLayersRepresentation));
         }
@@ -3994,7 +4264,8 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                    ) UpdatePrintTimeQueued();
             }
             // Fix transition layers times in software mode
-            else if (e.PropertyName is nameof(TransitionLayerCount) && TransitionLayerType == TransitionLayerTypes.Software)
+            else if (e.PropertyName is nameof(TransitionLayerCount) &&
+                     TransitionLayerType == TransitionLayerTypes.Software)
             {
                 ResetCurrentTransitionLayers();
             }
@@ -4105,25 +4376,6 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         GC.SuppressFinalize(this);
         _queueTimerPrintTime.Dispose();
         Clear();
-    }
-
-    #endregion
-
-    #region Notification
-
-    /// <summary>
-    /// Raise notification for aspect changes, like <see cref="Resolution"/>, <see cref="Display"/> and relatives
-    /// </summary>
-    protected void NotifyAspectChange()
-    {
-        OnPropertyChanged(nameof(Ppmm));
-        OnPropertyChanged(nameof(PpmmMax));
-        OnPropertyChanged(nameof(PixelSizeMicrons));
-        OnPropertyChanged(nameof(PixelArea));
-        OnPropertyChanged(nameof(PixelAreaMicrons));
-        OnPropertyChanged(nameof(PixelSizeMicronsMax));
-        OnPropertyChanged(nameof(PixelSize));
-        OnPropertyChanged(nameof(PixelSizeMax));
     }
 
     #endregion
@@ -5027,8 +5279,17 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
             var entry = zipArchive.GetEntry(entryPath);
             if (entry is null) continue;
             var mat = new Mat();
-            CvInvoke.Imdecode(entry.ToArray(), ImreadModes.Unchanged, mat);
-            Thumbnails.Add(mat);
+            try
+            {
+                CvInvoke.Imdecode(entry.ToArray(), ImreadModes.Unchanged, mat);
+                Thumbnails.Add(mat);
+            }
+            catch
+            {
+                mat.Dispose();
+                throw;
+            }
+
             progress++;
         }
     }
@@ -5043,8 +5304,17 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
             if (!string.IsNullOrWhiteSpace(entryEndsWith) && !entry.Name.EndsWith(entryEndsWith)) continue;
             if (!entry.Name.StartsWith(entryStartsWith)) continue;
             Mat mat = new();
-            CvInvoke.Imdecode(entry.ToArray(), ImreadModes.Unchanged, mat);
-            Thumbnails.Add(mat);
+            try
+            {
+                CvInvoke.Imdecode(entry.ToArray(), ImreadModes.Unchanged, mat);
+                Thumbnails.Add(mat);
+            }
+            catch
+            {
+                mat.Dispose();
+                throw;
+            }
+
             progress++;
         }
     }
@@ -5079,38 +5349,38 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                     switch (layerImageType)
                     {
                         case ImageFormat.Png24:
-                        {
-                            using var mat = layer.LayerMat;
-                            CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgr);
-                            pngLayerBytes[layerIndex] = mat.GetPngBytes();
+                            {
+                                using var mat = layer.LayerMat;
+                                CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgr);
+                                pngLayerBytes[layerIndex] = mat.GetPngBytes();
 
-                            break;
-                        }
+                                break;
+                            }
                         case ImageFormat.Png32:
-                        {
-                            using var mat = layer.LayerMat;
-                            CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgra);
-                            pngLayerBytes[layerIndex] = mat.GetPngBytes();
+                            {
+                                using var mat = layer.LayerMat;
+                                CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgra);
+                                pngLayerBytes[layerIndex] = mat.GetPngBytes();
 
-                            break;
-                        }
+                                break;
+                            }
                         case ImageFormat.Png24BgrAA:
-                        {
-                            using var mat = layer.LayerMat;
-                            using var outputMat = mat.Reshape(3);
-                            pngLayerBytes[layerIndex] = outputMat.GetPngBytes();
+                            {
+                                using var mat = layer.LayerMat;
+                                using var outputMat = mat.Reshape(3);
+                                pngLayerBytes[layerIndex] = outputMat.GetPngBytes();
 
-                            break;
-                        }
+                                break;
+                            }
                         case ImageFormat.Png24RgbAA:
-                        {
-                            using var mat = layer.LayerMat;
-                            using var outputMat = mat.Reshape(3);
-                            CvInvoke.CvtColor(outputMat, outputMat, ColorConversion.Bgr2Rgb);
-                            pngLayerBytes[layerIndex] = outputMat.GetPngBytes();
+                            {
+                                using var mat = layer.LayerMat;
+                                using var outputMat = mat.Reshape(3);
+                                CvInvoke.CvtColor(outputMat, outputMat, ColorConversion.Bgr2Rgb);
+                                pngLayerBytes[layerIndex] = outputMat.GetPngBytes();
 
-                            break;
-                        }
+                                break;
+                            }
                         default:
                             pngLayerBytes[layerIndex] = layer.CompressedPngBytes;
                             break;
@@ -5216,26 +5486,26 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                         _layers[layerIndex] = new Layer((uint)layerIndex, pngBytes, this);
                         break;
                     case ImageFormat.Png24BgrAA:
-                    {
-                        using var bgrMat = new Mat();
-                        CvInvoke.Imdecode(pngBytes, ImreadModes.ColorBgr, bgrMat);
-                        using var greyMat = bgrMat.Reshape(1);
+                        {
+                            using var bgrMat = new Mat();
+                            CvInvoke.Imdecode(pngBytes, ImreadModes.ColorBgr, bgrMat);
+                            using var greyMat = bgrMat.Reshape(1);
 
-                        _layers[layerIndex] = new Layer((uint)layerIndex, greyMat, this);
+                            _layers[layerIndex] = new Layer((uint)layerIndex, greyMat, this);
 
-                        break;
-                    }
+                            break;
+                        }
                     case ImageFormat.Png24RgbAA:
-                    {
-                        using Mat rgbMat = new();
-                        CvInvoke.Imdecode(pngBytes, ImreadModes.ColorBgr, rgbMat);
-                        CvInvoke.CvtColor(rgbMat, rgbMat, ColorConversion.Bgr2Rgb);
-                        using var greyMat = rgbMat.Reshape(1);
+                        {
+                            using Mat rgbMat = new();
+                            CvInvoke.Imdecode(pngBytes, ImreadModes.ColorBgr, rgbMat);
+                            CvInvoke.CvtColor(rgbMat, rgbMat, ColorConversion.Bgr2Rgb);
+                            using var greyMat = rgbMat.Reshape(1);
 
-                        _layers[layerIndex] = new Layer((uint)layerIndex, greyMat, this);
+                            _layers[layerIndex] = new Layer((uint)layerIndex, greyMat, this);
 
-                        break;
-                    }
+                            break;
+                        }
                     default:
                         throw new ArgumentOutOfRangeException(nameof(layerImageFormat), layerImageFormat, null);
                 }
@@ -8318,205 +8588,6 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
     public Mat GetMergedMatForSequentialPositionedLayers(uint layerIndex)
     {
         return GetMergedMatForSequentialPositionedLayers(layerIndex, out _);
-    }
-
-    #endregion
-
-    #region Draw Modifications
-
-    public void DrawModifications(IList<PixelOperation> drawings, OperationProgress? progress = null)
-    {
-        progress ??= new OperationProgress();
-        progress.Reset("Drawings", (uint)drawings.Count);
-
-        var group1 = drawings
-            .Where(operation => operation.OperationType
-                is PixelOperation.PixelOperationType.Drawing
-                or PixelOperation.PixelOperationType.Text
-                or PixelOperation.PixelOperationType.Fill)
-            .GroupBy(operation => operation.LayerIndex);
-
-        Parallel.ForEach(group1, CoreSettings.GetParallelOptions(progress), layerOperationGroup =>
-        {
-            progress.PauseIfRequested();
-            var layer = this[layerOperationGroup.Key];
-            using var mat = layer.LayerMat;
-
-            foreach (var operation in layerOperationGroup)
-            {
-                if (operation.OperationType == PixelOperation.PixelOperationType.Drawing)
-                {
-                    if (operation is not PixelDrawing operationDrawing) continue;
-                    if (operationDrawing.BrushSize == 1)
-                    {
-                        mat.SetByte(operation.Location.X, operation.Location.Y, operationDrawing.Brightness);
-                        continue;
-                    }
-
-                    var pixelWidth = PixelWidth;
-                    var pixelHeigth = PixelHeight;
-                    var diameter = PixelsToNormalizedPitchF(operationDrawing.BrushSize);
-
-                    mat.DrawAlignedPolygon((byte)operationDrawing.BrushShape, diameter,
-                        operationDrawing.Location,
-                        new MCvScalar(operationDrawing.Brightness), operationDrawing.RotationAngle,
-                        operationDrawing.Thickness, operationDrawing.LineType);
-                    /*switch (operationDrawing.BrushShape)
-                        {
-                            case PixelDrawing.BrushShapeType.Square:
-                                CvInvoke.Rectangle(mat, operationDrawing.Rectangle, new MCvScalar(operationDrawing.Brightness), operationDrawing.Thickness, operationDrawing.LineType);
-                                break;
-                            case PixelDrawing.BrushShapeType.Circle:
-                                CvInvoke.Circle(mat, operation.Location, operationDrawing.BrushSize / 2,
-                                    new MCvScalar(operationDrawing.Brightness), operationDrawing.Thickness, operationDrawing.LineType);
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }*/
-                }
-                else if (operation.OperationType == PixelOperation.PixelOperationType.Text)
-                {
-                    if (operation is not PixelText operationText) continue;
-                    mat.PutTextRotated(operationText.Text, operationText.Location, operationText.Font,
-                        operationText.FontScale, new MCvScalar(operationText.Brightness), operationText.Thickness,
-                        operationText.LineType, operationText.Mirror, operationText.LineAlignment,
-                        (double)operationText.Angle);
-                }
-                else if (operation.OperationType == PixelOperation.PixelOperationType.Fill)
-                {
-                    if (operation is not PixelFill operationFill) continue;
-                    var pixel = mat.GetByte(operation.Location);
-                    if (!operationFill.IsAdd && pixel == 0) continue;
-
-                    using var vec = layer.Contours.GetContoursInside(operation.Location);
-
-                    if (vec.Size > 0)
-                    {
-                        CvInvoke.DrawContours(mat, vec, -1, new MCvScalar(operationFill.Brightness), -1);
-                    }
-                }
-            }
-
-            layer.LayerMat = mat;
-            progress.LockAndIncrement();
-        });
-
-        var group2 = drawings
-            .Where(operation => operation.OperationType
-                is PixelOperation.PixelOperationType.Supports
-                or PixelOperation.PixelOperationType.DrainHole)
-            .GroupBy(operation => operation.LayerIndex)
-            .OrderByDescending(group => group.Key);
-
-        if (group2.Any())
-        {
-            using var matCache = new MatCacheManager(this, 0, group2.First().Key)
-            {
-                AutoDispose = true,
-                Direction = false
-            };
-            foreach (var layerOperationGroup in group2)
-            {
-                var toProcess = layerOperationGroup.ToList();
-                var drawnSupportLayers = 0;
-                var drawnDrainHoleLayers = 0;
-                for (var operationLayer = (int)layerOperationGroup.Key - 1;
-                     operationLayer >= 0 && toProcess.Count > 0;
-                     operationLayer--)
-                {
-                    var layer = this[operationLayer];
-                    var mat = matCache.Get1((uint)operationLayer);
-                    var isMatModified = false;
-
-                    for (var i = toProcess.Count - 1; i >= 0; i--)
-                    {
-                        progress.PauseOrCancelIfRequested();
-                        var operation = toProcess[i];
-                        if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
-                        {
-                            var operationSupport = (PixelSupport)operation;
-
-                            var radius = (operationLayer > 10
-                                ? Math.Min(operationSupport.TipDiameter + drawnSupportLayers,
-                                    operationSupport.PillarDiameter)
-                                : operationSupport.BaseDiameter) / 2;
-                            uint whitePixels;
-
-                            var yStart = Math.Max(0, operation.Location.Y - operationSupport.TipDiameter / 2);
-                            var xStart = Math.Max(0, operation.Location.X - operationSupport.TipDiameter / 2);
-
-                            var tipDiameter = PixelsToNormalizedPitch(operationSupport.TipDiameter);
-                            var tipRadius = PixelsToNormalizedPitch(operationSupport.TipDiameter / 2);
-                            var pillarDiameter = PixelsToNormalizedPitch(operationSupport.PillarDiameter);
-
-                            using (var matCircleRoi = new Mat(mat,
-                                       new Rectangle(xStart, yStart, tipDiameter.Width, tipDiameter.Height)))
-                            {
-                                using var matCircleMask = matCircleRoi.NewZeros();
-                                matCircleMask.DrawCircle(tipRadius.ToPoint(), tipRadius,
-                                    new MCvScalar(operation.PixelBrightness), -1);
-                                CvInvoke.BitwiseAnd(matCircleRoi, matCircleMask, matCircleMask);
-                                whitePixels = (uint)CvInvoke.CountNonZero(matCircleMask);
-                            }
-
-                            if (whitePixels >= Math.Pow(operationSupport.TipDiameter, 2) / 3)
-                            {
-                                //CvInvoke.Circle(mat, operation.Location, radius, new MCvScalar(255), -1);
-                                if (drawnSupportLayers == 0) continue; // Supports nonexistent, keep digging
-                                toProcess.RemoveAt(i);
-                                continue; // White area end supporting
-                            }
-
-                            mat.DrawCircle(operation.Location, PixelsToNormalizedPitch(radius),
-                                new MCvScalar(operation.PixelBrightness), -1, operationSupport.LineType);
-                            isMatModified = true;
-                            drawnSupportLayers++;
-                        }
-                        else if (operation.OperationType == PixelOperation.PixelOperationType.DrainHole)
-                        {
-                            var operationDrainHole = (PixelDrainHole)operation;
-
-                            var diameterPitched = PixelsToNormalizedPitch(operationDrainHole.Diameter);
-                            var radius = PixelsToNormalizedPitch(operationDrainHole.Diameter / 2);
-                            uint blackPixels;
-
-                            var xStart = Math.Max(0, operation.Location.X - radius.Width);
-                            var yStart = Math.Max(0, operation.Location.Y - radius.Height);
-
-                            using (var matCircleRoi = new Mat(mat,
-                                       new Rectangle(xStart, yStart, diameterPitched.Width, diameterPitched.Height)))
-                            {
-                                using var matCircleRoiInv = new Mat();
-                                CvInvoke.Threshold(matCircleRoi, matCircleRoiInv, 100, 255, ThresholdType.BinaryInv);
-                                using var matCircleMask = matCircleRoi.NewZeros();
-                                matCircleMask.DrawCircle(radius.ToPoint(), radius, EmguCvExtensions.WhiteColor, -1);
-                                CvInvoke.BitwiseAnd(matCircleRoiInv, matCircleMask, matCircleMask);
-                                blackPixels = (uint)CvInvoke.CountNonZero(matCircleMask);
-                            }
-
-                            if (blackPixels >= Math.Pow(operationDrainHole.Diameter, 2) / 3) // Enough area to drain?
-                            {
-                                if (drawnDrainHoleLayers == 0) continue; // Drill not found a target yet, keep digging
-                                toProcess.RemoveAt(i);
-                                continue; // Stop drill drain found!
-                            }
-
-                            mat.DrawCircle(operation.Location, radius, EmguCvExtensions.BlackColor, -1,
-                                operationDrainHole.LineType);
-                            isMatModified = true;
-                            drawnDrainHoleLayers++;
-                        }
-                    }
-
-                    if (isMatModified)
-                    {
-                        layer.LayerMat = mat;
-                    }
-                }
-
-                progress += (uint)layerOperationGroup.Count();
-            }
-        }
     }
 
     #endregion

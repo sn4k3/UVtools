@@ -10,6 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
@@ -684,13 +685,18 @@ public sealed class KlipperFile : FileFormat
 
                 if (line.StartsWith("MSLA_DISPLAY_VALIDATE ", StringComparison.OrdinalIgnoreCase))
                 {
-                    var match = Regex.Match(line, string.Format("RESOLUTION={0},{0} PIXEL={1},{1}", @"(\d+)", "([+-]?([0-9]*[.])?[0-9]+)"));
-                    if (match is { Success: true, Groups.Count: >= 3 })
+                    var match = Regex.Match(line,
+                        @"RESOLUTION=(\d+),(\d+) PIXEL=([+-]?(?:[0-9]*[.])?[0-9]+),([+-]?(?:[0-9]*[.])?[0-9]+)");
+                    if (match is { Success: true, Groups.Count: >= 5 })
                     {
                         if (uint.TryParse(match.Groups[1].ValueSpan, out var resolutionX)) ResolutionX = resolutionX;
                         if (uint.TryParse(match.Groups[2].ValueSpan, out var resolutionY)) ResolutionY = resolutionY;
-                        if (uint.TryParse(match.Groups[3].ValueSpan, out var pixelWidth)) DisplayWidth = resolutionX * pixelWidth;
-                        if (uint.TryParse(match.Groups[4].ValueSpan, out var pixelHeight)) DisplayHeight = resolutionY * pixelHeight;
+                        if (float.TryParse(match.Groups[3].ValueSpan, NumberStyles.Float, CultureInfo.InvariantCulture,
+                                out var pixelWidth))
+                            DisplayWidth = resolutionX * pixelWidth;
+                        if (float.TryParse(match.Groups[4].ValueSpan, NumberStyles.Float, CultureInfo.InvariantCulture,
+                                out var pixelHeight))
+                            DisplayHeight = resolutionY * pixelHeight;
                     }
 
                     continue;
@@ -699,7 +705,7 @@ public sealed class KlipperFile : FileFormat
                 if (line.StartsWith("SET_PRINT_STATS_INFO ", StringComparison.OrdinalIgnoreCase) && LayerCount == 0)
                 {
                     var match = Regex.Match(line, $"SET_PRINT_STATS_INFO TOTAL_LAYER={@"(\d+)"}");
-                    if (match is { Success: true, Groups.Count: >= 3 })
+                    if (match is { Success: true, Groups.Count: >= 2 })
                     {
                         if (uint.TryParse(match.Groups[1].ValueSpan, out var layerCount)) HeaderSettings.LayerCount = layerCount;
                     }
@@ -710,7 +716,7 @@ public sealed class KlipperFile : FileFormat
                 if (line.StartsWith("PRINT_START ", StringComparison.OrdinalIgnoreCase) && LayerCount == 0)
                 {
                     var match = Regex.Match(line, $"LAYERS={@"(\d+)"}");
-                    if (match is { Success: true, Groups.Count: >= 3 })
+                    if (match is { Success: true, Groups.Count: >= 2 })
                     {
                         if (uint.TryParse(match.Groups[1].ValueSpan, out var layerCount)) HeaderSettings.LayerCount = layerCount;
                     }

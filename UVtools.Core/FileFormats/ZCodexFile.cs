@@ -361,7 +361,7 @@ public sealed class ZCodexFile : FileFormat
 
     protected override void EncodeInternally(OperationProgress progress) 
     { 
-        float usedMaterial = MaterialMilliliters / LayerCount;
+        float usedMaterial = LayerCount == 0 ? 0 : MaterialMilliliters / LayerCount;
         ResinMetadataSettings.Layers.Clear();
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
         {
@@ -435,7 +435,10 @@ public sealed class ZCodexFile : FileFormat
             throw new FileLoadException("ResinMetadata not found", FileFullPath);
         }
 
-        ResinMetadataSettings = JsonSerializer.Deserialize<ResinMetadata>(entry.Open())!;
+        using (var stream = entry.Open())
+        {
+            ResinMetadataSettings = JsonSerializer.Deserialize<ResinMetadata>(stream)!;
+        }
 
         entry = inputFile.GetEntry("UserSettingsData");
         if (entry is null)
@@ -444,7 +447,10 @@ public sealed class ZCodexFile : FileFormat
             throw new FileLoadException("UserSettingsData not found", FileFullPath);
         }
 
-        UserSettings = JsonSerializer.Deserialize<UserSettingsdata>(entry.Open())!;
+        using (var stream = entry.Open())
+        {
+            UserSettings = JsonSerializer.Deserialize<UserSettingsdata>(stream)!;
+        }
 
         entry = inputFile.GetEntry("ZCodeMetadata");
         if (entry is null)
@@ -453,7 +459,10 @@ public sealed class ZCodexFile : FileFormat
             throw new FileLoadException("ZCodeMetadata not found", FileFullPath);
         }
 
-        ZCodeMetadataSettings = JsonSerializer.Deserialize<ZCodeMetadata>(entry.Open())!;
+        using (var stream = entry.Open())
+        {
+            ZCodeMetadataSettings = JsonSerializer.Deserialize<ZCodeMetadata>(stream)!;
+        }
 
         entry = inputFile.GetEntry("ResinGCodeData");
         if (entry is null)

@@ -405,7 +405,8 @@ public sealed partial class OperationLayerExportHtml : Operation
                     switch (value)
                     {
                         case null:
-                            continue;
+                            html.WriteLine("                    <td></td>");
+                            break;
                         case IList list:
                             html.WriteLine($"                    <td>{list.Count}</td>");
                             break;

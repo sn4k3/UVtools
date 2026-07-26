@@ -38,15 +38,16 @@ public class PolygonAperture : Aperture
 
     public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
+        if (Diameter <= 0 || Vertices is < 3 or > 12) return;
+
         var location = Document.PositionMmToPx(at);
         mat.DrawPolygon(Vertices, Document.SizeMmToPx(Diameter, Diameter), location, color, Rotation, -1, lineType);
         if (HoleDiameter > 0)
         {
-            var invertColor = color.Equals(EmguCvExtensions.BlackColor) ? EmguCvExtensions.WhiteColor : EmguCvExtensions.BlackColor;
             CvInvoke.Ellipse(mat,
                 location,
                 Document.SizeMmToPx(HoleDiameter / 2.0, HoleDiameter / 2.0),
-                0, 0, 360, invertColor, -1, lineType);
+                0, 0, 360, InvertColor(color), -1, lineType);
         }
     }
 }

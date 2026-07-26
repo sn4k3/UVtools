@@ -74,7 +74,7 @@ public sealed partial class OperationScripting : Operation
             return "Script is not loaded.";
         }
 
-        var scriptValidation = _scriptState!.ContinueWithAsync<string?>("return ScriptValidate();").Result;
+            var scriptValidation = _scriptState!.ContinueWithAsync<string?>("return ScriptValidate();").GetAwaiter().GetResult();
         return scriptValidation.ReturnValue;
     }
 
@@ -176,8 +176,8 @@ public sealed partial class OperationScripting : Operation
             ScriptOptions.Default
                 .AddReferences(typeof(About).Assembly)
                 .WithAllowUnsafe(true),
-            ScriptGlobals).Result;
-        var result = _scriptState.ContinueWithAsync("ScriptInit();").Result;
+            ScriptGlobals).GetAwaiter().GetResult();
+        _scriptState.ContinueWithAsync("ScriptInit();").GetAwaiter().GetResult();
 
         OnPropertyChanged(nameof(CanExecute));
         _onScriptReloaded?.Invoke(this, EventArgs.Empty);
@@ -187,7 +187,7 @@ public sealed partial class OperationScripting : Operation
     {
         if (ScriptGlobals is null || _scriptState is null) return false;
         ScriptGlobals.Progress = progress;
-        var scriptExecute = _scriptState.ContinueWithAsync<bool>("return ScriptExecute();").Result;
+        var scriptExecute = _scriptState.ContinueWithAsync<bool>("return ScriptExecute();").GetAwaiter().GetResult();
         return !progress.Token.IsCancellationRequested && scriptExecute.ReturnValue;
     }
 

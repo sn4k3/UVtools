@@ -311,10 +311,11 @@ public partial class OperationTimelapse : Operation
     protected override bool ExecuteInternally(OperationProgress progress)
     {
         var virtualLayers = new List<uint>();
-        var checkpointHeight = SlicerFile[0].PositionZ;
+        var checkpointHeight = SlicerFile[LayerIndexStart].PositionZ;
 
         for (var layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
         {
+            progress.PauseOrCancelIfRequested();
             progress++;
             var layer = SlicerFile[layerIndex];
             if ((decimal)layer.PositionZ >= RaisePositionZ) break; // pass the target height, do not continue
@@ -463,6 +464,7 @@ public partial class OperationTimelapse : Operation
                     // Slow lift layer must be lower than photo layer, break this insertion from now on
                     slowLiftHeight = 0;
                     virtualPhotoLayer.LiftSpeed = minLiftSpeed;
+                    insertedLayers++;
                     continue;
                 }
 
@@ -473,6 +475,7 @@ public partial class OperationTimelapse : Operation
             insertedLayers++;
         }
 
+        if (progress.Token.IsCancellationRequested) return false;
         SlicerFile.SuppressRebuildPropertiesWork(() => SlicerFile.Layers = layers.ToArray());
 
         return !progress.Token.IsCancellationRequested;

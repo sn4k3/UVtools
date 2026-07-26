@@ -27,7 +27,10 @@ public sealed partial class SuggestionTransitionLayerCount : Suggestion
         get
         {
             if (SlicerFile is null) return false;
-            return SlicerFile.CanUseLayerExposureTime && SlicerFile.LayerCount != 0;
+            return SlicerFile.LayerCount != 0 &&
+                   (SlicerFile.CanUseTransitionLayerCount ||
+                    SlicerFile.TransitionLayerType == FileFormat.TransitionLayerTypes.Software &&
+                    SlicerFile.CanUseLayerExposureTime);
         }
     }
 
@@ -43,6 +46,7 @@ public sealed partial class SuggestionTransitionLayerCount : Suggestion
                 || SlicerFile.BottomExposureTime <= 0
                 || SlicerFile.ExposureTime <= 0
                 || SlicerFile.BottomExposureTime <= SlicerFile.ExposureTime
+                || TransitionStepTime <= 0
                 || SlicerFile.BottomLayerCount + MinimumTransitionLayerCount > SlicerFile.LayerCount
                 || SlicerFile.MaximumPossibleTransitionLayerCount < MinimumTransitionLayerCount) return true;
 
@@ -59,7 +63,7 @@ public sealed partial class SuggestionTransitionLayerCount : Suggestion
                                                      actualTransitionLayerCount <= MaximumTransitionLayerCount,
                 SuggestionApplyWhen.Different => actualTransitionLayerCount == suggestedTransitionLayerCount,
                     
-                _ => throw new ArgumentOutOfRangeException()
+                _ => false
             };
         }
     }
@@ -86,8 +90,8 @@ public sealed partial class SuggestionTransitionLayerCount : Suggestion
             var bottomExposureTime = SlicerFile.LastBottomLayer?.ExposureTime ?? SlicerFile.BottomExposureTime;
             var exposureTime = SlicerFile.ExposureTime;
 
-            var layerIndex = SlicerFile.TransitionLayerCount > 0
-                ? SlicerFile.BottomLayerCount + SlicerFile.TransitionLayerCount
+            var layerIndex = actualTransitionLayerCount > 0
+                ? SlicerFile.BottomLayerCount + actualTransitionLayerCount
                 : SlicerFile.BottomLayerCount;
 
             if (SlicerFile.ContainsLayer(layerIndex))
@@ -123,8 +127,8 @@ public sealed partial class SuggestionTransitionLayerCount : Suggestion
             var bottomExposureTime = SlicerFile.LastBottomLayer?.ExposureTime ?? SlicerFile.BottomExposureTime;
             var exposureTime = SlicerFile.ExposureTime;
 
-            var layerIndex = SlicerFile.TransitionLayerCount > 0
-                ? SlicerFile.BottomLayerCount + SlicerFile.TransitionLayerCount
+            var layerIndex = actualTransitionLayerCount > 0
+                ? SlicerFile.BottomLayerCount + actualTransitionLayerCount
                 : SlicerFile.BottomLayerCount;
 
             if (SlicerFile.ContainsLayer(layerIndex))
@@ -136,13 +140,22 @@ public sealed partial class SuggestionTransitionLayerCount : Suggestion
         }
     }
 
-    public ushort TransitionLayerCount =>
-        (ushort)Math.Min(
-            Math.Clamp(
-                SlicerFile.GetTransitionLayerCountFromLayers((float)TransitionStepTime, false),
-                MinimumTransitionLayerCount,
-                MaximumTransitionLayerCount)
-            , SlicerFile.MaximumPossibleTransitionLayerCount);
+    public ushort TransitionLayerCount
+    {
+        get
+        {
+            if (TransitionStepTime <= 0) return 0;
+
+            var minimum = Math.Min(MinimumTransitionLayerCount, MaximumTransitionLayerCount);
+            var maximum = Math.Max(MinimumTransitionLayerCount, MaximumTransitionLayerCount);
+            return (ushort)Math.Min(
+                Math.Clamp(
+                    SlicerFile.GetTransitionLayerCountFromLayers((float)TransitionStepTime, false),
+                    minimum,
+                    maximum),
+                SlicerFile.MaximumPossibleTransitionLayerCount);
+        }
+    }
 
     public decimal TransitionStepTime
     {

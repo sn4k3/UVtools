@@ -1,5 +1,113 @@
 # Changelog
 
+## /07/2026 - v6.2.0
+
+- **Layer repair:**
+    - Fixed single-pass island and suction-cup re-detection.
+    - Fixed the inclusive layer range so the final selected layer is processed.
+    - Restricted repairs and island detection to the selected range.
+    - Removed the early return that skipped morphology and empty-layer removal.
+    - Indexed issues by layer instead of repeatedly scanning all issues.
+    - Added deterministic Mat disposal and exception-safe attachment locking.
+    - Fixed attachment of early layers and prevented source-layer modification.
+    - Improved cancellation handling, validation, progress counts, and all-empty-file handling.
+    - Prevented repaired islands from being processed again by later stages.
+- **Operations**:
+    - Audited all operation implementations for correctness, cancellation, native-resource ownership, and avoidable
+      work.
+    - Invalidated cached validation after settings change, rejected reversed layer ranges, and disposed internally owned
+      progress state.
+    - Made native matrix, ROI, cache, and imported-format cleanup deterministic across calibration, import, mesh export,
+      dynamic-height, arithmetic, dimming, raft, re-height, and redraw operations.
+    - Reduced multi-layer removal from repeated full-layer shifts to one pass while handling duplicate and invalid
+      indexes safely.
+    - Replaced quadratic pattern-image string construction with row builders and avoided oversized pattern tiling.
+    - Fixed re-height difference accumulation and pixel-corrosion indexing errors.
+    - Fixed clone, phased-exposure, double-exposure, and timelapse layer placement/counting while avoiding partial
+      commits on cancellation.
+    - Made light-bleed compensation deterministic by reading immutable layer snapshots instead of concurrently modified
+      neighbors.
+    - Fixed dynamic-lift zero-range calculations, resize fade endpoints, overlapping copy moves, transition progress,
+      and lift-time calculations.
+    - Fixed infill wave stepping/Z accumulation, pattern cleanup, and exact pattern repeat sizing.
+    - Fixed GIF frame counts, zero FPS handling, rotated frame dimensions, save error reporting, and image/heat-map crop
+      transforms.
+    - Improved mask ownership and ROI behavior, layer-arithmetic bounds/masking, lithophane sizing, and PCB render
+      reuse.
+- **Gerber:**
+    - Audited the complete Gerber parser, apertures, macros, and drawing primitives.
+    - Reworked command tokenization to support multiple commands per line and multiline extended commands without
+      repeated string concatenation.
+    - Fixed signed and trailing-zero coordinates, modal D01/D02/D03 operations, relative positioning, duplicate
+      definitions, and combined G01/G02/G03 commands.
+    - Added validated single- and multi-quadrant arc interpolation, optional I/J offsets, correctly stroked full
+      circles, and arc support inside regions.
+    - Replaced the aperture regex parser with allocation-conscious validated parsing and fixed clipped rectangle flashes
+      near image boundaries.
+    - Added ordered macro variable assignments, invariant-culture expression evaluation, malformed-input handling,
+      outline vertex validation, and rotation around the macro origin for every primitive.
+    - Consolidated duplicated primitive expression logic and reduced temporary allocations throughout parsing and
+      drawing.
+- **Excellon:**
+    - Reworked coordinate and tool parsing to handle declared formats, signed and decimal coordinates, zero suppression,
+      omitted axes, and malformed input without regex allocations or parser exceptions.
+    - Added incremental coordinates, repeats, routed linear slots, G85 slots, M71/M72 units, and G90/G91 positioning.
+    - Fixed `FILE_FORMAT` fractional precision, asymmetric pixel scaling, duplicate tools, stale parser state, and
+      invariant-culture serialization.
+    - Added slot rendering and deterministic sizing validation.
+- **GCode:**
+    - Audited the complete GCode builder, command, and layer-state implementations.
+    - Fixed invariant-culture output, command equality/hash consistency, line counting, compact command parsing, numeric
+      validation, LED-off detection, PWM scaling, sync-delay detection, and layer bounds/state resets.
+    - Fixed relative retract acceleration, zero-valued retract suppression, event arguments, Klipper setup idempotence,
+      malformed thumbnail handling, and out-of-range layer detection.
+    - Reduced rebuild work by reusing movement lists, replacing quadratic remaining-time sums with a running total, and
+      avoiding thumbnail chunk allocations.
+- **File formats:**
+    - Reduced GCode thumbnail and FlashForge SVGX path-building allocations with bounded stack-backed and sparse DotNext
+      buffer writers.
+    - Made FlashForge SVG coordinate serialization culture-invariant.
+- **Layer compression:**
+    - Preserved sparse, incrementally growing compression streams for large matrices while reducing Zstandard
+      decompression overhead by decoding directly into the destination matrix.
+    - Rejected truncated, oversized, and dimension-mismatched LZ4 and Zstandard decompressed data.
+- **Mesh export:**
+    - Added shared stack-buffered, invariant UTF-8 record formatting across AMF, 3MF, OBJ, OFF, PLY, STL, and WRL
+      exports.
+    - Replaced repeated dictionary lookups with single-probe vertex-cache access in all indexed mesh exporters.
+    - Combined binary PLY vertex/face records and STL triangles into one stream write per record without heap
+      allocations.
+    - Removed per-candidate string allocations from mesh extension lookup and made matching case-insensitive.
+    - Fixed cropped rotation/flip exports, non-square pixel pitch after quarter-turn rotation, and layer Z placement.
+    - Made cancellation, temporary writer, and voxel subtraction-matrix cleanup deterministic while preserving the
+      selected output extension.
+- **Suggestions:**
+    - Audited every suggestion for validation, cancellation, progress ownership, malformed profile handling, and
+      avoidable work.
+    - Fixed bottom-layer target caps, transition-layer zero-step handling and reporting, and exact/stable model corner
+      placement.
+    - Corrected bottom/normal limits, clamping, proportional inputs, and light-off-delay handling for wait-before-cure
+      and wait-after-cure suggestions.
+    - Removed repeated transition-layer scans, made random anchors allocation-free, and replaced whole-file XML regex
+      matching with secure streaming profile discovery.
+- Add `GetRleBufferInitialCapacity` helper to `FileFormat` for consistent RLE buffer sizing
+- Add Goo V5.0, V5.1 and V5.2 support by @AlchMeow (#1129) fixes #1114
+- Refactor RLE encode/decode across all file formats to use `BufferWriterSlim<byte>` instead of `List<byte>`, reducing
+  allocations
+- Replace `List<byte>` layer line buffers with `MemoryOwner<byte>` using `ArrayPool` for pooled, zero-copy layer
+  encoding/decoding
+- Improve robustness: add bounds checks to RLE decoders, dispose Mat on error, validate ZIP entry sizes
+- Optimize `FileStreamExtensions` read/write methods using `BinaryPrimitives` and stack-allocated spans
+- Fix `CTBEncryptedFile.CryptFile` to use a shared backing buffer instead of copying
+- Fix `SL1File` swapped `BottomLightPWM`/`LightPWM` default values
+- Fix `NanoDLPFile` incorrect `DisplayController` condition
+- Fix `KlipperFile` regex group count checks and float parsing with `InvariantCulture`
+- Fix `ZCodexFile` division-by-zero when `LayerCount == 0`
+- Fix .gitignore the NUKE temp directory by @The-Bootloader (#1132)
+- Rename "010" solution folder to work around Nuke source generator bug by @The-Bootloader (#1133)
+- (Upgrade) .NET from 10.0.9 to 10.0.10
+- (Upgrade) AvaloniaUI from 12.0.5 to 12.1.0
+
 ## 27/06/2026 - v6.1.1
 
 - (Fix) Settings - UI Scaling: Set minimum and maximum values on the input box
@@ -521,8 +629,8 @@ Best for maximum compression: Brotli @ Optimal
 
 - (Add) Pixel Arithmetic - Brightness Step: Mutates the initial brightness with a step that is added/subtracted to the
   current value dependent on the processed layer count (#1014)
-- (Fix) Anycubic ZIP: Implement the missing fields from manifest file and allow to tune TSMC and regular global values (
-  #1018)
+- (Fix) Anycubic ZIP: Implement the missing fields from manifest file and allow to tune TSMC and regular global values
+  (#1018)
 - (Fix) Handle floating precision error when calculating the `PerLayerSettings` flag (#1013)
 - (Fix) Linux: Pixel editor drawing cursor preview not visible (#1019)
 - (Fix) Use `async Task` instead of `async void` where possible
@@ -661,11 +769,11 @@ Best for maximum compression: Brotli @ Optimal
     - (Change) Rename file and class from `PhotonWorkshopFile` to `AnycubicFile`
     - (Change) Rename file and class from `CXDLPFile` to `CrealityCXDLPFile`
     - (Change) Rename convert menu group from `CXDLP` to `Creality CXDLP`
-    - (Fix) CTB (Version 5): `NullReferenceException` when trying to convert from a file with a `null` MaterialName (
-      #857)
+    - (Fix) CTB (Version 5): `NullReferenceException` when trying to convert from a file with a `null` MaterialName
+      (#857)
     - (Fix) Sanitize file version before convert the file to ensure capabilities (#934)
-    - (Fix) Unable to set the format version when converting from files with a version that match it own default
-      version (#857)
+    - (Fix) Unable to set the format version when converting from files with a version that match it own default version
+      (#857)
 
 ## 14/09/2024 - v4.4.2
 
@@ -723,7 +831,8 @@ Best for maximum compression: Brotli @ Optimal
     - (Improvement) Pixel arithmetic: Add extra checks to ignore empty size and layers
     - (Change) Edit print parameters: Allow set lift and retract speeds to 0 (#906)
 - **UI:**
-    - (Add) Menu - File - Copy parameters to files: Allow to copy parameters from current file to another file(s) (#852)
+    - (Add) Menu - File - Copy parameters to files: Allow to copy parameters from current file to another file (s)
+      (#852)
     - (Improvement) Menu - File - Reset layer properties: Hold SHIFT key to also rebuild layers position with the file
       layer height (#870)
     - (Improvement) Save as and convert file save dialog: Force the correct file extension if been tampered (#909)
@@ -771,7 +880,7 @@ Best for maximum compression: Brotli @ Optimal
     - (Add) nanoDLP file format
     - (Add) SL1 printer note keyword: `LAYERIMAGEFORMAT_xxx` sets the layer image format required for the converted file
       if the format have multiple options (For Archives with PNG's)
-    - (Fix) Anycubic file format: Model Min/Max(X/Y) was not properly calculated
+    - (Fix) Anycubic file format: Model Min/Max (X/Y) was not properly calculated
     - (Fix) Photon Mono M5s Pro incorrect display height and width (fixes #858)
 - **PrusaSlicer:**
     - (Add) Concepts3D Athena 8K & 12K
@@ -834,8 +943,8 @@ Best for maximum compression: Brotli @ Optimal
 
 - (Add) Benchmark test: GC Memory Copy and Pooled Memory Copy
 - (Add) Photon Mono M5s Pro (m5sp) support and corresponding PrusaSlicer printer (#842)
-- (Add) Tool: Stir resin - Allow to stir the resin in the VAT by moving the build plate up and down multiple times (
-  #839)
+- (Add) Tool: Stir resin - Allow to stir the resin in the VAT by moving the build plate up and down multiple times
+  (#839)
 - (Improvement) Improve the dummy pixel location to match the first pixel of the layer (if possible)
 - (Improvement) Better format for readable time from seconds, it now can show/hide days, hours, minutes and seconds when
   optimal
@@ -873,7 +982,7 @@ Best for maximum compression: Brotli @ Optimal
         - (Improvement) Use DataGrid row header to show the operation count instead of process and store indexes for the
           objects
         - (Fix) Drawings and Text controls are not stretched to fill the available space to the right
-    - (Improvement) macOS: Shortcuts Ctrl+0, Ctrl+R, Ctrl+F changed to use command key(⌘) instead of control key
+    - (Improvement) macOS: Shortcuts Ctrl+0, Ctrl+R, Ctrl+F changed to use command key (⌘) instead of control key
 - (Improvement) Dynamic layer height, Lithophane, PCB exposure and Phased exposure: Use better performant `HasNonZero`
   instead of `CountNonZero` to check if there are any pixels to process
 - (Improvement) Update demo file with the newest version of the format and use SL1S printer instead
@@ -907,9 +1016,9 @@ Best for maximum compression: Brotli @ Optimal
       When decompressing, the full resolution image is still created and then the cached area is imported to the
       corresponding position, composing the final and original image. This is still faster than the old method because
       decompress a larger buffer is more costly.  
-      In the end both writes/compresses and reads/decompresses are now faster and using less memory.
-      Note: When printing multiple objects it is recommended to place them close to each other as you can to take better
-      advantage of this new method.
+      In the end both writes/compresses and reads/decompresses are now faster and using less memory. Note: When printing
+      multiple objects it is recommended to place them close to each other as you can to take better advantage of this
+      new method.
 - **Issues Detection:**
     - (Fix) When detecting for Islands but not overhangs it will throw an exception about invalid roi
     - (Fix) Huge memory leak when detecting resin traps (#830)
@@ -926,8 +1035,8 @@ Best for maximum compression: Brotli @ Optimal
     - (Add) `ManufacturingProcess` property to get the manufacturing process used by the file/printer combination
     - (Add) `SupportAntiAliasing` property to get if the file supports antialiasing usage (grey pixels)
     - (Improvement) Goo: On encode image do not use gradient compression when going from grey to black or white
-    - (Change) PZR: Disable gradient compression for this file format as it corrupt layer for Phrozen Sonic Mini 8K S (
-      #776, #810, #814)
+    - (Change) PZR: Disable gradient compression for this file format as it corrupt layer for Phrozen Sonic Mini 8K S
+      (#776, #810, #814)
     - (Fix) Thumbnail text generation and for partial open files
     - (Fix) Parse transition step time and count from layers throw an exception when the file only have one layer
 - **UI:**
@@ -936,7 +1045,7 @@ Best for maximum compression: Brotli @ Optimal
     - (Improvement) Use icons instead UTF-8 character for buttons with drop-down menus
     - (Fix) Benchmark tool: Allow to show percentages larger than 100% and increase progress height
 - **Tools:**
-    - (Fix) Layer actions - Import layer(s): Unable to process image files (#815)
+    - (Fix) Layer actions - Import layer (s): Unable to process image files (#815)
     - (Fix) PCB Exposure: Draw circles using ellipses in order to use non-square pixels (#822)
 - **Suggestions:**
     - (Fix) Bottom layers count: Do not trigger the suggestion when the file layer count are equal or less than the
@@ -1020,7 +1129,7 @@ Best for maximum compression: Brotli @ Optimal
       refresh the UI with the new information if changed
     - (Improvement) When moving model by an operation or suggestion it will redetect the issues to update their
       positions (#752)
-- **Layer actions - Import layer(s):**
+- **Layer actions - Import layer (s):**
     - (Add) Button to set the current layer
     - (Improvement) If any file isn't imported it will show an message informing why
     - (Fix) Layer properties were getting rebuilt (#739)
@@ -1037,8 +1146,8 @@ Best for maximum compression: Brotli @ Optimal
 - **UVtoolsCmd:**
     - (Add) "compare" command to compare two files and output the differences
     - (Add) "print-formats" command to print the available formats
-    - (Improvement) Improve "extract" command to allow extract specific thumbnails or layers in a range or indexes (
-      #754)
+    - (Improvement) Improve "extract" command to allow extract specific thumbnails or layers in a range or indexes
+      (#754)
 - **Project:**
     - (Change) Rename UVtools.WPF to UVtools.UI
     - (Change) Make UVtools.UI nullable enabled
@@ -1083,8 +1192,8 @@ Best for maximum compression: Brotli @ Optimal
 - (Improvement) Resin traps and suction cups: Optimization of contour grouping will now make the detection faster if it
   contains a large number of contours
 - (Change) Lower the default setting for binary threshold for resin traps, from 127 to 100
-- (Fix) macOS: Unable to have settings on Monterey or above due the settings folder no longer exists on recent
-  systems. (#728)   
+- (Fix) macOS: Unable to have settings on Monterey or above due the settings folder no longer exists on recent systems.
+  (#728)
   Your current settings will not be automatically transferred to the new location, to do such please copy them over or
   use the following command before upgrade: `mv "$HOME/.local/share/UVtools" "$HOME/Library/Application Support"`  
   If you already ran UVtools and would like to transfer old settings, use:
@@ -1175,8 +1284,8 @@ Best for maximum compression: Brotli @ Optimal
     - (Add) Properties: BottomWaitTimeBeforeCure, WaitTimeBeforeCure, BottomWaitTimeAfterCure, WaitTimeAfterCure,
       BottomWaitTimeAfterLift, WaitTimeAfterLift
     - (Add) Vendor key to the configuration to be able to save custom key-values from other softwares (#687)
-- (Add) Layers properties: `CompletionTime`, `CompletionTimeStr`, `StartTime`, `StartTimeStr`, `EndTime`, `EndTimeStr` (
-  #698)
+- (Add) Layers properties: `CompletionTime`, `CompletionTimeStr`, `StartTime`, `StartTimeStr`, `EndTime`, `EndTimeStr`
+  (#698)
 - (Add) PrusaSlicer printer: Creality Halot Mage and Mage Pro
 - (Add) Tool - Blur: Stack blur
 - (Change) Tool - Timelapse: Increase wait time from 100s to 1000s maximum
@@ -1366,7 +1475,7 @@ Best for maximum compression: Brotli @ Optimal
         - Second parameter is the regex pattern to match content with
         - Third parameter is the final request that supports a parameter from regex matching group, eg: **{#1}** is
           match Group[1] value
-        - **Example:** <\? getfiles > {0}\/([0-9]+[.][0-9a-zA-Z]+), > printfile,{#1} ?>
+        - **Example:** <\? getfiles > {0}\/ ([0-9]+[.][0-9a-zA-Z]+), > printfile,{#1} ?>
     - (Change) Allow to print a filename without send it when upload request path is empty
     - (Fix) Do not show printers with empty requests
 - (Change) Default layer compression to Lz4 instead of Png
@@ -1386,8 +1495,8 @@ Best for maximum compression: Brotli @ Optimal
     - **print-properties:**
         - (Change) `-b`, `--base` option to `-a`, `-all` to indicate all properties and sub-properties, now defaults to
           only show base properties
-        - (Add) `-r`, `--range` option to prints only the matching layer(s) index(es) in a range
-        - (Add) `-i`, `--indexes` option to prints only the matching layer(s) index(es)
+        - (Add) `-r`, `--range` option to prints only the matching layer (s) index (es) in a range
+        - (Add) `-i`, `--indexes` option to prints only the matching layer (s) index (es)
     - (Add) Command:
       `set-properties <input-file> <property=value> Set properties in a file or to it layers with new values`
     - (Add) Command: `print-issues <input-file> Detect and print issues in a file`
@@ -1404,8 +1513,8 @@ Best for maximum compression: Brotli @ Optimal
       detected issues" (Default)
     - (Improvement) Do not allow to run the tool if there are no detected issues when the option "Use and repair the
       previous detected issues" is selected
-- (Improvement) Linux: Recompile libcvextern.so on a older system to be able to run on both older and newest system (
-  #603)
+- (Improvement) Linux: Recompile libcvextern.so on a older system to be able to run on both older and newest system
+  (#603)
 - (Upgrade) .NET from 6.0.10 to 6.0.11
 
 ## 05/11/2022 - v3.8.2
@@ -1427,8 +1536,8 @@ Best for maximum compression: Brotli @ Optimal
     - (Improvement) Linux AppImage upgrades now renames to UVtools.AppImage
     - (Improvement) Re-open the program with the current loaded file
 - (Add) UVtoolsCmd:
-  `set-preview, set-thumbnail <input-file> <file path|layer index|:random-layer|:heatmap>  Sets and replace thumbnail(s) in the file [default: :heatmap]`. (
-  #599)  
+  `set-preview, set-thumbnail <input-file> <file path|layer index|:random-layer|:heatmap>  Sets and replace thumbnail(s) in the file [default: :heatmap]`.
+  (#599)
   Use `UVtoolsCmd set-preview -?` to view the full documentation
 - (Improvement) Export layers to mesh: Write the file to a temporary location and move it to the target location when
   complete with success
@@ -1446,7 +1555,7 @@ Best for maximum compression: Brotli @ Optimal
         - (Add) Allow to drag and drop files into "Add files" button and grid header
         - (Improvement) Do not add empty layers when usable to draw or when draw a all black image
         - (Improvement) "Merge all gerbers into one layer" will now draw all gerber into one image instead of perform
-          the Max(of all gerbers pixels), allowing to subtract areas as they are on gerbers
+          the Max (of all gerbers pixels), allowing to subtract areas as they are on gerbers
     - **Import layers:** Fix error when trying to insert layers
     - **Export layers images:** Better compression of contours for SVG export, resulting in smooth curves, better
       visuals and lower file size
@@ -1531,9 +1640,9 @@ Best for maximum compression: Brotli @ Optimal
       that case, it's fine to ignore this.
     - (Add) Model position: Printing on a corner will reduce the FEP stretch forces when detaching from the model during
       a lift sequence, benefits are: Reduced lift height and faster printing, less stretch, less FEP marks, better FEP
-      lifespan, easier to peel, less prone to failure and use the screen pixels more evenly.
-      If the model is too large to fit within the margin(s) on the screen, it will attempt to center it on that same
-      axis to avoid touching on screen edge(s) and to give a sane margin from it.
+      lifespan, easier to peel, less prone to failure and use the screen pixels more evenly. If the model is too large
+      to fit within the margin (s) on the screen, it will attempt to center it on that same axis to avoid touching on
+      screen edge (s) and to give a sane margin from it.
 - **Status bar:**
     - (Add) Transition layers: 0/-0.00s
     - (Improvement) Change "Layer Height: 0.000mm" to "Layers: count @ 0.000mm"
@@ -1569,10 +1678,9 @@ Best for maximum compression: Brotli @ Optimal
     - (Add) Preset "Minimum": Sets to the minimum position
     - (Add) Preset "Medium": Sets to half-way between minimum and maximum position
     - (Add) Preset "Maximum": Sets to the maximum position
-    - (Add) Wait time: Sets the ensured wait time to stay still on the desired position.
-      This is useful if the printer firmware always move to top and you want to stay still on the set position for at
-      least the desired time.
-      Note: The print time calculation will take this wait into consideration and display a longer print time.
+    - (Add) Wait time: Sets the ensured wait time to stay still on the desired position. This is useful if the printer
+      firmware always move to top and you want to stay still on the set position for at least the desired time. Note:
+      The print time calculation will take this wait into consideration and display a longer print time.
 - (Add) FileFormat: AnyCubic custom machine (.pwc)
 - (Downgrade) OpenCV from 4.5.5 to 4.5.4 due a possible crash while detecting islands (Windows)
 
@@ -1725,7 +1833,7 @@ Best for maximum compression: Brotli @ Optimal
 - **UI - Issue list:**
     - (Add) Context menu when right click issues to select an action
     - (Add) Option to solidify suction cups when right click on the issue
-    - (Improvement) Better confirmation text when click on remove issue(s) with detailed list of actions
+    - (Improvement) Better confirmation text when click on remove issue (s) with detailed list of actions
 
 ## 19/06/2022 - v3.5.0
 
@@ -1776,8 +1884,8 @@ Best for maximum compression: Brotli @ Optimal
     - (Add) Documentation around `Operation` methods
     - (Fix) Open files in partial mode when the resolution is not defined would cause a `NullPointerException` (#474)
 - **Suggestion: Wait time before cure**
-    - (Add) Proportional maximum time change: Sets the maximum allowed time difference relative to the previous layer (
-      #471)
+    - (Add) Proportional maximum time change: Sets the maximum allowed time difference relative to the previous layer
+      (#471)
     - (Add) Proportional mass get modes: Previous, Average and Maximum relative to a defined height (#471)
     - (Change) Proportional set type sets fallback time to the first layer
     - (Fix) Proportional set type was taking current layer mass instead of looking to the previous cured layer (#471)
@@ -1819,8 +1927,8 @@ Best for maximum compression: Brotli @ Optimal
     - (Fix) Lithophane: Disallow having start threshold equal to end threshold
 - (Add) Windows explorer: Right-click on files will show "Open with UVtools" on context menu which opens the selected
   file on UVtools (Windows MSI only)
-- (Improvement) Island and overhang detection: Ignore detection on all layers that are in direct contact with the
-  plate (On same first layer position)
+- (Improvement) Island and overhang detection: Ignore detection on all layers that are in direct contact with the plate
+  (On same first layer position)
 - (Improvement) Cmd: Better error messages for convert command when using shared extensions and no extension
 
 ## 14/04/2022 - v3.3.2
@@ -1853,14 +1961,14 @@ Best for maximum compression: Brotli @ Optimal
 ## 10/04/2022 - v3.3.0
 
 - **Shortcuts:**
-    - (Add) **Delete:** While on layer preview and with roi or mask(s) selected, will remove the selected area from
+    - (Add) **Delete:** While on layer preview and with roi or mask (s) selected, will remove the selected area from
       layer
-    - (Add) **Alt + Delete:** While on layer preview and with roi or mask(s) selected, will remove the selected area
+    - (Add) **Alt + Delete:** While on layer preview and with roi or mask (s) selected, will remove the selected area
       from all layers
     - (Add) **Ctrl + Delete:** While on layer preview, will remove the current layer
-    - (Add) **Insert:** While on layer preview and with roi or mask(s) selected, will keep only the selected area in
+    - (Add) **Insert:** While on layer preview and with roi or mask (s) selected, will keep only the selected area in
       layer
-    - (Add) **Alt + Insert:** While on layer preview and with roi or mask(s) selected, will keep only the selected area
+    - (Add) **Alt + Insert:** While on layer preview and with roi or mask (s) selected, will keep only the selected area
       in all layers
     - (Add) **Ctrl + Insert:** While on layer preview, will clone the current layer
     - (Add) **Home:** While on layer preview will go to first layer
@@ -1876,10 +1984,9 @@ Best for maximum compression: Brotli @ Optimal
 - **Settings:**
     - (Add) Remove source file after automatic conversion (#444)
     - (Add) Remove source file after manual conversion (#444)
-    - (Add) **Average resin bottle cost:** The average cost per one resin bottle of 1000ml.
-      Used to calculate the material cost when the file lacks that information.
-      Use 0 to disable this feature and only show the cost if file have that information.
-      If this value is changed, you need to reload the current file to update the cost.
+    - (Add) **Average resin bottle cost:** The average cost per one resin bottle of 1000ml. Used to calculate the
+      material cost when the file lacks that information. Use 0 to disable this feature and only show the cost if file
+      have that information. If this value is changed, you need to reload the current file to update the cost.
     - (Change) Move "Expand and show tool descriptions by default" to From `General` to `Tools` tab (Setting will reset
       to default)
 - **File formats:**
@@ -2040,8 +2147,7 @@ Best for maximum compression: Brotli @ Optimal
     - (Add) `Volume` property to get the total model volume
     - (Add) `SanitizeLayers` method to reassign indexes and force attribute parent file
     - (Improvement) Merge `LayerManager` into `FileFormat` and cleanup: This affects the whole project and external
-      scripts.
-      If using scripts please update them, search for `.LayerManager.` and replace by `.`
+      scripts. If using scripts please update them, search for `.LayerManager.` and replace by `.`
     - (Change) Chitubox encrypted format can now be saved as normal
     - (Fix) Converted files layers was pointing to the source file and related to it
 - **Layers:**
@@ -2154,8 +2260,8 @@ Best for maximum compression: Brotli @ Optimal
     - (Improvement) if blank, allow the previous layer to have a higher Z position than the successor layer
     - (Improvement) SL1: Implement the missing keys from new features of PrusaSlicer 2.4.0
     - (Fix) Calling a partial save action without a progress instance would cause a crash
-    - (Fix) GCode: Unable to parse the "Wait time after lift" when a second lift (TSMC) was present, leading to a sum
-      on "Wait time before cure"
+    - (Fix) GCode: Unable to parse the "Wait time after lift" when a second lift (TSMC) was present, leading to a sum on
+      "Wait time before cure"
 - **Tools:**
     - (Add) Timelapse: Raise the build platform to a set position every odd-even height to be able to take a photo and
       create a time-lapse video of the print
@@ -2346,8 +2452,8 @@ Best for maximum compression: Brotli @ Optimal
 ## 18/11/2021 - v2.25.0
 
 - **File formats:**
-    - (Add) Allow to partial open the files for read and/or change properties, the layer images won't be read nor
-      cached (Fast)
+    - (Add) Allow to partial open the files for read and/or change properties, the layer images won't be read nor cached
+      (Fast)
     - (Add) More abstraction on partial save
 - **Scripting:**
     - (Add) ScriptOpenFolderDialogInput - Selects a folder path
@@ -2359,7 +2465,7 @@ Best for maximum compression: Brotli @ Optimal
 ## 14/11/2021 - v2.24.4
 
 - **File - Send to - Device**
-    - (Add) Progress with the transfered megabyte(s) and allow to cancel the transfer
+    - (Add) Progress with the transfered megabyte (s) and allow to cancel the transfer
     - (Add) It will prompt for drive ejection [Configurable - On by default] [Windows only] (#340)
 - (Fix) PhotonS: Some slicers will not fill the pixel RLE to the end when the remaining pixels are trailing black, this
   was triggering error on read because data checksum was incomplete, ignoring checksum now (#344)
@@ -2560,8 +2666,7 @@ Best for maximum compression: Brotli @ Optimal
     - **Menu:**
         - (Add) File - Open recent: Open any recent open file from a list   
           Shift + Click: Open file in a new window   
-          Shift + Ctrl + Click: Remove file from recent list
-          Ctrl + Click: Purge non-existing files
+          Shift + Ctrl + Click: Remove file from recent list Ctrl + Click: Purge non-existing files
         - (Add) File - Send to: Copy the file directly to a removable drive (Windows only)
     - **(Add) Layer navigation buttons:**
         - SB: Navigate to the smallest bottom layer in mass
@@ -3052,7 +3157,7 @@ Best for maximum compression: Brotli @ Optimal
 
 - **Layer arithmetic:**
     - (Add) Allow to use ':' to define a layer range to set, eg, 0:20 to select from 0 to 20 layers
-    - (Improvement) Modifications with set ROI and/or Mask(s) are only applied to target layer on that same regions
+    - (Improvement) Modifications with set ROI and/or Mask (s) are only applied to target layer on that same regions
     - (Improvement) Disallow set one layer to the same layer without any modification
     - (Improvement) Clear and sanitize non-existing layers indexes
     - (Improvement) Disable the layer range selector from dialog
@@ -3193,8 +3298,8 @@ Best for maximum compression: Brotli @ Optimal
     * (Fix) Unable to convert files with no thumbnails to other file format that requires thumbnails
 * **Tools:**
     * (Add) Re-height: Option to Anti-Aliasing layers
-    * (Fix) Morph and Blur: The combobox was not setting to the selected item when preform a redo operation (
-      Ctrl+Shift+Z)
+    * (Fix) Morph and Blur: The combobox was not setting to the selected item when preform a redo operation
+      (Ctrl+Shift+Z)
 * **GUI:**
     * (Change) Progress window to be a grid element inside MainWindow, this allow to reuse the graphics and its elements
       without the need of spawning a Window instance everytime a progress is shown, resulting in better performance and
@@ -3392,12 +3497,12 @@ Best for maximum compression: Brotli @ Optimal
     * Gather resin trap areas together when computing for other issues to spare a decoding cycle latter
     * When using a threshold for islands detection it was also applying it to the overhangs
     * Fix the spare decoding conditional cycle for partial scans
-    * Change resin trap search from parallel to sync to prevent fake detections and missing joints at cost of speed (
-      #13)
+    * Change resin trap search from parallel to sync to prevent fake detections and missing joints at cost of speed
+      (#13)
 * **Tools:**
     * Add layer selector: 'From first to current layer' and 'From current to last layer'
-    * I printed this file: Multiplier - Number of time(s) the file has been printed. Half numbers can be used to consume
-      from a failed print. Example: 0.5x if a print canceled at 50% progress
+    * I printed this file: Multiplier - Number of time (s) the file has been printed. Half numbers can be used to
+      consume from a failed print. Example: 0.5x if a print canceled at 50% progress
     * Pixel dimming: Increase wall thickness default from 5px to 10px
     * Import layers: Importing layers was not marking layers as modified, then the save file won't save the new images
       in, to prevent other similar bugs, all layers that got replaced will be auto marked as modified
@@ -3446,8 +3551,8 @@ Best for maximum compression: Brotli @ Optimal
 
 * (Add) Calibration - Exposure time finder: Option to "Do not perform the lifting sequence for layers with same Z
   positioning"
-  The lift height will be set to 0 for sequential layers that share same z position.
-  Some printers may not support this and always require a lift after each layer.
+  The lift height will be set to 0 for sequential layers that share same z position. Some printers may not support this
+  and always require a lift after each layer.
 * (Fix) Hide MaterialMilliliters from layer data if unable to calculate the value (NaN)
 * (Fix) CWS: A missing line break wasn't lifting printer on finish
 * (Fix) Layers: Allow to set LiftHeight and LightOffDelay to 0 per layer
@@ -3536,9 +3641,8 @@ Best for maximum compression: Brotli @ Optimal
 * (Add) Setting: Expand and show tool descriptions by default
 * (Improvement) Drag and drop a file on Main Window while hold SHIFT key will open the file under a new instance
 * (Improvement) PrusaSlicer & SL1 files: Allow to set custom variables on "Material - Notes" per resin to override the "
-  Printer - Notes" variables
-  This will allow custom settings per resin, for example, if you want a higher 'lift height, lift speed, etc' on more
-  viscous resins. (#141)
+  Printer - Notes" variables This will allow custom settings per resin, for example, if you want a higher 'lift height,
+  lift speed, etc' on more viscous resins. (#141)
 * (Change) Setting: Windows vertical margin to 60px
 * (Fix) Export file was getting a "Parameter count mismatch" on some file formats (#140)
 * (Fix) photon and cbddlp file formats with version 3 to never hash images
@@ -3597,8 +3701,7 @@ Best for maximum compression: Brotli @ Optimal
 * (Change) Tool - Redraw model/supports icon
 * (Change) photon and cbddlp to use version 3 by default
 * (Add) Tool - Dynamic layer height: Analyze and optimize the model with dynamic layer heights, larger angles will slice
-  at lower layer height
-  while more straight angles will slice larger layer height. (#131)
+  at lower layer height while more straight angles will slice larger layer height. (#131)
 * (Add) Calibration - Exposure time finder: Generates test models with various strategies and increments to verify the
   best exposure time for a given layer height
 * (Add) File load checks, trigger error when a file have critical errors and attempt to fix non-critical errors
@@ -3654,7 +3757,7 @@ Best for maximum compression: Brotli @ Optimal
     * (Remove) FLIP_XY compability from printers
     * (Remove) AntiAlias variable from printers
 * **(Add) Settings - Automations:**
-    * Auto save the file after apply any automation(s)
+    * Auto save the file after apply any automation (s)
     * Auto convert SL1 files to the target format when possible and load it back
     * Auto set the extra 'light-off delay' based on lift height and speed.
 * **FileFormats:**
@@ -3716,7 +3819,7 @@ Best for maximum compression: Brotli @ Optimal
 
 * (Add) About box: Primary screen identifier and open on screen identifier
 * (Add) Calibrator - External tests
-* (Change) Rewrite 'Action - Import Layer(s)' to support file formats and add the following importation types:
+* (Change) Rewrite 'Action - Import Layer (s)' to support file formats and add the following importation types:
     * **Insert:** Insert layers. (Requires images with bounds equal or less than file resolution)
     * **Replace:** Replace layers. (Requires images with bounds equal or less than file resolution)
     * **Stack:** Stack layers content. (Requires images with bounds equal or less than file resolution)
@@ -3734,15 +3837,15 @@ Best for maximum compression: Brotli @ Optimal
 * (Add) Tool - Redraw model/supports: Redraw the model or supports with a set brightness. This requires an extra sliced
   file from same object but without any supports and raft, straight to the build plate.
 * (Add) Tool - Raft Relief:
-    * Allow ignore a number of layer(s) to start only after that number, default is 0
+    * Allow ignore a number of layer (s) to start only after that number, default is 0
     * Allow set a pixel brightness for the operation, default is 0
     * New "dimming" type, works like relief but instead of drill raft it set to a brightness level
 * (Add) Arch-x64 package (#104)
 * (Fix) A OS dependent startup crash when there's no primary screen set (#115)
 * (Fix) Tool - Re height: Able to cancel the job
 * (Fix) Unable to save "Calibration - Tolerance" profiles
-* (Change) Core: Move all operations code from LayerManager and Layer to it own Operation* class within a Execute
-  method (Abstraction)
+* (Change) Core: Move all operations code from LayerManager and Layer to it own Operation* class within a Execute method
+  (Abstraction)
 * (Change) sh UVtools.sh to run independent UVtools instance first, if not found it will fallback to dotnet UVtools.dll
 * (Change) Compile and zip project with WSL to keep the +x (execute) attribute for linux and unix systems
 * (Change) MacOS builds are now packed as an application bundle (Auto-updater disabled for now)
@@ -3815,8 +3918,8 @@ the new calibration wizards.
 * (Change) PrusaSlicer print profiles names, reduced bottom layers and raft height
 * (Remove) PrusaSlicer print profiles with 3 digit z precision (0.025 and 0.035)
 * (Fix) PW0, PWS, PWMX, PWMO, PWMS, PWX file formats, where 4 offsets (16 bytes) were missing on preview image, leading
-  to wrong table size. Previous converted files with UVtools wont open from now on, you need to reconvert them. (
-  ezrec/uv3dp#124)
+  to wrong table size. Previous converted files with UVtools wont open from now on, you need to reconvert them.
+  (ezrec/uv3dp#124)
 * (Fix) Unable to run Re-Height tool due a rounding problem on some cases (#101)
 * (Fix) Layer preview end with exception when no per layer settings are available (SL1 case)
 
@@ -3834,10 +3937,8 @@ the new calibration wizards.
 * (Add) Improved island detection: Combines the island and overhang detections for a better more realistic detection and
   to discard false-positives. (Slower)
   If enabled, and when a island is found, it will check for overhangs on that same island, if no overhang found then the
-  island will be discarded and considered safe, otherwise it will flag as an island issue.
-  Note: Overhangs settings will be used to configure the detection. Enabling Overhangs is not required for this
-  procedure to work.
-  Enabled by default.
+  island will be discarded and considered safe, otherwise it will flag as an island issue. Note: Overhangs settings will
+  be used to configure the detection. Enabling Overhangs is not required for this procedure to work. Enabled by default.
 * (Add) More information on the About box: Operative system and architecture, framework, processor count and screens
 * (Fix) Overhangs: Include islands when detecting overhangs were not skip when found a island
 * (Fix) Decode CWS from Wanhao Workshop fails on number of slices (#102)
@@ -3916,10 +4017,9 @@ the new calibration wizards.
 
 ## 05/11/2020 - v1.1.3
 
-* (Add) Auto-updater: When a new version is detected UVtools still show the same green button at top,
-  on click, it will prompt for auto or manual update.
-  On Linux and Mac the script will kill all UVtools instances and auto-upgrade.
-  On Windows the user must close all instances and continue with the shown MSI installation
+* (Add) Auto-updater: When a new version is detected UVtools still show the same green button at top, on click, it will
+  prompt for auto or manual update. On Linux and Mac the script will kill all UVtools instances and auto-upgrade. On
+  Windows the user must close all instances and continue with the shown MSI installation
 * (Add) Tool profiles: Create and remove named presets for some tools
 * (Add) Event handler for handling non-UI thread exceptions
 * (Fix) Mac: File - Open in a new window was not working
@@ -4131,8 +4231,8 @@ the new calibration wizards.
 
 ## 14/09/2020 - v0.8.2.1
 
-* (Improvement) When unable to convert a format from SL1 to other, advice users to check used printer on PrusaSlicer (
-  #60)
+* (Improvement) When unable to convert a format from SL1 to other, advice users to check used printer on PrusaSlicer
+  (#60)
 * (Improvement) Information on "Install profiles on PrusaSlicer" (#60)
 * (Fix) LGS: Change resolution tool was defining wrong Y
 * (Fix) ctb and pws: Renders a bad file after save, this was introduced with canceled saves feature
@@ -4200,10 +4300,9 @@ the new calibration wizards.
 * (Improvement) Tool - Flip: Better performance on "make copy"
 * (Improvement) Tool - Rotate: Disallow operation when selecting an angle of -360, 0 and 360
 * (Improvement) Shortcuts: + and - to go up and down on layers were change to W and S keys. Reason: + and - are bound to
-  zoom and can lead to problems
-  Less frequently used settings for gap and noise removal iterations have been moved to an advanced settings group that
-  is hidden by default, and can be shown if changes in those settings is desired. For many users, those advanced
-  settings can be left on default and never adjusted. (#43)
+  zoom and can lead to problems Less frequently used settings for gap and noise removal iterations have been moved to an
+  advanced settings group that is hidden by default, and can be shown if changes in those settings is desired. For many
+  users, those advanced settings can be left on default and never adjusted. (#43)
 * (Change) Tool - Rotate - icon
 * (Upgrade) OpenCV from 4.2 to 4.3
 * (Upgrade) BinarySerializer from 8.5.2 to 8.5.3
@@ -4275,7 +4374,7 @@ the new calibration wizards.
         * Double-Left click or CTRL-Left-click on an issue in the issue list will zoom in on that specific issue.
         * Double-Right click or CTRL-Right-Click on any issue will zoom to fit either the build plate or the print
           bounds, depending on your settings. Holding ALT during the click operation will perform the inverse zoom
-          action from what is configured in your settings(zoom plate vs zoom print bounds).
+          action from what is configured in your settings (zoom plate vs zoom print bounds).
         * The Prev/Next buttons at the top of the Layer Preview will now auto-repeat if held down (similar to the layer
           scroll bar).
     * Layer Preview

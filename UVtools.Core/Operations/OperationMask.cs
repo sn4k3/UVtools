@@ -76,16 +76,18 @@ public class OperationMask : Operation
     /// <param name="maskSize"></param>
     public void LoadFromFile(string filePath, bool invertMask = false, Size maskSize = default)
     {
-        Mask = CvInvoke.Imread(filePath, ImreadModes.Grayscale);
-        if (maskSize is {Width: > 0, Height: > 0} && Mask.Size != maskSize)
+        var newMask = CvInvoke.Imread(filePath, ImreadModes.Grayscale);
+        if (maskSize is {Width: > 0, Height: > 0} && newMask.Size != maskSize)
         {
-            CvInvoke.Resize(Mask, Mask, maskSize);
+            CvInvoke.Resize(newMask, newMask, maskSize);
         }
 
         if (invertMask)
         {
-            InvertMask();
+            CvInvoke.BitwiseNot(newMask, newMask);
         }
+        Mask?.Dispose();
+        Mask = newMask;
     }
 
     public void InvertMask()
@@ -110,12 +112,28 @@ public class OperationMask : Operation
 
     public override bool Execute(Mat mat, params object[]? arguments)
     {
+        using var original = mat.Clone();
         using var target = GetRoiOrDefault(mat);
-        using var mask = GetMask(mat);
-        if (Mask!.Size != target.Size) return false;
-        //CvInvoke.BitwiseAnd(target, Mask, target, mask);
-        CvInvoke.Multiply(target, Mask, target, EmguCvExtensions.NormalizedByteScale);
+        using var croppedInputMask = HaveROI && Mask!.Size == mat.Size ? GetRoiOrDefault(Mask) : null;
+        var inputMask = croppedInputMask ?? Mask;
+        if (inputMask!.Size != target.Size) return false;
+        CvInvoke.Multiply(target, inputMask, target, EmguCvExtensions.NormalizedByteScale);
+        ApplyMask(original, target);
         return true;
+    }
+
+    public override Operation Clone()
+    {
+        var clone = (OperationMask)base.Clone();
+        clone.Mask = Mask?.Clone();
+        return clone;
+    }
+
+    public override void Dispose()
+    {
+        Mask?.Dispose();
+        Mask = null;
+        base.Dispose();
     }
 
     #endregion

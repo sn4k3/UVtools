@@ -35,6 +35,8 @@ public sealed partial class SuggestionModelPosition : Suggestion
 
     #region Members
 
+    private Anchor? _randomAnchor;
+
     #endregion
 
     #region Properties
@@ -51,6 +53,13 @@ public sealed partial class SuggestionModelPosition : Suggestion
             var topRight    = new Point((int)SlicerFile.ResolutionX - LeftRightMargin, TopBottomMargin);
             var bottomRight = new Point((int)SlicerFile.ResolutionX - LeftRightMargin, (int)SlicerFile.ResolutionY - TopBottomMargin);
             var bottomLeft  = new Point(LeftRightMargin, (int)SlicerFile.ResolutionY - TopBottomMargin);
+            var isTopLeft = SlicerFile.BoundingRectangle.Location == topLeft;
+            var isTopRight = SlicerFile.BoundingRectangle.Right == topRight.X &&
+                             SlicerFile.BoundingRectangle.Y == topRight.Y;
+            var isBottomRight = SlicerFile.BoundingRectangle.Right == bottomRight.X &&
+                                SlicerFile.BoundingRectangle.Bottom == bottomRight.Y;
+            var isBottomLeft = SlicerFile.BoundingRectangle.X == bottomLeft.X &&
+                               SlicerFile.BoundingRectangle.Bottom == bottomLeft.Y;
 
             var applyWhen = ApplyWhen;
             if (SlicerFile.ResolutionX - SlicerFile.BoundingRectangle.Size.Width < MinimumLeftRightMargin * 2
@@ -67,13 +76,17 @@ public sealed partial class SuggestionModelPosition : Suggestion
                 /*BR*/ || (SlicerFile.BoundingRectangle.Right <= (int)SlicerFile.ResolutionX - MinimumLeftRightMargin && SlicerFile.BoundingRectangle.Right >= (int)SlicerFile.ResolutionX - MaximumLeftRightMargin && SlicerFile.BoundingRectangle.Bottom <= (int)SlicerFile.ResolutionY - MinimumTopBottomMargin && SlicerFile.BoundingRectangle.Bottom >= (int)SlicerFile.ResolutionY - MaximumTopBottomMargin)
                 /*BL*/ || (SlicerFile.BoundingRectangle.X >= MinimumLeftRightMargin && SlicerFile.BoundingRectangle.X <= MaximumLeftRightMargin && SlicerFile.BoundingRectangle.Bottom <= (int)SlicerFile.ResolutionY - MinimumTopBottomMargin && SlicerFile.BoundingRectangle.Bottom >= (int)SlicerFile.ResolutionY - MaximumTopBottomMargin)
                 ,
-                SuggestionApplyWhen.Different =>
-                /*TL*/    (SlicerFile.BoundingRectangle.Location == topLeft)
-                /*TR*/ || (SlicerFile.BoundingRectangle.Right == topRight.X && SlicerFile.BoundingRectangle.Y == topRight.Y)
-                /*BR*/ || (SlicerFile.BoundingRectangle.Right == bottomRight.X && SlicerFile.BoundingRectangle.Bottom == bottomRight.Y)
-                /*BL*/ || (SlicerFile.BoundingRectangle.X == bottomLeft.X && SlicerFile.BoundingRectangle.Bottom == bottomLeft.Y)
-                ,
-                _ => throw new ArgumentOutOfRangeException()
+                SuggestionApplyWhen.Different => AnchorType switch
+                {
+                    SuggestionModelAnchor.Random =>
+                        isTopLeft || isTopRight || isBottomRight || isBottomLeft,
+                    SuggestionModelAnchor.TopLeft => isTopLeft,
+                    SuggestionModelAnchor.TopRight => isTopRight,
+                    SuggestionModelAnchor.BottomRight => isBottomRight,
+                    SuggestionModelAnchor.BottomLeft => isBottomLeft,
+                    _ => false
+                },
+                _ => false
             };
         }
     }
@@ -98,6 +111,8 @@ public sealed partial class SuggestionModelPosition : Suggestion
     [ObservableProperty]
     public partial SuggestionModelAnchor AnchorType { get; set; } = SuggestionModelAnchor.Random;
 
+    partial void OnAnchorTypeChanged(SuggestionModelAnchor value) => _randomAnchor = null;
+
     [ObservableProperty]
     public partial ushort TargetTopBottomMargin { get; set; } = 100;
 
@@ -105,9 +120,14 @@ public sealed partial class SuggestionModelPosition : Suggestion
     {
         get
         {
-            var margin = Math.Clamp(TargetTopBottomMargin, MinimumTopBottomMargin, MaximumTopBottomMargin);
-            return SlicerFile.ResolutionY - SlicerFile.BoundingRectangle.Size.Height < margin * 2
-                ? (ushort) Math.Round((SlicerFile.ResolutionY - SlicerFile.BoundingRectangle.Size.Height) / 2f,
+            var margin = Math.Clamp(
+                TargetTopBottomMargin,
+                Math.Min(MinimumTopBottomMargin, MaximumTopBottomMargin),
+                Math.Max(MinimumTopBottomMargin, MaximumTopBottomMargin));
+            var available = Math.Max(0L,
+                (long)SlicerFile.ResolutionY - SlicerFile.BoundingRectangle.Size.Height);
+            return available < margin * 2
+                ? (ushort) Math.Round(available / 2f,
                     MidpointRounding.AwayFromZero)
                 : margin;
         }
@@ -121,9 +141,14 @@ public sealed partial class SuggestionModelPosition : Suggestion
     {
         get
         {
-            var margin = Math.Clamp(TargetLeftRightMargin, MinimumLeftRightMargin, MaximumLeftRightMargin);
-            return SlicerFile.ResolutionX - SlicerFile.BoundingRectangle.Size.Width < margin * 2
-                ? (ushort) Math.Round((SlicerFile.ResolutionX - SlicerFile.BoundingRectangle.Size.Width) / 2f,
+            var margin = Math.Clamp(
+                TargetLeftRightMargin,
+                Math.Min(MinimumLeftRightMargin, MaximumLeftRightMargin),
+                Math.Max(MinimumLeftRightMargin, MaximumLeftRightMargin));
+            var available = Math.Max(0L,
+                (long)SlicerFile.ResolutionX - SlicerFile.BoundingRectangle.Size.Width);
+            return available < margin * 2
+                ? (ushort) Math.Round(available / 2f,
                     MidpointRounding.AwayFromZero)
                 : margin;
         }
@@ -156,16 +181,15 @@ public sealed partial class SuggestionModelPosition : Suggestion
                 case SuggestionModelAnchor.BottomLeft:
                     return Anchor.BottomLeft;
                 case SuggestionModelAnchor.Random:
-                default:
-                    var anchors = new[]
+                    return _randomAnchor ??= Random.Shared.Next(4) switch
                     {
-                        Anchor.TopLeft,
-                        Anchor.TopRight,
-                        Anchor.BottomRight,
-                        Anchor.BottomLeft
+                        0 => Anchor.TopLeft,
+                        1 => Anchor.TopRight,
+                        2 => Anchor.BottomRight,
+                        _ => Anchor.BottomLeft
                     };
-
-                    return anchors[new Random().Next(anchors.Length)];
+                default:
+                    return Anchor.None;
             }
         }
     }
@@ -177,24 +201,8 @@ public sealed partial class SuggestionModelPosition : Suggestion
             Anchor.TopRight    => new Point((int) SlicerFile.ResolutionX - LeftRightMargin, TopBottomMargin),
             Anchor.BottomRight => new Point((int) SlicerFile.ResolutionX - LeftRightMargin, (int) SlicerFile.ResolutionY - TopBottomMargin),
             Anchor.BottomLeft  => new Point(LeftRightMargin, (int) SlicerFile.ResolutionY - TopBottomMargin),
-            _ => throw new ArgumentOutOfRangeException()
+            _ => Point.Empty
         };
-
-    /*private static Anchor ToolMoveRandomAnchor
-    {
-        get
-        {
-            var anchors = new[]
-            {
-                Anchor.TopLeft,
-                Anchor.TopRight,
-                Anchor.BottomRight,
-                Anchor.BottomLeft
-            };
-
-            return anchors[new Random().Next(0, anchors.Length)];
-        }
-    }*/
 
     #endregion
 
@@ -203,6 +211,11 @@ public sealed partial class SuggestionModelPosition : Suggestion
     public override string? Validate()
     {
         var sb = new StringBuilder();
+
+        if (!Enum.IsDefined(AnchorType))
+        {
+            sb.AppendLine("The model anchor is invalid");
+        }
 
         if (MinimumTopBottomMargin > MaximumTopBottomMargin)
         {
@@ -255,7 +268,13 @@ public sealed partial class SuggestionModelPosition : Suggestion
                 throw new ArgumentOutOfRangeException();
         }
 
-        return operation.IsWithinBoundary && operation.Execute(progress);
+        var result = operation.IsWithinBoundary && operation.Execute(progress);
+        if (result)
+        {
+            _randomAnchor = null;
+        }
+
+        return result;
     }
 
     #endregion

@@ -10,6 +10,7 @@ using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Text;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Layers;
 using ZLinq;
 
 namespace UVtools.Core.Operations;
@@ -96,42 +97,48 @@ public sealed partial class OperationLayerClone : Operation
         progress.Reset(ProgressAction, totalClones);
 
         var oldLayers = SlicerFile.AsValueEnumerable().ToArray();
-        SlicerFile.Init(SlicerFile.LayerCount + totalClones);
-        //var newLayers = new Layer[SlicerFile.LayerCount + totalClones];
+        var relativePositions = oldLayers.AsValueEnumerable().Select(layer => layer.RelativePositionZ).ToArray();
+        var newLayers = new Layer[oldLayers.Length + totalClones];
+        var newOriginalPositions = new float[oldLayers.Length];
 
         uint newLayerIndex = 0;
         float incrementedPositionZ = 0;
         for (uint layerIndex = 0; layerIndex < oldLayers.Length; layerIndex++)
         {
             progress.PauseOrCancelIfRequested();
-            SlicerFile[newLayerIndex++] = oldLayers[layerIndex];
-
-            if (!KeepSamePositionZ && incrementedPositionZ > 0)
-            {
-                oldLayers[layerIndex].PositionZ += incrementedPositionZ;
-            }
+            var layer = oldLayers[layerIndex];
+            newOriginalPositions[layerIndex] = layer.PositionZ + incrementedPositionZ;
+            newLayers[newLayerIndex++] = layer;
 
             if (layerIndex < LayerIndexStart || layerIndex > LayerIndexEnd) continue;
-            float increment = SlicerFile[layerIndex].RelativePositionZ;
+            float increment = relativePositions[layerIndex];
             if (increment == 0) increment = SlicerFile.LayerHeight;
             for (uint i = 0; i < Clones; i++)
             {
-                SlicerFile[newLayerIndex] = oldLayers[layerIndex].Clone();
+                var clone = layer.Clone();
 
                 if (!KeepSamePositionZ)
                 {
                     incrementedPositionZ += increment;
-                    SlicerFile[newLayerIndex].PositionZ += increment * (i + 1);
+                    clone.PositionZ = newOriginalPositions[layerIndex] + increment * (i + 1);
                 }
 
-                newLayerIndex++;
+                newLayers[newLayerIndex++] = clone;
                 progress++;
             }
         }
 
+        if (progress.Token.IsCancellationRequested) return false;
         SlicerFile.SuppressRebuildPropertiesWork(() =>
         {
-            SlicerFile.Layers = SlicerFile.Layers; // Reassign for update
+            if (!KeepSamePositionZ)
+            {
+                for (var i = 0; i < oldLayers.Length; i++)
+                {
+                    oldLayers[i].PositionZ = newOriginalPositions[i];
+                }
+            }
+            SlicerFile.Layers = newLayers;
         });
 
 

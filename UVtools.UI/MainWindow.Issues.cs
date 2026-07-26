@@ -230,7 +230,7 @@ public partial class MainWindow
                     Progress.PauseIfRequested();
                     using (var image = SlicerFile![layerIssues.Key].LayerMat)
                     {
-                        var bytes = image.GetSpanOfBytes(0, 0);
+                        var bytes = image.GetSpanOfBytes();
 
                         bool edited = false;
                         foreach (var issue in layerIssues.Value)

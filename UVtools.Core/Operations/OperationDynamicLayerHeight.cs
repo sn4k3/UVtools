@@ -467,7 +467,7 @@ public sealed partial class OperationDynamicLayerHeight : Operation
 
         var kernel = EmguCvExtensions.Kernel3X3Rectangle;
 
-        var matCache = new MatCacheManager(this, (ushort)CacheObjectCount, ObjectsPerCache)
+        using var matCache = new MatCacheManager(this, (ushort)CacheObjectCount, ObjectsPerCache)
         {
             AutoDispose = true,
             AutoDisposeKeepLast = 1,
@@ -528,7 +528,7 @@ public sealed partial class OperationDynamicLayerHeight : Operation
                 var matThreshold = matCache.Get(layerIndex, 1);
                 if (ReconstructAntiAliasing)
                 {
-                    var blurMat = new Mat();
+                    using var blurMat = new Mat();
                     CvInvoke.GaussianBlur(matThreshold, blurMat, new Size(3, 3), 0);
                     layer.LayerMat = blurMat;
                 }
@@ -540,10 +540,12 @@ public sealed partial class OperationDynamicLayerHeight : Operation
             layers.Add(layer);
         }
 
-        for (uint layerIndex = 0; layerIndex < LayerIndexStart; layerIndex++) // Skip layers and re-use layers
+        try
         {
-            ReUseLayer(layerIndex);
-        }
+            for (uint layerIndex = 0; layerIndex < LayerIndexStart; layerIndex++) // Skip layers and re-use layers
+            {
+                ReUseLayer(layerIndex);
+            }
 
         for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; )
         {
@@ -728,7 +730,13 @@ public sealed partial class OperationDynamicLayerHeight : Operation
         report.NewPrintTime = SlicerFile.PrintTime;
         AfterCompleteReport = report.ToString();
 
-        return true;
+            return true;
+        }
+        finally
+        {
+            matSum?.Dispose();
+            matXorSum?.Dispose();
+        }
     }
 
     #endregion

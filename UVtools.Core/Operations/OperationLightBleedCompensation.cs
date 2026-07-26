@@ -218,89 +218,93 @@ public partial class OperationLightBleedCompensation : Operation
     {
         var dimMats = GetDimMats();
         if (dimMats.Length == 0) return false;
-        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
+        var sourceLayers = SlicerFile.CloneLayers();
+        try
         {
-            progress.PauseIfRequested();
-            var layer = SlicerFile[layerIndex];
-            using var mat = layer.LayerMat;
-            using var original = mat.Clone();
-            using var target = GetRoiOrDefault(mat);
-
-            for (byte i = 0; i < dimMats.Length; i++)
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
-                Mat? mask = null;
-                Mat? previousMat = null;
-                Mat? previousMatRoi = null;
-                Mat? nextMat = null;
-                Mat? nextMatRoi = null;
+                progress.PauseIfRequested();
+                var layer = SlicerFile[layerIndex];
+                using var mat = layer.LayerMat;
+                using var original = mat.Clone();
+                using var target = GetRoiOrDefault(mat);
 
-
-                if (LookupMode is LightBleedCompensationLookupMode.Previous or LightBleedCompensationLookupMode.Both)
+                for (var i = 0; i < dimMats.Length; i++)
                 {
-                    int layerPreviousIndex = (int)layerIndex - i - 1;
-                    if (layerPreviousIndex >= LayerIndexStart)
+                    Mat? mask = null;
+                    Mat? previousMat = null;
+                    Mat? previousMatRoi = null;
+                    Mat? nextMat = null;
+                    Mat? nextMatRoi = null;
+                    try
                     {
-                        previousMat = SlicerFile[layerPreviousIndex].LayerMat;
-                        mask = previousMatRoi = GetRoiOrDefault(previousMat);
+                        if (LookupMode is LightBleedCompensationLookupMode.Previous or LightBleedCompensationLookupMode.Both)
+                        {
+                            int layerPreviousIndex = (int)layerIndex - i - 1;
+                            if (layerPreviousIndex >= LayerIndexStart)
+                            {
+                                previousMat = sourceLayers[layerPreviousIndex].LayerMat;
+                                mask = previousMatRoi = GetRoiOrDefault(previousMat);
+                            }
+                        }
+                        if (LookupMode is LightBleedCompensationLookupMode.Next or LightBleedCompensationLookupMode.Both)
+                        {
+                            uint layerIndexNext = (uint)layerIndex + (uint)i + 1;
+                            if (layerIndexNext <= LayerIndexEnd)
+                            {
+                                nextMat = sourceLayers[layerIndexNext].LayerMat;
+                                mask = nextMatRoi = GetRoiOrDefault(nextMat);
+                            }
+                        }
+
+                        if (mask is null || (previousMat is null && nextMat is null)) break;
+                        if (previousMat is not null && nextMat is not null)
+                        {
+                            CvInvoke.Add(previousMatRoi, nextMatRoi, previousMatRoi);
+                            mask = previousMatRoi;
+                        }
+
+                        switch (Subject)
+                        {
+                            case LightBleedCompensationSubject.Similarities:
+                                CvInvoke.Subtract(target, dimMats[i], target, mask);
+                                break;
+                            case LightBleedCompensationSubject.Bridges:
+                                mask!.SetTo(EmguCvExtensions.WhiteColor, mask);
+                                CvInvoke.BitwiseNot(mask, mask);
+                                CvInvoke.Subtract(target, dimMats[i], target, mask);
+                                break;
+                            case LightBleedCompensationSubject.Both:
+                                CvInvoke.Subtract(target, dimMats[i], target, mask);
+                                mask!.SetTo(EmguCvExtensions.WhiteColor, mask);
+                                CvInvoke.BitwiseNot(mask, mask);
+                                CvInvoke.Subtract(target, dimMats[i], target, mask);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException(nameof(Subject), Subject, null);
+                        }
+                    }
+                    finally
+                    {
+                        previousMatRoi?.Dispose();
+                        nextMatRoi?.Dispose();
+                        previousMat?.Dispose();
+                        nextMat?.Dispose();
                     }
                 }
-                if (LookupMode is LightBleedCompensationLookupMode.Next or LightBleedCompensationLookupMode.Both)
-                {
-                    uint layerIndexNext = (uint) (layerIndex + i + 1);
-                    if (layerIndexNext <= LayerIndexEnd)
-                    {
-                        nextMat = SlicerFile[layerIndexNext].LayerMat;
-                        mask = nextMatRoi = GetRoiOrDefault(nextMat);
-                    }
-                }
 
-                if (mask is null || (previousMat is null && nextMat is null)) break; // Nothing more to do
-                if (previousMat is not null && nextMat is not null) // both, need to merge previous with next layer
-                {
-                    CvInvoke.Add(previousMatRoi, nextMatRoi, previousMatRoi);
-                    mask = previousMatRoi;
-                }
+                ApplyMask(original, target);
+                layer.LayerMat = mat;
 
-                switch (Subject)
-                {
-                    case LightBleedCompensationSubject.Similarities:
-                        CvInvoke.Subtract(target, dimMats[i], target, mask);
-                        break;
-                    case LightBleedCompensationSubject.Bridges:
-                        mask!.SetTo(EmguCvExtensions.WhiteColor, mask);
-                        CvInvoke.BitwiseNot(mask, mask);
-                        CvInvoke.Subtract(target, dimMats[i], target, mask);
-                        break;
-                    case LightBleedCompensationSubject.Both:
-                        CvInvoke.Subtract(target, dimMats[i], target, mask);
-                        mask!.SetTo(EmguCvExtensions.WhiteColor, mask);
-                        CvInvoke.BitwiseNot(mask, mask);
-                        CvInvoke.Subtract(target, dimMats[i], target, mask);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(Subject), Subject, null);
-                }
-
-                previousMat?.Dispose();
-                nextMat?.Dispose();
-                previousMatRoi?.Dispose();
-                nextMatRoi?.Dispose();
-                mask?.Dispose();
-            }
-
-            // Apply the results only to the selected masked area, if user selected one
-            ApplyMask(original, target);
-
-            // Set current layer image with the modified mat we just manipulated
-            layer.LayerMat = mat;
-
-            // Increment progress bar by 1
-            progress.LockAndIncrement();
-        });
-
-        foreach (var dimMat in dimMats)
+                progress.LockAndIncrement();
+            });
+        }
+        finally
         {
-            dimMat.Dispose();
+            foreach (var dimMat in dimMats)
+            {
+                dimMat.Dispose();
+            }
         }
 
         // return true if not cancelled by user

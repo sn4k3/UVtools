@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Buffers;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 using BinarySerialization;
+using DotNext.Buffers;
 using Emgu.CV;
 using EmguExtensions;
 using UVtools.Core.Exceptions;
@@ -89,7 +90,7 @@ public sealed class GooFile : FileFormat
         [FieldLength(24)]
         [SerializeAs(SerializedType.TerminatedString)]
         [FieldEndianness(Endianness.Big)]
-        public string FileCreateTime { get; set; } = DateTime.UtcNow.ToString("yyyy-mm-dd HH:mm:ss");
+        public string FileCreateTime { get; set; } = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
 
         [FieldOrder(5)]
         [FieldLength(32)]
@@ -496,17 +497,19 @@ public sealed class GooFile : FileFormat
 
         public Mat DecodeImage(uint layerIndex, bool consumeRle = true)
         {
-            var mat = EmguCvExtensions.InitMat(Parent!.Resolution);
+            if (DataLength <= 3) return EmguCvExtensions.InitMat(Parent!.Resolution);
 
-            if (DataLength <= 3) return mat;
+            var encodedRle = EncodedRle ??
+                             throw new FileLoadException($"RLE data for layer {layerIndex} is not available.");
+            if (DataLength != encodedRle.Length)
+                throw new FileLoadException(
+                    $"RLE data length for layer {layerIndex} is {encodedRle.Length}, expected {DataLength}.");
 
-            if (EncodedRle[0] != LayerMagic)
+            if (encodedRle[0] != LayerMagic)
                 throw new MessageException(
-                    $"RLE for layer {layerIndex} is corrupted, should start with {LayerMagic} but got {EncodedRle[0]}");
+                    $"RLE for layer {layerIndex} is corrupted, should start with {LayerMagic} but got {encodedRle[0]}");
 
-            var pixel = 0;
-            var lastByteIndex = DataLength - 1;
-            byte color = 0;
+            var lastByteIndex = encodedRle.Length - 1;
             byte checkSum = 0;
 
             for (var i = 1; i < lastByteIndex; i++)
@@ -514,172 +517,205 @@ public sealed class GooFile : FileFormat
                 // Calculate checksum
                 unchecked
                 {
-                    checkSum += EncodedRle[i];
+                    checkSum += encodedRle[i];
                 }
             }
 
             checkSum = (byte)~checkSum;
-            if (EncodedRle[^1] != checkSum)
+            if (encodedRle[^1] != checkSum)
                 throw new MessageException(
-                    $"Decoded RLE for layer {layerIndex} is corrupted, expected checksum <{EncodedRle[^1]}>, got <{checkSum}>");
+                    $"Decoded RLE for layer {layerIndex} is corrupted, expected checksum <{encodedRle[^1]}>, got <{checkSum}>");
 
-            for (var i = 1; i < lastByteIndex; i++)
+            var mat = EmguCvExtensions.InitMat(Parent!.Resolution);
+            try
             {
-                /* Byte0[7:6]: The type of chunk
-                 * (0x0) 0 0 This chunk contain all 0x0 pixels
-                 * (0x1) 0 1 This chunk contain the value of gray between 0x1 to 0xfe. The gray value is after byte0.
-                 * (0x2) 1 0 This chunk contain the diff value from the previous pixel
-                 * (0x3) 1 1 This chunk contain all 0xff pixels
-                 */
-                var chunkType = (byte)(EncodedRle[i] >> 6);
-                var stride = 0;
+                var pixel = 0;
+                byte color = 0;
+                for (var i = 1; i < lastByteIndex; i++)
+                {
+                    /* Byte0[7:6]: The type of chunk
+                     * (0x0) 0 0 This chunk contain all 0x0 pixels
+                     * (0x1) 0 1 This chunk contain the value of gray between 0x1 to 0xfe. The gray value is after byte0.
+                     * (0x2) 1 0 This chunk contain the diff value from the previous pixel
+                     * (0x3) 1 1 This chunk contain all 0xff pixels
+                     */
+                    var chunkType = (byte)(EncodedRle[i] >> 6);
+                    var stride = 0;
 
-                var strideIndex0 = i;
-                var strideIndex1 = i + 1;
-                var strideIndex2 = i + 2;
-                var strideIndex3 = i + 3;
+                    var strideIndex0 = i;
+                    var strideIndex1 = i + 1;
+                    var strideIndex2 = i + 2;
+                    var strideIndex3 = i + 3;
 
-                if (chunkType == 0x0) // 0 0
-                {
-                    color = byte.MinValue;
-                }
-                else if (chunkType == 0x1) // 0 1
-                {
-                    color = EncodedRle[++i];
-                    strideIndex1++;
-                    strideIndex2++;
-                    strideIndex3++;
-                }
-                else if (chunkType == 0x2) // 1 0
-                {
-                    /* When byte0[7:6] is [1:0], the meaning of byte0[5:4] follow below definition:
-                     * 0 0 byte0[3:0] is the positive diff value. that's mean
-                           current value subtract previous value is bigger
-                           than 0. The range is from 0 to 15. 0x0 map to 0.
-                           0xf map to 15.
-                     * 0 1 byte0[3:0] is the positive diff value. And this
-                           value's run-length represent by byte1[7:0]
-                     * 1 0 byte0[3:0] is the negative diff value.that's mean
-                           current value subtract previous value is smaller
-                           than 0. The range is from 0 to 15. 0x0 map to 0.
-                           0xf map to 15.
-                     * 1 1 byte0[3:0] is the negative diff value. And this
-                           value's run-length represent by byte1[7:0]
-                    */
-                    var diffType = (byte)((EncodedRle[i] >> 4) & 0x3);
-                    var diffValue = (byte)(EncodedRle[i] & 0xf);
-                    if (diffType == 0x0)
+                    if (chunkType == 0x0) // 0 0
                     {
-                        color += diffValue;
-                        stride = 1;
+                        color = byte.MinValue;
                     }
-                    else if (diffType == 0x1)
+                    else if (chunkType == 0x1) // 0 1
                     {
-                        color += diffValue;
-                        stride = EncodedRle[++i];
+                        if (i + 1 >= lastByteIndex)
+                            throw new FileLoadException($"Truncated grayscale RLE chunk in layer {layerIndex}.");
+                        color = EncodedRle[++i];
+                        strideIndex1++;
+                        strideIndex2++;
+                        strideIndex3++;
                     }
-                    else if (diffType == 0x2)
+                    else if (chunkType == 0x2) // 1 0
                     {
-                        color -= diffValue;
-                        stride = 1;
+                        /* When byte0[7:6] is [1:0], the meaning of byte0[5:4] follow below definition:
+                         * 0 0 byte0[3:0] is the positive diff value. that's mean
+                               current value subtract previous value is bigger
+                               than 0. The range is from 0 to 15. 0x0 map to 0.
+                               0xf map to 15.
+                         * 0 1 byte0[3:0] is the positive diff value. And this
+                               value's run-length represent by byte1[7:0]
+                         * 1 0 byte0[3:0] is the negative diff value.that's mean
+                               current value subtract previous value is smaller
+                               than 0. The range is from 0 to 15. 0x0 map to 0.
+                               0xf map to 15.
+                         * 1 1 byte0[3:0] is the negative diff value. And this
+                               value's run-length represent by byte1[7:0]
+                        */
+                        var diffType = (byte)((EncodedRle[i] >> 4) & 0x3);
+                        var diffValue = (byte)(EncodedRle[i] & 0xf);
+                        if (diffType == 0x0)
+                        {
+                            color += diffValue;
+                            stride = 1;
+                        }
+                        else if (diffType == 0x1)
+                        {
+                            if (i + 1 >= lastByteIndex)
+                                throw new FileLoadException($"Truncated difference RLE chunk in layer {layerIndex}.");
+                            color += diffValue;
+                            stride = EncodedRle[++i];
+                        }
+                        else if (diffType == 0x2)
+                        {
+                            color -= diffValue;
+                            stride = 1;
+                        }
+                        else if (diffType == 0x3)
+                        {
+                            if (i + 1 >= lastByteIndex)
+                                throw new FileLoadException($"Truncated difference RLE chunk in layer {layerIndex}.");
+                            color -= diffValue;
+                            stride = EncodedRle[++i];
+                        }
+                        else
+                        {
+                            throw new ArgumentOutOfRangeException(nameof(diffType),
+                                $"Diff type {diffType:X} is out of range, can only go up to 0x3.");
+                        }
                     }
-                    else if (diffType == 0x3)
+                    else if (chunkType == 0x3) // 1 1
                     {
-                        color -= diffValue;
-                        stride = EncodedRle[++i];
+                        color = byte.MaxValue;
                     }
                     else
                     {
-                        throw new ArgumentOutOfRangeException(nameof(diffType),
-                            $"Diff type {diffType:X} is out of range, can only go up to 0x3.");
+                        throw new ArgumentOutOfRangeException(nameof(chunkType),
+                            $"Chunk type {chunkType:X} is out of range, can only go up to 0x3.");
                     }
-                }
-                else if (chunkType == 0x3) // 1 1
-                {
-                    color = byte.MaxValue;
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException(nameof(chunkType),
-                        $"Chunk type {chunkType:X} is out of range, can only go up to 0x3.");
-                }
 
-                if (chunkType != 0x2)
-                {
-                    /* Byte0[5:4]: The length of chunk except when byte0[7:6] is [1 0]
-                     * (0x0) 0 0 4-bit run-length use byte0[3:0]
-                     * (0x1) 0 1 The run-length consist by byte1[7:0] and byte0[3:0]
-                     * (0x2) 1 0 The run-length consist by byte1[7:0], byte2[7:0] and byte0[3:0]
-                     * (0x3) 1 1 The run-length consist by byte1[7:0], byte2[7:0], byte3[7:0] and byte0[3:0]
-                     */
-                    var chunkLength = (byte)((EncodedRle[strideIndex0] >> 4) & 0x3);
-                    switch (chunkLength)
+                    if (chunkType != 0x2)
                     {
-                        case 0x0:
-                            stride = EncodedRle[strideIndex0] & 0xF;
-                            break;
-                        case 0x1:
-                            stride = (EncodedRle[strideIndex1] << 4) + (EncodedRle[strideIndex0] & 0xF);
-                            i += 1;
-                            break;
-                        case 0x2:
-                            stride = (EncodedRle[strideIndex1] << 12) + (EncodedRle[strideIndex2] << 4) +
-                                     (EncodedRle[strideIndex0] & 0xF);
-                            i += 2;
-                            break;
-                        case 0x3:
-                            stride = (EncodedRle[strideIndex1] << 20) + (EncodedRle[strideIndex2] << 12) +
-                                     (EncodedRle[strideIndex3] << 4) + (EncodedRle[strideIndex0] & 0xF);
-                            i += 3;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(chunkLength),
-                                $"Chunk length {chunkLength:X} is out of range, can only go up to 0x3.");
+                        /* Byte0[5:4]: The length of chunk except when byte0[7:6] is [1 0]
+                         * (0x0) 0 0 4-bit run-length use byte0[3:0]
+                         * (0x1) 0 1 The run-length consist by byte1[7:0] and byte0[3:0]
+                         * (0x2) 1 0 The run-length consist by byte1[7:0], byte2[7:0] and byte0[3:0]
+                         * (0x3) 1 1 The run-length consist by byte1[7:0], byte2[7:0], byte3[7:0] and byte0[3:0]
+                        */
+                        var chunkLength = (byte)((EncodedRle[strideIndex0] >> 4) & 0x3);
+                        var lastStrideIndex = chunkLength switch
+                        {
+                            0 => strideIndex0,
+                            1 => strideIndex1,
+                            2 => strideIndex2,
+                            _ => strideIndex3
+                        };
+                        if (lastStrideIndex >= lastByteIndex)
+                            throw new FileLoadException($"Truncated RLE run length in layer {layerIndex}.");
+                        switch (chunkLength)
+                        {
+                            case 0x0:
+                                stride = EncodedRle[strideIndex0] & 0xF;
+                                break;
+                            case 0x1:
+                                stride = (EncodedRle[strideIndex1] << 4) + (EncodedRle[strideIndex0] & 0xF);
+                                i += 1;
+                                break;
+                            case 0x2:
+                                stride = (EncodedRle[strideIndex1] << 12) + (EncodedRle[strideIndex2] << 4) +
+                                         (EncodedRle[strideIndex0] & 0xF);
+                                i += 2;
+                                break;
+                            case 0x3:
+                                stride = (EncodedRle[strideIndex1] << 20) + (EncodedRle[strideIndex2] << 12) +
+                                         (EncodedRle[strideIndex3] << 4) + (EncodedRle[strideIndex0] & 0xF);
+                                i += 3;
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException(nameof(chunkLength),
+                                    $"Chunk length {chunkLength:X} is out of range, can only go up to 0x3.");
+                        }
                     }
+
+                    if (stride <= 0 || pixel > mat.ByteCountInt32 - stride)
+                        throw new FileLoadException(
+                            $"RLE run in layer {layerIndex} exceeds the image bounds at pixel {pixel}.");
+
+                    mat.FillSpan(ref pixel, stride, color);
                 }
 
-                mat.FillSpan(ref pixel, stride, color);
+                if (consumeRle) EncodedRle = null!;
+
+                return mat;
             }
-
-            if (consumeRle) EncodedRle = null!;
-
-            return mat;
+            catch
+            {
+                mat.Dispose();
+                throw;
+            }
         }
 
         public byte[] EncodeImage(Mat image, uint layerIndex, bool useColorDifferenceCompression = true)
         {
-            List<byte> rle = [LayerMagic];
+            var span = image.GetReadOnlySpanOfBytes();
+            using var bufferOwner = new MemoryOwner<byte>(ArrayPool<byte>.Shared, checked(span.Length * 2 + 2));
+            var buffer = bufferOwner.Memory;
+            var count = 1;
+            buffer.Span[0] = LayerMagic;
             byte previousColor = 0;
             byte currentColor = 0;
             uint stride = 0;
-            byte checkSum = 0;
-            var span = image.GetReadOnlySpanOfBytes();
 
             void AddRep()
             {
+                var output = buffer.Span;
                 if (stride == 0)
                 {
                     return;
                 }
 
-                var firstByteIndex = rle.Count;
-                rle.Add(0);
+                var firstByteIndex = count++;
+                output[firstByteIndex] = 0;
 
                 // Difference mode
                 var colorDifference = (byte)Math.Abs(currentColor - previousColor);
                 if (useColorDifferenceCompression && colorDifference <= 0xF && stride <= byte.MaxValue &&
                     currentColor is > 0 and < byte.MaxValue)
                 {
-                    rle[firstByteIndex] = (byte)((0b10 << 6) | (colorDifference & 0xF));
+                    output[firstByteIndex] = (byte)((0b10 << 6) | (colorDifference & 0xF));
                     if (stride > 1)
                     {
-                        rle[firstByteIndex] |= 0x1 << 4;
-                        rle.Add((byte)stride);
+                        output[firstByteIndex] |= 0x1 << 4;
+                        output[count++] = (byte)stride;
                     }
 
                     if (currentColor < previousColor)
                     {
-                        rle[firstByteIndex] |= 0x1 << 5;
+                        output[firstByteIndex] |= 0x1 << 5;
                     }
                 }
                 else
@@ -692,16 +728,16 @@ public sealed class GooFile : FileFormat
                     if (currentColor == byte.MaxValue)
                     {
                         // 1 1 This chunk contain all 0xff pixels
-                        rle[firstByteIndex] |= 0b11 << 6;
+                        output[firstByteIndex] |= 0b11 << 6;
                     }
                     else if (currentColor > byte.MinValue)
                     {
                         // 0 1 This chunk contain the value of gray between 0x1 to 0xfe. The gray value is after byte0.
-                        rle[firstByteIndex] |= 0b01 << 6;
-                        rle.Add(currentColor);
+                        output[firstByteIndex] |= 0b01 << 6;
+                        output[count++] = currentColor;
                     }
 
-                    rle[firstByteIndex] |= (byte)(stride & 0xF);
+                    output[firstByteIndex] |= (byte)(stride & 0xF);
                     if (stride <= 0xF)
                     {
                         //rle[firstByteIndex] |= 0b00 << 4;
@@ -710,27 +746,30 @@ public sealed class GooFile : FileFormat
 
                     if (stride <= 0xFFF)
                     {
-                        rle[firstByteIndex] |= 0b01 << 4;
-                        rle.Add((byte)(stride >> 4));
+                        output[firstByteIndex] |= 0b01 << 4;
+                        output[count++] = (byte)(stride >> 4);
                         return;
                     }
 
                     if (stride <= 0xFFFFF)
                     {
-                        rle[firstByteIndex] |= 0b10 << 4;
-                        rle.Add((byte)(stride >> 12));
-                        rle.Add((byte)(stride >> 4));
+                        output[firstByteIndex] |= 0b10 << 4;
+                        output[count++] = (byte)(stride >> 12);
+                        output[count++] = (byte)(stride >> 4);
                         return;
                     }
 
                     if (stride <= 0xFFFFFFF)
                     {
-                        rle[firstByteIndex] |= 0b11 << 4;
-                        rle.Add((byte)(stride >> 20));
-                        rle.Add((byte)(stride >> 12));
-                        rle.Add((byte)(stride >> 4));
+                        output[firstByteIndex] |= 0b11 << 4;
+                        output[count++] = (byte)(stride >> 20);
+                        output[count++] = (byte)(stride >> 12);
+                        output[count++] = (byte)(stride >> 4);
                         return;
                     }
+
+                    throw new FileLoadException(
+                        $"RLE run in layer {layerIndex} is too large to encode: {stride} pixels.");
                 }
             }
 
@@ -751,19 +790,20 @@ public sealed class GooFile : FileFormat
 
             AddRep();
 
-            // Calculate checksum
-            for (var i = 1; i < rle.Count; i++)
+            byte checkSum = 0;
+            for (var i = 1; i < count; i++)
             {
                 unchecked
                 {
-                    checkSum += rle[i];
+                    checkSum += buffer.Span[i];
                 }
             }
 
-            rle.Add((byte)~checkSum);
+            buffer.Span[count++] = (byte)~checkSum;
 
-            EncodedRle = rle.ToArray();
-            DataLength = (uint)EncodedRle.Length;
+            EncodedRle = GC.AllocateUninitializedArray<byte>(count);
+            buffer.Span[..count].CopyTo(EncodedRle);
+            DataLength = (uint)count;
 
             return EncodedRle;
         }

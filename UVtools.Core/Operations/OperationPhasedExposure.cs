@@ -280,6 +280,7 @@ public partial class OperationPhasedExposure : Operation, IEquatable<OperationPh
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
+        if (PhasedExposures.Count == 0) return false;
         var layers = new Layer?[SlicerFile.LayerCount + LayerRangeCount * (PhasedExposures.Count - 1)];
 
         // Untouched
@@ -294,18 +295,16 @@ public partial class OperationPhasedExposure : Operation, IEquatable<OperationPh
         {
             progress.PauseIfRequested();
             var layer = SlicerFile[layerIndex];
+            uint newLayerIndex = (uint)(LayerIndexStart + (layerIndex - LayerIndexStart) * PhasedExposures.Count);
 
             if (layer.IsEmpty)
             {
+                layers[newLayerIndex] = layer;
                 progress.LockAndIncrement();
                 return;
             }
 
             var isBottomLayer = layer.IsBottomLayer;
-
-            uint newLayerIndex = (uint)(LayerIndexStart + (layerIndex - LayerIndexStart) * PhasedExposures.Count);
-
-            if (isBottomLayer) Interlocked.Increment(ref bottomLayers);
 
             using var matRoi = layer.LayerMatBoundingRectangle;
             uint affectedLayers = 0;
@@ -362,17 +361,21 @@ public partial class OperationPhasedExposure : Operation, IEquatable<OperationPh
 
             // Prevent layer loss due erode settings on low pixel layer, keep the original instead
             if (affectedLayers == 0) layers[newLayerIndex] = layer;
+            else if (isBottomLayer && affectedLayers > 1)
+                Interlocked.Add(ref bottomLayers, (int)affectedLayers - 1);
 
 
             progress.LockAndIncrement();
         });
 
         // Untouched
+        var extraLayerCount = LayerRangeCount * (uint)(PhasedExposures.Count - 1);
         for (uint i = LayerIndexEnd+1; i < SlicerFile.LayerCount; i++)
         {
-            layers[i + LayerRangeCount] = SlicerFile[i];
+            layers[i + extraLayerCount] = SlicerFile[i];
         }
 
+        if (progress.Token.IsCancellationRequested) return false;
         SlicerFile.SuppressRebuildPropertiesWork(() =>
         {
             SlicerFile.BottomLayerCount = (ushort)bottomLayers;

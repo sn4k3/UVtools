@@ -1307,8 +1307,8 @@ public sealed partial class OperationCalibrateExposureFinder : Operation
 
             if (BullsEyeInvertQuadrants)
             {
-                var matRoi1 = new Mat(layers[1], new Rectangle(bullseyeXPos, yPos - bulleyesRadius - 5, bulleyesRadius + 6, bulleyesRadius + 5));
-                var matRoi2 = new Mat(layers[1], new Rectangle(bullseyeXPos - bulleyesRadius - 5, yPos, bulleyesRadius + 5, bulleyesRadius + 6));
+                using var matRoi1 = new Mat(layers[1], new Rectangle(bullseyeXPos, yPos - bulleyesRadius - 5, bulleyesRadius + 6, bulleyesRadius + 5));
+                using var matRoi2 = new Mat(layers[1], new Rectangle(bullseyeXPos - bulleyesRadius - 5, yPos, bulleyesRadius + 5, bulleyesRadius + 6));
                 //using var mask = matRoi1.CloneBlank();
 
                 //CvInvoke.Circle(mask, new Point(mask.Width / 2, mask.Height / 2), bulleyesRadius, EmguCvExtensions.WhiteByte, -1, EnableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
@@ -1589,7 +1589,7 @@ public sealed partial class OperationCalibrateExposureFinder : Operation
                 progress.PauseIfRequested();
                 var layer = SlicerFile[layerIndex];
                 using var mat = layer.LayerMat;
-                var matRoi = new Mat(mat, boundingRectangle);
+                using var matRoi = new Mat(mat, boundingRectangle);
                 int layerCountOnHeight = (int)(layer.PositionZ / SlicerFile.LayerHeight);
                 bool isBottomLayer = layerCountOnHeight <= BottomLayers;
 
@@ -1603,7 +1603,7 @@ public sealed partial class OperationCalibrateExposureFinder : Operation
                         ExposureItem item = new(group.Key.LayerHeight, group.Key.BottomExposure, group.Key.Exposure, brightness);
                         if(!table.TryGetValue(item, out var point)) continue;
 
-                        var newMatRoi = new Mat(newMat, new Rectangle(point, matRoi.Size));
+                        using var newMatRoi = new Mat(newMat, new Rectangle(point, matRoi.Size));
                         matRoi.CopyTo(newMatRoi);
 
                         if (layer.IsBottomLayer)
@@ -1789,7 +1789,7 @@ public sealed partial class OperationCalibrateExposureFinder : Operation
                     }
 
 
-                    Mat matRoi = new(mat, new Rectangle(position, layers[0].Size));
+                    using Mat matRoi = new(mat, new Rectangle(position, layers[0].Size));
 
                     layers[isBaseLayer ? 0 : 1].CopyTo(matRoi);
 

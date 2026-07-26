@@ -135,64 +135,92 @@ public sealed partial class OperationLayerRemove : Operation
 
     public static bool RemoveLayers(FileFormat slicerFile, IEnumerable<uint> layersRemove, OperationProgress? progress = null)
     {
-        if (!layersRemove.Any()) return false;
+        var layerIndexes = layersRemove
+            .Where(layerIndex => layerIndex < slicerFile.LayerCount)
+            .Distinct()
+            .OrderByDescending(layerIndex => layerIndex)
+            .ToArray();
+        if (layerIndexes.Length == 0) return false;
+        if (layerIndexes.Length >= slicerFile.LayerCount)
+            throw new InvalidOperationException("At least one layer must remain in the file.");
 
+        var ownsProgress = progress is null;
         progress ??= new OperationProgress(false);
 
-        progress.Reset("Removed layers", (uint)layersRemove.Count());
-
-        var layers = slicerFile.ToList();
-        int removedBottomLayers = 0;
-        //uint lastRemovedBottomLayerIndex = 0;
-
-        var lastBottomLayer = slicerFile.LastBottomLayer;
-
-        // Register bottom layers
-        if (slicerFile.BottomLayerCount > 0)
+        try
         {
-            var layersRemoveAsc = layersRemove.OrderBy(index => index);
-            foreach (var layerIndex in layersRemoveAsc)
-            {
-                if (!slicerFile[layerIndex].IsBottomLayer) continue;
-                removedBottomLayers++;
-                //lastRemovedBottomLayerIndex = layerIndex;
-            }
-        }
+            progress.Reset("Removed layers", (uint)layerIndexes.Length);
 
-        // Remove layers
-        var layersRemoveDesc = layersRemove.OrderByDescending(index => index);
-        foreach (var layerIndex in layersRemoveDesc)
-        {
-            layers.RemoveAt((int)layerIndex);
+            var layers = slicerFile.ToList();
+            var removedBottomLayers = 0;
+            var removedLayerHeights = layerIndexes.ToDictionary(
+                layerIndex => layerIndex,
+                layerIndex => slicerFile[layerIndex].RelativePositionZ);
+            //uint lastRemovedBottomLayerIndex = 0;
 
-            // Shift layer positions
-            var relativeZ = slicerFile[layerIndex].RelativePositionZ;
-            if (relativeZ <= 0) continue;
-            for (uint i = layerIndex + 1; i < slicerFile.LayerCount; i++)
-            {
-                slicerFile[i].PositionZ -= relativeZ;
-            }
-            progress++;
-        }
+            var lastBottomLayer = slicerFile.LastBottomLayer;
 
-        // Should never happen, still use this safe-check
-        if (slicerFile.LayerCount != layers.Count)
-        {
-            // Try to copy bottom parameters to shifted new bottom layers
-            if (removedBottomLayers > 0 && lastBottomLayer is not null)
+            // Register bottom layers
+            if (slicerFile.BottomLayerCount > 0)
             {
-                var startIndex = (uint) Math.Max(lastBottomLayer.Index + 1, layersRemove.Count());
-                var endIndex = startIndex + removedBottomLayers;
-                var copyFromFromLayerIndex = (uint)Math.Max(0, (int)lastBottomLayer.Index);
-                for (var layerIndex = startIndex; layerIndex < endIndex && layerIndex < slicerFile.LayerCount; layerIndex++)
+                foreach (var layerIndex in layerIndexes)
                 {
-                    slicerFile[copyFromFromLayerIndex].CopyParametersTo(slicerFile[layerIndex]);
+                    if (!slicerFile[layerIndex].IsBottomLayer) continue;
+                    removedBottomLayers++;
+                    //lastRemovedBottomLayerIndex = layerIndex;
                 }
             }
-            slicerFile.SuppressRebuildPropertiesWork(() => slicerFile.Layers = layers.ToArray());
-        }
 
-        return true;
+            var removedHeight = 0f;
+            var removeIndex = layerIndexes.Length - 1;
+            for (uint layerIndex = 0; layerIndex < slicerFile.LayerCount; layerIndex++)
+            {
+                if (removeIndex >= 0 && layerIndex == layerIndexes[removeIndex])
+                {
+                    removedHeight += removedLayerHeights[layerIndex];
+                    removeIndex--;
+                    continue;
+                }
+
+                if (removedHeight > 0)
+                    slicerFile[layerIndex].PositionZ -= removedHeight;
+            }
+
+            foreach (var layerIndex in layerIndexes)
+            {
+                layers.RemoveAt((int)layerIndex);
+                progress++;
+            }
+
+            // Should never happen, still use this safe-check
+            if (slicerFile.LayerCount != layers.Count)
+            {
+                // Try to copy bottom parameters to shifted new bottom layers
+                if (removedBottomLayers > 0 && lastBottomLayer is not null)
+                {
+                    var bottomLayersToReplace = removedBottomLayers;
+                    for (var layerIndex = lastBottomLayer.Index + 1;
+                         layerIndex < slicerFile.LayerCount && bottomLayersToReplace > 0;
+                         layerIndex++)
+                    {
+                        if (removedLayerHeights.ContainsKey(layerIndex)) continue;
+                        lastBottomLayer.CopyParametersTo(slicerFile[layerIndex]);
+                        bottomLayersToReplace--;
+                    }
+                }
+
+                slicerFile.SuppressRebuildPropertiesWork(() => slicerFile.Layers = layers.ToArray());
+            }
+
+            return true;
+        }
+        finally
+        {
+            if (ownsProgress)
+            {
+                progress.Dispose();
+            }
+        }
     }
     #endregion
 }

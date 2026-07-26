@@ -160,7 +160,9 @@ public partial class OperationEditParameters : Operation
             uint setLayers = 0;
             for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
             {
+                progress.PauseOrCancelIfRequested();
                 SlicerFile[layerIndex].SetValuesFromPrintParametersModifiers(Modifiers);
+                progress++;
                 if (SkipNumberOfLayer == 0) continue;
                 setLayers++;
                 if (setLayers >= SetNumberOfLayer)
@@ -178,14 +180,24 @@ public partial class OperationEditParameters : Operation
         }
         else
         {
-            if (!PropagateModificationsToLayers)
+            var suppressRebuild = !PropagateModificationsToLayers;
+            if (suppressRebuild)
             {
                 SlicerFile.SuppressRebuildProperties = true;
             }
-            SlicerFile.SetValuesFromPrintParametersModifiers();
-            if (!PropagateModificationsToLayers)
+            try
             {
-                SlicerFile.SuppressRebuildProperties = false;
+                SlicerFile.SetValuesFromPrintParametersModifiers();
+            }
+            finally
+            {
+                if (suppressRebuild)
+                {
+                    SlicerFile.SuppressRebuildProperties = false;
+                }
+            }
+            if (suppressRebuild)
+            {
                 SlicerFile.RebuildGCode();
             }
         }

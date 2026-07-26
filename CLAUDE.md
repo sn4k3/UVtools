@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Follow the repository-wide agent instructions in `AGENTS.md` in addition to this file.
+
 ## Project Overview
 
 UVtools is a cross-platform (Windows, Linux, macOS) MSLA/DLP resin printer file analysis, calibration, repair, conversion, and manipulation application. It supports 35+ proprietary file formats (CTB, SL1, GOO, PWS, etc.) and provides both a desktop GUI and CLI.

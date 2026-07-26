@@ -5,6 +5,8 @@
     <Platform Name="x64" />
   </Configurations>
   <Folder Name="/root/">
+    <File Path=".gitignore" />
+    <File Path="AGENTS.md" />
     <File Path="CHANGELOG.md" />
     <File Path="CREDITS.md" />
     <File Path="Directory.Build.props" />

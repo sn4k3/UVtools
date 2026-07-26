@@ -10,6 +10,7 @@ using BinarySerialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -19,6 +20,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using DotNext.Buffers;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using EmguExtensions;
@@ -49,7 +51,7 @@ public sealed class AnycubicZipFile : FileFormat
         public string Version { get; set; } = "3";
 
         [JsonPropertyName("machine_type")]
-        public SettingsMachineType MachineType { get; set; } = new ();
+        public SettingsMachineType MachineType { get; set; } = new();
 
         [JsonPropertyName("machine_extern")]
         public SettingsMachineExtern MachineExtern { get; set; } = new();
@@ -904,7 +906,7 @@ public sealed class AnycubicZipFile : FileFormat
 
         [FieldOrder(7)] public float MaxContourArea { get; set; }
 
-        [FieldOrder(8)] [FieldCount(8)] public uint[] Padding { get; set; } = new uint[8];
+        [FieldOrder(8)][FieldCount(8)] public uint[] Padding { get; set; } = new uint[8];
 
         public override string ToString()
         {
@@ -966,15 +968,15 @@ public sealed class AnycubicZipFile : FileFormat
         /// </summary>
         [FieldOrder(14)] public uint ModelStats { get; set; }
 
-        [FieldOrder(15)] [FieldCount(64)] public uint[] Padding { get; set; } = new uint[64];
+        [FieldOrder(15)][FieldCount(64)] public uint[] Padding { get; set; } = new uint[64];
 
-        [FieldOrder(16)] [FieldLength(4)] public string Separator { get; set; } = "<---";
+        [FieldOrder(16)][FieldLength(4)] public string Separator { get; set; } = "<---";
 
         [FieldOrder(17)] public uint LayerDefCount { get; set; }
 
         [FieldOrder(18)][FieldCount(nameof(LayerDefCount))] public SceneLayerDef[] LayersDef { get; set; } = [];
 
-        [FieldOrder(19)] [FieldLength(4)] public string EndMarker { get; set; } = "--->";
+        [FieldOrder(19)][FieldLength(4)] public string EndMarker { get; set; } = "--->";
 
         public void Update(FileFormat slicerFile)
         {
@@ -1005,7 +1007,7 @@ public sealed class AnycubicZipFile : FileFormat
 
         [FieldOrder(2)] public float Thickness { get; set; }
 
-        [FieldOrder(3)] [FieldCount(8)] public uint[] Reserved { get; set; } = new uint[8];
+        [FieldOrder(3)][FieldCount(8)] public uint[] Reserved { get; set; } = new uint[8];
 
         [FieldOrder(4)] public float RawVolume { get; set; }
 
@@ -1031,7 +1033,7 @@ public sealed class AnycubicZipFile : FileFormat
 
         [FieldOrder(3)] public uint EntryCount { get; set; }
 
-        [FieldOrder(4)] [FieldCount(nameof(EntryCount))] public CalcLayerVolumesEntry[] Entries { get; set; } = [];
+        [FieldOrder(4)][FieldCount(nameof(EntryCount))] public CalcLayerVolumesEntry[] Entries { get; set; } = [];
 
         [Ignore]
         public float RawVolumeSum => Entries.Sum(entry => entry.RawVolume);
@@ -1144,12 +1146,12 @@ public sealed class AnycubicZipFile : FileFormat
     #endregion
 
     #region Properties
-    public SettingsManifest Settings { get; set; } = new ();
-    public LayersControllerManifest LayersSettings { get; set; } = new ();
-    public LcdFunctionManifest LcdFunctionSettings { get; set; } = new ();
-    public PrintInfoManifest PrintInfoSettings { get; set; } = new ();
-    public SceneManifest SceneSettings { get; set; } = new ();
-    public SoftwareInfoManifest SoftwareInfoSettings { get; set; } = new ();
+    public SettingsManifest Settings { get; set; } = new();
+    public LayersControllerManifest LayersSettings { get; set; } = new();
+    public LcdFunctionManifest LcdFunctionSettings { get; set; } = new();
+    public PrintInfoManifest PrintInfoSettings { get; set; } = new();
+    public SceneManifest SceneSettings { get; set; } = new();
+    public SoftwareInfoManifest SoftwareInfoSettings { get; set; } = new();
     public CalcLayerVolumesManifest CalcLayerVolumesSettings { get; set; } = new();
 
     public override FileFormatType FileType => FileFormatType.Archive;
@@ -1409,7 +1411,7 @@ public sealed class AnycubicZipFile : FileFormat
             var resinSettings = GetResinSetting();
             if (resinSettings is not null)
             {
-                resinSettings.SlicePara.BottomExposureTime = resinSettings.SlicePara.BottomExposureTimeDual =value;
+                resinSettings.SlicePara.BottomExposureTime = resinSettings.SlicePara.BottomExposureTimeDual = value;
             }
 
             base.BottomExposureTime = value;
@@ -1860,11 +1862,9 @@ public sealed class AnycubicZipFile : FileFormat
 
     private Mat DecodeLayerRle(AnycubicZipRleFormat format, byte[] encodedRle)
     {
-        var mat = CreateMat();
-
         if (format == AnycubicZipRleFormat.PW0)
         {
-            return AnycubicFile.DecodePW0(mat, encodedRle);
+            return AnycubicFile.DecodePW0(CreateMat(), encodedRle);
         }
 
         if (format == AnycubicZipRleFormat.PWSZ)
@@ -1885,7 +1885,7 @@ public sealed class AnycubicZipFile : FileFormat
             var padding1 = BitExtensions.ToUIntLittleEndian(encodedRle, index); index += 4;
             var objectCount = BitExtensions.ToUIntLittleEndian(encodedRle, index); index += 4;
 
-            if (encodedRle[index] != '[' || encodedRle[index+1] != '-' || encodedRle[index+2] != '-' || encodedRle[index+3] != '\0')
+            if (encodedRle[index] != '[' || encodedRle[index + 1] != '-' || encodedRle[index + 2] != '-' || encodedRle[index + 3] != '\0')
                 throw new FileLoadException($"Invalid RLE coordinates start marker, expecting: [--\0 got: {System.Text.Encoding.Default.GetString(encodedRle, index, 4)}.");
 
             index += 4;
@@ -1893,70 +1893,81 @@ public sealed class AnycubicZipFile : FileFormat
             var padding2 = BitExtensions.ToUIntLittleEndian(encodedRle, index); index += 4;
             var lineCount = BitExtensions.ToUIntLittleEndian(encodedRle, index); index += 4;
             var unknown1 = BitExtensions.ToUIntLittleEndian(encodedRle, index); index += 4;
+            if ((ulong)lineCount * 17 + 8 > (ulong)(encodedRle.Length - index))
+                throw new FileLoadException("Invalid RLE line count exceeds the available data.");
 
-            float halfDisplayX = DisplayWidth / 2f;
-            float halfDisplayY = DisplayHeight / 2f;
-
-            if (lineCount > 0)
+            var mat = CreateMat();
+            try
             {
-                for (int i = 0; i < lineCount; i++)
+                float halfDisplayX = DisplayWidth / 2f;
+                float halfDisplayY = DisplayHeight / 2f;
+
+                if (lineCount > 0)
                 {
-                    var startX = BitExtensions.ToSingleLittleEndian(encodedRle, index) + halfDisplayX; index += 4;
-                    var startY = BitExtensions.ToSingleLittleEndian(encodedRle, index) + halfDisplayY; index += 4;
-                    var endX = BitExtensions.ToSingleLittleEndian(encodedRle, index) + halfDisplayX; index += 4;
-                    var endY = BitExtensions.ToSingleLittleEndian(encodedRle, index) + halfDisplayY; index += 4;
-                    var cw = encodedRle[index++];
-
-                    var startPoint = DisplayToPixelPosition(startX, startY);
-                    var endPoint = DisplayToPixelPosition(endX, endY);
-
-                    //CvInvoke.Line(mat, startPoint, endPoint, EmguCvExtensions.WhiteColor);
-                    CvInvoke.Line(mat, startPoint, endPoint, new MCvScalar((1+i)*15));
-                }
-
-                var boundingRectangle = CvInvoke.BoundingRectangle(mat);
-                using var matRoi = new Mat(mat, boundingRectangle);
-                using var contours = new EmguContours(matRoi, RetrType.Tree, ChainApproxMethod.ChainApproxSimple, boundingRectangle.Location);
-
-                if (!contours.IsEmpty)
-                {
-                    using var newContours = new VectorOfVectorOfPoint();
-                    foreach (var family in contours.Families)
+                    for (int i = 0; i < lineCount; i++)
                     {
-                        newContours.Push(family.TraverseTree()
-                            .Where(traverseFamily => traverseFamily.IsPositive) // Ignore all non-welcomers
-                            .Select(traverseFamily => traverseFamily.Self.Vector).ToArray());
+                        var startX = BitExtensions.ToSingleLittleEndian(encodedRle, index) + halfDisplayX; index += 4;
+                        var startY = BitExtensions.ToSingleLittleEndian(encodedRle, index) + halfDisplayY; index += 4;
+                        var endX = BitExtensions.ToSingleLittleEndian(encodedRle, index) + halfDisplayX; index += 4;
+                        var endY = BitExtensions.ToSingleLittleEndian(encodedRle, index) + halfDisplayY; index += 4;
+                        var cw = encodedRle[index++];
+
+                        var startPoint = DisplayToPixelPosition(startX, startY);
+                        var endPoint = DisplayToPixelPosition(endX, endY);
+
+                        //CvInvoke.Line(mat, startPoint, endPoint, EmguCvExtensions.WhiteColor);
+                        CvInvoke.Line(mat, startPoint, endPoint, new MCvScalar((1 + i) * 15));
                     }
 
+                    var boundingRectangle = CvInvoke.BoundingRectangle(mat);
+                    using var matRoi = new Mat(mat, boundingRectangle);
+                    using var contours = new EmguContours(matRoi, RetrType.Tree, ChainApproxMethod.ChainApproxSimple, boundingRectangle.Location);
 
-                    /*for (var i = 0; i < contours.Vector.Size; i++)
+                    if (!contours.IsEmpty)
                     {
-                        var x = Random.Shared.Next(0, contours.Vector[i].Size);
-                        CvInvoke.PutText(mat, contours.Hierarchy[i, EmguContour.HierarchyParent].ToString(), contours.Vector[i][0], FontFace.HersheyDuplex, 1, new MCvScalar(127), 1);
-                    }*/
-
-                    CvInvoke.DrawContours(mat, newContours, -1, EmguCvExtensions.WhiteColor, -1);
-
-                    /*foreach (var family in contours.Families)
-                    {
-                        foreach (var me in family.TraverseTree())
+                        using var newContours = new VectorOfVectorOfPoint();
+                        foreach (var family in contours.Families)
                         {
-                            var i = Random.Shared.Next(0, me.Self.Vector.Size);
-                            CvInvoke.PutText(mat, me.Depth.ToString(), me.Self.Vector[0], FontFace.HersheyDuplex, 1, new MCvScalar(127), 1);
+                            newContours.Push(family.TraverseTree()
+                                .Where(traverseFamily => traverseFamily.IsPositive) // Ignore all non-welcomers
+                                .Select(traverseFamily => traverseFamily.Self.Vector).ToArray());
                         }
-                    }*/
+
+
+                        /*for (var i = 0; i < contours.Vector.Size; i++)
+                        {
+                            var x = Random.Shared.Next(0, contours.Vector[i].Size);
+                            CvInvoke.PutText(mat, contours.Hierarchy[i, EmguContour.HierarchyParent].ToString(), contours.Vector[i][0], FontFace.HersheyDuplex, 1, new MCvScalar(127), 1);
+                        }*/
+
+                        CvInvoke.DrawContours(mat, newContours, -1, EmguCvExtensions.WhiteColor, -1);
+
+                        /*foreach (var family in contours.Families)
+                        {
+                            foreach (var me in family.TraverseTree())
+                            {
+                                var i = Random.Shared.Next(0, me.Self.Vector.Size);
+                                CvInvoke.PutText(mat, me.Depth.ToString(), me.Self.Vector[0], FontFace.HersheyDuplex, 1, new MCvScalar(127), 1);
+                            }
+                        }*/
+                    }
                 }
+
+                if (encodedRle[index] != '-' || encodedRle[index + 1] != '-' || encodedRle[index + 2] != ']' || encodedRle[index + 3] != '\0')
+                    throw new FileLoadException($"Invalid RLE coordinates end marker, expecting: --]\0 got: {System.Text.Encoding.Default.GetString(encodedRle, index, 4)}.");
+
+                index += 4;
+
+                if (encodedRle[index] != '=' || encodedRle[index + 1] != '=' || encodedRle[index + 2] != '}' || encodedRle[index + 3] != '\0')
+                    throw new FileLoadException($"Invalid RLE file end marker, expecting: ==}}\0 got: {System.Text.Encoding.Default.GetString(encodedRle, index, 4)}.");
+
+                return mat;
             }
-
-            if (encodedRle[index] != '-' || encodedRle[index + 1] != '-' || encodedRle[index + 2] != ']' || encodedRle[index + 3] != '\0')
-                throw new FileLoadException($"Invalid RLE coordinates end marker, expecting: --]\0 got: {System.Text.Encoding.Default.GetString(encodedRle, index, 4)}.");
-
-            index += 4;
-
-            if (encodedRle[index] != '=' || encodedRle[index + 1] != '=' || encodedRle[index + 2] != '}' || encodedRle[index + 3] != '\0')
-                throw new FileLoadException($"Invalid RLE file end marker, expecting: ==}}\0 got: {System.Text.Encoding.Default.GetString(encodedRle, index, 4)}.");
-
-            return mat;
+            catch
+            {
+                mat.Dispose();
+                throw;
+            }
         }
 
         throw new NotSupportedException($"Unsupported RLE format: {format}");
@@ -1973,84 +1984,123 @@ public sealed class AnycubicZipFile : FileFormat
         if (format == AnycubicZipRleFormat.PWSZ)
         {
             var layer = this[layerIndex];
-            var rle = new List<byte>();
-
-            rle.AddRange("{==\0"u8.ToArray());
-
-            var zeroUintArray = new byte[4];
-
-            rle.AddRange(BitExtensions.ToBytesLittleEndian(SceneSettings.LayersDef[layerIndex].Area));
-            rle.AddRange(BitExtensions.ToBytesLittleEndian(SceneSettings.LayersDef[layerIndex].XStartBoundingRectangleOffsetFromCenter));
-            rle.AddRange(BitExtensions.ToBytesLittleEndian(SceneSettings.LayersDef[layerIndex].YStartBoundingRectangleOffsetFromCenter));
-            rle.AddRange(BitExtensions.ToBytesLittleEndian(SceneSettings.LayersDef[layerIndex].XEndBoundingRectangleOffsetFromCenter));
-            rle.AddRange(BitExtensions.ToBytesLittleEndian(SceneSettings.LayersDef[layerIndex].YEndBoundingRectangleOffsetFromCenter));
-            rle.AddRange(zeroUintArray);
-            rle.AddRange(BitExtensions.ToBytesLittleEndian(SceneSettings.LayersDef[layerIndex].ObjectCount));
-
-            rle.AddRange("[--\0"u8.ToArray());
-
-            rle.AddRange(zeroUintArray);
-
-            float halfDisplayX = DisplayWidth / 2f;
-            float halfDisplayY = DisplayHeight / 2f;
-
-            uint lines = 0;
-
-            var linesRle = new List<byte>();
-            foreach (var family in layer.Contours.Families)
+            var rle = new BufferWriterSlim<byte>(4 * 1024);
+            try
             {
-                foreach (var contour in family.TraverseTreeAsEmguContour())
+
+                static void WriteUInt32(ref BufferWriterSlim<byte> writer, uint value)
                 {
-                    if (contour.Count == 1)
+                    BinaryPrimitives.WriteUInt32LittleEndian(writer.GetSpan(sizeof(uint)), value);
+                    writer.Advance(sizeof(uint));
+                }
+
+                static void WriteSingle(ref BufferWriterSlim<byte> writer, float value)
+                {
+                    BinaryPrimitives.WriteSingleLittleEndian(writer.GetSpan(sizeof(float)), value);
+                    writer.Advance(sizeof(float));
+                }
+
+                static void OverwriteUInt32(ref BufferWriterSlim<byte> writer, int offset, uint value)
+                {
+                    Span<byte> bytes = stackalloc byte[sizeof(uint)];
+                    BinaryPrimitives.WriteUInt32LittleEndian(bytes, value);
+                    for (var i = 0; i < bytes.Length; i++)
                     {
-                        var startPoint = PixelToDisplayPosition(contour[0]);
-                        linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(startPoint.X - halfDisplayX)));
-                        linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(startPoint.Y - halfDisplayY)));
-                        linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(startPoint.X - halfDisplayX)));
-                        linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(startPoint.Y - halfDisplayY)));
-                        linesRle.Add(1);
-                        lines++;
+                        writer[offset + i] = bytes[i];
                     }
-                    else
+                }
+
+                static void WriteLine(
+                    ref BufferWriterSlim<byte> writer,
+                    float startX,
+                    float startY,
+                    float endX,
+                    float endY)
+                {
+                    WriteSingle(ref writer, startX);
+                    WriteSingle(ref writer, startY);
+                    WriteSingle(ref writer, endX);
+                    WriteSingle(ref writer, endY);
+                    writer.Add(1);
+                }
+
+                rle.Write("{==\0"u8);
+
+                WriteSingle(ref rle, SceneSettings.LayersDef[layerIndex].Area);
+                WriteSingle(ref rle, SceneSettings.LayersDef[layerIndex].XStartBoundingRectangleOffsetFromCenter);
+                WriteSingle(ref rle, SceneSettings.LayersDef[layerIndex].YStartBoundingRectangleOffsetFromCenter);
+                WriteSingle(ref rle, SceneSettings.LayersDef[layerIndex].XEndBoundingRectangleOffsetFromCenter);
+                WriteSingle(ref rle, SceneSettings.LayersDef[layerIndex].YEndBoundingRectangleOffsetFromCenter);
+                WriteUInt32(ref rle, 0);
+                WriteUInt32(ref rle, SceneSettings.LayersDef[layerIndex].ObjectCount);
+
+                rle.Write("[--\0"u8);
+
+                WriteUInt32(ref rle, 0);
+                var lineCountOffset = rle.WrittenCount;
+                WriteUInt32(ref rle, 0);
+                WriteUInt32(ref rle, 1); // Unknown
+
+                float halfDisplayX = DisplayWidth / 2f;
+                float halfDisplayY = DisplayHeight / 2f;
+
+                uint lines = 0;
+
+                foreach (var family in layer.Contours.Families)
+                {
+                    foreach (var contour in family.TraverseTreeAsEmguContour())
                     {
-                        for (int i = 1; i < contour.Count; i++)
+                        if (contour.Count == 1)
                         {
-                            var startPoint = PixelToDisplayPosition(contour[i-1]);
-                            var endPoint = PixelToDisplayPosition(contour[i]);
-                            linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(startPoint.X - halfDisplayX)));
-                            linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(startPoint.Y - halfDisplayY)));
-                            linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(endPoint.X - halfDisplayX)));
-                            linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(endPoint.Y - halfDisplayY)));
-                            linesRle.Add(1);
+                            var startPoint = PixelToDisplayPosition(contour[0]);
+                            var x = RoundDisplaySize(startPoint.X - halfDisplayX);
+                            var y = RoundDisplaySize(startPoint.Y - halfDisplayY);
+                            WriteLine(ref rle, x, y, x, y);
                             lines++;
                         }
-
-                        // Closing line
-                        if (lines >= 3 && contour.IsClosed)
+                        else
                         {
-                            var startPoint = PixelToDisplayPosition(contour[^1]);
-                            var endPoint = PixelToDisplayPosition(contour[0]);
-                            linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(startPoint.X - halfDisplayX)));
-                            linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(startPoint.Y - halfDisplayY)));
-                            linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(endPoint.X - halfDisplayX)));
-                            linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(endPoint.Y - halfDisplayY)));
-                            linesRle.Add(1);
-                            lines++;
+                            for (int i = 1; i < contour.Count; i++)
+                            {
+                                var startPoint = PixelToDisplayPosition(contour[i - 1]);
+                                var endPoint = PixelToDisplayPosition(contour[i]);
+                                WriteLine(
+                                    ref rle,
+                                    RoundDisplaySize(startPoint.X - halfDisplayX),
+                                    RoundDisplaySize(startPoint.Y - halfDisplayY),
+                                    RoundDisplaySize(endPoint.X - halfDisplayX),
+                                    RoundDisplaySize(endPoint.Y - halfDisplayY));
+                                lines++;
+                            }
+
+                            // Closing line
+                            if (lines >= 3 && contour.IsClosed)
+                            {
+                                var startPoint = PixelToDisplayPosition(contour[^1]);
+                                var endPoint = PixelToDisplayPosition(contour[0]);
+                                WriteLine(
+                                    ref rle,
+                                    RoundDisplaySize(startPoint.X - halfDisplayX),
+                                    RoundDisplaySize(startPoint.Y - halfDisplayY),
+                                    RoundDisplaySize(endPoint.X - halfDisplayX),
+                                    RoundDisplaySize(endPoint.Y - halfDisplayY));
+                                lines++;
+                            }
                         }
                     }
                 }
+
+                OverwriteUInt32(ref rle, lineCountOffset, lines);
+                rle.Write("--]\0"u8);
+
+                rle.Write("==}\0"u8);
+
+                return rle.WrittenSpan.ToArray();
             }
-
-            rle.AddRange(BitExtensions.ToBytesLittleEndian(lines));
-            rle.AddRange(BitExtensions.ToBytesLittleEndian(1u)); // Unknown
-
-            rle.AddRange(linesRle);
-
-            rle.AddRange("--]\0"u8.ToArray());
-
-            rle.AddRange("==}\0"u8.ToArray());
-
-            return rle.ToArray();
+            finally
+            {
+                rle.Dispose();
+            }
         }
 
         throw new NotSupportedException($"Unsupported RLE format: {format}");

@@ -85,9 +85,9 @@ public sealed partial class SuggestionLayerHeight : Suggestion
     {
         var sb = new StringBuilder();
 
-        if (MaximumLayerHeightDecimalPlates is < 2 or > 10)
+        if (MaximumLayerHeightDecimalPlates is < 2 or > 4)
         {
-            sb.AppendLine("Layer height digits must be between 2 and 10");
+            sb.AppendLine("Layer height digits must be between 2 and 4");
         }
 
         if (MinimumLayerHeight <= 0)

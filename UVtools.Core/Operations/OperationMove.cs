@@ -241,16 +241,12 @@ public partial class OperationMove : Operation
 
         using var srcRoi = new Mat(mat, ROI);
         using var dstRoi = new Mat(mat, DstRoi);
+        using var targetRoi = srcRoi.Clone();
         if (IsCutMove)
         {
-            using var targetRoi = srcRoi.Clone();
             srcRoi.SetTo(new MCvScalar(0));
-            targetRoi.CopyTo(dstRoi);
         }
-        else
-        {
-            srcRoi.CopyTo(dstRoi);
-        }
+        targetRoi.CopyTo(dstRoi);
 
         return true;
     }

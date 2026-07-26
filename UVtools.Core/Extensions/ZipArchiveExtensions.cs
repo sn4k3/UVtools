@@ -494,7 +494,9 @@ public static class ZipArchiveExtensions
     public static byte[] ToArray(this ZipArchiveEntry entry)
     {
         using var stream = entry.Open();
-        var buffer = GC.AllocateUninitializedArray<byte>((int)entry.Length);
+        if (entry.Length > Array.MaxLength)
+            throw new IOException($"ZIP entry '{entry.FullName}' is too large to fit in a byte array.");
+        var buffer = GC.AllocateUninitializedArray<byte>(checked((int)entry.Length));
         stream.ReadExactly(buffer);
         return buffer;
     }

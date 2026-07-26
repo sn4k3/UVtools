@@ -635,12 +635,13 @@ public sealed partial class OperationCalibrateTolerance : Operation
         var newLayers = new Layer[LayerCount];
 
         var layers = GetLayers();
+        try
+        {
 
         Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
             newLayers[layerIndex] = new Layer((uint)layerIndex, layers[layerIndex], SlicerFile) {IsModified = true};
-            layers[layerIndex].Dispose();
             progress.LockAndIncrement();
         });
 
@@ -664,7 +665,15 @@ public sealed partial class OperationCalibrateTolerance : Operation
         moveOp.Execute(progress);
 
 
-        return !progress.Token.IsCancellationRequested;
+            return !progress.Token.IsCancellationRequested;
+        }
+        finally
+        {
+            foreach (var mat in layers)
+            {
+                mat.Dispose();
+            }
+        }
     }
 
     #endregion

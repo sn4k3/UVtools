@@ -6,6 +6,8 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using System.Buffers;
+using System.Buffers.Binary;
 using System.IO;
 using System.Numerics;
 using System.Text;
@@ -18,6 +20,12 @@ public class STLMeshFile : MeshFile
 {
     #region Constants
     public const string DefaultObjectName = "UVTools STL Object";
+    private const int AsciiTriangleBufferSize = 512;
+    #endregion
+
+    #region Members
+    private static readonly StandardFormat ScientificCoordinateFormat = new('E', 11);
+    private static readonly StandardFormat GeneralCoordinateFormat = new('G');
     #endregion
 
     #region Properties
@@ -56,33 +64,17 @@ public class STLMeshFile : MeshFile
     {
         if (FileFormat == MeshFileFormat.ASCII)
         {
-            MeshStream.WriteLineLF($"  facet normal {normal.X} {normal.Y} {normal.Z}");
-            MeshStream.WriteLineLF("    outer loop");
-            MeshStream.WriteLineLF($"      vertex {p1.X:E11} {p1.Y:E11} {p1.Z:E11}");
-            MeshStream.WriteLineLF($"      vertex {p2.X:E11} {p2.Y:E11} {p2.Z:E11}");
-            MeshStream.WriteLineLF($"      vertex {p3.X:E11} {p3.Y:E11} {p3.Z:E11}");
-            MeshStream.WriteLineLF("    endloop");
-            MeshStream.WriteLineLF("  endfacet");
+            WriteAsciiTriangle(p1, p2, p3, normal);
         }
         else
         {
-            MeshStream.WriteFloatLittleEndian(normal.X);
-            MeshStream.WriteFloatLittleEndian(normal.Y);
-            MeshStream.WriteFloatLittleEndian(normal.Z);
-
-            MeshStream.WriteFloatLittleEndian(p1.X);
-            MeshStream.WriteFloatLittleEndian(p1.Y);
-            MeshStream.WriteFloatLittleEndian(p1.Z);
-
-            MeshStream.WriteFloatLittleEndian(p2.X);
-            MeshStream.WriteFloatLittleEndian(p2.Y);
-            MeshStream.WriteFloatLittleEndian(p2.Z);
-
-            MeshStream.WriteFloatLittleEndian(p3.X);
-            MeshStream.WriteFloatLittleEndian(p3.Y);
-            MeshStream.WriteFloatLittleEndian(p3.Z);
-
-            MeshStream.Write(new byte[2]);
+            Span<byte> triangle = stackalloc byte[50];
+            WriteVector3(triangle, normal);
+            WriteVector3(triangle[12..], p1);
+            WriteVector3(triangle[24..], p2);
+            WriteVector3(triangle[36..], p3);
+            triangle[48..].Clear();
+            MeshStream.Write(triangle);
         }
 
         TriangleCount++;
@@ -101,6 +93,38 @@ public class STLMeshFile : MeshFile
             MeshStream.WriteUIntLittleEndian(TriangleCount);
         }
         MeshStream.Flush();
+    }
+
+    private static void WriteVector3(Span<byte> destination, Vector3 vector)
+    {
+        BinaryPrimitives.WriteSingleLittleEndian(destination, vector.X);
+        BinaryPrimitives.WriteSingleLittleEndian(destination[sizeof(float)..], vector.Y);
+        BinaryPrimitives.WriteSingleLittleEndian(destination[(sizeof(float) * 2)..], vector.Z);
+    }
+
+    private void WriteAsciiTriangle(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 normal)
+    {
+        Span<byte> record = stackalloc byte[AsciiTriangleBufferSize];
+        var writer = new MeshTextWriter(record);
+        writer.Append("  facet normal "u8);
+        AppendVector3(ref writer, normal, GeneralCoordinateFormat);
+        writer.Append("\n    outer loop\n      vertex "u8);
+        AppendVector3(ref writer, p1, ScientificCoordinateFormat);
+        writer.Append("\n      vertex "u8);
+        AppendVector3(ref writer, p2, ScientificCoordinateFormat);
+        writer.Append("\n      vertex "u8);
+        AppendVector3(ref writer, p3, ScientificCoordinateFormat);
+        writer.Append("\n    endloop\n  endfacet\n"u8);
+        writer.CopyTo(MeshStream);
+    }
+
+    private static void AppendVector3(ref MeshTextWriter writer, Vector3 vector, StandardFormat format)
+    {
+        writer.Append(vector.X, format);
+        writer.Append((byte)' ');
+        writer.Append(vector.Y, format);
+        writer.Append((byte)' ');
+        writer.Append(vector.Z, format);
     }
 
     #endregion

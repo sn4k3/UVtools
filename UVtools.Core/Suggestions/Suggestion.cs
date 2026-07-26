@@ -10,7 +10,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.ComponentModel;
 using System.IO;
-using System.Text.RegularExpressions;
+using System.Xml;
 using System.Xml.Serialization;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -151,17 +151,36 @@ public abstract partial class Suggestion : ObservableObject
     public bool Execute(OperationProgress? progress = null)
     {
         if (SlicerFile is null) throw new InvalidOperationException($"The suggestion '{Title}' can't execute due the lacking of a file parent.");
-        if (!Enabled || !IsAvailable || IsApplied || IsInformativeOnly || !SlicerFile.HaveLayers) return false;
+        if (!Enabled || !IsAvailable || IsInformativeOnly || !SlicerFile.HaveLayers ||
+            !Enum.IsDefined(ApplyWhen) || !string.IsNullOrWhiteSpace(Validate()))
+        {
+            return false;
+        }
 
+        if (IsApplied) return false;
+
+        var ownsProgress = progress is null;
         progress ??= new OperationProgress();
-        progress.Title = $"Applying suggestion: {Title}";
+        try
+        {
+            progress.Title = $"Applying suggestion: {Title}";
+            progress.PauseOrCancelIfRequested();
 
-        var result = ExecuteInternally(progress);
+            var result = ExecuteInternally(progress);
 
-        OnPropertyChanged(nameof(IsApplied));
-        RefreshNotifyMessage();
+            progress.PauseOrCancelIfRequested();
+            OnPropertyChanged(nameof(IsApplied));
+            RefreshNotifyMessage();
 
-        return result;
+            return result;
+        }
+        finally
+        {
+            if (ownsProgress)
+            {
+                progress.Dispose();
+            }
+        }
     }
 
     /// <summary>
@@ -209,7 +228,7 @@ public abstract partial class Suggestion : ObservableObject
         }
 
         var baseName = "Suggestion";
-        if (classNamePath.StartsWith(baseName)) classNamePath = classNamePath[baseName.Length..];
+        if (classNamePath.StartsWith(baseName, StringComparison.Ordinal)) classNamePath = classNamePath[baseName.Length..];
         if (classNamePath == string.Empty) return null;
 
         var baseType = typeof(Suggestion).FullName;
@@ -236,15 +255,21 @@ public abstract partial class Suggestion : ObservableObject
     {
         if (!File.Exists(path)) return null;
 
-        var fileText = File.ReadAllText(path);
-        var match = Regex.Match(fileText, @"(?:<\/\s*Suggestion)([a-zA-Z0-9_]+)(?:\s*>)");
-        if (!match.Success) return null;
-        if (match.Groups.Count < 1) return null;
-        var suggestionName = match.Groups[1].Value;
-        var baseType = typeof(Suggestion).FullName;
-        if (string.IsNullOrWhiteSpace(baseType)) return null;
-        var classname = baseType + suggestionName + ", UVtools.Core";
-        var type = Type.GetType(classname);
+        using var reader = XmlReader.Create(path, new XmlReaderSettings
+        {
+            DtdProcessing = DtdProcessing.Prohibit,
+            XmlResolver = null
+        });
+        reader.MoveToContent();
+
+        var rootName = reader.LocalName;
+        if (!rootName.StartsWith("Suggestion", StringComparison.Ordinal) ||
+            rootName.Length == "Suggestion".Length)
+        {
+            return null;
+        }
+
+        var type = Type.GetType($"{typeof(Suggestion).Namespace}.{rootName}, {typeof(Suggestion).Assembly.GetName().Name}");
         if (type is null) return null;
 
         return Deserialize(path, type, slicerFile);
@@ -259,6 +284,11 @@ public abstract partial class Suggestion : ObservableObject
     /// <returns></returns>
     public static Suggestion? Deserialize(string path, Type type, FileFormat? slicerFile = null)
     {
+        if (!typeof(Suggestion).IsAssignableFrom(type) || type.IsAbstract)
+        {
+            return null;
+        }
+
         var serializer = new XmlSerializer(type);
         using var stream = File.OpenRead(path);
         var suggestion = serializer.Deserialize(stream) as Suggestion;

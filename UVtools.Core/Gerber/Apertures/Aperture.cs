@@ -12,8 +12,7 @@ using Emgu.CV.Structure;
 using System;
 using System.Drawing;
 using System.Globalization;
-using System.Text.RegularExpressions;
-using ZLinq;
+using EmguExtensions;
 
 namespace UVtools.Core.Gerber.Apertures;
 
@@ -53,82 +52,158 @@ public abstract class Aperture
 
     public static Aperture? Parse(string line, GerberFormat document)
     {
-        var match = Regex.Match(line, @"\%ADD([0-9]+)(\w+),?(\S+)?\*\%");
-        if (!match.Success || match.Groups.Count < 3) return null;
+        line = line.Trim();
+        if (!line.StartsWith("%ADD", StringComparison.Ordinal) ||
+            !line.EndsWith("*%", StringComparison.Ordinal) ||
+            line.Length <= 6)
+        {
+            return null;
+        }
 
-        if (!int.TryParse(match.Groups[1].Value, out var index)) return null;
-        //if (!char.TryParse(match.Groups[2].Value, out var type)) return null;
+        var definition = line.AsSpan(4, line.Length - 6);
+        var indexLength = 0;
+        while (indexLength < definition.Length && char.IsAsciiDigit(definition[indexLength]))
+        {
+            indexLength++;
+        }
 
-        switch (match.Groups[2].Value)
+        if (indexLength == 0 ||
+            !int.TryParse(definition[..indexLength], NumberStyles.None,
+                CultureInfo.InvariantCulture, out var index))
+        {
+            return null;
+        }
+
+        var apertureDefinition = definition[indexLength..];
+        var separatorIndex = apertureDefinition.IndexOf(',');
+        var template = (separatorIndex < 0
+            ? apertureDefinition
+            : apertureDefinition[..separatorIndex]).Trim().ToString();
+        var modifiers = separatorIndex < 0
+            ? string.Empty
+            : apertureDefinition[(separatorIndex + 1)..].Trim().ToString();
+        if (template.Length == 0) return null;
+
+        var split = modifiers.Length == 0
+            ? []
+            : modifiers.Split(['X', 'x'], StringSplitOptions.TrimEntries);
+        switch (template)
         {
             case "C":
             {
-                if (match.Groups.Count < 4) return null;
-                var split = match.Groups[3].Value.Split('X', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                if (split.Length == 0) return null;
-                if (!double.TryParse(split[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var diameter)) return null;
+                if (split.Length is < 1 or > 2 ||
+                    !double.TryParse(split[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var diameter) ||
+                    !double.IsFinite(diameter) || diameter <= 0)
+                {
+                    return null;
+                }
+
                 var holeDiameter = 0.0;
-                if (split.Length > 1 && !double.TryParse(split[1], NumberStyles.Float, CultureInfo.InvariantCulture, out holeDiameter)) return null;
+                if (split.Length > 1 &&
+                    (!double.TryParse(split[1], NumberStyles.Float, CultureInfo.InvariantCulture, out holeDiameter) ||
+                     !double.IsFinite(holeDiameter) || holeDiameter < 0))
+                {
+                    return null;
+                }
+
                 return new CircleAperture(document, index, diameter, holeDiameter);
             }
             case "O": // OBround
             {
-                if (match.Groups.Count < 4) return null;
-                var split = match.Groups[3].Value.Split('X', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                if (split.Length < 2) return null;
-                if (!float.TryParse(split[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var width)) return null;
-                if (!float.TryParse(split[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var height)) return null;
+                if (split.Length is < 2 or > 3 ||
+                    !float.TryParse(split[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var width) ||
+                    !float.TryParse(split[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var height) ||
+                    !float.IsFinite(width) || !float.IsFinite(height) || width <= 0 || height <= 0)
+                {
+                    return null;
+                }
+
                 var holeDiameter = 0.0;
-                if (split.Length > 2 && !double.TryParse(split[2], NumberStyles.Float, CultureInfo.InvariantCulture, out holeDiameter)) return null;
+                if (split.Length > 2 &&
+                    (!double.TryParse(split[2], NumberStyles.Float, CultureInfo.InvariantCulture, out holeDiameter) ||
+                     !double.IsFinite(holeDiameter) || holeDiameter < 0))
+                {
+                    return null;
+                }
 
                 return new ObroundAperture(document, index, width, height, holeDiameter);
             }
             case "R":
             {
-                if (match.Groups.Count < 4) return null;
-                var split = match.Groups[3].Value.Split('X', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                if (split.Length < 2) return null;
-                if (!float.TryParse(split[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var width)) return null;
-                if (!float.TryParse(split[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var height)) return null;
-                var holeDiameter = 0.0;
-                if (split.Length > 2 && !double.TryParse(split[2], NumberStyles.Float, CultureInfo.InvariantCulture, out holeDiameter)) return null;
-
-                    return new RectangleAperture(document, index, width, height, holeDiameter);
+                if (split.Length is < 2 or > 3 ||
+                    !float.TryParse(split[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var width) ||
+                    !float.TryParse(split[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var height) ||
+                    !float.IsFinite(width) || !float.IsFinite(height) || width <= 0 || height <= 0)
+                {
+                    return null;
                 }
+
+                var holeDiameter = 0.0;
+                if (split.Length > 2 &&
+                    (!double.TryParse(split[2], NumberStyles.Float, CultureInfo.InvariantCulture, out holeDiameter) ||
+                     !double.IsFinite(holeDiameter) || holeDiameter < 0))
+                {
+                    return null;
+                }
+
+                return new RectangleAperture(document, index, width, height, holeDiameter);
+            }
             case "P":
             {
-                if (match.Groups.Count < 4) return null;
-                var split = match.Groups[3].Value.Split('X', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                if (split.Length < 2) return null;
-                if (!double.TryParse(split[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var diameter)) return null;
-                if (!ushort.TryParse(split[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var vertices)) return null;
+                if (split.Length is < 2 or > 4 ||
+                    !double.TryParse(split[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var diameter) ||
+                    !ushort.TryParse(split[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var vertices) ||
+                    !double.IsFinite(diameter) || diameter <= 0 || vertices is < 3 or > 12)
+                {
+                    return null;
+                }
+
                 var rotation = 0.0;
-                if (split.Length > 2 && !double.TryParse(split[2], NumberStyles.Float, CultureInfo.InvariantCulture, out rotation)) return null;
+                if (split.Length > 2 &&
+                    (!double.TryParse(split[2], NumberStyles.Float, CultureInfo.InvariantCulture, out rotation) ||
+                     !double.IsFinite(rotation)))
+                {
+                    return null;
+                }
+
                 var holeDiameter = 0.0;
-                if (split.Length > 3 && !double.TryParse(split[3], NumberStyles.Float, CultureInfo.InvariantCulture, out holeDiameter)) return null;
+                if (split.Length > 3 &&
+                    (!double.TryParse(split[3], NumberStyles.Float, CultureInfo.InvariantCulture, out holeDiameter) ||
+                     !double.IsFinite(holeDiameter) || holeDiameter < 0))
+                {
+                    return null;
+                }
 
                 return new PolygonAperture(document, index, diameter, vertices, rotation, holeDiameter);
             }
             default: // macro
             {
-                if (!document.Macros.TryGetValue(match.Groups[2].Value, out var macro)) return null;
+                if (!document.Macros.TryGetValue(template, out var macro)) return null;
                 macro = macro.Clone();
-                //var parseLine = line.TrimEnd('%', '*');
-                //var commaIndex = parseLine.IndexOf(',')+1;
-                //parseLine = parseLine[commaIndex..];
-                string[] args = ["0"];
-                if (match.Groups.Count >= 4)
+                var args = new string[split.Length + 1];
+                args[0] = "0";
+                for (var argumentIndex = 0; argumentIndex < split.Length; argumentIndex++)
                 {
-                    args = args.AsValueEnumerable().Concat(match.Groups[3].Value.Split('X', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToArray();
+                    if (!double.TryParse(split[argumentIndex], NumberStyles.Float,
+                            CultureInfo.InvariantCulture, out var argument) ||
+                        !double.IsFinite(argument))
+                    {
+                        return null;
+                    }
+
+                    args[argumentIndex + 1] =
+                        argument.ToString("R", CultureInfo.InvariantCulture);
                 }
 
-                foreach (var primitive in macro)
-                {
-                    primitive.ParseExpressions(args);
-                }
+                if (!macro.ParseExpressions(args)) return null;
 
                 return new MacroAperture(document, index, macro);
             }
         }
     }
+
+    protected static MCvScalar InvertColor(MCvScalar color)
+        => color.Equals(EmguCvExtensions.BlackColor)
+            ? EmguCvExtensions.WhiteColor
+            : EmguCvExtensions.BlackColor;
 }

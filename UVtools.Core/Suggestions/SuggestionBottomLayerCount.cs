@@ -22,7 +22,8 @@ public sealed partial class SuggestionBottomLayerCount : Suggestion
 
     #region Properties
 
-    public override bool IsAvailable => SlicerFile?.CanUseBottomLayerCount ?? false;
+    public override bool IsAvailable =>
+        SlicerFile is { CanUseBottomLayerCount: true, LayerHeight: > 0 };
 
     public override bool IsApplied
     {
@@ -36,10 +37,10 @@ public sealed partial class SuggestionBottomLayerCount : Suggestion
                 SuggestionApplyWhen.OutsideLimits => bottomHeight >= Math.Min((decimal)SlicerFile.PrintHeight, MinimumBottomHeight) &&
                                                       bottomHeight <= MaximumBottomHeight &&
                                                       SlicerFile.BottomLayerCount >= Math.Min(SlicerFile.LayerCount, MinimumBottomLayerCount) &&
-                                                      SlicerFile.BottomLayerCount <= MaximumBottomLayerCount,
-                SuggestionApplyWhen.Different => bottomHeight == Math.Min((decimal)SlicerFile.PrintHeight, TargetBottomHeight),
+                                                      SlicerFile.BottomLayerCount <= Math.Min(SlicerFile.LayerCount, MaximumBottomLayerCount),
+                SuggestionApplyWhen.Different => SlicerFile.BottomLayerCount == BottomLayerCountValue,
                     
-                _ => throw new ArgumentOutOfRangeException()
+                _ => false
             };
         }
     }
@@ -83,7 +84,19 @@ public sealed partial class SuggestionBottomLayerCount : Suggestion
     [ObservableProperty]
     public partial byte MaximumBottomLayerCount { get; set; } = 7;
 
-    public ushort BottomLayerCountValue => Math.Clamp((ushort)Math.Ceiling((float)TargetBottomHeight / SlicerFile.LayerHeight), MinimumBottomLayerCount, MaximumBottomLayerCount);
+    public ushort BottomLayerCountValue
+    {
+        get
+        {
+            if (SlicerFile.LayerHeight <= 0) return 0;
+
+            var minimum = Math.Min(MinimumBottomLayerCount, MaximumBottomLayerCount);
+            var maximum = Math.Max(MinimumBottomLayerCount, MaximumBottomLayerCount);
+            var targetDecimal = Math.Ceiling(TargetBottomHeight / (decimal)SlicerFile.LayerHeight);
+            var target = targetDecimal >= uint.MaxValue ? uint.MaxValue : (uint)targetDecimal;
+            return (ushort)Math.Min(Math.Clamp(target, minimum, maximum), SlicerFile.LayerCount);
+        }
+    }
 
     #endregion
 
@@ -116,6 +129,12 @@ public sealed partial class SuggestionBottomLayerCount : Suggestion
         if (MinimumBottomLayerCount > MaximumBottomLayerCount)
         {
             sb.AppendLine("Minimum limit (layers) can't be higher than maximum limit (layers)");
+        }
+
+        if (ApplyWhen == SuggestionApplyWhen.OutsideLimits &&
+            (TargetBottomHeight < MinimumBottomHeight || TargetBottomHeight > MaximumBottomHeight))
+        {
+            sb.AppendLine("Target bottom height must be within the minimum and maximum limits");
         }
 
         return sb.ToString();

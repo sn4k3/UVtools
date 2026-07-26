@@ -139,25 +139,20 @@ public sealed partial class OperationLayerExportHeatMap : Operation
 
         resultMat.ConvertTo(resultMat, DepthType.Cv8U, 1.0 / layerRange.Length);
 
+        using var croppedResult = CropByROI && HaveROI ? GetRoiOrDefault(resultMat) : null;
+        var output = croppedResult ?? resultMat;
+
         if (FlipDirection != FlipDirection.None)
         {
-            CvInvoke.Flip(resultMat, resultMat, (FlipType)FlipDirection);
+            CvInvoke.Flip(output, output, (FlipType)FlipDirection);
         }
 
         if (RotateDirection != RotateDirection.None)
         {
-            CvInvoke.Rotate(resultMat, resultMat, (RotateFlags)RotateDirection);
+            CvInvoke.Rotate(output, output, (RotateFlags)RotateDirection);
         }
 
-        if (CropByROI && HaveROI)
-        {
-            using var sumMatRoi = GetRoiOrDefault(resultMat);
-            sumMatRoi.Save(FilePath);
-        }
-        else
-        {
-            resultMat.Save(FilePath);
-        }
+        output.Save(FilePath);
 
 
         return !progress.Token.IsCancellationRequested;
