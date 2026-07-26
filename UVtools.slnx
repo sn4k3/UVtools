@@ -41,7 +41,7 @@
     <File Path="Scripts/install-dependencies.sh" />
     <File Path="Scripts/install-uvtools.sh" />
   </Folder>
-  <Folder Name="/root/scripts/010/">
+  <Folder Name="/root/scripts/Editor010/">
     <File Path="Scripts/010 Editor/anet.bt" />
     <File Path="Scripts/010 Editor/ctb.bt" />
     <File Path="Scripts/010 Editor/ctb_decrypted.bt" />
