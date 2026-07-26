@@ -686,10 +686,10 @@ public partial class GerberFormat
     [GeneratedRegex(@"D([0-9]+)")]
     private static partial Regex LineDParse();
 
-    [GeneratedRegex(@"X-?([0-9]+)?")]
+    [GeneratedRegex(@"X(-?[0-9]+)?")]
     private static partial Regex LineXParse();
 
-    [GeneratedRegex(@"Y-?([0-9]+)?")]
+    [GeneratedRegex(@"Y(-?[0-9]+)?")]
     private static partial Regex LineYParse();
 
     [GeneratedRegex(@"I(-?[0-9]+)")]
