@@ -639,6 +639,9 @@ public partial class OperationPCBExposure : Operation
             FillPlateWithCopies(mat, fillSource ?? GetFillSourceRectangle(offset, canMirror));
         }
 
+        // Last, so the tiling above still sees the drawn area rather than a fully lit plate
+        if (InvertColor) InvertColors(mat);
+
         return mat;
     }
 
@@ -659,15 +662,27 @@ public partial class OperationPCBExposure : Operation
                 offset, EnableAntiAliasing);
         }
 
-        // Nothing was rendered onto the build area, the operations below would run on an empty Mat and throw
+        if (Mirror && canMirror) MirrorMat(mat);
+    }
+
+    /// <summary>
+    /// Inverts the whole plate, so the artwork is dark against a lit background.
+    /// </summary>
+    /// <remarks>
+    /// <para>Must run once per plate, never per file. Composing several files applies it once each, and every
+    /// pass flips the area again: an even number of files cancels out, and whatever was drawn after the first
+    /// pass is the only thing left inverted. That reads as "only the drill holes inverted", since drill files
+    /// are drawn last.</para>
+    /// <para>Runs after the plate is tiled, not before: inverting first lights the whole plate, so the grid
+    /// cell measured from it would span everything and no copy would fit.</para>
+    /// </remarks>
+    private static void InvertColors(Mat mat)
+    {
+        // Nothing was drawn, so there is nothing to invert. Lighting the plate here would turn an empty
+        // result into a full power exposure of the entire screen.
         if (!CvInvoke.HasNonZero(mat)) return;
 
-        //var boundingRectangle = CvInvoke.BoundingRectangle(mat);
-        //var cropped = mat.Roi(new Size(boundingRectangle.Right, boundingRectangle.Bottom));
-        using var cropped = mat.RoiFromBoundingRectangle(out _);
-
-        if (InvertColor) CvInvoke.BitwiseNot(cropped, cropped);
-        if (Mirror && canMirror) MirrorMat(mat);
+        CvInvoke.BitwiseNot(mat, mat);
     }
 
     protected override bool ExecuteInternally(OperationProgress progress)
@@ -693,7 +708,7 @@ public partial class OperationPCBExposure : Operation
             progress++;
         }
 
-        // Once the whole plate is composed, so it lands on the same axis for every file
+        // Once the whole plate is composed, so every file is treated the same way
         if (FlipY) FlipMatVertically(mergeMat);
 
         if (progress.Token.IsCancellationRequested) return false;
@@ -733,6 +748,10 @@ public partial class OperationPCBExposure : Operation
         }
 
         if (fillSource is not null) FillPlateWithCopies(mergeMat, fillSource);
+
+        // After tiling: inverting first would light the whole plate, so the grid cell measured from it
+        // would span everything and no copy would fit
+        if (InvertColor) InvertColors(mergeMat);
 
         if (MergeFiles)
         {

@@ -9,6 +9,7 @@
 using System;
 using System.Drawing;
 using Emgu.CV;
+using EmguExtensions;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
@@ -128,6 +129,92 @@ public class OperationPCBExposureTests
         using var mat = operation.GetMat(operation.Files[0]);
 
         Assert.Equal(0, CvInvoke.CountNonZero(mat));
+    }
+
+    [Fact]
+    public void InvertColorAppliesOncePerPlateNotOncePerFile()
+    {
+        // Applying the inversion while composing flips the plate again for every file, so an even number
+        // of files cancels out and only whatever was drawn last ends up inverted.
+        using var slicerFile = PcbFixtures.CreateSlicerFile();
+        using var board = new TempFile(PcbFixtures.NegativeYBoardWithPads);
+        using var drill = new TempFile(PcbFixtures.NegativeYPadDrill, ".drl");
+
+        var operation = CreateOperation(slicerFile, board.Path, drill.Path);
+        operation.MergeFiles = true;
+
+        var offset = operation.GetDrawOffsetMillimeters();
+        using var plain = slicerFile.CreateMat();
+        operation.DrawMat(operation.Files[0], plain, false, offset);
+        operation.DrawMat(operation.Files[1], plain, false, offset);
+        var plainPixels = CvInvoke.CountNonZero(plain);
+
+        operation.InvertColor = true;
+        Assert.True(operation.Execute());
+        using var inverted = slicerFile[0].LayerMat;
+        var invertedPixels = CvInvoke.CountNonZero(inverted);
+
+        // Inverting the artwork lights up its background, so a sparse board must gain pixels overall.
+        // Two files cancelling the inversion leaves the count roughly where it started.
+        Assert.True(invertedPixels > plainPixels * 2,
+            $"expected the inverted plate to be far brighter, got {invertedPixels}px against {plainPixels}px");
+    }
+
+    [Fact]
+    public void InvertColorLightsTheWholePlateNotJustTheArtwork()
+    {
+        using var slicerFile = PcbFixtures.CreateSlicerFile();
+        using var board = new TempFile(PcbFixtures.NegativeYBoard);
+        var operation = CreateOperation(slicerFile, board.Path);
+        operation.InvertColor = true;
+
+        using var mat = operation.GetMat(operation.Files[0]);
+
+        // A corner far from the 20x20mm board must be lit, not left dark
+        using var corner = mat.Roi(new Rectangle(0, 0, 8, 8));
+        Assert.Equal(64, CvInvoke.CountNonZero(corner));
+
+        // ...and the traces themselves are now the dark part
+        Assert.True(CvInvoke.CountNonZero(mat) > PcbFixtures.PlatePixels * PcbFixtures.PlatePixels * 0.9,
+            "the plate should be almost entirely lit once inverted");
+    }
+
+    [Fact]
+    public void InvertColorDoesNotLightAnEmptyPlate()
+    {
+        // An empty result must stay dark rather than becoming a full power exposure of the whole screen
+        using var slicerFile = PcbFixtures.CreateSlicerFile();
+        using var board = new TempFile(PcbFixtures.NegativeYBoard);
+        var operation = CreateOperation(slicerFile, board.Path);
+        operation.Anchor = Anchor.None;
+        operation.InvertColor = true;
+
+        using var mat = operation.GetMat(operation.Files[0]);
+
+        Assert.Equal(0, CvInvoke.CountNonZero(mat));
+    }
+
+    [Fact]
+    public void InvertColorStillAllowsThePlateToBeFilled()
+    {
+        // Inverting before tiling would light the plate, making the measured grid cell span everything
+        using var slicerFile = PcbFixtures.CreateSlicerFile();
+        using var board = new TempFile(PcbFixtures.NegativeYBoard);
+        var operation = CreateOperation(slicerFile, board.Path);
+        operation.FillPlate = true;
+        operation.FillSpacingX = 5;
+        operation.FillSpacingY = 5;
+
+        using var plain = operation.GetMat(operation.Files[0]);
+        var plainDark = PcbFixtures.PlatePixels * PcbFixtures.PlatePixels - CvInvoke.CountNonZero(plain);
+
+        operation.InvertColor = true;
+        using var inverted = operation.GetMat(operation.Files[0]);
+        var invertedDark = PcbFixtures.PlatePixels * PcbFixtures.PlatePixels - CvInvoke.CountNonZero(inverted);
+
+        // The tiled artwork becomes the dark part, so the dark area must match the lit area of the plain render
+        Assert.Equal(plainDark, CvInvoke.CountNonZero(inverted));
+        Assert.Equal(CvInvoke.CountNonZero(plain), invertedDark);
     }
 
     [Fact]
