@@ -256,7 +256,7 @@ public partial class OperationPCBExposure : Operation
     /// <para><see cref="OffsetX"/> and <see cref="OffsetY"/> still apply on top of the placement as a manual nudge.</para>
     /// </summary>
     [ObservableProperty]
-    public partial Anchor Anchor { get; set; } = Anchor.None;
+    public partial Anchor Anchor { get; set; } = Anchor.TopLeft;
 
     /// <summary>
     /// Gets or sets to repeat the artwork as many times as it fits to fill the plate.

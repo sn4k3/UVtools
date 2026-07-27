@@ -4960,13 +4960,13 @@
         <member name="M:UVtools.Core.Gerber.GerberFormat.LineYParse">
             <remarks>
             Pattern:<br/>
-            <code>Y(-?[0-9]+)?</code><br/>
+            <code>Y-?([0-9]+)?</code><br/>
             Explanation:<br/>
             <code>
             ○ Match 'Y'.<br/>
+            ○ Match '-' greedily, optionally.<br/>
             ○ Optional (greedy).<br/>
                 ○ 1st capture group.<br/>
-                    ○ Match '-' atomically, optionally.<br/>
                     ○ Match a character in the set [0-9] atomically at least once.<br/>
             </code>
             </remarks>
