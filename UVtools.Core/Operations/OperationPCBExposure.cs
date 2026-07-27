@@ -648,6 +648,23 @@ public partial class OperationPCBExposure : Operation
 
     public Mat GetMat(PCBExposureFile file, bool canMirror = true, SizeF? drawOffsetMm = null,
         Rectangle? fillSource = null)
+        => GetMat(file, out _, canMirror, drawOffsetMm, fillSource);
+
+    /// <summary>
+    /// Draws a single file onto a plate.
+    /// </summary>
+    /// <param name="file">File to draw</param>
+    /// <param name="contentBounds">
+    /// Area the artwork occupies, measured before <see cref="InvertColor"/> is applied.
+    /// <para>Inverting lights the background, so the drawn pixels of the finished plate are no longer the
+    /// artwork. Anything that needs to know where the content is, such as cropping a preview or a thumbnail,
+    /// must use this rather than measure the returned <see cref="Mat"/>.</para>
+    /// </param>
+    /// <param name="canMirror">Apply the display mirror</param>
+    /// <param name="drawOffsetMm">Offset to draw with, defaults to <see cref="GetDrawOffsetMillimeters"/></param>
+    /// <param name="fillSource">Grid cell to tile, defaults to one measured across every file</param>
+    public Mat GetMat(PCBExposureFile file, out Rectangle contentBounds, bool canMirror = true,
+        SizeF? drawOffsetMm = null, Rectangle? fillSource = null)
     {
         // Resolve the offset before allocating the final plate because anchor measurement uses a temporary plate.
         var offset = drawOffsetMm ?? GetDrawOffsetMillimeters();
@@ -662,7 +679,10 @@ public partial class OperationPCBExposure : Operation
             FillPlateWithCopies(mat, fillSource ?? GetFillSourceRectangle(offset, canMirror));
         }
 
-        // Last, so the tiling above still sees the drawn area rather than a fully lit plate
+        // Measured before inverting: afterwards the lit pixels are the background, not the artwork
+        contentBounds = CvInvoke.BoundingRectangle(mat);
+
+        // Last, so everything above still sees the drawn area rather than a lit plate
         if (InvertColor) InvertColors(mat, GetInvertArea(offset, canMirror));
 
         return mat;
@@ -798,15 +818,19 @@ public partial class OperationPCBExposure : Operation
 
         if (fillSource is not null) FillPlateWithCopies(mergeMat, fillSource);
 
-        // After tiling: inverting first would light the area, so the grid cell measured from it would
-        // span everything and no copy would fit. Unmirrored here, the display mirror is applied below.
-        if (InvertColor) InvertColors(mergeMat, GetInvertArea(drawOffset, false));
+        // Mirrored whether or not the files were merged, so the composed plate keeps the same orientation as
+        // the layers above and can stand in for them when measuring below
+        if (Mirror) MirrorMat(mergeMat);
 
-        if (MergeFiles)
-        {
-            if (Mirror) MirrorMat(mergeMat);
-            layers.Add(new Layer(mergeMat, SlicerFile));
-        }
+        // Where the artwork sits, with every geometric step applied and nothing inverted yet. Inverting lights
+        // the background, so from here on the drawn pixels are no longer the content and must not be measured.
+        var contentBounds = CvInvoke.BoundingRectangle(mergeMat);
+
+        // Last of all: inverting earlier would light the area, and every measurement above would then be
+        // reading the background instead of the artwork
+        if (InvertColor) InvertColors(mergeMat, GetInvertArea(drawOffset, true));
+
+        if (MergeFiles) layers.Add(new Layer(mergeMat, SlicerFile));
 
         if (progress.Token.IsCancellationRequested || layers.Count == 0) return false;
         SlicerFile.SuppressRebuildPropertiesWork(() =>
@@ -839,10 +863,12 @@ public partial class OperationPCBExposure : Operation
 
         if (Mirror) // Reposition layers
         {
+            // Measured from contentBounds rather than SlicerFile.BoundingRectangle: the layers may be
+            // inverted by now, and their lit pixels would then be the background rather than the artwork
             using var op = new OperationMove(SlicerFile, Anchor.TopLeft)
             {
-                MarginLeft = SlicerFile.BoundingRectangle.X,
-                MarginTop = SlicerFile.BoundingRectangle.Y
+                MarginLeft = contentBounds.X,
+                MarginTop = contentBounds.Y
             };
 
             var flip = SlicerFile.DisplayMirror;
@@ -850,21 +876,25 @@ public partial class OperationPCBExposure : Operation
             switch (flip)
             {
                 case FlipDirection.Horizontally:
-                    op.MarginLeft = (int)SlicerFile.ResolutionX - SlicerFile.BoundingRectangle.Right;
+                    op.MarginLeft = (int)SlicerFile.ResolutionX - contentBounds.Right;
                     break;
                 case FlipDirection.Vertically:
-                    op.MarginTop = (int)SlicerFile.ResolutionY - SlicerFile.BoundingRectangle.Bottom;
+                    op.MarginTop = (int)SlicerFile.ResolutionY - contentBounds.Bottom;
                     break;
                 case FlipDirection.Both:
-                    op.MarginLeft = (int)SlicerFile.ResolutionX - SlicerFile.BoundingRectangle.Right;
-                    op.MarginTop = (int)SlicerFile.ResolutionY - SlicerFile.BoundingRectangle.Bottom;
+                    op.MarginLeft = (int)SlicerFile.ResolutionX - contentBounds.Right;
+                    op.MarginTop = (int)SlicerFile.ResolutionY - contentBounds.Bottom;
                     break;
             }
 
             op.Execute(progress);
         }
 
-        using var croppedMat = mergeMat.RoiFromBoundingRectangle(out _, 20);
+        // Cropped to the artwork, not to whatever the plate happens to have lit
+        var thumbnailBounds = Rectangle.Inflate(contentBounds, 20, 20);
+        thumbnailBounds.Intersect(new Rectangle(0, 0, mergeMat.Width, mergeMat.Height));
+
+        using var croppedMat = mergeMat.Roi(thumbnailBounds);
         using var bgrMat = new Mat();
         CvInvoke.CvtColor(croppedMat, bgrMat, ColorConversion.Gray2Bgr);
         SlicerFile.SetThumbnails(bgrMat);

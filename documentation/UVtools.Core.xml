@@ -8739,6 +8739,21 @@
             Flips <paramref name="mat"/> along the printer display mirror axis, defaulting to horizontally.
             </summary>
         </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetMat(UVtools.Core.Operations.OperationPCBExposure.PCBExposureFile,System.Drawing.Rectangle@,System.Boolean,System.Nullable{System.Drawing.SizeF},System.Nullable{System.Drawing.Rectangle})">
+            <summary>
+            Draws a single file onto a plate.
+            </summary>
+            <param name="file">File to draw</param>
+            <param name="contentBounds">
+            Area the artwork occupies, measured before <see cref="P:UVtools.Core.Operations.OperationPCBExposure.InvertColor"/> is applied.
+            <para>Inverting lights the background, so the drawn pixels of the finished plate are no longer the
+            artwork. Anything that needs to know where the content is, such as cropping a preview or a thumbnail,
+            must use this rather than measure the returned <see cref="T:Emgu.CV.Mat"/>.</para>
+            </param>
+            <param name="canMirror">Apply the display mirror</param>
+            <param name="drawOffsetMm">Offset to draw with, defaults to <see cref="M:UVtools.Core.Operations.OperationPCBExposure.GetDrawOffsetMillimeters"/></param>
+            <param name="fillSource">Grid cell to tile, defaults to one measured across every file</param>
+        </member>
         <member name="M:UVtools.Core.Operations.OperationPCBExposure.InvertColors(Emgu.CV.Mat,System.Nullable{System.Drawing.Rectangle})">
             <summary>
             Inverts the plate so the artwork is dark against a lit background.

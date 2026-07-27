@@ -208,6 +208,30 @@ public class OperationPCBExposureTests
         Assert.True(CvInvoke.CountNonZero(wholePlate) > lit * 10);
     }
 
+    [Theory]
+    [InlineData(OperationPCBExposure.InvertAreaType.Plate)]
+    [InlineData(OperationPCBExposure.InvertAreaType.BoardOutline)]
+    public void InvertColorDoesNotChangeWhereTheContentIs(OperationPCBExposure.InvertAreaType area)
+    {
+        // Inverting is an output transform. It lights the background, so the drawn pixels of the finished
+        // plate stop being the artwork -- but the artwork has not moved, and the reported bounds must say so.
+        using var slicerFile = PcbFixtures.CreateSlicerFile();
+        using var outline = new TempFile(PcbFixtures.NegativeYBoard, ".gko");
+        using var artwork = new TempFile(CenterPad);
+        var operation = CreateOperation(slicerFile, outline.Path, artwork.Path);
+
+        using var plain = operation.GetMat(operation.Files[1], out var plainBounds);
+
+        operation.InvertColor = true;
+        operation.InvertArea = area;
+        using var inverted = operation.GetMat(operation.Files[1], out var invertedBounds);
+
+        Assert.Equal(plainBounds, invertedBounds);
+
+        // And the reported bounds really are the artwork, not the lit area of either render
+        Assert.Equal(CvInvoke.BoundingRectangle(plain), plainBounds);
+    }
+
     [Fact]
     public void InvertColorDefaultsToTheWholePlate()
     {

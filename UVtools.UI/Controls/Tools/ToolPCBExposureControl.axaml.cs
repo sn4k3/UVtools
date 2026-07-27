@@ -2,6 +2,7 @@ using Avalonia.Input;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using System;
+using System.Drawing;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -170,11 +171,16 @@ public partial class ToolPCBExposureControl : ToolControl
             var file = (OperationPCBExposure.PCBExposureFile)_selectedFile.Clone();
             file.InvertPolarity = ExcellonDrillFormat.Extensions.AsValueEnumerable().Any(extension => file.IsExtension(extension));
             _previewImage?.Dispose();
-            using var mat = Operation.GetMat(file);
+            using var mat = Operation.GetMat(file, out var contentBounds);
 
             if (_cropPreview)
             {
-                using var matCropped = mat.RoiFromBoundingRectangle(out _, 20);
+                // Cropped to the artwork rather than to the lit pixels: with the colors inverted those are
+                // the background, so measuring them would crop to the inverted area instead of the board
+                var cropBounds = Rectangle.Inflate(contentBounds, 20, 20);
+                cropBounds.Intersect(new Rectangle(0, 0, mat.Width, mat.Height));
+
+                using var matCropped = mat.Roi(cropBounds);
                 PreviewImage = matCropped.ToBitmap();
             }
             else
