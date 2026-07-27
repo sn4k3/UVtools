@@ -1,17 +1,16 @@
-using Avalonia.Input;
-using Avalonia.Platform.Storage;
-using Avalonia.Threading;
 using System;
-using System.Drawing;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using Avalonia.Input;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using EmguExtensions;
 using EmguExtensions.Avalonia;
 using SukiUI.MessageBox;
 using UVtools.Core.Excellon;
-using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 using UVtools.UI.Extensions;
 using UVtools.UI.Windows;
@@ -22,14 +21,33 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolPCBExposureControl : ToolControl
 {
-
-    public OperationPCBExposure Operation => (BaseOperation as OperationPCBExposure)!;
-
     private readonly Timer _timer = null!;
+    private bool _cropPreview = true;
 
     private Bitmap? _previewImage;
     private OperationPCBExposure.PCBExposureFile? _selectedFile;
-    private bool _cropPreview  = true;
+
+    public ToolPCBExposureControl()
+    {
+        BaseOperation = new OperationPCBExposure(SlicerFile!);
+        if (!ValidateSpawn()) return;
+        InitializeComponent();
+
+        AddHandler(DragDrop.DropEvent, (sender, args) =>
+        {
+            var files = args.DataTransfer.TryGetFiles();
+            if (files is null) return;
+            Operation.AddFiles(files.AsValueEnumerable().Select(file => file.TryGetLocalPath()).ToArray()!);
+        });
+
+        _timer = new Timer(50)
+        {
+            AutoReset = false
+        };
+        _timer.Elapsed += (sender, e) => { Dispatcher.UIThread.InvokeAsync(UpdatePreview); };
+    }
+
+    public OperationPCBExposure Operation => (BaseOperation as OperationPCBExposure)!;
 
     public Bitmap? PreviewImage
     {
@@ -52,32 +70,9 @@ public partial class ToolPCBExposureControl : ToolControl
         get => _cropPreview;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _cropPreview, value)) return;
+            if (!RaiseAndSetIfChanged(ref _cropPreview, value)) return;
             UpdatePreview();
         }
-    }
-
-    public ToolPCBExposureControl()
-    {
-        BaseOperation = new OperationPCBExposure(SlicerFile!);
-        if (!ValidateSpawn()) return;
-        InitializeComponent();
-
-        AddHandler(DragDrop.DropEvent, (sender, args) =>
-        {
-            var files = args.DataTransfer.TryGetFiles();
-            if (files is null) return;
-            Operation.AddFiles(files.AsValueEnumerable().Select(file => file.TryGetLocalPath()).ToArray()!);
-        });
-
-        _timer = new Timer(50)
-        {
-            AutoReset = false
-        };
-        _timer.Elapsed += (sender, e) =>
-        {
-            Dispatcher.UIThread.InvokeAsync(UpdatePreview);
-        };
     }
 
     public override void Callback(ToolWindow.Callbacks callback)
@@ -109,8 +104,9 @@ public partial class ToolPCBExposureControl : ToolControl
 
                 _timer.Stop();
                 _timer.Start();
-                if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.FileCount > 0;
-                Operation.Files.CollectionChanged += (sender, e) => ParentWindow!.ButtonOkEnabled = Operation.FileCount > 0;
+                if (ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.FileCount > 0;
+                Operation.Files.CollectionChanged +=
+                    (sender, e) => ParentWindow!.ButtonOkEnabled = Operation.FileCount > 0;
                 break;
         }
     }
@@ -124,9 +120,7 @@ public partial class ToolPCBExposureControl : ToolControl
         // happen and the pads stay solid. Only warn about the files that would actually be dropped: one with the
         // polarity inverted draws white and does produce a layer of its own.
         var ignoredDrillFiles = Operation.Files
-            .Where(file => file.Exists
-                           && !file.InvertPolarity
-                           && !file.IsBoardOutline
+            .Where(file => file is { Exists: true, InvertPolarity: false, IsBoardOutline: false }
                            && ExcellonDrillFormat.Extensions.AsValueEnumerable().Any(file.IsExtension))
             .Select(file => $"- {file.FileName}")
             .ToArray();
@@ -167,9 +161,11 @@ public partial class ToolPCBExposureControl : ToolControl
                 return;
             }
 
-            if (!OperationPCBExposure.ValidExtensions.AsValueEnumerable().Any(extension => _selectedFile.IsExtension(extension)) || !_selectedFile.Exists) return;
+            if (!OperationPCBExposure.ValidExtensions.AsValueEnumerable()
+                    .Any(extension => _selectedFile.IsExtension(extension)) || !_selectedFile.Exists) return;
             var file = (OperationPCBExposure.PCBExposureFile)_selectedFile.Clone();
-            file.InvertPolarity = ExcellonDrillFormat.Extensions.AsValueEnumerable().Any(extension => file.IsExtension(extension));
+            file.InvertPolarity = ExcellonDrillFormat.Extensions.AsValueEnumerable()
+                .Any(extension => file.IsExtension(extension));
             _previewImage?.Dispose();
             using var mat = Operation.GetMat(file, out var contentBounds);
 
@@ -192,7 +188,6 @@ public partial class ToolPCBExposureControl : ToolControl
         {
             Debug.WriteLine(e);
         }
-
     }
 
     public async Task AddFiles()

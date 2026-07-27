@@ -2,7 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:controls="clr-namespace:UVtools.UI.Controls"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
              xmlns:operations="clr-namespace:UVtools.Core.Operations;assembly=UVtools.Core"
              xmlns:suki="https://github.com/kikipoulet/SukiUI"
@@ -10,8 +9,8 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolPCBExposureControl"
              x:DataType="tools:ToolPCBExposureControl">
-	<Grid ColumnDefinitions="Auto,10,350">
-		<StackPanel Spacing="10">
+    <Grid ColumnDefinitions="Auto,10,350">
+        <StackPanel Spacing="10">
 
             <Border BorderBrush="Gray" BorderThickness="1" Padding="5"
                     DragDrop.AllowDrop="True">
@@ -55,8 +54,8 @@
                     <StackPanel HorizontalAlignment="Right" Spacing="5" Orientation="Vertical">
                         <StackPanel HorizontalAlignment="Right" Spacing="5" Orientation="Horizontal">
                             <Button IsEnabled="{Binding Operation.Files.Count}"
-                                Command="{Binding ClearFiles}"
-                                Content="{icon:MaterialIconTextExt Kind=DeleteSweep, Text={Binding Operation.Files.Count, StringFormat=Clear {0} files}}" />
+                                    Command="{Binding ClearFiles}"
+                                    Content="{icon:MaterialIconTextExt Kind=DeleteSweep, Text={Binding Operation.Files.Count, StringFormat=Clear {0} files}}" />
                         </StackPanel>
                         <StackPanel HorizontalAlignment="Right" Spacing="5" Orientation="Horizontal">
                             <Button IsEnabled="{Binding Operation.Files.Count}"
@@ -82,18 +81,18 @@
                       SelectedItem="{Binding SelectedFile}"
                       DragDrop.AllowDrop="True">
                 <DataGrid.Columns>
-                    <DataGridTextColumn  Header="Filename"
-                                         Binding="{Binding FileName}"
-                                         IsReadOnly="True"
-                                         Width="*" />
-                    <DataGridTemplateColumn  Header="Size scale"
-                                             Width="130">
+                    <DataGridTextColumn Header="Filename"
+                                        Binding="{Binding FileName}"
+                                        IsReadOnly="True"
+                                        Width="*" />
+                    <DataGridTemplateColumn Header="Size scale"
+                                            Width="130">
                         <DataTemplate x:DataType="operations:OperationPCBExposure+PCBExposureFile">
                             <NumericUpDown Increment="0.05"
                                            Minimum="0.01"
                                            Maximum="100"
                                            FormatString="F2"
-                                           Value="{Binding SizeScale}"/>
+                                           Value="{Binding SizeScale}" />
                         </DataTemplate>
                     </DataGridTemplateColumn>
 
@@ -108,45 +107,45 @@
             </DataGrid>
 
 
-			<Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+            <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
                   ColumnDefinitions="Auto,10,400">
 
                 <ToggleSwitch Grid.Row="0" Grid.Column="2"
                               IsChecked="{Binding Operation.MergeFiles}"
                               OnContent="Draw all gerber files into same layer"
-                              OffContent="Create one layer per gerber file"/>
+                              OffContent="Create one layer per gerber file" />
 
                 <TextBlock Grid.Row="2" Grid.Column="0"
                            VerticalAlignment="Center"
-                           Text="Layer height:"/>
-				<NumericUpDown Grid.Row="2" Grid.Column="2"
-							   suki:NumericUpDownExtensions.Unit="mm"
-							   Increment="0.01"
-							   Minimum="0.001"
-							   Maximum="500"
-							   FormatString="F3"
-							   Value="{Binding Operation.LayerHeight}"/>
+                           Text="Layer height:" />
+                <NumericUpDown Grid.Row="2" Grid.Column="2"
+                               suki:NumericUpDownExtensions.Unit="mm"
+                               Increment="0.01"
+                               Minimum="0.001"
+                               Maximum="500"
+                               FormatString="F3"
+                               Value="{Binding Operation.LayerHeight}" />
 
 
-				<TextBlock Grid.Row="4" Grid.Column="0"
-						   VerticalAlignment="Center"
-						   Text="Exposure time:"/>
-				<NumericUpDown Grid.Row="4" Grid.Column="2"
-							   suki:NumericUpDownExtensions.Unit="s"
-							   Increment="0.5"
-							   Minimum="0.5"
-							   Maximum="1000"
-							   FormatString="F2"
-							   Value="{Binding Operation.ExposureTime}"/>
+                <TextBlock Grid.Row="4" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Exposure time:" />
+                <NumericUpDown Grid.Row="4" Grid.Column="2"
+                               suki:NumericUpDownExtensions.Unit="s"
+                               Increment="0.5"
+                               Minimum="0.5"
+                               Maximum="1000"
+                               FormatString="F2"
+                               Value="{Binding Operation.ExposureTime}" />
 
                 <TextBlock Grid.Row="6" Grid.Column="0"
                            VerticalAlignment="Center"
-                           Text="Size rounding:"/>
+                           Text="Size rounding:" />
 
                 <ComboBox Grid.Row="6" Grid.Column="2"
-                    HorizontalAlignment="Stretch"
-                    ItemsSource="{Binding Operation.SizeMidpointRounding, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                    SelectedItem="{Binding Operation.SizeMidpointRounding, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+                          HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding Operation.SizeMidpointRounding, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                          SelectedItem="{Binding Operation.SizeMidpointRounding, Converter={StaticResource FromValueDescriptionToEnumConverter}}" />
 
 
                 <TextBlock Grid.Row="8" Grid.Column="0"
@@ -154,7 +153,7 @@
                            ToolTip.Tip="Offset the PCB origin.
 &#x0a;Applied on top of the selected placement, use it to nudge the artwork from there.
 &#x0a;Use the 'Show full preview image (The final result)' option to preview the resulting position."
-                           Text="Offset X/Y:"/>
+                           Text="Offset X/Y:" />
 
                 <StackPanel Grid.Row="8" Grid.Column="2"
                             Orientation="Horizontal" Spacing="20">
@@ -164,7 +163,7 @@
                                    Maximum="10000"
                                    FormatString="F2"
                                    Width="187"
-                                   Value="{Binding Operation.OffsetX}"/>
+                                   Value="{Binding Operation.OffsetX}" />
 
                     <NumericUpDown suki:NumericUpDownExtensions.Unit="mm"
                                    Increment="0.05"
@@ -172,12 +171,12 @@
                                    Maximum="10000"
                                    FormatString="F2"
                                    Width="187"
-                                   Value="{Binding Operation.OffsetY}"/>
+                                   Value="{Binding Operation.OffsetY}" />
                 </StackPanel>
 
                 <TextBlock Grid.Row="10" Grid.Column="0"
                            VerticalAlignment="Center"
-                           Text="Positioning:"/>
+                           Text="Positioning:" />
 
                 <Grid Grid.Row="10" Grid.Column="2"
                       ColumnDefinitions="90,20,*"
@@ -196,7 +195,7 @@
                                      ToolTip.Tip="Top Left"
                                      IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=TopLeft, Mode=OneWay}"
                                      Command="{Binding Operation.SetAnchor}"
-                                     CommandParameter="0"/>
+                                     CommandParameter="0" />
                         <RadioButton Grid.Row="0" Grid.Column="1"
                                      HorizontalAlignment="Center"
                                      VerticalAlignment="Center"
@@ -204,7 +203,7 @@
                                      ToolTip.Tip="Top Center"
                                      IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=TopCenter, Mode=OneWay}"
                                      Command="{Binding Operation.SetAnchor}"
-                                     CommandParameter="1"/>
+                                     CommandParameter="1" />
                         <RadioButton Grid.Row="0" Grid.Column="2"
                                      HorizontalAlignment="Center"
                                      VerticalAlignment="Center"
@@ -212,7 +211,7 @@
                                      ToolTip.Tip="Top Right"
                                      IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=TopRight, Mode=OneWay}"
                                      Command="{Binding Operation.SetAnchor}"
-                                     CommandParameter="2"/>
+                                     CommandParameter="2" />
 
                         <RadioButton Grid.Row="1" Grid.Column="0"
                                      HorizontalAlignment="Center"
@@ -221,7 +220,7 @@
                                      ToolTip.Tip="Middle Left"
                                      IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MiddleLeft, Mode=OneWay}"
                                      Command="{Binding Operation.SetAnchor}"
-                                     CommandParameter="3"/>
+                                     CommandParameter="3" />
                         <RadioButton Grid.Row="1" Grid.Column="1"
                                      HorizontalAlignment="Center"
                                      VerticalAlignment="Center"
@@ -229,7 +228,7 @@
                                      ToolTip.Tip="Middle Center"
                                      IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MiddleCenter, Mode=OneWay}"
                                      Command="{Binding Operation.SetAnchor}"
-                                     CommandParameter="4"/>
+                                     CommandParameter="4" />
                         <RadioButton Grid.Row="1" Grid.Column="2"
                                      HorizontalAlignment="Center"
                                      VerticalAlignment="Center"
@@ -237,7 +236,7 @@
                                      ToolTip.Tip="Middle Right"
                                      IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MiddleRight, Mode=OneWay}"
                                      Command="{Binding Operation.SetAnchor}"
-                                     CommandParameter="5"/>
+                                     CommandParameter="5" />
 
                         <RadioButton Grid.Row="2" Grid.Column="0"
                                      HorizontalAlignment="Center"
@@ -246,7 +245,7 @@
                                      ToolTip.Tip="Bottom Left"
                                      IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=BottomLeft, Mode=OneWay}"
                                      Command="{Binding Operation.SetAnchor}"
-                                     CommandParameter="6"/>
+                                     CommandParameter="6" />
                         <RadioButton Grid.Row="2" Grid.Column="1"
                                      HorizontalAlignment="Center"
                                      VerticalAlignment="Center"
@@ -254,7 +253,7 @@
                                      ToolTip.Tip="Bottom Center"
                                      IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=BottomCenter, Mode=OneWay}"
                                      Command="{Binding Operation.SetAnchor}"
-                                     CommandParameter="7"/>
+                                     CommandParameter="7" />
                         <RadioButton Grid.Row="2" Grid.Column="2"
                                      HorizontalAlignment="Center"
                                      VerticalAlignment="Center"
@@ -262,7 +261,7 @@
                                      ToolTip.Tip="Bottom Right"
                                      IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=BottomRight, Mode=OneWay}"
                                      Command="{Binding Operation.SetAnchor}"
-                                     CommandParameter="8"/>
+                                     CommandParameter="8" />
                     </Grid>
 
                     <StackPanel Grid.Column="2"
@@ -273,14 +272,14 @@
                                      ToolTip.Tip="Preserve the exact coordinates declared by the board files."
                                      IsChecked="{Binding Operation.Anchor, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=None, Mode=OneWay}"
                                      Command="{Binding Operation.SetAnchor}"
-                                     CommandParameter="9"/>
+                                     CommandParameter="9" />
 
                         <CheckBox VerticalAlignment="Center"
-                                  IsChecked="{Binding Operation.FlipY}"
+                                  IsChecked="{Binding Operation.FlipVertically}"
                                   ToolTip.Tip="Flip the artwork along the vertical axis.
 &#x0a;Gerber and drill files put the origin at the bottom left with Y growing upwards, while image rows grow downwards, so the drawing comes out mirrored top to bottom without this.
 &#x0a;Leave it enabled to get the same orientation your CAD tool or gerber viewer shows."
-                                  Content="Flip vertically"/>
+                                  Content="Flip vertically" />
                     </StackPanel>
                 </Grid>
 
@@ -289,13 +288,13 @@
                            ToolTip.Tip="Repeat the artwork as many times as it fits to fill the plate.
 &#x0a;Only whole copies are placed, a copy that would be clipped by the plate edge is skipped.
 &#x0a;The spacing is the gap left between the copies."
-                           Text="Fill plate:"/>
+                           Text="Fill plate:" />
 
                 <StackPanel Grid.Row="12" Grid.Column="2"
                             Orientation="Horizontal" Spacing="20">
                     <CheckBox VerticalAlignment="Center"
                               IsChecked="{Binding Operation.FillPlate}"
-                              Content="Enable"/>
+                              Content="Enable" />
 
                     <NumericUpDown suki:NumericUpDownExtensions.Unit="mm"
                                    Increment="0.5"
@@ -305,7 +304,7 @@
                                    Width="140"
                                    IsEnabled="{Binding Operation.FillPlate}"
                                    ToolTip.Tip="Horizontal gap between copies"
-                                   Value="{Binding Operation.FillSpacingX}"/>
+                                   Value="{Binding Operation.FillSpacingX}" />
 
                     <NumericUpDown suki:NumericUpDownExtensions.Unit="mm"
                                    Increment="0.5"
@@ -315,53 +314,57 @@
                                    Width="140"
                                    IsEnabled="{Binding Operation.FillPlate}"
                                    ToolTip.Tip="Vertical gap between copies"
-                                   Value="{Binding Operation.FillSpacingY}"/>
+                                   Value="{Binding Operation.FillSpacingY}" />
                 </StackPanel>
 
                 <TextBlock Grid.Row="14" Grid.Column="0"
                            VerticalAlignment="Center"
                            ToolTip.Tip="The area the 'Invert color' option covers.
 &#x0a;Inverting lights the background and masks the traces, so this decides how much of the plate is exposed."
-                           Text="Invert area:"/>
+                           Text="Invert area:" />
 
-                <ComboBox Grid.Row="14" Grid.Column="2"
-                          HorizontalAlignment="Stretch"
-                          IsEnabled="{Binding Operation.InvertColor}"
-                          ItemsSource="{Binding Operation.InvertArea, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                          SelectedItem="{Binding Operation.InvertArea, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+                <Grid Grid.Row="14" Grid.Column="2" ColumnSpacing="10"
+                      ColumnDefinitions="Auto,*">
+                    <CheckBox Grid.Column="0" VerticalAlignment="Center"
+                              IsChecked="{Binding Operation.InvertColor}"
+                              Content="Enable" />
+
+                    <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
+                              IsEnabled="{Binding Operation.InvertColor}"
+                              ItemsSource="{Binding Operation.InvertArea, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                              SelectedItem="{Binding Operation.InvertArea, Converter={StaticResource FromValueDescriptionToEnumConverter}}" />
+                </Grid>
+
 
                 <TextBlock Grid.Row="16" Grid.Column="0"
                            VerticalAlignment="Center"
-                           Text="Options:"/>
+                           Text="Options:" />
 
-				<StackPanel Grid.Row="16" Grid.Column="2"
+                <StackPanel Grid.Row="16" Grid.Column="2"
                             Orientation="Horizontal" Spacing="20">
-					<CheckBox VerticalAlignment="Center"
+                    <CheckBox VerticalAlignment="Center"
                               IsChecked="{Binding Operation.Mirror}"
-                              Content="Mirror"/>
+                              Content="Mirror" />
 
-					<CheckBox VerticalAlignment="Center"
-                              IsChecked="{Binding Operation.InvertColor}"
-                              Content="Invert color"/>
 
                     <CheckBox VerticalAlignment="Center"
                               IsChecked="{Binding Operation.EnableAntiAliasing}"
-                              Content="Enable Anti-Aliasing"/>
-				</StackPanel>
-			</Grid>
+                              Content="Enable Anti-Aliasing" />
+                </StackPanel>
+            </Grid>
 
-		</StackPanel>
+        </StackPanel>
 
-		<StackPanel Grid.Column="2" Orientation="Vertical" Spacing="10">
+        <StackPanel Grid.Column="2" Orientation="Vertical" Spacing="10">
             <ToggleSwitch IsChecked="{Binding CropPreview}"
-                 OnContent="Show preview image cropped by it bounds"
-                OffContent="Show full preview image (The final result)"/>
+                          OnContent="Show preview image cropped by it bounds"
+                          OffContent="Show full preview image (The final result)" />
 
             <Image Stretch="Uniform"
                    MaxHeight="700"
-                   Source="{Binding PreviewImage}"/>
+                   Source="{Binding PreviewImage}" />
 
-			<TextBlock Text="{Binding PreviewImage.Size, StringFormat=Size: {0}}" HorizontalAlignment="Center"/>
-		</StackPanel>
-	</Grid>
+            <TextBlock Text="{Binding PreviewImage.Size, StringFormat=Size: {0}}" HorizontalAlignment="Center" />
+        </StackPanel>
+    </Grid>
 </UserControl>

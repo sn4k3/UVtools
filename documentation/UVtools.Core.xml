@@ -8644,7 +8644,7 @@
         <member name="P:UVtools.Core.Operations.OperationPCBExposure.EnableAntiAliasing">
             <inheritdoc/>
         </member>
-        <member name="P:UVtools.Core.Operations.OperationPCBExposure.FlipY">
+        <member name="P:UVtools.Core.Operations.OperationPCBExposure.FlipVertically">
             <inheritdoc/>
         </member>
         <member name="P:UVtools.Core.Operations.OperationPCBExposure.Anchor">
@@ -11600,8 +11600,8 @@
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.InvertArea">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "InvertArea" generated properties.</summary>
         </member>
-        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.FlipY">
-            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "FlipY" generated properties.</summary>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.FlipVertically">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "FlipVertically" generated properties.</summary>
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.FillPlate">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "FillPlate" generated properties.</summary>

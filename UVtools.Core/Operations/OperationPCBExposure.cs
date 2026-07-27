@@ -107,11 +107,11 @@ public partial class OperationPCBExposure : Operation
     /// </summary>
     public enum InvertAreaType : byte
     {
-        [Description("Whole plate, including the background")]
-        Plate,
-
         [Description("Inside the board outline only")]
-        BoardOutline
+        BoardOutline,
+
+        [Description("Whole plate, including the background")]
+        Plate
     }
 
     #endregion
@@ -156,13 +156,21 @@ public partial class OperationPCBExposure : Operation
         else
         {
             var hasArtworkFile = false;
+            var hasOutline = false;
             foreach (var file in Files)
             {
                 if (!file.Exists) sb.AppendLine($"The file {file} does not exists");
-                if (!file.IsBoardOutline) hasArtworkFile = true;
+                if (file.IsBoardOutline) hasOutline = true;
+                else hasArtworkFile = true;
             }
 
-            if (!hasArtworkFile) sb.AppendLine("Select at least one artwork file in addition to the board outline/profile");
+            if (!hasArtworkFile)
+                sb.AppendLine("Select at least one artwork file in addition to the board outline/profile");
+            else if (!hasOutline && Anchor is not (Anchor.None or Anchor.MiddleCenter))
+                sb.AppendLine($"""
+                               The anchor {Anchor} requires at least one board outline/profile file to preserve the physical margins, please add the board outline/profile to ensure correct margins from sides.
+                               The MiddleCenter or original from board requires no outline/profile file.
+                               """);
         }
 
         return sb.ToString();
@@ -251,12 +259,13 @@ public partial class OperationPCBExposure : Operation
 
     /// <summary>
     /// Gets or sets the area <see cref="InvertColor"/> covers.
-    /// <para><see cref="InvertAreaType.Plate"/> lights the whole build area, so everything outside the artwork
-    /// is exposed as well.</para>
     /// <para><see cref="InvertAreaType.BoardOutline"/> confines it to the board, ie the outline files when any
     /// are selected and the drawn artwork otherwise, leaving the surrounding plate dark.</para>
+    /// /// <para><see cref="InvertAreaType.Plate"/> lights the whole build area, so everything outside the artwork
+    /// is exposed as well.</para>
     /// </summary>
-    [ObservableProperty] public partial InvertAreaType InvertArea { get; set; }
+    [ObservableProperty]
+    public partial InvertAreaType InvertArea { get; set; }
 
     [ObservableProperty] public partial bool EnableAntiAliasing { get; set; }
 
@@ -268,7 +277,7 @@ public partial class OperationPCBExposure : Operation
     /// <para>Applied once to the finished plate, so every file lands on the same axis and the layers stay aligned.</para>
     /// </summary>
     [ObservableProperty]
-    public partial bool FlipY { get; set; } = true;
+    public partial bool FlipVertically { get; set; } = true;
 
     /// <summary>
     /// Gets or sets where to place the artwork on the plate before drawing it.
@@ -316,7 +325,7 @@ public partial class OperationPCBExposure : Operation
                OffsetX == other.OffsetX && OffsetY == other.OffsetY && Mirror == other.Mirror &&
                InvertColor == other.InvertColor && InvertArea == other.InvertArea &&
                EnableAntiAliasing == other.EnableAntiAliasing &&
-               FlipY == other.FlipY && Anchor == other.Anchor && FillPlate == other.FillPlate &&
+               FlipVertically == other.FlipVertically && Anchor == other.Anchor && FillPlate == other.FillPlate &&
                FillSpacingX == other.FillSpacingX && FillSpacingY == other.FillSpacingY;
     }
 
@@ -415,7 +424,7 @@ public partial class OperationPCBExposure : Operation
 
         foreach (var file in Files)
         {
-            if (!file.Exists || useBoardOutline && !file.IsBoardOutline) continue;
+            if (!file.Exists || (useBoardOutline && !file.IsBoardOutline)) continue;
 
             var bounds = IsDrillFile(file)
                 ? ExcellonDrillFormat.ParseAndDraw(file, measureMat, SlicerFile.Ppmm, SizeMidpointRounding).BoundsMm
@@ -454,11 +463,11 @@ public partial class OperationPCBExposure : Operation
         var y = anchor switch
         {
             Anchor.TopLeft or Anchor.TopCenter or Anchor.TopRight =>
-                FlipY ? plateHeightMm - boundsMm.Bottom : -boundsMm.Top,
+                FlipVertically ? plateHeightMm - boundsMm.Bottom : -boundsMm.Top,
             Anchor.MiddleLeft or Anchor.MiddleCenter or Anchor.MiddleRight =>
                 plateHeightMm / 2f - (boundsMm.Top + boundsMm.Height / 2f),
             Anchor.BottomLeft or Anchor.BottomCenter or Anchor.BottomRight =>
-                FlipY ? -boundsMm.Top : plateHeightMm - boundsMm.Bottom,
+                FlipVertically ? -boundsMm.Top : plateHeightMm - boundsMm.Bottom,
             _ => 0
         };
 
@@ -473,7 +482,7 @@ public partial class OperationPCBExposure : Operation
     {
         using var mat = SlicerFile.CreateMat();
         DrawBoundsReference(mat, centerOffsetMm);
-        if (FlipY) FlipMatVertically(mat);
+        if (FlipVertically) FlipMatVertically(mat);
         return CvInvoke.BoundingRectangle(mat);
     }
 
@@ -484,13 +493,13 @@ public partial class OperationPCBExposure : Operation
         // Match execution order so subtractive drill files affect the measured result in the same way.
         foreach (var file in Files)
         {
-            if (IsDrillFile(file) || useBoardOutline && !file.IsBoardOutline) continue;
+            if (IsDrillFile(file) || (useBoardOutline && !file.IsBoardOutline)) continue;
             DrawMat(file, mat, false, offsetMm);
         }
 
         foreach (var file in Files)
         {
-            if (!IsDrillFile(file) || useBoardOutline && !file.IsBoardOutline) continue;
+            if (!IsDrillFile(file) || (useBoardOutline && !file.IsBoardOutline)) continue;
             DrawMat(file, mat, false, offsetMm);
         }
     }
@@ -539,7 +548,7 @@ public partial class OperationPCBExposure : Operation
 
         var correctionX = (targetX - renderedBounds.X) / SlicerFile.Ppmm.Width;
         var correctionY = (targetY - renderedBounds.Y) / SlicerFile.Ppmm.Height;
-        if (FlipY) correctionY = -correctionY;
+        if (FlipVertically) correctionY = -correctionY;
 
         return new SizeF(
             offset.Width + centerOffset.Width + correctionX,
@@ -641,7 +650,7 @@ public partial class OperationPCBExposure : Operation
 
         // Drawn unmirrored on purpose. Apply the plate transforms a single time afterwards.
         DrawBoundsReference(mat, offset);
-        if (FlipY) FlipMatVertically(mat);
+        if (FlipVertically) FlipMatVertically(mat);
         if (canMirror && Mirror) MirrorMat(mat);
 
         var rectangle = CvInvoke.BoundingRectangle(mat);
@@ -672,7 +681,9 @@ public partial class OperationPCBExposure : Operation
 
     public Mat GetMat(PCBExposureFile file, bool canMirror = true, SizeF? drawOffsetMm = null,
         Rectangle? fillSource = null)
-        => GetMat(file, out _, canMirror, drawOffsetMm, fillSource);
+    {
+        return GetMat(file, out _, canMirror, drawOffsetMm, fillSource);
+    }
 
     /// <summary>
     /// Draws a single file onto a plate.
@@ -694,12 +705,12 @@ public partial class OperationPCBExposure : Operation
         var offset = drawOffsetMm ?? GetDrawOffsetMillimeters();
         var mat = SlicerFile.CreateMat();
         DrawMat(file, mat, canMirror, offset);
-        if (FlipY) FlipMatVertically(mat);
+        if (FlipVertically) FlipMatVertically(mat);
 
         // Measured across every file, not just this one: a drill layer covers a smaller area than the
         // copper it belongs to, and sizing each layer grid on its own content pulls the copies out of line.
         // Resolved once here, since both the tiling and the board sized inversion need it.
-        var boardCell = FillPlate || InvertColor && InvertArea == InvertAreaType.BoardOutline
+        var boardCell = FillPlate || (InvertColor && InvertArea == InvertAreaType.BoardOutline)
             ? fillSource ?? GetFillSourceRectangle(offset, canMirror)
             : null;
 
@@ -811,7 +822,7 @@ public partial class OperationPCBExposure : Operation
         }
 
         // Once the whole plate is composed, so every file is treated the same way
-        if (FlipY) FlipMatVertically(mergeMat);
+        if (FlipVertically) FlipMatVertically(mergeMat);
 
         if (progress.Token.IsCancellationRequested) return false;
 
@@ -828,7 +839,7 @@ public partial class OperationPCBExposure : Operation
 
         // The composed plate is the grid cell for every layer. Taken before mirroring and before the plate is
         // tiled, so each layer replicates the same area no matter how much of it that layer actually covers.
-        Rectangle? fillSource = FillPlate
+        var fillSource = FillPlate
             ? HasBoardOutline
                 ? GetFillSourceRectangle(drawOffset)
                 : CvInvoke.BoundingRectangle(mergeMat)
