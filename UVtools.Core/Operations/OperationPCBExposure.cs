@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
@@ -99,6 +100,18 @@ public partial class OperationPCBExposure : Operation
                    fileName.EndsWith("Outline", StringComparison.OrdinalIgnoreCase) ||
                    fileName.EndsWith("Profile", StringComparison.OrdinalIgnoreCase);
         }
+    }
+
+    /// <summary>
+    /// The area that <see cref="InvertColor"/> covers.
+    /// </summary>
+    public enum InvertAreaType : byte
+    {
+        [Description("Whole plate, including the background")]
+        Plate,
+
+        [Description("Inside the board outline only")]
+        BoardOutline
     }
 
     #endregion
@@ -236,6 +249,15 @@ public partial class OperationPCBExposure : Operation
 
     [ObservableProperty] public partial bool InvertColor { get; set; }
 
+    /// <summary>
+    /// Gets or sets the area <see cref="InvertColor"/> covers.
+    /// <para><see cref="InvertAreaType.Plate"/> lights the whole build area, so everything outside the artwork
+    /// is exposed as well.</para>
+    /// <para><see cref="InvertAreaType.BoardOutline"/> confines it to the board, ie the outline files when any
+    /// are selected and the drawn artwork otherwise, leaving the surrounding plate dark.</para>
+    /// </summary>
+    [ObservableProperty] public partial InvertAreaType InvertArea { get; set; }
+
     [ObservableProperty] public partial bool EnableAntiAliasing { get; set; }
 
     /// <summary>
@@ -292,7 +314,8 @@ public partial class OperationPCBExposure : Operation
         return Files.Equals(other.Files) && MergeFiles == other.MergeFiles && LayerHeight == other.LayerHeight &&
                ExposureTime == other.ExposureTime && SizeMidpointRounding == other.SizeMidpointRounding &&
                OffsetX == other.OffsetX && OffsetY == other.OffsetY && Mirror == other.Mirror &&
-               InvertColor == other.InvertColor && EnableAntiAliasing == other.EnableAntiAliasing &&
+               InvertColor == other.InvertColor && InvertArea == other.InvertArea &&
+               EnableAntiAliasing == other.EnableAntiAliasing &&
                FlipY == other.FlipY && Anchor == other.Anchor && FillPlate == other.FillPlate &&
                FillSpacingX == other.FillSpacingX && FillSpacingY == other.FillSpacingY;
     }
@@ -640,7 +663,7 @@ public partial class OperationPCBExposure : Operation
         }
 
         // Last, so the tiling above still sees the drawn area rather than a fully lit plate
-        if (InvertColor) InvertColors(mat);
+        if (InvertColor) InvertColors(mat, GetInvertArea(offset, canMirror));
 
         return mat;
     }
@@ -666,23 +689,49 @@ public partial class OperationPCBExposure : Operation
     }
 
     /// <summary>
-    /// Inverts the whole plate, so the artwork is dark against a lit background.
+    /// Inverts the plate so the artwork is dark against a lit background.
     /// </summary>
+    /// <param name="mat">Plate to invert</param>
+    /// <param name="area">Region to light, or null for the whole plate</param>
     /// <remarks>
     /// <para>Must run once per plate, never per file. Composing several files applies it once each, and every
     /// pass flips the area again: an even number of files cancels out, and whatever was drawn after the first
     /// pass is the only thing left inverted. That reads as "only the drill holes inverted", since drill files
     /// are drawn last.</para>
-    /// <para>Runs after the plate is tiled, not before: inverting first lights the whole plate, so the grid
-    /// cell measured from it would span everything and no copy would fit.</para>
+    /// <para>Runs after the plate is tiled, not before: inverting first lights the area, so the grid cell
+    /// measured from it would span everything and no copy would fit.</para>
     /// </remarks>
-    private static void InvertColors(Mat mat)
+    private static void InvertColors(Mat mat, Rectangle? area = null)
     {
         // Nothing was drawn, so there is nothing to invert. Lighting the plate here would turn an empty
         // result into a full power exposure of the entire screen.
         if (!CvInvoke.HasNonZero(mat)) return;
 
-        CvInvoke.BitwiseNot(mat, mat);
+        if (area is not { Width: > 0, Height: > 0 })
+        {
+            CvInvoke.BitwiseNot(mat, mat);
+            return;
+        }
+
+        using var roi = mat.Roi(area.Value);
+        CvInvoke.BitwiseNot(roi, roi);
+    }
+
+    /// <summary>
+    /// Gets the region <see cref="InvertColor"/> should light, in plate pixels.
+    /// </summary>
+    /// <param name="drawOffsetMm">Offset the plate was drawn with</param>
+    /// <param name="canMirror">Whether the target plate has been mirrored</param>
+    /// <returns>The board area, or null to light the whole plate</returns>
+    /// <remarks>
+    /// Measured across every file rather than the one being drawn, so each layer of a multi file job is
+    /// inverted over the same area and they still line up.
+    /// </remarks>
+    private Rectangle? GetInvertArea(SizeF drawOffsetMm, bool canMirror)
+    {
+        return InvertArea == InvertAreaType.BoardOutline
+            ? GetFillSourceRectangle(drawOffsetMm, canMirror)
+            : null;
     }
 
     protected override bool ExecuteInternally(OperationProgress progress)
@@ -749,9 +798,9 @@ public partial class OperationPCBExposure : Operation
 
         if (fillSource is not null) FillPlateWithCopies(mergeMat, fillSource);
 
-        // After tiling: inverting first would light the whole plate, so the grid cell measured from it
-        // would span everything and no copy would fit
-        if (InvertColor) InvertColors(mergeMat);
+        // After tiling: inverting first would light the area, so the grid cell measured from it would
+        // span everything and no copy would fit. Unmirrored here, the display mirror is applied below.
+        if (InvertColor) InvertColors(mergeMat, GetInvertArea(drawOffset, false));
 
         if (MergeFiles)
         {

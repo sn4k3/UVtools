@@ -180,6 +180,42 @@ public class OperationPCBExposureTests
     }
 
     [Fact]
+    public void InvertColorCanBeConfinedToTheBoardOutline()
+    {
+        // The outline is a 20x20mm board on a 100x100mm plate, so confining the inversion to it must leave
+        // the surrounding plate dark instead of lighting all of it.
+        using var slicerFile = PcbFixtures.CreateSlicerFile();
+        using var outline = new TempFile(PcbFixtures.NegativeYBoard, ".gko");
+        using var artwork = new TempFile(CenterPad);
+
+        var operation = CreateOperation(slicerFile, outline.Path, artwork.Path);
+        operation.InvertColor = true;
+        operation.InvertArea = OperationPCBExposure.InvertAreaType.BoardOutline;
+
+        using var mat = operation.GetMat(operation.Files[1]);
+
+        // A corner far from the board stays dark
+        using var corner = mat.Roi(new Rectangle(0, 0, 8, 8));
+        Assert.Equal(0, CvInvoke.CountNonZero(corner));
+
+        // The lit area is about the board, 201x201px, rather than the whole 1000x1000 plate
+        var lit = CvInvoke.CountNonZero(mat);
+        Assert.InRange(lit, 30000, 45000);
+
+        // Where the whole plate option would light nearly everything
+        operation.InvertArea = OperationPCBExposure.InvertAreaType.Plate;
+        using var wholePlate = operation.GetMat(operation.Files[1]);
+        Assert.True(CvInvoke.CountNonZero(wholePlate) > lit * 10);
+    }
+
+    [Fact]
+    public void InvertColorDefaultsToTheWholePlate()
+    {
+        using var slicerFile = PcbFixtures.CreateSlicerFile();
+        Assert.Equal(OperationPCBExposure.InvertAreaType.Plate, new OperationPCBExposure(slicerFile).InvertArea);
+    }
+
+    [Fact]
     public void InvertColorDoesNotLightAnEmptyPlate()
     {
         // An empty result must stay dark rather than becoming a full power exposure of the whole screen

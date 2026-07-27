@@ -108,7 +108,7 @@
             </DataGrid>
 
 
-			<Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+			<Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
                   ColumnDefinitions="Auto,10,400">
 
                 <ToggleSwitch Grid.Row="0" Grid.Column="2"
@@ -320,9 +320,21 @@
 
                 <TextBlock Grid.Row="14" Grid.Column="0"
                            VerticalAlignment="Center"
+                           ToolTip.Tip="The area the 'Invert color' option covers.
+&#x0a;Inverting lights the background and masks the traces, so this decides how much of the plate is exposed."
+                           Text="Invert area:"/>
+
+                <ComboBox Grid.Row="14" Grid.Column="2"
+                          HorizontalAlignment="Stretch"
+                          IsEnabled="{Binding Operation.InvertColor}"
+                          ItemsSource="{Binding Operation.InvertArea, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                          SelectedItem="{Binding Operation.InvertArea, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+                <TextBlock Grid.Row="16" Grid.Column="0"
+                           VerticalAlignment="Center"
                            Text="Options:"/>
 
-				<StackPanel Grid.Row="14" Grid.Column="2"
+				<StackPanel Grid.Row="16" Grid.Column="2"
                             Orientation="Horizontal" Spacing="20">
 					<CheckBox VerticalAlignment="Center"
                               IsChecked="{Binding Operation.Mirror}"

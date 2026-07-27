@@ -4960,13 +4960,13 @@
         <member name="M:UVtools.Core.Gerber.GerberFormat.LineYParse">
             <remarks>
             Pattern:<br/>
-            <code>Y-?([0-9]+)?</code><br/>
+            <code>Y(-?[0-9]+)?</code><br/>
             Explanation:<br/>
             <code>
             ○ Match 'Y'.<br/>
-            ○ Match '-' greedily, optionally.<br/>
             ○ Optional (greedy).<br/>
                 ○ 1st capture group.<br/>
+                    ○ Match '-' atomically, optionally.<br/>
                     ○ Match a character in the set [0-9] atomically at least once.<br/>
             </code>
             </remarks>
@@ -8606,6 +8606,11 @@
             Positions and vectors aren't affected by this.
             </summary>
         </member>
+        <member name="T:UVtools.Core.Operations.OperationPCBExposure.InvertAreaType">
+            <summary>
+            The area that <see cref="P:UVtools.Core.Operations.OperationPCBExposure.InvertColor"/> covers.
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Operations.OperationPCBExposure.Files">
             <inheritdoc/>
         </member>
@@ -8631,6 +8636,9 @@
             <inheritdoc/>
         </member>
         <member name="P:UVtools.Core.Operations.OperationPCBExposure.InvertColor">
+            <inheritdoc/>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationPCBExposure.InvertArea">
             <inheritdoc/>
         </member>
         <member name="P:UVtools.Core.Operations.OperationPCBExposure.EnableAntiAliasing">
@@ -8730,6 +8738,33 @@
             <summary>
             Flips <paramref name="mat"/> along the printer display mirror axis, defaulting to horizontally.
             </summary>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.InvertColors(Emgu.CV.Mat,System.Nullable{System.Drawing.Rectangle})">
+            <summary>
+            Inverts the plate so the artwork is dark against a lit background.
+            </summary>
+            <param name="mat">Plate to invert</param>
+            <param name="area">Region to light, or null for the whole plate</param>
+            <remarks>
+            <para>Must run once per plate, never per file. Composing several files applies it once each, and every
+            pass flips the area again: an even number of files cancels out, and whatever was drawn after the first
+            pass is the only thing left inverted. That reads as "only the drill holes inverted", since drill files
+            are drawn last.</para>
+            <para>Runs after the plate is tiled, not before: inverting first lights the area, so the grid cell
+            measured from it would span everything and no copy would fit.</para>
+            </remarks>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetInvertArea(System.Drawing.SizeF,System.Boolean)">
+            <summary>
+            Gets the region <see cref="P:UVtools.Core.Operations.OperationPCBExposure.InvertColor"/> should light, in plate pixels.
+            </summary>
+            <param name="drawOffsetMm">Offset the plate was drawn with</param>
+            <param name="canMirror">Whether the target plate has been mirrored</param>
+            <returns>The board area, or null to light the whole plate</returns>
+            <remarks>
+            Measured across every file rather than the one being drawn, so each layer of a multi file job is
+            inverted over the same area and they still line up.
+            </remarks>
         </member>
         <member name="T:UVtools.Core.Operations.OperationPhasedExposure">
             <inheritdoc/>
@@ -11533,6 +11568,9 @@
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.OffsetY">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "OffsetY" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.InvertArea">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "InvertArea" generated properties.</summary>
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.FlipY">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "FlipY" generated properties.</summary>
