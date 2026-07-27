@@ -18,6 +18,16 @@ namespace UVtools.Tests;
 
 public class OperationPCBExposureTests
 {
+    private const string CenterPad =
+        """
+        %FSLAX46Y46*%
+        %MOMM*%
+        %ADD10C,1.800000*%
+        D10*
+        X20000000Y-30000000D03*
+        M02*
+        """;
+
     private static OperationPCBExposure CreateOperation(FileFormat slicerFile, params string[] filePaths)
     {
         var operation = new OperationPCBExposure(slicerFile)
@@ -134,6 +144,94 @@ public class OperationPCBExposureTests
         Assert.NotNull(bounds);
         Assert.Equal(10, bounds.Value.Left, 3);
         Assert.Equal(30, bounds.Value.Right, 3);
+    }
+
+    [Theory]
+    [InlineData("hawk-Edge_Cuts.gbr", true)]
+    [InlineData("board.gko", true)]
+    [InlineData("board-Outline.gbr", true)]
+    [InlineData("board-Profile.gbr", true)]
+    [InlineData("hawk-F_Cu.gbr", false)]
+    public void CommonProfileFileNamesAreDetected(string filePath, bool expected)
+    {
+        var file = new OperationPCBExposure.PCBExposureFile(filePath);
+
+        Assert.Equal(expected, file.IsBoardOutline);
+    }
+
+    [Fact]
+    public void BoardOutlineIsUsedInsteadOfArtworkForBounds()
+    {
+        const string remotePad =
+            """
+            %FSLAX46Y46*%
+            %MOMM*%
+            %ADD10C,1.000000*%
+            D10*
+            X80000000Y-30000000D03*
+            M02*
+            """;
+
+        using var slicerFile = PcbFixtures.CreateSlicerFile();
+        using var outline = new TempFile(PcbFixtures.NegativeYBoard, ".gko");
+        using var artwork = new TempFile(remotePad);
+        var operation = CreateOperation(slicerFile, outline.Path, artwork.Path);
+
+        var bounds = operation.GetBoundsMillimeters();
+
+        Assert.True(operation.Files[0].IsBoardOutline);
+        Assert.NotNull(bounds);
+        Assert.Equal(10, bounds.Value.Left, 3);
+        Assert.Equal(30, bounds.Value.Right, 3);
+    }
+
+    [Fact]
+    public void TopLeftAnchorPreservesFeatureMarginsInsideBoardOutline()
+    {
+        using var slicerFile = PcbFixtures.CreateSlicerFile();
+        using var outline = new TempFile(PcbFixtures.NegativeYBoard, ".gko");
+        using var artwork = new TempFile(CenterPad);
+        var operation = CreateOperation(slicerFile, outline.Path, artwork.Path);
+        operation.Anchor = Anchor.TopLeft;
+
+        using var mat = operation.GetMat(operation.Files[1]);
+        var feature = CvInvoke.BoundingRectangle(mat);
+
+        // The 1.8mm pad is at the centre of a 20mm board, so anchoring the profile to the corner must retain
+        // approximately 10mm (100px) around the feature instead of moving the feature itself to (0, 0).
+        Assert.InRange(feature.X + feature.Width / 2, 98, 102);
+        Assert.InRange(feature.Y + feature.Height / 2, 98, 102);
+    }
+
+    [Fact]
+    public void BoardOutlineDoesNotProduceAnExposureLayer()
+    {
+        using var slicerFile = PcbFixtures.CreateSlicerFile();
+        using var outline = new TempFile(PcbFixtures.NegativeYBoard, ".gko");
+        using var artwork = new TempFile(CenterPad);
+        var operation = CreateOperation(slicerFile, outline.Path, artwork.Path);
+
+        Assert.True(operation.Execute());
+        Assert.Equal(1u, slicerFile.LayerCount);
+    }
+
+    [Fact]
+    public void FillPlateUsesBoardOutlineForCopySpacing()
+    {
+        using var slicerFile = PcbFixtures.CreateSlicerFile();
+        using var outline = new TempFile(PcbFixtures.NegativeYBoard, ".gko");
+        using var artwork = new TempFile(CenterPad);
+        var operation = CreateOperation(slicerFile, outline.Path, artwork.Path);
+        operation.FillPlate = true;
+        operation.FillSpacingX = 5;
+        operation.FillSpacingY = 5;
+
+        using var mat = operation.GetMat(operation.Files[1]);
+        var bounds = CvInvoke.BoundingRectangle(mat);
+
+        // Four 20mm boards fit per axis with 5mm gaps. The visible pad extent spans the three 25.1mm pitches.
+        Assert.InRange(bounds.Width, 770, 774);
+        Assert.InRange(bounds.Height, 770, 774);
     }
 
     [Fact]

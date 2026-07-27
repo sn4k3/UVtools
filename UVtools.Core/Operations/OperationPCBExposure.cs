@@ -62,6 +62,7 @@ public partial class OperationPCBExposure : Operation
         public PCBExposureFile(string filePath, bool invertPolarity = false) : base(filePath)
         {
             InvertPolarity = invertPolarity;
+            IsBoardOutline = IsLikelyBoardOutline(filePath);
         }
 
         /// <summary>
@@ -69,6 +70,13 @@ public partial class OperationPCBExposure : Operation
         /// </summary>
         [ObservableProperty]
         public partial bool InvertPolarity { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this file is a reference outline/profile used to calculate the physical board bounds.
+        /// Reference files are not included in the generated exposure layers.
+        /// </summary>
+        [ObservableProperty]
+        public partial bool IsBoardOutline { get; set; }
 
         /// <summary>
         /// Gets or sets the scale to apply to each shape drawing size.
@@ -79,6 +87,18 @@ public partial class OperationPCBExposure : Operation
             get;
             set => SetProperty(ref field, Math.Max(0.001, Math.Round(value, 4)));
         } = 1;
+
+        private static bool IsLikelyBoardOutline(string filePath)
+        {
+            if (Path.GetExtension(filePath).Equals(".gko", StringComparison.OrdinalIgnoreCase)) return true;
+
+            var fileName = Path.GetFileNameWithoutExtension(filePath);
+            return fileName.EndsWith("Edge_Cuts", StringComparison.OrdinalIgnoreCase) ||
+                   fileName.EndsWith("Edge-Cuts", StringComparison.OrdinalIgnoreCase) ||
+                   fileName.EndsWith("Edge.Cuts", StringComparison.OrdinalIgnoreCase) ||
+                   fileName.EndsWith("Outline", StringComparison.OrdinalIgnoreCase) ||
+                   fileName.EndsWith("Profile", StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     #endregion
@@ -91,7 +111,8 @@ public partial class OperationPCBExposure : Operation
 
     public override string Description =>
         "Converts a gerber file to a pixel perfect image given your printer LCD/resolution to exposure the copper traces.\n" +
-        "Note: The current opened file will be overwritten with this gerber image, use a dummy or a not needed file.";
+        "Note: When using a placement anchor, provide a board outline/profile file to preserve the board's physical margins.\n" +
+        "The current opened file will be overwritten with this gerber image, use a dummy or a not needed file.";
 
     public override string ConfirmationText =>
         "generate the PCB traces?";
@@ -121,10 +142,14 @@ public partial class OperationPCBExposure : Operation
         }
         else
         {
+            var hasArtworkFile = false;
             foreach (var file in Files)
             {
                 if (!file.Exists) sb.AppendLine($"The file {file} does not exists");
+                if (!file.IsBoardOutline) hasArtworkFile = true;
             }
+
+            if (!hasArtworkFile) sb.AppendLine("Select at least one artwork file in addition to the board outline/profile");
         }
 
         return sb.ToString();
@@ -347,11 +372,14 @@ public partial class OperationPCBExposure : Operation
         return ExcellonDrillFormat.Extensions.AsValueEnumerable().Any(file.IsExtension);
     }
 
+    private bool HasBoardOutline => Files.AsValueEnumerable().Any(file => file.IsBoardOutline);
+
     /// <summary>
-    /// Parses every file in <see cref="Files"/> without rendering it, to find the area the artwork occupies.
+    /// Parses the outline/profile files, or every artwork file when no outline is selected, to find the physical
+    /// board area.
     /// </summary>
     /// <returns>
-    /// The union of each file bounding rectangle in millimeters, as the files declare the coordinates and
+    /// The union of each reference file bounding rectangle in millimeters, as the files declare the coordinates and
     /// therefore possibly negative, or null when none of them plots anything.
     /// </returns>
     public RectangleF? GetBoundsMillimeters()
@@ -360,10 +388,11 @@ public partial class OperationPCBExposure : Operation
         // Measuring cannot be done from the rendered plate because whatever falls outside it is already lost.
         using var measureMat = new Mat(1, 1, DepthType.Cv8U, 1);
         RectangleF? result = null;
+        var useBoardOutline = HasBoardOutline;
 
         foreach (var file in Files)
         {
-            if (!file.Exists) continue;
+            if (!file.Exists || useBoardOutline && !file.IsBoardOutline) continue;
 
             var bounds = IsDrillFile(file)
                 ? ExcellonDrillFormat.ParseAndDraw(file, measureMat, SlicerFile.Ppmm, SizeMidpointRounding).BoundsMm
@@ -414,28 +443,33 @@ public partial class OperationPCBExposure : Operation
     }
 
     /// <summary>
-    /// Renders the complete job at the center of the plate and returns the bounds of the pixels it actually draws.
+    /// Renders the board-bounds reference at the center of the plate and returns the bounds of the pixels it draws.
     /// Gerber coordinate bounds follow path and flash centers, so they do not include aperture radii.
     /// </summary>
     private Rectangle GetRenderedBounds(SizeF centerOffsetMm)
     {
         using var mat = SlicerFile.CreateMat();
+        DrawBoundsReference(mat, centerOffsetMm);
+        if (FlipY) FlipMatVertically(mat);
+        return CvInvoke.BoundingRectangle(mat);
+    }
+
+    private void DrawBoundsReference(Mat mat, SizeF offsetMm)
+    {
+        var useBoardOutline = HasBoardOutline;
 
         // Match execution order so subtractive drill files affect the measured result in the same way.
         foreach (var file in Files)
         {
-            if (IsDrillFile(file)) continue;
-            DrawMat(file, mat, false, centerOffsetMm);
+            if (IsDrillFile(file) || useBoardOutline && !file.IsBoardOutline) continue;
+            DrawMat(file, mat, false, offsetMm);
         }
 
         foreach (var file in Files)
         {
-            if (!IsDrillFile(file)) continue;
-            DrawMat(file, mat, false, centerOffsetMm);
+            if (!IsDrillFile(file) || useBoardOutline && !file.IsBoardOutline) continue;
+            DrawMat(file, mat, false, offsetMm);
         }
-
-        if (FlipY) FlipMatVertically(mat);
-        return CvInvoke.BoundingRectangle(mat);
     }
 
     /// <summary>
@@ -547,8 +581,8 @@ public partial class OperationPCBExposure : Operation
     }
 
     /// <summary>
-    /// Composes every file onto one plate to measure the area a single copy occupies, ie: the grid cell that
-    /// <see cref="FillPlateWithCopies"/> replicates.
+    /// Draws the outline/profile, or all artwork when no outline is selected, to measure the physical board area
+    /// that <see cref="FillPlateWithCopies"/> replicates.
     /// </summary>
     /// <param name="drawOffsetMm">Offset to draw with, defaults to <see cref="GetDrawOffsetMillimeters"/></param>
     /// <param name="canMirror">Mirror the composed plate, to match a target that was drawn mirrored</param>
@@ -558,9 +592,8 @@ public partial class OperationPCBExposure : Operation
         var offset = drawOffsetMm ?? GetDrawOffsetMillimeters();
         using var mat = SlicerFile.CreateMat();
 
-        // Drawn unmirrored on purpose: DrawMat flips the whole Mat, so mirroring once per file would
-        // undo itself on every second one. Apply the flips a single time afterwards instead.
-        foreach (var file in Files) DrawMat(file, mat, false, offset);
+        // Drawn unmirrored on purpose. Apply the plate transforms a single time afterwards.
+        DrawBoundsReference(mat, offset);
         if (FlipY) FlipMatVertically(mat);
         if (canMirror && Mirror) MirrorMat(mat);
 
@@ -641,11 +674,12 @@ public partial class OperationPCBExposure : Operation
     {
         if (Files.Count == 0) return false;
         var layers = new List<Layer>();
-        progress.ItemCount = FileCount;
 
         //var orderFiles = Files.OrderBy(file => file.IsExtension(".drl") || file.IsExtension(".xln")).ToArray();
         var orderFiles = Files.AsValueEnumerable()
+            .Where(file => !file.IsBoardOutline)
             .OrderBy(IsDrillFile).ToArray();
+        progress.ItemCount = (uint)orderFiles.Length;
 
         // Measured once and shared by every file, per file centering would misalign the layers against each other
         var drawOffset = GetDrawOffsetMillimeters();
@@ -677,7 +711,11 @@ public partial class OperationPCBExposure : Operation
 
         // The composed plate is the grid cell for every layer. Taken before mirroring and before the plate is
         // tiled, so each layer replicates the same area no matter how much of it that layer actually covers.
-        Rectangle? fillSource = FillPlate ? CvInvoke.BoundingRectangle(mergeMat) : null;
+        Rectangle? fillSource = FillPlate
+            ? HasBoardOutline
+                ? GetFillSourceRectangle(drawOffset)
+                : CvInvoke.BoundingRectangle(mergeMat)
+            : null;
 
         if (!MergeFiles)
         {

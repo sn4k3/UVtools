@@ -8597,6 +8597,9 @@
         <member name="P:UVtools.Core.Operations.OperationPCBExposure.PCBExposureFile.InvertPolarity">
             <inheritdoc/>
         </member>
+        <member name="P:UVtools.Core.Operations.OperationPCBExposure.PCBExposureFile.IsBoardOutline">
+            <inheritdoc/>
+        </member>
         <member name="P:UVtools.Core.Operations.OperationPCBExposure.PCBExposureFile.SizeScale">
             <summary>
             Gets or sets the scale to apply to each shape drawing size.
@@ -8654,10 +8657,11 @@
         </member>
         <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetBoundsMillimeters">
             <summary>
-            Parses every file in <see cref="P:UVtools.Core.Operations.OperationPCBExposure.Files"/> without rendering it, to find the area the artwork occupies.
+            Parses the outline/profile files, or every artwork file when no outline is selected, to find the physical
+            board area.
             </summary>
             <returns>
-            The union of each file bounding rectangle in millimeters, as the files declare the coordinates and
+            The union of each reference file bounding rectangle in millimeters, as the files declare the coordinates and
             therefore possibly negative, or null when none of them plots anything.
             </returns>
         </member>
@@ -8669,7 +8673,7 @@
         </member>
         <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetRenderedBounds(System.Drawing.SizeF)">
             <summary>
-            Renders the complete job at the center of the plate and returns the bounds of the pixels it actually draws.
+            Renders the board-bounds reference at the center of the plate and returns the bounds of the pixels it draws.
             Gerber coordinate bounds follow path and flash centers, so they do not include aperture radii.
             </summary>
         </member>
@@ -8706,8 +8710,8 @@
         </member>
         <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetFillSourceRectangle(System.Nullable{System.Drawing.SizeF},System.Boolean)">
             <summary>
-            Composes every file onto one plate to measure the area a single copy occupies, ie: the grid cell that
-            <see cref="M:UVtools.Core.Operations.OperationPCBExposure.FillPlateWithCopies(Emgu.CV.Mat,System.Nullable{System.Drawing.Rectangle})"/> replicates.
+            Draws the outline/profile, or all artwork when no outline is selected, to measure the physical board area
+            that <see cref="M:UVtools.Core.Operations.OperationPCBExposure.FillPlateWithCopies(Emgu.CV.Mat,System.Nullable{System.Drawing.Rectangle})"/> replicates.
             </summary>
             <param name="drawOffsetMm">Offset to draw with, defaults to <see cref="M:UVtools.Core.Operations.OperationPCBExposure.GetDrawOffsetMillimeters"/></param>
             <param name="canMirror">Mirror the composed plate, to match a target that was drawn mirrored</param>
@@ -11514,6 +11518,9 @@
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.InvertPolarity">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "InvertPolarity" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.IsBoardOutline">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "IsBoardOutline" generated properties.</summary>
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.MergeFiles">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "MergeFiles" generated properties.</summary>
