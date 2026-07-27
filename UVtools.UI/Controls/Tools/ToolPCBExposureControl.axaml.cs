@@ -125,6 +125,7 @@ public partial class ToolPCBExposureControl : ToolControl
         var ignoredDrillFiles = Operation.Files
             .Where(file => file.Exists
                            && !file.InvertPolarity
+                           && !file.IsBoardOutline
                            && ExcellonDrillFormat.Extensions.AsValueEnumerable().Any(file.IsExtension))
             .Select(file => $"- {file.FileName}")
             .ToArray();
