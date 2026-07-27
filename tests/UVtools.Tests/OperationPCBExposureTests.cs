@@ -233,6 +233,45 @@ public class OperationPCBExposureTests
     }
 
     [Fact]
+    public void InvertColorFollowsEveryCopyWhenThePlateIsFilled()
+    {
+        // Filling re-lays the artwork as a grid centred on the plate, so the board is no longer where it was
+        // first drawn. Inverting the pre-tiling rectangle would light a patch that no longer holds a board.
+        using var slicerFile = PcbFixtures.CreateSlicerFile();
+        using var outline = new TempFile(PcbFixtures.NegativeYBoard, ".gko");
+        using var artwork = new TempFile(CenterPad);
+
+        var operation = CreateOperation(slicerFile, outline.Path, artwork.Path);
+        operation.FillPlate = true;
+        operation.FillSpacingX = 5;
+        operation.FillSpacingY = 5;
+
+        using var plain = operation.GetMat(operation.Files[1]);
+        var artworkBounds = CvInvoke.BoundingRectangle(plain);
+
+        operation.InvertColor = true;
+        operation.InvertArea = OperationPCBExposure.InvertAreaType.BoardOutline;
+        using var inverted = operation.GetMat(operation.Files[1]);
+        var litBounds = CvInvoke.BoundingRectangle(inverted);
+
+        // Lighting every copy covers whole boards, so it reaches past the artwork on all sides: the boards
+        // extend to their cell edges while the artwork sits inside them. Lighting the stale pre-tiling
+        // rectangle cannot reach past the outermost copies, since it is a single board near the plate centre.
+        Assert.True(litBounds.X < artworkBounds.X && litBounds.Y < artworkBounds.Y,
+            $"expected the lit area {litBounds} to extend past the artwork {artworkBounds} on every side");
+        Assert.True(litBounds.Right > artworkBounds.Right && litBounds.Bottom > artworkBounds.Bottom,
+            $"expected the lit area {litBounds} to extend past the artwork {artworkBounds} on every side");
+
+        // And it is many boards' worth of light, not one
+        var lit = CvInvoke.CountNonZero(inverted);
+        Assert.True(lit > 400000, $"expected every copy to be lit, got {lit}px");
+
+        // ...while the plate outside the grid stays dark
+        using var corner = inverted.Roi(new Rectangle(0, 0, 8, 8));
+        Assert.Equal(0, CvInvoke.CountNonZero(corner));
+    }
+
+    [Fact]
     public void InvertColorDefaultsToTheWholePlate()
     {
         using var slicerFile = PcbFixtures.CreateSlicerFile();

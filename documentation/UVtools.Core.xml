@@ -8716,6 +8716,18 @@
             fits.</para>
             </remarks>
         </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetFillGrid(System.Drawing.Size,System.Drawing.Rectangle)">
+            <summary>
+            Lays out the grid of copies that fits the plate for a cell of the given size.
+            </summary>
+            <param name="plate">Plate size in pixels</param>
+            <param name="cell">Area a single copy occupies</param>
+            <returns>Where each copy lands, empty when no more than one fits and the artwork stays put</returns>
+            <remarks>
+            Shared by the tiling and by anything that needs to know where the copies ended up, since the grid is
+            centered on the plate and the original cell position is not one of them.
+            </remarks>
+        </member>
         <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetFillSourceRectangle(System.Nullable{System.Drawing.SizeF},System.Boolean)">
             <summary>
             Draws the outline/profile, or all artwork when no outline is selected, to measure the physical board area
@@ -8754,7 +8766,7 @@
             <param name="drawOffsetMm">Offset to draw with, defaults to <see cref="M:UVtools.Core.Operations.OperationPCBExposure.GetDrawOffsetMillimeters"/></param>
             <param name="fillSource">Grid cell to tile, defaults to one measured across every file</param>
         </member>
-        <member name="M:UVtools.Core.Operations.OperationPCBExposure.InvertColors(Emgu.CV.Mat,System.Nullable{System.Drawing.Rectangle})">
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.InvertColors(Emgu.CV.Mat,System.Drawing.Rectangle[])">
             <summary>
             Inverts the plate so the artwork is dark against a lit background.
             </summary>
@@ -8769,16 +8781,17 @@
             measured from it would span everything and no copy would fit.</para>
             </remarks>
         </member>
-        <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetInvertArea(System.Drawing.SizeF,System.Boolean)">
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetInvertAreas(System.Drawing.Size,System.Nullable{System.Drawing.Rectangle})">
             <summary>
-            Gets the region <see cref="P:UVtools.Core.Operations.OperationPCBExposure.InvertColor"/> should light, in plate pixels.
+            Gets the regions <see cref="P:UVtools.Core.Operations.OperationPCBExposure.InvertColor"/> should light, in plate pixels.
             </summary>
-            <param name="drawOffsetMm">Offset the plate was drawn with</param>
-            <param name="canMirror">Whether the target plate has been mirrored</param>
-            <returns>The board area, or null to light the whole plate</returns>
+            <param name="plate">Plate size in pixels</param>
+            <param name="boardCell">Area a single board occupies, as returned by <see cref="M:UVtools.Core.Operations.OperationPCBExposure.GetFillSourceRectangle(System.Nullable{System.Drawing.SizeF},System.Boolean)"/></param>
+            <returns>One region per board, or null to light the whole plate</returns>
             <remarks>
-            Measured across every file rather than the one being drawn, so each layer of a multi file job is
-            inverted over the same area and they still line up.
+            With the plate filled the board sits in every grid cell rather than where it was first drawn, so each
+            copy gets its own region. Using the pre-tiling rectangle would light a patch of plate that no longer
+            holds a board.
             </remarks>
         </member>
         <member name="T:UVtools.Core.Operations.OperationPhasedExposure">

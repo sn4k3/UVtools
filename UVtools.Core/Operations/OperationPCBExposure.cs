@@ -568,39 +568,63 @@ public partial class OperationPCBExposure : Operation
     public int FillPlateWithCopies(Mat mat, Rectangle? source = null)
     {
         var cell = source ?? CvInvoke.BoundingRectangle(mat);
-        if (cell.Width <= 0 || cell.Height <= 0) return 0;
+        var grid = GetFillGrid(mat.Size, cell);
+        if (grid.Length == 0) return 0;
+
+        using var copy = mat.Roi(cell).Clone();
+
+        // The original is not on the grid, so lay the whole thing out from scratch
+        mat.SetTo(EmguCvExtensions.BlackColor);
+
+        foreach (var target in grid)
+        {
+            using var destination = mat.Roi(target);
+            copy.CopyTo(destination);
+        }
+
+        return grid.Length - 1;
+    }
+
+    /// <summary>
+    /// Lays out the grid of copies that fits the plate for a cell of the given size.
+    /// </summary>
+    /// <param name="plate">Plate size in pixels</param>
+    /// <param name="cell">Area a single copy occupies</param>
+    /// <returns>Where each copy lands, empty when no more than one fits and the artwork stays put</returns>
+    /// <remarks>
+    /// Shared by the tiling and by anything that needs to know where the copies ended up, since the grid is
+    /// centered on the plate and the original cell position is not one of them.
+    /// </remarks>
+    private Rectangle[] GetFillGrid(Size plate, Rectangle cell)
+    {
+        if (cell.Width <= 0 || cell.Height <= 0) return [];
 
         var gapX = (int)Math.Round((double)FillSpacingX * SlicerFile.Ppmm.Width);
         var gapY = (int)Math.Round((double)FillSpacingY * SlicerFile.Ppmm.Height);
 
         // n copies span n * size + (n - 1) * gap, so the largest n that still fits is (plate + gap) / (size + gap)
-        var columns = (mat.Width + gapX) / (cell.Width + gapX);
-        var rows = (mat.Height + gapY) / (cell.Height + gapY);
-        if (columns <= 1 && rows <= 1) return 0;
-
-        using var copy = mat.Roi(cell).Clone();
+        var columns = (plate.Width + gapX) / (cell.Width + gapX);
+        var rows = (plate.Height + gapY) / (cell.Height + gapY);
+        if (columns <= 1 && rows <= 1) return [];
 
         // Center the grid rather than growing outwards from wherever the original sits, otherwise the
         // margins left over on the anchored side go to waste and fewer copies fit than the plate allows
-        var startX = (mat.Width - (columns * cell.Width + (columns - 1) * gapX)) / 2;
-        var startY = (mat.Height - (rows * cell.Height + (rows - 1) * gapY)) / 2;
+        var startX = (plate.Width - (columns * cell.Width + (columns - 1) * gapX)) / 2;
+        var startY = (plate.Height - (rows * cell.Height + (rows - 1) * gapY)) / 2;
 
-        // The original is not on the grid, so lay the whole thing out from scratch
-        mat.SetTo(EmguCvExtensions.BlackColor);
-
+        var grid = new Rectangle[rows * columns];
         for (var row = 0; row < rows; row++)
         {
             for (var column = 0; column < columns; column++)
             {
-                using var destination = mat.Roi(new Rectangle(
+                grid[row * columns + column] = new Rectangle(
                     startX + column * (cell.Width + gapX),
                     startY + row * (cell.Height + gapY),
-                    cell.Width, cell.Height));
-                copy.CopyTo(destination);
+                    cell.Width, cell.Height);
             }
         }
 
-        return rows * columns - 1;
+        return grid;
     }
 
     /// <summary>
@@ -672,18 +696,20 @@ public partial class OperationPCBExposure : Operation
         DrawMat(file, mat, canMirror, offset);
         if (FlipY) FlipMatVertically(mat);
 
-        if (FillPlate)
-        {
-            // Measured across every file, not just this one: a drill layer covers a smaller area than the
-            // copper it belongs to, and sizing each layer grid on its own content pulls the copies out of line
-            FillPlateWithCopies(mat, fillSource ?? GetFillSourceRectangle(offset, canMirror));
-        }
+        // Measured across every file, not just this one: a drill layer covers a smaller area than the
+        // copper it belongs to, and sizing each layer grid on its own content pulls the copies out of line.
+        // Resolved once here, since both the tiling and the board sized inversion need it.
+        var boardCell = FillPlate || InvertColor && InvertArea == InvertAreaType.BoardOutline
+            ? fillSource ?? GetFillSourceRectangle(offset, canMirror)
+            : null;
+
+        if (FillPlate) FillPlateWithCopies(mat, boardCell);
 
         // Measured before inverting: afterwards the lit pixels are the background, not the artwork
         contentBounds = CvInvoke.BoundingRectangle(mat);
 
         // Last, so everything above still sees the drawn area rather than a lit plate
-        if (InvertColor) InvertColors(mat, GetInvertArea(offset, canMirror));
+        if (InvertColor) InvertColors(mat, GetInvertAreas(mat.Size, boardCell));
 
         return mat;
     }
@@ -721,37 +747,44 @@ public partial class OperationPCBExposure : Operation
     /// <para>Runs after the plate is tiled, not before: inverting first lights the area, so the grid cell
     /// measured from it would span everything and no copy would fit.</para>
     /// </remarks>
-    private static void InvertColors(Mat mat, Rectangle? area = null)
+    private static void InvertColors(Mat mat, Rectangle[]? areas = null)
     {
         // Nothing was drawn, so there is nothing to invert. Lighting the plate here would turn an empty
         // result into a full power exposure of the entire screen.
         if (!CvInvoke.HasNonZero(mat)) return;
 
-        if (area is not { Width: > 0, Height: > 0 })
+        if (areas is null || areas.Length == 0)
         {
             CvInvoke.BitwiseNot(mat, mat);
             return;
         }
 
-        using var roi = mat.Roi(area.Value);
-        CvInvoke.BitwiseNot(roi, roi);
+        foreach (var area in areas)
+        {
+            if (area is not { Width: > 0, Height: > 0 }) continue;
+            using var roi = mat.Roi(area);
+            CvInvoke.BitwiseNot(roi, roi);
+        }
     }
 
     /// <summary>
-    /// Gets the region <see cref="InvertColor"/> should light, in plate pixels.
+    /// Gets the regions <see cref="InvertColor"/> should light, in plate pixels.
     /// </summary>
-    /// <param name="drawOffsetMm">Offset the plate was drawn with</param>
-    /// <param name="canMirror">Whether the target plate has been mirrored</param>
-    /// <returns>The board area, or null to light the whole plate</returns>
+    /// <param name="plate">Plate size in pixels</param>
+    /// <param name="boardCell">Area a single board occupies, as returned by <see cref="GetFillSourceRectangle"/></param>
+    /// <returns>One region per board, or null to light the whole plate</returns>
     /// <remarks>
-    /// Measured across every file rather than the one being drawn, so each layer of a multi file job is
-    /// inverted over the same area and they still line up.
+    /// With the plate filled the board sits in every grid cell rather than where it was first drawn, so each
+    /// copy gets its own region. Using the pre-tiling rectangle would light a patch of plate that no longer
+    /// holds a board.
     /// </remarks>
-    private Rectangle? GetInvertArea(SizeF drawOffsetMm, bool canMirror)
+    private Rectangle[]? GetInvertAreas(Size plate, Rectangle? boardCell)
     {
-        return InvertArea == InvertAreaType.BoardOutline
-            ? GetFillSourceRectangle(drawOffsetMm, canMirror)
-            : null;
+        if (InvertArea != InvertAreaType.BoardOutline || boardCell is not { } cell) return null;
+        if (!FillPlate) return [cell];
+
+        var grid = GetFillGrid(plate, cell);
+        return grid.Length > 0 ? grid : [cell];
     }
 
     protected override bool ExecuteInternally(OperationProgress progress)
@@ -827,8 +860,15 @@ public partial class OperationPCBExposure : Operation
         var contentBounds = CvInvoke.BoundingRectangle(mergeMat);
 
         // Last of all: inverting earlier would light the area, and every measurement above would then be
-        // reading the background instead of the artwork
-        if (InvertColor) InvertColors(mergeMat, GetInvertArea(drawOffset, true));
+        // reading the background instead of the artwork. The grid is centered on the plate, so mirroring
+        // maps it onto itself and the cells are the same either way.
+        if (InvertColor)
+        {
+            var boardCell = InvertArea == InvertAreaType.BoardOutline
+                ? fillSource ?? GetFillSourceRectangle(drawOffset, true)
+                : null;
+            InvertColors(mergeMat, GetInvertAreas(mergeMat.Size, boardCell));
+        }
 
         if (MergeFiles) layers.Add(new Layer(mergeMat, SlicerFile));
 
