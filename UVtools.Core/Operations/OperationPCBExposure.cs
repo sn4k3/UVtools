@@ -168,7 +168,7 @@ public partial class OperationPCBExposure : Operation
                 sb.AppendLine("Select at least one artwork file in addition to the board outline/profile");
             else if (!hasOutline && Anchor is not (Anchor.None or Anchor.MiddleCenter))
                 sb.AppendLine($"""
-                               The anchor {Anchor} requires at least one board outline/profile file to preserve the physical margins, please add the board outline/profile to ensure correct margins from sides.
+                               The anchor {Anchor} requires at least one board outline/profile file to preserve the physical margins, please add the board outline/profile (Edge_Cuts or .gko) to ensure correct margins from sides.
                                The MiddleCenter or original from board requires no outline/profile file.
                                """);
         }
