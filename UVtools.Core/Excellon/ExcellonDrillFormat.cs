@@ -648,6 +648,45 @@ public class ExcellonDrillFormat
     public Size SizeMmToPx(float sizeMmX, float sizeMmY)
         => new ((int)Math.Max(1, Math.Round(sizeMmX * XYppmm.Width * SizeScale, (MidpointRounding)SizeMidpointRounding)),
             (int)Math.Max(1, Math.Round(sizeMmY * XYppmm.Height * SizeScale, (MidpointRounding)SizeMidpointRounding)));
+
+    /// <summary>
+    /// Gets the bounding rectangle of all the parsed <see cref="Drills"/> and <see cref="Slots"/>, in millimeters
+    /// and without the drawing offset applied, ie: the coordinates as the file declares them.
+    /// Includes the tool radius.
+    /// <para>Returns null when nothing was parsed.</para>
+    /// </summary>
+    public RectangleF? BoundsMm
+    {
+        get
+        {
+            if (Drills.Count == 0 && Slots.Count == 0) return null;
+
+            var minX = float.MaxValue;
+            var minY = float.MaxValue;
+            var maxX = float.MinValue;
+            var maxY = float.MinValue;
+
+            void Include(PointF position, float diameter)
+            {
+                var at = GetMillimeters(position);
+                var radius = GetMillimeters(diameter / 2);
+
+                if (at.X - radius < minX) minX = at.X - radius;
+                if (at.X + radius > maxX) maxX = at.X + radius;
+                if (at.Y - radius < minY) minY = at.Y - radius;
+                if (at.Y + radius > maxY) maxY = at.Y + radius;
+            }
+
+            foreach (var drill in Drills) Include(drill.Position, drill.Diameter);
+            foreach (var slot in Slots)
+            {
+                Include(slot.Start, slot.Diameter);
+                Include(slot.End, slot.Diameter);
+            }
+
+            return new RectangleF(minX, minY, maxX - minX, maxY - minY);
+        }
+    }
     #endregion
 
     #region Static methods

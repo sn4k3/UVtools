@@ -6,9 +6,9 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Emgu.CV.CvEnum;
 using System;
 using System.ComponentModel;
+using Emgu.CV.CvEnum;
 
 namespace UVtools.Core;
 
@@ -36,10 +36,8 @@ public enum IndexStartNumber : byte
 /// </summary>
 public enum LayerGroup : byte
 {
-    [Description("Bottom layers")]
-    Bottom,
-    [Description("Normal layers")]
-    Normal,
+    [Description("Bottom layers")] Bottom,
+    [Description("Normal layers")] Normal
 }
 
 public enum LayerRangeSelection : byte
@@ -61,7 +59,7 @@ public enum FlipDirection : sbyte
     None = sbyte.MinValue,
     Horizontally = FlipType.Horizontal,
     Vertically = FlipType.Vertical,
-    Both = FlipType.Both,
+    Both = FlipType.Both
 }
 
 /// <summary>
@@ -69,25 +67,30 @@ public enum FlipDirection : sbyte
 /// </summary>
 public enum RotateDirection : sbyte
 {
-    [Description("None")]
-    None = -1,
+    [Description("None")] None = -1,
+
     /// <summary>Rotate 90 degrees clockwise (0)</summary>
-    [Description("Rotate 90º CW")]
-    Rotate90Clockwise = RotateFlags.Rotate90Clockwise,
+    [Description("Rotate 90º CW")] Rotate90Clockwise = RotateFlags.Rotate90Clockwise,
+
     /// <summary>Rotate 180 degrees clockwise (1)</summary>
-    [Description("Rotate 180º")]
-    Rotate180 = RotateFlags.Rotate180,
+    [Description("Rotate 180º")] Rotate180 = RotateFlags.Rotate180,
+
     /// <summary>Rotate 270 degrees clockwise (2)</summary>
-    [Description("Rotate 90º CCW")]
-    Rotate90CounterClockwise = RotateFlags.Rotate90CounterClockwise,
+    [Description("Rotate 90º CCW")] Rotate90CounterClockwise = RotateFlags.Rotate90CounterClockwise
 }
 
 public enum Anchor : byte
 {
-    TopLeft, TopCenter, TopRight,
-    MiddleLeft, MiddleCenter, MiddleRight,
-    BottomLeft, BottomCenter, BottomRight,
-    None
+    [Description("↖ Top Left")] TopLeft,
+    [Description("↑ Top Center")] TopCenter,
+    [Description("↗ Top Right")] TopRight,
+    [Description("← Middle Left")] MiddleLeft,
+    [Description("• Middle Center")] MiddleCenter,
+    [Description("→ Middle Right")] MiddleRight,
+    [Description("↙ Bottom Left")] BottomLeft,
+    [Description("↓ Bottom Center")] BottomCenter,
+    [Description("↘ Bottom Right")] BottomRight,
+    [Description("None")] None
 }
 
 public enum LightOffDelaySetMode : byte
@@ -101,8 +104,7 @@ public enum LightOffDelaySetMode : byte
     [Description("Set the light-off to zero")]
     SetToZero,
 
-    [Description("Disabled")]
-    NoAction
+    [Description("Disabled")] NoAction
 }
 
 public enum SpeedUnit : byte
@@ -111,14 +113,16 @@ public enum SpeedUnit : byte
     /// mm/s
     /// </summary>
     MillimetersPerSecond,
+
     /// <summary>
     /// mm/m
     /// </summary>
     MillimetersPerMinute,
+
     /// <summary>
     /// cm/m
     /// </summary>
-    CentimetersPerMinute,
+    CentimetersPerMinute
 }
 
 public enum TimeUnits : byte
@@ -127,6 +131,7 @@ public enum TimeUnits : byte
     /// ms
     /// </summary>
     Milliseconds,
+
     /// <summary>
     /// s
     /// </summary>
@@ -135,26 +140,30 @@ public enum TimeUnits : byte
 
 public enum MidpointRoundingType
 {
-    [Description("To even: The strategy of rounding to the nearest number, and when a number is halfway between two others, it's rounded toward the nearest even number.")]
+    [Description(
+        "To even: The strategy of rounding to the nearest number, and when a number is halfway between two others, it's rounded toward the nearest even number.")]
     ToEven = MidpointRounding.ToEven,
 
-    [Description("Away from zero: The strategy of rounding to the nearest number, and when a number is halfway between two others, it's rounded toward the nearest number that's away from zero.")]
+    [Description(
+        "Away from zero: The strategy of rounding to the nearest number, and when a number is halfway between two others, it's rounded toward the nearest number that's away from zero.")]
     AwayFromZero = MidpointRounding.AwayFromZero,
 
-    [Description("To zero: The strategy of directed rounding toward zero, with the result closest to and no greater in magnitude than the infinitely precise result.")]
+    [Description(
+        "To zero: The strategy of directed rounding toward zero, with the result closest to and no greater in magnitude than the infinitely precise result.")]
     ToZero = MidpointRounding.ToZero,
 
-    [Description("To negative inifity: The strategy of downwards-directed rounding, with the result closest to and no greater than the infinitely precise result.")]
+    [Description(
+        "To negative inifity: The strategy of downwards-directed rounding, with the result closest to and no greater than the infinitely precise result.")]
     ToNegativeInfinity = MidpointRounding.ToNegativeInfinity,
 
-    [Description("To positive inifity: The strategy of upwards-directed rounding, with the result closest to and no less than the infinitely precise result.")]
+    [Description(
+        "To positive inifity: The strategy of upwards-directed rounding, with the result closest to and no less than the infinitely precise result.")]
     ToPositiveInfinity = MidpointRounding.ToPositiveInfinity
 }
 
 public enum RemoveSourceFileAction : byte
 {
-    [Description("Keep the source file")]
-    No,
+    [Description("Keep the source file")] No,
 
     [Description("Remove the source file")]
     Yes,
@@ -213,6 +222,7 @@ public enum RamLimitAction : byte
 {
     [Description("Pause the current operation")]
     Pause,
+
     [Description("Cancel the current operation")]
-    Cancel,
+    Cancel
 }

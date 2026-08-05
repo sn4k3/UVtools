@@ -352,6 +352,14 @@
             Positions and vectors aren't affected by this.
             </summary>
         </member>
+        <member name="P:UVtools.Core.Excellon.ExcellonDrillFormat.BoundsMm">
+            <summary>
+            Gets the bounding rectangle of all the parsed <see cref="P:UVtools.Core.Excellon.ExcellonDrillFormat.Drills"/> and <see cref="P:UVtools.Core.Excellon.ExcellonDrillFormat.Slots"/>, in millimeters
+            and without the drawing offset applied, ie: the coordinates as the file declares them.
+            Includes the tool radius.
+            <para>Returns null when nothing was parsed.</para>
+            </summary>
+        </member>
         <member name="T:UVtools.Core.Exceptions.MessageException">
             <summary>
             Generic exception to show only the message instead of the full stack-trace
@@ -4938,13 +4946,13 @@
         <member name="M:UVtools.Core.Gerber.GerberFormat.LineXParse">
             <remarks>
             Pattern:<br/>
-            <code>X-?([0-9]+)?</code><br/>
+            <code>X(-?[0-9]+)?</code><br/>
             Explanation:<br/>
             <code>
             ○ Match 'X'.<br/>
-            ○ Match '-' greedily, optionally.<br/>
             ○ Optional (greedy).<br/>
                 ○ 1st capture group.<br/>
+                    ○ Match '-' atomically, optionally.<br/>
                     ○ Match a character in the set [0-9] atomically at least once.<br/>
             </code>
             </remarks>
@@ -4952,13 +4960,13 @@
         <member name="M:UVtools.Core.Gerber.GerberFormat.LineYParse">
             <remarks>
             Pattern:<br/>
-            <code>Y-?([0-9]+)?</code><br/>
+            <code>Y(-?[0-9]+)?</code><br/>
             Explanation:<br/>
             <code>
             ○ Match 'Y'.<br/>
-            ○ Match '-' greedily, optionally.<br/>
             ○ Optional (greedy).<br/>
                 ○ 1st capture group.<br/>
+                    ○ Match '-' atomically, optionally.<br/>
                     ○ Match a character in the set [0-9] atomically at least once.<br/>
             </code>
             </remarks>
@@ -5014,6 +5022,21 @@
             Gets or sets the scale to apply to each shape drawing size.
             Positions and vectors aren't affected by this.
             </summary>
+        </member>
+        <member name="P:UVtools.Core.Gerber.GerberFormat.BoundsMm">
+            <summary>
+            Gets the bounding rectangle of everything plotted so far, in millimeters and without
+            <see cref="P:UVtools.Core.Gerber.GerberFormat.OffsetX"/> and <see cref="P:UVtools.Core.Gerber.GerberFormat.OffsetY"/> applied, ie: the coordinates as the file declares them.
+            <para>Measured from the path centerlines: the aperture width and the bulge of an arc are not accounted for.</para>
+            <para>Returns null when nothing was plotted. A single flash yields a zero sized rectangle, not null.</para>
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Gerber.GerberFormat.PlotBounds(System.Double,System.Double)">
+            <summary>
+            Expands <see cref="P:UVtools.Core.Gerber.GerberFormat.BoundsMm"/> to include the given coordinate.
+            </summary>
+            <param name="atXmm">X coordinate in millimeters, without the offset applied</param>
+            <param name="atYmm">Y coordinate in millimeters, without the offset applied</param>
         </member>
         <member name="P:UVtools.Core.Gerber.Macro.Name">
             <summary>
@@ -8574,10 +8597,18 @@
         <member name="P:UVtools.Core.Operations.OperationPCBExposure.PCBExposureFile.InvertPolarity">
             <inheritdoc/>
         </member>
+        <member name="P:UVtools.Core.Operations.OperationPCBExposure.PCBExposureFile.IsBoardOutline">
+            <inheritdoc/>
+        </member>
         <member name="P:UVtools.Core.Operations.OperationPCBExposure.PCBExposureFile.SizeScale">
             <summary>
             Gets or sets the scale to apply to each shape drawing size.
             Positions and vectors aren't affected by this.
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.Operations.OperationPCBExposure.InvertAreaType">
+            <summary>
+            The area that <see cref="P:UVtools.Core.Operations.OperationPCBExposure.InvertColor"/> covers.
             </summary>
         </member>
         <member name="P:UVtools.Core.Operations.OperationPCBExposure.Files">
@@ -8607,8 +8638,161 @@
         <member name="P:UVtools.Core.Operations.OperationPCBExposure.InvertColor">
             <inheritdoc/>
         </member>
+        <member name="P:UVtools.Core.Operations.OperationPCBExposure.InvertArea">
+            <inheritdoc/>
+        </member>
         <member name="P:UVtools.Core.Operations.OperationPCBExposure.EnableAntiAliasing">
             <inheritdoc/>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationPCBExposure.FlipVertically">
+            <inheritdoc/>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationPCBExposure.Anchor">
+            <inheritdoc/>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationPCBExposure.FillPlate">
+            <inheritdoc/>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationPCBExposure.FillSpacingX">
+            <summary>
+            Gets or sets the horizontal gap in millimeters left between each copy when <see cref="P:UVtools.Core.Operations.OperationPCBExposure.FillPlate"/> is enabled
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationPCBExposure.FillSpacingY">
+            <summary>
+            Gets or sets the vertical gap in millimeters left between each copy when <see cref="P:UVtools.Core.Operations.OperationPCBExposure.FillPlate"/> is enabled
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetBoundsMillimeters">
+            <summary>
+            Parses the outline/profile files, or every artwork file when no outline is selected, to find the physical
+            board area.
+            </summary>
+            <returns>
+            The union of each reference file bounding rectangle in millimeters, as the files declare the coordinates and
+            therefore possibly negative, or null when none of them plots anything.
+            </returns>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetAnchorOffsetMillimeters(System.Drawing.RectangleF)">
+            <summary>
+            Gets the offset in millimeters that places the given area at <see cref="P:UVtools.Core.Operations.OperationPCBExposure.Anchor"/>.
+            </summary>
+            <param name="boundsMm">Area to place, in millimeters</param>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetRenderedBounds(System.Drawing.SizeF)">
+            <summary>
+            Renders the board-bounds reference at the center of the plate and returns the bounds of the pixels it draws.
+            Gerber coordinate bounds follow path and flash centers, so they do not include aperture radii.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetDrawOffsetMillimeters">
+            <summary>
+            Gets the offset in millimeters to draw with: the manual <see cref="P:UVtools.Core.Operations.OperationPCBExposure.OffsetX"/> and <see cref="P:UVtools.Core.Operations.OperationPCBExposure.OffsetY"/>,
+            plus the placement correction selected by <see cref="P:UVtools.Core.Operations.OperationPCBExposure.Anchor"/>.
+            </summary>
+            <remarks>
+            Every file must be drawn with the same offset, otherwise the layers of a multi file job no longer line up.
+            Compute it once and pass it to <see cref="M:UVtools.Core.Operations.OperationPCBExposure.DrawMat(UVtools.Core.Operations.OperationPCBExposure.PCBExposureFile,Emgu.CV.Mat,System.Boolean,System.Nullable{System.Drawing.SizeF})"/> / <see cref="M:UVtools.Core.Operations.OperationPCBExposure.GetMat(UVtools.Core.Operations.OperationPCBExposure.PCBExposureFile,System.Boolean,System.Nullable{System.Drawing.SizeF},System.Nullable{System.Drawing.Rectangle})"/> rather than letting each call re-measure.
+            </remarks>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.FillPlateWithCopies(Emgu.CV.Mat,System.Nullable{System.Drawing.Rectangle})">
+            <summary>
+            Repeats whatever is already drawn on <paramref name="mat"/> to fill the rest of the plate, leaving
+            <see cref="P:UVtools.Core.Operations.OperationPCBExposure.FillSpacingX"/> and <see cref="P:UVtools.Core.Operations.OperationPCBExposure.FillSpacingY"/> millimeters of gap between each copy.
+            </summary>
+            <param name="mat">Plate sized <see cref="T:Emgu.CV.Mat"/> holding the drawn artwork</param>
+            <param name="source">
+            The grid cell to replicate, in pixels. Defaults to the bounds of whatever is drawn on <paramref name="mat"/>.
+            <para>When several layers are tiled they must all be given the same cell, otherwise each one is measured on its
+            own content, the cells differ in size and the copies of, say, a copper layer and a drill layer drift apart.</para>
+            </param>
+            <returns>Number of copies added, the original is not counted</returns>
+            <remarks>
+            <para>The cell is taken from drawn pixels rather than computed from the file coordinates, so it stays correct
+            regardless of the offset and inversion already applied. It must however be measured in the same orientation as
+            <paramref name="mat"/>, so tile before mirroring, or measure from an equally mirrored plate.</para>
+            <para>The resulting grid is centered on the plate, which repositions the artwork even when
+            <see cref="P:UVtools.Core.Operations.OperationPCBExposure.Anchor"/> is <see cref="F:UVtools.Core.Anchor.None"/>. Nothing is moved when a single copy is all that
+            fits.</para>
+            </remarks>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetFillGrid(System.Drawing.Size,System.Drawing.Rectangle)">
+            <summary>
+            Lays out the grid of copies that fits the plate for a cell of the given size.
+            </summary>
+            <param name="plate">Plate size in pixels</param>
+            <param name="cell">Area a single copy occupies</param>
+            <returns>Where each copy lands, empty when no more than one fits and the artwork stays put</returns>
+            <remarks>
+            Shared by the tiling and by anything that needs to know where the copies ended up, since the grid is
+            centered on the plate and the original cell position is not one of them.
+            </remarks>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetFillSourceRectangle(System.Nullable{System.Drawing.SizeF},System.Boolean)">
+            <summary>
+            Draws the outline/profile, or all artwork when no outline is selected, to measure the physical board area
+            that <see cref="M:UVtools.Core.Operations.OperationPCBExposure.FillPlateWithCopies(Emgu.CV.Mat,System.Nullable{System.Drawing.Rectangle})"/> replicates.
+            </summary>
+            <param name="drawOffsetMm">Offset to draw with, defaults to <see cref="M:UVtools.Core.Operations.OperationPCBExposure.GetDrawOffsetMillimeters"/></param>
+            <param name="canMirror">Mirror the composed plate, to match a target that was drawn mirrored</param>
+            <returns>The cell rectangle in pixels, or null when nothing is drawn</returns>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.FlipMatVertically(Emgu.CV.Mat)">
+            <summary>
+            Flips <paramref name="mat"/> along the vertical axis to undo the top/bottom mirroring the renderer applies.
+            </summary>
+            <remarks>
+            Must run once per plate, never per file: this flips the whole <see cref="T:Emgu.CV.Mat"/>, so calling it while composing
+            several files into one would undo itself on every second file.
+            </remarks>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.MirrorMat(Emgu.CV.Mat)">
+            <summary>
+            Flips <paramref name="mat"/> along the printer display mirror axis, defaulting to horizontally.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetMat(UVtools.Core.Operations.OperationPCBExposure.PCBExposureFile,System.Drawing.Rectangle@,System.Boolean,System.Nullable{System.Drawing.SizeF},System.Nullable{System.Drawing.Rectangle})">
+            <summary>
+            Draws a single file onto a plate.
+            </summary>
+            <param name="file">File to draw</param>
+            <param name="contentBounds">
+            Area the artwork occupies, measured before <see cref="P:UVtools.Core.Operations.OperationPCBExposure.InvertColor"/> is applied.
+            <para>Inverting lights the background, so the drawn pixels of the finished plate are no longer the
+            artwork. Anything that needs to know where the content is, such as cropping a preview or a thumbnail,
+            must use this rather than measure the returned <see cref="T:Emgu.CV.Mat"/>.</para>
+            </param>
+            <param name="canMirror">Apply the display mirror</param>
+            <param name="drawOffsetMm">Offset to draw with, defaults to <see cref="M:UVtools.Core.Operations.OperationPCBExposure.GetDrawOffsetMillimeters"/></param>
+            <param name="fillSource">Grid cell to tile, defaults to one measured across every file</param>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.InvertColors(Emgu.CV.Mat,System.Drawing.Rectangle[])">
+            <summary>
+            Inverts the plate so the artwork is dark against a lit background.
+            </summary>
+            <param name="mat">Plate to invert</param>
+            <param name="area">Region to light, or null for the whole plate</param>
+            <remarks>
+            <para>Must run once per plate, never per file. Composing several files applies it once each, and every
+            pass flips the area again: an even number of files cancels out, and whatever was drawn after the first
+            pass is the only thing left inverted. That reads as "only the drill holes inverted", since drill files
+            are drawn last.</para>
+            <para>Runs after the plate is tiled, not before: inverting first lights the area, so the grid cell
+            measured from it would span everything and no copy would fit.</para>
+            </remarks>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationPCBExposure.GetInvertAreas(System.Drawing.Size,System.Nullable{System.Drawing.Rectangle})">
+            <summary>
+            Gets the regions <see cref="P:UVtools.Core.Operations.OperationPCBExposure.InvertColor"/> should light, in plate pixels.
+            </summary>
+            <param name="plate">Plate size in pixels</param>
+            <param name="boardCell">Area a single board occupies, as returned by <see cref="M:UVtools.Core.Operations.OperationPCBExposure.GetFillSourceRectangle(System.Nullable{System.Drawing.SizeF},System.Boolean)"/></param>
+            <returns>One region per board, or null to light the whole plate</returns>
+            <remarks>
+            With the plate filled the board sits in every grid cell rather than where it was first drawn, so each
+            copy gets its own region. Using the pre-tiling rectangle would light a patch of plate that no longer
+            holds a board.
+            </remarks>
         </member>
         <member name="T:UVtools.Core.Operations.OperationPhasedExposure">
             <inheritdoc/>
@@ -11398,6 +11582,9 @@
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.InvertPolarity">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "InvertPolarity" generated properties.</summary>
         </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.IsBoardOutline">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "IsBoardOutline" generated properties.</summary>
+        </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.MergeFiles">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "MergeFiles" generated properties.</summary>
         </member>
@@ -11409,6 +11596,15 @@
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.OffsetY">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "OffsetY" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.InvertArea">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "InvertArea" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.FlipVertically">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "FlipVertically" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.FillPlate">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "FillPlate" generated properties.</summary>
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.BottomIterations">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "BottomIterations" generated properties.</summary>

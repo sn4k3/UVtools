@@ -1,15 +1,16 @@
-using Avalonia.Input;
-using Avalonia.Platform.Storage;
-using Avalonia.Threading;
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using Avalonia.Input;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using EmguExtensions;
 using EmguExtensions.Avalonia;
+using SukiUI.MessageBox;
 using UVtools.Core.Excellon;
-using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 using UVtools.UI.Extensions;
 using UVtools.UI.Windows;
@@ -20,14 +21,33 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolPCBExposureControl : ToolControl
 {
-
-    public OperationPCBExposure Operation => (BaseOperation as OperationPCBExposure)!;
-
     private readonly Timer _timer = null!;
+    private bool _cropPreview = true;
 
     private Bitmap? _previewImage;
     private OperationPCBExposure.PCBExposureFile? _selectedFile;
-    private bool _cropPreview  = true;
+
+    public ToolPCBExposureControl()
+    {
+        BaseOperation = new OperationPCBExposure(SlicerFile!);
+        if (!ValidateSpawn()) return;
+        InitializeComponent();
+
+        AddHandler(DragDrop.DropEvent, (sender, args) =>
+        {
+            var files = args.DataTransfer.TryGetFiles();
+            if (files is null) return;
+            Operation.AddFiles(files.AsValueEnumerable().Select(file => file.TryGetLocalPath()).ToArray()!);
+        });
+
+        _timer = new Timer(50)
+        {
+            AutoReset = false
+        };
+        _timer.Elapsed += (sender, e) => { Dispatcher.UIThread.InvokeAsync(UpdatePreview); };
+    }
+
+    public OperationPCBExposure Operation => (BaseOperation as OperationPCBExposure)!;
 
     public Bitmap? PreviewImage
     {
@@ -50,32 +70,9 @@ public partial class ToolPCBExposureControl : ToolControl
         get => _cropPreview;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _cropPreview, value)) return;
+            if (!RaiseAndSetIfChanged(ref _cropPreview, value)) return;
             UpdatePreview();
         }
-    }
-
-    public ToolPCBExposureControl()
-    {
-        BaseOperation = new OperationPCBExposure(SlicerFile!);
-        if (!ValidateSpawn()) return;
-        InitializeComponent();
-
-        AddHandler(DragDrop.DropEvent, (sender, args) =>
-        {
-            var files = args.DataTransfer.TryGetFiles();
-            if (files is null) return;
-            Operation.AddFiles(files.AsValueEnumerable().Select(file => file.TryGetLocalPath()).ToArray()!);
-        });
-
-        _timer = new Timer(50)
-        {
-            AutoReset = false
-        };
-        _timer.Elapsed += (sender, e) =>
-        {
-            Dispatcher.UIThread.InvokeAsync(UpdatePreview);
-        };
     }
 
     public override void Callback(ToolWindow.Callbacks callback)
@@ -107,9 +104,50 @@ public partial class ToolPCBExposureControl : ToolControl
 
                 _timer.Stop();
                 _timer.Start();
-                if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.FileCount > 0;
-                Operation.Files.CollectionChanged += (sender, e) => ParentWindow!.ButtonOkEnabled = Operation.FileCount > 0;
+                if (ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.FileCount > 0;
+                Operation.Files.CollectionChanged +=
+                    (sender, e) => ParentWindow!.ButtonOkEnabled = Operation.FileCount > 0;
                 break;
+        }
+    }
+
+    public override async Task<bool> OnBeforeProcess()
+    {
+        if (Operation.MergeFiles) return true;
+
+        // Drill files are drawn in black, subtractively, over the copper drawn before them. Given a layer of their
+        // own they land on an empty plate, come out completely black and get discarded, so the holes silently never
+        // happen and the pads stay solid. Only warn about the files that would actually be dropped: one with the
+        // polarity inverted draws white and does produce a layer of its own.
+        var ignoredDrillFiles = Operation.Files
+            .Where(file => file is { Exists: true, InvertPolarity: false, IsBoardOutline: false }
+                           && ExcellonDrillFormat.Extensions.AsValueEnumerable().Any(file.IsExtension))
+            .Select(file => $"- {file.FileName}")
+            .ToArray();
+
+        if (ignoredDrillFiles.Length == 0) return true;
+
+        var result = await ParentWindow!.MessageBoxQuestion(
+            $"The following drill file(s) will have no effect on the output:\n\n{string.Join('\n', ignoredDrillFiles)}\n\n" +
+            "Drill files are drawn in black to punch their holes out of the copper drawn before them. " +
+            "With \"Merge files\" disabled every file gets a layer of its own, so a drill file is drawn onto an empty " +
+            "layer, comes out completely black and is discarded, leaving the pads solid.\n\n" +
+            "Enable \"Merge files\" so the holes are punched out of the copper?\n\n" +
+            "Yes: enable merging and continue.\n" +
+            "No: continue as is, the drill file(s) are ignored.\n" +
+            "Cancel: go back to the tool.",
+            "Drill file(s) without merging",
+            SukiMessageBoxButtons.YesNoCancel);
+
+        switch (result)
+        {
+            case SukiMessageBoxResult.Yes:
+                Operation.MergeFiles = true;
+                return true;
+            case SukiMessageBoxResult.No:
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -123,15 +161,22 @@ public partial class ToolPCBExposureControl : ToolControl
                 return;
             }
 
-            if (!OperationPCBExposure.ValidExtensions.AsValueEnumerable().Any(extension => _selectedFile.IsExtension(extension)) || !_selectedFile.Exists) return;
+            if (!OperationPCBExposure.ValidExtensions.AsValueEnumerable()
+                    .Any(extension => _selectedFile.IsExtension(extension)) || !_selectedFile.Exists) return;
             var file = (OperationPCBExposure.PCBExposureFile)_selectedFile.Clone();
-            file.InvertPolarity = ExcellonDrillFormat.Extensions.AsValueEnumerable().Any(extension => file.IsExtension(extension));
+            file.InvertPolarity = ExcellonDrillFormat.Extensions.AsValueEnumerable()
+                .Any(extension => file.IsExtension(extension));
             _previewImage?.Dispose();
-            using var mat = Operation.GetMat(file);
+            using var mat = Operation.GetMat(file, out var contentBounds);
 
             if (_cropPreview)
             {
-                using var matCropped = mat.RoiFromBoundingRectangle(out _, 20);
+                // Cropped to the artwork rather than to the lit pixels: with the colors inverted those are
+                // the background, so measuring them would crop to the inverted area instead of the board
+                var cropBounds = Rectangle.Inflate(contentBounds, 20, 20);
+                cropBounds.Intersect(new Rectangle(0, 0, mat.Width, mat.Height));
+
+                using var matCropped = mat.Roi(cropBounds);
                 PreviewImage = matCropped.ToBitmap();
             }
             else
@@ -143,7 +188,6 @@ public partial class ToolPCBExposureControl : ToolControl
         {
             Debug.WriteLine(e);
         }
-
     }
 
     public async Task AddFiles()

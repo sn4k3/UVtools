@@ -474,12 +474,16 @@ $RECYCLE.BIN/
 # 010 Editor
 *.1wk
 
+# KiCad test projects
+.history/
+*.lck
+
+
 # Confidential
 **/[Cc]onfidential/
 **/[Ss]ecret/
 
 # publish
-publish/
 manifests/
 
 .*-build-tasks/
