@@ -19,7 +19,6 @@ namespace UVtools.UI;
 
 public partial class MainWindow
 {
-
     public void InitClipboardLayers()
     {
         ClipboardManager.PropertyChanged += ClipboardOnPropertyChanged;

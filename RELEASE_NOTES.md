@@ -1,19 +1,109 @@
-- (Add) Zstd/Zstandard layer compression
-- (Add) UI Scaling setting to allow to scale the UI to your preference
-- (Change) Default compressor from `Brotli` to `Deflate`
-- (Improvement) Move the `EmguCV` extensions and classes to a separate library `EmguExtensions` and rewrite most of it,
-  providing a boost in performance and fixing bugs: #1118, #1119
-- (Improvement) Better memory management when compressing layers
-- (Improvement) Use `OptimalMaxDegreeOfParallelism` setting for `MaxDegreeOfParallelism` by default at core, this
-  affects `UVtoolsCmd` and libraries that might use `UVtools.Core`
-- (Improvement) Allow to set array of strings via reflection, this simplifies the use of `UVtoolsCmd` (#1127)
-- (Improvement) Migrate `BindableBase` to `ObservableObject` from `CommunityToolkit.Mvvm`
-- (Improvement) Migrate to `Nuke` builds and publish
-- (Breaking change) As `EmguCV` extensions moved to a separate library, if you are using them in your own code/scripts
-  you need to adapt and use the new naming and reference the new library
-- (Fix) Anycubic zip format after save can not be loaded again in anycubic slicer (#1108)
-- (Fix) Goo: Disallow open files with a version that is not known by decoder (#1114)
-- (Fix) Calibrate - Exposure Finder: NullReferenceException when loading profiles (#1109)
-- (Upgrade) .NET from 10.0.5 to 10.0.9
-- (Upgrade) AvaloniaUI from 11.3.13 to 12.0.5
-- (Upgrade) openCV from 4.12.0 to 4.13.0
+- **Layer repair:**
+  - Fixed single-pass island and suction-cup re-detection.
+  - Fixed the inclusive layer range so the final selected layer is processed.
+  - Restricted repairs and island detection to the selected range.
+  - Removed the early return that skipped morphology and empty-layer removal.
+  - Indexed issues by layer instead of repeatedly scanning all issues.
+  - Added deterministic Mat disposal and exception-safe attachment locking.
+  - Fixed attachment of early layers and prevented source-layer modification.
+  - Improved cancellation handling, validation, progress counts, and all-empty-file handling.
+  - Prevented repaired islands from being processed again by later stages.
+- **Operations**:
+  - Audited all operation implementations for correctness, cancellation, native-resource ownership, and avoidable work.
+  - Invalidated cached validation after settings change, rejected reversed layer ranges, and disposed internally owned
+    progress state.
+  - Made native matrix, ROI, cache, and imported-format cleanup deterministic across calibration, import, mesh export,
+    dynamic-height, arithmetic, dimming, raft, re-height, and redraw operations.
+  - Reduced multi-layer removal from repeated full-layer shifts to one pass while handling duplicate and invalid indexes
+    safely.
+  - Replaced quadratic pattern-image string construction with row builders and avoided oversized pattern tiling.
+  - Fixed re-height difference accumulation and pixel-corrosion indexing errors.
+  - Fixed clone, phased-exposure, double-exposure, and timelapse layer placement/counting while avoiding partial commits
+    on cancellation.
+  - Made light-bleed compensation deterministic by reading immutable layer snapshots instead of concurrently modified
+    neighbors.
+  - Fixed dynamic-lift zero-range calculations, resize fade endpoints, overlapping copy moves, transition progress, and
+    lift-time calculations.
+  - Fixed infill wave stepping/Z accumulation, pattern cleanup, and exact pattern repeat sizing.
+  - Fixed GIF frame counts, zero FPS handling, rotated frame dimensions, save error reporting, and image/heat-map crop
+    transforms.
+  - Improved mask ownership and ROI behavior, layer-arithmetic bounds/masking, lithophane sizing, and PCB render reuse.
+- **Gerber:**
+  - Audited the complete Gerber parser, apertures, macros, and drawing primitives.
+  - Reworked command tokenization to support multiple commands per line and multiline extended commands without repeated
+    string concatenation.
+  - Fixed signed and trailing-zero coordinates, modal D01/D02/D03 operations, relative positioning, duplicate
+    definitions, and combined G01/G02/G03 commands.
+  - Added validated single- and multi-quadrant arc interpolation, optional I/J offsets, correctly stroked full circles,
+    and arc support inside regions.
+  - Replaced the aperture regex parser with allocation-conscious validated parsing and fixed clipped rectangle flashes
+    near image boundaries.
+  - Added ordered macro variable assignments, invariant-culture expression evaluation, malformed-input handling, outline
+    vertex validation, and rotation around the macro origin for every primitive.
+  - Consolidated duplicated primitive expression logic and reduced temporary allocations throughout parsing and drawing.
+  - Capture the coordinate sign so negative plots are placed correctly. by @The-Bootloader (#1133)
+  - Auto-center the artwork, render it upright, and optionally by @The-Bootloader (#1133)
+  - Warn when a drill file would be silently ignored. by @The-Bootloader (#1133)
+  - Add anchors to PCB render
+- **Excellon:**
+  - Reworked coordinate and tool parsing to handle declared formats, signed and decimal coordinates, zero suppression,
+    omitted axes, and malformed input without regex allocations or parser exceptions.
+  - Added incremental coordinates, repeats, routed linear slots, G85 slots, M71/M72 units, and G90/G91 positioning.
+  - Fixed `FILE_FORMAT` fractional precision, asymmetric pixel scaling, duplicate tools, stale parser state, and
+    invariant-culture serialization.
+  - Added slot rendering and deterministic sizing validation.
+- **GCode:**
+  - Audited the complete GCode builder, command, and layer-state implementations.
+  - Fixed invariant-culture output, command equality/hash consistency, line counting, compact command parsing, numeric
+    validation, LED-off detection, PWM scaling, sync-delay detection, and layer bounds/state resets.
+  - Fixed relative retract acceleration, zero-valued retract suppression, event arguments, Klipper setup idempotence,
+    malformed thumbnail handling, and out-of-range layer detection.
+  - Reduced rebuild work by reusing movement lists, replacing quadratic remaining-time sums with a running total, and
+    avoiding thumbnail chunk allocations.
+- **File formats:**
+  - Reduced GCode thumbnail and FlashForge SVGX path-building allocations with bounded stack-backed and sparse DotNext
+    buffer writers.
+  - Made FlashForge SVG coordinate serialization culture-invariant.
+- **Layer compression:**
+  - Preserved sparse, incrementally growing compression streams for large matrices while reducing Zstandard
+    decompression overhead by decoding directly into the destination matrix.
+  - Rejected truncated, oversized, and dimension-mismatched LZ4 and Zstandard decompressed data.
+- **Mesh export:**
+  - Added shared stack-buffered, invariant UTF-8 record formatting across AMF, 3MF, OBJ, OFF, PLY, STL, and WRL exports.
+  - Replaced repeated dictionary lookups with single-probe vertex-cache access in all indexed mesh exporters.
+  - Combined binary PLY vertex/face records and STL triangles into one stream write per record without heap allocations.
+  - Removed per-candidate string allocations from mesh extension lookup and made matching case-insensitive.
+  - Fixed cropped rotation/flip exports, non-square pixel pitch after quarter-turn rotation, and layer Z placement.
+  - Made cancellation, temporary writer, and voxel subtraction-matrix cleanup deterministic while preserving the
+    selected output extension.
+- **Suggestions:**
+  - Audited every suggestion for validation, cancellation, progress ownership, malformed profile handling, and avoidable
+    work.
+  - Fixed bottom-layer target caps, transition-layer zero-step handling and reporting, and exact/stable model corner
+    placement.
+  - Corrected bottom/normal limits, clamping, proportional inputs, and light-off-delay handling for wait-before-cure and
+    wait-after-cure suggestions.
+  - Removed repeated transition-layer scans, made random anchors allocation-free, and replaced whole-file XML regex
+    matching with secure streaming profile discovery.
+- **Advanced image box:**
+  - Fixed zoom-level navigation skipping adjacent levels and failing with an empty level collection
+  - Corrected centered zoom anchoring and tracker-image sizing when automatic tracker zoom is disabled
+  - Made pointer panning and selection end reliably when the pointer is released outside the control
+  - Rejected empty zoom regions and clipped selections safely to image bounds
+- Add `GetRleBufferInitialCapacity` helper to `FileFormat` for consistent RLE buffer sizing
+- Add Goo V5.0, V5.1 and V5.2 support by @AlchMeow (#1129) fixes #1114
+- Refactor RLE encode/decode across all file formats to use `BufferWriterSlim<byte>` instead of `List<byte>`, reducing
+  allocations
+- Replace `List<byte>` layer line buffers with `MemoryOwner<byte>` using `ArrayPool` for pooled, zero-copy layer
+  encoding/decoding
+- Improve robustness: add bounds checks to RLE decoders, dispose Mat on error, validate ZIP entry sizes
+- Optimize `FileStreamExtensions` read/write methods using `BinaryPrimitives` and stack-allocated spans
+- Fix `CTBEncryptedFile.CryptFile` to use a shared backing buffer instead of copying
+- Fix `SL1File` swapped `BottomLightPWM`/`LightPWM` default values
+- Fix `NanoDLPFile` incorrect `DisplayController` condition
+- Fix `KlipperFile` regex group count checks and float parsing with `InvariantCulture`
+- Fix `ZCodexFile` division-by-zero when `LayerCount == 0`
+- Fix .gitignore the NUKE temp directory by @The-Bootloader (#1132)
+- Rename "010" solution folder to work around Nuke source generator bug by @The-Bootloader (#1133)
+- (Upgrade) .NET from 10.0.9 to 10.0.10
+- (Upgrade) AvaloniaUI from 12.0.5 to 12.1.1
