@@ -68,6 +68,18 @@
   - Reduced GCode thumbnail and FlashForge SVGX path-building allocations with bounded stack-backed and sparse DotNext
     buffer writers.
   - Made FlashForge SVG coordinate serialization culture-invariant.
+  - Add `GetRleBufferInitialCapacity` helper to `FileFormat` for consistent RLE buffer sizing
+  - Add Goo V5.0, V5.1 and V5.2 support by @AlchMeow (#1129) fixes #1114
+  - Refactor RLE encode/decode across all file formats to use `BufferWriterSlim<byte>` instead of `List<byte>`, reducing
+    allocations
+  - Replace `List<byte>` layer line buffers with `MemoryOwner<byte>` using `ArrayPool` for pooled, zero-copy layer
+    encoding/decoding
+  - Improve robustness: add bounds checks to RLE decoders, dispose Mat on error, validate ZIP entry sizes
+  - Fix `CTBEncryptedFile.CryptFile` to use a shared backing buffer instead of copying
+  - Fix `SL1File` swapped `BottomLightPWM`/`LightPWM` default values
+  - Fix `NanoDLPFile` incorrect `DisplayController` condition
+  - Fix `KlipperFile` regex group count checks and float parsing with `InvariantCulture`
+  - Fix `ZCodexFile` division-by-zero when `LayerCount == 0`
 - **Layer compression:**
   - Preserved sparse, incrementally growing compression streams for large matrices while reducing Zstandard
     decompression overhead by decoding directly into the destination matrix.
@@ -94,19 +106,7 @@
   - Corrected centered zoom anchoring and tracker-image sizing when automatic tracker zoom is disabled
   - Made pointer panning and selection end reliably when the pointer is released outside the control
   - Rejected empty zoom regions and clipped selections safely to image bounds
-- Add `GetRleBufferInitialCapacity` helper to `FileFormat` for consistent RLE buffer sizing
-- Add Goo V5.0, V5.1 and V5.2 support by @AlchMeow (#1129) fixes #1114
-- Refactor RLE encode/decode across all file formats to use `BufferWriterSlim<byte>` instead of `List<byte>`, reducing
-  allocations
-- Replace `List<byte>` layer line buffers with `MemoryOwner<byte>` using `ArrayPool` for pooled, zero-copy layer
-  encoding/decoding
-- Improve robustness: add bounds checks to RLE decoders, dispose Mat on error, validate ZIP entry sizes
 - Optimize `FileStreamExtensions` read/write methods using `BinaryPrimitives` and stack-allocated spans
-- Fix `CTBEncryptedFile.CryptFile` to use a shared backing buffer instead of copying
-- Fix `SL1File` swapped `BottomLightPWM`/`LightPWM` default values
-- Fix `NanoDLPFile` incorrect `DisplayController` condition
-- Fix `KlipperFile` regex group count checks and float parsing with `InvariantCulture`
-- Fix `ZCodexFile` division-by-zero when `LayerCount == 0`
 - Fix .gitignore the NUKE temp directory by @The-Bootloader (#1132)
 - Rename "010" solution folder to work around Nuke source generator bug by @The-Bootloader (#1133)
 - (Upgrade) .NET from 10.0.9 to 10.0.10
