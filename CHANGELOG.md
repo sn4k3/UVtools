@@ -1,6 +1,6 @@
 # Changelog
 
-## 05/08/2026 - v6.2.0
+## 06/08/2026 - v6.2.0
 
 - **Layer repair:**
   - Fixed single-pass island and suction-cup re-detection.
