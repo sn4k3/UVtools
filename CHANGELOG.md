@@ -89,6 +89,11 @@
     wait-after-cure suggestions.
   - Removed repeated transition-layer scans, made random anchors allocation-free, and replaced whole-file XML regex
     matching with secure streaming profile discovery.
+- **Advanced image box:**
+  - Fixed zoom-level navigation skipping adjacent levels and failing with an empty level collection
+  - Corrected centered zoom anchoring and tracker-image sizing when automatic tracker zoom is disabled
+  - Made pointer panning and selection end reliably when the pointer is released outside the control
+  - Rejected empty zoom regions and clipped selections safely to image bounds
 - Add `GetRleBufferInitialCapacity` helper to `FileFormat` for consistent RLE buffer sizing
 - Add Goo V5.0, V5.1 and V5.2 support by @AlchMeow (#1129) fixes #1114
 - Refactor RLE encode/decode across all file formats to use `BufferWriterSlim<byte>` instead of `List<byte>`, reducing

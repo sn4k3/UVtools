@@ -289,10 +289,17 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         /// <returns>The next matching increased zoom level for the given current zoom if applicable, otherwise the nearest zoom.</returns>
         public int NextZoom(int zoomLevel, int constrainZoomLevel = 0)
         {
-            var index = IndexOf(FindNearest(zoomLevel));
-            if (index < Count - 1) index++;
+            if (Count == 0) return zoomLevel;
 
-            return constrainZoomLevel > 0 && this[index] >= constrainZoomLevel ? constrainZoomLevel : this[index];
+            var nextZoom = List.Values[Count - 1];
+            for (var i = 0; i < Count; i++)
+            {
+                if (List.Values[i] <= zoomLevel) continue;
+                nextZoom = List.Values[i];
+                break;
+            }
+
+            return constrainZoomLevel > 0 ? Math.Min(nextZoom, constrainZoomLevel) : nextZoom;
         }
 
         /// <summary>
@@ -303,10 +310,17 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         /// <returns>The next matching decreased zoom level for the given current zoom if applicable, otherwise the nearest zoom.</returns>
         public int PreviousZoom(int zoomLevel, int constrainZoomLevel = 0)
         {
-            var index = IndexOf(FindNearest(zoomLevel));
-            if (index > 0) index--;
+            if (Count == 0) return zoomLevel;
 
-            return constrainZoomLevel > 0 && this[index] <= constrainZoomLevel ? constrainZoomLevel : this[index];
+            var previousZoom = List.Values[0];
+            for (var i = Count - 1; i >= 0; i--)
+            {
+                if (List.Values[i] >= zoomLevel) continue;
+                previousZoom = List.Values[i];
+                break;
+            }
+
+            return constrainZoomLevel > 0 ? Math.Max(previousZoom, constrainZoomLevel) : previousZoom;
         }
 
         /// <summary>
@@ -765,7 +779,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         get
         {
             var viewport = GetImageViewPort();
-            return new(viewport.Width / 2, viewport.Height / 2);
+            return viewport.Center;
         }
     }
 
@@ -1632,7 +1646,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         {
             var destSize = TrackerImageAutoZoom
                 ? new Size(_trackerImage.Size.Width * zoomFactor, _trackerImage.Size.Height * zoomFactor)
-                : image.Size;
+                : _trackerImage.Size;
 
             var destPos = new Point(
                 _pointerPosition.X - destSize.Width / 2,
@@ -1859,7 +1873,12 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             || _isSelecting
             || Image is null) return;
 
-        var pointer = e.GetCurrentPoint(this);
+        var viewPort = ViewPort;
+        if (viewPort is null) return;
+
+        var pointer = e.GetCurrentPoint(viewPort);
+        var location = pointer.Position;
+        if (!new Rect(viewPort.Bounds.Size).Contains(location)) return;
 
         if (SelectionMode != SelectionModes.None)
         {
@@ -1886,20 +1905,30 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             IsPanning = true;
         }
 
-        var location = pointer.Position;
-
-        if (location.X > Viewport.Width) return;
-        if (location.Y > Viewport.Height) return;
         _startMousePosition = location;
+        e.Pointer.Capture(viewPort);
+        e.Handled = true;
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
-        base.OnPointerReleased(e);
-        if (e.Handled) return;
-
+        var wasInteracting = _isPanning || _isSelecting;
         IsPanning = false;
         IsSelecting = false;
+        if (wasInteracting)
+        {
+            e.Pointer.Capture(null);
+            e.Handled = true;
+        }
+
+        base.OnPointerReleased(e);
+    }
+
+    protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+    {
+        IsPanning = false;
+        IsSelecting = false;
+        base.OnPointerCaptureLost(e);
     }
 
     private void ViewPortOnPointerExited(object? sender, PointerEventArgs e)
@@ -2401,7 +2430,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <param name="margin">Give a margin to rectangle by a value to zoom-out that pixel value</param>
     public void ZoomToRegion(Rect rectangle, double margin = 0)
     {
-        if (!IsImageLoaded) return;
+        if (!IsImageLoaded || rectangle.Width <= 0 || rectangle.Height <= 0) return;
         if (margin > 0) rectangle = rectangle.Inflate(margin);
         var ratioX = Viewport.Width / rectangle.Width;
         var ratioY = Viewport.Height / rectangle.Height;
@@ -2666,32 +2695,8 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     {
         var image = Image;
         if (image is null) return Rectangle.Empty;
-        var x = rectangle.X;
-        var y = rectangle.Y;
-        var w = rectangle.Width;
-        var h = rectangle.Height;
-
-        if (x < 0)
-        {
-            x = 0;
-        }
-
-        if (y < 0)
-        {
-            y = 0;
-        }
-
-        if (x + w > image.Size.Width)
-        {
-            w = (int)(image.Size.Width - x);
-        }
-
-        if (y + h > image.Size.Height)
-        {
-            h = (int)(image.Size.Height - y);
-        }
-
-        return new(x, y, w, h);
+        var imageBounds = new Rectangle(0, 0, (int)image.Size.Width, (int)image.Size.Height);
+        return Rectangle.Intersect(rectangle, imageBounds);
     }
 
     /// <summary>
@@ -2705,34 +2710,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     {
         var image = Image;
         if (image is null) return default;
-        var x = rectangle.X;
-        var y = rectangle.Y;
-        var w = rectangle.Width;
-        var h = rectangle.Height;
-
-        if (x < 0)
-        {
-            w -= -x;
-            x = 0;
-        }
-
-        if (y < 0)
-        {
-            h -= -y;
-            y = 0;
-        }
-
-        if (x + w > image.Size.Width)
-        {
-            w = image.Size.Width - x;
-        }
-
-        if (y + h > image.Size.Height)
-        {
-            h = image.Size.Height - y;
-        }
-
-        return new(x, y, w, h);
+        return rectangle.Intersect(new Rect(image.Size));
     }
     #endregion
 

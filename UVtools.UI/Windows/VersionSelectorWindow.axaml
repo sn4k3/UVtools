@@ -14,33 +14,26 @@
                        Width="450"
                        Padding="10"
                        WindowStartupLocation="CenterOwner">
-    <LayoutTransformControl>
-        <LayoutTransformControl.LayoutTransform>
-            <ScaleTransform ScaleX="{Binding Settings.General.UiScaling}"
-                            ScaleY="{Binding Settings.General.UiScaling}" />
-        </LayoutTransformControl.LayoutTransform>
-        <suki:SukiMessageBoxHost Header="{Binding DescriptionText}"
-                                 UseAlternativeHeaderStyle="True">
-            <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,*"
-                  ColumnSpacing="10">
-                <TextBlock Grid.Row="0" Grid.Column="0"
-                           VerticalAlignment="Center"
-                           Text="Version:" />
-                <ComboBox Grid.Row="0" Grid.Column="1"
-                          HorizontalAlignment="Stretch"
-                          ItemsSource="{Binding AvailableVersions}"
-                          SelectedItem="{Binding Version}" />
-            </Grid>
-            <suki:SukiMessageBoxHost.ActionButtonsSource>
-                <Button Command="{Binding SelectVersion}"
-                        IsDefault="True"
-                        Content="{icon:MaterialIconTextExt Kind=Check, Text='{Binding Version, StringFormat=Select v{0}}'}" />
-                <Button Content="Use the default" Command="{Binding SelectDefault}" />
-                <Button IsCancel="True"
-                        Content="{icon:MaterialIconTextExt Kind=SignOut, Text='Cancel'}"
-                        Command="{Binding Close}" />
-            </suki:SukiMessageBoxHost.ActionButtonsSource>
-        </suki:SukiMessageBoxHost>
-
-    </LayoutTransformControl>
+    <suki:SukiMessageBoxHost Header="{Binding DescriptionText}"
+                             UseAlternativeHeaderStyle="True">
+        <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,*"
+              ColumnSpacing="10">
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Version:" />
+            <ComboBox Grid.Row="0" Grid.Column="1"
+                      HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding AvailableVersions}"
+                      SelectedItem="{Binding Version}" />
+        </Grid>
+        <suki:SukiMessageBoxHost.ActionButtonsSource>
+            <Button Command="{Binding SelectVersion}"
+                    IsDefault="True"
+                    Content="{icon:MaterialIconTextExt Kind=Check, Text='{Binding Version, StringFormat=Select v{0}}'}" />
+            <Button Content="Use the default" Command="{Binding SelectDefault}" />
+            <Button IsCancel="True"
+                    Content="{icon:MaterialIconTextExt Kind=SignOut, Text='Cancel'}"
+                    Command="{Binding Close}" />
+        </suki:SukiMessageBoxHost.ActionButtonsSource>
+    </suki:SukiMessageBoxHost>
 </windows:GenericWindow>
