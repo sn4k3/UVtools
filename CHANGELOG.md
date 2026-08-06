@@ -110,7 +110,7 @@
 - Fix .gitignore the NUKE temp directory by @The-Bootloader (#1132)
 - Rename "010" solution folder to work around Nuke source generator bug by @The-Bootloader (#1133)
 - (Upgrade) .NET from 10.0.9 to 10.0.10
-- (Upgrade) AvaloniaUI from 12.0.5 to 12.1.0
+- (Upgrade) AvaloniaUI from 12.0.5 to 12.1.1
 
 ## 27/06/2026 - v6.1.1
 
