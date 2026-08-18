@@ -39,8 +39,8 @@
         <PackageReference Include="EmguExtensions.Avalonia" Version="0.1.7"/>
         <PackageReference Include="MarkdownViewer.Core" Version="1.0.5"/>
         <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2"/>
-        <PackageReference Include="SukiUI" Version="7.0.2-nightly20260801"/>
-        <PackageReference Include="Svg.Controls.Avalonia" Version="12.0.0.13"/>
+        <PackageReference Include="SukiUI" Version="7.0.2-nightly.20260818.5e67227"/>
+        <PackageReference Include="Svg.Controls.Avalonia" Version="12.0.0.15"/>
         <PackageReference Include="Updatum" Version="1.4.0"/>
     </ItemGroup>
 

@@ -73,25 +73,25 @@
     </windows:GenericWindow.KeyBindings>
 
     <windows:GenericWindow.MenuItems>
-        <MenuItem Name="MainMenuFile" Header="File">
+        <MenuItem Name="MainMenuFile" Header="_File">
             <MenuItem Name="MainMenuFileOpen"
                       Icon="{icon:MaterialIconExt Kind=FileImport}"
                       Command="{Binding MenuFileOpenClicked}"
-                      Header="Open"
+                      Header="_Open"
                       HotKey="{OnPlatform Ctrl+O, macOS=⌘+O}"
                       InputGesture="{Binding $self.HotKey}" />
 
             <MenuItem Name="MainMenuFileOpenNewWindow"
                       Icon="{icon:MaterialIconExt Kind=FileMultiple}"
                       Command="{Binding MenuFileOpenNewWindowClicked}"
-                      Header="Open in new window"
+                      Header="_Open in new window"
                       HotKey="{OnPlatform Ctrl+Shift+O,
 					  macOS=⌘+Shift+O}"
                       InputGesture="{Binding $self.HotKey}" />
 
             <MenuItem Name="MainMenuFileOpenRecent"
                       Icon="{icon:MaterialIconExt Kind=FileTable}"
-                      Header="Open recent"
+                      Header="_Open recent"
                       ItemsSource="{Binding MenuFileOpenRecentItems}"
                       ToolTip.ShowDelay="2000"
                       ToolTip.Tip="On a file: &#x0a;Shift + Click: Open file in a new window &#x0a;Shift + Ctrl + Click: Remove file from list &#x0a;Ctrl + Click: Purge non-existing files" />
@@ -99,13 +99,13 @@
             <MenuItem Name="MainMenuFileOpenInPartialMode"
                       Icon="{icon:MaterialIconExt Kind=FileImportOutline}"
                       Command="{Binding MenuFileOpenInPartialModeClicked}"
-                      Header="Open in partial mode"
+                      Header="_Open in partial mode"
                       ToolTip.Tip="Open a file only to see and/or edit properties. &#x0a;Layer images won't be loaded and most tools won't run in this mode." />
 
             <MenuItem Name="MainMenuFileReload"
                       Icon="{icon:MaterialIconExt Kind=FileRefresh}"
                       Command="{Binding ReloadFile}"
-                      Header="Reload"
+                      Header="_Reload"
                       HotKey="{OnPlatform Ctrl+F5,
 					  macOS=⌘+F5}"
                       InputGesture="{Binding $self.HotKey}"
@@ -114,7 +114,7 @@
             <MenuItem Name="MainMenuFileSave"
                       Icon="{icon:MaterialIconExt Kind=ContentSave}"
                       Command="{Binding MenuFileSaveClicked}"
-                      Header="Save"
+                      Header="_Save"
                       HotKey="{OnPlatform Ctrl+S,
 					  macOS=⌘+S}"
                       InputGesture="{Binding $self.HotKey}"
@@ -123,7 +123,7 @@
             <MenuItem Name="MainMenuFileSaveAs"
                       Icon="{icon:MaterialIconExt Kind=ContentSaveCheck}"
                       Command="{Binding MenuFileSaveAsClicked}"
-                      Header="Save as"
+                      Header="_Save as"
                       HotKey="{OnPlatform Ctrl+Shift+S,
 					  macOS=⌘+Shift+S}"
                       InputGesture="{Binding $self.HotKey}"
@@ -132,7 +132,7 @@
             <MenuItem Name="MainMenuFileRename"
                       Icon="{icon:MaterialIconExt Kind=Rename}"
                       Command="{Binding MenuFileRenameClicked}"
-                      Header="Rename"
+                      Header="_Rename"
                       HotKey="{OnPlatform Ctrl+F2,
 					  macOS=⌘+F2}"
                       InputGesture="{Binding $self.HotKey}"
@@ -140,21 +140,21 @@
 
             <MenuItem Name="MainMenuFileConvert"
                       Icon="{icon:MaterialIconExt Kind=Exchange}"
-                      Header="Convert to"
+                      Header="_Convert to"
                       IsEnabled="{Binding IsFileLoaded}"
                       IsVisible="{Binding MenuFileConvertItems, Converter={x:Static ObjectConverters.IsNotNull}}"
                       ItemsSource="{Binding MenuFileConvertItems}" />
 
             <MenuItem Name="MainMenuFileSendTo"
                       Icon="{icon:MaterialIconExt Kind=Share}"
-                      Header="Send to"
+                      Header="_Send to"
                       IsEnabled="{Binding IsFileLoaded}"
                       ItemsSource="{Binding MenuFileSendToItems}" />
 
             <MenuItem Name="MainMenuFileClose"
                       Icon="{icon:MaterialIconExt Kind=FileRemove}"
                       Command="{Binding MenuFileCloseFileClicked}"
-                      Header="Close"
+                      Header="_Close"
                       HotKey="{OnPlatform Ctrl+W,
 					  macOS=⌘+W}"
                       InputGesture="{Binding $self.HotKey}"
@@ -164,7 +164,7 @@
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Hammer}"
                       Command="{Binding ResetLayersProperties}"
-                      Header="Reset layers properties"
+                      Header="_Reset layers properties"
                       ToolTip.Tip="Reset all layer properties with the file globals. &#x0a;Hold SHIFT key to also rebuild layers position with the file layer height.">
                 <MenuItem.IsEnabled>
                     <MultiBinding Converter="{x:Static BoolConverters.And}">
@@ -176,7 +176,7 @@
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Flask}"
                       Command="{Binding IPrintedThisFile}"
-                      Header="I printed this file"
+                      Header="_I printed this file"
                       HotKey="{OnPlatform Ctrl+P,
 					  macOS=⌘+P}"
                       InputGesture="{Binding $self.HotKey}"
@@ -185,7 +185,7 @@
             <MenuItem Name="MainMenuFileOpenContainingFileFolder"
                       Icon="{icon:MaterialIconExt Kind=FolderOpen}"
                       Command="{Binding MenuFileOpenContainingFolderClicked}"
-                      Header="Open containing folder"
+                      Header="_Open containing folder"
                       HotKey="{OnPlatform Ctrl+Shift+L,
 					  macOS=⌘+Shift+L}"
                       InputGesture="{Binding $self.HotKey}"
@@ -194,7 +194,7 @@
             <MenuItem Name="MainMenuFileExtract"
                       Icon="{icon:MaterialIconExt Kind=FolderZip}"
                       Command="{Binding ExtractFile}"
-                      Header="Extract file contents"
+                      Header="_Extract file contents"
                       HotKey="{OnPlatform Ctrl+Shift+E,
 					  macOS=⌘+Shift+E}"
                       InputGesture="{Binding $self.HotKey}"
@@ -202,13 +202,13 @@
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=FileExport}"
                       Command="{Binding CopyParametersToFiles}"
-                      Header="Copy parameters to files"
+                      Header="_Copy parameters to files"
                       IsEnabled="{Binding IsFileLoaded}" />
 
             <MenuItem Name="MainMenuFileTerminal"
                       Icon="{icon:MaterialIconExt Kind=Terminal}"
                       Command="{Binding OpenTerminal}"
-                      Header="Terminal"
+                      Header="_Terminal"
                       HotKey="{OnPlatform Ctrl+Shift+T,
 					  macOS=⌘+Shift+T}"
                       InputGesture="{Binding $self.HotKey}"
@@ -219,14 +219,14 @@
             <MenuItem Name="MainMenuFileFullscreen"
                       Icon="{icon:MaterialIconExt Kind=Fullscreen}"
                       Command="{Binding MenuFileFullscreenClicked}"
-                      Header="Fullscreen"
+                      Header="_Fullscreen"
                       HotKey="F11"
                       InputGesture="{Binding $self.HotKey}" />
 
             <MenuItem Name="MainMenuFileSettings"
                       Icon="{icon:MaterialIconExt Kind=Cog}"
                       Command="{Binding MenuFileSettingsClicked}"
-                      Header="Settings"
+                      Header="_Settings"
                       HotKey="Ctrl+,"
                       InputGesture="{Binding $self.HotKey}" />
 
@@ -235,32 +235,32 @@
             <MenuItem Name="MainMenuFileExit"
                       Icon="{icon:MaterialIconExt Kind=SignOut}"
                       Command="{Binding Close}"
-                      Header="Exit"
+                      Header="_Exit"
                       InputGesture="Alt+F4" />
         </MenuItem>
 
-        <MenuItem Header="Tools"
+        <MenuItem Header="_Tools"
                   IsEnabled="{Binding IsFileLoaded}"
                   IsVisible="{Binding IsFileLoaded}"
                   ItemsSource="{Binding MenuTools}" />
 
-        <MenuItem Header="Calibration"
+        <MenuItem Header="_Calibration"
                   IsEnabled="{Binding IsFileLoaded}"
                   IsVisible="{Binding IsFileLoaded}"
                   ItemsSource="{Binding MenuCalibration}" />
 
 
-        <MenuItem Header="Help">
+        <MenuItem Header="_Help">
             <MenuItem Icon="{icon:MaterialIconExt Kind=InfoCircle}"
                       Command="{Binding MenuHelpAboutClicked}"
-                      Header="About"
+                      Header="_About"
                       HotKey="F1"
                       InputGesture="{Binding $self.HotKey}" />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=MicrosoftEdge}"
                       Command="{Binding OpenWebsite}"
                       CommandParameter="{Binding Source={x:Static core:About.Website}}"
-                      Header="Website"
+                      Header="_Website"
                       HotKey="{OnPlatform Ctrl+F1,
 					  macOS=⌘+F1}"
                       InputGesture="{Binding $self.HotKey}" />
@@ -268,48 +268,48 @@
             <MenuItem Icon="{icon:MaterialIconExt Kind=Wikipedia}"
                       Command="{Binding OpenWebsite}"
                       CommandParameter="https://github.com/sn4k3/UVtools/wiki"
-                      Header="Wiki &amp; tutorials" />
+                      Header="_Wiki &amp; tutorials" />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Forum}"
-                      Header="Community forums">
+                      Header="_Community forums">
                 <MenuItem Icon="{icon:MaterialIconExt Kind=Github}"
                           Command="{Binding OpenWebsite}"
                           CommandParameter="https://github.com/sn4k3/UVtools/discussions"
-                          Header="GitHub" />
+                          Header="_GitHub" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=Facebook}"
                           Command="{Binding OpenWebsite}"
                           CommandParameter="https://www.facebook.com/groups/uvtools"
-                          Header="Facebook" />
+                          Header="_Facebook" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=Reddit}"
                           Command="{Binding OpenWebsite}"
                           CommandParameter="https://www.reddit.com/search/?q=UVtools&amp;type=link&amp;sort=new"
-                          Header="Reddit" />
+                          Header="_Reddit" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=Twitter}"
                           Command="{Binding OpenWebsite}"
                           CommandParameter="https://twitter.com/search?q=UVtools&amp;src=typedquery&amp;f=live"
-                          Header="Twitter" />
+                          Header="_Twitter" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=Youtube}"
                           Command="{Binding OpenWebsite}"
                           CommandParameter="https://www.youtube.com/results?search_query=UVtools"
-                          Header="Youtube" />
+                          Header="_Youtube" />
             </MenuItem>
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Donate}"
-                      Header="Donate">
+                      Header="_Donate">
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=Github}"
                           Command="{Binding OpenWebsite}"
                           CommandParameter="{Binding Source={x:Static core:About.DonateGitHubUrl}}"
-                          Header="GitHub" />
+                          Header="_GitHub" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=Payment}"
                           Command="{Binding OpenWebsite}"
                           CommandParameter="{Binding Source={x:Static core:About.DonatePayPalUrl}}"
-                          Header="PayPal" />
+                          Header="_PayPal" />
 
             </MenuItem>
 
@@ -318,72 +318,72 @@
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Flask}"
                       Command="{Binding MenuHelpMaterialManagerClicked}"
-                      Header="Material manager"
+                      Header="_Material manager"
                       HotKey="F10"
                       InputGesture="{Binding $self.HotKey}" />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Printer3d}"
                       Command="{Binding MenuHelpInstallProfilesClicked}"
-                      Header="Install profiles into PrusaSlicer" />
+                      Header="_Install profiles into PrusaSlicer" />
 
             <Separator />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Bug}"
                       Command="{Binding MenuHelpReportIssueClicked}"
-                      Header="Report an issue" />
+                      Header="_Report an issue" />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Help}"
                       Command="{Binding OpenWebsite}"
                       CommandParameter="https://github.com/sn4k3/UVtools/discussions/categories/q-a"
-                      Header="Ask a question" />
+                      Header="_Ask a question" />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=HeadLightbulb}"
                       Command="{Binding OpenWebsite}"
                       CommandParameter="https://github.com/sn4k3/UVtools/discussions/categories/ideas"
-                      Header="Suggest an improvement or new features" />
+                      Header="_Suggest an improvement or new features" />
 
             <Separator />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=FolderOpen}"
                       Command="{Binding MenuHelpOpenSettingsFolderClicked}"
-                      Header="Open settings folder" />
+                      Header="_Open settings folder" />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=MemoryArrowDown}"
                       Command="{Binding MenuHelpFreeUnusedRAMClicked}"
-                      Header="Free unused RAM"
+                      Header="_Free unused RAM"
                       ToolTip.Tip="Force the garbage collection of all unused objects within the program to free unused memory (RAM). &#x0a;It's never required for the end user run this. The program will automatically take care of it when required. &#x0a;This function is for debug purposes." />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Cpu64Bit}"
                       Command="{Binding MenuHelpBenchmarkClicked}"
-                      Header="Benchmark" />
+                      Header="_Benchmark" />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Ladybug}"
-                      Header="Debug tools"
+                      Header="_Debug tools"
                       IsVisible="{Binding IsDebug}">
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=FolderOpen}"
                           Command="{Binding MenuHelpDebugOpenExecutableDirectoryClicked}"
-                          Header="Open executable directory"
+                          Header="_Open executable directory"
                           IsVisible="{Binding IsDebug}" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=LightningBolt}"
                           Command="{Binding MenuHelpDebugThrowExceptionClicked}"
-                          Header="Throw exception"
+                          Header="_Throw exception"
                           IsVisible="{Binding IsDebug}" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=Message}"
                           Command="{Binding MenuHelpDebugLongMessageBoxClicked}"
-                          Header="Show long message box"
+                          Header="_Show long message box"
                           IsVisible="{Binding IsDebug}" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=PartyPopper}"
                           Command="{Binding ShowBirthdayMessage}"
-                          Header="Show birthday message box"
+                          Header="_Show birthday message box"
                           IsVisible="{Binding IsDebug}" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=CloudDownload}"
                           Command="{Binding MenuHelpDebugTriggerNewUpdateClicked}"
-                          Header="Trigger new update"
+                          Header="_Trigger new update"
                           IsEnabled="{Binding !AppUpdater.IsBusy}"
                           IsVisible="{Binding IsDebug}" />
 

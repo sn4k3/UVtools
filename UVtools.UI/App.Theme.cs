@@ -1,10 +1,10 @@
-﻿using Avalonia.Media;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Media;
 using Avalonia.Styling;
 using SukiUI;
 using SukiUI.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace UVtools.UI;
 
@@ -19,7 +19,7 @@ public partial class App
         Theme = SukiTheme.GetInstance();
 
         ThemeColors.AddRange([
-            new SukiColorTheme("UVtools", new Color(255, 102, 20, 102), new Color(255, 20, 166, 166)),
+            new SukiColorTheme("UVtools", new Color(255, 102, 20, 102), new Color(255, 20, 166, 166))
         ]);
 
         ThemeColors.AddRange(Theme.ColorThemes);
@@ -45,7 +45,7 @@ public partial class App
             default:
                 throw new ArgumentOutOfRangeException(nameof(theme), theme, null);
         }
-        ChangeColorTheme(UserSettings.Instance.General.ThemeColor);
+        //ChangeColorTheme(UserSettings.Instance.General.ThemeColor);
     }
 
     public static void ChangeColorTheme(SukiColorTheme color)

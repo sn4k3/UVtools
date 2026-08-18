@@ -6,18 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Avalonia;
-using Avalonia.Collections;
-using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Platform.Storage;
-using Avalonia.Reactive;
-using Avalonia.Threading;
-using Material.Icons;
-using Material.Icons.Avalonia;
-using SukiUI.Controls;
-using SukiUI.MessageBox;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -36,7 +24,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Web;
+using Avalonia;
+using Avalonia.Collections;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
+using Avalonia.Reactive;
+using Avalonia.Threading;
+using Material.Icons;
+using Material.Icons.Avalonia;
 using StageKit;
+using SukiUI.Controls;
+using SukiUI.MessageBox;
 using Updatum;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
@@ -64,6 +64,36 @@ namespace UVtools.UI;
 
 public partial class MainWindow : GenericWindow
 {
+    public uint SavesCount
+    {
+        get => _savesCount;
+        set => RaiseAndSetIfChanged(ref _savesCount, value);
+    }
+
+    public bool CanSave
+    {
+        get => IsFileLoaded && _canSave;
+        set => RaiseAndSetIfChanged(ref _canSave, value);
+    }
+
+    public IEnumerable<MenuItem> MenuFileOpenRecentItems
+    {
+        get => _menuFileOpenRecentItems;
+        set => RaiseAndSetIfChanged(ref _menuFileOpenRecentItems, value);
+    }
+
+    public IEnumerable<MenuItem> MenuFileSendToItems
+    {
+        get => _menuFileSendToItems;
+        set => RaiseAndSetIfChanged(ref _menuFileSendToItems, value);
+    }
+
+    public IEnumerable<MenuItem> MenuFileConvertItems
+    {
+        get => _menuFileConvertItems;
+        set => RaiseAndSetIfChanged(ref _menuFileConvertItems, value);
+    }
+
     #region Redirects
 
     //public AppVersionChecker VersionChecker => App.VersionChecker;
@@ -236,36 +266,6 @@ public partial class MainWindow : GenericWindow
 
     #endregion
 
-    public uint SavesCount
-    {
-        get => _savesCount;
-        set => RaiseAndSetIfChanged(ref _savesCount, value);
-    }
-
-    public bool CanSave
-    {
-        get => IsFileLoaded && _canSave;
-        set => RaiseAndSetIfChanged(ref _canSave, value);
-    }
-
-    public IEnumerable<MenuItem> MenuFileOpenRecentItems
-    {
-        get => _menuFileOpenRecentItems;
-        set => RaiseAndSetIfChanged(ref _menuFileOpenRecentItems, value);
-    }
-
-    public IEnumerable<MenuItem> MenuFileSendToItems
-    {
-        get => _menuFileSendToItems;
-        set => RaiseAndSetIfChanged(ref _menuFileSendToItems, value);
-    }
-
-    public IEnumerable<MenuItem> MenuFileConvertItems
-    {
-        get => _menuFileConvertItems;
-        set => RaiseAndSetIfChanged(ref _menuFileConvertItems, value);
-    }
-
 
     #region Constructors
 
@@ -326,7 +326,7 @@ public partial class MainWindow : GenericWindow
                     }
                 }
 
-                menuTool.Header = operation.Title;
+                menuTool.Header = $"_{operation.Title}";
                 menuTool.Click += async (sender, args) => await ShowRunOperation(operation.GetType());
             }
         }

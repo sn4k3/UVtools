@@ -1,7 +1,7 @@
 ﻿using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
-using System.Threading.Tasks;
 
 namespace UVtools.Core.Scripting;
 
@@ -17,7 +17,6 @@ public class Scripter
         "System.Threading",
         "System.Threading.Tasks",
         "UVtools.Core",
-        "UVtools.Core.EmguCV",
         "UVtools.Core.Extensions",
         "UVtools.Core.FileFormats",
         "UVtools.Core.GCode",
@@ -34,7 +33,8 @@ public class Scripter
         "UVtools.Core.SystemOS"
     ];
 
-    public static Task<ScriptState<object>> RunScript(string text, object? globals = null, CancellationToken token = default)
+    public static Task<ScriptState<object>> RunScript(string text, object? globals = null,
+        CancellationToken token = default)
     {
         return CSharpScript.RunAsync(text,
             ScriptOptions.Default

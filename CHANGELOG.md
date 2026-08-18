@@ -1,5 +1,11 @@
 # Changelog
 
+## 18/08/2026 - v6.2.1
+
+- Fix Terminal error when sending a command
+- Fix 'Edit Print Paramters' menu item not visible in Tools (#1106)
+- (Upgrade) .NET from 10.0.10 to 10.0.11
+
 ## 06/08/2026 - v6.2.0
 
 - **Layer repair:**

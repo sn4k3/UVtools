@@ -10,7 +10,7 @@
             - IndexSelector: Allow to choose an index from a collection count and display the selected number
             - GroupBox: Similar to GroupBox of WinForms, it contain an Header and Content
         </Description>
-        <Version>5.0.1</Version>
+        <Version>5.0.2</Version>
 
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>Advanced image box; NumericUpDown; Index Selector; Group Box; Avalonia</PackageTags>
@@ -30,7 +30,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.301" PrivateAssets="All"/>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.400" PrivateAssets="All"/>
         <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)"/>
     </ItemGroup>
 

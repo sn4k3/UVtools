@@ -6,20 +6,19 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Threading;
-using Emgu.CV.CvEnum;
-using SkiaSharp;
-using SukiUI.MessageBox;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Threading;
+using Emgu.CV.CvEnum;
 using EmguExtensions;
-using UVtools.Core.Extensions;
+using SkiaSharp;
+using SukiUI.MessageBox;
 using UVtools.Core.Layers;
 using UVtools.Core.PixelEditor;
 using UVtools.UI.Extensions;
@@ -30,8 +29,8 @@ namespace UVtools.UI;
 
 public partial class MainWindow
 {
-    public RangeObservableCollection<PixelOperation> Drawings { get; } = [];
     private int _selectedPixelOperationTabIndex;
+    public RangeObservableCollection<PixelOperation> Drawings { get; } = [];
 
     public PixelDrawing DrawingPixelDrawing { get; } = new();
     public PixelText DrawingPixelText { get; } = new();
@@ -79,9 +78,9 @@ public partial class MainWindow
             return;
         }
 
-        Point location = GetTransposedPoint(operation.Location, true);
+        var location = GetTransposedPoint(operation.Location, true);
 
-        if (Settings.LayerPreview.ZoomIssues ^ (_globalModifiers & KeyModifiers.Alt) != 0)
+        if (Settings.LayerPreview.ZoomIssues ^ ((_globalModifiers & KeyModifiers.Alt) != 0))
         {
             CenterLayerAt(new Rectangle(location, operation.Size), AppSettings.LockedZoomLevel);
         }
@@ -98,8 +97,8 @@ public partial class MainWindow
     {
         if (e.PointerPressedEventArgs.ClickCount == 2) return;
         if (DrawingsGrid.SelectedItem is not MainIssue) return;
-        // Double clicking an issue will center and zoom into the
-        // selected issue. Left click on an issue will zoom to fit.
+        // Double-clicking an issue will center and zoom into the
+        // selected issue. Left-click on an issue will zoom to fit.
 
         var pointer = e.PointerPressedEventArgs.GetCurrentPoint(DrawingsGrid);
 
@@ -108,12 +107,10 @@ public partial class MainWindow
             ZoomToFit();
             return;
         }
-
     }
 
     private void DrawingsGrid_OnKeyUp(object? sender, KeyEventArgs e)
     {
-
         switch (e.Key)
         {
             case Key.Escape:
@@ -122,7 +119,7 @@ public partial class MainWindow
             case Key.Multiply:
                 var selectedItems = DrawingsGrid.SelectedItems.OfType<PixelOperation>().ToList();
                 DrawingsGrid.SelectedItems.Clear();
-                foreach (PixelOperation item in Drawings)
+                foreach (var item in Drawings)
                 {
                     if (!selectedItems.Contains(item))
                         DrawingsGrid.SelectedItems.Add(item);
@@ -152,12 +149,12 @@ public partial class MainWindow
         ShowLayer();
     }
 
-    void DrawPixel(bool isAdd, Point location, KeyModifiers keyModifiers)
+    private void DrawPixel(bool isAdd, Point location, KeyModifiers keyModifiers)
     {
         //Stopwatch sw = Stopwatch.StartNew();
         //var point = pbLayer.PointToImage(location);
 
-        Point realLocation = GetTransposedPoint(location);
+        var realLocation = GetTransposedPoint(location);
 
         if ((keyModifiers & KeyModifiers.Control) != 0)
         {
@@ -190,12 +187,14 @@ public partial class MainWindow
         if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Drawing)
         {
             var drawings = new List<PixelOperation>();
-            uint minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelDrawing.LayersBelow);
-            uint maxLayer = SlicerFile.SanitizeLayerIndex(ActualLayer + DrawingPixelDrawing.LayersAbove);
-            for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
+            var minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelDrawing.LayersBelow);
+            var maxLayer = SlicerFile.SanitizeLayerIndex(ActualLayer + DrawingPixelDrawing.LayersAbove);
+            for (var layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
             {
                 var operationDrawing = new PixelDrawing(layerIndex, realLocation, DrawingPixelDrawing.LineType,
-                    DrawingPixelDrawing.BrushShape, DrawingPixelDrawing.RotationAngle, DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.Thickness, DrawingPixelDrawing.RemovePixelBrightness, DrawingPixelDrawing.PixelBrightness, isAdd);
+                    DrawingPixelDrawing.BrushShape, DrawingPixelDrawing.RotationAngle, DrawingPixelDrawing.BrushSize,
+                    DrawingPixelDrawing.Thickness, DrawingPixelDrawing.RemovePixelBrightness,
+                    DrawingPixelDrawing.PixelBrightness, isAdd);
 
                 //if (PixelHistory.Contains(operation)) continue;
                 //AddDrawing(operationDrawing);
@@ -214,13 +213,16 @@ public partial class MainWindow
                         continue;
                     }
 
-                    float halfBrush = operationDrawing.BrushSize / 2f;
+                    var halfBrush = operationDrawing.BrushSize / 2f;
                     var angle = operationDrawing.RotationAngle;
                     switch (operationDrawing.BrushShape)
                     {
                         case PixelDrawing.BrushShapeType.Line:
                         {
-                            var point1 = location with { X = (int)Math.Round(location.X - halfBrush, MidpointRounding.AwayFromZero) };
+                            var point1 = location with
+                            {
+                                X = (int)Math.Round(location.X - halfBrush, MidpointRounding.AwayFromZero)
+                            };
                             var point2 = point1 with { X = point1.X + operationDrawing.BrushSize };
 
                             if (_showLayerImageRotated)
@@ -323,7 +325,8 @@ public partial class MainWindow
                                 IsStroke = operationDrawing.Thickness >= 0,
                                 StrokeWidth = operationDrawing.Thickness
                             };
-                            LayerCache.Canvas?.DrawCircle(location.X, location.Y, operationDrawing.BrushSize / 2f, circlePaint);
+                            LayerCache.Canvas?.DrawCircle(location.X, location.Y, operationDrawing.BrushSize / 2f,
+                                circlePaint);
 
                             /*CvInvoke.Circle(LayerCache.ImageBgr, location, operationDrawing.BrushSize / 2,
                                 new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
@@ -334,8 +337,8 @@ public partial class MainWindow
                         {
                             if (_showLayerImageRotated)
                             {
-                                if (!_showLayerImageFlipped || _showLayerImageFlippedHorizontally &&
-                                    _showLayerImageFlippedVertically)
+                                if (!_showLayerImageFlipped || (_showLayerImageFlippedHorizontally &&
+                                                                _showLayerImageFlippedVertically))
                                 {
                                     if (_showLayerImageRotateCcwDirection)
                                     {
@@ -359,7 +362,8 @@ public partial class MainWindow
                                 }
                             }
 
-                            var vertices = DrawingExtensions.GetAlignedPolygonVertices((byte)operationDrawing.BrushShape,
+                            var vertices = DrawingExtensions.GetAlignedPolygonVertices(
+                                (byte)operationDrawing.BrushShape,
                                 SlicerFile.PixelsToNormalizedPitchF(operationDrawing.BrushSize),
                                 location, angle, _showLayerImageFlipped && _showLayerImageFlippedHorizontally,
                                 _showLayerImageFlipped && _showLayerImageFlippedVertically);
@@ -382,7 +386,7 @@ public partial class MainWindow
                                 Color = new SKColor(color.ToUint32()),
                                 IsStroke = operationDrawing.Thickness >= 0,
                                 StrokeWidth = operationDrawing.Thickness,
-                                StrokeJoin = SKStrokeJoin.Round,
+                                StrokeJoin = SKStrokeJoin.Round
                             };
 
                             using var path = new SKPath();
@@ -391,7 +395,8 @@ public partial class MainWindow
                             for (var i = 1; i < vertices.Length; i++)
                             {
                                 path.LineTo(vertices[i].X, vertices[i].Y);
-                                canvas.DrawLine(vertices[i - 1].X, vertices[i - 1].Y, vertices[i].X, vertices[i].Y, linePaint);
+                                canvas.DrawLine(vertices[i - 1].X, vertices[i - 1].Y, vertices[i].X, vertices[i].Y,
+                                    linePaint);
                                 canvas.DrawPoint(vertices[i].X, vertices[i].Y, linePaint);
                             }
 
@@ -403,6 +408,7 @@ public partial class MainWindow
                             break;
                         }
                     }
+
                     LayerImageBox.InvalidateVisual();
                     //RefreshLayerImage();
                 }
@@ -416,14 +422,16 @@ public partial class MainWindow
             if (string.IsNullOrEmpty(DrawingPixelText.Text) || DrawingPixelText.FontScale < 0.2) return;
 
             var drawings = new List<PixelOperation>();
-            uint minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelText.LayersBelow);
-            uint maxLayer = SlicerFile!.SanitizeLayerIndex(ActualLayer + DrawingPixelText.LayersAbove);
+            var minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelText.LayersBelow);
+            var maxLayer = SlicerFile!.SanitizeLayerIndex(ActualLayer + DrawingPixelText.LayersAbove);
 
-            for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
+            for (var layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
             {
                 var operationText = new PixelText(layerIndex, realLocation, DrawingPixelText.LineType,
                     DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness,
-                    DrawingPixelText.Text, DrawingPixelText.Mirror, DrawingPixelText.LineAlignment, DrawingPixelText.Angle, DrawingPixelText.RemovePixelBrightness, DrawingPixelText.PixelBrightness, isAdd);
+                    DrawingPixelText.Text, DrawingPixelText.Mirror, DrawingPixelText.LineAlignment,
+                    DrawingPixelText.Angle, DrawingPixelText.RemovePixelBrightness, DrawingPixelText.PixelBrightness,
+                    isAdd);
 
                 //if (PixelHistory.Contains(operation)) continue;
                 //PixelHistory.Add(operation);
@@ -451,11 +459,12 @@ public partial class MainWindow
             if (!isAdd && LayerCache.Image!.GetByte(realLocation) == 0) return;
 
             var drawings = new List<PixelOperation>();
-            uint minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelFill.LayersBelow);
-            uint maxLayer = SlicerFile!.SanitizeLayerIndex(ActualLayer + DrawingPixelFill.LayersAbove);
-            for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
+            var minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelFill.LayersBelow);
+            var maxLayer = SlicerFile!.SanitizeLayerIndex(ActualLayer + DrawingPixelFill.LayersAbove);
+            for (var layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
             {
-                var operationFill = new PixelFill(layerIndex, realLocation, DrawingPixelFill.ErasePixelBrightness, DrawingPixelFill.PixelBrightness, isAdd);
+                var operationFill = new PixelFill(layerIndex, realLocation, DrawingPixelFill.ErasePixelBrightness,
+                    DrawingPixelFill.PixelBrightness, isAdd);
 
                 //if (PixelHistory.Contains(operation)) continue;
                 drawings.Add(operationFill);
@@ -489,7 +498,8 @@ public partial class MainWindow
             //if (PixelHistory.Contains(operation)) return;
             AddDrawing(operationSupport);
 
-            LayerCache.ImageBgra.DrawCircle(location, SlicerFile!.PixelsToNormalizedPitch(operationSupport.TipDiameter / 2),
+            LayerCache.ImageBgra.DrawCircle(location,
+                SlicerFile!.PixelsToNormalizedPitch(operationSupport.TipDiameter / 2),
                 Settings.PixelEditor.SupportsColor.ToMCvScalar(), -1);
             RefreshLayerImage();
             return;
@@ -502,7 +512,8 @@ public partial class MainWindow
             //if (PixelHistory.Contains(operation)) return;
             AddDrawing(operationDrainHole);
 
-            LayerCache.ImageBgra.DrawCircle(location, SlicerFile!.PixelsToNormalizedPitch(operationDrainHole.Diameter / 2),
+            LayerCache.ImageBgra.DrawCircle(location,
+                SlicerFile!.PixelsToNormalizedPitch(operationDrainHole.Diameter / 2),
                 Settings.PixelEditor.DrainHoleColor.ToMCvScalar(), -1);
             RefreshLayerImage();
             return;
@@ -551,7 +562,6 @@ public partial class MainWindow
         }
         else
         {
-
             result = await this.MessageBoxQuestion(
                 "Are you sure you want to apply all operations?",
                 "Apply image editor changes?");
@@ -582,7 +592,6 @@ public partial class MainWindow
                 }
                 catch (OperationCanceledException)
                 {
-
                 }
                 catch (Exception ex)
                 {
@@ -619,7 +628,7 @@ public partial class MainWindow
                     if (!whiteListLayers.Contains(item.LayerIndex))
                         whiteListLayers.Add(item.LayerIndex);
 
-                    uint nextLayer = item.LayerIndex + 1;
+                    var nextLayer = item.LayerIndex + 1;
                     if (nextLayer < SlicerFile!.LayerCount &&
                         !whiteListLayers.Contains(nextLayer))
                     {
