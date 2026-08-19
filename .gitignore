@@ -65,6 +65,7 @@ artifacts/
 # NUKE
 # Holds the .NET SDK build.ps1/build.sh downloads when no suitable one is installed
 .nuke/temp/
+.fallout/temp/
 
 # Tye
 .tye/

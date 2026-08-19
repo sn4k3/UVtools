@@ -8,21 +8,21 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Nuke.Common;
-using Nuke.Common.IO;
-using Nuke.Common.ProjectModel;
-using Nuke.Common.Tooling;
-using Nuke.Common.Tools.DotNet;
-using Nuke.Common.Utilities;
-using Nuke.Common.Utilities.Collections;
+using Fallout.Common;
+using Fallout.Common.IO;
+using Fallout.Solutions;
+using Fallout.Common.Tooling;
+using Fallout.Common.Tools.DotNet;
+using Fallout.Common.Utilities;
+using Fallout.Common.Utilities.Collections;
 using Serilog;
 using UVtools.Core.FileFormats;
-using static Nuke.Common.EnvironmentInfo;
-using static Nuke.Common.Tools.DotNet.DotNetTasks;
+using static Fallout.Common.EnvironmentInfo;
+using static Fallout.Common.Tools.DotNet.DotNetTasks;
 
 namespace build;
 
-public partial class Build : NukeBuild
+public partial class Build : FalloutBuild
 {
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     public readonly Configuration Configuration = Configuration.Release;

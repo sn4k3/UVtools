@@ -1,6 +1,6 @@
 using System.Security;
 using System.Text.RegularExpressions;
-using Nuke.Common.Tooling;
+using Fallout.Common.Tooling;
 
 namespace build;
 

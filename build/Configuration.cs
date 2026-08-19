@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using Nuke.Common.Tooling;
+using Fallout.Common.Tooling;
 
 namespace build;
 
