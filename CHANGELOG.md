@@ -1,6 +1,6 @@
 # Changelog
 
-## 18/08/2026 - v6.2.1
+## /08/2026 - v6.2.1
 
 - Fix Terminal error when sending a command (#1138)
 - Fix 'Edit Print Paramters' menu item not visible in Tools (#1106)
