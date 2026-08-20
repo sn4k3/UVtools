@@ -773,6 +773,12 @@ public partial class UserSettings : ObservableObject
 
         [ObservableProperty] public partial bool CloseEditorOnApply { get; set; }
 
+        /// <summary>
+        /// When true, the Drawing tool accumulates the pointer path in memory and only commits stroke
+        /// operations when the mouse is released. When false, the legacy per-pointer commit is used.
+        /// </summary>
+        [ObservableProperty] public partial bool RenderOnRelease { get; set; } = false;
+
         public PixelEditorUserSettings Clone()
         {
             return (MemberwiseClone() as PixelEditorUserSettings)!;

@@ -27,6 +27,7 @@ public abstract partial class PixelOperation : ObservableObject, IEquatable<Pixe
         Fill,
         Supports,
         DrainHole,
+        Stroke,
     }
 
     [ObservableProperty]
@@ -50,7 +51,7 @@ public abstract partial class PixelOperation : ObservableObject, IEquatable<Pixe
     /// Gets the location of the operation
     /// </summary>
     [XmlIgnore]
-    public Point Location { get; private set; }
+    public Point Location { get; protected set; }
 
     /// <summary>
     /// Gets the <see cref="LineType"/> for the draw operation

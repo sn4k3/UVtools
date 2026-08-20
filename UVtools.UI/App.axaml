@@ -12,6 +12,7 @@
         <converters:EnumToCollectionConverter x:Key="EnumToCollectionConverter" />
         <converters:FromValueDescriptionToEnumConverter x:Key="FromValueDescriptionToEnumConverter" />
         <converters:NumericUpDownValueConverter x:Key="NumericUpDownValueConverter" />
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
 
         <!-- Styles attached dynamically depending on current theme (simple or fluent) -->
         <FluentTheme x:Key="FluentTheme">

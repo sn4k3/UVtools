@@ -21,6 +21,7 @@ using SkiaSharp;
 using SukiUI.MessageBox;
 using UVtools.Core.Layers;
 using UVtools.Core.PixelEditor;
+using UVtools.Core.Extensions;
 using UVtools.UI.Extensions;
 using UVtools.UI.Structures;
 using DrawingExtensions = UVtools.Core.Extensions.DrawingExtensions;
@@ -32,11 +33,20 @@ public partial class MainWindow
     private int _selectedPixelOperationTabIndex;
     public RangeObservableCollection<PixelOperation> Drawings { get; } = [];
 
+    private string _pixelEditorModeLabel = "Pixel Editor (C)";
+    public string PixelEditorModeLabel
+    {
+        get => _pixelEditorModeLabel;
+        private set => RaiseAndSetIfChanged(ref _pixelEditorModeLabel, value);
+    }
+
     public PixelDrawing DrawingPixelDrawing { get; } = new();
     public PixelText DrawingPixelText { get; } = new();
     public PixelFill DrawingPixelFill { get; } = new();
     public PixelSupport DrawingPixelSupport { get; } = new();
     public PixelDrainHole DrawingPixelDrainHole { get; } = new();
+
+    private PixelStroke? _pendingPixelStroke;
 
     public RangeObservableCollection<PixelOperation> DrawingPixelDrawingProfiles { get; } = [];
     public RangeObservableCollection<PixelOperation> DrawingPixelTextProfiles { get; } = [];
@@ -50,8 +60,32 @@ public partial class MainWindow
         set => RaiseAndSetIfChanged(ref _selectedPixelOperationTabIndex, value);
     }
 
+    /// <summary>
+    /// Sets the pixel editor to the legacy classic mode (immediate commit per pointer event).
+    /// </summary>
+    public void SetPixelEditorClassicMode()
+    {
+        Settings.PixelEditor.RenderOnRelease = false;
+        PixelEditorModeLabel = "Pixel Editor (C)";
+        AddLog("Pixel Editor drawing mode: Classic");
+    }
+
+    /// <summary>
+    /// Sets the pixel editor to the vector mode (accumulate path, commit on mouse release).
+    /// </summary>
+    public void SetPixelEditorVectorialMode()
+    {
+        Settings.PixelEditor.RenderOnRelease = true;
+        PixelEditorModeLabel = "Pixel Editor (V)";
+        AddLog("Pixel Editor drawing mode: Vector (render on release)");
+    }
+
     public void InitPixelEditor()
     {
+        PixelEditorModeLabel = Settings.PixelEditor.RenderOnRelease
+            ? "Pixel Editor (V)"
+            : "Pixel Editor (C)";
+
         DrawingPixelDrawingProfiles.Add(DrawingPixelDrawing.Clone());
         DrawingPixelTextProfiles.Add(DrawingPixelText.Clone());
         DrawingPixelFillProfiles.Add(DrawingPixelFill.Clone());
@@ -186,6 +220,28 @@ public partial class MainWindow
 
         if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Drawing)
         {
+            if (Settings.PixelEditor.RenderOnRelease)
+            {
+                _pendingPixelStroke ??= new PixelStroke
+                {
+                    LineType = DrawingPixelDrawing.LineType,
+                    BrushShape = DrawingPixelDrawing.BrushShape,
+                    RotationAngle = DrawingPixelDrawing.RotationAngle,
+                    BrushSize = DrawingPixelDrawing.BrushSize,
+                    Thickness = DrawingPixelDrawing.Thickness,
+                    RemovePixelBrightness = DrawingPixelDrawing.RemovePixelBrightness,
+                    PixelBrightness = DrawingPixelDrawing.PixelBrightness,
+                    IsAdd = isAdd,
+                    LayersBelow = DrawingPixelDrawing.LayersBelow,
+                    LayersAbove = DrawingPixelDrawing.LayersAbove
+                };
+                if (_pendingPixelStroke.AddPoint(realLocation))
+                {
+                    DrawPendingStrokePreview();
+                }
+                return;
+            }
+
             var drawings = new List<PixelOperation>();
             var minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelDrawing.LayersBelow);
             var maxLayer = SlicerFile.SanitizeLayerIndex(ActualLayer + DrawingPixelDrawing.LayersAbove);
@@ -202,215 +258,7 @@ public partial class MainWindow
 
                 if (layerIndex == _actualLayer)
                 {
-                    var color = isAdd
-                        ? Settings.PixelEditor.AddPixelColor
-                        : Settings.PixelEditor.RemovePixelColor;
-
-                    if (operationDrawing.BrushSize == 1)
-                    {
-                        LayerCache.Canvas?.DrawPoint(location.X, location.Y, new SKColor(color.ToUint32()));
-                        LayerImageBox.InvalidateVisual();
-                        continue;
-                    }
-
-                    var halfBrush = operationDrawing.BrushSize / 2f;
-                    var angle = operationDrawing.RotationAngle;
-                    switch (operationDrawing.BrushShape)
-                    {
-                        case PixelDrawing.BrushShapeType.Line:
-                        {
-                            var point1 = location with
-                            {
-                                X = (int)Math.Round(location.X - halfBrush, MidpointRounding.AwayFromZero)
-                            };
-                            var point2 = point1 with { X = point1.X + operationDrawing.BrushSize };
-
-                            if (_showLayerImageRotated)
-                            {
-                                if (_showLayerImageRotateCcwDirection)
-                                {
-                                    angle += 90;
-                                }
-                                else
-                                {
-                                    angle -= 90;
-                                }
-                            }
-
-                            point1 = point1.Rotate(angle, location);
-                            point2 = point2.Rotate(angle, location);
-
-
-                            if (_showLayerImageFlipped)
-                            {
-                                if (_showLayerImageFlippedHorizontally)
-                                {
-                                    var newPoint1 = new Point(point2.X, point1.Y);
-                                    var newPoint2 = new Point(point1.X, point2.Y);
-
-                                    point1 = newPoint1;
-                                    point2 = newPoint2;
-                                }
-
-                                if (_showLayerImageFlippedVertically)
-                                {
-                                    var newPoint1 = new Point(point1.X, point2.Y);
-                                    var newPoint2 = new Point(point2.X, point1.Y);
-
-                                    point1 = newPoint1;
-                                    point2 = newPoint2;
-                                }
-                            }
-
-                            /*if (_showLayerImageRotated)
-                            {
-                                if (!_showLayerImageFlipped || _showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically)
-                                {
-                                    if (_showLayerImageRotateCcwDirection)
-                                    {
-                                        angle -= 90;
-                                    }
-                                    else
-                                    {
-                                        angle += 90;
-                                    }
-                                }
-                                else
-                                {
-                                    if (_showLayerImageRotateCcwDirection)
-                                    {
-                                        angle += 90;
-                                    }
-                                    else
-                                    {
-                                        angle -= 90;
-                                    }
-                                }
-                            }*/
-
-
-                            using var linePaint = new SKPaint
-                            {
-                                IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
-                                Color = new SKColor(color.ToUint32()),
-                                IsStroke = operationDrawing.Thickness >= 0,
-                                StrokeWidth = operationDrawing.Thickness,
-                                StrokeCap = SKStrokeCap.Round
-                            };
-
-                            LayerCache.Canvas?.DrawLine(point1.X, point1.Y, point2.X, point2.Y, linePaint);
-                            break;
-                        }
-                        /*case PixelDrawing.BrushShapeType.Square:
-                            LayerCache.Canvas.DrawRect(location.X - halfBrush, location.Y - halfBrush,
-                                operationDrawing.BrushSize,
-                                operationDrawing.BrushSize,
-                                new SKPaint
-                                {
-                                    IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
-                                    Color = new SKColor(color.ToUint32()),
-                                    IsStroke = operationDrawing.Thickness >= 0,
-                                    StrokeWidth = operationDrawing.Thickness
-                                } );
-                            /*CvInvoke.Rectangle(LayerCache.ImageBgr, GetTransposedRectangle(operationDrawing.Rectangle),
-                                new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
-                                operationDrawing.LineType);*/
-                        //break;
-                        case PixelDrawing.BrushShapeType.Circle:
-                        {
-                            using var circlePaint = new SKPaint
-                            {
-                                IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
-                                Color = new SKColor(color.ToUint32()),
-                                IsStroke = operationDrawing.Thickness >= 0,
-                                StrokeWidth = operationDrawing.Thickness
-                            };
-                            LayerCache.Canvas?.DrawCircle(location.X, location.Y, operationDrawing.BrushSize / 2f,
-                                circlePaint);
-
-                            /*CvInvoke.Circle(LayerCache.ImageBgr, location, operationDrawing.BrushSize / 2,
-                                new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
-                                operationDrawing.LineType);*/
-                            break;
-                        }
-                        default:
-                        {
-                            if (_showLayerImageRotated)
-                            {
-                                if (!_showLayerImageFlipped || (_showLayerImageFlippedHorizontally &&
-                                                                _showLayerImageFlippedVertically))
-                                {
-                                    if (_showLayerImageRotateCcwDirection)
-                                    {
-                                        angle -= 90;
-                                    }
-                                    else
-                                    {
-                                        angle += 90;
-                                    }
-                                }
-                                else
-                                {
-                                    if (_showLayerImageRotateCcwDirection)
-                                    {
-                                        angle += 90;
-                                    }
-                                    else
-                                    {
-                                        angle -= 90;
-                                    }
-                                }
-                            }
-
-                            var vertices = DrawingExtensions.GetAlignedPolygonVertices(
-                                (byte)operationDrawing.BrushShape,
-                                SlicerFile.PixelsToNormalizedPitchF(operationDrawing.BrushSize),
-                                location, angle, _showLayerImageFlipped && _showLayerImageFlippedHorizontally,
-                                _showLayerImageFlipped && _showLayerImageFlippedVertically);
-
-                            //if(angle % 360 != 0) PointExtensions.Rotate(vertices, angle, location);
-
-                            using var canvas = LayerCache.Canvas;
-                            using var linePaint = new SKPaint
-                            {
-                                IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
-                                Color = new SKColor(color.ToUint32()),
-                                IsStroke = true,
-                                StrokeWidth = operationDrawing.Thickness,
-                                StrokeJoin = SKStrokeJoin.Round
-                            };
-
-                            using var fillPaint = new SKPaint
-                            {
-                                IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
-                                Color = new SKColor(color.ToUint32()),
-                                IsStroke = operationDrawing.Thickness >= 0,
-                                StrokeWidth = operationDrawing.Thickness,
-                                StrokeJoin = SKStrokeJoin.Round
-                            };
-
-                            using var path = new SKPath();
-                            path.MoveTo(vertices[0].X, vertices[0].Y);
-                            canvas!.DrawPoint(vertices[0].X, vertices[0].Y, linePaint);
-                            for (var i = 1; i < vertices.Length; i++)
-                            {
-                                path.LineTo(vertices[i].X, vertices[i].Y);
-                                canvas.DrawLine(vertices[i - 1].X, vertices[i - 1].Y, vertices[i].X, vertices[i].Y,
-                                    linePaint);
-                                canvas.DrawPoint(vertices[i].X, vertices[i].Y, linePaint);
-                            }
-
-                            canvas.DrawLine(vertices[0].X, vertices[0].Y, vertices[^1].X, vertices[^1].Y, linePaint);
-                            path.Close();
-
-                            canvas.DrawPath(path, fillPaint);
-
-                            break;
-                        }
-                    }
-
-                    LayerImageBox.InvalidateVisual();
-                    //RefreshLayerImage();
+                    DrawPixelBrushPreview(operationDrawing, location, isAdd);
                 }
             }
 
@@ -522,6 +370,240 @@ public partial class MainWindow
         {
             throw new NotImplementedException("Missing pixel operation");
         }
+    }
+
+    /// <summary>
+    /// Draws a single brush stamp on the current layer canvas using the selected tool settings.
+    /// Used both for the legacy immediate preview and the deferred stroke live preview.
+    /// </summary>
+    /// <param name="operationDrawing">The brush settings to draw.</param>
+    /// <param name="location">The image-space location to stamp.</param>
+    /// <param name="isAdd">True to add pixels, false to remove.</param>
+    private void DrawPixelBrushPreview(PixelDrawing operationDrawing, Point location, bool isAdd)
+    {
+        var color = isAdd
+            ? Settings.PixelEditor.AddPixelColor
+            : Settings.PixelEditor.RemovePixelColor;
+
+        if (operationDrawing.BrushSize == 1)
+        {
+            LayerCache.Canvas?.DrawPoint(location.X, location.Y, new SKColor(color.ToUint32()));
+            LayerImageBox.InvalidateVisual();
+            return;
+        }
+
+        var halfBrush = operationDrawing.BrushSize / 2f;
+        var angle = operationDrawing.RotationAngle;
+        switch (operationDrawing.BrushShape)
+        {
+            case PixelDrawing.BrushShapeType.Line:
+            {
+                var point1 = location with
+                {
+                    X = (int)Math.Round(location.X - halfBrush, MidpointRounding.AwayFromZero)
+                };
+                var point2 = point1 with { X = point1.X + operationDrawing.BrushSize };
+
+                if (_showLayerImageRotated)
+                {
+                    if (_showLayerImageRotateCcwDirection)
+                    {
+                        angle += 90;
+                    }
+                    else
+                    {
+                        angle -= 90;
+                    }
+                }
+
+                point1 = point1.Rotate(angle, location);
+                point2 = point2.Rotate(angle, location);
+
+
+                if (_showLayerImageFlipped)
+                {
+                    if (_showLayerImageFlippedHorizontally)
+                    {
+                        var newPoint1 = new Point(point2.X, point1.Y);
+                        var newPoint2 = new Point(point1.X, point2.Y);
+
+                        point1 = newPoint1;
+                        point2 = newPoint2;
+                    }
+
+                    if (_showLayerImageFlippedVertically)
+                    {
+                        var newPoint1 = new Point(point1.X, point2.Y);
+                        var newPoint2 = new Point(point2.X, point1.Y);
+
+                        point1 = newPoint1;
+                        point2 = newPoint2;
+                    }
+                }
+
+                using var linePaint = new SKPaint
+                {
+                    IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
+                    Color = new SKColor(color.ToUint32()),
+                    IsStroke = operationDrawing.Thickness >= 0,
+                    StrokeWidth = operationDrawing.Thickness,
+                    StrokeCap = SKStrokeCap.Round
+                };
+
+                LayerCache.Canvas?.DrawLine(point1.X, point1.Y, point2.X, point2.Y, linePaint);
+                break;
+            }
+            case PixelDrawing.BrushShapeType.Circle:
+            {
+                using var circlePaint = new SKPaint
+                {
+                    IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
+                    Color = new SKColor(color.ToUint32()),
+                    IsStroke = operationDrawing.Thickness >= 0,
+                    StrokeWidth = operationDrawing.Thickness
+                };
+                LayerCache.Canvas?.DrawCircle(location.X, location.Y, operationDrawing.BrushSize / 2f,
+                    circlePaint);
+                break;
+            }
+            default:
+            {
+                if (_showLayerImageRotated)
+                {
+                    if (!_showLayerImageFlipped || (_showLayerImageFlippedHorizontally &&
+                                                    _showLayerImageFlippedVertically))
+                    {
+                        if (_showLayerImageRotateCcwDirection)
+                        {
+                            angle -= 90;
+                        }
+                        else
+                        {
+                            angle += 90;
+                        }
+                    }
+                    else
+                    {
+                        if (_showLayerImageRotateCcwDirection)
+                        {
+                            angle += 90;
+                        }
+                        else
+                        {
+                            angle -= 90;
+                        }
+                    }
+                }
+
+                var vertices = DrawingExtensions.GetAlignedPolygonVertices(
+                    (byte)operationDrawing.BrushShape,
+                    SlicerFile.PixelsToNormalizedPitchF(operationDrawing.BrushSize),
+                    location, angle, _showLayerImageFlipped && _showLayerImageFlippedHorizontally,
+                    _showLayerImageFlipped && _showLayerImageFlippedVertically);
+
+                using var canvas = LayerCache.Canvas;
+                using var linePaint = new SKPaint
+                {
+                    IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
+                    Color = new SKColor(color.ToUint32()),
+                    IsStroke = true,
+                    StrokeWidth = operationDrawing.Thickness,
+                    StrokeJoin = SKStrokeJoin.Round
+                };
+
+                using var fillPaint = new SKPaint
+                {
+                    IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
+                    Color = new SKColor(color.ToUint32()),
+                    IsStroke = operationDrawing.Thickness >= 0,
+                    StrokeWidth = operationDrawing.Thickness,
+                    StrokeJoin = SKStrokeJoin.Round
+                };
+
+                using var path = new SKPath();
+                path.MoveTo(vertices[0].X, vertices[0].Y);
+                canvas!.DrawPoint(vertices[0].X, vertices[0].Y, linePaint);
+                for (var i = 1; i < vertices.Length; i++)
+                {
+                    path.LineTo(vertices[i].X, vertices[i].Y);
+                    canvas.DrawLine(vertices[i - 1].X, vertices[i - 1].Y, vertices[i].X, vertices[i].Y,
+                        linePaint);
+                    canvas.DrawPoint(vertices[i].X, vertices[i].Y, linePaint);
+                }
+
+                canvas.DrawLine(vertices[0].X, vertices[0].Y, vertices[^1].X, vertices[^1].Y, linePaint);
+                path.Close();
+
+                canvas.DrawPath(path, fillPaint);
+
+                break;
+            }
+        }
+
+        LayerImageBox.InvalidateVisual();
+    }
+
+    /// <summary>
+    /// Draws the live preview of the pending stroke on the current layer canvas, interpolating
+    /// the gap between the last two stored points with the selected brush.
+    /// </summary>
+    private void DrawPendingStrokePreview()
+    {
+        if (_pendingPixelStroke is null || _pendingPixelStroke.Points.Count == 0) return;
+        var displayPoints = new Point[_pendingPixelStroke.Points.Count];
+        for (var i = 0; i < _pendingPixelStroke.Points.Count; i++)
+        {
+            displayPoints[i] = GetTransposedPoint(_pendingPixelStroke.Points[i], true);
+        }
+
+        var operationDrawing = new PixelDrawing(ActualLayer, displayPoints[0],
+            _pendingPixelStroke.LineType, _pendingPixelStroke.BrushShape, _pendingPixelStroke.RotationAngle,
+            _pendingPixelStroke.BrushSize, _pendingPixelStroke.Thickness,
+            _pendingPixelStroke.RemovePixelBrightness, _pendingPixelStroke.PixelBrightness,
+            _pendingPixelStroke.IsAdd);
+
+        if (displayPoints.Length == 1)
+        {
+            DrawPixelBrushPreview(operationDrawing, displayPoints[0], _pendingPixelStroke.IsAdd);
+            return;
+        }
+
+        var previousPoint = displayPoints[^2];
+        var currentPoint = displayPoints[^1];
+        foreach (var point in previousPoint.InterpolateLine(currentPoint))
+        {
+            DrawPixelBrushPreview(operationDrawing, point, _pendingPixelStroke.IsAdd);
+        }
+    }
+
+    /// <summary>
+    /// Commits the pending stroke on mouse release: builds one PixelStroke per layer in the
+    /// propagation range and inserts them all with a single bulk insert.
+    /// </summary>
+    private void CommitPendingStroke()
+    {
+        if (_pendingPixelStroke is null || _pendingPixelStroke.IsEmpty)
+        {
+            _pendingPixelStroke = null;
+            return;
+        }
+
+        var drawings = new List<PixelOperation>();
+        var minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)_pendingPixelStroke.LayersBelow);
+        var maxLayer = SlicerFile.SanitizeLayerIndex(ActualLayer + _pendingPixelStroke.LayersAbove);
+        for (var layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
+        {
+            var operationStroke = new PixelStroke(layerIndex, _pendingPixelStroke.Points,
+                _pendingPixelStroke.LineType, _pendingPixelStroke.BrushShape, _pendingPixelStroke.RotationAngle,
+                _pendingPixelStroke.BrushSize, _pendingPixelStroke.Thickness,
+                _pendingPixelStroke.RemovePixelBrightness, _pendingPixelStroke.PixelBrightness,
+                _pendingPixelStroke.IsAdd);
+            drawings.Add(operationStroke);
+        }
+
+        _pendingPixelStroke = null;
+        AddDrawings(drawings);
+        ShowLayer();
     }
 
     public void AddDrawing(PixelOperation operation)

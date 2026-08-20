@@ -104,8 +104,12 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
             .Where(operation => operation.OperationType
                 is PixelOperation.PixelOperationType.Drawing
                 or PixelOperation.PixelOperationType.Text
-                or PixelOperation.PixelOperationType.Fill)
-            .GroupBy(operation => operation.LayerIndex);
+                or PixelOperation.PixelOperationType.Fill
+                or PixelOperation.PixelOperationType.Stroke)
+            .SelectMany(operation => operation.OperationType == PixelOperation.PixelOperationType.Stroke
+                ? ExpandLayerRange(operation)
+                : new[] { (operation.LayerIndex, operation) })
+            .GroupBy(tuple => tuple.LayerIndex);
 
         Parallel.ForEach(group1, CoreSettings.GetParallelOptions(progress), layerOperationGroup =>
         {
@@ -113,7 +117,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
             var layer = this[layerOperationGroup.Key];
             using var mat = layer.LayerMat;
 
-            foreach (var operation in layerOperationGroup)
+            foreach (var (_, operation) in layerOperationGroup)
             {
                 if (operation.OperationType == PixelOperation.PixelOperationType.Drawing)
                 {
@@ -152,6 +156,46 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                         operationText.FontScale, new MCvScalar(operationText.Brightness), operationText.Thickness,
                         operationText.LineType, operationText.Mirror, operationText.LineAlignment,
                         (double)operationText.Angle);
+                }
+                else if (operation.OperationType == PixelOperation.PixelOperationType.Stroke)
+                {
+                    if (operation is not PixelStroke operationStroke || operationStroke.IsEmpty) continue;
+
+                    if (operationStroke.BrushSize == 1)
+                    {
+                        var previousPoint = operationStroke.Points[0];
+                        mat.SetByte(previousPoint.X, previousPoint.Y, operationStroke.Brightness);
+                        for (var i = 1; i < operationStroke.Points.Count; i++)
+                        {
+                            var point = operationStroke.Points[i];
+                            foreach (var interpolatedPoint in previousPoint.InterpolateLine(point))
+                            {
+                                mat.SetByte(interpolatedPoint.X, interpolatedPoint.Y, operationStroke.Brightness);
+                            }
+
+                            previousPoint = point;
+                        }
+
+                        continue;
+                    }
+
+                    var strokeDiameter = PixelsToNormalizedPitchF(operationStroke.BrushSize);
+                    var strokePreviousPoint = operationStroke.Points[0];
+                    mat.DrawAlignedPolygon((byte)operationStroke.BrushShape, strokeDiameter, strokePreviousPoint,
+                        new MCvScalar(operationStroke.Brightness), operationStroke.RotationAngle,
+                        operationStroke.Thickness, operationStroke.LineType);
+                    for (var i = 1; i < operationStroke.Points.Count; i++)
+                    {
+                        var point = operationStroke.Points[i];
+                        foreach (var interpolatedPoint in strokePreviousPoint.InterpolateLine(point))
+                        {
+                            mat.DrawAlignedPolygon((byte)operationStroke.BrushShape, strokeDiameter, interpolatedPoint,
+                                new MCvScalar(operationStroke.Brightness), operationStroke.RotationAngle,
+                                operationStroke.Thickness, operationStroke.LineType);
+                        }
+
+                        strokePreviousPoint = point;
+                    }
                 }
                 else if (operation.OperationType == PixelOperation.PixelOperationType.Fill)
                 {
@@ -288,6 +332,27 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                 progress += (uint)layerOperationGroup.Count();
             }
         }
+    }
+
+    /// <summary>
+    /// Expands a stroke operation into one tuple per layer in its propagation range
+    /// (<see cref="PixelStroke.LayersBelow"/> to <see cref="PixelStroke.LayersAbove"/>).
+    /// </summary>
+    /// <param name="operation">The stroke operation to expand.</param>
+    /// <returns>One (LayerIndex, operation) tuple per target layer, in ascending order.</returns>
+    private IEnumerable<(uint LayerIndex, PixelOperation operation)> ExpandLayerRange(PixelOperation operation)
+    {
+        if (operation is not PixelStroke stroke) return new[] { (operation.LayerIndex, operation) };
+
+        var minLayer = SanitizeLayerIndex((int)operation.LayerIndex - (int)stroke.LayersBelow);
+        var maxLayer = SanitizeLayerIndex((int)operation.LayerIndex + (int)stroke.LayersAbove);
+        var result = new List<(uint, PixelOperation)>((int)(maxLayer - minLayer) + 1);
+        for (var layer = minLayer; layer <= maxLayer; layer++)
+        {
+            result.Add((layer, operation));
+        }
+
+        return result;
     }
 
     #endregion

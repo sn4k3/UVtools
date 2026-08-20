@@ -431,7 +431,7 @@ public class OperationPCBExposureTests
         var offset = operation.GetDrawOffsetMillimeters();
 
         using var upright = operation.GetMat(operation.Files[0]);
-        operation.FlipY = false;
+        operation.FlipVertically = false;
         using var mirrored = operation.GetMat(operation.Files[0]);
 
         // The round pad is above the square one on the board, at Y -25 against Y -30

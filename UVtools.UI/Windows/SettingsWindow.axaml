@@ -1987,6 +1987,8 @@
                                             Spacing="10">
                                     <CheckBox Content="Refresh issues for modified layers"
                                               IsChecked="{Binding Settings.PixelEditor.PartialUpdateIslandsOnEditing}" />
+                                    <CheckBox Content="Render strokes only when the mouse is released (smoother drawing)"
+                                              IsChecked="{Binding Settings.PixelEditor.RenderOnRelease}" />
                                     <CheckBox Content="Close pixel editor after operations are applied"
                                               IsChecked="{Binding Settings.PixelEditor.CloseEditorOnApply}" />
                                 </StackPanel>
