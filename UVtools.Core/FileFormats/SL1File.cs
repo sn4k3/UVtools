@@ -468,7 +468,11 @@ public sealed class SL1File : FileFormat
     public override float LayerHeight
     {
         get => OutputConfigSettings.LayerHeight;
-        set => base.LayerHeight = OutputConfigSettings.LayerHeight = Layer.RoundHeight(value);
+        // Both ini files carry the layer height (layerHeight in config.ini, layer_height in prusaslicer.ini)
+        // and the decoder maps either key onto every settings object that has the member, so the two must
+        // agree or whichever is read last wins. Keeping the print settings in sync makes a file written
+        // from scratch decode with the height it was given.
+        set => base.LayerHeight = OutputConfigSettings.LayerHeight = PrintSettings.LayerHeight = Layer.RoundHeight(value);
     }
 
     public override uint LayerCount
