@@ -499,7 +499,11 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                         previousSpan = previousImage.RoiMat.GetReadOnlySpan2DOfBytes();
                                     }
 
-                                    List<Point> points = [];
+                                    // First pass only counts. The point list is materialized later, and only
+                                    // for components that actually turn out to be islands: a large solid
+                                    // cross-section would otherwise grow (and immediately discard) a list with
+                                    // one entry per pixel.
+                                    int pixelCount = 0;
                                     uint pixelsSupportingIsland = 0;
 
                                     for (int y = rect.Y; y < rect.Bottom; y++)
@@ -509,7 +513,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                             roiSpan.DangerousGetReferenceAt(y, x) < islandConfig.RequiredPixelBrightnessToProcessCheck // Low brightness, ignore
                                         ) continue;
 
-                                        points.Add(new Point(image.Roi.X + x, image.Roi.Y + y));
+                                        pixelCount++;
 
                                         //int pixel = roiStep * y + x;
                                         if (previousSpan.DangerousGetReferenceAt(y, x) >= islandConfig.RequiredPixelBrightnessToSupport)
@@ -518,9 +522,9 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                         }
                                     }
 
-                                    if (points.Count == 0) continue; // Should never happen
+                                    if (pixelCount == 0) continue; // Should never happen
 
-                                    var requiredSupportingPixels = Math.Max(1, points.Count * islandConfig.RequiredPixelsToSupportMultiplier);
+                                    var requiredSupportingPixels = Math.Max(1, pixelCount * islandConfig.RequiredPixelsToSupportMultiplier);
 
                                     /*if (pixelsSupportingIsland >= islandConfig.RequiredPixelsToSupport)
                                             isIsland = false; // Not a island, bounding is strong, i think...
@@ -582,6 +586,18 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                         {
                                             continue;
                                         }
+                                    }
+
+                                    // Confirmed island: now collect its pixels.
+                                    var points = new List<Point>(pixelCount);
+                                    for (int y = rect.Y; y < rect.Bottom; y++)
+                                    for (int x = rect.X; x < rect.Right; x++)
+                                    {
+                                        if (labelSpan.DangerousGetReferenceAt(y, x) != i ||
+                                            roiSpan.DangerousGetReferenceAt(y, x) < islandConfig.RequiredPixelBrightnessToProcessCheck
+                                        ) continue;
+
+                                        points.Add(new Point(image.Roi.X + x, image.Roi.Y + y));
                                     }
 
                                     AddIssue(new MainIssue(MainIssue.IssueType.Island, new IssueOfPoints(layer, points, islandBoundingRectangle)));
