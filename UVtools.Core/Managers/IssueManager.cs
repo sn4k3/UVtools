@@ -164,6 +164,25 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
             CvInvoke.DrawContours(output, externals, -1, EmguCvExtensions.BlackColor, -1);
         }
 
+        /// <summary>
+        /// Gets the rectangle that encloses every contour of <paramref name="group"/>, clamped to <paramref name="bounds"/>.
+        /// The resin trap passes only ever touch pixels inside this rectangle, so all the per-contour
+        /// mat work can be confined to it instead of running over the whole layer.
+        /// </summary>
+        static Rectangle GetContourGroupRoi(VectorOfVectorOfPoint group, Size bounds)
+        {
+            if (group.Size == 0) return Rectangle.Empty;
+
+            var rect = CvInvoke.BoundingRectangle(group[0]);
+            for (var i = 1; i < group.Size; i++)
+            {
+                rect = Rectangle.Union(rect, CvInvoke.BoundingRectangle(group[i]));
+            }
+
+            rect.Intersect(new Rectangle(Point.Empty, bounds));
+            return rect;
+        }
+
         if (printHeightConfig.Enabled && SlicerFile.MachineZ > 0)
         {
             float printHeightWithOffset = Layer.RoundHeight(SlicerFile.MachineZ + printHeightConfig.Offset);
@@ -736,11 +755,20 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                         if (progress.Token.IsCancellationRequested) return;
                         if (resinTrapsContoursArea[layerIndex][i] < resinTrapConfig.RequiredAreaToProcessCheck) return;
 
-                        /* intersect current contour, with the current airmap. */
-                        using var currentContour = curLayer.NewZeros();
+                        /* intersect current contour, with the current airmap.
+                         * Everything is confined to the contour's own bounding box: drawing into a
+                         * layer-sized mat here meant allocating + zeroing the full layer and then
+                         * scanning the whole image three times (and/count/or) for a contour that
+                         * usually covers a tiny fraction of it. */
+                        var contourRoi = GetContourGroupRoi(hollows[layerIndex][i], curLayer.Size);
+                        if (contourRoi.IsEmpty) return;
+
+                        using var currentContour = EmguCvExtensions.InitMat(contourRoi.Size);
+                        using var currentAirMapRoi = new Mat(currentAirMap, contourRoi);
                         using var airOverlap = new Mat();
-                        CvInvoke.DrawContours(currentContour, hollows[layerIndex][i], -1, EmguCvExtensions.WhiteColor, -1);
-                        CvInvoke.BitwiseAnd(currentAirMap, currentContour, airOverlap);
+                        CvInvoke.DrawContours(currentContour, hollows[layerIndex][i], -1, EmguCvExtensions.WhiteColor, -1,
+                            LineType.EightConnected, null, int.MaxValue, new Point(-contourRoi.X, -contourRoi.Y));
+                        CvInvoke.BitwiseAnd(currentAirMapRoi, currentContour, airOverlap);
                         var overlapCount = CvInvoke.CountNonZero(airOverlap);
 
                         lock (SlicerFile[layerIndex].Mutex)
@@ -759,12 +787,12 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                     /* this contour does overlap air, add it to the current air map and remember this contour was air-connected for 2nd pass */
                                     airContours[layerIndex].Add(hollows[layerIndex][i]);
 
-                                    CvInvoke.BitwiseOr(currentContour, currentAirMap, currentAirMap);
+                                    CvInvoke.BitwiseOr(currentContour, currentAirMapRoi, currentAirMapRoi);
                                 }
                                 else
                                 {
                                     /* it overlapped ,but not by enough, treat as solid */
-                                    CvInvoke.Subtract(currentAirMap, currentContour, currentAirMap);
+                                    CvInvoke.Subtract(currentAirMapRoi, currentContour, currentAirMapRoi);
                                 }
                             }
                         }
@@ -838,12 +866,17 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                         progress.PauseIfRequested();
                         if (progress.Token.IsCancellationRequested) return;
 
-                        /* check if each contour overlaps known air */
-                        using var currentContour = curLayer.NewZeros();
-                        using var airOverlap = new Mat();
-                        CvInvoke.DrawContours(currentContour, resinTraps[layerIndex][x], -1, EmguCvExtensions.WhiteColor, -1);
+                        /* check if each contour overlaps known air, confined to the contour's bounding box */
+                        var contourRoi = GetContourGroupRoi(resinTraps[layerIndex][x], curLayer.Size);
+                        if (contourRoi.IsEmpty) return;
 
-                        CvInvoke.BitwiseAnd(currentAirMap, currentContour, airOverlap);
+                        using var currentContour = EmguCvExtensions.InitMat(contourRoi.Size);
+                        using var currentAirMapRoi = new Mat(currentAirMap, contourRoi);
+                        using var airOverlap = new Mat();
+                        CvInvoke.DrawContours(currentContour, resinTraps[layerIndex][x], -1, EmguCvExtensions.WhiteColor, -1,
+                            LineType.EightConnected, null, int.MaxValue, new Point(-contourRoi.X, -contourRoi.Y));
+
+                        CvInvoke.BitwiseAnd(currentAirMapRoi, currentContour, airOverlap);
                         var overlapCount = CvInvoke.CountNonZero(airOverlap);
 
                         //lock (SlicerFile[layerIndex].Mutex)
@@ -851,7 +884,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                         if (overlapCount >= resinTrapConfig.RequiredBlackPixelsToDrain)
                         {
                             /* this contour does overlap air, add this it our air map */
-                            CvInvoke.BitwiseOr(currentContour, currentAirMap, currentAirMap, currentContour);
+                            CvInvoke.BitwiseOr(currentContour, currentAirMapRoi, currentAirMapRoi, currentContour);
                             /* Always add the removed contour to suctionTraps (even if we aren't reporting suction traps)
                              * This is because contours that are placed on here get removed from resin traps in the next stage
                              * if you don't put them here, they never get removed even if they should :) */
@@ -902,7 +935,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                         else
                         {
                             /* doesn't overlap by enough, remove from air map */
-                            CvInvoke.Subtract(currentAirMap, currentContour, currentAirMap, currentContour);
+                            CvInvoke.Subtract(currentAirMapRoi, currentContour, currentAirMapRoi, currentContour);
 
                             lock (SlicerFile[layerIndex].Mutex)
                             {
