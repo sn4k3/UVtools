@@ -26,7 +26,7 @@ using Avalonia.Input.Platform;
 using Material.Icons;
 using StageKit;
 using StageKit.Runtime;
-using Updatum;
+using StageKit.Updatum;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;

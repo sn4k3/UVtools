@@ -42,7 +42,7 @@
 
         <!-- Versions -->
         <UVtoolsVersion>6.2.1</UVtoolsVersion>
-        <AvaloniaVersion>12.1.1</AvaloniaVersion>
+        <AvaloniaVersion>12.1.2</AvaloniaVersion>
 
         <!-- MvvmToolkit -->
         <MvvmToolkitEnableINotifyPropertyChangingSupport>false</MvvmToolkitEnableINotifyPropertyChangingSupport>

@@ -37,7 +37,7 @@ using Material.Icons.Avalonia;
 using StageKit;
 using SukiUI.Controls;
 using SukiUI.MessageBox;
-using Updatum;
+using StageKit.Updatum;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Exceptions;

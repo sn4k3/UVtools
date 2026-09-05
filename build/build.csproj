@@ -12,6 +12,7 @@
     <ItemGroup>
         <PackageReference Include="Fallout.Build" Version="10.4.0"/>
         <PackageReference Include="Fallout.Common" Version="10.4.0"/>
+        <PackageReference Include="StageKit.Fallout" Version="0.3.2" />
     </ItemGroup>
 
     <ItemGroup>
