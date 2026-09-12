@@ -18,6 +18,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using EmguExtensions;
+using StageKit.Extensions;
 using UVtools.Core.Compressors;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;

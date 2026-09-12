@@ -12,6 +12,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Xml;
+using StageKit.Primitives;
 using ZLinq;
 
 namespace UVtools.Core.Extensions;
@@ -112,8 +113,8 @@ public static class ZipArchiveExtensions
         //Gets the complete path for the destination file, including any
         //relative paths that were in the zip file
         var destFileName = Path.GetFullPath(Path.Combine(destinationPath, preserveFullName ? entry.FullName : entry.Name));
-        var fullDestDirPath = Path.GetFullPath(Path.Combine(destinationPath, (preserveFullName ? Path.GetDirectoryName(entry.FullName) : string.Empty)!) + Path.DirectorySeparatorChar);
-        if (!destFileName.StartsWith(fullDestDirPath)) return null; // Entry is outside the target dir
+        if (!PathUtilities.IsSubPathOf(destFileName, destinationPath)) return null; // Entry is outside the target dir
+        var fullDestDirPath = Path.GetDirectoryName(destFileName)!;
 
         //Creates the directory (if it doesn't exist) for the new path
         Directory.CreateDirectory(fullDestDirPath);

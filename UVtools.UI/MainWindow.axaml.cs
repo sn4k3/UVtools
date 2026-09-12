@@ -1042,7 +1042,7 @@ public partial class MainWindow : GenericWindow
     public void MenuFileOpenContainingFolderClicked()
     {
         if (!IsFileLoaded) return;
-        HostSystem.OpenDirectory(SlicerFile!.DirectoryPath);
+        HostSystem.ShowFileInFileManager(SlicerFile!.FileFullPath!);
     }
 
     public async Task MenuFileRenameClicked()

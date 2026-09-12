@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using StageKit.Primitives.System;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Objects;
@@ -101,18 +102,13 @@ public partial class MappedProcess : ObservableObject
 
     public async Task StartProcess(FileFormat slicerFile, CancellationToken cancellationToken = default)
     {
-        await StartProcess(slicerFile.FileFullPath!, cancellationToken);
+        await StartProcess(slicerFile.FileFullPath!, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task StartProcess(string slicerFile, CancellationToken cancellationToken = default)
     {
         var arguments = string.IsNullOrWhiteSpace(Arguments) ? $"\"{slicerFile}\"" : string.Format(Arguments, slicerFile);
-        using var process = Process.Start(ApplicationPath, arguments);
-        if (process is null) return;
-        if (WaitForExit)
-        {
-            await process.WaitForExitAsync(cancellationToken);
-        }
+        await ProcessHelper.StartProcessAsync(ApplicationPath, arguments, requireElevation: false, waitForCompletion: WaitForExit, waitTimeout: -1, cancellationToken).ConfigureAwait(false);
     }
 
     public override string ToString()

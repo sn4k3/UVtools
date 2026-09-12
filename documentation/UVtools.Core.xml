@@ -377,7 +377,7 @@
         </member>
         <member name="P:UVtools.Core.Extensions.DateTimeExtensions.TimestampMinutes">
             <summary>
-            Gets the Unix minutes in seconds since Jan 1, 1970 UTC
+            Gets the Unix timestamp in minutes since Jan 1, 1970 UTC
             </summary>
         </member>
         <member name="M:UVtools.Core.Extensions.DateTimeExtensions.GetDateTimeFromTimestampSeconds(System.Double)">
@@ -392,29 +392,6 @@
             Gets the <see cref="T:System.DateTime"/> from a unix timestamp in minutes
             </summary>
             <param name="minutes"></param>
-            <returns></returns>
-        </member>
-        <member name="M:UVtools.Core.Extensions.DateTimeExtensions.Age(System.DateTime)">
-            <summary>
-            Calculates the age in years of the current System.DateTime object today.
-            </summary>
-            <param name="birthDate">The date of birth</param>
-            <returns>Age in years today. 0 is returned for a future date of birth.</returns>
-        </member>
-        <member name="M:UVtools.Core.Extensions.DateTimeExtensions.Age(System.DateTime,System.DateTime)">
-            <summary>
-            Calculates the age in years of the current System.DateTime object on a later date.
-            </summary>
-            <param name="birthDate">The date of birth</param>
-            <param name="laterDate">The date on which to calculate the age.</param>
-            <returns>Age in years on a later day. 0 is returned as minimum.</returns>
-        </member>
-        <member name="M:UVtools.Core.Extensions.DateTimeExtensions.ToTimeString(System.TimeSpan,System.Boolean)">
-            <summary>
-            Convert a <see cref="T:System.TimeSpan"/> to a string representation of the time
-            </summary>
-            <param name="timeSpan"></param>
-            <param name="showSeconds"></param>
             <returns></returns>
         </member>
         <member name="M:UVtools.Core.Extensions.FileStreamExtensions.ReadToEnd(System.IO.FileStream)">

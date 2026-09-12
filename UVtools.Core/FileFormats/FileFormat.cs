@@ -30,6 +30,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using EmguExtensions;
+using StageKit.Extensions;
 using UVtools.Core.Exceptions;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
@@ -37,6 +38,7 @@ using UVtools.Core.Layers;
 using UVtools.Core.Managers;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
+using StageKit.Primitives;
 using UVtools.Core.PixelEditor;
 using ZLinq;
 using Timer = System.Timers.Timer;
@@ -1583,12 +1585,11 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
     {
         errorMessage = string.Empty;
 
-        var invalidFileNameChars = Path.GetInvalidFileNameChars();
-        var invalidChars = filename.AsValueEnumerable().Where(c => invalidFileNameChars.AsValueEnumerable().Contains(c))
-            .Distinct();
-
-        if (invalidChars.Any())
+        if (filename.AsSpan().IndexOfAny(FileUtilities.InvalidFileNameChars) >= 0)
         {
+            var invalidChars = filename.AsValueEnumerable().Where(c => FileUtilities.InvalidFileNameChars.Contains(c))
+                .Distinct();
+
             errorMessage =
                 $"The file \"{filename}\" have invalid characters.\nThe following in-name characters are forbidden: {invalidChars.JoinToString(", ")}.";
             return false;
@@ -4022,7 +4023,8 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         get
         {
             var time = DisplayTotalOffTime;
-            return TimeSpan.FromSeconds(float.IsPositiveInfinity(time) || float.IsNaN(time) ? 0 : time).ToTimeString();
+            return TimeSpan.FromSeconds(float.IsPositiveInfinity(time) || float.IsNaN(time) ? 0 : time)
+                .ToTimeString();
         }
     }
 
