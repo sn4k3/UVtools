@@ -196,49 +196,44 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
         if (emptyLayerConfig.Enabled)
         {
+            var classifyByPosition = emptyLayerConfig.IgnoreStartingEmptyLayers ||
+                                     emptyLayerConfig.IgnoreLooseEmptyLayers ||
+                                     emptyLayerConfig.IgnoreEndingEmptyLayers;
+            var firstNonEmptyLayerIndex = 0;
+            var lastNonEmptyLayerIndex = SlicerFile.Count - 1;
+            if (classifyByPosition)
+            {
+                while (firstNonEmptyLayerIndex < SlicerFile.Count && SlicerFile[firstNonEmptyLayerIndex].IsEmpty)
+                {
+                    firstNonEmptyLayerIndex++;
+                }
+
+                while (lastNonEmptyLayerIndex >= firstNonEmptyLayerIndex && SlicerFile[lastNonEmptyLayerIndex].IsEmpty)
+                {
+                    lastNonEmptyLayerIndex--;
+                }
+            }
+
             for (var layerIndex = 0; layerIndex < SlicerFile.Count; layerIndex++)
             {
                 var layer = SlicerFile[layerIndex];
                 if (!layer.IsEmpty) continue;
 
-                if (!emptyLayerConfig.IgnoreStartingEmptyLayers
-                    && emptyLayerConfig is {IgnoreLooseEmptyLayers: false, IgnoreEndingEmptyLayers: false})
+                if (!classifyByPosition)
                 {
                     AddIssue(new MainIssue(MainIssue.IssueType.EmptyLayer, new Issue(layer)));
                     continue;
                 }
 
-                // 1 = Starting
-                // 2 = Loose
-                // 3 = Ending
-                byte emptyLayerPosType = 0;
-                int i;
-
-                for (i = 0; i < layerIndex && SlicerFile[i].IsEmpty; layerIndex++) { }
-
-                if (i == layerIndex)
+                if (layerIndex < firstNonEmptyLayerIndex)
                 {
-                    emptyLayerPosType = 1;
+                    if (!emptyLayerConfig.IgnoreStartingEmptyLayers) AddIssue(new MainIssue(MainIssue.IssueType.EmptyLayer, new Issue(layer)));
                 }
-                else
-                {
-                    for (i = (int) SlicerFile.LastLayerIndex; i > layerIndex && SlicerFile[i].IsEmpty; layerIndex--) { }
-                    emptyLayerPosType = i == layerIndex ? (byte) 3 : (byte) 2;
-                }
-
-                if (emptyLayerPosType == 1)
-                {
-                    if(!emptyLayerConfig.IgnoreStartingEmptyLayers) AddIssue(new MainIssue(MainIssue.IssueType.EmptyLayer, new Issue(layer)));
-                }
-                else if (emptyLayerPosType == 2)
-                {
-                    if (!emptyLayerConfig.IgnoreLooseEmptyLayers) AddIssue(new MainIssue(MainIssue.IssueType.EmptyLayer, new Issue(layer)));
-                }
-                else if (emptyLayerPosType == 3)
+                else if (layerIndex > lastNonEmptyLayerIndex)
                 {
                     if (!emptyLayerConfig.IgnoreEndingEmptyLayers) AddIssue(new MainIssue(MainIssue.IssueType.EmptyLayer, new Issue(layer)));
                 }
-                else
+                else if (!emptyLayerConfig.IgnoreLooseEmptyLayers)
                 {
                     AddIssue(new MainIssue(MainIssue.IssueType.EmptyLayer, new Issue(layer)));
                 }
