@@ -9952,60 +9952,6 @@
             Gets the name of the running *.app. Returns null or empty if not running an macOS .app. Returns null or empty if not an AppImage
             </summary>
         </member>
-        <member name="T:UVtools.Core.SystemOS.macOS">
-            <summary>
-            MacOS specific methods
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.SystemOS.macOS.IsRunningApp">
-            <summary>
-            Gets if is running under MacOS and under .app format
-            </summary>
-        </member>
-        <member name="M:UVtools.Core.SystemOS.macOS.IsRunningAppGetPath(System.String@)">
-            <summary>
-            Gets if is running under macOS and under .app format and return the full root path for the running .app
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.SystemOS.macOS.RunningAppRootPath">
-            <summary>
-            Gets the full root path for the running .app. Returns null or empty if not running an macOS .app
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.SystemOS.macOS.RunningAppName">
-            <summary>
-            Gets the name of the running .app. Returns null or empty if not running an macOS .app
-            </summary>
-        </member>
-        <member name="M:UVtools.Core.SystemOS.SystemAware.Beep(System.Int32,System.Int32,System.Boolean)">
-            <summary>
-            Produces a beep tone from speaker
-            </summary>
-            <param name="frequency">The sound frequency</param>
-            <param name="duration">The duration of the beep in milliseconds</param>
-            <param name="waitForCompletion">True to wait for beep ends to continue, otherwise run in background</param>
-        </member>
-        <member name="P:UVtools.Core.SystemOS.SystemAware.IsRunningLinuxAppImage">
-            <summary>
-            Gets if is running under Linux and under AppImage format
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="P:UVtools.Core.SystemOS.SystemAware.IsRunningMacOSApp">
-            <summary>
-            Gets if is running under MacOS and under *.app format
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.SystemOS.SystemAware.OperatingSystemName">
-            <summary>
-            Gets the main name of the operative system
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.SystemOS.SystemAware.OperatingSystemNameWithArch">
-            <summary>
-            Gets the main name of the operative system with architecture
-            </summary>
-        </member>
         <member name="M:UVtools.Core.SystemOS.Windows.USB.GetUSBHandler(System.String)">
             <summary>
             Get the USB handler

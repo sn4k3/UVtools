@@ -25,6 +25,7 @@ using System.Web;
 using Avalonia.Input.Platform;
 using Material.Icons;
 using StageKit;
+using StageKit.Primitives.System;
 using StageKit.Runtime;
 using StageKit.Updatum;
 using UVtools.Core;
@@ -117,7 +118,7 @@ public partial class App : Application
                             "https://github.com/sn4k3/UVtools/discussions/categories/q-a",
                             () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
                         MessageWindow.CreateButtonAction("Restart", MaterialIconKind.Restart,
-                            () => SystemAware.StartThisApplication()),
+                            () => EntryApplication.LaunchNewInstance()),
                         MessageWindow.CreateCloseButton(MaterialIconKind.SignOut)
                     ])
                 {
@@ -194,9 +195,8 @@ public partial class App : Application
         {
             try
             {
-                var result = SystemAware.GetProcessOutput("bash",
-                    $"-c \"ldd '{Path.Combine(ApplicationPath, "libcvextern.so")}' | grep not\"");
-                if (!string.IsNullOrWhiteSpace(result))
+                var result = ProcessHelper.GetShellOutput($"-c \"ldd '{Path.Combine(ApplicationPath, "libcvextern.so")}' | grep not\"");
+                if (!string.IsNullOrWhiteSpace(result.StandardOutput))
                 {
                     message += $"Missing dependencies:\n{result}\n";
                 }
@@ -210,9 +210,8 @@ public partial class App : Application
         {
             try
             {
-                var result = SystemAware.GetProcessOutput("otool",
-                    $"-L '{Path.Combine(ApplicationPath, "libcvextern.dylib")}'");
-                if (!string.IsNullOrWhiteSpace(result))
+                var result = ProcessHelper.GetProcessOutput("otool", $"-L '{Path.Combine(ApplicationPath, "libcvextern.dylib")}'");
+                if (!string.IsNullOrWhiteSpace(result.StandardOutput))
                 {
                     message += $"Dependencies:\n{result}\n";
                 }
@@ -229,7 +228,7 @@ public partial class App : Application
 
         return new MessageWindow($"{About.SoftwareWithVersion} is unable to run",
             MaterialIconKind.EmojiFrownOutline,
-            $"{About.SoftwareWithVersionArch} [{SystemAware.OperatingSystemName}]\nUnable to run due one or more missing dependencies.\nTriggered by: libcvextern  (OpenCV)",
+            $"{About.SoftwareWithVersionArch} [{HostSystem.OperatingSystemName}]\nUnable to run due one or more missing dependencies.\nTriggered by: libcvextern  (OpenCV)",
             message,
             TextWrapping.Wrap,
             [
@@ -249,25 +248,6 @@ public partial class App : Application
     public static string ApplicationPath => AppContext.BaseDirectory;
     public static string AppExecutable => Environment.ProcessPath!;
     public static string AppExecutableQuoted => $"\"{AppExecutable}\"";
-
-    public static void NewInstance(string filePath)
-    {
-        try
-        {
-            if (File.Exists(AppExecutable)) // Direct execute
-            {
-                SystemAware.StartProcess(AppExecutable, $"\"{filePath}\"");
-            }
-            else
-            {
-                SystemAware.StartProcess("dotnet", $"UVtools.dll \"{filePath}\"");
-            }
-        }
-        catch (Exception e)
-        {
-            Debug.WriteLine(e);
-        }
-    }
 
     public static Uri CreateAssemblyUri(string url)
     {
@@ -346,7 +326,7 @@ public partial class App : Application
 
             for (var i = 0; i < UserSettings.Instance.General.NotificationBeepCount; i++)
             {
-                SystemAware.Beep(frequency, UserSettings.Instance.General.NotificationBeepDuration, true);
+                HostSystem.Beep(frequency, UserSettings.Instance.General.NotificationBeepDuration, true);
                 frequency += UserSettings.Instance.General.NotificationBeepRepeatFrequencyOffset;
                 Thread.Sleep(UserSettings.Instance.General.NotificationBeepRepeatDelay);
             }

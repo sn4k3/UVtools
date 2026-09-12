@@ -16,165 +16,106 @@ using Fallout.Common.Tools.DotNet;
 using Fallout.Common.Utilities;
 using Fallout.Common.Utilities.Collections;
 using Serilog;
+using StageKit.Fallout;
+using StageKit.Runtime;
 using UVtools.Core.FileFormats;
 using static Fallout.Common.EnvironmentInfo;
 using static Fallout.Common.Tools.DotNet.DotNetTasks;
 
 namespace build;
 
-public partial class Build : FalloutBuild
+public partial class Build : StageKitBuild
 {
-    [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
-    public readonly Configuration Configuration = Configuration.Release;
-
-    [Parameter(
-        "When publish set this variable(true) to bundle all arch in a single bundle, eg: x64 and arm64 together, app will then run the required arch. Default: False")]
-    readonly bool PublishBundleWithMultipleArch;
-
-    [Parameter("When publish set this variable(true) to create the bundles (zip, apps, installers). Default: True")]
-    readonly bool PublishCreateBundles = true;
-
-    [Parameter(
-        "When publish set this variable(true) to keep only the bundles (zip, apps, installers), compilation folders will be removed. Default: False")]
-    readonly bool PublishDiscardNonBundles;
-    //public readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
-
-    [Parameter(
-        "RIDs to publish separated by space, Default: 'win-x64 win-arm64 osx-x64 osx-arm64 linux-x64 linux-arm64'")]
-    readonly string[] RIds =
-    [
-        "win-x64", "win-arm64",
-        "osx-x64", "osx-arm64",
-        "linux-x64", "linux-arm64"
-    ];
-
-    [Solution(GenerateProjects = true)] internal readonly Solution Solution = null!;
-
-    /// Support plugins are available for:
-    ///   - JetBrains ReSharper        https://nuke.build/resharper
-    ///   - JetBrains Rider            https://nuke.build/rider
-    ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
-    ///   - Microsoft VSCode           https://nuke.build/vscode
-
-    Project MainProject => Solution.UVtools_UI;
-
-    AbsolutePath ArtifactsDirectory => Solution.UVtools_Core.GetProperty("ArtifactsPath");
-
-    AbsolutePath PublishDirectory => ArtifactsDirectory / "publish";
-
-    AbsolutePath MediaDirectory => RootDirectory / "UVtools.CAD";
-
-    AbsolutePath ChangelogFile => RootDirectory / "CHANGELOG.md";
-
-    AbsolutePath ReleaseNotesFile => RootDirectory / "RELEASE_NOTES.md";
-
-
-    [field: AllowNull]
-    [field: MaybeNull]
-    public string SoftwareName => field ??= Solution.UVtools_Core.GetProperty("ProductName")!;
-
-    [field: AllowNull]
-    [field: MaybeNull]
-    public string SoftwareCompany => field ??= Solution.UVtools_Core.GetProperty("Company")!;
-
-    [field: AllowNull]
-    [field: MaybeNull]
-    public string SoftwareCompanyRDNS => field ??= Solution.UVtools_Core.GetProperty("CompanyRDNS")!;
-
-    [field: AllowNull]
-    [field: MaybeNull]
-    public string SoftwareRDNS => field ??= $"{SoftwareCompanyRDNS}.{SoftwareName}";
-
-    [field: AllowNull]
-    [field: MaybeNull]
-    public string SoftwareAuthors => field ??= Solution.UVtools_Core.GetProperty("Authors")!;
-
-    [field: AllowNull]
-    [field: MaybeNull]
-    public string SoftwareSummary => field ??= Solution.UVtools_Core.GetProperty("Summary")!;
-
-    [field: AllowNull]
-    [field: MaybeNull]
-    public string SoftwareDescription => field ??= Solution.UVtools_Core.GetProperty("Description")!;
-
-    [field: AllowNull]
-    [field: MaybeNull]
-    public string SoftwareVersion
+    public Build()
     {
-        get
-        {
-            if (field is null)
-            {
-                field ??= Solution.UVtools_Core.GetProperty("Version")!;
-            }
-            else
-            {
-                if (field.EndsWith("-dev")) field = field[..^4];
-            }
+        DependOnTargets =
+        [
+            ImportPsProfiles
+        ];
+        
+        PackagingTypes =
+        [
+            ApplicationPackagingType.Portable,
+            ApplicationPackagingType.WindowsInstaller,
+            ApplicationPackagingType.LinuxAppImage,
+            ApplicationPackagingType.LinuxDeb,
+            ApplicationPackagingType.LinuxRpm,
+            ApplicationPackagingType.LinuxArchPackage,
+            ApplicationPackagingType.MacOSAppBundle
+        ];
+        
+        BeforePublishRid = context =>
+            Log.Information("Publishing {Rid} to {Path}",
+                context.RuntimeIdentifier, context.PublishPath);
 
-            return field;
-        }
+        AfterPublishRid = context =>
+        {
+            Log.Information("Published {Rid} to {Path}",
+                context.RuntimeIdentifier, context.PublishPath);
+        };
     }
+    
+    /// <inheritdoc />
+    protected override LinuxAppBundleOptions CreateLinuxAppBundleOptions()
+    {
+        var options = base.CreateLinuxAppBundleOptions();
+        options.SnapStagePackages.Add("libfontconfig1");
+        options.AppRunScriptBeforeExec = $$"""
+                                            function help() {
+                                                cat <<'EOF'
+                                             _   ___     ___              _     
+                                            | | | \ \   / / |_ ___   ___ | |___ 
+                                            | | | |\ \ / /| __/ _ \ / _ \| / __|
+                                            | |_| | \ V / | || (_) | (_) | \__ \
+                                             \___/   \_/   \__\___/ \___/|_|___/
+                                            
+                                            --------------------------------------------------------------------------
+                                               All the great {{SoftwareName}} functionality inside an AppImage package.
+                                            --------------------------------------------------------------------------
+                                            (This package uses the AppImage software packaging technology for Linux
+                                             ['One App == One File'] for easy availability of the newest {{SoftwareName}}
+                                             releases across all major Linux distributions.)
+                                             Usage:  --help, -h
+                                             ------     # This message
+                                                     <path/to/file1> [path/to/file2] [path/to/file3] [...]
+                                                        # Opens and loads specific file(s) with UVtools
+                                                     --cmd-help
+                                                        # Display UVtoolsCmd help message
+                                                     --cmd, -c <argument(s)> [option(s)]
+                                                        # Redirect a command to UVtoolsCmd
+                                                     --appimage-extract
+                                                        # Unpack this AppImage into a local sub-directory [currently named 'squashfs-root']
+                                                     --appimage-help
+                                                        # Show available AppImage options
+                                            "
+                                            }
 
-    [field: AllowNull]
-    [field: MaybeNull]
-    public string SoftwareCopyright => field ??= Solution.UVtools_Core.GetProperty("Copyright")!;
+                                            if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+                                                help
+                                                exit 0
+                                            fi
+                                            
+                                            if [[ "${1:-}" == "--cmd-help" ]]; then
+                                                exec 'UVtoolsCmd' --help
+                                                exit $?
+                                            fi
+                                            
+                                            if [[ "${1:-}" == "--cmd" || "${1:-}" == "-c" ]]; then
+                                                if [ "$#" -lt 2 ]; then
+                                                     echo 'UVtoolsCmd requires at least one parameter'
+                                             		exec 'UVtoolsCmd' --help
+                                                     exit $?
+                                                fi
+                                            
+                                                shift
+                                            	   exec 'UVtoolsCmd' "$@"
+                                                exit $?
+                                            fi
 
-    [field: AllowNull]
-    [field: MaybeNull]
-    public string SoftwareLicense => field ??= Solution.UVtools_Core.GetProperty("PackageLicenseExpression")!;
+                                            """;
 
-    [field: AllowNull]
-    [field: MaybeNull]
-    public string SoftwareRepositoryUrl => field ??= Solution.UVtools_Core.GetProperty("RepositoryUrl")!;
-
-    [field: AllowNull]
-    [field: MaybeNull]
-    public string SoftwarePackageTags => field ??= Solution.UVtools_Core.GetProperty("PackageTags")!;
-
-    [field: AllowNull]
-    [field: MaybeNull]
-    public string BuildRuntimeCacheFileName =>
-        field ??= Solution.UVtools_Core.GetProperty(nameof(BuildRuntimeCacheFileName))!;
-
-
-    public Target Print => _ => _
-        .Executes(() =>
-        {
-            Log.Information("RootDirectory = {Value}", RootDirectory);
-            Log.Information("TemporaryDirectory = {Value}", TemporaryDirectory);
-            Log.Information("BuildAssemblyDirectory = {Value}", BuildAssemblyDirectory);
-            Log.Information("BuildAssemblyFile = {Value}", BuildAssemblyFile);
-            Log.Information("BuildProjectDirectory = {Value}", BuildProjectDirectory);
-            Log.Information("BuildProjectFile = {Value}", BuildProjectFile);
-            Log.Information("Solution = {Value}", Solution);
-            Log.Information("SolutionDirectory = {Value}", Solution.Directory);
-            Log.Information("PublishDirectory = {Value}", PublishDirectory);
-            Log.Information("Version = {Value}", SoftwareVersion);
-            Log.Information("IsWin = {Value}", IsWin);
-            Log.Information("IsOsx = {Value}", IsOsx);
-            Log.Information("IsLinux = {Value}", IsLinux);
-            Log.Information("IsWsl = {Value}", IsWsl);
-            Log.Information("RIds = {Value}", string.Join(", ", RIds));
-        });
-
-    public Target Clean => _ => _
-        .Before(Restore)
-        .Executes(() =>
-        {
-            DotNetClean();
-            ArtifactsDirectory.DeleteDirectory();
-            //ArtifactsDirectory.GlobDirectories("*/bin", "*/obj").ForEach(DeleteDirectory);
-            //EnsureCleanDirectory(ArtifactsDirectory);
-        });
-
-    public Target Restore => _ => _
-        .Executes(() =>
-        {
-            DotNetRestore(options => options
-                .SetProjectFile(MainProject)
-            );
-        });
+        return options;
+    }
 
     public Target ImportPsProfiles => _ => _
         .Executes(() =>
@@ -217,29 +158,7 @@ public partial class Build : FalloutBuild
             }
         });
 
-    public Target Compile => _ => _
-        .DependsOn(Restore, ImportPsProfiles)
-        .Executes(() =>
-        {
-            DotNetBuild(options => options
-                .SetProjectFile(MainProject)
-                .SetConfiguration(Configuration)
-                .EnableNoRestore()
-            );
-        });
-
-    public Target Run => _ => _
-        .DependsOn(Restore, ImportPsProfiles)
-        .Executes(() =>
-        {
-            DotNetRun(options => options
-                .SetProjectFile(MainProject)
-                .SetConfiguration(Configuration)
-                .EnableNoRestore()
-            );
-        });
-
-    public Target Publish => _ => _
+    /*public Target Publish => _ => _
         //.OnlyWhenStatic(() => Configuration == Configuration.Release)
         .DependsOn(Restore, ImportPsProfiles)
         .Executes(() =>
@@ -670,20 +589,7 @@ public partial class Build : FalloutBuild
                 }
             }
 
-            // Clean publish objects
-            Log.Information("Cleaning objects.");
-            ArtifactsDirectory.GlobDirectories("**/release_*", "**/debug_*").ForEach(path =>
-            {
-                try
-                {
-                    path.DeleteDirectory();
-                }
-                catch (Exception e)
-                {
-                    Log.Warning(e.Message);
-                }
-            });
-        });
+            */
 
     public static int Main() => Execute<Build>(x => x.Compile);
 

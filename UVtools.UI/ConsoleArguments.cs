@@ -8,6 +8,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using StageKit.Primitives;
+using StageKit.Primitives.System;
 using UVtools.Core.FileFormats;
 using UVtools.Core.MeshFormats;
 using UVtools.Core.Operations;
@@ -30,7 +32,7 @@ public static class ConsoleArguments
         if (args[0] is "--cmd" && args.Length > 1)
         {
             var newArgs = string.Join(' ', args[1..]);
-            SystemAware.StartProcess(Path.Combine(App.ApplicationPath, SystemAware.GetExecutableName("UVtoolsCmd")), newArgs);
+            ProcessHelper.StartProcess(Path.Combine(App.ApplicationPath, HostSystem.NormalizeExecutableExtension("UVtoolsCmd")), newArgs);
             return true;
         }
 

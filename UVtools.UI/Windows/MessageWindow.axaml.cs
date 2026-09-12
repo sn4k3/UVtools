@@ -7,6 +7,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Material.Icons;
 using Material.Icons.Avalonia;
+using StageKit.Primitives.System;
 using UVtools.Core.Dialogs;
 using UVtools.Core.SystemOS;
 
@@ -238,7 +239,7 @@ public partial class MessageWindow : GenericWindow
         var button = CreateButtonFunc(text, icon, () =>
         {
             customAction.Invoke();
-            SystemAware.OpenBrowser(url);
+            HostSystem.OpenUrl(url);
             return true;
         }, padding, tag);
         return button;
@@ -248,7 +249,7 @@ public partial class MessageWindow : GenericWindow
     {
         var button = CreateButtonFunc(text, icon, () =>
         {
-            SystemAware.OpenBrowser(url);
+            HostSystem.OpenUrl(url);
             return true;
         }, padding, tag);
         return button;

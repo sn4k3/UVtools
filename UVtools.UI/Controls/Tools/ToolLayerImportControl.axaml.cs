@@ -4,6 +4,7 @@ using Avalonia.Platform.Storage;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using StageKit.Primitives.System;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
@@ -86,7 +87,7 @@ public partial class ToolLayerImportControl : ToolControl
         FilesListBox.DoubleTapped += (sender, args) =>
         {
             if (FilesListBox.SelectedItem is not GenericFileRepresentation file) return;
-            SystemAware.StartProcess(file.FilePath);
+            HostSystem.OpenFile(file.FilePath);
         };
         FilesListBox.KeyUp += (sender, e) =>
         {

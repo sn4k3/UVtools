@@ -11,6 +11,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
+using StageKit.Primitives.System;
 using UVtools.Core.SystemOS;
 using UVtools.UI.Extensions;
 using AvaloniaStatic = UVtools.UI.Controls.AvaloniaStatic;
@@ -59,7 +60,7 @@ public partial class MainWindow
             "GCode save complete");
         if (result != SukiMessageBoxResult.Yes) return;
 
-        SystemAware.StartProcess(filePath);
+        await HostSystem.OpenFileAsync(filePath);
     }
 
     public void OnClickGCodeSaveClipboard()

@@ -1,4 +1,5 @@
-﻿using UVtools.Core.Operations;
+﻿using StageKit.Primitives.System;
+using UVtools.Core.Operations;
 using UVtools.Core.SystemOS;
 using UVtools.UI.Controls.Tools;
 
@@ -17,6 +18,6 @@ public partial class CalibrateExternalTestsControl : ToolControl
 
     public void ButtonClicked(object url)
     {
-        SystemAware.OpenBrowser((string)url);
+        HostSystem.OpenUrl((string)url);
     }
 }

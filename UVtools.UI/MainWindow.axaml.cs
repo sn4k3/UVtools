@@ -35,6 +35,8 @@ using Avalonia.Threading;
 using Material.Icons;
 using Material.Icons.Avalonia;
 using StageKit;
+using StageKit.Primitives.System;
+using StageKit.Runtime;
 using SukiUI.Controls;
 using SukiUI.MessageBox;
 using StageKit.Updatum;
@@ -521,17 +523,15 @@ public partial class MainWindow : GenericWindow
             return;
         }
 
-        var memoryStatus = SystemAware.GetMemoryStatus();
-        if (memoryStatus.ullAvailPhys == 0) return; // Unable to check
+        if(!HostSystem.TryGetMemoryStatus(out var memoryStatus)) return;
 
-        var availableMemory = (decimal)Math.Round(memoryStatus.ullAvailPhys / Math.Pow(1024, 3), 2,
+        var availableMemory = (decimal)Math.Round(memoryStatus.AvailablePhysicalBytes / Math.Pow(1024, 3), 2,
             MidpointRounding.AwayFromZero);
         if (availableMemory > Settings.General.AvailableRamLimit) return;
 
-        var totalMemory = Math.Round(memoryStatus.ullTotalPhys / Math.Pow(1024, 3), 2, MidpointRounding.AwayFromZero);
-        var usedMemory = Math.Round((memoryStatus.ullTotalPhys - memoryStatus.ullAvailPhys) / Math.Pow(1024, 3), 2,
-            MidpointRounding.AwayFromZero);
-
+        var totalMemory = Math.Round(memoryStatus.TotalPhysicalBytes / Math.Pow(1024, 3), 2, MidpointRounding.AwayFromZero);
+        var usedMemory = Math.Round(memoryStatus.UsedPhysicalBytes / Math.Pow(1024, 3), 2, MidpointRounding.AwayFromZero);
+        
         var processMemory = Math.Round(Environment.WorkingSet / Math.Pow(1024, 3), 2, MidpointRounding.AwayFromZero);
         var percentProcessMemory = Math.Round(processMemory * 100 / totalMemory, 2, MidpointRounding.AwayFromZero);
 
@@ -835,7 +835,7 @@ public partial class MainWindow : GenericWindow
             await ProcessFiles(files.AsValueEnumerable().Select(file => file.TryGetLocalPath()).ToArray()!);
         });
 
-        AddLog($"{About.Software} start", ApplicationKit.RuntimeElapsed.TotalSeconds);
+        AddLog($"{About.Software} start", EntryApplication.ProcessUptime.TotalSeconds);
 
         if (Settings.General.CheckForUpdatesOnStartup)
         {
@@ -1042,7 +1042,7 @@ public partial class MainWindow : GenericWindow
     public void MenuFileOpenContainingFolderClicked()
     {
         if (!IsFileLoaded) return;
-        SystemAware.SelectFileOnExplorer(SlicerFile!.FileFullPath!);
+        HostSystem.OpenDirectory(SlicerFile!.DirectoryPath);
     }
 
     public async Task MenuFileRenameClicked()
@@ -1302,7 +1302,7 @@ public partial class MainWindow : GenericWindow
 
     public void MenuHelpOpenSettingsFolderClicked()
     {
-        SystemAware.StartProcess(UserSettings.SettingsFolder);
+        HostSystem.OpenDirectory(UserSettings.SettingsFolder);
     }
 
     public void MenuHelpReportIssueClicked()
@@ -1318,7 +1318,7 @@ public partial class MainWindow : GenericWindow
             // ignored
         }
 
-        SystemAware.OpenBrowser(
+        HostSystem.OpenUrl(
             $"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title=%5BBug%5D+&system={HttpUtility.UrlEncode(system)}");
     }
 
@@ -1341,7 +1341,7 @@ public partial class MainWindow : GenericWindow
                         "Click 'Yes' to open the PrusaSlicer webpage for download\n" +
                         "Click 'No' to dismiss",
                         "Unable to detect PrusaSlicer") == SukiMessageBoxResult.Yes)
-                    SystemAware.OpenBrowser("https://www.prusa3d.com/prusaslicer/");
+                    await HostSystem.OpenUrlAsync("https://www.prusa3d.com/prusaslicer/");
                 return;
             }
         }
@@ -1351,7 +1351,7 @@ public partial class MainWindow : GenericWindow
 
     public void MenuHelpDebugOpenExecutableDirectoryClicked()
     {
-        SystemAware.StartProcess(App.ApplicationPath);
+        HostSystem.OpenDirectory(App.ApplicationPath);
     }
 
     public void MenuHelpDebugThrowExceptionClicked()
@@ -1458,7 +1458,7 @@ public partial class MainWindow : GenericWindow
         }
         else if (ReferenceEquals(result, manualUpdateButton))
         {
-            SystemAware.OpenBrowser(release.HtmlUrl);
+            await HostSystem.OpenUrlAsync(release.HtmlUrl);
         }
     }
 
@@ -1600,8 +1600,8 @@ public partial class MainWindow : GenericWindow
                 await ProcessFile(files[i], fileDecodeType);
                 continue;
             }
-
-            App.NewInstance(files[i]);
+            
+            EntryApplication.LaunchNewInstance(files[i]);
         }
     }
 
@@ -2353,7 +2353,7 @@ public partial class MainWindow : GenericWindow
                     await ProcessFile(filePath, _actualLayer);
                     break;
                 case SukiMessageBoxResult.Yes:
-                    App.NewInstance(filePath);
+                    EntryApplication.LaunchNewInstance(filePath);
                     break;
             }
 
@@ -2659,7 +2659,7 @@ public partial class MainWindow : GenericWindow
                 "'Yes' to open target folder, 'No' to continue.",
                 "Extraction complete") == SukiMessageBoxResult.Yes)
         {
-            SystemAware.StartProcess(finalPath);
+            await HostSystem.OpenDirectoryAsync(finalPath);
         }
     }
 
@@ -2952,7 +2952,7 @@ public partial class MainWindow : GenericWindow
             return;
         }
 
-        if (_globalModifiers == KeyModifiers.Shift) App.NewInstance(file);
+        if (_globalModifiers == KeyModifiers.Shift) EntryApplication.LaunchNewInstance(file);
         else await ProcessFile(file);
     }
 

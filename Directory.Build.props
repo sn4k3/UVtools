@@ -46,9 +46,6 @@
 
         <!-- MvvmToolkit -->
         <MvvmToolkitEnableINotifyPropertyChangingSupport>false</MvvmToolkitEnableINotifyPropertyChangingSupport>
-
-        <!-- Other variables -->
-        <BuildRuntimeCacheFileName>buildruntime.json</BuildRuntimeCacheFileName>
     </PropertyGroup>
 
     <!-- GitHub Actions -->

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
 using Material.Icons;
+using StageKit.Primitives.System;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.SystemOS;
@@ -72,9 +73,9 @@ public partial class AboutWindow : GenericWindow
         }
     }
 
-    public static string? GraphicCardName => SystemAware.GetGraphicCardName();
+    public static string? GraphicCardName => HostSystem.GraphicsCardName;
 
-    public static string? ProcessorName => SystemAware.GetProcessorName();
+    public static string? ProcessorName => HostSystem.ProcessorName;
 
     public static int ProcessorCount => Environment.ProcessorCount;
 
@@ -82,14 +83,13 @@ public partial class AboutWindow : GenericWindow
     {
         get
         {
-            var memory = SystemAware.GetMemoryStatus();
-            if (memory.ullTotalPhys == 0)
+            if (!HostSystem.TryGetMemoryStatus(out var memory))
             {
                 return "Unknown";
             }
 
             var factor = Math.Pow(1024, 3);
-            return $"{(memory.ullTotalPhys-memory.ullAvailPhys) / factor:F2} / {memory.ullTotalPhys / factor:F2} GB";
+            return $"{memory.AvailablePhysicalBytes / factor:F2} / {memory.TotalPhysicalBytes / factor:F2} GB";
         }
     }
 

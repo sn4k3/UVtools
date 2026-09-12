@@ -11,6 +11,7 @@ using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using EmguExtensions;
+using StageKit.Primitives.System;
 using UVtools.Core;
 using UVtools.Core.Compressors;
 using UVtools.Core.Extensions;
@@ -170,7 +171,7 @@ public partial class BenchmarkWindow : GenericWindow
                                  "Run the test while your PC is idle or not in heavy load.\n" +
                                  "Results are in 'tests done per second' (TDPS)";
 
-    public static string? ProcessorName => SystemAware.GetProcessorName();
+    public static string? ProcessorName => HostSystem.ProcessorName;
 
     public int ReferenceSelectedIndex
     {
