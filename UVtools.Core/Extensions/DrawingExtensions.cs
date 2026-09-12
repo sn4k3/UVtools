@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using Emgu.CV.Structure;
 
@@ -178,5 +179,44 @@ public static class DrawingExtensions
     {
         if (sides != 4) startingAngle += (180 - (360.0 / sides)) / 2;
         return GetPolygonVertices(sides, new SizeF(diameter, diameter), center, startingAngle, flipHorizontally, flipVertically, midpointRounding);
+    }
+
+    /// <summary>
+    /// Interpolates the pixels of a line between two points (inclusive of both endpoints) using
+    /// Bresenham's algorithm.
+    /// </summary>
+    /// <param name="start">Start point.</param>
+    /// <param name="end">End point.</param>
+    /// <returns>The ordered pixels from <paramref name="start"/> to <paramref name="end"/>, both inclusive.</returns>
+    public static Point[] InterpolateLine(this Point start, Point end)
+    {
+        var dx = Math.Abs(end.X - start.X);
+        var dy = Math.Abs(end.Y - start.Y);
+        var sx = start.X < end.X ? 1 : -1;
+        var sy = start.Y < end.Y ? 1 : -1;
+        var err = dx - dy;
+
+        var points = new List<Point>();
+        var x = start.X;
+        var y = start.Y;
+        while (true)
+        {
+            points.Add(new Point(x, y));
+            if (x == end.X && y == end.Y) break;
+            var e2 = 2 * err;
+            if (e2 > -dy)
+            {
+                err -= dy;
+                x += sx;
+            }
+
+            if (e2 < dx)
+            {
+                err += dx;
+                y += sy;
+            }
+        }
+
+        return points.ToArray();
     }
 }

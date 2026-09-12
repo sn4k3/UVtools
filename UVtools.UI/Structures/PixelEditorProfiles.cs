@@ -30,6 +30,7 @@ public class PixelEditorProfiles //: IList<Operation>
     [XmlElement(typeof(PixelFill))]
     [XmlElement(typeof(PixelDrainHole))]
     [XmlElement(typeof(PixelSupport))]
+    [XmlElement(typeof(PixelStroke))]
     public List<PixelOperation> Profiles { get; internal set; } = [];
 
     [XmlIgnore]

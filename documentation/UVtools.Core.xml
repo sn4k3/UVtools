@@ -417,6 +417,15 @@
             <param name="showSeconds"></param>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.Extensions.DrawingExtensions.InterpolateLine(System.Drawing.Point,System.Drawing.Point)">
+            <summary>
+            Interpolates the pixels of a line between two points (inclusive of both endpoints) using
+            Bresenham's algorithm.
+            </summary>
+            <param name="start">Start point.</param>
+            <param name="end">End point.</param>
+            <returns>The ordered pixels from <paramref name="start"/> to <paramref name="end"/>, both inclusive.</returns>
+        </member>
         <member name="M:UVtools.Core.Extensions.FileStreamExtensions.ReadToEnd(System.IO.FileStream)">
             <summary>
             Read from current position to the end of the file
@@ -2121,6 +2130,14 @@
             <summary>
             Raise notification for aspect changes, like <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/>, <see cref="P:UVtools.Core.FileFormats.FileFormat.Display"/> and relatives
             </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ExpandLayerRange(UVtools.Core.PixelEditor.PixelOperation)">
+            <summary>
+            Expands a stroke operation into one tuple per layer in its propagation range
+            (<see cref="!:PixelStroke.LayersBelow"/> to <see cref="!:PixelStroke.LayersAbove"/>).
+            </summary>
+            <param name="operation">The stroke operation to expand.</param>
+            <returns>One (LayerIndex, operation) tuple per target layer, in ascending order.</returns>
         </member>
         <member name="T:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier">
             <summary>
@@ -9333,6 +9350,18 @@
         <member name="P:UVtools.Core.PixelEditor.PixelOperation.Size">
             <summary>
             Gets the total size of the operation
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.PixelEditor.PixelStroke.AddPoint(System.Drawing.Point)">
+            <summary>
+            Adds a point to the stroke, skipping it if it equals the last stored point (time-window dedup).
+            </summary>
+            <param name="point">The image-space point.</param>
+            <returns>True if the point was appended, false if it was a duplicate of the last stored point.</returns>
+        </member>
+        <member name="M:UVtools.Core.PixelEditor.PixelStroke.GetBounds">
+            <summary>
+            Gets the bounding rectangle of the stored points.
             </summary>
         </member>
         <member name="T:UVtools.Core.PixelEditor.PixelSupport">

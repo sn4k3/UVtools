@@ -474,6 +474,7 @@ public partial class MainWindow
             }
             else
             {
+                _pendingPixelStroke = null;
                 _ = DrawModifications(true);
             }
         }
@@ -636,6 +637,7 @@ public partial class MainWindow
                 ShowLayer(); // Show layer only if timer is not present
             }
 
+            _pendingPixelStroke = null;
             InvalidateLayerNavigation();
         }
     }
@@ -1407,6 +1409,52 @@ public partial class MainWindow
                         vec.Dispose();
                     }*/
                 }
+                else if (operation.OperationType == PixelOperation.PixelOperationType.Stroke)
+                {
+                    var operationStroke = (PixelStroke)operation;
+                    if (operationStroke.IsEmpty) continue;
+                    var color = operationStroke.IsAdd
+                        ? (DrawingsGrid.SelectedItems.Contains(operation)
+                            ? Settings.PixelEditor.AddPixelHighlightColor
+                            : Settings.PixelEditor.AddPixelColor)
+                        : (DrawingsGrid.SelectedItems.Contains(operation)
+                            ? Settings.PixelEditor.RemovePixelHighlightColor
+                            : Settings.PixelEditor.RemovePixelColor);
+
+                    if (operationStroke.BrushSize == 1)
+                    {
+                        var previousPoint = operationStroke.Points[0];
+                        LayerCache.ImageBgra.SetByte(previousPoint.X, previousPoint.Y, [color.B, color.G, color.R, color.A
+                        ]);
+                        for (var i = 1; i < operationStroke.Points.Count; i++)
+                        {
+                            foreach (var point in previousPoint.InterpolateLine(operationStroke.Points[i]))
+                            {
+                                LayerCache.ImageBgra.SetByte(point.X, point.Y, [color.B, color.G, color.R, color.A
+                                ]);
+                            }
+                            previousPoint = operationStroke.Points[i];
+                        }
+                        continue;
+                    }
+
+                    var strokeDiameter = SlicerFile.PixelsToNormalizedPitchF(operationStroke.BrushSize);
+                    var strokePreviousPoint = operationStroke.Points[0];
+                    LayerCache.ImageBgra.DrawAlignedPolygon((byte)operationStroke.BrushShape, strokeDiameter,
+                        strokePreviousPoint, color.ToMCvScalar(), operationStroke.RotationAngle,
+                        operationStroke.Thickness, operationStroke.LineType);
+                    for (var i = 1; i < operationStroke.Points.Count; i++)
+                    {
+                        var point = operationStroke.Points[i];
+                        foreach (var interpolatedPoint in strokePreviousPoint.InterpolateLine(point))
+                        {
+                            LayerCache.ImageBgra.DrawAlignedPolygon((byte)operationStroke.BrushShape, strokeDiameter,
+                                interpolatedPoint, color.ToMCvScalar(), operationStroke.RotationAngle,
+                                operationStroke.Thickness, operationStroke.LineType);
+                        }
+                        strokePreviousPoint = point;
+                    }
+                }
                 else if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
                 {
                     var operationSupport = (PixelSupport) operation;
@@ -1883,7 +1931,14 @@ public partial class MainWindow
     private void LayerImageBox_PointerReleased(object? sender, PointerReleasedEventArgs e)
     {
         var pointer = e.GetCurrentPoint(LayerImageBox);
-        if (!LayerImageBox.IsPointInImage(pointer.Position)) return;
+        if (!LayerImageBox.IsPointInImage(pointer.Position))
+        {
+            if (Settings.PixelEditor.RenderOnRelease && _pendingPixelStroke is not null)
+            {
+                CommitPendingStroke();
+            }
+            return;
+        }
         Point location = LayerImageBox.PointToImage(pointer.Position).ToDotNet();
         if (LayerImageBox.SelectionMode == AdvancedImageBox.SelectionModes.Rectangle)
         {
@@ -1928,6 +1983,12 @@ public partial class MainWindow
         if (!IsPixelEditorActive || e.InitialPressMouseButton == MouseButton.Middle ||
             (e.KeyModifiers & KeyModifiers.Shift) == 0) return;
         _lastPixelMouseLocation = Point.Empty;
+
+        if (Settings.PixelEditor.RenderOnRelease)
+        {
+            CommitPendingStroke();
+            return;
+        }
 
         // Left or Alt-Right Adds pixel, Right or Alt-Left removes pixel
         DrawPixel(e.InitialPressMouseButton == MouseButton.Left ^ (e.KeyModifiers & KeyModifiers.Alt) != 0, location, e.KeyModifiers);

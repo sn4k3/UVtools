@@ -2178,13 +2178,27 @@
                             </DropDownButton>
 
 
-                            <ToggleButton Margin="-1,0,0,0"
-                                          VerticalAlignment="Stretch"
-                                          HotKey="{OnPlatform Ctrl+E,
-										  macOS=⌘+E}"
-                                          Content="{icon:MaterialIconTextExt Kind=RulerSquareCompass, Text='Pixel Editor'}"
-                                          IsChecked="{Binding IsPixelEditorActive}"
-                                          ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Edit layer image: Draw pixels, add supports and/or drain holes. [{0}+E]'}" />
+                            <ToggleSplitButton Margin="-1,0,0,0"
+                                               VerticalAlignment="Stretch"
+                                               HotKey="{OnPlatform Ctrl+E,
+											  macOS=⌘+E}"
+                                               IsChecked="{Binding IsPixelEditorActive}"
+                                               ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Edit layer image: Draw pixels, add supports and/or drain holes. [{0}+E]'}">
+                                <ToggleSplitButton.Content>
+                                    <icon:MaterialIconText Kind="RulerSquareCompass"
+                                                           Text="{Binding PixelEditorModeLabel}" />
+                                </ToggleSplitButton.Content>
+                                <ToggleSplitButton.Flyout>
+                                    <MenuFlyout Placement="Bottom">
+                                        <MenuItem Header="Classic (immediate)"
+                                                  Command="{Binding SetPixelEditorClassicMode}"
+                                                  IsChecked="{Binding !Settings.PixelEditor.RenderOnRelease}" />
+                                        <MenuItem Header="Vector (on release)"
+                                                  Command="{Binding SetPixelEditorVectorialMode}"
+                                                  IsChecked="{Binding Settings.PixelEditor.RenderOnRelease}" />
+                                    </MenuFlyout>
+                                </ToggleSplitButton.Flyout>
+                            </ToggleSplitButton>
                         </WrapPanel>
 
 

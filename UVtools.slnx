@@ -75,6 +75,7 @@
     <Platform Solution="*|ARM64" Project="ARM64" />
     <Platform Solution="*|x64" Project="x64" />
   </Project>
+  <Project Path="tests/UVtools.Tests/UVtools.Tests.csproj" />
   <Project Path="UVtools.AvaloniaControls/UVtools.AvaloniaControls.csproj">
     <Platform Solution="*|ARM64" Project="ARM64" />
     <Platform Solution="*|x64" Project="x64" />
