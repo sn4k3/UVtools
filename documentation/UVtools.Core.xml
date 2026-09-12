@@ -9903,32 +9903,6 @@
         <member name="P:UVtools.Core.Suggestions.SuggestionWaitTimeBeforeCure.CreateEmptyFirstLayer">
             <inheritdoc/>
         </member>
-        <member name="T:UVtools.Core.SystemOS.Linux">
-            <summary>
-            Linux specific methods
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.SystemOS.Linux.IsRunningAppImage">
-            <summary>
-            Gets if is running under Linux and under AppImage format
-            </summary>
-        </member>
-        <member name="M:UVtools.Core.SystemOS.Linux.IsRunningAppImageGetPath(System.String@)">
-            <summary>
-            Gets if is running under Linux and under AppImage format and return the full root path for the running AppImage
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.SystemOS.Linux.RunningAppImageRootPath">
-            <summary>
-            <para>Gets the full root path for the running AppImage. Returns null is not Linux and null/empty if not an AppImage</para>
-            <para>The return path is the source file location and not the execution path location.</para>
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.SystemOS.Linux.RunningAppName">
-            <summary>
-            Gets the name of the running *.app. Returns null or empty if not running an macOS .app. Returns null or empty if not an AppImage
-            </summary>
-        </member>
         <member name="M:UVtools.Core.SystemOS.Windows.USB.GetUSBHandler(System.String)">
             <summary>
             Get the USB handler
