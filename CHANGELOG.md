@@ -15,8 +15,10 @@
 - (Fix) empty-layer classification in linear time by @apullin (#1145)
 - (Fix) Object reference not set to an instance of an object after clicking File -> Reload (#1141)
 - (Fix) AdvancedImageBox: owned-image disposal, selection clamping, crop stride/alpha handling, zoom bounds, redraw
-- (Fix) Disposed generated tracker and ROI crop bitmaps
   invalidation, panning cursor reuse, and selection start bounds
+- (Fix) Disposed generated tracker and ROI crop bitmaps
+- (Breaking) AdvancedImageBox: `ZoomLevelCollection` now exposes `ICollection<int>` rather than positional
+  `IList<int>` operations, because zoom levels are sorted and unique.
 - (Upgrade) .NET from 10.0.10 to 10.0.11
 - (Upgrade) AvaloniaUI from 12.1.1 to 12.1.2
 
