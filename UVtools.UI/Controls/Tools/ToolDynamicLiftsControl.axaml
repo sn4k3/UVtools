@@ -7,208 +7,318 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolDynamicLiftsControl"
              x:DataType="tools:ToolDynamicLiftsControl">
-  <StackPanel Spacing="10">
+    <StackPanel Spacing="10">
 
-      <Grid RowDefinitions="Auto,20,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-            ColumnDefinitions="Auto,10,180,Auto,210,10,Auto">
-          <TextBlock Grid.Row="0" Grid.Column="0"
-                     VerticalAlignment="Center"
-                     Text="Set method:"/>
+        <Grid RowDefinitions="Auto,20,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+              ColumnDefinitions="Auto,10,180,Auto,210,10,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Set method:" />
 
-          <ComboBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="5"
+            <ComboBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="5"
+                      HorizontalAlignment="Stretch"
+                      Width="500"
+                      ItemsSource="{Binding Operation.SetMethod, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      SelectedItem="{Binding Operation.SetMethod, Converter={StaticResource FromValueDescriptionToEnumConverter}}" />
+
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontWeight="Bold"
+                       Text="Property" />
+
+            <TextBlock Grid.Row="2" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontWeight="Bold"
+                       Text="Height" />
+
+            <TextBlock Grid.Row="2" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontWeight="Bold"
+                       Text="Speed" />
+
+            <TextBlock Grid.Row="2" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontWeight="Bold"
+                       Text="View" />
+
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                       VerticalAlignment="Center"
+                       Text="Smallest bottom lift:" />
+
+            <NumericUpDown Grid.Row="4" Grid.Column="2"
+                           suki:NumericUpDownExtensions.Unit="mm"
+                           IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                           VerticalAlignment="Center"
+                           Minimum="1"
+                           Maximum="100"
+                           Increment="0.5"
+                           FormatString="F2"
+                           Value="{Binding Operation.SmallestBottomLiftHeight}" />
+
+            <TextBlock Grid.Row="4" Grid.Column="3"
+                       Margin="5,0"
+                       IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                       VerticalAlignment="Center"
+                       Text="@" />
+
+            <NumericUpDown Grid.Row="4" Grid.Column="4"
+                           suki:NumericUpDownExtensions.Unit="mm/min"
+                           IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                           VerticalAlignment="Center"
+                           Minimum="5"
+                           Maximum="1000"
+                           Increment="1"
+                           FormatString="F2"
+                           Value="{Binding Operation.FastestBottomLiftSpeed}" />
+
+            <Button Grid.Row="4" Grid.Column="6"
+                    IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                    VerticalAlignment="Stretch"
                     HorizontalAlignment="Stretch"
-                    Width="500"
-                    ItemsSource="{Binding Operation.SetMethod, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                    SelectedItem="{Binding Operation.SetMethod, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+                    HorizontalContentAlignment="Center"
+                    ToolTip.Tip="View the smallest bottom layer for the selected layer range"
+                    Command="{Binding ViewSmallestBottomLayer}"
+                    Content="Smallest" />
 
-
-          <TextBlock Grid.Row="2" Grid.Column="0"
-                     VerticalAlignment="Center"
-                     HorizontalAlignment="Center"
-                     FontWeight="Bold"
-                     Text="Property"/>
-
-        <TextBlock Grid.Row="2" Grid.Column="2"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Center"
-                   FontWeight="Bold"
-                   Text="Height"/>
-
-        <TextBlock Grid.Row="2" Grid.Column="4"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Center"
-                   FontWeight="Bold"
-                   Text="Speed"/>
-
-        <TextBlock Grid.Row="2" Grid.Column="6"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Center"
-                   FontWeight="Bold"
-                   Text="View"/>
-
-        <TextBlock Grid.Row="4" Grid.Column="0"
-                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
-                   VerticalAlignment="Center"
-                   Text="Smallest bottom lift:"/>
-
-        <NumericUpDown Grid.Row="4" Grid.Column="2"
-                       suki:NumericUpDownExtensions.Unit="mm"
+            <TextBlock Grid.Row="6" Grid.Column="0"
                        IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                        VerticalAlignment="Center"
-                       Minimum="1"
-                       Maximum="100"
-                       Increment="0.5"
-                       FormatString="F2"
-                       Value="{Binding Operation.SmallestBottomLiftHeight}"/>
+                       Text="Largest bottom lift:" />
 
-        <TextBlock Grid.Row="4" Grid.Column="3"
-                   Margin="5,0"
-                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
-                   VerticalAlignment="Center"
-                   Text="@"/>
+            <NumericUpDown Grid.Row="6" Grid.Column="2"
+                           suki:NumericUpDownExtensions.Unit="mm"
+                           IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                           VerticalAlignment="Center"
+                           Minimum="1"
+                           Maximum="100"
+                           Increment="0.5"
+                           FormatString="F2"
+                           Value="{Binding Operation.LargestBottomLiftHeight}" />
 
-        <NumericUpDown Grid.Row="4" Grid.Column="4"
-                       suki:NumericUpDownExtensions.Unit="mm/min"
+            <TextBlock Grid.Row="6" Grid.Column="3"
+                       Margin="5,0"
                        IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                        VerticalAlignment="Center"
-                       Minimum="5"
-                       Maximum="1000"
-                       Increment="1"
-                       FormatString="F2"
-                       Value="{Binding Operation.FastestBottomLiftSpeed}"/>
+                       Text="@" />
 
-        <Button Grid.Row="4" Grid.Column="6"
-                IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
-                VerticalAlignment="Stretch"
-                HorizontalAlignment="Stretch"
-                HorizontalContentAlignment="Center"
-                ToolTip.Tip="View the smallest bottom layer for the selected layer range"
-                Command="{Binding ViewSmallestBottomLayer}"
-                Content="Smallest"/>
+            <NumericUpDown Grid.Row="6" Grid.Column="4"
+                           suki:NumericUpDownExtensions.Unit="mm/min"
+                           IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                           VerticalAlignment="Center"
+                           Minimum="5"
+                           Maximum="1000"
+                           Increment="1"
+                           FormatString="F2"
+                           Value="{Binding Operation.SlowestBottomLiftSpeed}" />
 
-        <TextBlock Grid.Row="6" Grid.Column="0"
-                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
-                   VerticalAlignment="Center"
-                   Text="Largest bottom lift:"/>
+            <Button Grid.Row="6" Grid.Column="6"
+                    IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                    VerticalAlignment="Stretch"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Command="{Binding ViewLargestBottomLayer}"
+                    CommandParameter="True"
+                    ToolTip.Tip="View the largest bottom layer for the selected layer range"
+                    Content="Largest" />
 
-        <NumericUpDown Grid.Row="6" Grid.Column="2"
-                       suki:NumericUpDownExtensions.Unit="mm"
+            <TextBlock Grid.Row="8" Grid.Column="0"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                       VerticalAlignment="Center"
+                       Text="Smallest lift:" />
+
+            <NumericUpDown Grid.Row="8" Grid.Column="2"
+                           suki:NumericUpDownExtensions.Unit="mm"
+                           IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                           VerticalAlignment="Center"
+                           Minimum="1"
+                           Maximum="100"
+                           Increment="0.5"
+                           FormatString="F2"
+                           Value="{Binding Operation.SmallestLiftHeight}" />
+
+            <TextBlock Grid.Row="8" Grid.Column="3"
+                       Margin="5,0"
                        IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                        VerticalAlignment="Center"
-                       Minimum="1"
-                       Maximum="100"
-                       Increment="0.5"
-                       FormatString="F2"
-                       Value="{Binding Operation.LargestBottomLiftHeight}"/>
+                       Text="@" />
 
-        <TextBlock Grid.Row="6" Grid.Column="3"
-                   Margin="5,0"
-                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
-                   VerticalAlignment="Center"
-                   Text="@"/>
+            <NumericUpDown Grid.Row="8" Grid.Column="4"
+                           suki:NumericUpDownExtensions.Unit="mm/min"
+                           IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                           VerticalAlignment="Center"
+                           Minimum="5"
+                           Maximum="1000"
+                           Increment="1"
+                           FormatString="F2"
+                           Value="{Binding Operation.FastestLiftSpeed}" />
 
-        <NumericUpDown Grid.Row="6" Grid.Column="4"
-                       suki:NumericUpDownExtensions.Unit="mm/min"
+            <Button Grid.Row="8" Grid.Column="6"
+                    IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                    VerticalAlignment="Stretch"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Command="{Binding ViewSmallestNormalLayer}"
+                    CommandParameter="False"
+                    ToolTip.Tip="View the smallest normal layer for the selected layer range"
+                    Content="Smallest" />
+
+            <TextBlock Grid.Row="10" Grid.Column="0"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                       VerticalAlignment="Center"
+                       Text="Largest lift:" />
+
+            <NumericUpDown Grid.Row="10" Grid.Column="2"
+                           suki:NumericUpDownExtensions.Unit="mm"
+                           IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                           VerticalAlignment="Center"
+                           Minimum="1"
+                           Maximum="100"
+                           Increment="0.5"
+                           FormatString="F2"
+                           Value="{Binding Operation.LargestLiftHeight}" />
+
+            <TextBlock Grid.Row="10" Grid.Column="3"
+                       Margin="5,0"
                        IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                        VerticalAlignment="Center"
-                       Minimum="5"
-                       Maximum="1000"
-                       Increment="1"
-                       FormatString="F2"
-                       Value="{Binding Operation.SlowestBottomLiftSpeed}"/>
+                       Text="@" />
 
-        <Button Grid.Row="6" Grid.Column="6"
-                IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
-                VerticalAlignment="Stretch"
-                HorizontalAlignment="Stretch"
-                HorizontalContentAlignment="Center"
-                Command="{Binding ViewLargestBottomLayer}"
-                CommandParameter="True"
-                ToolTip.Tip="View the largest bottom layer for the selected layer range"
-                Content="Largest"/>
+            <NumericUpDown Grid.Row="10" Grid.Column="4"
+                           suki:NumericUpDownExtensions.Unit="mm/min"
+                           IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                           VerticalAlignment="Center"
+                           Minimum="5"
+                           Maximum="1000"
+                           Increment="1"
+                           FormatString="F2"
+                           Value="{Binding Operation.SlowestLiftSpeed}" />
 
-        <TextBlock Grid.Row="8" Grid.Column="0"
-                   IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
-                   VerticalAlignment="Center"
-                   Text="Smallest lift:"/>
-
-        <NumericUpDown Grid.Row="8" Grid.Column="2"
-                       suki:NumericUpDownExtensions.Unit="mm"
-                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
-                       VerticalAlignment="Center"
-                       Minimum="1"
-                       Maximum="100"
-                       Increment="0.5"
-                       FormatString="F2"
-                       Value="{Binding Operation.SmallestLiftHeight}"/>
-
-        <TextBlock Grid.Row="8" Grid.Column="3"
-                   Margin="5,0"
-                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
-                   VerticalAlignment="Center"
-                   Text="@"/>
-
-        <NumericUpDown Grid.Row="8" Grid.Column="4"
-                       suki:NumericUpDownExtensions.Unit="mm/min"
-                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
-                       VerticalAlignment="Center"
-                       Minimum="5"
-                       Maximum="1000"
-                       Increment="1"
-                       FormatString="F2"
-                       Value="{Binding Operation.FastestLiftSpeed}"/>
-
-        <Button Grid.Row="8" Grid.Column="6"
-                IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
-                VerticalAlignment="Stretch"
-                HorizontalAlignment="Stretch"
-                HorizontalContentAlignment="Center"
-                Command="{Binding ViewSmallestNormalLayer}"
-                CommandParameter="False"
-                ToolTip.Tip="View the smallest normal layer for the selected layer range"
-                Content="Smallest"/>
-
-        <TextBlock Grid.Row="10" Grid.Column="0"
-                   IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
-                   VerticalAlignment="Center"
-                   Text="Largest lift:"/>
-
-        <NumericUpDown Grid.Row="10" Grid.Column="2"
-                       suki:NumericUpDownExtensions.Unit="mm"
-                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
-                       VerticalAlignment="Center"
-                       Minimum="1"
-                       Maximum="100"
-                       Increment="0.5"
-                       FormatString="F2"
-                       Value="{Binding Operation.LargestLiftHeight}"/>
-
-        <TextBlock Grid.Row="10" Grid.Column="3"
-                   Margin="5,0"
-                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
-                   VerticalAlignment="Center"
-                   Text="@"/>
-
-        <NumericUpDown Grid.Row="10" Grid.Column="4"
-                       suki:NumericUpDownExtensions.Unit="mm/min"
-                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
-                       VerticalAlignment="Center"
-                       Minimum="5"
-                       Maximum="1000"
-                       Increment="1"
-                       FormatString="F2"
-                       Value="{Binding Operation.SlowestLiftSpeed}"/>
-
-        <Button Grid.Row="10" Grid.Column="6"
-                IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
-                VerticalAlignment="Stretch"
-                HorizontalAlignment="Stretch"
-                HorizontalContentAlignment="Center"
-                Command="{Binding ViewLargestNormalLayer}"
-                CommandParameter="False"
-                ToolTip.Tip="View the largest normal layer for the selected layer range"
-                Content="Largest"/>
+            <Button Grid.Row="10" Grid.Column="6"
+                    IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                    VerticalAlignment="Stretch"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Command="{Binding ViewLargestNormalLayer}"
+                    CommandParameter="False"
+                    ToolTip.Tip="View the largest normal layer for the selected layer range"
+                    Content="Largest" />
         </Grid>
 
-  </StackPanel>
+        <Separator IsVisible="{Binding SlicerFile.CanUseLayerRetractSpeed}" />
+
+        <TextBlock IsVisible="{Binding SlicerFile.CanUseLayerRetractSpeed}"
+                   Text="Retraction"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center" />
+
+        <TextBlock IsVisible="{Binding SlicerFile.CanUseLayerRetractHeight2}"
+                   Text="The second distance is the final retract movement near the vat and is calculated from each generated lift height."
+                   TextWrapping="Wrap"
+                   HorizontalAlignment="Center" />
+
+        <Grid IsVisible="{Binding SlicerFile.CanUseLayerRetractSpeed}"
+              RowDefinitions="Auto,10,Auto,10,Auto"
+              ColumnDefinitions="Auto,10,180,10,180,10,180">
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontWeight="Bold"
+                       Text="Layer type" />
+
+            <TextBlock Grid.Row="0" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontWeight="Bold"
+                       Text="First speed" />
+
+            <TextBlock Grid.Row="0" Grid.Column="4"
+                       IsVisible="{Binding SlicerFile.CanUseLayerRetractHeight2}"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontWeight="Bold"
+                       Text="Second distance" />
+
+            <TextBlock Grid.Row="0" Grid.Column="6"
+                       IsVisible="{Binding SlicerFile.CanUseLayerRetractSpeed2}"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontWeight="Bold"
+                       Text="Second speed" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                       VerticalAlignment="Center"
+                       Text="Bottom layers:" />
+
+            <NumericUpDown Grid.Row="2" Grid.Column="2"
+                           suki:NumericUpDownExtensions.Unit="mm/min"
+                           IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                           Minimum="5"
+                           Maximum="1000"
+                           Increment="1"
+                           FormatString="F2"
+                           Value="{Binding Operation.BottomRetractSpeed}" />
+
+            <NumericUpDown Grid.Row="2" Grid.Column="4"
+                           suki:NumericUpDownExtensions.Unit="%"
+                           IsVisible="{Binding SlicerFile.CanUseLayerRetractHeight2}"
+                           IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                           Minimum="0"
+                           Maximum="100"
+                           Increment="1"
+                           FormatString="F2"
+                           Value="{Binding Operation.BottomRetractHeight2Percentage}" />
+
+            <NumericUpDown Grid.Row="2" Grid.Column="6"
+                           suki:NumericUpDownExtensions.Unit="mm/min"
+                           IsVisible="{Binding SlicerFile.CanUseLayerRetractSpeed2}"
+                           IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                           Minimum="5"
+                           Maximum="1000"
+                           Increment="1"
+                           FormatString="F2"
+                           Value="{Binding Operation.BottomRetractSpeed2}" />
+
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                       VerticalAlignment="Center"
+                       Text="Normal layers:" />
+
+            <NumericUpDown Grid.Row="4" Grid.Column="2"
+                           suki:NumericUpDownExtensions.Unit="mm/min"
+                           IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                           Minimum="5"
+                           Maximum="1000"
+                           Increment="1"
+                           FormatString="F2"
+                           Value="{Binding Operation.RetractSpeed}" />
+
+            <NumericUpDown Grid.Row="4" Grid.Column="4"
+                           suki:NumericUpDownExtensions.Unit="%"
+                           IsVisible="{Binding SlicerFile.CanUseLayerRetractHeight2}"
+                           IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                           Minimum="0"
+                           Maximum="100"
+                           Increment="1"
+                           FormatString="F2"
+                           Value="{Binding Operation.RetractHeight2Percentage}" />
+
+            <NumericUpDown Grid.Row="4" Grid.Column="6"
+                           suki:NumericUpDownExtensions.Unit="mm/min"
+                           IsVisible="{Binding SlicerFile.CanUseLayerRetractSpeed2}"
+                           IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                           Minimum="5"
+                           Maximum="1000"
+                           Increment="1"
+                           FormatString="F2"
+                           Value="{Binding Operation.RetractSpeed2}" />
+        </Grid>
+
+    </StackPanel>
 </UserControl>
