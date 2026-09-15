@@ -106,7 +106,7 @@ public abstract partial class PixelOperation : ObservableObject, IEquatable<Pixe
         operation.Size = Size;
     }
 
-    public PixelOperation Clone()
+    public virtual PixelOperation Clone()
     {
         return (PixelOperation) MemberwiseClone();
     }

@@ -5,6 +5,7 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -23,11 +24,9 @@ public partial class PixelStroke : PixelOperation, IEquatable<PixelStroke>
 {
     public override PixelOperationType OperationType => PixelOperationType.Stroke;
 
-    [XmlIgnore]
-    public List<Point> Points { get; } = [];
+    [XmlIgnore] public List<Point> Points { get; } = [];
 
-    [XmlIgnore]
-    public bool IsEmpty => Points.Count == 0;
+    [XmlIgnore] public bool IsEmpty => Points.Count == 0;
 
     public PixelDrawing.BrushShapeType BrushShape { get; set; } = PixelDrawing.BrushShapeType.Square;
 
@@ -39,8 +38,7 @@ public partial class PixelStroke : PixelOperation, IEquatable<PixelStroke>
 
     public byte RemovePixelBrightness { get; set; }
 
-    [XmlIgnore]
-    public bool IsAdd { get; set; } = true;
+    [XmlIgnore] public bool IsAdd { get; set; } = true;
 
     public byte Brightness => IsAdd ? PixelBrightness : RemovePixelBrightness;
 
@@ -48,7 +46,8 @@ public partial class PixelStroke : PixelOperation, IEquatable<PixelStroke>
     {
     }
 
-    public PixelStroke(uint layerIndex, IEnumerable<Point> points, LineType lineType, PixelDrawing.BrushShapeType brushShape,
+    public PixelStroke(uint layerIndex, IEnumerable<Point> points, LineType lineType,
+        PixelDrawing.BrushShapeType brushShape,
         double rotationAngle, ushort brushSize, short thickness, byte removePixelBrightness, byte pixelBrightness,
         bool isAdd) : base(layerIndex, Point.Empty, lineType, pixelBrightness)
     {
@@ -63,10 +62,14 @@ public partial class PixelStroke : PixelOperation, IEquatable<PixelStroke>
             AddPoint(point);
         }
 
-        Location = Points.Count > 0 ? Points[0] : Point.Empty;
-        if (Points.Count > 0)
+        if (!IsEmpty)
         {
-            Size = new Size(GetBounds().Width + 1, GetBounds().Height + 1);
+            var bounds = GetBounds();
+            bounds.Size += new Size(1, 1);
+            var brushRadius = BrushSize / 2;
+            bounds.Inflate(brushRadius, brushRadius);
+            Location = new Point(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2);
+            Size = bounds.Size;
         }
     }
 
@@ -101,10 +104,21 @@ public partial class PixelStroke : PixelOperation, IEquatable<PixelStroke>
         return new Rectangle(min, new Size(max.X - min.X, max.Y - min.Y));
     }
 
+    /// <summary>
+    /// Returns whether the stroke applies to the supplied layer through its propagation range.
+    /// </summary>
+    public bool IsInLayerRange(uint layerIndex)
+    {
+        var minimumLayer = LayerIndex > LayersBelow ? LayerIndex - LayersBelow : 0;
+        var maximumLayer = (ulong)LayerIndex + LayersAbove;
+        return layerIndex >= minimumLayer && layerIndex <= maximumLayer;
+    }
+
     public override void CopyTo(PixelOperation operation)
     {
         base.CopyTo(operation);
-        if (operation is not PixelStroke stroke) throw new TypeAccessException($"Expecting PixelStroke but got {operation.GetType().Name}");
+        if (operation is not PixelStroke stroke)
+            throw new TypeAccessException($"Expecting PixelStroke but got {operation.GetType().Name}");
         stroke.Points.Clear();
         stroke.Points.AddRange(Points);
         stroke.BrushShape = BrushShape;
@@ -115,9 +129,17 @@ public partial class PixelStroke : PixelOperation, IEquatable<PixelStroke>
         stroke.IsAdd = IsAdd;
     }
 
+    public override PixelOperation Clone()
+    {
+        var clone = new PixelStroke();
+        CopyTo(clone);
+        return clone;
+    }
+
     public override string ToString()
     {
-        return $"{LineType} {BrushShape}, {BrushSize}px/{Thickness}px, {RotationAngle}º, {Points.Count} points, {PixelBrightness}☼/{RemovePixelBrightness}☼, Layers: {LayersBelow}/{LayersAbove}";
+        return
+            $"{LineType} {BrushShape}, {BrushSize}px/{Thickness}px, {RotationAngle}º, {Points.Count} points, {PixelBrightness}☼/{RemovePixelBrightness}☼, Layers: {LayersBelow}/{LayersAbove}";
     }
 
     public bool Equals(PixelStroke? other)

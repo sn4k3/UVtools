@@ -30,15 +30,7 @@ namespace UVtools.UI;
 
 public partial class MainWindow
 {
-    private int _selectedPixelOperationTabIndex;
     public RangeObservableCollection<PixelOperation> Drawings { get; } = [];
-
-    private string _pixelEditorModeLabel = "Pixel Editor (C)";
-    public string PixelEditorModeLabel
-    {
-        get => _pixelEditorModeLabel;
-        private set => RaiseAndSetIfChanged(ref _pixelEditorModeLabel, value);
-    }
 
     public PixelDrawing DrawingPixelDrawing { get; } = new();
     public PixelText DrawingPixelText { get; } = new();
@@ -56,36 +48,12 @@ public partial class MainWindow
 
     public int SelectedPixelOperationTabIndex
     {
-        get => _selectedPixelOperationTabIndex;
-        set => RaiseAndSetIfChanged(ref _selectedPixelOperationTabIndex, value);
-    }
-
-    /// <summary>
-    /// Sets the pixel editor to the legacy classic mode (immediate commit per pointer event).
-    /// </summary>
-    public void SetPixelEditorClassicMode()
-    {
-        Settings.PixelEditor.RenderOnRelease = false;
-        PixelEditorModeLabel = "Pixel Editor (C)";
-        AddLog("Pixel Editor drawing mode: Classic");
-    }
-
-    /// <summary>
-    /// Sets the pixel editor to the vector mode (accumulate path, commit on mouse release).
-    /// </summary>
-    public void SetPixelEditorVectorialMode()
-    {
-        Settings.PixelEditor.RenderOnRelease = true;
-        PixelEditorModeLabel = "Pixel Editor (V)";
-        AddLog("Pixel Editor drawing mode: Vector (render on release)");
+        get;
+        set => RaiseAndSetIfChanged(ref field, value);
     }
 
     public void InitPixelEditor()
     {
-        PixelEditorModeLabel = Settings.PixelEditor.RenderOnRelease
-            ? "Pixel Editor (V)"
-            : "Pixel Editor (C)";
-
         DrawingPixelDrawingProfiles.Add(DrawingPixelDrawing.Clone());
         DrawingPixelTextProfiles.Add(DrawingPixelText.Clone());
         DrawingPixelFillProfiles.Add(DrawingPixelFill.Clone());
@@ -220,49 +188,24 @@ public partial class MainWindow
 
         if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Drawing)
         {
-            if (Settings.PixelEditor.RenderOnRelease)
+            _pendingPixelStroke ??= new PixelStroke
             {
-                _pendingPixelStroke ??= new PixelStroke
-                {
-                    LineType = DrawingPixelDrawing.LineType,
-                    BrushShape = DrawingPixelDrawing.BrushShape,
-                    RotationAngle = DrawingPixelDrawing.RotationAngle,
-                    BrushSize = DrawingPixelDrawing.BrushSize,
-                    Thickness = DrawingPixelDrawing.Thickness,
-                    RemovePixelBrightness = DrawingPixelDrawing.RemovePixelBrightness,
-                    PixelBrightness = DrawingPixelDrawing.PixelBrightness,
-                    IsAdd = isAdd,
-                    LayersBelow = DrawingPixelDrawing.LayersBelow,
-                    LayersAbove = DrawingPixelDrawing.LayersAbove
-                };
-                if (_pendingPixelStroke.AddPoint(realLocation))
-                {
-                    DrawPendingStrokePreview();
-                }
-                return;
+                LineType = DrawingPixelDrawing.LineType,
+                BrushShape = DrawingPixelDrawing.BrushShape,
+                RotationAngle = DrawingPixelDrawing.RotationAngle,
+                BrushSize = DrawingPixelDrawing.BrushSize,
+                Thickness = DrawingPixelDrawing.Thickness,
+                RemovePixelBrightness = DrawingPixelDrawing.RemovePixelBrightness,
+                PixelBrightness = DrawingPixelDrawing.PixelBrightness,
+                IsAdd = isAdd,
+                LayersBelow = DrawingPixelDrawing.LayersBelow,
+                LayersAbove = DrawingPixelDrawing.LayersAbove
+            };
+            if (_pendingPixelStroke.AddPoint(realLocation))
+            {
+                DrawPendingStrokePreview();
             }
 
-            var drawings = new List<PixelOperation>();
-            var minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelDrawing.LayersBelow);
-            var maxLayer = SlicerFile.SanitizeLayerIndex(ActualLayer + DrawingPixelDrawing.LayersAbove);
-            for (var layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
-            {
-                var operationDrawing = new PixelDrawing(layerIndex, realLocation, DrawingPixelDrawing.LineType,
-                    DrawingPixelDrawing.BrushShape, DrawingPixelDrawing.RotationAngle, DrawingPixelDrawing.BrushSize,
-                    DrawingPixelDrawing.Thickness, DrawingPixelDrawing.RemovePixelBrightness,
-                    DrawingPixelDrawing.PixelBrightness, isAdd);
-
-                //if (PixelHistory.Contains(operation)) continue;
-                //AddDrawing(operationDrawing);
-                drawings.Add(operationDrawing);
-
-                if (layerIndex == _actualLayer)
-                {
-                    DrawPixelBrushPreview(operationDrawing, location, isAdd);
-                }
-            }
-
-            AddDrawings(drawings);
             return;
         }
         else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Text)
@@ -374,7 +317,6 @@ public partial class MainWindow
 
     /// <summary>
     /// Draws a single brush stamp on the current layer canvas using the selected tool settings.
-    /// Used both for the legacy immediate preview and the deferred stroke live preview.
     /// </summary>
     /// <param name="operationDrawing">The brush settings to draw.</param>
     /// <param name="location">The image-space location to stamp.</param>
@@ -550,26 +492,21 @@ public partial class MainWindow
     private void DrawPendingStrokePreview()
     {
         if (_pendingPixelStroke is null || _pendingPixelStroke.Points.Count == 0) return;
-        var displayPoints = new Point[_pendingPixelStroke.Points.Count];
-        for (var i = 0; i < _pendingPixelStroke.Points.Count; i++)
-        {
-            displayPoints[i] = GetTransposedPoint(_pendingPixelStroke.Points[i], true);
-        }
+        var currentPoint = GetTransposedPoint(_pendingPixelStroke.Points[^1], true);
 
-        var operationDrawing = new PixelDrawing(ActualLayer, displayPoints[0],
+        var operationDrawing = new PixelDrawing(ActualLayer, currentPoint,
             _pendingPixelStroke.LineType, _pendingPixelStroke.BrushShape, _pendingPixelStroke.RotationAngle,
             _pendingPixelStroke.BrushSize, _pendingPixelStroke.Thickness,
             _pendingPixelStroke.RemovePixelBrightness, _pendingPixelStroke.PixelBrightness,
             _pendingPixelStroke.IsAdd);
 
-        if (displayPoints.Length == 1)
+        if (_pendingPixelStroke.Points.Count == 1)
         {
-            DrawPixelBrushPreview(operationDrawing, displayPoints[0], _pendingPixelStroke.IsAdd);
+            DrawPixelBrushPreview(operationDrawing, currentPoint, _pendingPixelStroke.IsAdd);
             return;
         }
 
-        var previousPoint = displayPoints[^2];
-        var currentPoint = displayPoints[^1];
+        var previousPoint = GetTransposedPoint(_pendingPixelStroke.Points[^2], true);
         foreach (var point in previousPoint.InterpolateLine(currentPoint))
         {
             DrawPixelBrushPreview(operationDrawing, point, _pendingPixelStroke.IsAdd);
@@ -577,8 +514,7 @@ public partial class MainWindow
     }
 
     /// <summary>
-    /// Commits the pending stroke on mouse release: builds one PixelStroke per layer in the
-    /// propagation range and inserts them all with a single bulk insert.
+    /// Commits the pending stroke on mouse release.
     /// </summary>
     private void CommitPendingStroke()
     {
@@ -588,21 +524,18 @@ public partial class MainWindow
             return;
         }
 
-        var drawings = new List<PixelOperation>();
-        var minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)_pendingPixelStroke.LayersBelow);
-        var maxLayer = SlicerFile.SanitizeLayerIndex(ActualLayer + _pendingPixelStroke.LayersAbove);
-        for (var layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
+        var operationStroke = new PixelStroke(ActualLayer, _pendingPixelStroke.Points,
+            _pendingPixelStroke.LineType, _pendingPixelStroke.BrushShape, _pendingPixelStroke.RotationAngle,
+            _pendingPixelStroke.BrushSize, _pendingPixelStroke.Thickness,
+            _pendingPixelStroke.RemovePixelBrightness, _pendingPixelStroke.PixelBrightness,
+            _pendingPixelStroke.IsAdd)
         {
-            var operationStroke = new PixelStroke(layerIndex, _pendingPixelStroke.Points,
-                _pendingPixelStroke.LineType, _pendingPixelStroke.BrushShape, _pendingPixelStroke.RotationAngle,
-                _pendingPixelStroke.BrushSize, _pendingPixelStroke.Thickness,
-                _pendingPixelStroke.RemovePixelBrightness, _pendingPixelStroke.PixelBrightness,
-                _pendingPixelStroke.IsAdd);
-            drawings.Add(operationStroke);
-        }
+            LayersBelow = _pendingPixelStroke.LayersBelow,
+            LayersAbove = _pendingPixelStroke.LayersAbove
+        };
 
         _pendingPixelStroke = null;
-        AddDrawings(drawings);
+        AddDrawing(operationStroke);
         ShowLayer();
     }
 
@@ -700,25 +633,35 @@ public partial class MainWindow
 
             if (Settings.PixelEditor.PartialUpdateIslandsOnEditing)
             {
-                List<uint> whiteListLayers = [];
+                HashSet<uint> whiteListLayers = [];
                 foreach (var item in Drawings)
                 {
                     /*if (item.OperationType != PixelOperation.PixelOperationType.Drawing &&
                         item.OperationType != PixelOperation.PixelOperationType.Text &&
                         item.OperationType != PixelOperation.PixelOperationType.Fill &&
                         item.OperationType != PixelOperation.PixelOperationType.Supports) continue;*/
-                    if (!whiteListLayers.Contains(item.LayerIndex))
-                        whiteListLayers.Add(item.LayerIndex);
-
-                    var nextLayer = item.LayerIndex + 1;
-                    if (nextLayer < SlicerFile!.LayerCount &&
-                        !whiteListLayers.Contains(nextLayer))
+                    var firstLayer = item.LayerIndex;
+                    var lastLayer = item.LayerIndex;
+                    if (item is PixelStroke stroke)
                     {
-                        whiteListLayers.Add(nextLayer);
+                        firstLayer = stroke.LayersBelow >= stroke.LayerIndex
+                            ? 0
+                            : stroke.LayerIndex - stroke.LayersBelow;
+                        lastLayer = (uint)Math.Min(SlicerFile!.LastLayerIndex,
+                            (ulong)stroke.LayerIndex + stroke.LayersAbove);
+                    }
+
+                    for (var layerIndex = firstLayer; layerIndex <= lastLayer; layerIndex++)
+                    {
+                        whiteListLayers.Add(layerIndex);
+                        if (layerIndex + 1 < SlicerFile!.LayerCount)
+                        {
+                            whiteListLayers.Add(layerIndex + 1);
+                        }
                     }
                 }
 
-                await UpdateIslandsOverhangs(whiteListLayers);
+                await UpdateIslandsOverhangs(whiteListLayers.ToList());
             }
         }
 

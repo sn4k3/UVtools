@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using Emgu.CV.Structure;
 
@@ -187,36 +186,61 @@ public static class DrawingExtensions
     /// </summary>
     /// <param name="start">Start point.</param>
     /// <param name="end">End point.</param>
-    /// <returns>The ordered pixels from <paramref name="start"/> to <paramref name="end"/>, both inclusive.</returns>
-    public static Point[] InterpolateLine(this Point start, Point end)
+    /// <returns>An allocation-free enumerator over the ordered pixels from <paramref name="start"/> to
+    /// <paramref name="end"/>, both inclusive.</returns>
+    public static LineEnumerator InterpolateLine(this Point start, Point end) => new(start, end);
+
+    public struct LineEnumerator
     {
-        var dx = Math.Abs(end.X - start.X);
-        var dy = Math.Abs(end.Y - start.Y);
-        var sx = start.X < end.X ? 1 : -1;
-        var sy = start.Y < end.Y ? 1 : -1;
-        var err = dx - dy;
+        private readonly Point _end;
+        private readonly int _deltaX;
+        private readonly int _deltaY;
+        private readonly int _stepX;
+        private readonly int _stepY;
+        private int _error;
+        private bool _started;
+        private bool _complete;
 
-        var points = new List<Point>();
-        var x = start.X;
-        var y = start.Y;
-        while (true)
+        public Point Current { get; private set; }
+
+        internal LineEnumerator(Point start, Point end)
         {
-            points.Add(new Point(x, y));
-            if (x == end.X && y == end.Y) break;
-            var e2 = 2 * err;
-            if (e2 > -dy)
-            {
-                err -= dy;
-                x += sx;
-            }
-
-            if (e2 < dx)
-            {
-                err += dx;
-                y += sy;
-            }
+            _end = end;
+            _deltaX = Math.Abs(end.X - start.X);
+            _deltaY = Math.Abs(end.Y - start.Y);
+            _stepX = start.X < end.X ? 1 : -1;
+            _stepY = start.Y < end.Y ? 1 : -1;
+            _error = _deltaX - _deltaY;
+            Current = start;
         }
 
-        return points.ToArray();
+        public readonly LineEnumerator GetEnumerator() => this;
+
+        public bool MoveNext()
+        {
+            if (_complete) return false;
+            if (!_started)
+            {
+                _started = true;
+                _complete = Current == _end;
+                return true;
+            }
+
+            var error = 2 * _error;
+            if (error > -_deltaY)
+            {
+                _error -= _deltaY;
+                Current = Current with { X = Current.X + _stepX };
+            }
+
+            if (error < _deltaX)
+            {
+                _error += _deltaX;
+                Current = Current with { Y = Current.Y + _stepY };
+            }
+
+            _complete = Current == _end;
+            return true;
+        }
     }
 }

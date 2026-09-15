@@ -2,6 +2,7 @@
 
 ## /08/2026 - v6.2.1
 
+- Improve pixel editor drawing with smooth, interpolated strokes committed on pointer release by @jorgerobles (#1139)
 - Fix Terminal error when sending a command (#1138)
 - Fix 'Edit Print Paramters' menu item not visible in Tools (#1106)
 - (Upgrade) .NET from 10.0.10 to 10.0.11

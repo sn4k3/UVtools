@@ -7,12 +7,14 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using EmguExtensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.PixelEditor;
 using Xunit;
@@ -21,6 +23,26 @@ namespace UVtools.Tests;
 
 public class PixelStrokeTests
 {
+    [Theory]
+    [InlineData(10, 10, 16, 10, 7)]
+    [InlineData(10, 10, 10, 16, 7)]
+    [InlineData(10, 10, 16, 16, 7)]
+    [InlineData(10, 10, 10, 10, 1)]
+    public void LineInterpolationIncludesBothEndpoints(int startX, int startY, int endX, int endY, int expectedCount)
+    {
+        var start = new Point(startX, startY);
+        var end = new Point(endX, endY);
+        var points = new List<Point>();
+        foreach (var point in start.InterpolateLine(end))
+        {
+            points.Add(point);
+        }
+
+        Assert.Equal(expectedCount, points.Count);
+        Assert.Equal(start, points[0]);
+        Assert.Equal(end, points[^1]);
+    }
+
     [Fact]
     public void ConsecutiveDuplicatePointsAreNotStoredTwice()
     {
@@ -119,6 +141,37 @@ public class PixelStrokeTests
     public void StrokeWithoutPointsIsEmpty()
     {
         Assert.True(new PixelStroke().IsEmpty);
+    }
+
+    [Fact]
+    public void CloneOwnsAnIndependentPointList()
+    {
+        var stroke = new PixelStroke(2, [new Point(10, 10)], LineType.AntiAlias,
+            PixelDrawing.BrushShapeType.Square, 0, 1, -1, 30, 200, true);
+
+        var clone = Assert.IsType<PixelStroke>(stroke.Clone());
+        clone.AddPoint(new Point(11, 10));
+
+        Assert.Single(stroke.Points);
+        Assert.Equal(2, clone.Points.Count);
+    }
+
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(1, true)]
+    [InlineData(2, true)]
+    [InlineData(3, true)]
+    [InlineData(4, false)]
+    public void LayerRangeIncludesPropagatedLayers(uint layerIndex, bool expected)
+    {
+        var stroke = new PixelStroke(2, [new Point(10, 10)], LineType.AntiAlias,
+            PixelDrawing.BrushShapeType.Square, 0, 1, -1, 30, 200, true)
+        {
+            LayersBelow = 1,
+            LayersAbove = 1
+        };
+
+        Assert.Equal(expected, stroke.IsInLayerRange(layerIndex));
     }
 
     [Fact]

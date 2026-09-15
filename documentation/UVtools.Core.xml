@@ -424,7 +424,8 @@
             </summary>
             <param name="start">Start point.</param>
             <param name="end">End point.</param>
-            <returns>The ordered pixels from <paramref name="start"/> to <paramref name="end"/>, both inclusive.</returns>
+            <returns>An allocation-free enumerator over the ordered pixels from <paramref name="start"/> to
+            <paramref name="end"/>, both inclusive.</returns>
         </member>
         <member name="M:UVtools.Core.Extensions.FileStreamExtensions.ReadToEnd(System.IO.FileStream)">
             <summary>
@@ -2134,7 +2135,7 @@
         <member name="M:UVtools.Core.FileFormats.FileFormat.ExpandLayerRange(UVtools.Core.PixelEditor.PixelOperation)">
             <summary>
             Expands a stroke operation into one tuple per layer in its propagation range
-            (<see cref="!:PixelStroke.LayersBelow"/> to <see cref="!:PixelStroke.LayersAbove"/>).
+            (<see cref="P:UVtools.Core.PixelEditor.PixelOperation.LayersBelow"/> to <see cref="P:UVtools.Core.PixelEditor.PixelOperation.LayersAbove"/>).
             </summary>
             <param name="operation">The stroke operation to expand.</param>
             <returns>One (LayerIndex, operation) tuple per target layer, in ascending order.</returns>
@@ -9362,6 +9363,11 @@
         <member name="M:UVtools.Core.PixelEditor.PixelStroke.GetBounds">
             <summary>
             Gets the bounding rectangle of the stored points.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.PixelEditor.PixelStroke.IsInLayerRange(System.UInt32)">
+            <summary>
+            Returns whether the stroke applies to the supplied layer through its propagation range.
             </summary>
         </member>
         <member name="T:UVtools.Core.PixelEditor.PixelSupport">

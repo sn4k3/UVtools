@@ -31,7 +31,7 @@ public partial class PixelText : PixelOperation, IEquatable<PixelText>
     {
         get;
         set => SetProperty(ref field, Math.Round(value, 2));
-    }
+    } = 1;
 
     [ObservableProperty]
     public partial ushort Thickness { get; set; } = 1;
