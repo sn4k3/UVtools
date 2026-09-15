@@ -1,16 +1,25 @@
 name: Greetings
 
-on: [pull_request_target, issues]
+on:
+  pull_request_target:
+    types: [opened]
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
 
 jobs:
   greeting:
+    name: Greet first-time contributors
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       issues: write
       pull-requests: write
+
     steps:
-    - uses: actions/first-interaction@v1
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        issue-message: "This is your first time submitting an issue with UVtools 🥳Please review your issue and ensure that the submit template was followed, the information is complete, and not related to any other open issue. It will be reviewed shortly. Debugging is very important and make the program better. Thanks for contributing and making the software better! 🙌"
-        pr-message: "This is your first time submitting a pull request with UVtools 🥳Please review your PR and ensure that the submit template was followed, the information is complete, and not related to any other open PR. It will be reviewed shortly. PRs by community are very important and make the program better and richer in every way. Thanks for contributing and making the software better! 🙌"
+      - uses: actions/first-interaction@v3
+        with:
+          issue_message: "This is your first time submitting an issue with UVtools 🥳 Please review your issue and ensure that the submission template was followed, the information is complete, and it is not related to another open issue. It will be reviewed shortly. Debugging is very important and makes the program better. Thanks for contributing! 🙌"
+          pr_message: "This is your first time submitting a pull request with UVtools 🥳 Please review your PR and ensure that the submission template was followed, the information is complete, and it is not related to another open PR. Community PRs make the software better and richer in every way. Thanks for contributing! 🙌"

@@ -1,102 +1,99 @@
 <Solution>
-  <Configurations>
-    <Platform Name="Any CPU" />
-    <Platform Name="ARM64" />
-    <Platform Name="x64" />
-  </Configurations>
-  <Folder Name="/root/">
-    <File Path=".gitignore" />
-    <File Path="AGENTS.md" />
-    <File Path="CHANGELOG.md" />
-    <File Path="CREDITS.md" />
-    <File Path="Directory.Build.props" />
-    <File Path="LICENSE" />
-    <File Path="README.md" />
-    <File Path="RELEASE_NOTES.md" />
-  </Folder>
-  <Folder Name="/root/.github/">
-    <File Path=".github/FUNDING.yml" />
-    <File Path=".github/PULL_REQUEST_TEMPLATE.md" />
-  </Folder>
-  <Folder Name="/root/.github/ISSUE_TEMPLATE/">
-    <File Path=".github/ISSUE_TEMPLATE/bug_report.md.old" />
-    <File Path=".github/ISSUE_TEMPLATE/bug_report_form.yml" />
-    <File Path=".github/ISSUE_TEMPLATE/config.yml" />
-    <File Path=".github/ISSUE_TEMPLATE/feature_request.md.old" />
-    <File Path=".github/ISSUE_TEMPLATE/feature_request_form.yml" />
-  </Folder>
-  <Folder Name="/root/.github/workflows/">
-    <File Path=".github/workflows/codeql-analysis.yml" />
-    <File Path=".github/workflows/devskim.yml" />
-    <File Path=".github/workflows/greetings.yml" />
-    <File Path=".github/workflows/package-publish.yml" />
-  </Folder>
-  <Folder Name="/root/build/">
-    <File Path="build/createRelease.ps1" />
-    <File Path="build/createRelease.sh" />
-    <File Path="build/cvextern.ps1" />
-    <File Path="build/libcvextern.sh" />
-    <File Path="build/README.md" />
-  </Folder>
-  <Folder Name="/root/scripts/">
-    <File Path="Scripts/ImportPrusaSlicerData.ps1" />
-    <File Path="Scripts/install-dependencies.sh" />
-    <File Path="Scripts/install-uvtools.sh" />
-  </Folder>
-  <Folder Name="/root/scripts/Editor010/">
-    <File Path="Scripts/010 Editor/anet.bt" />
-    <File Path="Scripts/010 Editor/ctb.bt" />
-    <File Path="Scripts/010 Editor/ctb_decrypted.bt" />
-    <File Path="Scripts/010 Editor/ctb_encrypted.bt" />
-    <File Path="Scripts/010 Editor/cxdlp.bt" />
-    <File Path="Scripts/010 Editor/cxdlpv4.bt" />
-    <File Path="Scripts/010 Editor/cxdlp_v1.bt" />
-    <File Path="Scripts/010 Editor/fdg.bt" />
-    <File Path="Scripts/010 Editor/FileFormats.1pj" />
-    <File Path="Scripts/010 Editor/goo.bt" />
-    <File Path="Scripts/010 Editor/gr1.bt" />
-    <File Path="Scripts/010 Editor/lgs.bt" />
-    <File Path="Scripts/010 Editor/mdlp.bt" />
-    <File Path="Scripts/010 Editor/osf.bt" />
-    <File Path="Scripts/010 Editor/osla.bt" />
-    <File Path="Scripts/010 Editor/photons.bt" />
-    <File Path="Scripts/010 Editor/PhotonWorkshop.bt" />
-    <File Path="Scripts/010 Editor/phz.bt" />
-    <File Path="Scripts/010 Editor/pwsz.bt" />
-    <File Path="Scripts/010 Editor/pwszCalcLayerVolumes.bt" />
-    <File Path="Scripts/010 Editor/pwszScene.bt" />
-    <File Path="Scripts/010 Editor/svgx.bt" />
-  </Folder>
-  <Project Path="build/build.csproj">
-    <Build Solution="Release|Any CPU" Project="false" />
-  </Project>
-  <Project Path="Scripts/UVtools.ScriptSample/UVtools.ScriptSample.csproj">
-    <BuildDependency Project="UVtools.Core/UVtools.Core.csproj" />
-    <Platform Solution="*|ARM64" Project="ARM64" />
-    <Platform Solution="*|x64" Project="x64" />
-  </Project>
-  <Project Path="UVtools.AvaloniaControls/UVtools.AvaloniaControls.csproj">
-    <Platform Solution="*|ARM64" Project="ARM64" />
-    <Platform Solution="*|x64" Project="x64" />
-  </Project>
-  <Project Path="UVtools.Cmd/UVtools.Cmd.csproj">
-    <Platform Solution="*|ARM64" Project="ARM64" />
-    <Platform Solution="*|x64" Project="x64" />
-  </Project>
-  <Project Path="UVtools.Core/UVtools.Core.csproj">
-    <Platform Solution="*|ARM64" Project="ARM64" />
-    <Platform Solution="*|x64" Project="x64" />
-  </Project>
-  <Project Path="UVtools.Installer/UVtools.Installer.wixproj" Type="b7dd6f7e-def8-4e67-b5b7-07ef123db6f0">
-    <Build Solution="*|ARM64" Project="false" />
-    <Build Solution="*|x64" Project="false" />
-    <Build Solution="Debug|Any CPU" Project="false" />
-  </Project>
-  <Project Path="UVtools.UI/UVtools.UI.csproj">
-    <BuildDependency Project="UVtools.AvaloniaControls/UVtools.AvaloniaControls.csproj" />
-    <BuildDependency Project="UVtools.Cmd/UVtools.Cmd.csproj" />
-    <BuildDependency Project="UVtools.Core/UVtools.Core.csproj" />
-    <Platform Solution="*|ARM64" Project="ARM64" />
-    <Platform Solution="*|x64" Project="x64" />
-  </Project>
+    <Configurations>
+        <Platform Name="Any CPU" />
+        <Platform Name="ARM64" />
+        <Platform Name="x64" />
+    </Configurations>
+    <Folder Name="/root/">
+        <File Path=".gitignore" />
+        <File Path="AGENTS.md" />
+        <File Path="CHANGELOG.md" />
+        <File Path="CREDITS.md" />
+        <File Path="Directory.Build.props" />
+        <File Path="LICENSE" />
+        <File Path="README.md" />
+        <File Path="RELEASE_NOTES.md" />
+    </Folder>
+    <Folder Name="/root/.github/">
+        <File Path=".github/FUNDING.yml" />
+        <File Path=".github/PULL_REQUEST_TEMPLATE.md" />
+    </Folder>
+    <Folder Name="/root/.github/ISSUE_TEMPLATE/">
+        <File Path=".github/ISSUE_TEMPLATE/bug_report.md.old" />
+        <File Path=".github/ISSUE_TEMPLATE/bug_report_form.yml" />
+        <File Path=".github/ISSUE_TEMPLATE/config.yml" />
+        <File Path=".github/ISSUE_TEMPLATE/feature_request.md.old" />
+        <File Path=".github/ISSUE_TEMPLATE/feature_request_form.yml" />
+    </Folder>
+    <Folder Name="/root/.github/workflows/">
+        <File Path=".github/workflows/codeql-analysis.yml" />
+        <File Path=".github/workflows/devskim.yml" />
+        <File Path=".github/workflows/greetings.yml" />
+        <File Path=".github/workflows/release.yml" />
+    </Folder>
+    <Folder Name="/root/build/">
+        <File Path="build/createRelease.ps1" />
+        <File Path="build/createRelease.sh" />
+        <File Path="build/cvextern.ps1" />
+        <File Path="build/libcvextern.sh" />
+        <File Path="build/README.md" />
+    </Folder>
+    <Folder Name="/root/scripts/">
+        <File Path="Scripts/ImportPrusaSlicerData.ps1" />
+        <File Path="Scripts/install-dependencies.sh" />
+        <File Path="Scripts/install-uvtools.sh" />
+    </Folder>
+    <Folder Name="/root/scripts/Editor010/">
+        <File Path="Scripts/010 Editor/anet.bt" />
+        <File Path="Scripts/010 Editor/ctb.bt" />
+        <File Path="Scripts/010 Editor/ctb_decrypted.bt" />
+        <File Path="Scripts/010 Editor/ctb_encrypted.bt" />
+        <File Path="Scripts/010 Editor/cxdlp.bt" />
+        <File Path="Scripts/010 Editor/cxdlpv4.bt" />
+        <File Path="Scripts/010 Editor/cxdlp_v1.bt" />
+        <File Path="Scripts/010 Editor/fdg.bt" />
+        <File Path="Scripts/010 Editor/FileFormats.1pj" />
+        <File Path="Scripts/010 Editor/goo.bt" />
+        <File Path="Scripts/010 Editor/gr1.bt" />
+        <File Path="Scripts/010 Editor/lgs.bt" />
+        <File Path="Scripts/010 Editor/mdlp.bt" />
+        <File Path="Scripts/010 Editor/osf.bt" />
+        <File Path="Scripts/010 Editor/osla.bt" />
+        <File Path="Scripts/010 Editor/photons.bt" />
+        <File Path="Scripts/010 Editor/PhotonWorkshop.bt" />
+        <File Path="Scripts/010 Editor/phz.bt" />
+        <File Path="Scripts/010 Editor/pwsz.bt" />
+        <File Path="Scripts/010 Editor/pwszCalcLayerVolumes.bt" />
+        <File Path="Scripts/010 Editor/pwszScene.bt" />
+        <File Path="Scripts/010 Editor/svgx.bt" />
+    </Folder>
+    <Project Path="build/build.csproj">
+        <Build Solution="Release|Any CPU" Project="false" />
+    </Project>
+    <Project Path="Scripts/UVtools.ScriptSample/UVtools.ScriptSample.csproj">
+        <BuildDependency Project="UVtools.Core/UVtools.Core.csproj" />
+        <Platform Solution="*|ARM64" Project="ARM64" />
+        <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="tests/UVtools.Tests/UVtools.Tests.csproj" />
+    <Project Path="UVtools.AvaloniaControls/UVtools.AvaloniaControls.csproj">
+        <Platform Solution="*|ARM64" Project="ARM64" />
+        <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="UVtools.Cmd/UVtools.Cmd.csproj">
+        <Platform Solution="*|ARM64" Project="ARM64" />
+        <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="UVtools.Core/UVtools.Core.csproj">
+        <Platform Solution="*|ARM64" Project="ARM64" />
+        <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="UVtools.WixInstaller/UVtools.WixInstaller.wixproj" />
+    <Project Path="UVtools.UI/UVtools.UI.csproj">
+        <BuildDependency Project="UVtools.AvaloniaControls/UVtools.AvaloniaControls.csproj" />
+        <BuildDependency Project="UVtools.Cmd/UVtools.Cmd.csproj" />
+        <BuildDependency Project="UVtools.Core/UVtools.Core.csproj" />
+        <Platform Solution="*|ARM64" Project="ARM64" />
+        <Platform Solution="*|x64" Project="x64" />
+    </Project>
 </Solution>

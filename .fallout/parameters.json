@@ -1,4 +1,5 @@
 {
   "$schema": "build.schema.json",
-  "Solution": "UVtools.slnx"
+  "Solution": "UVtools.slnx",
+  "BuildProjectFile": "build/build.csproj"
 }
