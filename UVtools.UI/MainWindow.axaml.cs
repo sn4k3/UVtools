@@ -38,9 +38,9 @@ using Material.Icons.Avalonia;
 using StageKit;
 using StageKit.Primitives.System;
 using StageKit.Runtime;
+using StageKit.Updatum;
 using SukiUI.Controls;
 using SukiUI.MessageBox;
-using StageKit.Updatum;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Exceptions;
@@ -51,7 +51,6 @@ using UVtools.Core.Network;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.Core.Scripting;
-using UVtools.Core.SystemOS;
 using UVtools.UI.Controls;
 using UVtools.UI.Controls.Calibrators;
 using UVtools.UI.Controls.Tools;
@@ -570,12 +569,17 @@ public partial class MainWindow : GenericWindow
                 if (Settings.General.AvailableRamOnHitLimitKillIfUnableToAction)
                 {
                     // Kills
+                    // ReSharper disable once UnthrowableException
                     throw new InsufficientMemoryException(
-                        $"Your system memory RAM hit the limit of {usedMemory}GB from a total of {totalMemory}GB.  Available: {availableMemory}GB.  {About.Software}: {processMemory}GB ({percentProcessMemory}%).\n" +
-                        $"The program crashed on purpose due the impossibility to pause or cancel the running operation, this was to relief pressure and ensure the system stability.\n\n" +
-                        $"Monitor your memory RAM under the system tools and re-run the operation to check the usages and find the cause.\n" +
-                        $"You may need to stop other processes or increase your memory RAM in order to deal with huge files and/or heavy operations.\n\n" +
-                        $"Currently you have configured a lower limit of {Settings.General.AvailableRamLimit}GB of available memory RAM for the operations.");
+                        $"""
+                         Your system memory RAM hit the limit of {usedMemory}GB from a total of {totalMemory}GB.  Available: {availableMemory}GB.  {About.Software}: {processMemory}GB ({percentProcessMemory}%)
+                         The program crashed on purpose due the impossibility to pause or cancel the running operation, this was to relief pressure and ensure the system stability.
+
+                         Monitor your memory RAM under the system tools and re-run the operation to check the usages and find the cause.
+                         You may need to stop other processes or increase your memory RAM in order to deal with huge files and/or heavy operations.
+
+                         Currently you have configured a lower limit of {Settings.General.AvailableRamLimit}GB of available memory RAM for the operations.
+                         """);
                 }
             }
         });
@@ -1003,7 +1007,7 @@ public partial class MainWindow : GenericWindow
         if (e.Key is Key.LeftShift or Key.RightShift
             || (e.KeyModifiers & KeyModifiers.Shift) == 0 || (e.KeyModifiers & KeyModifiers.Control) == 0)
         {
-            LayerImageBox.TrackerImage = null;
+            SetLayerImageBoxTrackerImage(null);
             LayerImageBox.Cursor = StaticControls.ArrowCursor;
             LayerImageBox.AutoPan = true;
             LayerImageBox.SelectionMode = AdvancedImageBox.SelectionModes.None;
@@ -1615,7 +1619,7 @@ public partial class MainWindow : GenericWindow
                 {
                     Debug.WriteLine(e);
                 }
-                
+
                 continue;
             }
 

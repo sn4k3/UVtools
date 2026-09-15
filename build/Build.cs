@@ -30,7 +30,7 @@ public sealed partial class Build : StageKitBuild
             ApplicationPackagingType.LinuxArchPackage,
             ApplicationPackagingType.MacOSAppBundle
         ];
-        
+
         WindowsInstallScriptWinGetPackageId = "PTRTECH.UVtools";
 
         FileAssociations.UnionWith(FileFormat.AllFileExtensions
@@ -40,7 +40,7 @@ public sealed partial class Build : StageKitBuild
                 && extension.GetFileFormat() is not ImageFile
             )
             .Select(extension => new FileAssociation(extension.Extension, extension.Description)));
-        
+
         BeforePublishRid = context =>
             Log.Information("Publishing {Rid} to {Path}",
                 context.RuntimeIdentifier, context.PublishPath);
@@ -137,7 +137,7 @@ public sealed partial class Build : StageKitBuild
                                                        # Unpack this AppImage into a local sub-directory [currently named 'squashfs-root']
                                                     --appimage-help
                                                        # Show available AppImage options
-                                           "
+                                           EOF
                                            }
 
                                            if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then

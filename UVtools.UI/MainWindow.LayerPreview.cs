@@ -6,17 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Threading;
-using CommunityToolkit.Mvvm.Input;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
-using Emgu.CV.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,10 +13,22 @@ using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Reactive;
+using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Input;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
+using Emgu.CV.Util;
 using EmguExtensions;
 using EmguExtensions.Avalonia;
+using SukiUI.MessageBox;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Extensions;
@@ -36,11 +37,10 @@ using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
 using UVtools.UI.Extensions;
 using UVtools.UI.Structures;
+using ZLinq;
 using Color = UVtools.UI.Structures.Color;
 using AvaloniaStatic = UVtools.UI.Controls.AvaloniaStatic;
 using Point = System.Drawing.Point;
-using SukiUI.MessageBox;
-using ZLinq;
 using PointExtensions = UVtools.Core.Extensions.PointExtensions;
 
 namespace UVtools.UI;
@@ -59,140 +59,46 @@ public partial class MainWindow
 
     #endregion
 
-    private Track LayerSlicerTrack = null!;
+    private const byte PixelEditorCursorMinDiameter = 10;
+    private readonly Timer _layerNavigationSliderDebounceTimer = new(25) { AutoReset = false };
 
     private readonly Timer _layerNavigationTooltipTimer = new(0.1) { AutoReset = false };
-    private readonly Timer _layerNavigationSliderDebounceTimer = new(25) { AutoReset = false };
-    private uint _actualLayerSlider;
+    private readonly List<Point[]> _maskPoints = [];
+
+    public LayerCache LayerCache = new();
+
+    private Track LayerSlicerTrack = null!;
     private uint _actualLayer;
-
-
-    private bool _showLayerImageRotated;
-    private bool _showLayerImageRotateCwDirection = true;
-    private bool _showLayerImageRotateCcwDirection;
-    private bool _showLayerImageFlipped;
-    private bool _showLayerImageFlippedHorizontally = true;
-    private bool _showLayerImageFlippedVertically;
-    private bool _showLayerImageDifference;
-    private bool _showLayerImageIssues = true;
-    private bool _showLayerImageCrosshairs = true;
+    private uint _actualLayerSlider;
     private bool _isPixelEditorActive;
-    private bool _showLayerOutlinePrintVolumeBoundary;
-    private bool _showLayerOutlineLayerBoundary;
-    private bool _showLayerOutlineContourBoundary;
-    private bool _showLayerOutlineEnclosingCircles;
-    private bool _showLayerOutlineHollowAreas;
-    private bool _showLayerOutlineCentroids;
-    private bool _showLayerOutlineTriangulate;
-    private bool _showLayerOutlineEdgeDetection;
-    private bool _showLayerOutlineDistanceDetection;
-    private bool _showLayerOutlineSkeletonize;
 
 
     private bool _isTooltipOverlayVisible;
-    private string _tooltipOverlayText = string.Empty;
+    private Point _lastPixelMouseLocation = Point.Empty;
+    private bool _showLayerImageCrosshairs = true;
+    private bool _showLayerImageDifference;
+    private bool _showLayerImageFlipped;
+    private bool _showLayerImageFlippedHorizontally = true;
+    private bool _showLayerImageFlippedVertically;
+    private bool _showLayerImageIssues = true;
+    private bool _showLayerImageRotateCcwDirection;
+    private bool _showLayerImageRotateCwDirection = true;
+
+
+    private bool _showLayerImageRotated;
+    private bool _showLayerOutlineCentroids;
+    private bool _showLayerOutlineContourBoundary;
+    private bool _showLayerOutlineDistanceDetection;
+    private bool _showLayerOutlineEdgeDetection;
+    private bool _showLayerOutlineEnclosingCircles;
+    private bool _showLayerOutlineHollowAreas;
+    private bool _showLayerOutlineLayerBoundary;
+    private bool _showLayerOutlinePrintVolumeBoundary;
+    private bool _showLayerOutlineSkeletonize;
+    private bool _showLayerOutlineTriangulate;
 
     private long _showLayerRenderMs;
-
-    public LayerCache LayerCache = new();
-    private Point _lastPixelMouseLocation = Point.Empty;
-    private readonly List<Point[]> _maskPoints = [];
-
-
-    public void InitLayerPreview()
-    {
-        LayerSlider.TemplateApplied += (sender, e) => { LayerSlicerTrack = e.NameScope.Find<Track>("PART_Track")!; };
-
-        _showLayerImageDifference = Settings.LayerPreview.ShowLayerDifference;
-        _showLayerOutlinePrintVolumeBoundary = Settings.LayerPreview.VolumeBoundsOutline;
-        _showLayerOutlineLayerBoundary = Settings.LayerPreview.LayerBoundsOutline;
-        _showLayerOutlineContourBoundary = Settings.LayerPreview.ContourBoundsOutline;
-        _showLayerOutlineEnclosingCircles = Settings.LayerPreview.EnclosingCirclesOutline;
-        _showLayerOutlineHollowAreas = Settings.LayerPreview.HollowOutline;
-        _showLayerOutlineCentroids = Settings.LayerPreview.CentroidOutline;
-
-        LayerImageBox.ZoomLevels = new AdvancedImageBox.ZoomLevelCollection(AppSettings.ZoomLevels);
-        LayerImageBox.ZoomWithMouseWheelBehaviour = Settings.LayerPreview.ZoomPreferNative
-            ? AdvancedImageBox.MouseWheelZoomBehaviours.ZoomNativeAltLevels
-            : AdvancedImageBox.MouseWheelZoomBehaviours.ZoomLevelsAltNative;
-        LayerImageBox.ZoomWithMouseWheelDebounceMilliseconds = Settings.LayerPreview.ZoomDebounceMilliseconds;
-
-        LayerImageBox.GetObservable(AdvancedImageBox.ZoomProperty).Subscribe(new AnonymousObserver<int>(zoom =>
-        {
-            if (!IsFileLoaded) return;
-            var newZoom = zoom;
-            var oldZoom = LayerImageBox.OldZoom;
-            RaisePropertyChanged(nameof(LayerZoomStr));
-            AddLogVerbose($"Zoomed from {oldZoom} to {newZoom}");
-
-            if (_showLayerImageCrosshairs &&
-                SlicerFile!.IssueManager.Count > 0 &&
-                (oldZoom < 50 &&
-                 newZoom >= 50 // Trigger refresh as crosshair thickness increases at lower zoom levels
-                 || oldZoom > 100 && newZoom <= 100
-                 || oldZoom is >= 50 and <= 100 && (newZoom is < 50 or > 100)
-                 || oldZoom <= AppSettings.CrosshairFadeLevel &&
-                 newZoom > AppSettings
-                     .CrosshairFadeLevel // Trigger refresh as zoom level manually crosses fade threshold
-                 || oldZoom > AppSettings.CrosshairFadeLevel && newZoom <= AppSettings.CrosshairFadeLevel)
-               )
-            {
-                if (Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues)
-                {
-                    if (IssuesGrid.SelectedItems.Count == 0 || !IssuesGrid.SelectedItems.Cast<MainIssue>()
-                            .Any(mainIssue => // Find a valid candidate to update layer preview, otherwise quit
-                                mainIssue.IsIssueInBetween(_actualLayer)
-                                && mainIssue.Type is not MainIssue.IssueType.TouchingBound
-                                    and not MainIssue.IssueType.EmptyLayer)) return;
-                }
-                else
-                {
-                    if (!SlicerFile.IssueManager.AsValueEnumerable()
-                            .Any(mainIssue => // Find a valid candidate to update layer preview, otherwise quit
-                                mainIssue.IsIssueInBetween(_actualLayer)
-                                && mainIssue.Type is not MainIssue.IssueType.TouchingBound
-                                    and not MainIssue.IssueType.EmptyLayer)) return;
-                }
-
-                // A timer is used here rather than invoking ShowLayer directly to eliminate sublte visual flashing
-                // that will occur on the transition when the crosshair fades or unfades if ShowLayer is called directly.
-                ShowLayer();
-            }
-        }));
-
-        LayerImageBox.GetObservable(AdvancedImageBox.SelectionRegionProperty)
-            .Subscribe(new AnonymousObserver<Rect>(rect => RaisePropertyChanged(nameof(LayerROIStr))));
-
-        LayerImageBox.PointerMoved += LayerImageBoxOnPointerMoved;
-        LayerImageBox.KeyDown += LayerImageBox_KeyDown;
-        LayerImageBox.KeyUp += LayerImageBox_KeyUp;
-        LayerImageBox.PointerReleased += LayerImageBox_PointerReleased;
-        LayerImageBox.PointerPressed += LayerImageBoxOnPointerPressed;
-        LayerImageBox.DoubleTapped += LayerImageBoxOnDoubleTapped;
-
-        LayerNavigationIssuesCanvas.PointerWheelChanged += LayerSliderOnPointerWheelChanged;
-        LayerSlider.PointerWheelChanged += LayerSliderOnPointerWheelChanged;
-
-        _layerNavigationTooltipTimer.Elapsed += (sender, args) =>
-        {
-            Dispatcher.UIThread.InvokeAsync(() => RaisePropertyChanged(nameof(LayerNavigationTooltipMargin)));
-        };
-        _layerNavigationSliderDebounceTimer.Interval = Settings.LayerPreview.LayerSliderDebounce == 0
-            ? 1
-            : Settings.LayerPreview.LayerSliderDebounce;
-        _layerNavigationSliderDebounceTimer.Elapsed += (sender, args) =>
-        {
-            Dispatcher.UIThread.InvokeAsync(ShowLayer);
-        };
-    }
-
-    private void LayerSliderOnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
-    {
-        if (e.Delta.Y > 0)
-            ActualLayer++;
-        else if (e.Delta.Y < 0 && _actualLayer > 0)
-            ActualLayer--;
-    }
+    private string _tooltipOverlayText = string.Empty;
 
 
     public bool ShowLayerImageRotated
@@ -655,6 +561,131 @@ public partial class MainWindow
         }
     }
 
+    public Thickness LayerNavigationTooltipMargin
+    {
+        get
+        {
+            double top = 0;
+            if (LayerSlicerTrack is not null)
+            {
+                var trackerPos = LayerSlicerTrack.Thumb!.Bounds.Height / 2 + LayerSlicerTrack.Thumb.Bounds.Top;
+                var halfTooltipHeight = LayerNavigationTooltipBorder.Bounds.Height / 2;
+                top = Math.Clamp(trackerPos - halfTooltipHeight, 0,
+                    LayerSlider.Bounds.Height - LayerNavigationTooltipBorder.Bounds.Height);
+            }
+
+            return new Thickness(
+                0,
+                top,
+                5,
+                0);
+        }
+    }
+
+    private void SetLayerImageBoxTrackerImage(Avalonia.Media.Imaging.Bitmap? image)
+    {
+        var previousImage = LayerImageBox.TrackerImage;
+        if (ReferenceEquals(previousImage, image)) return;
+
+        LayerImageBox.TrackerImage = image;
+        previousImage?.Dispose();
+    }
+
+    public void InitLayerPreview()
+    {
+        LayerSlider.TemplateApplied += (sender, e) => { LayerSlicerTrack = e.NameScope.Find<Track>("PART_Track")!; };
+
+        _showLayerImageDifference = Settings.LayerPreview.ShowLayerDifference;
+        _showLayerOutlinePrintVolumeBoundary = Settings.LayerPreview.VolumeBoundsOutline;
+        _showLayerOutlineLayerBoundary = Settings.LayerPreview.LayerBoundsOutline;
+        _showLayerOutlineContourBoundary = Settings.LayerPreview.ContourBoundsOutline;
+        _showLayerOutlineEnclosingCircles = Settings.LayerPreview.EnclosingCirclesOutline;
+        _showLayerOutlineHollowAreas = Settings.LayerPreview.HollowOutline;
+        _showLayerOutlineCentroids = Settings.LayerPreview.CentroidOutline;
+
+        LayerImageBox.ZoomLevels = new AdvancedImageBox.ZoomLevelCollection(AppSettings.ZoomLevels);
+        LayerImageBox.ZoomWithMouseWheelBehaviour = Settings.LayerPreview.ZoomPreferNative
+            ? AdvancedImageBox.MouseWheelZoomBehaviours.ZoomNativeAltLevels
+            : AdvancedImageBox.MouseWheelZoomBehaviours.ZoomLevelsAltNative;
+        LayerImageBox.ZoomWithMouseWheelDebounceMilliseconds = Settings.LayerPreview.ZoomDebounceMilliseconds;
+
+        LayerImageBox.GetObservable(AdvancedImageBox.ZoomProperty).Subscribe(new AnonymousObserver<int>(zoom =>
+        {
+            if (!IsFileLoaded) return;
+            var newZoom = zoom;
+            var oldZoom = LayerImageBox.OldZoom;
+            RaisePropertyChanged(nameof(LayerZoomStr));
+            AddLogVerbose($"Zoomed from {oldZoom} to {newZoom}");
+
+            if (_showLayerImageCrosshairs &&
+                SlicerFile!.IssueManager.Count > 0 &&
+                ((oldZoom < 50 &&
+                  newZoom >= 50) // Trigger refresh as crosshair thickness increases at lower zoom levels
+                 || (oldZoom > 100 && newZoom <= 100)
+                 || (oldZoom is >= 50 and <= 100 && newZoom is < 50 or > 100)
+                 || (oldZoom <= AppSettings.CrosshairFadeLevel &&
+                     newZoom > AppSettings
+                         .CrosshairFadeLevel) // Trigger refresh as zoom level manually crosses fade threshold
+                 || (oldZoom > AppSettings.CrosshairFadeLevel && newZoom <= AppSettings.CrosshairFadeLevel))
+               )
+            {
+                if (Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues)
+                {
+                    if (IssuesGrid.SelectedItems.Count == 0 || !IssuesGrid.SelectedItems.Cast<MainIssue>()
+                            .Any(mainIssue => // Find a valid candidate to update layer preview, otherwise quit
+                                mainIssue.IsIssueInBetween(_actualLayer)
+                                && mainIssue.Type is not MainIssue.IssueType.TouchingBound
+                                    and not MainIssue.IssueType.EmptyLayer)) return;
+                }
+                else
+                {
+                    if (!SlicerFile.IssueManager.AsValueEnumerable()
+                            .Any(mainIssue => // Find a valid candidate to update layer preview, otherwise quit
+                                mainIssue.IsIssueInBetween(_actualLayer)
+                                && mainIssue.Type is not MainIssue.IssueType.TouchingBound
+                                    and not MainIssue.IssueType.EmptyLayer)) return;
+                }
+
+                // A timer is used here rather than invoking ShowLayer directly to eliminate sublte visual flashing
+                // that will occur on the transition when the crosshair fades or unfades if ShowLayer is called directly.
+                ShowLayer();
+            }
+        }));
+
+        LayerImageBox.GetObservable(AdvancedImageBox.SelectionRegionProperty)
+            .Subscribe(new AnonymousObserver<Rect>(rect => RaisePropertyChanged(nameof(LayerROIStr))));
+
+        LayerImageBox.PointerMoved += LayerImageBoxOnPointerMoved;
+        LayerImageBox.KeyDown += LayerImageBox_KeyDown;
+        LayerImageBox.KeyUp += LayerImageBox_KeyUp;
+        LayerImageBox.PointerReleased += LayerImageBox_PointerReleased;
+        LayerImageBox.PointerPressed += LayerImageBoxOnPointerPressed;
+        LayerImageBox.DoubleTapped += LayerImageBoxOnDoubleTapped;
+
+        LayerNavigationIssuesCanvas.PointerWheelChanged += LayerSliderOnPointerWheelChanged;
+        LayerSlider.PointerWheelChanged += LayerSliderOnPointerWheelChanged;
+
+        _layerNavigationTooltipTimer.Elapsed += (sender, args) =>
+        {
+            Dispatcher.UIThread.InvokeAsync(() => RaisePropertyChanged(nameof(LayerNavigationTooltipMargin)));
+        };
+        _layerNavigationSliderDebounceTimer.Interval = Settings.LayerPreview.LayerSliderDebounce == 0
+            ? 1
+            : Settings.LayerPreview.LayerSliderDebounce;
+        _layerNavigationSliderDebounceTimer.Elapsed += (sender, args) =>
+        {
+            Dispatcher.UIThread.InvokeAsync(ShowLayer);
+        };
+    }
+
+    private void LayerSliderOnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        if (e.Delta.Y > 0)
+            ActualLayer++;
+        else if (e.Delta.Y < 0 && _actualLayer > 0)
+            ActualLayer--;
+    }
+
     public void ForceUpdateActualLayer(uint layerIndex = 0)
     {
         //_actualLayer = layerIndex;
@@ -675,160 +706,6 @@ public partial class MainWindow
         RaisePropertyChanged(nameof(LayerBoundsStr));
         _layerNavigationTooltipTimer.Start();
     }
-
-    public Thickness LayerNavigationTooltipMargin
-    {
-        get
-        {
-            double top = 0;
-            if (LayerSlicerTrack is not null)
-            {
-                double trackerPos = LayerSlicerTrack.Thumb!.Bounds.Height / 2 + LayerSlicerTrack.Thumb.Bounds.Top;
-                double halfTooltipHeight = LayerNavigationTooltipBorder.Bounds.Height / 2;
-                top = Math.Clamp(trackerPos - halfTooltipHeight, 0,
-                    LayerSlider.Bounds.Height - LayerNavigationTooltipBorder.Bounds.Height);
-            }
-
-            return new Thickness(
-                0,
-                top,
-                5,
-                0);
-        }
-    }
-
-
-    #region ROI & Mask
-
-    public Rectangle ROI
-    {
-        get
-        {
-            var rect = LayerImageBox.SelectionRegion;
-            return rect == default ? default : GetTransposedRectangle(rect.ToDotNet(), true);
-        }
-        set => LayerImageBox.SelectionRegion = GetTransposedRectangle(value).ToAvalonia();
-    }
-
-    public RectangleF ROIMillimeters
-    {
-        get
-        {
-            if (!IsFileLoaded) return RectangleF.Empty;
-            var roi = ROI;
-            var pixelSize = SlicerFile!.PixelSize;
-            if (roi.IsEmpty || pixelSize.IsEmpty) return RectangleF.Empty;
-            return new RectangleF(
-                MathF.Round(roi.X * pixelSize.Width, 2),
-                MathF.Round(roi.Y * pixelSize.Height, 2),
-                MathF.Round(roi.Width * pixelSize.Width, 2),
-                MathF.Round(roi.Height * pixelSize.Height, 2));
-        }
-    }
-
-    [RelayCommand]
-    public void SelectModelVolumeRoi()
-    {
-        if (!IsFileLoaded) return;
-        ROI = SlicerFile!.BoundingRectangle;
-    }
-
-    [RelayCommand]
-    public void SelectLayerVolumeRoi()
-    {
-        if (!LayerCache.IsCached) return;
-        ROI = LayerCache.Layer!.BoundingRectangle;
-    }
-
-
-    public List<Point[]> MaskPoints => _maskPoints;
-
-    /*private set
-        {
-            if(!RaiseAndSetIfChanged(ref _maskPoints, value)) return;
-            ShowLayer();
-        }*/
-    public void AddMaskPoints(Point[] points, bool refreshLayer = true)
-    {
-        if (_maskPoints.RemoveAll(points1 => points1.AsValueEnumerable().SequenceEqual(points)) <= 0)
-        {
-            _maskPoints.Add(points);
-        }
-
-        if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
-
-        if (refreshLayer) ShowLayer();
-        RaisePropertyChanged(nameof(LayerROIStr));
-    }
-
-    public void AddMaskPoints(IEnumerable<Point[]> pointsOfPoints, bool clear = true)
-    {
-        if (clear)
-        {
-            _maskPoints.Clear();
-            _maskPoints.AddRange(pointsOfPoints);
-        }
-        else
-        {
-            foreach (var points in pointsOfPoints)
-            {
-                if (_maskPoints.RemoveAll(points1 => points1.AsValueEnumerable().SequenceEqual(points)) <= 0)
-                {
-                    _maskPoints.Add(points);
-                }
-            }
-        }
-
-        ShowLayer();
-        RaisePropertyChanged(nameof(LayerROIStr));
-    }
-
-    [RelayCommand]
-    public void SelectLayerPositiveAreasMask()
-    {
-        if (!LayerCache.IsCached) return;
-        AddMaskPoints(LayerCache.Layer!.Contours.Vector.ToArrayOfArray());
-        if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
-    }
-
-    [RelayCommand]
-    public void SelectLayerHollowAreasMask()
-    {
-        if (!LayerCache.IsCached) return;
-        var contours =
-            EmguContours.GetNegativeContours(LayerCache.Layer!.Contours.Vector, LayerCache.Layer.Contours.Hierarchy);
-        AddMaskPoints(contours.ToArrayOfArray());
-        if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
-    }
-
-    [RelayCommand]
-    public void ClearMask()
-    {
-        if (_maskPoints.Count <= 0) return;
-        _maskPoints.Clear();
-        ShowLayer();
-        RaisePropertyChanged(nameof(LayerROIStr));
-    }
-
-    [RelayCommand]
-    public void ClearROI()
-    {
-        ROI = Rectangle.Empty;
-    }
-
-    public void ClearROIAndMask()
-    {
-        ClearROI();
-        ClearMask();
-    }
-
-    [RelayCommand]
-    public void OnROIClick()
-    {
-        ZoomToFit(ZoomToFitType.Selection);
-    }
-
-    #endregion
 
     [RelayCommand]
     public void GoFirstLayer()
@@ -1060,15 +937,15 @@ public partial class MainWindow
                     //var nextSpan = nextImage.GetPixelSpan<byte>();
 
 
-                    int width = LayerCache.Image.RealStep;
-                    int channels = LayerCache.ImageBgra.NumberOfChannels;
-                    bool showSimilarityInstead = Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead;
+                    var width = LayerCache.Image.RealStep;
+                    var channels = LayerCache.ImageBgra.NumberOfChannels;
+                    var showSimilarityInstead = Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead;
 
                     Parallel.For(rect.Y, rect.Bottom, CoreSettings.ParallelOptions, y =>
                     {
-                        for (int x = rect.X; x < rect.Right; x++)
+                        for (var x = rect.X; x < rect.Right; x++)
                         {
-                            int pixel = y * width + x;
+                            var pixel = y * width + x;
                             if (showSimilarityInstead)
                             {
                                 if (imageSpan[pixel] == 0) continue;
@@ -1129,7 +1006,7 @@ public partial class MainWindow
                 {
                     //count++;
                     var color = Color.Empty;
-                    bool drawCrosshair = false;
+                    var drawCrosshair = false;
 
                     switch (issue.Parent!.Type)
                     {
@@ -1194,11 +1071,11 @@ public partial class MainWindow
                         {
                             foreach (var pixel in issueOfPoints.Points)
                             {
-                                int pixelPos = LayerCache.Image.GetPixelPos(pixel);
-                                byte brightness = imageSpan[pixelPos];
+                                var pixelPos = LayerCache.Image.GetPixelPos(pixel);
+                                var brightness = imageSpan[pixelPos];
                                 if (brightness == 0) continue;
 
-                                int pixelBgrPos = pixelPos * LayerCache.ImageBgra.NumberOfChannels;
+                                var pixelBgrPos = pixelPos * LayerCache.ImageBgra.NumberOfChannels;
 
                                 var newColor = color.FactorColor(brightness, 80);
 
@@ -1229,9 +1106,9 @@ public partial class MainWindow
 
             if (_showLayerOutlineContourBoundary)
             {
-                int lastParent = -1;
+                var lastParent = -1;
                 uint reps = 0;
-                for (int i = 0; i < LayerCache.Layer.Contours.Count; i++)
+                for (var i = 0; i < LayerCache.Layer.Contours.Count; i++)
                 {
                     var parent = LayerCache.Layer.Contours[i, EmguContour.HierarchyParent];
                     if (parent == -1)
@@ -1256,7 +1133,7 @@ public partial class MainWindow
 
             if (_showLayerOutlineEnclosingCircles)
             {
-                for (int i = 0; i < LayerCache.Layer.Contours.Count; i++)
+                for (var i = 0; i < LayerCache.Layer.Contours.Count; i++)
                 {
                     LayerCache.Layer.Contours[i].FitCircle(LayerCache.ImageBgra,
                         Settings.LayerPreview.EnclosingCirclesOutlineColor.ToMCvScalar(),
@@ -1286,9 +1163,9 @@ public partial class MainWindow
 
             if (_showLayerOutlineCentroids)
             {
-                int lastParent = -1;
+                var lastParent = -1;
                 uint reps = 0;
-                for (int i = 0; i < LayerCache.Layer.Contours.Count; i++)
+                for (var i = 0; i < LayerCache.Layer.Contours.Count; i++)
                 {
                     var parent = LayerCache.Layer.Contours[i, EmguContour.HierarchyParent];
                     if (parent == -1)
@@ -1335,10 +1212,10 @@ public partial class MainWindow
                 {
                     var size = group.Size;
                     var pointFs = new List<PointF>();
-                    for (int i = 0; i < size; i++)
+                    for (var i = 0; i < size; i++)
                     {
                         var subSize = group[i].Size;
-                        for (int x = 0; x < subSize; x++)
+                        for (var x = 0; x < subSize; x++)
                         {
                             pointFs.Add(group[i][x]);
                         }
@@ -1391,12 +1268,12 @@ public partial class MainWindow
                 {
                     var operationDrawing = (PixelDrawing)operation;
                     var color = operationDrawing.IsAdd
-                        ? (DrawingsGrid.SelectedItems.Contains(operation)
+                        ? DrawingsGrid.SelectedItems.Contains(operation)
                             ? Settings.PixelEditor.AddPixelHighlightColor
-                            : Settings.PixelEditor.AddPixelColor)
-                        : (DrawingsGrid.SelectedItems.Contains(operation)
+                            : Settings.PixelEditor.AddPixelColor
+                        : DrawingsGrid.SelectedItems.Contains(operation)
                             ? Settings.PixelEditor.RemovePixelHighlightColor
-                            : Settings.PixelEditor.RemovePixelColor);
+                            : Settings.PixelEditor.RemovePixelColor;
                     if (operationDrawing.BrushSize == 1)
                     {
                         LayerCache.ImageBgra.SetByte(operation.Location.X, operation.Location.Y, [
@@ -1414,12 +1291,12 @@ public partial class MainWindow
                 {
                     var operationText = (PixelText)operation;
                     var color = operationText.IsAdd
-                        ? (DrawingsGrid.SelectedItems.Contains(operation)
+                        ? DrawingsGrid.SelectedItems.Contains(operation)
                             ? Settings.PixelEditor.AddPixelHighlightColor
-                            : Settings.PixelEditor.AddPixelColor)
-                        : (DrawingsGrid.SelectedItems.Contains(operation)
+                            : Settings.PixelEditor.AddPixelColor
+                        : DrawingsGrid.SelectedItems.Contains(operation)
                             ? Settings.PixelEditor.RemovePixelHighlightColor
-                            : Settings.PixelEditor.RemovePixelColor);
+                            : Settings.PixelEditor.RemovePixelColor;
 
                     LayerCache.ImageBgra.PutTextRotated(operationText.Text, operationText.Location,
                         operationText.Font, operationText.FontScale, color.ToMCvScalar(),
@@ -1433,12 +1310,12 @@ public partial class MainWindow
                     if (!operationFill.IsAdd &&
                         imageSpan[LayerCache.Image.GetPixelPos(operation.Location)] == 0) continue;
                     var color = operationFill.IsAdd
-                        ? (DrawingsGrid.SelectedItems.Contains(operation)
+                        ? DrawingsGrid.SelectedItems.Contains(operation)
                             ? Settings.PixelEditor.AddPixelHighlightColor
-                            : Settings.PixelEditor.AddPixelColor)
-                        : (DrawingsGrid.SelectedItems.Contains(operation)
+                            : Settings.PixelEditor.AddPixelColor
+                        : DrawingsGrid.SelectedItems.Contains(operation)
                             ? Settings.PixelEditor.RemovePixelHighlightColor
-                            : Settings.PixelEditor.RemovePixelColor);
+                            : Settings.PixelEditor.RemovePixelColor;
 
                     using var vec = LayerCache.Layer.Contours.GetContoursInside(operation.Location);
                     if (vec.Size > 0) CvInvoke.DrawContours(LayerCache.ImageBgra, vec, -1, color.ToMCvScalar(), -1);
@@ -1458,12 +1335,12 @@ public partial class MainWindow
                     var operationStroke = (PixelStroke)operation;
                     if (operationStroke.IsEmpty) continue;
                     var color = operationStroke.IsAdd
-                        ? (DrawingsGrid.SelectedItems.Contains(operation)
+                        ? DrawingsGrid.SelectedItems.Contains(operation)
                             ? Settings.PixelEditor.AddPixelHighlightColor
-                            : Settings.PixelEditor.AddPixelColor)
-                        : (DrawingsGrid.SelectedItems.Contains(operation)
+                            : Settings.PixelEditor.AddPixelColor
+                        : DrawingsGrid.SelectedItems.Contains(operation)
                             ? Settings.PixelEditor.RemovePixelHighlightColor
-                            : Settings.PixelEditor.RemovePixelColor);
+                            : Settings.PixelEditor.RemovePixelColor;
 
                     if (operationStroke.BrushSize == 1)
                     {
@@ -1595,7 +1472,7 @@ public partial class MainWindow
         // Gradually increase line thickness from 1 to 3 at the lower-end of the zoom range.
         // This prevents the crosshair lines from disappearing due to being too thin to
         // render at very low zoom factors.
-        var lineThickness = (LayerImageBox.Zoom > 100) ? 1 : (LayerImageBox.Zoom < 50) ? 3 : 2;
+        var lineThickness = LayerImageBox.Zoom > 100 ? 1 : LayerImageBox.Zoom < 50 ? 3 : 2;
         var color = Settings.LayerPreview.CrosshairColor.ToMCvScalar();
 
 
@@ -1709,8 +1586,10 @@ public partial class MainWindow
         return point;
     }
 
-    public Rectangle GetTransposedRectangle(RectangleF rectangleF, bool inverse = true) =>
-        GetTransposedRectangle(Rectangle.Round(rectangleF), inverse);
+    public Rectangle GetTransposedRectangle(RectangleF rectangleF, bool inverse = true)
+    {
+        return GetTransposedRectangle(Rectangle.Round(rectangleF), inverse);
+    }
 
     public Rectangle GetTransposedRectangle(Rectangle rectangle, bool inverse = false)
     {
@@ -1849,7 +1728,10 @@ public partial class MainWindow
     /// </summary>
     /// <param name="point">Point holding X and Y coordinates</param>
     /// <param name="zoomLevel">Zoom level to set, 0 to ignore or negative value to get current locked zoom level</param>
-    public void CenterLayerAt(Point point, int zoomLevel = 0) => CenterLayerAt(point.X, point.Y, zoomLevel);
+    public void CenterLayerAt(Point point, int zoomLevel = 0)
+    {
+        CenterLayerAt(point.X, point.Y, zoomLevel);
+    }
 
 
     /// <summary>
@@ -1865,7 +1747,7 @@ public partial class MainWindow
             return;
         }
 
-        if (Settings.LayerPreview.ZoomIssues ^ (_globalModifiers & KeyModifiers.Alt) != 0)
+        if (Settings.LayerPreview.ZoomIssues ^ ((_globalModifiers & KeyModifiers.Alt) != 0))
         {
             CenterLayerAt(GetTransposedIssueBounds(issue), AppSettings.LockedZoomLevel);
         }
@@ -1932,7 +1814,7 @@ public partial class MainWindow
         switch (fitType)
         {
             case ZoomToFitType.Auto:
-                if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds ^ (_globalModifiers & KeyModifiers.Alt) != 0)
+                if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds ^ ((_globalModifiers & KeyModifiers.Alt) != 0))
                 {
                     /*if (!_showLayerImageRotated)
                     {
@@ -2005,7 +1887,7 @@ public partial class MainWindow
             return;
         }
 
-        Point location = LayerImageBox.PointToImage(pointer.Position).ToDotNet();
+        var location = LayerImageBox.PointToImage(pointer.Position).ToDotNet();
         if (LayerImageBox.SelectionMode == AdvancedImageBox.SelectionModes.Rectangle)
         {
             if (e.InitialPressMouseButton == MouseButton.Left)
@@ -2064,7 +1946,7 @@ public partial class MainWindow
         _lastPixelMouseLocation = Point.Empty;
 
         // Left or Alt-Right Adds pixel, Right or Alt-Left removes pixel
-        DrawPixel(e.InitialPressMouseButton == MouseButton.Left ^ (e.KeyModifiers & KeyModifiers.Alt) != 0,
+        DrawPixel((e.InitialPressMouseButton == MouseButton.Left) ^ ((e.KeyModifiers & KeyModifiers.Alt) != 0),
             location, e.KeyModifiers);
         CommitPendingStroke();
     }
@@ -2372,14 +2254,14 @@ public partial class MainWindow
         if (pointer.Properties.IsRightButtonPressed)
         {
             // Right or Alt-Left will remove a pixel
-            DrawPixel(false ^ (e.KeyModifiers & KeyModifiers.Alt) != 0, location, e.KeyModifiers);
+            DrawPixel(false ^ ((e.KeyModifiers & KeyModifiers.Alt) != 0), location, e.KeyModifiers);
             return;
         }
 
         if (pointer.Properties.IsLeftButtonPressed)
         {
             // Left or Alt-Right will add a pixel
-            DrawPixel(true ^ (e.KeyModifiers & KeyModifiers.Alt) != 0, location, e.KeyModifiers);
+            DrawPixel(true ^ ((e.KeyModifiers & KeyModifiers.Alt) != 0), location, e.KeyModifiers);
             return;
         }
     }
@@ -2389,7 +2271,7 @@ public partial class MainWindow
         if (!LayerCache.IsCached) return false;
         var point = GetTransposedPoint(location);
 
-        for (int i = LayerCache.Layer!.Contours.Count - 1; i >= 0; i--)
+        for (var i = LayerCache.Layer!.Contours.Count - 1; i >= 0; i--)
         {
             if (!LayerCache.Layer.Contours[i].IsInside(point)) continue;
             ROI = LayerCache.Layer.Contours[i].BoundingRectangle;
@@ -2403,7 +2285,7 @@ public partial class MainWindow
     {
         if (roiRectangle.IsEmpty || !LayerCache.IsCached) return 0;
         List<Rectangle> rectangles = [];
-        for (int i = 0; i < LayerCache.Layer!.Contours.Count; i++)
+        for (var i = 0; i < LayerCache.Layer!.Contours.Count; i++)
         {
             var rectangle = LayerCache.Layer.Contours[i].BoundingRectangle;
             //roi.Intersect(rectangle);
@@ -2465,10 +2347,9 @@ public partial class MainWindow
 
         if (file?.TryGetLocalPath() is not { } filePath) return;
 
-        LayerImageBox.GetSelectedBitmap()?.Save(filePath);
+        using var selectedBitmap = LayerImageBox.GetSelectedBitmap();
+        selectedBitmap?.Save(filePath);
     }
-
-    const byte PixelEditorCursorMinDiameter = 10;
 
     public void UpdatePixelEditorCursor()
     {
@@ -2486,7 +2367,7 @@ public partial class MainWindow
                 {
                     if ((byte)DrawingPixelDrawing.BrushShape >= 1)
                     {
-                        int cursorSize = DrawingPixelDrawing.BrushSize + 1;
+                        var cursorSize = DrawingPixelDrawing.BrushSize + 1;
                         if (DrawingPixelDrawing.Thickness > 1)
                         {
                             cursorSize += DrawingPixelDrawing.Thickness;
@@ -2544,7 +2425,7 @@ public partial class MainWindow
                 var text = DrawingPixelText.Text;
                 if (string.IsNullOrEmpty(text) || DrawingPixelText.FontScale < 0.2) return;
 
-                int baseLine = 0;
+                var baseLine = 0;
                 //var size = CvInvoke.GetTextSize(text, DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness, ref baseLine);
                 var size = EmguCvExtensions.GetTextSizeExtended(text, DrawingPixelText.Font, DrawingPixelText.FontScale,
                     DrawingPixelText.Thickness, ref baseLine, DrawingPixelText.LineAlignment);
@@ -2620,7 +2501,7 @@ public partial class MainWindow
             var bounds = CvInvoke.BoundingRectangle(cursorGrey);
             using var cursorRoi = new Mat(cursor, bounds);*/
 
-            LayerImageBox.TrackerImage = cursor.ToBitmap();
+            SetLayerImageBoxTrackerImage(cursor.ToBitmap());
             //cursorRoi.Save("D:\\Cursor.png");
             //LayerImageBox.Cursor = new Cursor(cursor.ToBitmap(), new PixelPoint(cursor.Width / 2, cursor.Height / 2));
             //cursor.Save("D:\\Cursor.png");
@@ -2641,4 +2522,137 @@ public partial class MainWindow
             CvInvoke.PutText(mat, text, new Point(0,0), fontFace, scale, new MCvScalar(255,100,255, 255), thickness, lineType, cbPixelEditorTextMirror.Checked);
         }*/
     }
+
+
+    #region ROI & Mask
+
+    public Rectangle ROI
+    {
+        get
+        {
+            var rect = LayerImageBox.SelectionRegion;
+            return rect == default ? default : GetTransposedRectangle(rect.ToDotNet(), true);
+        }
+        set => LayerImageBox.SelectionRegion = GetTransposedRectangle(value).ToAvalonia();
+    }
+
+    public RectangleF ROIMillimeters
+    {
+        get
+        {
+            if (!IsFileLoaded) return RectangleF.Empty;
+            var roi = ROI;
+            var pixelSize = SlicerFile!.PixelSize;
+            if (roi.IsEmpty || pixelSize.IsEmpty) return RectangleF.Empty;
+            return new RectangleF(
+                MathF.Round(roi.X * pixelSize.Width, 2),
+                MathF.Round(roi.Y * pixelSize.Height, 2),
+                MathF.Round(roi.Width * pixelSize.Width, 2),
+                MathF.Round(roi.Height * pixelSize.Height, 2));
+        }
+    }
+
+    [RelayCommand]
+    public void SelectModelVolumeRoi()
+    {
+        if (!IsFileLoaded) return;
+        ROI = SlicerFile!.BoundingRectangle;
+    }
+
+    [RelayCommand]
+    public void SelectLayerVolumeRoi()
+    {
+        if (!LayerCache.IsCached) return;
+        ROI = LayerCache.Layer!.BoundingRectangle;
+    }
+
+
+    public List<Point[]> MaskPoints => _maskPoints;
+
+    /*private set
+        {
+            if(!RaiseAndSetIfChanged(ref _maskPoints, value)) return;
+            ShowLayer();
+        }*/
+    public void AddMaskPoints(Point[] points, bool refreshLayer = true)
+    {
+        if (_maskPoints.RemoveAll(points1 => points1.AsValueEnumerable().SequenceEqual(points)) <= 0)
+        {
+            _maskPoints.Add(points);
+        }
+
+        if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
+
+        if (refreshLayer) ShowLayer();
+        RaisePropertyChanged(nameof(LayerROIStr));
+    }
+
+    public void AddMaskPoints(IEnumerable<Point[]> pointsOfPoints, bool clear = true)
+    {
+        if (clear)
+        {
+            _maskPoints.Clear();
+            _maskPoints.AddRange(pointsOfPoints);
+        }
+        else
+        {
+            foreach (var points in pointsOfPoints)
+            {
+                if (_maskPoints.RemoveAll(points1 => points1.AsValueEnumerable().SequenceEqual(points)) <= 0)
+                {
+                    _maskPoints.Add(points);
+                }
+            }
+        }
+
+        ShowLayer();
+        RaisePropertyChanged(nameof(LayerROIStr));
+    }
+
+    [RelayCommand]
+    public void SelectLayerPositiveAreasMask()
+    {
+        if (!LayerCache.IsCached) return;
+        AddMaskPoints(LayerCache.Layer!.Contours.Vector.ToArrayOfArray());
+        if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
+    }
+
+    [RelayCommand]
+    public void SelectLayerHollowAreasMask()
+    {
+        if (!LayerCache.IsCached) return;
+        var contours =
+            EmguContours.GetNegativeContours(LayerCache.Layer!.Contours.Vector, LayerCache.Layer.Contours.Hierarchy);
+        AddMaskPoints(contours.ToArrayOfArray());
+        if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
+    }
+
+    [RelayCommand]
+    public void ClearMask()
+    {
+        if (_maskPoints.Count <= 0) return;
+        _maskPoints.Clear();
+        ShowLayer();
+        RaisePropertyChanged(nameof(LayerROIStr));
+    }
+
+    [RelayCommand]
+    public void ClearROI()
+    {
+        ROI = Rectangle.Empty;
+    }
+
+    public void ClearROIAndMask()
+    {
+        ClearROI();
+        ClearMask();
+    }
+
+    [RelayCommand]
+    public void OnROIClick()
+    {
+        ZoomToFit(ZoomToFitType.Selection);
+    }
+
+    #endregion
 }
