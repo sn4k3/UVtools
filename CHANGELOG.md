@@ -17,6 +17,7 @@
     double click on files to prompt for open with UVtools, it also allow to select it as default program (maybe fix
     #459)
 - (Add) Dynamic lifts: Configure separate bottom/normal retract speeds and two-stage retract distance percentages (#927)
+- (Fix) Align pixel editor line brush preview and applied position (#966)
 - (Improvement) pixel editor drawing with smooth, interpolated strokes committed on pointer release by @jorgerobles
   (#1139)
 - (Improvement) Avoid eager pixel lists during island detection by @apullin (#1142)

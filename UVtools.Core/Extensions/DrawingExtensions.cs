@@ -1,23 +1,22 @@
 ﻿using System;
 using System.Drawing;
 using Emgu.CV.Structure;
+using EmguExtensions;
 
 namespace UVtools.Core.Extensions;
 
 public static class DrawingExtensions
 {
-    public static Color FactorColor(this Color color, byte pixelColor, byte min = 0, byte max = byte.MaxValue) => color.FactorColor(pixelColor / 255.0, min, max);
+    public static Color FactorColor(this Color color, byte pixelColor, byte min = 0, byte max = byte.MaxValue) =>
+        color.FactorColor(pixelColor / 255.0, min, max);
 
     public static Color FactorColor(this Color color, double factor, byte min = 0, byte max = byte.MaxValue)
     {
-        byte r = (byte)(color.R == 0 ? 0 :
-            Math.Min(Math.Max(min, color.R * factor), max));
+        byte r = (byte)(color.R == 0 ? 0 : Math.Min(Math.Max(min, color.R * factor), max));
 
-        byte g = (byte)(color.G == 0 ? 0 :
-            Math.Min(Math.Max(min, color.G * factor), max));
+        byte g = (byte)(color.G == 0 ? 0 : Math.Min(Math.Max(min, color.G * factor), max));
 
-        byte b = (byte)(color.B == 0 ? 0 :
-            Math.Min(Math.Max(min, color.B * factor), max));
+        byte b = (byte)(color.B == 0 ? 0 : Math.Min(Math.Max(min, color.B * factor), max));
         return Color.FromArgb(r, g, b);
     }
 
@@ -37,7 +36,9 @@ public static class DrawingExtensions
         return length / (2 * Math.Cos((90 - theta / 2) * Math.PI / 180.0));
     }
 
-    public static Point[] GetPolygonVertices(int sides, SizeF diameter, PointF center, double startingAngle = 0, bool flipHorizontally = false, bool flipVertically = false, MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
+    public static Point[] GetPolygonVertices(int sides, SizeF diameter, PointF center, double startingAngle = 0,
+        bool flipHorizontally = false, bool flipVertically = false,
+        MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
     {
         if (sides < 3)
             throw new ArgumentException("Polygons can't have less than 3 sides...", nameof(sides));
@@ -48,7 +49,8 @@ public static class DrawingExtensions
 
         if (sides == 4)
         {
-            var rotatedRect = new RotatedRect(center, new SizeF(diameter.Width - 1, diameter.Height - 1), (float)startingAngle);
+            var rotatedRect = new RotatedRect(center, new SizeF(diameter.Width - 1, diameter.Height - 1),
+                (float)startingAngle);
             var verticesF = rotatedRect.GetVertices();
             for (var i = 0; i < verticesF.Length; i++)
             {
@@ -96,10 +98,13 @@ public static class DrawingExtensions
     }
 
 
-    public static Point[] GetAlignedPolygonVertices(int sides, SizeF diameter, PointF center, double startingAngle = 0, bool flipHorizontally = false, bool flipVertically = false, MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
+    public static Point[] GetAlignedPolygonVertices(int sides, SizeF diameter, PointF center, double startingAngle = 0,
+        bool flipHorizontally = false, bool flipVertically = false,
+        MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
     {
         if (sides != 4) startingAngle += (180 - (360.0 / sides)) / 2;
-        return GetPolygonVertices(sides, diameter, center, startingAngle, flipHorizontally, flipVertically, midpointRounding);
+        return GetPolygonVertices(sides, diameter, center, startingAngle, flipHorizontally, flipVertically,
+            midpointRounding);
 
         /*if (sides < 3)
             throw new ArgumentException("Polygons can't have less than 3 sides...", nameof(sides));
@@ -174,10 +179,35 @@ public static class DrawingExtensions
     */
     }
 
-    public static Point[] GetAlignedPolygonVertices(int sides, float diameter, PointF center, double startingAngle = 0, bool flipHorizontally = false, bool flipVertically = false, MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
+    public static Point[] GetAlignedPolygonVertices(int sides, float diameter, PointF center, double startingAngle = 0,
+        bool flipHorizontally = false, bool flipVertically = false,
+        MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
     {
         if (sides != 4) startingAngle += (180 - (360.0 / sides)) / 2;
-        return GetPolygonVertices(sides, new SizeF(diameter, diameter), center, startingAngle, flipHorizontally, flipVertically, midpointRounding);
+        return GetPolygonVertices(sides, new SizeF(diameter, diameter), center, startingAngle, flipHorizontally,
+            flipVertically, midpointRounding);
+    }
+
+    public static (Point Start, Point End) GetLineEndpoints(SizeF diameter, PointF center, double startingAngle = 0,
+        bool flipHorizontally = false, bool flipVertically = false,
+        MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
+    {
+        var point1 = center with { X = MathF.Round(center.X - diameter.Width / 2, midpointRounding) };
+        var point2 = point1 with { X = point1.X + diameter.Width - 1 };
+        point1 = point1.Rotate(startingAngle, center);
+        point2 = point2.Rotate(startingAngle, center);
+
+        if (flipHorizontally)
+        {
+            (point1, point2) = (new PointF(point2.X, point1.Y), new PointF(point1.X, point2.Y));
+        }
+
+        if (flipVertically)
+        {
+            (point1, point2) = (new PointF(point1.X, point2.Y), new PointF(point2.X, point1.Y));
+        }
+
+        return (point1.ToPoint(midpointRounding), point2.ToPoint(midpointRounding));
     }
 
     /// <summary>

@@ -18,6 +18,7 @@ using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.PixelEditor;
 using Xunit;
+using DrawingGeometryExtensions = UVtools.Core.Extensions.DrawingExtensions;
 
 namespace UVtools.Tests;
 
@@ -41,6 +42,28 @@ public class PixelStrokeTests
         Assert.Equal(expectedCount, points.Count);
         Assert.Equal(start, points[0]);
         Assert.Equal(end, points[^1]);
+    }
+
+    [Theory]
+    [InlineData(2, 9, 10)]
+    [InlineData(3, 9, 11)]
+    public void LineBrushEndpointsUseInclusiveDiameter(int brushSize, int expectedStartX, int expectedEndX)
+    {
+        var (start, end) =
+            DrawingGeometryExtensions.GetLineEndpoints(new SizeF(brushSize, brushSize), new PointF(10, 10));
+
+        Assert.Equal(new Point(expectedStartX, 10), start);
+        Assert.Equal(new Point(expectedEndX, 10), end);
+    }
+
+    [Fact]
+    public void LineBrushEndpointsApplyRotationAndFlips()
+    {
+        var (start, end) = DrawingGeometryExtensions.GetLineEndpoints(new SizeF(3, 3), new PointF(10, 10), 90,
+            flipHorizontally: true);
+
+        Assert.Equal(new Point(10, 9), start);
+        Assert.Equal(new Point(10, 11), end);
     }
 
     [Fact]

@@ -2375,7 +2375,10 @@ public partial class MainWindow
 
                         //if (cursorSize % 2 != 0) cursorSize++;
 
-                        cursor = EmguCvExtensions.InitMat(SlicerFile!.PixelsToNormalizedPitch(cursorSize), 4);
+                        var cursorDimensions = SlicerFile!.PixelsToNormalizedPitch(cursorSize);
+                        if ((cursorDimensions.Width & 1) == 0) cursorDimensions.Width++;
+                        if ((cursorDimensions.Height & 1) == 0) cursorDimensions.Height++;
+                        cursor = EmguCvExtensions.InitMat(cursorDimensions, 4);
                         //cursor.SetTo(new MCvScalar(255,255,255,255)); // Debug
 
                         /*FlipType? flip = null;
@@ -2388,7 +2391,7 @@ public partial class MainWindow
 
                         cursor.DrawAlignedPolygon((byte)DrawingPixelDrawing.BrushShape,
                             SlicerFile!.PixelsToNormalizedPitchF(DrawingPixelDrawing.BrushSize),
-                            new PointF(cursor.Width / 2.0f, cursor.Height / 2.0f),
+                            new PointF(cursor.Width / 2, cursor.Height / 2),
                             pixelEditorCursorColor, DrawingPixelDrawing.RotationAngle, DrawingPixelDrawing.Thickness,
                             DrawingPixelDrawing.LineType);
 

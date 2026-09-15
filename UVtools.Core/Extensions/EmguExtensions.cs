@@ -1841,28 +1841,10 @@ public static class EmguExtensionsUV
     {
         if (sides == 1)
         {
-            var point1 = center with { X = MathF.Round(center.X - diameter.Width / 2, midpointRounding) };
-            var point2 = point1 with { X = point1.X + diameter.Width - 1 };
-            point1 = point1.Rotate(startingAngle, center);
-            point2 = point2.Rotate(startingAngle, center);
-
-            if (flip is FlipType.Horizontal or FlipType.Both)
-            {
-                var newPoint1 = new PointF(point2.X, point1.Y);
-                var newPoint2 = new PointF(point1.X, point2.Y);
-                point1 = newPoint1;
-                point2 = newPoint2;
-            }
-
-            if (flip is FlipType.Vertical or FlipType.Both)
-            {
-                var newPoint1 = new PointF(point1.X, point2.Y);
-                var newPoint2 = new PointF(point2.X, point1.Y);
-                point1 = newPoint1;
-                point2 = newPoint2;
-            }
-
-            CvInvoke.Line(src, point1.ToPoint(midpointRounding), point2.ToPoint(midpointRounding), color, thickness < 1 ? 1 : thickness, lineType);
+            var (point1, point2) = DrawingExtensions.GetLineEndpoints(diameter, center, startingAngle,
+                flip is FlipType.Horizontal or FlipType.Both,
+                flip is FlipType.Vertical or FlipType.Both, midpointRounding);
+            CvInvoke.Line(src, point1, point2, color, thickness < 1 ? 1 : thickness, lineType);
             return;
         }
         if (sides >= 100)

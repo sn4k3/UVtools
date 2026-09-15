@@ -337,18 +337,11 @@ public partial class MainWindow
             return;
         }
 
-        var halfBrush = operationDrawing.BrushSize / 2f;
         var angle = operationDrawing.RotationAngle;
         switch (operationDrawing.BrushShape)
         {
             case PixelDrawing.BrushShapeType.Line:
             {
-                var point1 = location with
-                {
-                    X = (int)Math.Round(location.X - halfBrush, MidpointRounding.AwayFromZero)
-                };
-                var point2 = point1 with { X = point1.X + operationDrawing.BrushSize };
-
                 if (_showLayerImageRotated)
                 {
                     if (_showLayerImageRotateCcwDirection)
@@ -361,30 +354,11 @@ public partial class MainWindow
                     }
                 }
 
-                point1 = point1.Rotate(angle, location);
-                point2 = point2.Rotate(angle, location);
-
-
-                if (_showLayerImageFlipped)
-                {
-                    if (_showLayerImageFlippedHorizontally)
-                    {
-                        var newPoint1 = new Point(point2.X, point1.Y);
-                        var newPoint2 = new Point(point1.X, point2.Y);
-
-                        point1 = newPoint1;
-                        point2 = newPoint2;
-                    }
-
-                    if (_showLayerImageFlippedVertically)
-                    {
-                        var newPoint1 = new Point(point1.X, point2.Y);
-                        var newPoint2 = new Point(point2.X, point1.Y);
-
-                        point1 = newPoint1;
-                        point2 = newPoint2;
-                    }
-                }
+                var (point1, point2) = DrawingExtensions.GetLineEndpoints(
+                    SlicerFile!.PixelsToNormalizedPitchF(operationDrawing.BrushSize),
+                    new PointF(location.X, location.Y), angle,
+                    _showLayerImageFlipped && _showLayerImageFlippedHorizontally,
+                    _showLayerImageFlipped && _showLayerImageFlippedVertically);
 
                 using var linePaint = new SKPaint
                 {
