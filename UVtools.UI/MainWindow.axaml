@@ -29,7 +29,7 @@
         <KeyBinding Command="{Binding MenuFileOpenNewWindowClicked}"
                     Gesture="{OnPlatform Ctrl+Shift+O,
 					macOS=⌘+Shift+O}" />
-        <KeyBinding Command="{Binding ReloadFile}"
+        <KeyBinding Command="{Binding ReloadFileCommand}"
                     Gesture="{OnPlatform Ctrl+F5,
 					macOS=⌘+F5}" />
         <KeyBinding Command="{Binding MenuFileRenameClicked}"

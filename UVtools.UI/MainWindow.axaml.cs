@@ -32,6 +32,7 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Reactive;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Input;
 using Material.Icons;
 using Material.Icons.Avalonia;
 using StageKit;
@@ -1605,6 +1606,7 @@ public partial class MainWindow : GenericWindow
         }
     }
 
+    [RelayCommand]
     public Task ReloadFile()
     {
         return ReloadFile(_actualLayer);
