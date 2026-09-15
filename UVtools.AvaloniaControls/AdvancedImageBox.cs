@@ -44,7 +44,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <summary>
     /// Represents available levels of zoom in an <see cref="AdvancedImageBox"/> control
     /// </summary>
-    public class ZoomLevelCollection : IList<int>
+    public class ZoomLevelCollection : ICollection<int>
     {
         #region Public Class Properties
 
@@ -67,7 +67,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
         #endregion
 
-        #region IList<int> Members
+        #region IEnumerable Members
 
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
@@ -125,26 +125,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         /// <returns>true if the <see cref="T:System.Collections.Generic.ICollection`1" /> is read-only; otherwise, false.
         /// </returns>
         public bool IsReadOnly => false;
-
-        /// <summary>
-        /// Gets or sets the zoom level at the specified index.
-        /// </summary>
-        /// <param name="index">The index.</param>
-        public int this[int index]
-        {
-            get => List.Values[index];
-            set
-            {
-                if (List.Values[index] == value) return;
-                if (List.ContainsKey(value))
-                {
-                    throw new ArgumentException("The zoom level already exists in the collection.", nameof(value));
-                }
-
-                List.RemoveAt(index);
-                Add(value);
-            }
-        }
 
         #endregion
 
@@ -241,27 +221,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         }
 
         /// <summary>
-        /// Determines the index of a specific item in the <see cref="T:System.Collections.Generic.IList`1" />.
-        /// </summary>
-        /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.IList`1" />.</param>
-        /// <returns>The index of <paramref name="item" /> if found in the list; otherwise, -1.</returns>
-        public int IndexOf(int item)
-        {
-            return List.IndexOfKey(item);
-        }
-
-        /// <summary>
-        /// Not implemented.
-        /// </summary>
-        /// <param name="index">The index.</param>
-        /// <param name="item">The item.</param>
-        /// <exception cref="System.NotImplementedException">Not implemented</exception>
-        public void Insert(int index, int item)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Returns the next increased zoom level for the given current zoom.
         /// </summary>
         /// <param name="zoomLevel">The current zoom level.</param>
@@ -311,15 +270,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         public bool Remove(int item)
         {
             return List.Remove(item);
-        }
-
-        /// <summary>
-        /// Removes the element at the specified index of the <see cref="ZoomLevelCollection"/>.
-        /// </summary>
-        /// <param name="index">The zero-based index of the element to remove.</param>
-        public void RemoveAt(int index)
-        {
-            List.RemoveAt(index);
         }
 
         /// <summary>
@@ -1399,7 +1349,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
     public PixelRect SelectionRegionPixel => GetClampedSelectionPixelRect();
 
-    public bool HaveSelection => SelectionRegion != default;
+    public bool HaveSelection => SelectionRegionPixel is { Width: > 0, Height: > 0 };
 
     #endregion
 
