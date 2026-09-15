@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Input;
 using Emgu.CV.CvEnum;
 using EmguExtensions;
 using SkiaSharp;
@@ -135,6 +136,7 @@ public partial class MainWindow
         }
     }
 
+    [RelayCommand]
     public void OnClickDrawingRemove()
     {
         if (DrawingsGrid.SelectedItems.Count == 0) return;
@@ -142,6 +144,7 @@ public partial class MainWindow
         ShowLayer();
     }
 
+    [RelayCommand]
     public async Task OnClickDrawingClear()
     {
         if (Drawings.Count == 0) return;
@@ -549,7 +552,8 @@ public partial class MainWindow
         Drawings.InsertRange(0, operations);
     }
 
-    public async Task DrawModificationsCommand()
+    [RelayCommand]
+    public async Task ApplyDrawModifications()
     {
         await DrawModifications(false);
     }

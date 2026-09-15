@@ -1,7 +1,8 @@
-﻿<windows:GenericWindow x:Class="UVtools.UI.MainWindow"
+<windows:GenericWindow x:Class="UVtools.UI.MainWindow"
                        xmlns="https://github.com/avaloniaui"
                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                        xmlns:core="clr-namespace:UVtools.Core;assembly=UVtools.Core"
+                       xmlns:layers="clr-namespace:UVtools.Core.Layers;assembly=UVtools.Core"
                        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                        xmlns:fragments="clr-namespace:UVtools.UI.Controls.Fragments"
                        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -23,52 +24,52 @@
                        Icon="/Assets/Icons/UVtools.ico"
                        mc:Ignorable="d">
     <windows:GenericWindow.KeyBindings>
-        <KeyBinding Command="{Binding MenuFileOpenClicked}"
+        <KeyBinding Command="{Binding MenuFileOpenClickedCommand}"
                     Gesture="{OnPlatform Ctrl+O,
 					macOS=⌘+O}" />
-        <KeyBinding Command="{Binding MenuFileOpenNewWindowClicked}"
+        <KeyBinding Command="{Binding MenuFileOpenNewWindowClickedCommand}"
                     Gesture="{OnPlatform Ctrl+Shift+O,
 					macOS=⌘+Shift+O}" />
         <KeyBinding Command="{Binding ReloadFileCommand}"
                     Gesture="{OnPlatform Ctrl+F5,
 					macOS=⌘+F5}" />
-        <KeyBinding Command="{Binding MenuFileRenameClicked}"
+        <KeyBinding Command="{Binding MenuFileRenameClickedCommand}"
                     Gesture="{OnPlatform Ctrl+F2,
 					macOS=⌘+F2}" />
-        <KeyBinding Command="{Binding MenuFileSaveClicked}"
+        <KeyBinding Command="{Binding MenuFileSaveClickedCommand}"
                     Gesture="{OnPlatform Ctrl+S,
 					macOS=⌘+S}" />
-        <KeyBinding Command="{Binding MenuFileSaveAsClicked}"
+        <KeyBinding Command="{Binding MenuFileSaveAsClickedCommand}"
                     Gesture="{OnPlatform Ctrl+Shift+S,
 					macOS=⌘+Shift+S}" />
-        <KeyBinding Command="{Binding MenuFileCloseFileClicked}"
+        <KeyBinding Command="{Binding MenuFileCloseFileClickedCommand}"
                     Gesture="{OnPlatform Ctrl+W,
 					macOS=⌘+W}" />
-        <KeyBinding Command="{Binding IPrintedThisFile}"
+        <KeyBinding Command="{Binding IPrintedThisFileCommand}"
                     Gesture="{OnPlatform Ctrl+P,
 					macOS=⌘+P}" />
-        <KeyBinding Command="{Binding MenuFileOpenContainingFolderClicked}"
+        <KeyBinding Command="{Binding MenuFileOpenContainingFolderClickedCommand}"
                     Gesture="{OnPlatform Ctrl+Shift+L,
 					macOS=⌘+Shift+L}" />
-        <KeyBinding Command="{Binding ExtractFile}"
+        <KeyBinding Command="{Binding ExtractFileCommand}"
                     Gesture="{OnPlatform Ctrl+Shift+E,
 					macOS=⌘+Shift+E}" />
-        <KeyBinding Command="{Binding OpenTerminal}"
+        <KeyBinding Command="{Binding OpenTerminalCommand}"
                     Gesture="{OnPlatform Ctrl+Shift+T,
 					macOS=⌘+Shift+T}" />
-        <KeyBinding Command="{Binding MenuFileFullscreenClicked}"
+        <KeyBinding Command="{Binding MenuFileFullscreenClickedCommand}"
                     Gesture="F11" />
-        <KeyBinding Command="{Binding MenuFileSettingsClicked}"
+        <KeyBinding Command="{Binding MenuFileSettingsClickedCommand}"
                     Gesture="{OnPlatform 'Ctrl+,', macOS='⌘+,'}" />
 
-        <KeyBinding Command="{Binding MenuHelpAboutClicked}"
+        <KeyBinding Command="{Binding MenuHelpAboutClickedCommand}"
                     Gesture="F1" />
-        <KeyBinding Command="{Binding OpenWebsite}"
+        <KeyBinding Command="{Binding OpenWebsiteCommand}"
                     CommandParameter="{Binding Source={x:Static core:About.Website}}"
                     Gesture="{OnPlatform Ctrl+F1, macOS=⌘+F1}" />
-        <KeyBinding Command="{Binding MenuHelpMaterialManagerClicked}"
+        <KeyBinding Command="{Binding MenuHelpMaterialManagerClickedCommand}"
                     Gesture="F10" />
-        <KeyBinding Command="{Binding MenuHelpMaterialManagerClicked}"
+        <KeyBinding Command="{Binding MenuHelpMaterialManagerClickedCommand}"
                     Gesture="F10" />
     </windows:GenericWindow.KeyBindings>
 
@@ -76,14 +77,14 @@
         <MenuItem Name="MainMenuFile" Header="_File">
             <MenuItem Name="MainMenuFileOpen"
                       Icon="{icon:MaterialIconExt Kind=FileImport}"
-                      Command="{Binding MenuFileOpenClicked}"
+                      Command="{Binding MenuFileOpenClickedCommand}"
                       Header="_Open"
                       HotKey="{OnPlatform Ctrl+O, macOS=⌘+O}"
                       InputGesture="{Binding $self.HotKey}" />
 
             <MenuItem Name="MainMenuFileOpenNewWindow"
                       Icon="{icon:MaterialIconExt Kind=FileMultiple}"
-                      Command="{Binding MenuFileOpenNewWindowClicked}"
+                      Command="{Binding MenuFileOpenNewWindowClickedCommand}"
                       Header="_Open in new window"
                       HotKey="{OnPlatform Ctrl+Shift+O,
 					  macOS=⌘+Shift+O}"
@@ -98,13 +99,13 @@
 
             <MenuItem Name="MainMenuFileOpenInPartialMode"
                       Icon="{icon:MaterialIconExt Kind=FileImportOutline}"
-                      Command="{Binding MenuFileOpenInPartialModeClicked}"
+                      Command="{Binding MenuFileOpenInPartialModeClickedCommand}"
                       Header="_Open in partial mode"
                       ToolTip.Tip="Open a file only to see and/or edit properties. &#x0a;Layer images won't be loaded and most tools won't run in this mode." />
 
             <MenuItem Name="MainMenuFileReload"
                       Icon="{icon:MaterialIconExt Kind=FileRefresh}"
-                      Command="{Binding ReloadFile}"
+                      Command="{Binding ReloadFileCommand}"
                       Header="_Reload"
                       HotKey="{OnPlatform Ctrl+F5,
 					  macOS=⌘+F5}"
@@ -113,7 +114,7 @@
 
             <MenuItem Name="MainMenuFileSave"
                       Icon="{icon:MaterialIconExt Kind=ContentSave}"
-                      Command="{Binding MenuFileSaveClicked}"
+                      Command="{Binding MenuFileSaveClickedCommand}"
                       Header="_Save"
                       HotKey="{OnPlatform Ctrl+S,
 					  macOS=⌘+S}"
@@ -122,7 +123,7 @@
 
             <MenuItem Name="MainMenuFileSaveAs"
                       Icon="{icon:MaterialIconExt Kind=ContentSaveCheck}"
-                      Command="{Binding MenuFileSaveAsClicked}"
+                      Command="{Binding MenuFileSaveAsClickedCommand}"
                       Header="_Save as"
                       HotKey="{OnPlatform Ctrl+Shift+S,
 					  macOS=⌘+Shift+S}"
@@ -131,7 +132,7 @@
 
             <MenuItem Name="MainMenuFileRename"
                       Icon="{icon:MaterialIconExt Kind=Rename}"
-                      Command="{Binding MenuFileRenameClicked}"
+                      Command="{Binding MenuFileRenameClickedCommand}"
                       Header="_Rename"
                       HotKey="{OnPlatform Ctrl+F2,
 					  macOS=⌘+F2}"
@@ -153,7 +154,7 @@
 
             <MenuItem Name="MainMenuFileClose"
                       Icon="{icon:MaterialIconExt Kind=FileRemove}"
-                      Command="{Binding MenuFileCloseFileClicked}"
+                      Command="{Binding MenuFileCloseFileClickedCommand}"
                       Header="_Close"
                       HotKey="{OnPlatform Ctrl+W,
 					  macOS=⌘+W}"
@@ -163,7 +164,7 @@
             <Separator />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Hammer}"
-                      Command="{Binding ResetLayersProperties}"
+                      Command="{Binding ResetLayersPropertiesCommand}"
                       Header="_Reset layers properties"
                       ToolTip.Tip="Reset all layer properties with the file globals. &#x0a;Hold SHIFT key to also rebuild layers position with the file layer height.">
                 <MenuItem.IsEnabled>
@@ -175,7 +176,7 @@
             </MenuItem>
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Flask}"
-                      Command="{Binding IPrintedThisFile}"
+                      Command="{Binding IPrintedThisFileCommand}"
                       Header="_I printed this file"
                       HotKey="{OnPlatform Ctrl+P,
 					  macOS=⌘+P}"
@@ -184,7 +185,7 @@
 
             <MenuItem Name="MainMenuFileOpenContainingFileFolder"
                       Icon="{icon:MaterialIconExt Kind=FolderOpen}"
-                      Command="{Binding MenuFileOpenContainingFolderClicked}"
+                      Command="{Binding MenuFileOpenContainingFolderClickedCommand}"
                       Header="_Open containing folder"
                       HotKey="{OnPlatform Ctrl+Shift+L,
 					  macOS=⌘+Shift+L}"
@@ -193,7 +194,7 @@
 
             <MenuItem Name="MainMenuFileExtract"
                       Icon="{icon:MaterialIconExt Kind=FolderZip}"
-                      Command="{Binding ExtractFile}"
+                      Command="{Binding ExtractFileCommand}"
                       Header="_Extract file contents"
                       HotKey="{OnPlatform Ctrl+Shift+E,
 					  macOS=⌘+Shift+E}"
@@ -201,13 +202,13 @@
                       IsEnabled="{Binding IsFileLoaded}" />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=FileExport}"
-                      Command="{Binding CopyParametersToFiles}"
+                      Command="{Binding CopyParametersToFilesCommand}"
                       Header="_Copy parameters to files"
                       IsEnabled="{Binding IsFileLoaded}" />
 
             <MenuItem Name="MainMenuFileTerminal"
                       Icon="{icon:MaterialIconExt Kind=Terminal}"
-                      Command="{Binding OpenTerminal}"
+                      Command="{Binding OpenTerminalCommand}"
                       Header="_Terminal"
                       HotKey="{OnPlatform Ctrl+Shift+T,
 					  macOS=⌘+Shift+T}"
@@ -218,14 +219,14 @@
 
             <MenuItem Name="MainMenuFileFullscreen"
                       Icon="{icon:MaterialIconExt Kind=Fullscreen}"
-                      Command="{Binding MenuFileFullscreenClicked}"
+                      Command="{Binding MenuFileFullscreenClickedCommand}"
                       Header="_Fullscreen"
                       HotKey="F11"
                       InputGesture="{Binding $self.HotKey}" />
 
             <MenuItem Name="MainMenuFileSettings"
                       Icon="{icon:MaterialIconExt Kind=Cog}"
-                      Command="{Binding MenuFileSettingsClicked}"
+                      Command="{Binding MenuFileSettingsClickedCommand}"
                       Header="_Settings"
                       HotKey="Ctrl+,"
                       InputGesture="{Binding $self.HotKey}" />
@@ -234,7 +235,7 @@
 
             <MenuItem Name="MainMenuFileExit"
                       Icon="{icon:MaterialIconExt Kind=SignOut}"
-                      Command="{Binding Close}"
+                      Command="{Binding CloseWindowCommand}"
                       Header="_Exit"
                       InputGesture="Alt+F4" />
         </MenuItem>
@@ -252,13 +253,13 @@
 
         <MenuItem Header="_Help">
             <MenuItem Icon="{icon:MaterialIconExt Kind=InfoCircle}"
-                      Command="{Binding MenuHelpAboutClicked}"
+                      Command="{Binding MenuHelpAboutClickedCommand}"
                       Header="_About"
                       HotKey="F1"
                       InputGesture="{Binding $self.HotKey}" />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=MicrosoftEdge}"
-                      Command="{Binding OpenWebsite}"
+                      Command="{Binding OpenWebsiteCommand}"
                       CommandParameter="{Binding Source={x:Static core:About.Website}}"
                       Header="_Website"
                       HotKey="{OnPlatform Ctrl+F1,
@@ -266,34 +267,34 @@
                       InputGesture="{Binding $self.HotKey}" />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Wikipedia}"
-                      Command="{Binding OpenWebsite}"
+                      Command="{Binding OpenWebsiteCommand}"
                       CommandParameter="https://github.com/sn4k3/UVtools/wiki"
                       Header="_Wiki &amp; tutorials" />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Forum}"
                       Header="_Community forums">
                 <MenuItem Icon="{icon:MaterialIconExt Kind=Github}"
-                          Command="{Binding OpenWebsite}"
+                          Command="{Binding OpenWebsiteCommand}"
                           CommandParameter="https://github.com/sn4k3/UVtools/discussions"
                           Header="_GitHub" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=Facebook}"
-                          Command="{Binding OpenWebsite}"
+                          Command="{Binding OpenWebsiteCommand}"
                           CommandParameter="https://www.facebook.com/groups/uvtools"
                           Header="_Facebook" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=Reddit}"
-                          Command="{Binding OpenWebsite}"
+                          Command="{Binding OpenWebsiteCommand}"
                           CommandParameter="https://www.reddit.com/search/?q=UVtools&amp;type=link&amp;sort=new"
                           Header="_Reddit" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=Twitter}"
-                          Command="{Binding OpenWebsite}"
+                          Command="{Binding OpenWebsiteCommand}"
                           CommandParameter="https://twitter.com/search?q=UVtools&amp;src=typedquery&amp;f=live"
                           Header="_Twitter" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=Youtube}"
-                          Command="{Binding OpenWebsite}"
+                          Command="{Binding OpenWebsiteCommand}"
                           CommandParameter="https://www.youtube.com/results?search_query=UVtools"
                           Header="_Youtube" />
             </MenuItem>
@@ -302,12 +303,12 @@
                       Header="_Donate">
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=Github}"
-                          Command="{Binding OpenWebsite}"
+                          Command="{Binding OpenWebsiteCommand}"
                           CommandParameter="{Binding Source={x:Static core:About.DonateGitHubUrl}}"
                           Header="_GitHub" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=Payment}"
-                          Command="{Binding OpenWebsite}"
+                          Command="{Binding OpenWebsiteCommand}"
                           CommandParameter="{Binding Source={x:Static core:About.DonatePayPalUrl}}"
                           Header="_PayPal" />
 
@@ -317,44 +318,44 @@
             <Separator />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Flask}"
-                      Command="{Binding MenuHelpMaterialManagerClicked}"
+                      Command="{Binding MenuHelpMaterialManagerClickedCommand}"
                       Header="_Material manager"
                       HotKey="F10"
                       InputGesture="{Binding $self.HotKey}" />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Printer3d}"
-                      Command="{Binding MenuHelpInstallProfilesClicked}"
+                      Command="{Binding MenuHelpInstallProfilesClickedCommand}"
                       Header="_Install profiles into PrusaSlicer" />
 
             <Separator />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Bug}"
-                      Command="{Binding MenuHelpReportIssueClicked}"
+                      Command="{Binding MenuHelpReportIssueClickedCommand}"
                       Header="_Report an issue" />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Help}"
-                      Command="{Binding OpenWebsite}"
+                      Command="{Binding OpenWebsiteCommand}"
                       CommandParameter="https://github.com/sn4k3/UVtools/discussions/categories/q-a"
                       Header="_Ask a question" />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=HeadLightbulb}"
-                      Command="{Binding OpenWebsite}"
+                      Command="{Binding OpenWebsiteCommand}"
                       CommandParameter="https://github.com/sn4k3/UVtools/discussions/categories/ideas"
                       Header="_Suggest an improvement or new features" />
 
             <Separator />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=FolderOpen}"
-                      Command="{Binding MenuHelpOpenSettingsFolderClicked}"
+                      Command="{Binding MenuHelpOpenSettingsFolderClickedCommand}"
                       Header="_Open settings folder" />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=MemoryArrowDown}"
-                      Command="{Binding MenuHelpFreeUnusedRAMClicked}"
+                      Command="{Binding MenuHelpFreeUnusedRAMClickedCommand}"
                       Header="_Free unused RAM"
                       ToolTip.Tip="Force the garbage collection of all unused objects within the program to free unused memory (RAM). &#x0a;It's never required for the end user run this. The program will automatically take care of it when required. &#x0a;This function is for debug purposes." />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Cpu64Bit}"
-                      Command="{Binding MenuHelpBenchmarkClicked}"
+                      Command="{Binding MenuHelpBenchmarkClickedCommand}"
                       Header="_Benchmark" />
 
             <MenuItem Icon="{icon:MaterialIconExt Kind=Ladybug}"
@@ -362,27 +363,27 @@
                       IsVisible="{Binding IsDebug}">
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=FolderOpen}"
-                          Command="{Binding MenuHelpDebugOpenExecutableDirectoryClicked}"
+                          Command="{Binding MenuHelpDebugOpenExecutableDirectoryClickedCommand}"
                           Header="_Open executable directory"
                           IsVisible="{Binding IsDebug}" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=LightningBolt}"
-                          Command="{Binding MenuHelpDebugThrowExceptionClicked}"
+                          Command="{Binding MenuHelpDebugThrowExceptionClickedCommand}"
                           Header="_Throw exception"
                           IsVisible="{Binding IsDebug}" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=Message}"
-                          Command="{Binding MenuHelpDebugLongMessageBoxClicked}"
+                          Command="{Binding MenuHelpDebugLongMessageBoxClickedCommand}"
                           Header="_Show long message box"
                           IsVisible="{Binding IsDebug}" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=PartyPopper}"
-                          Command="{Binding ShowBirthdayMessage}"
+                          Command="{Binding ShowBirthdayMessageCommand}"
                           Header="_Show birthday message box"
                           IsVisible="{Binding IsDebug}" />
 
                 <MenuItem Icon="{icon:MaterialIconExt Kind=CloudDownload}"
-                          Command="{Binding MenuHelpDebugTriggerNewUpdateClicked}"
+                          Command="{Binding MenuHelpDebugTriggerNewUpdateClickedCommand}"
                           Header="_Trigger new update"
                           IsEnabled="{Binding !AppUpdater.IsBusy}"
                           IsVisible="{Binding IsDebug}" />
@@ -393,7 +394,7 @@
 
         <MenuItem Margin="10,0,0,0"
                   Background="DarkGreen"
-                  Command="{Binding MenuNewVersionClicked}"
+                  Command="{Binding MenuNewVersionClickedCommand}"
                   CornerRadius="10"
                   Foreground="White"
                   Header="{Binding AppUpdater.LatestReleaseTagVersionStr, StringFormat='New version v{0} is available!'}"
@@ -401,7 +402,7 @@
 
         <MenuItem Margin="10,0,0,0"
                   Background="{StaticResource LogoColor}"
-                  Command="{Binding ShowBirthdayMessage}"
+                  Command="{Binding ShowBirthdayMessageCommand}"
                   CornerRadius="10"
                   Foreground="White"
                   Header="{Binding Source={x:Static core:About.BirthdayTitle}}"
@@ -568,53 +569,53 @@
                                 <SelectableTextBlock VerticalAlignment="Center"
                                                      Text="{Binding VisibleThumbnailResolution}" />
 
-                                <SplitButton Command="{Binding OnClickThumbnailImportFile}"
+                                <SplitButton Command="{Binding ClickThumbnailImportFileCommand}"
                                              CommandParameter="False"
                                              Content="{icon:MaterialIconExt Image}"
                                              ToolTip.Tip="Replace the current preview image">
                                     <SplitButton.Flyout>
                                         <MenuFlyout>
                                             <MenuItem Icon="{icon:MaterialIconExt Image}"
-                                                      Command="{Binding OnClickThumbnailImportFile}"
+                                                      Command="{Binding ClickThumbnailImportFileCommand}"
                                                       CommandParameter="False"
                                                       Header="From file" />
 
                                             <MenuItem Icon="{icon:MaterialIconExt Image}"
-                                                      Command="{Binding OnClickThumbnailImportFile}"
+                                                      Command="{Binding ClickThumbnailImportFileCommand}"
                                                       CommandParameter="True"
                                                       Header="From file (Replace all)" />
 
                                             <Separator />
 
                                             <MenuItem Icon="{icon:MaterialIconExt Layers}"
-                                                      Command="{Binding OnClickThumbnailImportCurrentLayer}"
+                                                      Command="{Binding ClickThumbnailImportCurrentLayerCommand}"
                                                       CommandParameter="False"
                                                       Header="From current layer" />
 
                                             <MenuItem Icon="{icon:MaterialIconExt Layers}"
-                                                      Command="{Binding OnClickThumbnailImportCurrentLayer}"
+                                                      Command="{Binding ClickThumbnailImportCurrentLayerCommand}"
                                                       CommandParameter="True"
                                                       Header="From current layer (Replace all)" />
 
                                             <MenuItem Icon="{icon:MaterialIconExt Layers}"
-                                                      Command="{Binding OnClickThumbnailImportRandomLayer}"
+                                                      Command="{Binding ClickThumbnailImportRandomLayerCommand}"
                                                       CommandParameter="False"
                                                       Header="From random layer" />
 
                                             <MenuItem Icon="{icon:MaterialIconExt Layers}"
-                                                      Command="{Binding OnClickThumbnailImportRandomLayer}"
+                                                      Command="{Binding ClickThumbnailImportRandomLayerCommand}"
                                                       CommandParameter="True"
                                                       Header="From random layer (Replace all)" />
 
                                             <Separator />
 
                                             <MenuItem Icon="{icon:MaterialIconExt Image360}"
-                                                      Command="{Binding OnClickThumbnailImportHeatmap}"
+                                                      Command="{Binding ClickThumbnailImportHeatmapCommand}"
                                                       CommandParameter="False"
                                                       Header="From heatmap" />
 
                                             <MenuItem Icon="{icon:MaterialIconExt Image360}"
-                                                      Command="{Binding OnClickThumbnailImportHeatmap}"
+                                                      Command="{Binding ClickThumbnailImportHeatmapCommand}"
                                                       CommandParameter="True"
                                                       Header="From heatmap (Replace all)" />
                                         </MenuFlyout>
@@ -623,7 +624,7 @@
 
                                 <Button VerticalAlignment="Stretch"
                                         Content="{icon:MaterialIconExt Kind=ContentSave}"
-                                        Command="{Binding OnClickThumbnailSave}"
+                                        Command="{Binding ClickThumbnailSaveCommand}"
                                         ToolTip.Tip="Save thumbnail image to a file" />
 
                             </StackPanel>
@@ -666,18 +667,18 @@
                                         Spacing="2">
 
                                 <SplitButton Name="PropertiesSaveButton"
-                                             Command="{Binding OnClickPropertiesSaveClipboard}"
+                                             Command="{Binding ClickPropertiesSaveClipboardCommand}"
                                              Content="{icon:MaterialIconExt ContentSave}"
                                              IsEnabled="{Binding SlicerFile.Configs.Length}"
                                              ToolTip.Tip="Save properties to a file or clipboard">
                                     <SplitButton.Flyout>
                                         <MenuFlyout>
                                             <MenuItem Icon="{icon:MaterialIconExt FileExport}"
-                                                      Command="{Binding OnClickPropertiesSaveFile}"
+                                                      Command="{Binding ClickPropertiesSaveFileCommand}"
                                                       Header="To File" />
 
                                             <MenuItem Icon="{icon:MaterialIconExt Clipboard}"
-                                                      Command="{Binding OnClickPropertiesSaveClipboard}"
+                                                      Command="{Binding ClickPropertiesSaveClipboardCommand}"
                                                       Header="To Clipboard" />
 
                                         </MenuFlyout>
@@ -781,20 +782,20 @@
                                               ToolTip.Tip="Enable this to directly edit and use custom gcode. &#x0a;While this is active, UVtools won't update/generate the gcode, meaning any future change won't be replicated to gcode, unless you press the 'Refresh' button. &#x0a;To save the file with your custom gcode this setting must remain active while saving the file or else it will be re-generated. &#x0a;Use with caution and only if you know what you are doing!" />
 
                                 <Button Content="{icon:MaterialIconExt Kind=Sync}"
-                                        Command="{Binding OnClickRebuildGcode}"
+                                        Command="{Binding ClickRebuildGcodeCommand}"
                                         ToolTip.Tip="Rebuild GCode with current settings" />
 
-                                <SplitButton Command="{Binding OnClickGCodeSaveClipboard}"
+                                <SplitButton Command="{Binding ClickGCodeSaveClipboardCommand}"
                                              Content="{icon:MaterialIconExt ContentSave}"
                                              ToolTip.Tip="Save gcode to a file or clipboard">
                                     <SplitButton.Flyout>
                                         <MenuFlyout>
                                             <MenuItem Icon="{icon:MaterialIconExt Kind=ContentSave}"
-                                                      Command="{Binding OnClickGCodeSaveFile}"
+                                                      Command="{Binding ClickGCodeSaveFileCommand}"
                                                       Header="To File" />
 
                                             <MenuItem Icon="{icon:MaterialIconExt Kind=ClipboardOutline}"
-                                                      Command="{Binding OnClickGCodeSaveClipboard}"
+                                                      Command="{Binding ClickGCodeSaveClipboardCommand}"
                                                       Header="To Clipboard" />
 
                                         </MenuFlyout>
@@ -855,13 +856,13 @@
 
                                 <Button VerticalAlignment="Stretch"
                                         Content="{icon:MaterialIconExt Kind=EyeOff}"
-                                        Command="{Binding OnClickIssueIgnore}"
+                                        Command="{Binding ClickIssueIgnoreCommand}"
                                         IsEnabled="{Binding #IssuesGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
                                         ToolTip.Tip="Hides and ignores the selected issues, they won't be re-detected. &#x0a;ALT + Click to re-enable the ignored issues." />
 
                                 <Button VerticalAlignment="Stretch"
                                         Content="{icon:MaterialIconExt Kind=TrashCan}"
-                                        Command="{Binding OnClickIssueRemove}"
+                                        Command="{Binding ClickIssueRemoveCommand}"
                                         IsEnabled="{Binding #IssuesGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
                                         ToolTip.Tip="Remove the selected issue(s) when possible. &#x0a;Islands: All pixels are removed (turn black). &#x0a;ResinTrap: All areas are filled with white pixels. &#x0a;SuctionCup: Drills a vertical vent hole. &#x0a;EmptyLayers: Layers are removed." />
 
@@ -875,12 +876,12 @@
 
                                 <Button VerticalAlignment="Stretch"
                                         Content="{icon:MaterialIconExt Kind=Toolbox}"
-                                        Command="{Binding OnClickRepairIssues}"
+                                        Command="{Binding ClickRepairIssuesCommand}"
                                         IsEnabled="{Binding IsFileLoaded}"
                                         ToolTip.Tip="Attempt to repair issues" />
 
                                 <SplitButton VerticalAlignment="Stretch"
-                                             Command="{Binding OnClickDetectIssues}"
+                                             Command="{Binding ClickDetectIssuesCommand}"
                                              Content="{icon:MaterialIconTextExt Kind=Sync, Text='Detect'}"
                                              ToolTip.Tip="Compute Issues. &#x0a;Right click to access settings.">
                                     <SplitButton.Flyout>
@@ -914,13 +915,13 @@
 
                                                         <Button Margin="2,0,0,0"
                                                                 VerticalAlignment="Center"
-                                                                Command="{Binding SetResinTrapDetectionStartLayer}"
+                                                                Command="{Binding SetResinTrapDetectionStartLayerCommand}"
                                                                 CommandParameter="N"
                                                                 Content="N"
                                                                 ToolTip.Tip="Set to the first normal layer" />
                                                         <Button Margin="2,0,0,0"
                                                                 VerticalAlignment="Center"
-                                                                Command="{Binding SetResinTrapDetectionStartLayer}"
+                                                                Command="{Binding SetResinTrapDetectionStartLayerCommand}"
                                                                 CommandParameter="C"
                                                                 Content="C"
                                                                 ToolTip.Tip="Set to the current layer" />
@@ -964,42 +965,42 @@
                                     <ContextMenu
                                         IsVisible="{Binding $parent[DataGrid].SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
                                         <MenuItem Icon="{icon:MaterialIconExt EyeOff}"
-                                                  Command="{Binding OnClickIssueIgnore}"
+                                                  Command="{Binding ClickIssueIgnoreCommand}"
                                                   Header="Ignore issue(s)" />
                                         <Separator />
                                         <MenuItem Icon="{icon:MaterialIconExt TrashCan}"
-                                                  Command="{Binding SelectedIssuesIslandRemove}"
+                                                  Command="{Binding SelectedIssuesIslandRemoveCommand}"
                                                   Header="Remove island(s)"
-                                                  IsVisible="{ReflectionBinding #IssuesGrid.SelectedItem.IsIsland}" />
+                                                  IsVisible="{Binding #IssuesGrid.((layers:MainIssue)SelectedItem).IsIsland}" />
                                         <MenuItem Icon="{icon:MaterialIconExt Rhombus}"
-                                                  Command="{Binding SelectedIssuesResinTrapSolidify}"
+                                                  Command="{Binding SelectedIssuesResinTrapSolidifyCommand}"
                                                   Header="Fill/solidify resin trap(s)"
-                                                  IsVisible="{ReflectionBinding #IssuesGrid.SelectedItem.IsResinTrap}" />
+                                                  IsVisible="{Binding #IssuesGrid.((layers:MainIssue)SelectedItem).IsResinTrap}" />
                                         <MenuItem Icon="{icon:MaterialIconExt CircleBox}"
-                                                  Command="{Binding SelectedIssuesSuctionCupDrill}"
+                                                  Command="{Binding SelectedIssuesSuctionCupDrillCommand}"
                                                   Header="Drill suction cup(s)"
-                                                  IsVisible="{ReflectionBinding #IssuesGrid.SelectedItem.IsSuctionCup}" />
+                                                  IsVisible="{Binding #IssuesGrid.((layers:MainIssue)SelectedItem).IsSuctionCup}" />
                                         <MenuItem Icon="{icon:MaterialIconExt Rhombus}"
-                                                  Command="{Binding SelectedIssuesSuctionCupSolidify}"
+                                                  Command="{Binding SelectedIssuesSuctionCupSolidifyCommand}"
                                                   Header="Fill/solidify suction cup(s)"
-                                                  IsVisible="{ReflectionBinding #IssuesGrid.SelectedItem.IsSuctionCup}" />
+                                                  IsVisible="{Binding #IssuesGrid.((layers:MainIssue)SelectedItem).IsSuctionCup}" />
                                         <MenuItem Icon="{icon:MaterialIconExt TrashCan}"
-                                                  Command="{Binding SelectedIssuesEmptyLayerRemove}"
+                                                  Command="{Binding SelectedIssuesEmptyLayerRemoveCommand}"
                                                   Header="Remove empty layer(s)"
-                                                  IsVisible="{ReflectionBinding #IssuesGrid.SelectedItem.IsEmptyLayer}" />
+                                                  IsVisible="{Binding #IssuesGrid.((layers:MainIssue)SelectedItem).IsEmptyLayer}" />
                                     </ContextMenu>
                                 </DataGrid.ContextMenu>
                                 <DataGrid.Columns>
 
                                     <DataGridTextColumn Width="Auto"
-                                                        Binding="{ReflectionBinding Type}"
+                                                        Binding="{Binding Type, DataType={x:Type layers:MainIssue}}"
                                                         Header="Type" />
                                     <DataGridTextColumn Width="Auto"
-                                                        Binding="{ReflectionBinding LayerInfoString}"
+                                                        Binding="{Binding LayerInfoString, DataType={x:Type layers:MainIssue}}"
                                                         Header="Layer(s)"
                                                         SortMemberPath="StartLayerIndex" />
                                     <DataGridTextColumn Width="Auto"
-                                                        Binding="{ReflectionBinding Area,
+                                                        Binding="{Binding Area, DataType={x:Type layers:MainIssue},
 														StringFormat={}{0:N0}}"
                                                         Header="Area" />
                                 </DataGrid.Columns>
@@ -1047,12 +1048,12 @@
                                             HorizontalAlignment="Right"
                                             Orientation="Horizontal"
                                             Spacing="2">
-                                    <Button Command="{Binding ApplySuggestionsClicked}"
+                                    <Button Command="{Binding ApplySuggestionsClickedCommand}"
                                             IsEnabled="{Binding #SuggestionsAvailableListBox.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
                                             Content="{icon:MaterialIconTextExt Kind=Check, Text='Apply'}" />
 
                                     <Button VerticalAlignment="Stretch"
-                                            Command="{Binding ConfigureSuggestionsClicked}"
+                                            Command="{Binding ConfigureSuggestionsClickedCommand}"
                                             Content="{icon:MaterialIconExt Kind=Cog}"
                                             ToolTip.Tip="Configure suggestions" />
                                 </StackPanel>
@@ -1078,17 +1079,17 @@
                                             <TextBlock.ContextMenu>
                                                 <ContextMenu>
                                                     <MenuItem Icon="{icon:MaterialIconExt Check}"
-                                                              Command="{Binding $parent[windows:GenericWindow].((ui:MainWindow)DataContext).ApplySuggestionClicked}"
+                                                              Command="{Binding $parent[windows:GenericWindow].((ui:MainWindow)DataContext).ApplySuggestionClickedCommand}"
                                                               CommandParameter="{Binding .}"
                                                               Header="Apply"
                                                               IsVisible="{Binding !IsInformativeOnly}" />
                                                     <MenuItem Icon="{icon:MaterialIconExt InfoCircle}"
-                                                              Command="{Binding $parent[windows:GenericWindow].((ui:MainWindow)DataContext).OpenWebsite}"
+                                                              Command="{Binding $parent[windows:GenericWindow].((ui:MainWindow)DataContext).OpenWebsiteCommand}"
                                                               CommandParameter="{Binding InformationUrl}"
                                                               Header="More information (Web)"
                                                               IsVisible="{Binding InformationUrl, Converter={x:Static ObjectConverters.IsNotNull}}" />
                                                     <MenuItem Icon="{icon:MaterialIconExt Cog}"
-                                                              Command="{Binding $parent[windows:GenericWindow].((ui:MainWindow)DataContext).ConfigureSuggestionClicked}"
+                                                              Command="{Binding $parent[windows:GenericWindow].((ui:MainWindow)DataContext).ConfigureSuggestionClickedCommand}"
                                                               CommandParameter="{Binding .}"
                                                               Header="Configure" />
                                                 </ContextMenu>
@@ -1125,12 +1126,12 @@
                                             <TextBlock.ContextMenu>
                                                 <ContextMenu>
                                                     <MenuItem Icon="{icon:MaterialIconExt InfoCircle}"
-                                                              Command="{Binding $parent[windows:GenericWindow].((ui:MainWindow)DataContext).OpenWebsite}"
+                                                              Command="{Binding $parent[windows:GenericWindow].((ui:MainWindow)DataContext).OpenWebsiteCommand}"
                                                               CommandParameter="{Binding InformationUrl}"
                                                               Header="More information (Web)"
                                                               IsVisible="{Binding InformationUrl, Converter={x:Static ObjectConverters.IsNotNull}}" />
                                                     <MenuItem Icon="{icon:MaterialIconExt Cog}"
-                                                              Command="{Binding $parent[windows:GenericWindow].((ui:MainWindow)DataContext).ConfigureSuggestionClicked}"
+                                                              Command="{Binding $parent[windows:GenericWindow].((ui:MainWindow)DataContext).ConfigureSuggestionClickedCommand}"
                                                               CommandParameter="{Binding .}"
                                                               Header="Configure" />
                                                 </ContextMenu>
@@ -1707,11 +1708,11 @@
                                 <StackPanel Grid.Row="2"
                                             Orientation="Horizontal"
                                             Spacing="1">
-                                    <Button Command="{Binding OnClickDrawingRemove}"
+                                    <Button Command="{Binding ClickDrawingRemoveCommand}"
                                             IsEnabled="{Binding #DrawingsGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
                                             Content="{icon:MaterialIconTextExt Kind=TrashCan, Text='Remove'}" />
 
-                                    <Button Command="{Binding OnClickDrawingClear}"
+                                    <Button Command="{Binding ClickDrawingClearCommand}"
                                             IsEnabled="{Binding Drawings.Count}"
                                             Content="{icon:MaterialIconTextExt Kind=DeleteSweep, Text='Clear'}" />
                                 </StackPanel>
@@ -1721,7 +1722,7 @@
                                             Orientation="Horizontal"
                                             Spacing="10">
 
-                                    <Button Command="{Binding DrawModificationsCommand}"
+                                    <Button Command="{Binding ApplyDrawModificationsCommand}"
                                             IsEnabled="{Binding Drawings.Count}"
                                             Content="{icon:MaterialIconTextExt Kind=Check, Text={Binding Drawings.Count, StringFormat='Apply {0} operations'}}" />
                                 </StackPanel>
@@ -1780,7 +1781,7 @@
                                         Spacing="2">
 
                                 <Button Content="{icon:MaterialIconExt Kind=Undo}"
-                                        Command="{Binding ClipboardUndo}"
+                                        Command="{Binding ClipboardUndoCommand}"
                                         HotKey="Ctrl + Z"
                                         IsEnabled="{Binding ClipboardManager.CanUndo}"
                                         ToolTip.Tip="Undo [Ctrl + Z] &#x0a;Shift + Click to Undo and edit last operation [Ctrl + Shift + Z]" />
@@ -1795,7 +1796,7 @@
                                 </TextBlock>
 
                                 <Button Content="{icon:MaterialIconExt Kind=Redo}"
-                                        Command="{Binding ClipboardRedo}"
+                                        Command="{Binding ClipboardRedoCommand}"
                                         HotKey="Ctrl + Y"
                                         IsEnabled="{Binding ClipboardManager.CanRedo}"
                                         ToolTip.Tip="Redo [Ctrl + Y]" />
@@ -1807,7 +1808,7 @@
                                         Orientation="Horizontal"
                                         Spacing="2">
                                 <Button Content="{icon:MaterialIconExt Kind=DeleteSweep}"
-                                        Command="{Binding ClipboardClear}"
+                                        Command="{Binding ClipboardClearCommand}"
                                         IsEnabled="{Binding ClipboardManager.Items.Count}"
                                         ToolTip.Tip="Clear all clips" />
                             </StackPanel>
@@ -1909,7 +1910,7 @@
                     <RepeatButton Grid.Row="1"
                                   HorizontalAlignment="Stretch"
                                   Content="{icon:MaterialIconExt Kind=MenuUp}"
-                                  Command="{Binding GoNextLayer}"
+                                  Command="{Binding GoNextLayerCommand}"
                                   HotKey="Ctrl + Up"
                                   Interval="100"
                                   IsEnabled="{Binding CanGoUp}"
@@ -1954,7 +1955,7 @@
                     <RepeatButton Grid.Row="3"
                                   HorizontalAlignment="Stretch"
                                   Content="{icon:MaterialIconExt Kind=MenuDown}"
-                                  Command="{Binding GoPreviousLayer}"
+                                  Command="{Binding GoPreviousLayerCommand}"
                                   HotKey="Ctrl + Down"
                                   Interval="100"
                                   IsEnabled="{Binding CanGoDown}"
@@ -1971,7 +1972,7 @@
                           RowDefinitions="*">
                         <Button Grid.Column="0"
                                 Content="{icon:MaterialIconExt ChevronDoubleDown}"
-                                Command="{Binding GoFirstLayer}"
+                                Command="{Binding GoFirstLayerCommand}"
                                 HotKey="Ctrl + Left"
                                 IsEnabled="{Binding CanGoDown}"
                                 ToolTip.Tip="Navigate to first layer [Ctrl + Left]" />
@@ -1984,7 +1985,7 @@
 
                         <Button Grid.Column="2"
                                 Content="{icon:MaterialIconExt ChevronDoubleUp}"
-                                Command="{Binding GoLastLayer}"
+                                Command="{Binding GoLastLayerCommand}"
                                 HotKey="Ctrl + Right"
                                 IsEnabled="{Binding CanGoUp}"
                                 ToolTip.Tip="Navigate to last layer [Ctrl + Right]" />
@@ -1996,22 +1997,22 @@
                                 VerticalAlignment="Center"
                                 Orientation="Horizontal"
                                 Spacing="1">
-                        <Button Command="{Binding GoMassLayer}"
+                        <Button Command="{Binding GoMassLayerCommand}"
                                 CommandParameter="SB"
                                 Content="SB"
                                 ToolTip.Tip="Navigate to the smallest bottom layer in mass" />
 
-                        <Button Command="{Binding GoMassLayer}"
+                        <Button Command="{Binding GoMassLayerCommand}"
                                 CommandParameter="LB"
                                 Content="LB"
                                 ToolTip.Tip="Navigate to the largest bottom layer in mass" />
 
-                        <Button Command="{Binding GoMassLayer}"
+                        <Button Command="{Binding GoMassLayerCommand}"
                                 CommandParameter="SN"
                                 Content="SN"
                                 ToolTip.Tip="Navigate to the smallest normal layer in mass" />
 
-                        <Button Command="{Binding GoMassLayer}"
+                        <Button Command="{Binding GoMassLayerCommand}"
                                 CommandParameter="LN"
                                 Content="LN"
                                 ToolTip.Tip="Navigate to the largest normal layer in mass" />
@@ -2204,7 +2205,7 @@
                             </DropDownButton>
 
                             <Button VerticalAlignment="Stretch"
-                                    Command="{Binding ShowLayer}"
+                                    Command="{Binding ShowLayerCommand}"
                                     HotKey="F5"
                                     Content="{icon:MaterialIconExt Kind=Sync}"
                                     ToolTip.Tip="Refresh current layer [F5]" />
@@ -2212,13 +2213,13 @@
 
                             <SplitButton VerticalAlignment="Stretch"
                                          VerticalContentAlignment="Center"
-                                         Command="{Binding SaveCurrentLayerImage}"
+                                         Command="{Binding SaveCurrentLayerImageCommand}"
                                          Content="{icon:MaterialIconExt Kind=ContentSave}"
                                          ToolTip.Tip="Save layer image to a file">
                                 <SplitButton.Flyout>
                                     <MenuFlyout>
                                         <MenuItem Icon="{icon:MaterialIconExt Kind=Group}"
-                                                  Command="{Binding SaveCurrentROIImage}"
+                                                  Command="{Binding SaveCurrentROIImageCommand}"
                                                   Header="Save the selected region (ROI)" />
                                     </MenuFlyout>
                                 </SplitButton.Flyout>
@@ -2274,29 +2275,29 @@
                                 Content="{icon:MaterialIconTextExt Kind=GoogleDownasaur, Text={Binding LayerPixelCountStr}}"
                                 ToolTip.Tip="Number of pixels to cure on this layer image and the percentage of them against total lcd pixels and the total cured millimeters." />
 
-                            <Button Command="{Binding ZoomToFitPrintVolume}"
+                            <Button Command="{Binding ZoomToFitPrintVolumeCommand}"
                                     Content="{icon:MaterialIconTextExt Kind=SquareOutline, Text={Binding LayerBoundsStr}}"
                                     ToolTip.Tip="Object volume bounds for current layer, position and size in pixels and millimeters. &#x0a;Click: go to region" />
 
-                            <SplitButton Command="{Binding OnROIClick}"
+                            <SplitButton Command="{Binding ROIClickCommand}"
                                          IsEnabled="{Binding IsFileLoaded}"
                                          Content="{icon:MaterialIconTextExt Kind=SquareCircleOutline, Text={Binding LayerROIStr}}"
                                          ToolTip.Tip="Region of interest selection over layer. &#x0a;(NS): Not selected &#x0a;Click: go to region &#x0a;ESC: Clear ROI &amp; Masks | ESC + Shift: Clear ROI">
                                 <SplitButton.Flyout>
                                     <MenuFlyout Placement="Top">
-                                        <MenuItem Command="{Binding SelectLayerPositiveAreasMask}"
+                                        <MenuItem Command="{Binding SelectLayerPositiveAreasMaskCommand}"
                                                   Header="Mask: Select layer positive areas" />
-                                        <MenuItem Command="{Binding SelectLayerHollowAreasMask}"
+                                        <MenuItem Command="{Binding SelectLayerHollowAreasMaskCommand}"
                                                   Header="Mask: Select layer hollow areas" />
                                         <Separator />
-                                        <MenuItem Command="{Binding SelectModelVolumeRoi}"
+                                        <MenuItem Command="{Binding SelectModelVolumeRoiCommand}"
                                                   Header="ROI: Select model volume" />
-                                        <MenuItem Command="{Binding SelectLayerVolumeRoi}"
+                                        <MenuItem Command="{Binding SelectLayerVolumeRoiCommand}"
                                                   Header="ROI: Select layer volume" />
                                         <Separator />
-                                        <MenuItem Command="{Binding ClearMask}"
+                                        <MenuItem Command="{Binding ClearMaskCommand}"
                                                   Header="Clear Mask" />
-                                        <MenuItem Command="{Binding ClearROI}"
+                                        <MenuItem Command="{Binding ClearROICommand}"
                                                   Header="Clear ROI" />
                                     </MenuFlyout>
                                 </SplitButton.Flyout>
@@ -2309,16 +2310,16 @@
                                    HorizontalAlignment="Right"
                                    VerticalAlignment="Center"
                                    Orientation="Horizontal">
-                            <Button Command="{Binding OnLayerPixelPickerClicked}"
+                            <Button Command="{Binding LayerPixelPickerClickedCommand}"
                                     IsEnabled="{Binding LayerPixelPicker.IsSet}"
                                     Content="{icon:MaterialIconTextExt Kind=MapMarkerOutline, Text={Binding LayerPixelPicker}}"
                                     ToolTip.Tip="Pixel picker: &#x0a;Use CONTROL and over a pixel to get his position and brightness. &#x0a;Click: Center at position" />
 
-                            <Button Command="{Binding ZoomToNormal}"
+                            <Button Command="{Binding ZoomToNormalCommand}"
                                     Content="{icon:MaterialIconTextExt Kind=MagnifyExpand, Text={Binding LayerZoomStr}}"
                                     ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Layer image zoom level, use mouse scroll to zoom in/out into image. &#x0a;Click to set zoom to 100% &#x0a;Shift+Click to set zoom to defined value &#x0a;{0}+0 OR double right click to scale to fit'}" />
 
-                            <Button Command="{Binding ZoomToFitSimple}"
+                            <Button Command="{Binding ZoomToFitSimpleCommand}"
                                     Content="{icon:MaterialIconTextExt Kind=MagnifyScan, Text={Binding LayerResolutionStr}}"
                                     ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Layer Resolution and display size. &#x0a;Click: Zoom to fit [{0}+Alt+0]'}" />
 
@@ -2398,7 +2399,7 @@
                                 VerticalAlignment="Stretch"
                                 HorizontalContentAlignment="Center"
                                 VerticalContentAlignment="Center"
-                                Command="{Binding ProgressOnClickCancel}"
+                                Command="{Binding ProgressOnClickCancelCommand}"
                                 Content="{icon:MaterialIconTextExt Kind=StopCircleOutline, Text='Cancel'}"
                                 IsCancel="True"
                                 IsEnabled="{Binding Progress.CanCancel}" />

@@ -12,6 +12,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Input;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -131,7 +132,8 @@ public partial class MainWindow
                  || oldZoom > 100 && newZoom <= 100
                  || oldZoom is >= 50 and <= 100 && (newZoom is < 50 or > 100)
                  || oldZoom <= AppSettings.CrosshairFadeLevel &&
-                 newZoom > AppSettings.CrosshairFadeLevel // Trigger refresh as zoom level manually crosses fade threshold
+                 newZoom > AppSettings
+                     .CrosshairFadeLevel // Trigger refresh as zoom level manually crosses fade threshold
                  || oldZoom > AppSettings.CrosshairFadeLevel && newZoom <= AppSettings.CrosshairFadeLevel)
                )
             {
@@ -724,12 +726,14 @@ public partial class MainWindow
         }
     }
 
+    [RelayCommand]
     public void SelectModelVolumeRoi()
     {
         if (!IsFileLoaded) return;
         ROI = SlicerFile!.BoundingRectangle;
     }
 
+    [RelayCommand]
     public void SelectLayerVolumeRoi()
     {
         if (!LayerCache.IsCached) return;
@@ -779,6 +783,7 @@ public partial class MainWindow
         RaisePropertyChanged(nameof(LayerROIStr));
     }
 
+    [RelayCommand]
     public void SelectLayerPositiveAreasMask()
     {
         if (!LayerCache.IsCached) return;
@@ -786,6 +791,7 @@ public partial class MainWindow
         if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
     }
 
+    [RelayCommand]
     public void SelectLayerHollowAreasMask()
     {
         if (!LayerCache.IsCached) return;
@@ -795,6 +801,7 @@ public partial class MainWindow
         if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
     }
 
+    [RelayCommand]
     public void ClearMask()
     {
         if (_maskPoints.Count <= 0) return;
@@ -803,6 +810,7 @@ public partial class MainWindow
         RaisePropertyChanged(nameof(LayerROIStr));
     }
 
+    [RelayCommand]
     public void ClearROI()
     {
         ROI = Rectangle.Empty;
@@ -814,6 +822,7 @@ public partial class MainWindow
         ClearMask();
     }
 
+    [RelayCommand]
     public void OnROIClick()
     {
         ZoomToFit(ZoomToFitType.Selection);
@@ -821,6 +830,7 @@ public partial class MainWindow
 
     #endregion
 
+    [RelayCommand]
     public void GoFirstLayer()
     {
         if (!IsFileLoaded) return;
@@ -828,6 +838,7 @@ public partial class MainWindow
         ActualLayer = 0;
     }
 
+    [RelayCommand]
     public void GoPreviousLayer()
     {
         if (!IsFileLoaded) return;
@@ -835,6 +846,7 @@ public partial class MainWindow
         ActualLayer--;
     }
 
+    [RelayCommand]
     public void GoNextLayer()
     {
         if (!IsFileLoaded) return;
@@ -842,6 +854,7 @@ public partial class MainWindow
         ActualLayer++;
     }
 
+    [RelayCommand]
     public void GoLastLayer()
     {
         if (!IsFileLoaded) return;
@@ -861,6 +874,7 @@ public partial class MainWindow
         ActualLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)layers);
     }
 
+    [RelayCommand]
     public void GoMassLayer(object whichObj)
     {
         if (!IsFileLoaded) return;
@@ -884,6 +898,7 @@ public partial class MainWindow
     /// <summary>
     /// Shows a layer number
     /// </summary>
+    [RelayCommand]
     public unsafe void ShowLayer()
     {
         if (!IsFileLoaded) return;
@@ -1887,17 +1902,20 @@ public partial class MainWindow
         }
     }
 
+    [RelayCommand]
     public void ZoomToNormal()
     {
         LayerImageBox.Zoom = (_globalModifiers & KeyModifiers.Shift) != 0 ? AppSettings.LockedZoomLevel : 100;
         LayerImageBox.CenterToImage();
     }
 
+    [RelayCommand]
     public void ZoomToFitSimple()
     {
         ZoomToFit(ZoomToFitType.Image);
     }
 
+    [RelayCommand]
     public void ZoomToFitPrintVolume()
     {
         ZoomToFit(ZoomToFitType.Volume);
@@ -2418,12 +2436,14 @@ public partial class MainWindow
         return vec.Size > 0;
     }
 
+    [RelayCommand]
     public void OnLayerPixelPickerClicked()
     {
         if (!LayerPixelPicker.IsSet) return;
         CenterLayerAt(GetTransposedPoint(LayerPixelPicker.Location, true), -1);
     }
 
+    [RelayCommand]
     public async Task SaveCurrentLayerImage()
     {
         if (!IsFileLoaded) return;
@@ -2435,6 +2455,7 @@ public partial class MainWindow
         LayerCache.ImageBgra.Save(filePath);
     }
 
+    [RelayCommand]
     public async Task SaveCurrentROIImage()
     {
         if (!IsFileLoaded || !LayerImageBox.HaveSelection) return;

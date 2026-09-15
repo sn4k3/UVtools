@@ -7,6 +7,7 @@
  */
 
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Input;
 using SukiUI.MessageBox;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,7 @@ namespace UVtools.UI;
 public partial class MainWindow
 {
     #region Properties
+
     public Suggestion[] Suggestions
     {
         get => SuggestionManager.Instance.Suggestions;
@@ -37,9 +39,9 @@ public partial class MainWindow
     #endregion
 
     #region Methods
+
     public void InitSuggestions()
     {
-        
     }
 
     public void PopulateSuggestions(bool tryToAutoApply = true)
@@ -52,13 +54,13 @@ public partial class MainWindow
         foreach (var suggestion in Suggestions)
         {
             suggestion.SlicerFile = SlicerFile!;
-            if(!suggestion.Enabled || !suggestion.IsAvailable) continue;
+            if (!suggestion.Enabled || !suggestion.IsAvailable) continue;
             if (tryToAutoApply && suggestion.ExecuteIfAutoApply())
             {
                 autoApplied++;
             }
 
-            if(suggestion.IsApplied) suggestionsApplied.Add(suggestion);
+            if (suggestion.IsApplied) suggestionsApplied.Add(suggestion);
             else suggestionsAvailable.Add(suggestion);
         }
 
@@ -73,17 +75,21 @@ public partial class MainWindow
         }
     }
 
+    [RelayCommand]
     public async Task ApplySuggestionsClicked()
     {
         if (!IsFileLoaded || SuggestionsAvailableListBox!.SelectedItems!.Count == 0) return;
-        var suggestions = SuggestionsAvailableListBox.SelectedItems.Cast<Suggestion>().Where(suggestion => !suggestion.IsInformativeOnly).ToArray();
+        var suggestions = SuggestionsAvailableListBox.SelectedItems.Cast<Suggestion>()
+            .Where(suggestion => !suggestion.IsInformativeOnly).ToArray();
         if (suggestions.Length == 0) return;
-        var sb = new StringBuilder($"Are you sure you want to apply the following {suggestions.Length} suggestions?:\n\n");
+        var sb = new StringBuilder(
+            $"Are you sure you want to apply the following {suggestions.Length} suggestions?:\n\n");
 
         foreach (var suggestion in suggestions)
         {
             sb.AppendLine(suggestion.ConfirmationMessage);
         }
+
         if (await this.MessageBoxQuestion(sb.ToString(), "Apply suggestions?") != SukiMessageBoxResult.Yes) return;
 
         IsGUIEnabled = false;
@@ -107,10 +113,12 @@ public partial class MainWindow
                 }
             }
             catch (OperationCanceledException)
-            { }
+            {
+            }
             catch (Exception ex)
             {
-                Dispatcher.UIThread.InvokeAsync(async () => await this.MessageBoxError(ex.ToString(), "Error while applying a suggestion"));
+                Dispatcher.UIThread.InvokeAsync(async () =>
+                    await this.MessageBoxError(ex.ToString(), "Error while applying a suggestion"));
             }
 
             return executed;
@@ -134,11 +142,14 @@ public partial class MainWindow
         PopulateSuggestions(false);
     }
 
+    [RelayCommand]
     public async Task ApplySuggestionClicked(object suggestionObject)
     {
         if (!IsFileLoaded || suggestionObject is not Suggestion suggestion || suggestion.IsInformativeOnly) return;
 
-        if (await this.MessageBoxQuestion($"Are you sure you want to apply the following suggestion?:\n\n{suggestion.ConfirmationMessage}", "Apply the suggestion?") != SukiMessageBoxResult.Yes) return;
+        if (await this.MessageBoxQuestion(
+                $"Are you sure you want to apply the following suggestion?:\n\n{suggestion.ConfirmationMessage}",
+                "Apply the suggestion?") != SukiMessageBoxResult.Yes) return;
 
 
         IsGUIEnabled = false;
@@ -155,7 +166,8 @@ public partial class MainWindow
             }
             catch (Exception ex)
             {
-                Dispatcher.UIThread.InvokeAsync(async () => await this.MessageBoxError(ex.ToString(), $"{suggestion.Title} Error"));
+                Dispatcher.UIThread.InvokeAsync(async () =>
+                    await this.MessageBoxError(ex.ToString(), $"{suggestion.Title} Error"));
             }
 
             return false;
@@ -179,6 +191,7 @@ public partial class MainWindow
         PopulateSuggestions(false);
     }
 
+    [RelayCommand]
     public async Task ConfigureSuggestionsClicked()
     {
         if (!IsFileLoaded || Suggestions.Length == 0) return;
@@ -187,6 +200,7 @@ public partial class MainWindow
         PopulateSuggestions(false);
     }
 
+    [RelayCommand]
     public async Task ConfigureSuggestionClicked(object suggestion)
     {
         if (!IsFileLoaded || Suggestions.Length == 0) return;

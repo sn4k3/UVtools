@@ -5,7 +5,9 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.Input;
 using SukiUI.MessageBox;
 using System;
 using System.IO;
@@ -24,6 +26,7 @@ public partial class MainWindow
 
     public uint GCodeLines => !HaveGCode ? 0 : SlicerFile!.GCode!.LineCount;
 
+    [RelayCommand]
     public void OnClickRebuildGcode()
     {
         if (!HaveGCode) return;
@@ -36,11 +39,13 @@ public partial class MainWindow
         CanSave = true;
     }
 
+    [RelayCommand]
     public async Task OnClickGCodeSaveFile()
     {
         if (!HaveGCode) return;
 
-        using var file = await SaveFilePickerAsync(SlicerFile!.DirectoryPath, $"{SlicerFile.FilenameNoExt}_gcode.txt", AvaloniaStatic.TxtFileFilter);
+        using var file = await SaveFilePickerAsync(SlicerFile!.DirectoryPath, $"{SlicerFile.FilenameNoExt}_gcode.txt",
+            AvaloniaStatic.TxtFileFilter);
         if (file?.TryGetLocalPath() is not { } filePath) return;
 
         try
@@ -63,6 +68,7 @@ public partial class MainWindow
         await HostSystem.OpenFileAsync(filePath);
     }
 
+    [RelayCommand]
     public void OnClickGCodeSaveClipboard()
     {
         if (!HaveGCode) return;

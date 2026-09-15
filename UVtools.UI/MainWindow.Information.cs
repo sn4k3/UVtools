@@ -5,9 +5,11 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.Input;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using SukiUI.MessageBox;
@@ -84,7 +86,6 @@ public partial class MainWindow
                 //case nameof(LayerCache.)
             }
         };*/
-
     }
 
     private void GridOnKeyUp(object? sender, KeyEventArgs e)
@@ -111,6 +112,7 @@ public partial class MainWindow
     }
 
     #region Thumbnails
+
     public int VisibleThumbnailIndex
     {
         get => _visibleThumbnailIndex;
@@ -143,17 +145,21 @@ public partial class MainWindow
         }
     }
 
-    public string VisibleThumbnailResolution => _visibleThumbnailImage is null ? string.Empty : $"{{Width: {_visibleThumbnailImage.Size.Width}, Height: {_visibleThumbnailImage.Size.Height}}}";
+    public string VisibleThumbnailResolution => _visibleThumbnailImage is null
+        ? string.Empty
+        : $"{{Width: {_visibleThumbnailImage.Size.Width}, Height: {_visibleThumbnailImage.Size.Height}}}";
 
+    [RelayCommand]
     public async Task OnClickThumbnailSave()
     {
         if (!IsFileLoaded) return;
-
-        using var file = await SaveFilePickerAsync(SlicerFile!.DirectoryPath, $"{SlicerFile.FilenameNoExt}_thumbnail{_visibleThumbnailIndex+1}.png", AvaloniaStatic.PngFileFilter);
+        using var file = await SaveFilePickerAsync(SlicerFile!.DirectoryPath,
+            $"{SlicerFile.FilenameNoExt}_thumbnail{_visibleThumbnailIndex + 1}.png", AvaloniaStatic.PngFileFilter);
         if (file?.TryGetLocalPath() is not { } filePath) return;
         SlicerFile.Thumbnails[_visibleThumbnailIndex].Save(filePath);
     }
 
+    [RelayCommand]
     public async Task OnClickThumbnailImportFile(object replaceAllObj)
     {
         if (!IsFileLoaded) return;
@@ -185,6 +191,7 @@ public partial class MainWindow
         if (result) CanSave = true;
     }
 
+    [RelayCommand]
     public void OnClickThumbnailImportCurrentLayer(object replaceAllObj)
     {
         if (!IsFileLoaded) return;
@@ -217,6 +224,7 @@ public partial class MainWindow
         if (result) CanSave = true;
     }
 
+    [RelayCommand]
     public void OnClickThumbnailImportRandomLayer(object replaceAllObj)
     {
         if (!IsFileLoaded) return;
@@ -231,7 +239,7 @@ public partial class MainWindow
             if (_visibleThumbnailIndex < 0) return;
         }
 
-        var layer = SlicerFile[Random.Shared.Next((int) SlicerFile.LayerCount)];
+        var layer = SlicerFile[Random.Shared.Next((int)SlicerFile.LayerCount)];
         using var matRoi = layer.GetLayerMatBoundingRectangle(50, 100);
         CvInvoke.CvtColor(matRoi.RoiMat, matRoi.RoiMat, ColorConversion.Gray2Bgr);
 
@@ -249,6 +257,7 @@ public partial class MainWindow
         if (result) CanSave = true;
     }
 
+    [RelayCommand]
     public async Task OnClickThumbnailImportHeatmap(object replaceAllObj)
     {
         if (!IsFileLoaded) return;
@@ -274,7 +283,8 @@ public partial class MainWindow
             CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgr);
         }
         catch (OperationCanceledException)
-        { }
+        {
+        }
         catch (Exception exception)
         {
             await this.MessageBoxError(exception.ToString(), "Error while generating the heatmap");
@@ -297,7 +307,7 @@ public partial class MainWindow
 
         mat.Dispose();
 
-        if(result) CanSave = true;
+        if (result) CanSave = true;
     }
 
     public void RefreshThumbnail()
@@ -306,15 +316,18 @@ public partial class MainWindow
         if (_visibleThumbnailIndex < 0 || _visibleThumbnailIndex >= SlicerFile!.ThumbnailsCount) return;
         VisibleThumbnailImage = SlicerFile.Thumbnails[_visibleThumbnailIndex].ToBitmap();
     }
+
     #endregion
 
     #region Slicer Properties
 
+    [RelayCommand]
     public async Task OnClickPropertiesSaveFile()
     {
         if (SlicerFile?.Configs is null) return;
 
-        using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath, $"{SlicerFile.FilenameNoExt}_properties.ini", AvaloniaStatic.IniFileFilter);
+        using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath,
+            $"{SlicerFile.FilenameNoExt}_properties.ini", AvaloniaStatic.IniFileFilter);
 
         if (file?.TryGetLocalPath() is not { } filePath) return;
 
@@ -342,8 +355,10 @@ public partial class MainWindow
                             break;
                     }
                 }
+
                 await tw.WriteLineAsync();
             }
+
             tw.Close();
         }
         catch (Exception e)
@@ -360,6 +375,7 @@ public partial class MainWindow
         await HostSystem.OpenFileAsync(filePath);
     }
 
+    [RelayCommand]
     public void OnClickPropertiesSaveClipboard()
     {
         if (SlicerFile?.Configs is null) return;
@@ -418,6 +434,7 @@ public partial class MainWindow
             }
         }
     }
+
     #endregion
 
     #region Current Layer
@@ -428,9 +445,13 @@ public partial class MainWindow
         if (!IsFileLoaded) return;
         var layer = LayerCache.Layer!;
 
-        CurrentLayerProperties.Add(new ValueDescription($"{layer.Index}{(layer.IsModified ? " (Modified)" : string.Empty)}", nameof(layer.Index)));
-        CurrentLayerProperties.Add(new ValueDescription($"{Layer.ShowHeight(layer.LayerHeight)}mm", nameof(layer.LayerHeight)));
-        CurrentLayerProperties.Add(new ValueDescription($"{Layer.ShowHeight(layer.PositionZ)}mm", nameof(layer.PositionZ)));
+        CurrentLayerProperties.Add(
+            new ValueDescription($"{layer.Index}{(layer.IsModified ? " (Modified)" : string.Empty)}",
+                nameof(layer.Index)));
+        CurrentLayerProperties.Add(new ValueDescription($"{Layer.ShowHeight(layer.LayerHeight)}mm",
+            nameof(layer.LayerHeight)));
+        CurrentLayerProperties.Add(new ValueDescription($"{Layer.ShowHeight(layer.PositionZ)}mm",
+            nameof(layer.PositionZ)));
         CurrentLayerProperties.Add(new ValueDescription(layer.IsBottomLayer.ToString(), nameof(layer.IsBottomLayer)));
 
         if (SlicerFile!.CanUseExposureTime)
@@ -440,35 +461,47 @@ public partial class MainWindow
         {
             if (SlicerFile.CanUseLayerLiftHeight)
             {
-                var value = $"{layer.LiftHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min";
-                if (SlicerFile.CanUseLayerLiftAcceleration) value += $" ({layer.LiftAcceleration.ToString(CultureInfo.InvariantCulture)}mm/s²)";
+                var value =
+                    $"{layer.LiftHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min";
+                if (SlicerFile.CanUseLayerLiftAcceleration)
+                    value += $" ({layer.LiftAcceleration.ToString(CultureInfo.InvariantCulture)}mm/s²)";
                 CurrentLayerProperties.Add(new ValueDescription(value, nameof(layer.LiftHeight)));
             }
+
             if (SlicerFile.CanUseLayerLiftHeight2)
             {
-                var value = $"{layer.LiftHeight2.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed2.ToString(CultureInfo.InvariantCulture)}mm/min";
-                if (SlicerFile.CanUseLayerLiftAcceleration2) value += $" ({layer.LiftAcceleration2.ToString(CultureInfo.InvariantCulture)}mm/s²)";
+                var value =
+                    $"{layer.LiftHeight2.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed2.ToString(CultureInfo.InvariantCulture)}mm/min";
+                if (SlicerFile.CanUseLayerLiftAcceleration2)
+                    value += $" ({layer.LiftAcceleration2.ToString(CultureInfo.InvariantCulture)}mm/s²)";
                 CurrentLayerProperties.Add(new ValueDescription(value, nameof(layer.LiftHeight2)));
             }
 
             if (SlicerFile.CanUseLayerRetractSpeed)
             {
-                var value = $"{layer.RetractHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.RetractSpeed.ToString(CultureInfo.InvariantCulture)}mm/min";
-                if (SlicerFile.CanUseLayerRetractAcceleration) value += $" ({layer.RetractAcceleration.ToString(CultureInfo.InvariantCulture)}mm/s²)";
+                var value =
+                    $"{layer.RetractHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.RetractSpeed.ToString(CultureInfo.InvariantCulture)}mm/min";
+                if (SlicerFile.CanUseLayerRetractAcceleration)
+                    value += $" ({layer.RetractAcceleration.ToString(CultureInfo.InvariantCulture)}mm/s²)";
                 CurrentLayerProperties.Add(new ValueDescription(value, nameof(layer.RetractHeight)));
             }
+
             if (SlicerFile.CanUseLayerRetractHeight2)
             {
-                var value = $"{layer.RetractHeight2.ToString(CultureInfo.InvariantCulture)}mm @ {layer.RetractSpeed2.ToString(CultureInfo.InvariantCulture)}mm/min";
-                if (SlicerFile.CanUseLayerRetractAcceleration2) value += $" ({layer.RetractAcceleration2.ToString(CultureInfo.InvariantCulture)}mm/s²)";
+                var value =
+                    $"{layer.RetractHeight2.ToString(CultureInfo.InvariantCulture)}mm @ {layer.RetractSpeed2.ToString(CultureInfo.InvariantCulture)}mm/min";
+                if (SlicerFile.CanUseLayerRetractAcceleration2)
+                    value += $" ({layer.RetractAcceleration2.ToString(CultureInfo.InvariantCulture)}mm/s²)";
                 CurrentLayerProperties.Add(new ValueDescription(value, nameof(layer.RetractHeight2)));
             }
 
             if (SlicerFile.CanUseLayerLightOffDelay)
-                CurrentLayerProperties.Add(new ValueDescription($"{layer.LightOffDelay}s", nameof(layer.LightOffDelay)));
+                CurrentLayerProperties.Add(new ValueDescription($"{layer.LightOffDelay}s",
+                    nameof(layer.LightOffDelay)));
 
             if (SlicerFile.CanUseLayerWaitTimeBeforeCure)
-                CurrentLayerProperties.Add(new ValueDescription($"{layer.WaitTimeBeforeCure}/{layer.WaitTimeAfterCure}/{layer.WaitTimeAfterLift}s", "WaitTimes:"));
+                CurrentLayerProperties.Add(new ValueDescription(
+                    $"{layer.WaitTimeBeforeCure}/{layer.WaitTimeAfterCure}/{layer.WaitTimeAfterLift}s", "WaitTimes:"));
 
             if (SlicerFile.CanUseLayerLightPWM)
                 CurrentLayerProperties.Add(new ValueDescription(layer.LightPWM.ToString(), nameof(layer.LightPWM)));
@@ -484,12 +517,15 @@ public partial class MainWindow
                 CurrentLayerProperties.Add(new ValueDescription(value, nameof(layer.Pause)));
             }
         }
+
         var materialMillilitersPercent = layer.MaterialMillilitersPercent;
         if (layer.MaterialMilliliters > 0 && !float.IsNaN(materialMillilitersPercent))
         {
-            CurrentLayerProperties.Add(new ValueDescription($"{layer.MaterialMilliliters}ml ({materialMillilitersPercent:F2}%)", nameof(layer.MaterialMilliliters)));
+            CurrentLayerProperties.Add(new ValueDescription(
+                $"{layer.MaterialMilliliters}ml ({materialMillilitersPercent:F2}%)",
+                nameof(layer.MaterialMilliliters)));
         }
-
     }
+
     #endregion
 }

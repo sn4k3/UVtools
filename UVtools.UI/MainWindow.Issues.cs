@@ -5,6 +5,7 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
@@ -12,6 +13,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Input;
 using Emgu.CV;
 using Emgu.CV.Util;
 using System;
@@ -40,6 +42,7 @@ namespace UVtools.UI;
 public partial class MainWindow
 {
     #region Members
+
     private bool _firstTimeOnIssues = true;
 
     private int _issueSelectedIndex = -1;
@@ -52,8 +55,10 @@ public partial class MainWindow
             if (Settings.Issues.DataGridGroupByType || Settings.Issues.DataGridGroupByLayerIndex)
             {
                 var groupView = new DataGridCollectionView(SlicerFile!.IssueManager);
-                if (Settings.Issues.DataGridGroupByType) groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("Type"));
-                if (Settings.Issues.DataGridGroupByLayerIndex) groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("StartLayerIndex"));
+                if (Settings.Issues.DataGridGroupByType)
+                    groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("Type"));
+                if (Settings.Issues.DataGridGroupByLayerIndex)
+                    groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("StartLayerIndex"));
 
                 return groupView;
             }
@@ -61,6 +66,7 @@ public partial class MainWindow
             return SlicerFile!.IssueManager;
         }
     }
+
     #endregion
 
     #region Properties
@@ -105,7 +111,8 @@ public partial class MainWindow
         return retValue;
     }*/
 
-    public async Task RemoveRepairIssues(IEnumerable<MainIssue> issues, bool promptConfirmation = true, bool suctionCupDrill = true)
+    public async Task RemoveRepairIssues(IEnumerable<MainIssue> issues, bool promptConfirmation = true,
+        bool suctionCupDrill = true)
     {
         var mainIssues = issues as MainIssue[] ?? issues.ToArray();
         if (mainIssues.Length == 0) return;
@@ -157,7 +164,8 @@ public partial class MainWindow
                 (resinTraps > 0 ? $"- Fill/solidify {resinTraps} resin trap(s)\n" : string.Empty) +
                 (suctionCups > 0 ? $"- Drill {suctionCups} suction cup(s) at it's center\n" : string.Empty) +
                 "\nWarning: Removing an island can cause other issues to appear if there is material present in the layers above it.\n" +
-                "Always check previous and next layers before performing an island removal.", $"Remove {mainIssues.Length} Issues?") != SukiMessageBoxResult.Yes) return;
+                "Always check previous and next layers before performing an island removal.",
+                $"Remove {mainIssues.Length} Issues?") != SukiMessageBoxResult.Yes) return;
 
         var processParallelIssues = new Dictionary<uint, List<Issue>>();
         var processSuctionCups = new List<MainIssue>();
@@ -180,8 +188,8 @@ public partial class MainWindow
                         }
 
                         issueList.Add(issue);
-
                     }
+
                     continue;
                 case MainIssue.IssueType.SuctionCup:
                     if (!suctionCupDrill)
@@ -196,11 +204,12 @@ public partial class MainWindow
                             }
 
                             issueList.Add(issue);
-
                         }
+
                         continue;
                     }
-                    if(mainIssue.StartLayerIndex == 0) continue;
+
+                    if (mainIssue.StartLayerIndex == 0) continue;
                     processSuctionCups.Add(mainIssue);
                     continue;
                 case MainIssue.IssueType.EmptyLayer:
@@ -245,15 +254,18 @@ public partial class MainWindow
 
                                 edited = true;
                             }
-                            else if (issue.Type == MainIssue.IssueType.ResinTrap || (issue.Type == MainIssue.IssueType.SuctionCup && !suctionCupDrill))
+                            else if (issue.Type == MainIssue.IssueType.ResinTrap ||
+                                     (issue.Type == MainIssue.IssueType.SuctionCup && !suctionCupDrill))
                             {
                                 var issueOfContours = (IssueOfContours)issue;
                                 using var contours = new VectorOfVectorOfPoint(issueOfContours.Contours);
                                 CvInvoke.DrawContours(image, contours, -1, EmguCvExtensions.WhiteColor, -1);
                                 if (Settings.LayerRepair.ResinTrapsOverlapBy > 0)
                                 {
-                                    CvInvoke.DrawContours(image, contours, -1, EmguCvExtensions.WhiteColor, Settings.LayerRepair.ResinTrapsOverlapBy * 2 + 1);
+                                    CvInvoke.DrawContours(image, contours, -1, EmguCvExtensions.WhiteColor,
+                                        Settings.LayerRepair.ResinTrapsOverlapBy * 2 + 1);
                                 }
+
                                 edited = true;
                             }
                         }
@@ -272,8 +284,9 @@ public partial class MainWindow
                     OperationLayerRemove.RemoveLayers(SlicerFile!, layersToRemove);
                 }
 
-                if(suctionCupDrill) issueRemoveList.AddRange(SlicerFile!.IssueManager.DrillSuctionCupsForIssues(processSuctionCups, UserSettings.Instance.LayerRepair.SuctionCupsVentHole, Progress));
-
+                if (suctionCupDrill)
+                    issueRemoveList.AddRange(SlicerFile!.IssueManager.DrillSuctionCupsForIssues(processSuctionCups,
+                        UserSettings.Instance.LayerRepair.SuctionCupsVentHole, Progress));
             }
             catch (Exception ex)
             {
@@ -324,7 +337,6 @@ public partial class MainWindow
             }
 
             //Issues.Remove(issue);
-
         }
 
         if (issueRemoveList.Count == 0) return;
@@ -348,50 +360,63 @@ public partial class MainWindow
         CanSave = true;
     }
 
+    [RelayCommand]
     public async Task OnClickIssueRemove()
     {
         await RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>(), true);
     }
 
+    [RelayCommand]
     public async Task SelectedIssuesIslandRemove()
     {
         if (IssuesGrid.SelectedItem is null) return;
-        await RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsIsland), false);
+        await RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsIsland),
+            false);
     }
 
+    [RelayCommand]
     public async Task SelectedIssuesResinTrapSolidify()
     {
         if (IssuesGrid.SelectedItem is null) return;
-        await RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsResinTrap), false);
+        await RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsResinTrap),
+            false);
     }
 
+    [RelayCommand]
     public async Task SelectedIssuesSuctionCupDrill()
     {
         if (IssuesGrid.SelectedItem is null) return;
-        await RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsSuctionCup), false);
+        await RemoveRepairIssues(
+            IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsSuctionCup), false);
     }
 
+    [RelayCommand]
     public async Task SelectedIssuesSuctionCupSolidify()
     {
         if (IssuesGrid.SelectedItem is null) return;
-        await RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsSuctionCup), false, false);
+        await RemoveRepairIssues(
+            IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsSuctionCup), false, false);
     }
 
+    [RelayCommand]
     public async Task SelectedIssuesEmptyLayerRemove()
     {
         if (IssuesGrid.SelectedItem is null) return;
-        await RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsEmptyLayer), false);
+        await RemoveRepairIssues(
+            IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsEmptyLayer), false);
     }
 
+    [RelayCommand]
     public async Task OnClickIssueIgnore()
     {
         if (!IsFileLoaded) return;
         if ((_globalModifiers & KeyModifiers.Alt) != 0)
         {
-            if(SlicerFile!.IssueManager.IgnoredIssues.Count == 0) return;
+            if (SlicerFile!.IssueManager.IgnoredIssues.Count == 0) return;
             if (await this.MessageBoxQuestion(
                     $"Are you sure you want to re-enable {SlicerFile.IssueManager.IgnoredIssues.Count} ignored issues?\n" +
-                    "A full re-detect will be required to get the ignored issues.\n", $"Re-enable {SlicerFile.IssueManager.IgnoredIssues.Count} Issues?") !=
+                    "A full re-detect will be required to get the ignored issues.\n",
+                    $"Re-enable {SlicerFile.IssueManager.IgnoredIssues.Count} Issues?") !=
                 SukiMessageBoxResult.Yes) return;
 
             SlicerFile.IssueManager.IgnoredIssues.Clear();
@@ -429,7 +454,8 @@ public partial class MainWindow
 
         var issueList = SlicerFile!.IssueManager.ToList();
         issueList.RemoveAll(issue =>
-            config.IslandConfig.WhiteListLayers.Contains(issue.StartLayerIndex) && issue.Type is MainIssue.IssueType.Island or MainIssue.IssueType.Overhang);
+            config.IslandConfig.WhiteListLayers.Contains(issue.StartLayerIndex) &&
+            issue.Type is MainIssue.IssueType.Island or MainIssue.IssueType.Overhang);
         /*foreach (var layerIndex in islandConfig.WhiteListLayers)
         {
             issueList.RemoveAll(issue =>
@@ -444,13 +470,14 @@ public partial class MainWindow
             {
                 var issues = SlicerFile.IssueManager.DetectIssues(config, Progress);
 
-                issues.RemoveAll(issue => issue.Type is not MainIssue.IssueType.Island and not MainIssue.IssueType.Overhang); // Remove all non islands and overhangs
+                issues.RemoveAll(issue =>
+                    issue.Type is not MainIssue.IssueType.Island
+                        and not MainIssue.IssueType.Overhang); // Remove all non islands and overhangs
                 return issues;
             }
 
             catch (OperationCanceledException)
             {
-
             }
             catch (Exception ex)
             {
@@ -491,7 +518,10 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _issueSelectedIndex, value)) return;
-            if(_issueSelectedIndex >= 0) IssuesGrid.ScrollIntoView(SlicerFile!.IssueManager.AsValueEnumerable().FirstOrDefault(issue => ReferenceEquals(issue, IssuesGrid.SelectedItem)), null);
+            if (_issueSelectedIndex >= 0)
+                IssuesGrid.ScrollIntoView(
+                    SlicerFile!.IssueManager.AsValueEnumerable()
+                        .FirstOrDefault(issue => ReferenceEquals(issue, IssuesGrid.SelectedItem)), null);
         }
     }
 
@@ -528,7 +558,6 @@ public partial class MainWindow
         }
 
         //ForceUpdateActualLayer(issue.LayerIndex);
-
     }
 
     private async void IssuesGridOnKeyUp(object? sender, KeyEventArgs e)
@@ -556,6 +585,7 @@ public partial class MainWindow
         }
     }
 
+    [RelayCommand]
     public async Task OnClickRepairIssues()
     {
         await ShowRunOperation(typeof(OperationRepairLayers));
@@ -566,7 +596,8 @@ public partial class MainWindow
         if (!IsFileLoaded) return;
         if (!SlicerFile!.IssueManager.HaveIssues) return;
 
-        using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath, SlicerFile.FilenameNoExt, AvaloniaStatic.IssuesFileFilter);
+        using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath, SlicerFile.FilenameNoExt,
+            AvaloniaStatic.IssuesFileFilter);
         if (file?.TryGetLocalPath() is not { } filePath) return;
 
         IsGUIEnabled = false;
@@ -579,22 +610,24 @@ public partial class MainWindow
         {
             await this.MessageBoxError(e.ToString());
             Debug.WriteLine(e);
-            if(File.Exists(filePath)) File.Delete(filePath);
+            if (File.Exists(filePath)) File.Delete(filePath);
         }
 
         IsGUIEnabled = true;
     }
 
+    [RelayCommand]
     public async Task OnClickDetectIssues()
     {
         if (!IsFileLoaded) return;
         if (SlicerFile!.DecodeType == FileFormat.FileDecodeType.Partial)
         {
-            await this.MessageBoxError("The file was open in partial mode and the detect issues is unable to run in this mode.\n" +
-                                       "Please reload the file in full mode in order to use detect issues.", "Unable to run in partial mode");
+            await this.MessageBoxError(
+                "The file was open in partial mode and the detect issues is unable to run in this mode.\n" +
+                "Please reload the file in full mode in order to use detect issues.", "Unable to run in partial mode");
             return;
-
         }
+
         await ComputeIssues(GetIssuesDetectionConfiguration());
     }
 
@@ -634,7 +667,6 @@ public partial class MainWindow
             }
             catch (OperationCanceledException)
             {
-
             }
             catch (Exception ex)
             {
@@ -651,6 +683,7 @@ public partial class MainWindow
         {
             return;
         }
+
         SlicerFile.IssueManager.AddRange(resultIssues);
 
         ShowLayer();
@@ -679,14 +712,37 @@ public partial class MainWindow
     {
         return new Dictionary<MainIssue.IssueType, IImmutableSolidColorBrush>
         {
-            {MainIssue.IssueType.Island,     new ImmutableSolidColorBrush(highlightColors ? Settings.LayerPreview.IslandHighlightBrush : Settings.LayerPreview.IslandBrush)},
-            {MainIssue.IssueType.Overhang,   new ImmutableSolidColorBrush(highlightColors ? Settings.LayerPreview.OverhangHighlightBrush : Settings.LayerPreview.OverhangBrush)},
-            {MainIssue.IssueType.ResinTrap,  new ImmutableSolidColorBrush(highlightColors ? Settings.LayerPreview.ResinTrapHighlightBrush : Settings.LayerPreview.ResinTrapBrush)},
-            {MainIssue.IssueType.SuctionCup, new ImmutableSolidColorBrush(highlightColors ? Settings.LayerPreview.SuctionCupHighlightBrush : Settings.LayerPreview.SuctionCupBrush)},
-            {MainIssue.IssueType.TouchingBound, new ImmutableSolidColorBrush(Settings.LayerPreview.TouchingBoundsBrush)},
-            {MainIssue.IssueType.EmptyLayer, Brushes.Red},
-            {MainIssue.IssueType.PrintHeight, Brushes.Red},
-            {MainIssue.IssueType.Debug, new ImmutableSolidColorBrush(new Color(255, 15, 112, 16))},
+            {
+                MainIssue.IssueType.Island,
+                new ImmutableSolidColorBrush(highlightColors
+                    ? Settings.LayerPreview.IslandHighlightBrush
+                    : Settings.LayerPreview.IslandBrush)
+            },
+            {
+                MainIssue.IssueType.Overhang,
+                new ImmutableSolidColorBrush(highlightColors
+                    ? Settings.LayerPreview.OverhangHighlightBrush
+                    : Settings.LayerPreview.OverhangBrush)
+            },
+            {
+                MainIssue.IssueType.ResinTrap,
+                new ImmutableSolidColorBrush(highlightColors
+                    ? Settings.LayerPreview.ResinTrapHighlightBrush
+                    : Settings.LayerPreview.ResinTrapBrush)
+            },
+            {
+                MainIssue.IssueType.SuctionCup,
+                new ImmutableSolidColorBrush(highlightColors
+                    ? Settings.LayerPreview.SuctionCupHighlightBrush
+                    : Settings.LayerPreview.SuctionCupBrush)
+            },
+            {
+                MainIssue.IssueType.TouchingBound,
+                new ImmutableSolidColorBrush(Settings.LayerPreview.TouchingBoundsBrush)
+            },
+            { MainIssue.IssueType.EmptyLayer, Brushes.Red },
+            { MainIssue.IssueType.PrintHeight, Brushes.Red },
+            { MainIssue.IssueType.Debug, new ImmutableSolidColorBrush(new Color(255, 15, 112, 16)) },
         };
     }
 
@@ -695,7 +751,8 @@ public partial class MainWindow
         LayerNavigationIssuesCanvas.Children.Clear();
         if (!IsFileLoaded || SlicerFile!.IssueManager.Count == 0) return;
 
-        var tickFrequencySize = LayerNavigationIssuesCanvas.Bounds.Height * LayerSlider.TickFrequency / LayerSlider.Maximum;
+        var tickFrequencySize =
+            LayerNavigationIssuesCanvas.Bounds.Height * LayerSlider.TickFrequency / LayerSlider.Maximum;
         var stroke = (int)Math.Ceiling(tickFrequencySize);
 
         var colorDictionary = GetIssueColors(true);
@@ -707,12 +764,13 @@ public partial class MainWindow
         foreach (var issue in issues)
         {
             var color = Brushes.Red;
-            if (Settings.LayerPreview.UseIssueColorOnTracker) colorDictionary.TryGetValue(issue.Parent!.Type, out color);
+            if (Settings.LayerPreview.UseIssueColorOnTracker)
+                colorDictionary.TryGetValue(issue.Parent!.Type, out color);
 
             var yPos = tickFrequencySize * issue.LayerIndex;
 
 
-            var quadrant = (int)Math.Ceiling((issue.LayerIndex+1) * 4.0 / SlicerFile.LayerCount);
+            var quadrant = (int)Math.Ceiling((issue.LayerIndex + 1) * 4.0 / SlicerFile.LayerCount);
 
             switch (quadrant)
             {
@@ -741,7 +799,11 @@ public partial class MainWindow
 
             //yPos = Math.Clamp(yPos, 0, LayerNavigationIssuesCanvas.Bounds.Height);
 
-            var line = new Line { StrokeThickness = stroke, Stroke = color, EndPoint = new Avalonia.Point(LayerNavigationIssuesCanvas.Width, 0) };
+            var line = new Line
+            {
+                StrokeThickness = stroke, Stroke = color,
+                EndPoint = new Avalonia.Point(LayerNavigationIssuesCanvas.Width, 0)
+            };
             LayerNavigationIssuesCanvas.Children.Add(line);
             Canvas.SetBottom(line, yPos);
         }
@@ -796,9 +858,10 @@ public partial class MainWindow
     {
         if (!IsFileLoaded) return;
         SlicerFile!.IssueManager.Clear();
-        if(clearIgnored) SlicerFile.IssueManager.IgnoredIssues.Clear();
+        if (clearIgnored) SlicerFile.IssueManager.IgnoredIssues.Clear();
     }
 
+    [RelayCommand]
     public void SetResinTrapDetectionStartLayer(object which)
     {
         if (!IsFileLoaded) return;
@@ -838,7 +901,6 @@ public partial class MainWindow
     }
 
 
-
     public IslandDetectionConfiguration GetIslandDetectionConfiguration(bool enable)
     {
         return new()
@@ -854,7 +916,9 @@ public partial class MainWindow
             RequiredPixelBrightnessToSupport = Settings.Issues.IslandRequiredPixelBrightnessToSupport
         };
     }
-    public IslandDetectionConfiguration GetIslandDetectionConfiguration() => GetIslandDetectionConfiguration(Settings.Issues.ComputeIslands);
+
+    public IslandDetectionConfiguration GetIslandDetectionConfiguration() =>
+        GetIslandDetectionConfiguration(Settings.Issues.ComputeIslands);
 
     public OverhangDetectionConfiguration GetOverhangDetectionConfiguration(bool enable)
     {
@@ -865,7 +929,9 @@ public partial class MainWindow
             ErodeIterations = Settings.Issues.OverhangErodeIterations,
         };
     }
-    public OverhangDetectionConfiguration GetOverhangDetectionConfiguration() => GetOverhangDetectionConfiguration(Settings.Issues.ComputeOverhangs);
+
+    public OverhangDetectionConfiguration GetOverhangDetectionConfiguration() =>
+        GetOverhangDetectionConfiguration(Settings.Issues.ComputeOverhangs);
 
 
     public ResinTrapDetectionConfiguration GetResinTrapDetectionConfiguration(bool enable)
@@ -883,7 +949,9 @@ public partial class MainWindow
             RequiredHeightToConsiderSuctionCup = Settings.Issues.SuctionCupRequiredHeightToConsider
         };
     }
-    public ResinTrapDetectionConfiguration GetResinTrapDetectionConfiguration() => GetResinTrapDetectionConfiguration(Settings.Issues.ComputeResinTraps);
+
+    public ResinTrapDetectionConfiguration GetResinTrapDetectionConfiguration() =>
+        GetResinTrapDetectionConfiguration(Settings.Issues.ComputeResinTraps);
 
     public TouchingBoundDetectionConfiguration GetTouchingBoundsDetectionConfiguration(bool enable)
     {
@@ -897,18 +965,22 @@ public partial class MainWindow
             MarginBottom = UserSettings.Instance.Issues.TouchingBoundMarginBottom,
         };
     }
-    public TouchingBoundDetectionConfiguration GetTouchingBoundsDetectionConfiguration() => GetTouchingBoundsDetectionConfiguration(Settings.Issues.ComputeTouchingBounds);
+
+    public TouchingBoundDetectionConfiguration GetTouchingBoundsDetectionConfiguration() =>
+        GetTouchingBoundsDetectionConfiguration(Settings.Issues.ComputeTouchingBounds);
 
 
     public PrintHeightDetectionConfiguration GetPrintHeightDetectionConfiguration(bool enable)
     {
-        return new ()
+        return new()
         {
             Enabled = enable,
-            Offset = (float) Settings.Issues.PrintHeightOffset
+            Offset = (float)Settings.Issues.PrintHeightOffset
         };
     }
-    public PrintHeightDetectionConfiguration GetPrintHeightDetectionConfiguration() => GetPrintHeightDetectionConfiguration(Settings.Issues.ComputePrintHeight);
+
+    public PrintHeightDetectionConfiguration GetPrintHeightDetectionConfiguration() =>
+        GetPrintHeightDetectionConfiguration(Settings.Issues.ComputePrintHeight);
 
     public EmptyLayerDetectionConfiguration GetEmptyLayerDetectionConfiguration(bool enable)
     {
@@ -917,8 +989,9 @@ public partial class MainWindow
             Enabled = enable,
         };
     }
-    public EmptyLayerDetectionConfiguration GetEmptyLayerDetectionConfiguration() => GetEmptyLayerDetectionConfiguration(Settings.Issues.ComputeEmptyLayers);
 
+    public EmptyLayerDetectionConfiguration GetEmptyLayerDetectionConfiguration() =>
+        GetEmptyLayerDetectionConfiguration(Settings.Issues.ComputeEmptyLayers);
 
     #endregion
 }

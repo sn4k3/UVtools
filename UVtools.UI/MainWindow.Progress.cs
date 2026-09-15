@@ -7,6 +7,7 @@
  */
 
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Timers;
 using UVtools.Core.Operations;
@@ -17,6 +18,7 @@ namespace UVtools.UI;
 public partial class MainWindow
 {
     #region Members
+
     public OperationProgress Progress { get; } = new();
     private readonly Timer _progressTimer = new(200) { AutoReset = true };
     private long _progressLastTotalSeconds;
@@ -60,6 +62,7 @@ public partial class MainWindow
         Progress.IsPaused = !Progress.IsPaused;
     }
 
+    [RelayCommand]
     public void ProgressOnClickCancel()
     {
         if (!Progress.CanCancel) return;

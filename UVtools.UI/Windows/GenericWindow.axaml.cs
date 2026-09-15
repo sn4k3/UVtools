@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Input;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.UI.Windows;
@@ -78,6 +79,12 @@ public partial class GenericWindow : SukiWindow, INotifyPropertyChanged
         get => App.SlicerFile;
         set => App.SlicerFile = value;
     }
+    
+    [RelayCommand]
+    public void CloseWindow()
+    {
+        Close();
+    }
 
     public void CloseWithResult()
     {
@@ -91,6 +98,7 @@ public partial class GenericWindow : SukiWindow, INotifyPropertyChanged
         DataContext = newObject ?? old;
     }
 
+    [RelayCommand]
     public void OpenWebsite(object url)
     {
         GetTopLevel(this)!.Launcher.LaunchUriAsync(new Uri(url.ToString()!));

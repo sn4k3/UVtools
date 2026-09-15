@@ -524,15 +524,17 @@ public partial class MainWindow : GenericWindow
             return;
         }
 
-        if(!HostSystem.TryGetMemoryStatus(out var memoryStatus)) return;
+        if (!HostSystem.TryGetMemoryStatus(out var memoryStatus)) return;
 
         var availableMemory = (decimal)Math.Round(memoryStatus.AvailablePhysicalBytes / Math.Pow(1024, 3), 2,
             MidpointRounding.AwayFromZero);
         if (availableMemory > Settings.General.AvailableRamLimit) return;
 
-        var totalMemory = Math.Round(memoryStatus.TotalPhysicalBytes / Math.Pow(1024, 3), 2, MidpointRounding.AwayFromZero);
-        var usedMemory = Math.Round(memoryStatus.UsedPhysicalBytes / Math.Pow(1024, 3), 2, MidpointRounding.AwayFromZero);
-        
+        var totalMemory = Math.Round(memoryStatus.TotalPhysicalBytes / Math.Pow(1024, 3), 2,
+            MidpointRounding.AwayFromZero);
+        var usedMemory = Math.Round(memoryStatus.UsedPhysicalBytes / Math.Pow(1024, 3), 2,
+            MidpointRounding.AwayFromZero);
+
         var processMemory = Math.Round(Environment.WorkingSet / Math.Pow(1024, 3), 2, MidpointRounding.AwayFromZero);
         var percentProcessMemory = Math.Round(processMemory * 100 / totalMemory, 2, MidpointRounding.AwayFromZero);
 
@@ -1017,6 +1019,7 @@ public partial class MainWindow : GenericWindow
 
     #region Events
 
+    [RelayCommand]
     public async Task ShowBirthdayMessage()
     {
         await this.MessageBoxGeneric(About.BirthdayMessage, About.BirthdayTitle, About.BirthdayTitle,
@@ -1025,27 +1028,32 @@ public partial class MainWindow : GenericWindow
         UserSettings.Save();
     }
 
-    public async void MenuFileOpenClicked()
+    [RelayCommand]
+    public async Task MenuFileOpenClicked()
     {
         await OpenFile();
     }
 
-    public async void MenuFileOpenNewWindowClicked()
+    [RelayCommand]
+    public async Task MenuFileOpenNewWindowClicked()
     {
         await OpenFile(true);
     }
 
-    public async void MenuFileOpenInPartialModeClicked()
+    [RelayCommand]
+    public async Task MenuFileOpenInPartialModeClicked()
     {
         await OpenFile(false, FileFormat.FileDecodeType.Partial);
     }
 
+    [RelayCommand]
     public void MenuFileOpenContainingFolderClicked()
     {
         if (!IsFileLoaded) return;
         HostSystem.ShowFileInFileManager(SlicerFile!.FileFullPath!);
     }
 
+    [RelayCommand]
     public async Task MenuFileRenameClicked()
     {
         await RenameCurrentFile();
@@ -1071,12 +1079,14 @@ public partial class MainWindow : GenericWindow
         return true;
     }
 
+    [RelayCommand]
     public async Task MenuFileSaveClicked()
     {
         if (!CanSave) return;
         await SaveFile();
     }
 
+    [RelayCommand]
     public async Task MenuFileSaveAsClicked()
     {
         //await this.MessageBoxInfo(Path.Combine(App.ApplicationPath, "Assets", "Themes"));
@@ -1179,6 +1189,7 @@ public partial class MainWindow : GenericWindow
             fileDecodeType);
     }
 
+    [RelayCommand]
     public async Task MenuFileCloseFileClicked()
     {
         if (CanSave && await this.MessageBoxQuestion("""
@@ -1237,11 +1248,13 @@ public partial class MainWindow : GenericWindow
         ResetDataContext();
     }
 
+    [RelayCommand]
     public void MenuFileFullscreenClicked()
     {
         WindowState = WindowState == WindowState.FullScreen ? WindowState.Maximized : WindowState.FullScreen;
     }
 
+    [RelayCommand]
     public async Task MenuFileSettingsClicked()
     {
         var oldTheme = Settings.General.Theme;
@@ -1278,11 +1291,13 @@ public partial class MainWindow : GenericWindow
         }
     }
 
+    [RelayCommand]
     public async Task MenuHelpAboutClicked()
     {
         await new AboutWindow().ShowDialog(this);
     }
 
+    [RelayCommand]
     public async Task MenuHelpFreeUnusedRAMClicked()
     {
         IsGUIEnabled = false;
@@ -1296,16 +1311,19 @@ public partial class MainWindow : GenericWindow
         IsGUIEnabled = true;
     }
 
+    [RelayCommand]
     public async Task MenuHelpBenchmarkClicked()
     {
         await new BenchmarkWindow().ShowDialog(this);
     }
 
+    [RelayCommand]
     public void MenuHelpOpenSettingsFolderClicked()
     {
         HostSystem.OpenDirectory(UserSettings.SettingsFolder);
     }
 
+    [RelayCommand]
     public void MenuHelpReportIssueClicked()
     {
         var system = string.Empty;
@@ -1323,11 +1341,13 @@ public partial class MainWindow : GenericWindow
             $"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title=%5BBug%5D+&system={HttpUtility.UrlEncode(system)}");
     }
 
+    [RelayCommand]
     public async Task MenuHelpMaterialManagerClicked()
     {
         await new MaterialManagerWindow().ShowDialog(this);
     }
 
+    [RelayCommand]
     public async Task MenuHelpInstallProfilesClicked()
     {
         var PSFolder = App.GetPrusaSlicerDirectory();
@@ -1350,17 +1370,20 @@ public partial class MainWindow : GenericWindow
         await new PrusaSlicerManagerWindow().ShowDialog(this);
     }
 
+    [RelayCommand]
     public void MenuHelpDebugOpenExecutableDirectoryClicked()
     {
         HostSystem.OpenDirectory(App.ApplicationPath);
     }
 
+    [RelayCommand]
     public void MenuHelpDebugThrowExceptionClicked()
     {
         var i = 1 / new Random().Next(0);
         Debug.WriteLine(i);
     }
 
+    [RelayCommand]
     public async Task MenuHelpDebugLongMessageBoxClicked()
     {
         await this.MessageBoxError(string.Concat(Enumerable.Repeat(
@@ -1368,6 +1391,7 @@ public partial class MainWindow : GenericWindow
             100)));
     }
 
+    [RelayCommand]
     public async Task MenuHelpDebugTriggerNewUpdateClicked()
     {
         //VersionChecker.Check(true);
@@ -1390,6 +1414,7 @@ public partial class MainWindow : GenericWindow
         }
     }
 
+    [RelayCommand]
     public async Task MenuNewVersionClicked()
     {
         var release = AppUpdater.LatestRelease;
@@ -1590,7 +1615,7 @@ public partial class MainWindow : GenericWindow
                 {
                     Debug.WriteLine(e);
                 }
-
+                
                 continue;
             }
 
@@ -1601,18 +1626,13 @@ public partial class MainWindow : GenericWindow
                 await ProcessFile(files[i], fileDecodeType);
                 continue;
             }
-            
+
             EntryApplication.LaunchNewInstance(files[i]);
         }
     }
 
     [RelayCommand]
-    public Task ReloadFile()
-    {
-        return ReloadFile(_actualLayer);
-    }
-
-    public async Task ReloadFile(uint actualLayer)
+    public async Task ReloadFile()
     {
         if (!IsFileLoaded) return;
         if (CanSave
@@ -2537,6 +2557,7 @@ public partial class MainWindow : GenericWindow
         return task;
     }
 
+    [RelayCommand]
     public async Task ResetLayersProperties()
     {
         if (!IsFileLoaded || !SlicerFile!.SupportPerLayerSettings) return;
@@ -2556,12 +2577,14 @@ public partial class MainWindow : GenericWindow
         CanSave = true;
     }
 
+    [RelayCommand]
     public async Task IPrintedThisFile()
     {
         if (!IsFileLoaded) return;
         await ShowRunOperation(typeof(OperationIPrintedThisFile));
     }
 
+    [RelayCommand]
     public async Task CopyParametersToFiles()
     {
         if (!IsFileLoaded) return;
@@ -2624,6 +2647,7 @@ public partial class MainWindow : GenericWindow
         }
     }
 
+    [RelayCommand]
     public async Task ExtractFile()
     {
         if (!IsFileLoaded) return;
@@ -2665,6 +2689,7 @@ public partial class MainWindow : GenericWindow
         }
     }
 
+    [RelayCommand]
     public void OpenTerminal()
     {
         new TerminalWindow().Show(this);

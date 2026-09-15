@@ -9,6 +9,7 @@
 
 using Avalonia.Input;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Input;
 using SukiUI.MessageBox;
 using System;
 using System.ComponentModel;
@@ -46,6 +47,7 @@ public partial class MainWindow
         }
     }
 
+    [RelayCommand]
     public async Task ClipboardUndo()
     {
         CanSave = true;
@@ -54,6 +56,7 @@ public partial class MainWindow
             await ClipboardUndoAndRerun(true);
             return;
         }
+
         ClipboardManager.Undo();
     }
 
@@ -66,6 +69,7 @@ public partial class MainWindow
         {
             return;
         }
+
         if (clip?.Operation is null) return;
         /*if (clip.Operation.HaveROI)
         {
@@ -85,17 +89,20 @@ public partial class MainWindow
         }
     }
 
+    [RelayCommand]
     public void ClipboardRedo()
     {
         CanSave = true;
         ClipboardManager.Redo();
     }
 
+    [RelayCommand]
     public async Task ClipboardClear()
     {
         if (await this.MessageBoxQuestion("Are you sure you want to clear the clipboard?\n" +
                                           "Current layers will be placed as original layers\n" +
-                                          "This action is permanent!", "Clear clipboard?") != SukiMessageBoxResult.Yes) return;
+                                          "This action is permanent!", "Clear clipboard?") !=
+            SukiMessageBoxResult.Yes) return;
         ClipboardManager.Clear(true);
     }
 }
