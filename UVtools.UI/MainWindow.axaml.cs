@@ -2829,7 +2829,7 @@ public partial class MainWindow : GenericWindow
 
         if (result)
         {
-            ClipboardManager.Clip(baseOperation);
+            var changedLayers = ClipboardManager.Clip(baseOperation) is not null;
 
             ShowLayer();
             RefreshProperties();
@@ -2839,10 +2839,30 @@ public partial class MainWindow : GenericWindow
 
             CanSave = true;
 
-            if (baseOperation.GetType().Name.StartsWith("OperationCalibrate"))
+            if (baseOperation is OperationRepairLayers)
             {
-                IssuesClear();
+                await OnClickDetectIssues();
             }
+            
+            if (changedLayers && SlicerFile!.IssueManager.HaveIssues)
+            {
+                if (baseOperation.GetType().Name.StartsWith("OperationCalibrate"))
+                {
+                    IssuesClear();
+                }
+                else if (baseOperation 
+                         is OperationMove 
+                         or OperationRotate
+                         or OperationFlip
+                         or OperationLithophane
+                         or OperationLayerImport)
+                {
+                    // Recalculate issues due changed position
+                    await OnClickDetectIssues();
+                }
+            }
+            
+
 
             switch (baseOperation)
             {
