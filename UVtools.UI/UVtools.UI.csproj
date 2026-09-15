@@ -87,9 +87,4 @@
             </ItemGroup>
         </Otherwise>
     </Choose>
-
-    <Target Name="SaveRuntimeIdentifierToFile" AfterTargets="Publish" Condition="'$(RuntimeIdentifier)'!=''">
-        <WriteLinesToFile File="$(PublishDir)\runtime_package.dat" Lines="$(RuntimeIdentifier)" Overwrite="true"/>
-    </Target>
-
 </Project>
