@@ -41,7 +41,10 @@
     <Folder Name="/root/scripts/">
         <File Path="Scripts/ImportPrusaSlicerData.ps1" />
         <File Path="Scripts/install-dependencies.sh" />
+        <File Path="Scripts/install-uvtools.ps1" />
         <File Path="Scripts/install-uvtools.sh" />
+        <File Path="Scripts/uninstall-uvtools.ps1" />
+        <File Path="Scripts/uninstall-uvtools.sh" />
     </Folder>
     <Folder Name="/root/scripts/Editor010/">
         <File Path="Scripts/010 Editor/anet.bt" />
