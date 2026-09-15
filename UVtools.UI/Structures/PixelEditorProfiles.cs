@@ -5,6 +5,7 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,10 +17,10 @@ using ZLinq;
 
 namespace UVtools.UI.Structures;
 
-
 public class PixelEditorProfiles //: IList<Operation>
 {
     #region Properties
+
     /// <summary>
     /// Default filepath for store <see cref="PixelEditorProfiles"/>
     /// </summary>
@@ -49,12 +50,14 @@ public class PixelEditorProfiles //: IList<Operation>
     /// Instance (singleton)
     /// </summary>
     public static PixelEditorProfiles Instance => _instanceHolder.Value;
+
     #endregion
 
     #region Constructor
 
     private PixelEditorProfiles()
-    { }
+    {
+    }
 
     #endregion
 
@@ -62,8 +65,8 @@ public class PixelEditorProfiles //: IList<Operation>
 
     public PixelOperation this[uint index]
     {
-        get => Profiles[(int) index];
-        set => Profiles[(int) index] = value;
+        get => Profiles[(int)index];
+        set => Profiles[(int)index] = value;
     }
 
     public PixelOperation this[int index]
@@ -85,9 +88,11 @@ public class PixelEditorProfiles //: IList<Operation>
     {
         return GetEnumerator();
     }*/
+
     #endregion
 
     #region List Implementation
+
     public void Add(PixelOperation item)
     {
         Profiles.Add(item);
@@ -130,9 +135,11 @@ public class PixelEditorProfiles //: IList<Operation>
 
     public int Count => Profiles.Count;
     public bool IsReadOnly => false;
+
     #endregion
 
     #region Static Methods
+
     /// <summary>
     /// Clear all profiles
     /// </summary>
@@ -210,7 +217,7 @@ public class PixelEditorProfiles //: IList<Operation>
     public static void AddProfile(PixelOperation profile, bool save = true)
     {
         ProfileList.Insert(0, profile);
-        if(save) Save();
+        if (save) Save();
     }
 
     /// <summary>

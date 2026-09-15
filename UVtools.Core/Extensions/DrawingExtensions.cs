@@ -179,4 +179,68 @@ public static class DrawingExtensions
         if (sides != 4) startingAngle += (180 - (360.0 / sides)) / 2;
         return GetPolygonVertices(sides, new SizeF(diameter, diameter), center, startingAngle, flipHorizontally, flipVertically, midpointRounding);
     }
+
+    /// <summary>
+    /// Interpolates the pixels of a line between two points (inclusive of both endpoints) using
+    /// Bresenham's algorithm.
+    /// </summary>
+    /// <param name="start">Start point.</param>
+    /// <param name="end">End point.</param>
+    /// <returns>An allocation-free enumerator over the ordered pixels from <paramref name="start"/> to
+    /// <paramref name="end"/>, both inclusive.</returns>
+    public static LineEnumerator InterpolateLine(this Point start, Point end) => new(start, end);
+
+    public struct LineEnumerator
+    {
+        private readonly Point _end;
+        private readonly int _deltaX;
+        private readonly int _deltaY;
+        private readonly int _stepX;
+        private readonly int _stepY;
+        private int _error;
+        private bool _started;
+        private bool _complete;
+
+        public Point Current { get; private set; }
+
+        internal LineEnumerator(Point start, Point end)
+        {
+            _end = end;
+            _deltaX = Math.Abs(end.X - start.X);
+            _deltaY = Math.Abs(end.Y - start.Y);
+            _stepX = start.X < end.X ? 1 : -1;
+            _stepY = start.Y < end.Y ? 1 : -1;
+            _error = _deltaX - _deltaY;
+            Current = start;
+        }
+
+        public readonly LineEnumerator GetEnumerator() => this;
+
+        public bool MoveNext()
+        {
+            if (_complete) return false;
+            if (!_started)
+            {
+                _started = true;
+                _complete = Current == _end;
+                return true;
+            }
+
+            var error = 2 * _error;
+            if (error > -_deltaY)
+            {
+                _error -= _deltaY;
+                Current = Current with { X = Current.X + _stepX };
+            }
+
+            if (error < _deltaX)
+            {
+                _error += _deltaX;
+                Current = Current with { Y = Current.Y + _stepY };
+            }
+
+            _complete = Current == _end;
+            return true;
+        }
+    }
 }

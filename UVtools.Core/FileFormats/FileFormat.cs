@@ -100,14 +100,25 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
     public void DrawModifications(IList<PixelOperation> drawings, OperationProgress? progress = null)
     {
         progress ??= new OperationProgress();
-        progress.Reset("Drawings", (uint)drawings.Count);
-
         var group1 = drawings
             .Where(operation => operation.OperationType
                 is PixelOperation.PixelOperationType.Drawing
                 or PixelOperation.PixelOperationType.Text
-                or PixelOperation.PixelOperationType.Fill)
-            .GroupBy(operation => operation.LayerIndex);
+                or PixelOperation.PixelOperationType.Fill
+                or PixelOperation.PixelOperationType.Stroke)
+            .SelectMany(ExpandLayerRange)
+            .GroupBy(tuple => tuple.LayerIndex)
+            .ToArray();
+
+        var group2 = drawings
+            .Where(operation => operation.OperationType
+                is PixelOperation.PixelOperationType.Supports
+                or PixelOperation.PixelOperationType.DrainHole)
+            .GroupBy(operation => operation.LayerIndex)
+            .OrderByDescending(group => group.Key)
+            .ToArray();
+
+        progress.Reset("Drawings", (uint)(group1.Length + group2.Sum(group => group.Count())));
 
         Parallel.ForEach(group1, CoreSettings.GetParallelOptions(progress), layerOperationGroup =>
         {
@@ -115,7 +126,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
             var layer = this[layerOperationGroup.Key];
             using var mat = layer.LayerMat;
 
-            foreach (var operation in layerOperationGroup)
+            foreach (var (_, operation) in layerOperationGroup)
             {
                 if (operation.OperationType == PixelOperation.PixelOperationType.Drawing)
                 {
@@ -155,6 +166,46 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                         operationText.LineType, operationText.Mirror, operationText.LineAlignment,
                         (double)operationText.Angle);
                 }
+                else if (operation.OperationType == PixelOperation.PixelOperationType.Stroke)
+                {
+                    if (operation is not PixelStroke operationStroke || operationStroke.IsEmpty) continue;
+
+                    if (operationStroke.BrushSize == 1)
+                    {
+                        var previousPoint = operationStroke.Points[0];
+                        mat.SetByte(previousPoint.X, previousPoint.Y, operationStroke.Brightness);
+                        for (var i = 1; i < operationStroke.Points.Count; i++)
+                        {
+                            var point = operationStroke.Points[i];
+                            foreach (var interpolatedPoint in previousPoint.InterpolateLine(point))
+                            {
+                                mat.SetByte(interpolatedPoint.X, interpolatedPoint.Y, operationStroke.Brightness);
+                            }
+
+                            previousPoint = point;
+                        }
+
+                        continue;
+                    }
+
+                    var strokeDiameter = PixelsToNormalizedPitchF(operationStroke.BrushSize);
+                    var strokePreviousPoint = operationStroke.Points[0];
+                    mat.DrawAlignedPolygon((byte)operationStroke.BrushShape, strokeDiameter, strokePreviousPoint,
+                        new MCvScalar(operationStroke.Brightness), operationStroke.RotationAngle,
+                        operationStroke.Thickness, operationStroke.LineType);
+                    for (var i = 1; i < operationStroke.Points.Count; i++)
+                    {
+                        var point = operationStroke.Points[i];
+                        foreach (var interpolatedPoint in strokePreviousPoint.InterpolateLine(point))
+                        {
+                            mat.DrawAlignedPolygon((byte)operationStroke.BrushShape, strokeDiameter, interpolatedPoint,
+                                new MCvScalar(operationStroke.Brightness), operationStroke.RotationAngle,
+                                operationStroke.Thickness, operationStroke.LineType);
+                        }
+
+                        strokePreviousPoint = point;
+                    }
+                }
                 else if (operation.OperationType == PixelOperation.PixelOperationType.Fill)
                 {
                     if (operation is not PixelFill operationFill) continue;
@@ -174,14 +225,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
             progress.LockAndIncrement();
         });
 
-        var group2 = drawings
-            .Where(operation => operation.OperationType
-                is PixelOperation.PixelOperationType.Supports
-                or PixelOperation.PixelOperationType.DrainHole)
-            .GroupBy(operation => operation.LayerIndex)
-            .OrderByDescending(group => group.Key);
-
-        if (group2.Any())
+        if (group2.Length > 0)
         {
             using var matCache = new MatCacheManager(this, 0, group2.First().Key)
             {
@@ -289,6 +333,30 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
 
                 progress += (uint)layerOperationGroup.Count();
             }
+        }
+    }
+
+    /// <summary>
+    /// Expands a stroke operation into one tuple per layer in its propagation range
+    /// (<see cref="PixelOperation.LayersBelow"/> to <see cref="PixelOperation.LayersAbove"/>).
+    /// </summary>
+    /// <param name="operation">The stroke operation to expand.</param>
+    /// <returns>One (LayerIndex, operation) tuple per target layer, in ascending order.</returns>
+    private IEnumerable<(uint LayerIndex, PixelOperation operation)> ExpandLayerRange(PixelOperation operation)
+    {
+        if (operation is not PixelStroke stroke)
+        {
+            yield return (operation.LayerIndex, operation);
+            yield break;
+        }
+
+        var minLayer = stroke.LayersBelow >= operation.LayerIndex
+            ? 0
+            : operation.LayerIndex - stroke.LayersBelow;
+        var maxLayer = (uint)Math.Min(LastLayerIndex, (ulong)operation.LayerIndex + stroke.LayersAbove);
+        for (var layer = minLayer; layer <= maxLayer; layer++)
+        {
+            yield return (layer, operation);
         }
     }
 
@@ -5351,38 +5419,38 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                     switch (layerImageType)
                     {
                         case ImageFormat.Png24:
-                            {
-                                using var mat = layer.LayerMat;
-                                CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgr);
-                                pngLayerBytes[layerIndex] = mat.GetPngBytes();
+                        {
+                            using var mat = layer.LayerMat;
+                            CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgr);
+                            pngLayerBytes[layerIndex] = mat.GetPngBytes();
 
-                                break;
-                            }
+                            break;
+                        }
                         case ImageFormat.Png32:
-                            {
-                                using var mat = layer.LayerMat;
-                                CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgra);
-                                pngLayerBytes[layerIndex] = mat.GetPngBytes();
+                        {
+                            using var mat = layer.LayerMat;
+                            CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgra);
+                            pngLayerBytes[layerIndex] = mat.GetPngBytes();
 
-                                break;
-                            }
+                            break;
+                        }
                         case ImageFormat.Png24BgrAA:
-                            {
-                                using var mat = layer.LayerMat;
-                                using var outputMat = mat.Reshape(3);
-                                pngLayerBytes[layerIndex] = outputMat.GetPngBytes();
+                        {
+                            using var mat = layer.LayerMat;
+                            using var outputMat = mat.Reshape(3);
+                            pngLayerBytes[layerIndex] = outputMat.GetPngBytes();
 
-                                break;
-                            }
+                            break;
+                        }
                         case ImageFormat.Png24RgbAA:
-                            {
-                                using var mat = layer.LayerMat;
-                                using var outputMat = mat.Reshape(3);
-                                CvInvoke.CvtColor(outputMat, outputMat, ColorConversion.Bgr2Rgb);
-                                pngLayerBytes[layerIndex] = outputMat.GetPngBytes();
+                        {
+                            using var mat = layer.LayerMat;
+                            using var outputMat = mat.Reshape(3);
+                            CvInvoke.CvtColor(outputMat, outputMat, ColorConversion.Bgr2Rgb);
+                            pngLayerBytes[layerIndex] = outputMat.GetPngBytes();
 
-                                break;
-                            }
+                            break;
+                        }
                         default:
                             pngLayerBytes[layerIndex] = layer.CompressedPngBytes;
                             break;
@@ -5488,26 +5556,26 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                         _layers[layerIndex] = new Layer((uint)layerIndex, pngBytes, this);
                         break;
                     case ImageFormat.Png24BgrAA:
-                        {
-                            using var bgrMat = new Mat();
-                            CvInvoke.Imdecode(pngBytes, ImreadModes.ColorBgr, bgrMat);
-                            using var greyMat = bgrMat.Reshape(1);
+                    {
+                        using var bgrMat = new Mat();
+                        CvInvoke.Imdecode(pngBytes, ImreadModes.ColorBgr, bgrMat);
+                        using var greyMat = bgrMat.Reshape(1);
 
-                            _layers[layerIndex] = new Layer((uint)layerIndex, greyMat, this);
+                        _layers[layerIndex] = new Layer((uint)layerIndex, greyMat, this);
 
-                            break;
-                        }
+                        break;
+                    }
                     case ImageFormat.Png24RgbAA:
-                        {
-                            using Mat rgbMat = new();
-                            CvInvoke.Imdecode(pngBytes, ImreadModes.ColorBgr, rgbMat);
-                            CvInvoke.CvtColor(rgbMat, rgbMat, ColorConversion.Bgr2Rgb);
-                            using var greyMat = rgbMat.Reshape(1);
+                    {
+                        using Mat rgbMat = new();
+                        CvInvoke.Imdecode(pngBytes, ImreadModes.ColorBgr, rgbMat);
+                        CvInvoke.CvtColor(rgbMat, rgbMat, ColorConversion.Bgr2Rgb);
+                        using var greyMat = rgbMat.Reshape(1);
 
-                            _layers[layerIndex] = new Layer((uint)layerIndex, greyMat, this);
+                        _layers[layerIndex] = new Layer((uint)layerIndex, greyMat, this);
 
-                            break;
-                        }
+                        break;
+                    }
                     default:
                         throw new ArgumentOutOfRangeException(nameof(layerImageFormat), layerImageFormat, null);
                 }

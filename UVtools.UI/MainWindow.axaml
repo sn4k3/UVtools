@@ -2181,7 +2181,7 @@
                             <ToggleButton Margin="-1,0,0,0"
                                           VerticalAlignment="Stretch"
                                           HotKey="{OnPlatform Ctrl+E,
-										  macOS=⌘+E}"
+											 macOS=⌘+E}"
                                           Content="{icon:MaterialIconTextExt Kind=RulerSquareCompass, Text='Pixel Editor'}"
                                           IsChecked="{Binding IsPixelEditorActive}"
                                           ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Edit layer image: Draw pixels, add supports and/or drain holes. [{0}+E]'}" />
