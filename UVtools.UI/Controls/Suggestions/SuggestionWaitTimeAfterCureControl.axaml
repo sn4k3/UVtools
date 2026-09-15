@@ -4,47 +4,62 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:suggestions="clr-namespace:UVtools.UI.Controls.Suggestions"
              xmlns:suki="https://github.com/kikipoulet/SukiUI"
-             mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="300"
+             xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="400"
              x:Class="UVtools.UI.Controls.Suggestions.SuggestionWaitTimeAfterCureControl"
              x:DataType="suggestions:SuggestionWaitTimeAfterCureControl">
-	<Grid RowDefinitions="Auto,10,Auto,2,Auto,10,Auto,2,Auto,10,Auto"
-			ColumnDefinitions="Auto,10,190,5,Auto,5,190">
+    <Grid RowDefinitions="Auto,10,Auto,2,Auto,10,Auto,2,Auto,10,Auto,2,Auto,10,Auto"
+          ColumnDefinitions="Auto,10,190,5,Auto,5,190">
 
-		<TextBlock Grid.Row="0" Grid.Column="0"
+        <TextBlock Grid.Row="0" Grid.Column="0"
                    VerticalAlignment="Center"
                    ToolTip.Tip="Set the way the wait time is calculated / set"
-                   Text="Set type:"/>
+                   Text="Set type:" />
 
         <ComboBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="5"
                   HorizontalAlignment="Stretch"
                   ItemsSource="{Binding Suggestion.SetType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                  SelectedItem="{Binding Suggestion.SetType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+                  SelectedItem="{Binding Suggestion.SetType, Converter={StaticResource FromValueDescriptionToEnumConverter}}" />
 
-        <TextBlock Grid.Row="2" Grid.Column="2"
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Sets the height through which the bottom wait time is used"
+                   Text="Bottom height:" />
+
+        <NumericUpDown Grid.Row="2" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       suki:NumericUpDownExtensions.Unit="mm"
+                       Minimum="0"
+                       Maximum="1000"
+                       FormatString="F2"
+                       Increment="0.10"
+                       Value="{Binding Suggestion.BottomHeight}" />
+
+        <TextBlock Grid.Row="4" Grid.Column="2"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    FontWeight="Bold"
-                   Text="Bottom:"/>
+                   Text="Bottom:" />
 
-        <TextBlock Grid.Row="2" Grid.Column="6"
+        <TextBlock Grid.Row="4" Grid.Column="6"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    FontWeight="Bold"
-                   Text="Normal:"/>
+                   Text="Normal:" />
 
-        <TextBlock Grid.Row="4" Grid.Column="0"
+        <TextBlock Grid.Row="6" Grid.Column="0"
                    VerticalAlignment="Center"
                    ToolTip.Tip="Sets the wait time for (Bottom-Normal) layers"
                    IsVisible="{Binding Suggestion.IsSetTypeFixed}"
-                   Text="Wait time:"/>
+                   Text="Wait time:" />
 
-        <TextBlock Grid.Row="4" Grid.Column="0"
+        <TextBlock Grid.Row="6" Grid.Column="0"
                    VerticalAlignment="Center"
                    ToolTip.Tip="Sets the wait time according an (wait time - exposure time) ratio"
                    IsVisible="{Binding Suggestion.IsSetTypeProportionalExposure}"
-                   Text="Time - Exposure:"/>
+                   Text="Time - Exposure:" />
 
-        <NumericUpDown Grid.Row="4" Grid.Column="2"
+        <NumericUpDown Grid.Row="6" Grid.Column="2"
                        VerticalAlignment="Center"
                        suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
@@ -52,13 +67,13 @@
                        FormatString="F2"
                        Increment="0.50"
                        IsVisible="{Binding Suggestion.IsSetTypeFixed}"
-                       Value="{Binding Suggestion.FixedBottomWaitTimeAfterCure}"/>
+                       Value="{Binding Suggestion.FixedBottomWaitTimeAfterCure}" />
 
-        <TextBlock Grid.Row="4" Grid.Column="4"
+        <TextBlock Grid.Row="6" Grid.Column="4"
                    VerticalAlignment="Center"
-                   Text="-"/>
+                   Text="-" />
 
-        <NumericUpDown Grid.Row="4" Grid.Column="6"
+        <NumericUpDown Grid.Row="6" Grid.Column="6"
                        VerticalAlignment="Center"
                        suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
@@ -66,9 +81,9 @@
                        FormatString="F2"
                        Increment="0.50"
                        IsVisible="{Binding Suggestion.IsSetTypeFixed}"
-                       Value="{Binding Suggestion.FixedWaitTimeAfterCure}"/>
+                       Value="{Binding Suggestion.FixedWaitTimeAfterCure}" />
 
-        <NumericUpDown Grid.Row="4" Grid.Column="2"
+        <NumericUpDown Grid.Row="6" Grid.Column="2"
                        VerticalAlignment="Center"
                        suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
@@ -76,9 +91,9 @@
                        FormatString="F2"
                        Increment="0.50"
                        IsVisible="{Binding Suggestion.IsSetTypeProportionalExposure}"
-                       Value="{Binding Suggestion.ProportionalWaitTimeAfterCure}"/>
+                       Value="{Binding Suggestion.ProportionalWaitTimeAfterCure}" />
 
-        <NumericUpDown Grid.Row="4" Grid.Column="6"
+        <NumericUpDown Grid.Row="6" Grid.Column="6"
                        VerticalAlignment="Center"
                        suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
@@ -86,75 +101,96 @@
                        FormatString="F2"
                        Increment="0.50"
                        IsVisible="{Binding Suggestion.IsSetTypeProportionalExposure}"
-                       Value="{Binding Suggestion.ProportionalExposureTime}"/>
+                       Value="{Binding Suggestion.ProportionalExposureTime}" />
 
 
-        <TextBlock Grid.Row="6" Grid.Column="2"
+        <TextBlock Grid.Row="8" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Sets the number of layers to smoothly transition from bottom to normal wait time"
+                   IsVisible="{Binding Suggestion.IsSetTypeFixed}"
+                   Text="Transition layers:" />
+
+        <NumericUpDown Grid.Row="8" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       suki:NumericUpDownExtensions.Unit="{icon:MaterialIconExt Kind=Layers}"
+                       Minimum="0"
+                       Maximum="255"
+                       Increment="1"
+                       IsVisible="{Binding Suggestion.IsSetTypeFixed}"
+                       Value="{Binding Suggestion.WaitTimeAfterCureTransitionLayerCount}" />
+
+        <TextBlock Grid.Row="8" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   IsEnabled="{Binding Suggestion.WaitTimeAfterCureTransitionLayerCount}"
+                   IsVisible="{Binding Suggestion.IsSetTypeFixed}"
+                   Text="{Binding Suggestion.WaitTimeAfterCureTransitionDecrement, StringFormat=Decrement: {0:F2}s per layer}" />
+
+        <TextBlock Grid.Row="10" Grid.Column="2"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    FontWeight="Bold"
-                   Text="Minimum:"/>
+                   Text="Minimum:" />
 
-        <TextBlock Grid.Row="6" Grid.Column="6"
+        <TextBlock Grid.Row="10" Grid.Column="6"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    FontWeight="Bold"
-                   Text="Maximum:"/>
+                   Text="Maximum:" />
 
-		<TextBlock Grid.Row="8" Grid.Column="0"
+        <TextBlock Grid.Row="12" Grid.Column="0"
                    VerticalAlignment="Center"
                    ToolTip.Tip="Sets the limits for the bottom layers (Min-Max)"
-                   Text="Limits (bottom):"/>
+                   Text="Limits (bottom):" />
 
-		<NumericUpDown Grid.Row="8" Grid.Column="2"
+        <NumericUpDown Grid.Row="12" Grid.Column="2"
                        VerticalAlignment="Center"
                        suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
                        Maximum="1000"
                        FormatString="F2"
                        Increment="{Binding SlicerFile.LayerHeight}"
-                       Value="{Binding Suggestion.MinimumBottomWaitTimeAfterCure}"/>
+                       Value="{Binding Suggestion.MinimumBottomWaitTimeAfterCure}" />
 
-		<TextBlock Grid.Row="8" Grid.Column="4"
+        <TextBlock Grid.Row="12" Grid.Column="4"
                    VerticalAlignment="Center"
-                   Text="-"/>
+                   Text="-" />
 
-		<NumericUpDown Grid.Row="8" Grid.Column="6"
+        <NumericUpDown Grid.Row="12" Grid.Column="6"
                        VerticalAlignment="Center"
                        suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
                        Maximum="1000"
                        FormatString="F2"
                        Increment="0.50"
-                       Value="{Binding Suggestion.MaximumBottomWaitTimeAfterCure}"/>
+                       Value="{Binding Suggestion.MaximumBottomWaitTimeAfterCure}" />
 
-        <TextBlock Grid.Row="10" Grid.Column="0"
+        <TextBlock Grid.Row="14" Grid.Column="0"
                    VerticalAlignment="Center"
                    ToolTip.Tip="Sets the limits for the normal layers (Min-Max)"
-                   Text="Limits (normal):"/>
+                   Text="Limits (normal):" />
 
-        <NumericUpDown Grid.Row="10" Grid.Column="2"
+        <NumericUpDown Grid.Row="14" Grid.Column="2"
                        VerticalAlignment="Center"
                        suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
                        Maximum="1000"
                        FormatString="F2"
                        Increment="0.50"
-                       Value="{Binding Suggestion.MinimumWaitTimeAfterCure}"/>
+                       Value="{Binding Suggestion.MinimumWaitTimeAfterCure}" />
 
-        <TextBlock Grid.Row="10" Grid.Column="4"
+        <TextBlock Grid.Row="14" Grid.Column="4"
                    VerticalAlignment="Center"
-                   Text="-"/>
+                   Text="-" />
 
-        <NumericUpDown Grid.Row="10" Grid.Column="6"
+        <NumericUpDown Grid.Row="14" Grid.Column="6"
                        VerticalAlignment="Center"
                        suki:NumericUpDownExtensions.Unit="s"
                        Minimum="0"
                        Maximum="1000"
                        FormatString="F2"
                        Increment="0.50"
-                       Value="{Binding Suggestion.MaximumWaitTimeAfterCure}"/>
+                       Value="{Binding Suggestion.MaximumWaitTimeAfterCure}" />
 
 
-	</Grid>
+    </Grid>
 </UserControl>

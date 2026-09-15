@@ -9923,6 +9923,9 @@
         <member name="P:UVtools.Core.Suggestions.SuggestionWaitTimeAfterCure.SetType">
             <inheritdoc/>
         </member>
+        <member name="P:UVtools.Core.Suggestions.SuggestionWaitTimeAfterCure.WaitTimeAfterCureTransitionLayerCount">
+            <inheritdoc/>
+        </member>
         <member name="T:UVtools.Core.Suggestions.SuggestionWaitTimeBeforeCure">
             <inheritdoc/>
         </member>
@@ -11966,6 +11969,12 @@
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.IsSetTypeProportionalExposure">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "IsSetTypeProportionalExposure" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.WaitTimeAfterCureTransitionLayerCount">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "WaitTimeAfterCureTransitionLayerCount" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.WaitTimeAfterCureTransitionDecrement">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "WaitTimeAfterCureTransitionDecrement" generated properties.</summary>
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.IsSetTypeProportionalLayerPixels">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "IsSetTypeProportionalLayerPixels" generated properties.</summary>
