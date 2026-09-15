@@ -21,6 +21,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
 using EmguExtensions.Avalonia;
+using StageKit.Primitives.System;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
@@ -356,7 +357,7 @@ public partial class MainWindow
             "Properties save complete");
         if (result != SukiMessageBoxResult.Yes) return;
 
-        SystemAware.StartProcess(filePath);
+        await HostSystem.OpenFileAsync(filePath);
     }
 
     public void OnClickPropertiesSaveClipboard()

@@ -120,7 +120,7 @@ public static class About
     /// <summary>
     /// Gets UVtools years
     /// </summary>
-    public static int YearsOld => Born.Age();
+    public static int YearsOld => ApplicationKit.YearsOld;
 
     /// <summary>
     /// Return full age in a readable string

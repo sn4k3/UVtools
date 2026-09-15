@@ -20,7 +20,7 @@ osVariant=""
 
 if [ "$arch" != "x86_64" -a "$arch" != "arm64" ]; then
     echo "Error: Unsupported host arch $arch"
-    exit -1
+    exit 9
 fi
 
 #echo "- Detecting OS"
@@ -56,7 +56,7 @@ elif testcmd zypper; then
     #zypper install -y libgeotiff5 libgdiplus0
 else
     echo "Error: Base operative system / package manager not identified, nothing was installed"
-    exit -1
+    exit 9
 fi
 
 echo "- Detected: $osVariant $arch"

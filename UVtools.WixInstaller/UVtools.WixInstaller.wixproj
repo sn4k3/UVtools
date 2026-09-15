@@ -1,0 +1,193 @@
+<Project Sdk="WixToolset.Sdk/7.0.0">
+    <PropertyGroup>
+        <OutputType>Package</OutputType>
+        <AcceptEula>wix7</AcceptEula>
+        <!-- ICE57 cannot model HKMU and context-resolved shell folders in a dual-purpose package.
+             ICE61 requires an upper version bound, which intentionally conflicts with allowed downgrades. -->
+        <SuppressIces>$(SuppressIces);ICE57;ICE61</SuppressIces>
+        <!-- Keep the MSI in the output root while resolving English UI strings. -->
+        <Cultures>neutral,en-US</Cultures>
+        <InstallerPlatform>$(Platform)</InstallerPlatform>
+        <!-- perMachineOrUser (default), perUser, or perMachine. -->
+        <InstallerScope Condition="'$(InstallerScope)' == ''">perMachine</InstallerScope>
+        <!-- Set InstallerPathRegistration to Register, UserDefaultNo, or UserDefaultYes here or on
+             the command line; leaving it unset disables PATH registration and hides the option. -->
+        <InstallerPathRegistrationMode Condition="'$(InstallerPathRegistration)' == 'Register'">Register</InstallerPathRegistrationMode>
+        <InstallerPathRegistrationMode Condition="'$(InstallerPathRegistration)' == 'UserDefaultNo'">UserDefaultNo</InstallerPathRegistrationMode>
+        <InstallerPathRegistrationMode Condition="'$(InstallerPathRegistration)' == 'UserDefaultYes'">UserDefaultYes</InstallerPathRegistrationMode>
+        <!-- Optional file associations to register application capabilities in the Windows registry; blank disables. -->
+        <FileAssociations Condition="'$(FileAssociations)' == ''"></FileAssociations>
+        <!-- Optional file patterns or extensions for the Windows Explorer context menu; blank disables. -->
+        <ContextMenuOpenWithFileAssociations Condition="'$(ContextMenuOpenWithFileAssociations)' == ''"></ContextMenuOpenWithFileAssociations>
+        <!-- Optional URL schemes registered for the application; blank disables. -->
+        <UrlSchemes Condition="'$(UrlSchemes)' == ''"></UrlSchemes>
+        <LaunchApplicationArguments Condition="'$(LaunchApplicationArguments)' == ''"></LaunchApplicationArguments>
+        <DefaultStartMenuShortcut Condition="'$(DefaultStartMenuShortcut)' == ''"></DefaultStartMenuShortcut>
+        <DefaultDesktopShortcut Condition="'$(DefaultDesktopShortcut)' == ''"></DefaultDesktopShortcut>
+        <ContextMenuOpenWithTitle Condition="'$(ContextMenuOpenWithTitle)' == ''"></ContextMenuOpenWithTitle>
+        <ContextMenuOpenWithCommandArgs Condition="'$(ContextMenuOpenWithCommandArgs)' == ''"></ContextMenuOpenWithCommandArgs>
+        <OutputName>$(ApplicationName)_$(RuntimeIdentifier)_v$(BuildVersion)</OutputName>
+        <LicenseFile>$(MSBuildProjectDirectory)\Resources\License.rtf</LicenseFile>
+        <InstallerDialogImage>$(MSBuildProjectDirectory)\Resources\InstallerDialogImage.png</InstallerDialogImage>
+        <InstallerBannerImage>$(MSBuildProjectDirectory)\Resources\InstallerBannerImage.png</InstallerBannerImage>
+        <AuthenticodeTimestampUrl Condition="'$(AuthenticodeTimestampUrl)' == ''">http://timestamp.digicert.com</AuthenticodeTimestampUrl>
+        <SignToolPath Condition="'$(SignToolPath)' == ''">signtool.exe</SignToolPath>
+        <SignOutput Condition="'$(AuthenticodeCertificateThumbprint)' != ''">true</SignOutput>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <BindPath Include="$(PublishDirectory)" BindName="Publish"/>
+        <PackageReference Include="WixToolset.UI.wixext" Version="7.0.0"/>
+        <PackageReference Include="WixToolset.Util.wixext" Version="7.0.0"/>
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(ArtifactsPath)' != ''">
+        <OutputPath>$(ArtifactsPath)\bin\$(MSBuildProjectName)\$(Configuration)\</OutputPath>
+        <IntermediateOutputPath>$(ArtifactsPath)\obj\$(MSBuildProjectName)\$(Configuration)\$(OutputName)\</IntermediateOutputPath>
+    </PropertyGroup>
+
+    <!-- Generated once; keep these stable so upgrades replace earlier installations. -->
+    <PropertyGroup Condition="'$(Platform)' == 'x64'">
+        <UpgradeCode>1ea6d212-15c0-425e-b2ec-4b6c60817552</UpgradeCode>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Platform)' == 'arm64'">
+        <UpgradeCode>E7182630-416D-47FF-80C8-26586FD4C142</UpgradeCode>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Description Condition="'$(Description)' == ''">$(PackageDescription)</Description>
+        <Keywords Condition="'$(Keywords)' == '' And '$(PackageTags)' != ''">$([System.String]::Copy('$(PackageTags)').Replace(';', ', '))</Keywords>
+        <Keywords Condition="'$(Keywords)' == ''">$(PackageTags)</Keywords>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <DefineConstants>$(DefineConstants);ApplicationName=$(ApplicationName);ApplicationExecutableName=$(ApplicationExecutableName);BuildVersion=$(BuildVersion);Company=$(Company);Copyright=$(Copyright);Description=$(Description);Keywords=$(Keywords);PackageTags=$(PackageTags);RepositoryUrl=$(RepositoryUrl);ApplicationIcon=$(ApplicationIcon);LicenseFile=$(LicenseFile);UpgradeCode=$(UpgradeCode);InstallerScope=$(InstallerScope)</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(InstallerPathRegistrationMode)' != ''">
+        <DefineConstants>$(DefineConstants);InstallerPathRegistration=$(InstallerPathRegistrationMode)</DefineConstants>
+    </PropertyGroup>
+
+    <!-- Optional artwork; omit either property to retain that WixUI default image. -->
+    <PropertyGroup Condition="'$(InstallerDialogImage)' != ''">
+        <DefineConstants>$(DefineConstants);InstallerDialogImage=$(InstallerDialogImage)</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(InstallerBannerImage)' != ''">
+        <DefineConstants>$(DefineConstants);InstallerBannerImage=$(InstallerBannerImage)</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="Resources\InstallerBannerImage.png"/>
+        <Content Include="Resources\InstallerDialogImage.png"/>
+        <Content Include="Resources\License.rtf"/>
+    </ItemGroup>
+
+    <Target Name="ConfigureFileAssociations" BeforeTargets="BeforeBuild;CoreCompile" Condition="'$(FileAssociations)' != ''">
+        <PropertyGroup>
+            <_RawFileAssoc>$([System.String]::Copy('$(FileAssociations)').Replace(',', ';').Replace('%2C', ';').Replace('%3B', ';').Replace('*', ''))</_RawFileAssoc>
+        </PropertyGroup>
+        <ItemGroup>
+            <_FileAssocSplitItems Include="$(_RawFileAssoc.Split(';', System.StringSplitOptions.RemoveEmptyEntries))"/>
+            <_FileAssocTrimmedItems Include="@(_FileAssocSplitItems->Trim())" Condition="'%(Identity)' != ''"/>
+            <_FileAssocDotted Include="@(_FileAssocTrimmedItems)" Condition="$([System.String]::Copy('%(Identity)').StartsWith('.')) and '%(Identity)' != '.'"/>
+            <_FileAssocDotted Include="@(_FileAssocTrimmedItems->'.%(Identity)')" Condition="!$([System.String]::Copy('%(Identity)').StartsWith('.')) and '%(Identity)' != ''"/>
+        </ItemGroup>
+        <PropertyGroup>
+            <_CleanedFileAssociations Condition="'@(_FileAssocDotted)' != ''">@(_FileAssocDotted, '%3B')</_CleanedFileAssociations>
+            <DefineConstants Condition="'$(_CleanedFileAssociations)' != ''">$(DefineConstants);FileAssociations=$(_CleanedFileAssociations)</DefineConstants>
+        </PropertyGroup>
+    </Target>
+
+    <Target Name="ConfigureContextMenuOpenWith" BeforeTargets="BeforeBuild;CoreCompile" Condition="'$(ContextMenuOpenWithFileAssociations)' != ''">
+        <PropertyGroup>
+            <_RawContextMenuFiles>$([System.String]::Copy('$(ContextMenuOpenWithFileAssociations)').Replace(',', ';').Replace('%2C', ';').Replace('%3B', ';'))</_RawContextMenuFiles>
+        </PropertyGroup>
+        <ItemGroup>
+            <_ContextMenuSplitItems Include="$(_RawContextMenuFiles.Split(';', System.StringSplitOptions.RemoveEmptyEntries))"/>
+            <_ContextMenuTrimmedItems Include="@(_ContextMenuSplitItems->Trim())" Condition="'%(Identity)' != ''"/>
+            <_ContextMenuPatterns Include="@(_ContextMenuTrimmedItems)" Condition="$([System.String]::Copy('%(Identity)').StartsWith('*.'))"/>
+            <_ContextMenuPatterns Include="@(_ContextMenuTrimmedItems->'*%(Identity)')" Condition="!$([System.String]::Copy('%(Identity)').StartsWith('*.')) and $([System.String]::Copy('%(Identity)').StartsWith('.'))"/>
+            <_ContextMenuPatterns Include="@(_ContextMenuTrimmedItems->'*.%(Identity)')" Condition="!$([System.String]::Copy('%(Identity)').StartsWith('*.')) and !$([System.String]::Copy('%(Identity)').StartsWith('.')) and !$([System.String]::Copy('%(Identity)').StartsWith('*'))"/>
+            <_ContextMenuPatterns Include="@(_ContextMenuTrimmedItems)" Condition="!$([System.String]::Copy('%(Identity)').StartsWith('*.')) and !$([System.String]::Copy('%(Identity)').StartsWith('.')) and $([System.String]::Copy('%(Identity)').StartsWith('*'))"/>
+        </ItemGroup>
+        <PropertyGroup>
+            <ContextMenuOpenWithAppliesTo Condition="'@(_ContextMenuPatterns)' != ''">@(_ContextMenuPatterns->'System.FileName:&quot;%(Identity)&quot;', ' OR ')</ContextMenuOpenWithAppliesTo>
+            <ContextMenuOpenWithAppliesTo Condition="$([System.String]::Copy('$(ContextMenuOpenWithFileAssociations)').Contains('System.FileName:'))">$(ContextMenuOpenWithFileAssociations)</ContextMenuOpenWithAppliesTo>
+            <DefineConstants>$(DefineConstants);ContextMenuOpenWith=true</DefineConstants>
+            <DefineConstants Condition="'$(ContextMenuOpenWithFileAssociations)' != '*' and '$(ContextMenuOpenWithAppliesTo)' != ''">$(DefineConstants);ContextMenuOpenWithAppliesTo=$(ContextMenuOpenWithAppliesTo)</DefineConstants>
+            <DefineConstants Condition="'$(ContextMenuOpenWithTitle)' != ''">$(DefineConstants);ContextMenuOpenWithTitle=$(ContextMenuOpenWithTitle)</DefineConstants>
+            <DefineConstants Condition="'$(ContextMenuOpenWithCommandArgs)' != ''">$(DefineConstants);ContextMenuOpenWithCommandArgs=$(ContextMenuOpenWithCommandArgs)</DefineConstants>
+        </PropertyGroup>
+    </Target>
+
+    <Target Name="ConfigureUrlSchemes" BeforeTargets="BeforeBuild;CoreCompile" Condition="'$(UrlSchemes)' != ''">
+        <PropertyGroup>
+            <_RawUrlSchemes>$([System.String]::Copy('$(UrlSchemes)').Replace(',', ';').Replace('%2C', ';').Replace('%3B', ';'))</_RawUrlSchemes>
+        </PropertyGroup>
+        <ItemGroup>
+            <_UrlSchemeSplitItems Include="$(_RawUrlSchemes.Split(';', System.StringSplitOptions.RemoveEmptyEntries))"/>
+            <_UrlSchemeTrimmedItems Include="@(_UrlSchemeSplitItems->Trim())" Condition="'%(Identity)' != ''"/>
+        </ItemGroup>
+        <PropertyGroup>
+            <_CleanedUrlSchemes Condition="'@(_UrlSchemeTrimmedItems)' != ''">@(_UrlSchemeTrimmedItems, '%3B')</_CleanedUrlSchemes>
+            <DefineConstants Condition="'$(_CleanedUrlSchemes)' != ''">$(DefineConstants);UrlSchemes=$(_CleanedUrlSchemes)</DefineConstants>
+        </PropertyGroup>
+    </Target>
+
+    <Target Name="ConfigureInstallerCustomizations" BeforeTargets="BeforeBuild;CoreCompile">
+        <PropertyGroup>
+            <DefineConstants Condition="'$(LaunchApplicationArguments)' != ''">$(DefineConstants);LaunchApplicationArguments=$(LaunchApplicationArguments)</DefineConstants>
+            <DefineConstants Condition="'$(DefaultStartMenuShortcut)' != ''">$(DefineConstants);DefaultStartMenuShortcut=$(DefaultStartMenuShortcut)</DefineConstants>
+            <DefineConstants Condition="'$(DefaultDesktopShortcut)' != ''">$(DefineConstants);DefaultDesktopShortcut=$(DefaultDesktopShortcut)</DefineConstants>
+        </PropertyGroup>
+    </Target>
+
+    <Target Name="ValidateInstallerInputs" BeforeTargets="CoreCompile">
+        <Error Condition="'$(InstallerDialogImage)' != '' And !Exists('$(InstallerDialogImage)')"
+               Text="Installer dialog image '$(InstallerDialogImage)' does not exist."/>
+        <Error Condition="'$(InstallerBannerImage)' != '' And !Exists('$(InstallerBannerImage)')"
+               Text="Installer banner image '$(InstallerBannerImage)' does not exist."/>
+        <Error Condition="'$(PublishDirectory)' == ''"
+               Text="PublishDirectory must be provided by the Fallout publish pipeline."/>
+        <Error Condition="'$(ApplicationName)' == ''"
+               Text="ApplicationName must be provided by the Fallout publish pipeline."/>
+        <Error Condition="'$(ApplicationExecutableName)' == ''"
+               Text="ApplicationExecutableName must be provided by the Fallout publish pipeline."/>
+        <Error Condition="'$(BuildVersion)' == ''"
+               Text="BuildVersion must be provided by the Fallout publish pipeline."/>
+        <Error Condition="'$(RuntimeIdentifier)' == ''"
+               Text="RuntimeIdentifier must be provided by the Fallout publish pipeline."/>
+        <Error Condition="'$(Platform)' != 'x64' And '$(Platform)' != 'arm64'"
+               Text="Platform must be x64 or arm64, but was '$(Platform)'."/>
+        <Error Condition="'$(InstallerScope)' != 'perMachineOrUser' And '$(InstallerScope)' != 'perUser' And '$(InstallerScope)' != 'perMachine'"
+               Text="InstallerScope must be perMachineOrUser, perUser, or perMachine, but was '$(InstallerScope)'."/>
+        <Error Condition="'$(InstallerPathRegistration)' != '' And '$(InstallerPathRegistrationMode)' == ''"
+               Text="InstallerPathRegistration must be Register, UserDefaultNo, or UserDefaultYes, but was '$(InstallerPathRegistration)'."/>
+        <Error Condition="!Exists('$(PublishDirectory)')"
+               Text="PublishDirectory '$(PublishDirectory)' does not exist."/>
+        <Error Condition="!Exists('$(PublishDirectory)\$(ApplicationExecutableName).exe')"
+               Text="Application executable '$(PublishDirectory)\$(ApplicationExecutableName).exe' does not exist."/>
+        <Error Condition="!Exists('$(ApplicationIcon)')"
+               Text="Application icon '$(ApplicationIcon)' does not exist."/>
+        <Error Condition="!Exists('$(LicenseFile)')"
+               Text="Installer license '$(LicenseFile)' does not exist."/>
+    </Target>
+
+    <!-- Every signable binary in the payload, which for a self-contained publish replaces the signatures
+         the runtime binaries ship with. Redefine this item to narrow the set, for example to
+         $(PublishDirectory)\$(ApplicationExecutableName).exe for the entry executable alone. -->
+    <ItemGroup Condition="'$(SignOutput)' == 'true'">
+        <InstallerPayloadToSign Include="$(PublishDirectory)\**\*.exe;$(PublishDirectory)\**\*.dll"/>
+    </ItemGroup>
+
+    <Target Name="SignInstallerPayload" BeforeTargets="CoreCompile"
+            Condition="'$(SignOutput)' == 'true'">
+        <Exec Command="&quot;$(SignToolPath)&quot; sign /sha1 &quot;$(AuthenticodeCertificateThumbprint)&quot; /fd SHA256 /tr &quot;$(AuthenticodeTimestampUrl)&quot; /td SHA256 /d &quot;$(ApplicationName)&quot; /du &quot;$(RepositoryUrl)&quot; &quot;%(InstallerPayloadToSign.FullPath)&quot;"/>
+    </Target>
+
+    <Target Name="SignMsi" Condition="'$(SignOutput)' == 'true'">
+        <Exec Command="&quot;$(SignToolPath)&quot; sign /sha1 &quot;$(AuthenticodeCertificateThumbprint)&quot; /fd SHA256 /tr &quot;$(AuthenticodeTimestampUrl)&quot; /td SHA256 /d &quot;$(ApplicationName)&quot; /du &quot;$(RepositoryUrl)&quot; &quot;%(SignMsi.FullPath)&quot;"/>
+    </Target>
+
+</Project>

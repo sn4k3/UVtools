@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using Avalonia.Reactive;
+using StageKit.Primitives.System;
 using UVtools.Core;
 using UVtools.Core.Operations;
 using UVtools.Core.Scripting;
@@ -101,13 +102,13 @@ public partial class ToolScriptingControl : ToolControl
     public void OpenScriptFolder()
     {
         if (!Operation.HaveFile) return;
-        SystemAware.SelectFileOnExplorer(Operation.FilePath!);
+        HostSystem.ShowFileInFileManager(Operation.FilePath!);
     }
 
     public void OpenScriptFile()
     {
         if (!Operation.HaveFile) return;
-        SystemAware.StartProcess(Operation.FilePath!);
+        HostSystem.OpenFile(Operation.FilePath!);
     }
 
     public void ReloadGUI()

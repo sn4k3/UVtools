@@ -1,0 +1,487 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+    <?define InstallerRegistryKey = "Software\$(var.ApplicationName)" ?>
+    <?define ApplicationCapabilitiesRegistryKey = "Software\$(var.ApplicationName)\Capabilities" ?>
+    <?if $(var.InstallerScope) = "perMachineOrUser" ?>
+    <?define PackageScope = "perUserOrMachine" ?>
+    <?else ?>
+    <?define PackageScope = "$(var.InstallerScope)" ?>
+    <?endif ?>
+    <Package Name="$(var.ApplicationName)"
+             Manufacturer="$(var.Company)"
+             Version="$(var.BuildVersion)"
+             UpgradeCode="$(var.UpgradeCode)"
+             Language="1033"
+             Scope="$(var.PackageScope)"
+             Compressed="yes">
+        <!-- AllowDowngrades also makes same-version packages related major upgrades. It forces
+             RemoveExistingProducts before InstallInitialize, so the previous version is removed
+             outside this installation's rollback transaction. -->
+        <MajorUpgrade AllowDowngrades="yes"/>
+        <SummaryInformation Description="$(var.Description)"
+                            Keywords="$(var.Keywords)"
+                            Comments="$(var.Copyright)"/>
+        <MediaTemplate EmbedCab="yes"/>
+        <util:QueryNativeMachine/>
+        <Launch Condition='Installed OR WIX_UPGRADE_DETECTED OR ("$(sys.BUILDARCH)" ~= "x64" IMP WIX_NATIVE_MACHINE = 34404)'
+                Message="This x64 installer cannot be installed on an ARM64 device. Use the ARM64 installer instead."/>
+        <?if $(var.InstallerScope) = "perMachine" ?>
+        <Property Id="INSTALLSCOPE" Value="perMachine" Secure="yes"/>
+        <?else ?>
+        <Property Id="INSTALLSCOPE" Value="perUser" Secure="yes"/>
+        <?endif ?>
+        <Property Id="SHORTCUTS_UI_COMPLETE" Secure="yes"/>
+        <Property Id="INSTALLFOLDER" Secure="yes"/>
+        <?ifdef DefaultStartMenuShortcut ?>
+        <Property Id="CREATESTARTMENUSHORTCUT" Value="$(var.DefaultStartMenuShortcut)" Secure="yes"/>
+        <?else ?>
+        <Property Id="CREATESTARTMENUSHORTCUT" Value="1" Secure="yes"/>
+        <?endif ?>
+        <?ifdef DefaultDesktopShortcut ?>
+        <Property Id="CREATEDESKTOPSHORTCUT" Value="$(var.DefaultDesktopShortcut)" Secure="yes"/>
+        <?else ?>
+        <Property Id="CREATEDESKTOPSHORTCUT" Value="1" Secure="yes"/>
+        <?endif ?>
+        <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Start program after install"/>
+        <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"/>
+
+        <!-- Restore the directory chosen by the previous installation before the UI is shown. -->
+        <Property Id="MACHINEINSTALLFOLDER" Secure="yes">
+            <RegistrySearch Id="SearchMachineInstallDir"
+                            Root="HKLM"
+                            Key="$(var.InstallerRegistryKey)"
+                            Name="InstallDir"
+                            Type="raw"/>
+        </Property>
+        <Property Id="USERINSTALLFOLDER" Secure="yes">
+            <RegistrySearch Id="SearchUserInstallDir"
+                            Root="HKCU"
+                            Key="$(var.InstallerRegistryKey)"
+                            Name="InstallDir"
+                            Type="raw"/>
+        </Property>
+        <Property Id="MACHINEPROGRAMFILESFOLDER" Secure="yes">
+            <RegistrySearch Id="SearchMachineProgramFilesFolder"
+                            Root="HKLM"
+                            Key="SOFTWARE\Microsoft\Windows\CurrentVersion"
+                            Name="ProgramW6432Dir"
+                            Type="raw"
+                            Bitness="always64"/>
+        </Property>
+
+        <?if $(var.InstallerScope) = "perMachineOrUser" ?>
+        <SetProperty Id="INSTALLSCOPE" Action="Set_INSTALLSCOPE_PerUser" Value="perUser"
+                     After="AppSearch" Sequence="ui"
+                     Condition="USERINSTALLFOLDER AND NOT MACHINEINSTALLFOLDER"/>
+        <SetProperty Id="INSTALLSCOPE" Action="Set_INSTALLSCOPE_PerMachine" Value="perMachine"
+                     After="Set_INSTALLSCOPE_PerUser" Sequence="ui"
+                     Condition="MACHINEINSTALLFOLDER AND NOT USERINSTALLFOLDER"/>
+        <?endif ?>
+        <SetProperty Id="INSTALLFOLDER" Action="Set_INSTALLFOLDER_User_Default_Execute"
+                     Value="[LocalAppDataFolder]Programs\$(var.ApplicationName)"
+                     Before="CostFinalize" Sequence="execute"
+                     Condition="NOT Installed AND NOT INSTALLFOLDER AND NOT ALLUSERS AND NOT USERINSTALLFOLDER"/>
+        <SetProperty Id="INSTALLFOLDER" Action="Set_INSTALLFOLDER_User_Execute" Value="[USERINSTALLFOLDER]"
+                     Before="CostFinalize" Sequence="execute"
+                     Condition="NOT Installed AND NOT INSTALLFOLDER AND NOT ALLUSERS AND USERINSTALLFOLDER"/>
+        <SetProperty Id="INSTALLFOLDER" Action="Set_INSTALLFOLDER_Machine_Execute" Value="[MACHINEINSTALLFOLDER]"
+                     Before="CostFinalize" Sequence="execute"
+                     Condition="NOT Installed AND NOT INSTALLFOLDER AND ALLUSERS AND MACHINEINSTALLFOLDER"/>
+
+        <?ifdef InstallerPathRegistration ?>
+        <?if $(var.InstallerPathRegistration) = "Register" ?>
+        <Property Id="PATHREGISTRATIONSTATE" Value="1" Secure="yes"/>
+        <?else ?>
+        <Property Id="PATHREGISTRATION_USER_REG" Secure="yes">
+            <RegistrySearch Id="SearchUserPathRegistration"
+                            Root="HKCU"
+                            Key="$(var.InstallerRegistryKey)"
+                            Name="PathRegistration"
+                            Type="raw"/>
+        </Property>
+        <Property Id="PATHREGISTRATION_MACHINE_REG" Secure="yes">
+            <RegistrySearch Id="SearchMachinePathRegistration"
+                            Root="HKLM"
+                            Key="$(var.InstallerRegistryKey)"
+                            Name="PathRegistration"
+                            Type="raw"/>
+        </Property>
+        <?if $(var.InstallerPathRegistration) = "UserDefaultYes" ?>
+        <Property Id="REGISTERINSTALLPATH" Value="1" Secure="yes"/>
+        <Property Id="PATHREGISTRATIONSTATE" Value="1" Secure="yes"/>
+        <?else ?>
+        <Property Id="REGISTERINSTALLPATH" Secure="yes"/>
+        <Property Id="PATHREGISTRATIONSTATE" Value="0" Secure="yes"/>
+        <?endif ?>
+        <SetProperty Id="REGISTERINSTALLPATH" Action="Set_REGISTERINSTALLPATH_Checked"
+                     Value="1" After="AppSearch" Sequence="ui"
+                     Condition="PATHREGISTRATION_USER_REG = &quot;#1&quot; OR PATHREGISTRATION_MACHINE_REG = &quot;#1&quot;"/>
+        <SetProperty Id="REGISTERINSTALLPATH" Action="Set_REGISTERINSTALLPATH_Unchecked"
+                     Value="{}" After="AppSearch" Sequence="ui"
+                     Condition="PATHREGISTRATION_USER_REG = &quot;#0&quot; OR PATHREGISTRATION_MACHINE_REG = &quot;#0&quot;"/>
+        <Property Id="PATHREGISTRATION_UI_COMPLETE" Secure="yes"/>
+        <SetProperty Id="PATHREGISTRATIONSTATE" Action="Set_PATHREGISTRATIONSTATE_Checked_Execute"
+                     Value="1" After="AppSearch" Sequence="execute"
+                     Condition="NOT PATHREGISTRATION_UI_COMPLETE AND (PATHREGISTRATION_USER_REG = &quot;#1&quot; OR PATHREGISTRATION_MACHINE_REG = &quot;#1&quot;)"/>
+        <SetProperty Id="PATHREGISTRATIONSTATE" Action="Set_PATHREGISTRATIONSTATE_Unchecked_Execute"
+                     Value="0" After="Set_PATHREGISTRATIONSTATE_Checked_Execute" Sequence="execute"
+                     Condition="NOT PATHREGISTRATION_UI_COMPLETE AND (PATHREGISTRATION_USER_REG = &quot;#0&quot; OR PATHREGISTRATION_MACHINE_REG = &quot;#0&quot;)"/>
+        <?endif ?>
+        <?endif ?>
+
+        <Property Id="STARTMENUSHORTCUT_USER_REG" Secure="yes">
+            <RegistrySearch Id="SearchUserStartMenuShortcut"
+                            Root="HKCU"
+                            Key="$(var.InstallerRegistryKey)"
+                            Name="StartMenuShortcut"
+                            Type="raw"/>
+        </Property>
+        <Property Id="STARTMENUSHORTCUT_MACHINE_REG" Secure="yes">
+            <RegistrySearch Id="SearchMachineStartMenuShortcut"
+                            Root="HKLM"
+                            Key="$(var.InstallerRegistryKey)"
+                            Name="StartMenuShortcut"
+                            Type="raw"/>
+        </Property>
+        <Property Id="DESKTOPSHORTCUT_USER_REG" Secure="yes">
+            <RegistrySearch Id="SearchUserDesktopShortcut"
+                            Root="HKCU"
+                            Key="$(var.InstallerRegistryKey)"
+                            Name="DesktopShortcut"
+                            Type="raw"/>
+        </Property>
+        <Property Id="DESKTOPSHORTCUT_MACHINE_REG" Secure="yes">
+            <RegistrySearch Id="SearchMachineDesktopShortcut"
+                            Root="HKLM"
+                            Key="$(var.InstallerRegistryKey)"
+                            Name="DesktopShortcut"
+                            Type="raw"/>
+        </Property>
+
+        <SetProperty Id="CREATESTARTMENUSHORTCUT" Action="Set_CREATESTARTMENUSHORTCUT_Checked"
+                     Value="1" After="AppSearch" Sequence="ui"
+                     Condition="STARTMENUSHORTCUT_USER_REG = &quot;#1&quot; OR STARTMENUSHORTCUT_MACHINE_REG = &quot;#1&quot;"/>
+        <SetProperty Id="CREATESTARTMENUSHORTCUT" Action="Set_CREATESTARTMENUSHORTCUT_Unchecked"
+                     Value="{}" After="Set_CREATESTARTMENUSHORTCUT_Checked" Sequence="ui"
+                     Condition="STARTMENUSHORTCUT_USER_REG = &quot;#0&quot; OR STARTMENUSHORTCUT_MACHINE_REG = &quot;#0&quot; OR ((WIX_UPGRADE_DETECTED OR Installed) AND NOT STARTMENUSHORTCUT_USER_REG AND NOT STARTMENUSHORTCUT_MACHINE_REG)"/>
+        <SetProperty Id="CREATESTARTMENUSHORTCUT" Action="Set_CREATESTARTMENUSHORTCUT_Checked_Execute"
+                     Value="1" After="AppSearch" Sequence="execute"
+                     Condition="NOT SHORTCUTS_UI_COMPLETE AND (STARTMENUSHORTCUT_USER_REG = &quot;#1&quot; OR STARTMENUSHORTCUT_MACHINE_REG = &quot;#1&quot;)"/>
+        <SetProperty Id="CREATESTARTMENUSHORTCUT" Action="Set_CREATESTARTMENUSHORTCUT_Unchecked_Execute"
+                     Value="{}" After="Set_CREATESTARTMENUSHORTCUT_Checked_Execute" Sequence="execute"
+                     Condition="NOT SHORTCUTS_UI_COMPLETE AND (STARTMENUSHORTCUT_USER_REG = &quot;#0&quot; OR STARTMENUSHORTCUT_MACHINE_REG = &quot;#0&quot; OR ((WIX_UPGRADE_DETECTED OR Installed) AND NOT STARTMENUSHORTCUT_USER_REG AND NOT STARTMENUSHORTCUT_MACHINE_REG))"/>
+
+        <SetProperty Id="CREATEDESKTOPSHORTCUT" Action="Set_CREATEDESKTOPSHORTCUT_Checked"
+                     Value="1" After="AppSearch" Sequence="ui"
+                     Condition="DESKTOPSHORTCUT_USER_REG = &quot;#1&quot; OR DESKTOPSHORTCUT_MACHINE_REG = &quot;#1&quot;"/>
+        <SetProperty Id="CREATEDESKTOPSHORTCUT" Action="Set_CREATEDESKTOPSHORTCUT_Unchecked"
+                     Value="{}" After="Set_CREATEDESKTOPSHORTCUT_Checked" Sequence="ui"
+                     Condition="DESKTOPSHORTCUT_USER_REG = &quot;#0&quot; OR DESKTOPSHORTCUT_MACHINE_REG = &quot;#0&quot; OR ((WIX_UPGRADE_DETECTED OR Installed) AND NOT DESKTOPSHORTCUT_USER_REG AND NOT DESKTOPSHORTCUT_MACHINE_REG)"/>
+        <SetProperty Id="CREATEDESKTOPSHORTCUT" Action="Set_CREATEDESKTOPSHORTCUT_Checked_Execute"
+                     Value="1" After="AppSearch" Sequence="execute"
+                     Condition="NOT SHORTCUTS_UI_COMPLETE AND (DESKTOPSHORTCUT_USER_REG = &quot;#1&quot; OR DESKTOPSHORTCUT_MACHINE_REG = &quot;#1&quot;)"/>
+        <SetProperty Id="CREATEDESKTOPSHORTCUT" Action="Set_CREATEDESKTOPSHORTCUT_Unchecked_Execute"
+                     Value="{}" After="Set_CREATEDESKTOPSHORTCUT_Checked_Execute" Sequence="execute"
+                     Condition="NOT SHORTCUTS_UI_COMPLETE AND (DESKTOPSHORTCUT_USER_REG = &quot;#0&quot; OR DESKTOPSHORTCUT_MACHINE_REG = &quot;#0&quot; OR ((WIX_UPGRADE_DETECTED OR Installed) AND NOT DESKTOPSHORTCUT_USER_REG AND NOT DESKTOPSHORTCUT_MACHINE_REG))"/>
+
+        <?ifndef LaunchApplicationArguments ?>
+        <?define LaunchApplicationArguments = "" ?>
+        <?endif ?>
+        <CustomAction Id="LaunchApplication" FileRef="MainExecutable" ExeCommand="$(var.LaunchApplicationArguments)"
+                      Execute="immediate" Impersonate="yes" Return="asyncNoWait"/>
+
+        <Icon Id="ProductIcon.ico" SourceFile="$(var.ApplicationIcon)"/>
+        <Property Id="ARPPRODUCTICON" Value="ProductIcon.ico"/>
+        <Property Id="ARPURLINFOABOUT" Value="$(var.RepositoryUrl)"/>
+        <Property Id="ARPHELPLINK" Value="$(var.RepositoryUrl)/issues"/>
+        <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize"/>
+
+        <StandardDirectory Id="ProgramFiles6432Folder">
+            <Directory Id="INSTALLFOLDER" Name="$(var.ApplicationName)">
+                <Component Id="MainExecutableComponent" Guid="*">
+                    <File Id="MainExecutable"
+                          Source="!(bindpath.Publish)\$(var.ApplicationExecutableName).exe"
+                          KeyPath="yes"/>
+                </Component>
+                <Component Id="InstalledStateRegistryComponent" Guid="*">
+                    <RemoveRegistryValue Root="HKMU"
+                                         Key="$(var.InstallerRegistryKey)"
+                                         Name="ScopedInstallDir"/>
+                    <RegistryKey Root="HKMU" Key="$(var.InstallerRegistryKey)" ForceDeleteOnUninstall="yes">
+                        <RegistryValue Name="ProductCode" Type="string" Value="[ProductCode]" KeyPath="yes"/>
+                        <RegistryValue Name="Version" Type="string" Value="$(var.BuildVersion)"/>
+                        <RegistryValue Name="Architecture" Type="string" Value="$(var.Platform)"/>
+                        <RegistryValue Name="InstallDir" Type="string" Value="[INSTALLFOLDER]"/>
+                        <RegistryValue Name="ExecutablePath" Type="string"
+                                       Value="[INSTALLFOLDER]$(var.ApplicationExecutableName).exe"/>
+                    </RegistryKey>
+                </Component>
+
+                <?ifdef InstallerPathRegistration ?>
+                <!-- Persist the PATH checkbox independently from the PATH component so unchecked choices survive upgrades. -->
+                <Component Id="PathRegistrationStateComponent" Guid="*">
+                    <RegistryValue Root="HKMU" Key="$(var.InstallerRegistryKey)"
+                                   Name="PathRegistration" Type="integer" Value="[PATHREGISTRATIONSTATE]"
+                                   KeyPath="yes"/>
+                </Component>
+                <Component Id="UserPathEnvironmentComponent" Guid="*"
+                           Condition="NOT ALLUSERS AND PATHREGISTRATIONSTATE = 1"
+                           Transitive="yes">
+                    <Environment Id="AddUserInstallPath" Name="PATH" Action="set" Part="last"
+                                 System="no" Value="[INSTALLFOLDER]"/>
+                    <RegistryValue Root="HKMU" Key="$(var.InstallerRegistryKey)"
+                                   Name="UserPathEnvironment" Type="integer" Value="1" KeyPath="yes"/>
+                </Component>
+                <Component Id="MachinePathEnvironmentComponent" Guid="*"
+                           Condition="ALLUSERS AND PATHREGISTRATIONSTATE = 1"
+                           Transitive="yes">
+                    <Environment Id="AddMachineInstallPath" Name="PATH" Action="set" Part="last"
+                                 System="yes" Value="[INSTALLFOLDER]"/>
+                    <RegistryValue Root="HKMU" Key="$(var.InstallerRegistryKey)"
+                                   Name="MachinePathEnvironment" Type="integer" Value="1" KeyPath="yes"/>
+                </Component>
+                <?endif ?>
+
+                <!-- HKMU and the shell-folder properties resolve from the package's selected install context. -->
+                <Component Id="StartMenuShortcutComponent" Guid="*"
+                           Condition="CREATESTARTMENUSHORTCUT = 1" Transitive="yes">
+                    <Shortcut Id="StartMenuShortcut" Directory="ApplicationProgramsFolder"
+                              Name="$(var.ApplicationName)" Target="[INSTALLFOLDER]$(var.ApplicationExecutableName).exe"
+                              WorkingDirectory="INSTALLFOLDER"/>
+                    <Shortcut Id="StartMenuUninstallShortcut" Directory="ApplicationProgramsFolder"
+                              Name="Uninstall $(var.ApplicationName)" Target="[System64Folder]msiexec.exe"
+                              Description="Uninstalls $(var.ApplicationName) and all of its components"
+                              Arguments="/x [ProductCode]"
+                              Icon="ProductIcon.ico" IconIndex="0"/>
+                    <RegistryValue Root="HKMU" Key="$(var.InstallerRegistryKey)"
+                                   Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes"/>
+                    <RemoveFolder Id="RemoveApplicationProgramsFolder"
+                                  Directory="ApplicationProgramsFolder"
+                                  On="uninstall"/>
+                </Component>
+
+                <Component Id="DesktopShortcutComponent" Guid="*"
+                           Condition="CREATEDESKTOPSHORTCUT = 1" Transitive="yes">
+                    <Shortcut Id="DesktopShortcut" Directory="DesktopFolder"
+                              Name="$(var.ApplicationName)" Target="[INSTALLFOLDER]$(var.ApplicationExecutableName).exe"
+                              WorkingDirectory="INSTALLFOLDER"/>
+                    <RegistryValue Root="HKMU" Key="$(var.InstallerRegistryKey)"
+                                   Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes"/>
+                </Component>
+
+                <?ifdef FileAssociations ?>
+                <Component Id="FileAssociationsCapabilityComponent" Guid="*">
+                    <RegistryKey Root="HKMU" Key="Software\RegisteredApplications">
+                        <RegistryValue Name="$(var.ApplicationName)" Value="$(var.ApplicationCapabilitiesRegistryKey)"
+                                       Type="string" KeyPath="yes"/>
+                    </RegistryKey>
+                    <RegistryKey Root="HKMU" Key="$(var.ApplicationCapabilitiesRegistryKey)">
+                        <RegistryValue Name="ApplicationName" Value="$(var.ApplicationName)" Type="string"/>
+                        <RegistryValue Name="ApplicationDescription" Value="$(var.Description)" Type="string"/>
+                    </RegistryKey>
+                    <?foreach Ext in $(var.FileAssociations) ?>
+                    <RegistryKey Root="HKMU" Key="$(var.ApplicationCapabilitiesRegistryKey)\FileAssociations">
+                        <RegistryValue Name="$(var.Ext)" Value="$(var.ApplicationName)$(var.Ext)" Type="string"/>
+                    </RegistryKey>
+                    <RegistryKey Root="HKMU" Key="Software\Classes\$(var.ApplicationName)$(var.Ext)">
+                        <RegistryValue Value="$(var.ApplicationName) $(var.Ext) File" Type="string"/>
+                        <RegistryValue Name="FriendlyTypeName" Value="$(var.ApplicationName) $(var.Ext) File"
+                                       Type="string"/>
+                        <RegistryKey Key="DefaultIcon">
+                            <RegistryValue Value="[INSTALLFOLDER]$(var.ApplicationExecutableName).exe,0" Type="string"/>
+                        </RegistryKey>
+                        <RegistryKey Key="shell\open\command">
+                            <RegistryValue
+                                    Value="&quot;[INSTALLFOLDER]$(var.ApplicationExecutableName).exe&quot; &quot;%1&quot;"
+                                    Type="string"/>
+                        </RegistryKey>
+                    </RegistryKey>
+                    <RegistryKey Root="HKMU" Key="Software\Classes\$(var.Ext)\OpenWithProgids">
+                        <RegistryValue Name="$(var.ApplicationName)$(var.Ext)" Value="" Type="string"/>
+                    </RegistryKey>
+                    <?endforeach ?>
+                </Component>
+                <?endif ?>
+
+                <?ifdef UrlSchemes ?>
+                <Component Id="UrlSchemesCapabilityComponent" Guid="*">
+                    <RegistryKey Root="HKMU" Key="Software\RegisteredApplications">
+                        <RegistryValue Name="$(var.ApplicationName) Protocols"
+                                       Value="$(var.ApplicationCapabilitiesRegistryKey)" Type="string" KeyPath="yes"/>
+                    </RegistryKey>
+                    <RegistryKey Root="HKMU" Key="$(var.ApplicationCapabilitiesRegistryKey)\URLAssociations">
+                        <?foreach Scheme in $(var.UrlSchemes) ?>
+                        <RegistryValue Name="$(var.Scheme)" Value="$(var.ApplicationName).$(var.Scheme)" Type="string"/>
+                        <?endforeach ?>
+                    </RegistryKey>
+                    <?foreach Scheme in $(var.UrlSchemes) ?>
+                    <RegistryKey Root="HKMU" Key="Software\Classes\$(var.ApplicationName).$(var.Scheme)">
+                        <RegistryValue Value="URL:$(var.ApplicationName) Protocol" Type="string"/>
+                        <RegistryValue Name="URL Protocol" Value="" Type="string"/>
+                        <RegistryKey Key="DefaultIcon">
+                            <RegistryValue Value="[INSTALLFOLDER]$(var.ApplicationExecutableName).exe,0" Type="string"/>
+                        </RegistryKey>
+                        <RegistryKey Key="shell\open\command">
+                            <RegistryValue
+                                    Value="&quot;[INSTALLFOLDER]$(var.ApplicationExecutableName).exe&quot; &quot;%1&quot;"
+                                    Type="string"/>
+                        </RegistryKey>
+                    </RegistryKey>
+                    <RegistryKey Root="HKMU" Key="Software\Classes\$(var.Scheme)">
+                        <RegistryValue Value="URL:$(var.ApplicationName) Protocol" Type="string"/>
+                        <RegistryValue Name="URL Protocol" Value="" Type="string"/>
+                        <RegistryKey Key="DefaultIcon">
+                            <RegistryValue Value="[INSTALLFOLDER]$(var.ApplicationExecutableName).exe,0" Type="string"/>
+                        </RegistryKey>
+                        <RegistryKey Key="shell\open\command">
+                            <RegistryValue
+                                    Value="&quot;[INSTALLFOLDER]$(var.ApplicationExecutableName).exe&quot; &quot;%1&quot;"
+                                    Type="string"/>
+                        </RegistryKey>
+                    </RegistryKey>
+                    <?endforeach ?>
+                </Component>
+                <?endif ?>
+
+                <?ifdef ContextMenuOpenWith ?>
+                <Component Id="ContextMenuOpenWithComponent" Guid="*">
+                    <RegistryKey Root="HKMU" Key="Software\Classes\*\shell\$(var.ApplicationName)"
+                                 ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
+                        <?ifdef ContextMenuOpenWithTitle ?>
+                        <RegistryValue Value="$(var.ContextMenuOpenWithTitle)" Type="string" KeyPath="yes"/>
+                        <?else ?>
+                        <RegistryValue Value="Open with $(var.ApplicationName)" Type="string" KeyPath="yes"/>
+                        <?endif ?>
+                        <RegistryValue Name="Icon" Value="[INSTALLFOLDER]$(var.ApplicationExecutableName).exe"
+                                       Type="string"/>
+                        <RegistryValue Name="Position" Value="Top" Type="string"/>
+                        <?ifdef ContextMenuOpenWithAppliesTo ?>
+                        <RegistryValue Name="AppliesTo" Value="$(var.ContextMenuOpenWithAppliesTo)" Type="string"/>
+                        <?endif ?>
+                        <RegistryKey Key="command" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
+                            <?ifdef ContextMenuOpenWithCommandArgs ?>
+                            <RegistryValue
+                                    Value="&quot;[INSTALLFOLDER]$(var.ApplicationExecutableName).exe&quot; $(var.ContextMenuOpenWithCommandArgs)"
+                                    Type="string"/>
+                            <?else ?>
+                            <RegistryValue
+                                    Value="&quot;[INSTALLFOLDER]$(var.ApplicationExecutableName).exe&quot; &quot;%1&quot;"
+                                    Type="string"/>
+                            <?endif ?>
+                        </RegistryKey>
+                    </RegistryKey>
+                    <RegistryValue Root="HKMU" Key="$(var.InstallerRegistryKey)"
+                                   Name="ContextMenuOpenWith" Type="integer" Value="1"/>
+                </Component>
+                <?endif ?>
+
+                <Files Include="!(bindpath.Publish)\**">
+                    <Exclude Files="!(bindpath.Publish)\$(var.ApplicationExecutableName).exe"/>
+                </Files>
+            </Directory>
+        </StandardDirectory>
+
+        <StandardDirectory Id="ProgramMenuFolder">
+            <Directory Id="ApplicationProgramsFolder" Name="$(var.ApplicationName)"/>
+        </StandardDirectory>
+
+        <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER"/>
+        <UI>
+            <Publish Dialog="LicenseAgreementDlg" Control="Next" Event="NewDialog"
+                     Value="InstallOptionsDlg" Order="2" Condition="LicenseAccepted = &quot;1&quot;"/>
+            <Publish Dialog="InstallDirDlg" Control="Back" Event="NewDialog"
+                     Value="InstallOptionsDlg" Order="2" Condition="NOT Installed"/>
+            <!-- Mirror the built-in show condition of the checkbox so it is never shown but inert. -->
+            <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchApplication"
+                     Order="1"
+                     Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed"/>
+            <Dialog Id="InstallOptionsDlg" Width="370" Height="270" Title="[ProductName] v[ProductVersion] Setup">
+                <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44"
+                         TabSkip="yes" Text="!(loc.InstallDirDlgBannerBitmap)"/>
+                <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0"/>
+                <Control Id="Title" Type="Text" X="15" Y="15" Width="280" Height="20"
+                         Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}Installation options"/>
+                <?if $(var.InstallerScope) = "perMachineOrUser" ?>
+                <Control Id="InstallScope" Type="RadioButtonGroup" X="20" Y="60" Width="330" Height="45"
+                         Property="INSTALLSCOPE"
+                         DisableCondition="WIX_UPGRADE_DETECTED OR Installed"
+                         EnableCondition="NOT WIX_UPGRADE_DETECTED AND NOT Installed">
+                    <RadioButtonGroup Property="INSTALLSCOPE">
+                        <RadioButton Value="perMachine" X="0" Y="0" Width="310" Height="16"
+                                     Text="Install for all users (requires administrator privileges)"/>
+                        <RadioButton Value="perUser" X="0" Y="22" Width="310" Height="16"
+                                     Text="Install only for me"/>
+                    </RadioButtonGroup>
+                </Control>
+                <?elseif $(var.InstallerScope) = "perUser" ?>
+                <Control Id="InstallScopeFixed" Type="Text" X="20" Y="65" Width="330" Height="30"
+                         Text="This application will be installed only for the current user."/>
+                <?else ?>
+                <Control Id="InstallScopeFixed" Type="Text" X="20" Y="65" Width="330" Height="30"
+                         Text="This application will be installed for all users and requires administrator privileges."/>
+                <?endif ?>
+                <Control Id="StartMenu" Type="CheckBox" X="20" Y="125" Width="330" Height="18"
+                         Property="CREATESTARTMENUSHORTCUT" CheckBoxValue="1" Text="Create Start menu shortcut"/>
+                <Control Id="Desktop" Type="CheckBox" X="20" Y="155" Width="330" Height="18"
+                         Property="CREATEDESKTOPSHORTCUT" CheckBoxValue="1" Text="Create Desktop shortcut"/>
+                <?ifdef InstallerPathRegistration ?>
+                <?if $(var.InstallerPathRegistration) != "Register" ?>
+                <Control Id="RegisterInstallPath" Type="CheckBox" X="20" Y="185" Width="330" Height="18"
+                         Property="REGISTERINSTALLPATH" CheckBoxValue="1"
+                         Text="Add installation directory to PATH"/>
+                <?endif ?>
+                <?endif ?>
+                <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0"/>
+                <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="!(loc.WixUIBack)">
+                    <Publish Event="NewDialog" Value="LicenseAgreementDlg"/>
+                </Control>
+                <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes"
+                         Text="!(loc.WixUINext)">
+                    <?if $(var.InstallerScope) = "perMachineOrUser" ?>
+                    <Publish Property="ALLUSERS" Value="2" Order="2"
+                             Condition="INSTALLSCOPE = &quot;perUser&quot;"/>
+                    <Publish Property="MSIINSTALLPERUSER" Value="1" Order="3"
+                             Condition="INSTALLSCOPE = &quot;perUser&quot;"/>
+                    <Publish Property="ALLUSERS" Value="2" Order="4"
+                             Condition="INSTALLSCOPE = &quot;perMachine&quot;"/>
+                    <Publish Property="MSIINSTALLPERUSER" Value="{}" Order="5"
+                             Condition="INSTALLSCOPE = &quot;perMachine&quot;"/>
+                    <?endif ?>
+                    <Publish Property="INSTALLFOLDER" Value="[USERINSTALLFOLDER]" Order="6"
+                             Condition="INSTALLSCOPE = &quot;perUser&quot; AND USERINSTALLFOLDER"/>
+                    <Publish Property="INSTALLFOLDER" Value="[LocalAppDataFolder]Programs\$(var.ApplicationName)"
+                             Order="7"
+                             Condition="INSTALLSCOPE = &quot;perUser&quot; AND NOT USERINSTALLFOLDER"/>
+                    <Publish Property="INSTALLFOLDER" Value="[MACHINEINSTALLFOLDER]" Order="8"
+                             Condition="INSTALLSCOPE = &quot;perMachine&quot; AND MACHINEINSTALLFOLDER"/>
+                    <Publish Property="INSTALLFOLDER" Value="[MACHINEPROGRAMFILESFOLDER]\$(var.ApplicationName)"
+                             Order="9"
+                             Condition="INSTALLSCOPE = &quot;perMachine&quot; AND NOT MACHINEINSTALLFOLDER"/>
+                    <Publish Property="SHORTCUTS_UI_COMPLETE" Value="1" Order="10"/>
+                    <?ifdef InstallerPathRegistration ?>
+                    <?if $(var.InstallerPathRegistration) != "Register" ?>
+                    <Publish Property="PATHREGISTRATION_UI_COMPLETE" Value="1" Order="11"/>
+                    <Publish Property="PATHREGISTRATIONSTATE" Value="1" Order="12"
+                             Condition="REGISTERINSTALLPATH = 1"/>
+                    <Publish Property="PATHREGISTRATIONSTATE" Value="0" Order="13"
+                             Condition="NOT REGISTERINSTALLPATH"/>
+                    <?endif ?>
+                    <?endif ?>
+                    <Publish Event="NewDialog" Value="InstallDirDlg" Order="14"/>
+                </Control>
+                <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes"
+                         Text="!(loc.WixUICancel)">
+                    <Publish Event="SpawnDialog" Value="CancelDlg"/>
+                </Control>
+            </Dialog>
+        </UI>
+        <WixVariable Id="WixUILicenseRtf" Value="$(var.LicenseFile)"/>
+        <?ifdef InstallerDialogImage ?>
+        <WixVariable Id="WixUIDialogBmp" Value="$(var.InstallerDialogImage)"/>
+        <?endif ?>
+        <?ifdef InstallerBannerImage ?>
+        <WixVariable Id="WixUIBannerBmp" Value="$(var.InstallerBannerImage)"/>
+        <?endif ?>
+    </Package>
+</Wix>

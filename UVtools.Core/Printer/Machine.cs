@@ -13,6 +13,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
+using StageKit.Extensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.Objects;
 

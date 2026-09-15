@@ -1,0 +1,22 @@
+<WixLocalization xmlns="http://wixtoolset.org/schemas/v4/wxl" Culture="en-US">
+    <String Id="BrowseDlg_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="CancelDlg_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="DiskCostDlg_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="ErrorDlg_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="ExitDialog_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="FatalError_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="FilesInUse_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="MsiRMFilesInUse_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="InstallDirDlg_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="InvalidDirDlg_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="LicenseAgreementDlg_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="MaintenanceWelcomeDlg_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="MaintenanceTypeDlg_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="PrepareDlg_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="ProgressDlg_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="ResumeDlg_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="UserExit_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="VerifyReadyDlg_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="WelcomeDlg_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+    <String Id="WaitForCostingDlg_Title" Value="[ProductName] v[ProductVersion] Setup"/>
+</WixLocalization>

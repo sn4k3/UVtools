@@ -1,0 +1,308 @@
+name: 🚀 Publish release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and validate without creating a tag or release
+        required: false
+        default: true
+        type: boolean
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_NOLOGO: true
+  NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+  WINGET_PACKAGE_ID: PTRTECH.UVtools
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  release_information:
+    name: 🔍 Validate release information
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      changelog: ${{ steps.release.outputs.changelog }}
+      tag: ${{ steps.release.outputs.tag }}
+      version: ${{ steps.release.outputs.version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Extract and validate version and changelog
+        id: release
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          [xml] $properties = Get-Content -LiteralPath 'Directory.Build.props' -Raw
+          $version = ([string] $properties.Project.PropertyGroup.UVtoolsVersion).Trim()
+          if ($version -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') {
+            throw "Invalid UVtoolsVersion: '$version'."
+          }
+
+          $lines = Get-Content -LiteralPath 'CHANGELOG.md'
+          $headingIndex = 0..($lines.Count - 1) |
+            Where-Object { $lines[$_] -match '^##\s+.+\s+-\s+v(?<version>\S+)\s*$' } |
+            Select-Object -First 1
+          if ($null -eq $headingIndex) {
+            throw 'CHANGELOG.md does not contain a version heading.'
+          }
+
+          $headingVersion = [regex]::Match(
+            $lines[$headingIndex],
+            '^##\s+.+\s+-\s+v(?<version>\S+)\s*$'
+          ).Groups['version'].Value
+          if ($headingVersion -ne $version) {
+            throw "Directory.Build.props version '$version' does not match the latest changelog version '$headingVersion'."
+          }
+
+          $nextHeading = (($headingIndex + 1)..($lines.Count - 1) |
+            Where-Object { $lines[$_] -match '^##\s+' } |
+            Select-Object -First 1)
+          if ($null -eq $nextHeading) {
+            $nextHeading = $lines.Count
+          }
+
+          $changelog = ($lines[($headingIndex + 1)..($nextHeading - 1)] -join "`n").Trim()
+          if ([string]::IsNullOrWhiteSpace($changelog)) {
+            throw "The changelog section for v$version is empty."
+          }
+
+          $delimiter = "CHANGELOG_$([guid]::NewGuid().ToString('N'))"
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=v$version" >> $env:GITHUB_OUTPUT
+          "changelog<<$delimiter" >> $env:GITHUB_OUTPUT
+          $changelog >> $env:GITHUB_OUTPUT
+          $delimiter >> $env:GITHUB_OUTPUT
+
+      - name: Verify tag does not already exist
+        if: ${{ !inputs.dry_run }}
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        shell: bash
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG"; then
+            echo "Tag $RELEASE_TAG already exists." >&2
+            exit 1
+          fi
+
+  test:
+    name: 🧪 Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'NuGet.Config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore tests/UVtools.Tests/UVtools.Tests.csproj -p:NuGetAudit=false
+
+      - name: Run tests
+        run: dotnet test tests/UVtools.Tests/UVtools.Tests.csproj --configuration Release --no-restore
+
+  build:
+    name: 🛠️ Publish asset (${{ matrix.rid }})
+    needs: [release_information, test]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: win-x64
+            os: windows-latest
+          - rid: win-arm64
+            os: windows-latest
+          - rid: linux-x64
+            os: ubuntu-24.04
+          - rid: linux-arm64
+            os: ubuntu-24.04-arm
+          - rid: osx-x64
+            os: macos-15-intel
+          - rid: osx-arm64
+            os: macos-15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'NuGet.Config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore UVtools.slnx -p:NuGetAudit=false
+
+      - name: Install Linux packaging tools
+        if: ${{ startsWith(matrix.os, 'ubuntu-') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes dpkg-dev rpm makepkg pacman-package-manager fakeroot zstd libarchive-tools
+          command -v dpkg-deb
+          command -v rpmbuild
+          command -v makepkg
+          command -v pacman
+          command -v bsdtar
+
+      - name: Publish runtime asset
+        run: >-
+          dotnet run --project build/build.csproj
+          --configuration Release --no-restore --
+          Publish --rids ${{ matrix.rid }} --delete-publish-directories
+
+      - name: Upload release assets
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.rid }}
+          path: artifacts/publish/*
+          if-no-files-found: error
+          retention-days: 7
+
+  create_tag:
+    name: 🏷️ Create tag
+    needs: [release_information, build]
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Create and push tag
+        env:
+          RELEASE_TAG: ${{ needs.release_information.outputs.tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag --annotate "$RELEASE_TAG" --message "Release $RELEASE_TAG" "$GITHUB_SHA"
+          git push origin "$RELEASE_TAG"
+
+  create_release:
+    name: 🎉 Create GitHub release
+    needs: [release_information, build, create_tag]
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download release assets
+        uses: actions/download-artifact@v8
+        with:
+          path: release-artifacts
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.release_information.outputs.tag }}
+          name: ${{ needs.release_information.outputs.tag }}
+          body: ${{ needs.release_information.outputs.changelog }}
+          draft: false
+          prerelease: ${{ contains(needs.release_information.outputs.version, '-alpha') || contains(needs.release_information.outputs.version, '-beta') || contains(needs.release_information.outputs.version, '-preview') || contains(needs.release_information.outputs.version, '-rc') }}
+          files: release-artifacts/**/*
+          fail_on_unmatched_files: true
+
+      - name: Delete tag if release creation fails
+        if: ${{ failure() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ needs.release_information.outputs.tag }}
+        run: gh api --method DELETE "repos/${GITHUB_REPOSITORY}/git/refs/tags/${RELEASE_TAG}"
+
+  publish_packages:
+    name: 📦 Publish NuGet packages
+    needs: [release_information, create_release]
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release_information.outputs.tag }}
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'NuGet.Config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore UVtools.slnx -p:NuGetAudit=false
+
+      - name: Pack libraries
+        run: |
+          dotnet pack UVtools.Core --configuration Release --no-restore --output packages
+          dotnet pack UVtools.AvaloniaControls --configuration Release --no-restore --output packages
+
+      - name: Publish to NuGet.org
+        env:
+          NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
+        run: dotnet nuget push "packages/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key "$NUGET_TOKEN" --skip-duplicate
+
+      - name: Publish to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet nuget push "packages/*.nupkg" --source "https://nuget.pkg.github.com/${GITHUB_REPOSITORY_OWNER}/index.json" --api-key "$GITHUB_TOKEN" --skip-duplicate
+
+  winget:
+    name: 🚀 Submit Winget update
+    needs: [release_information, create_release]
+    if: ${{ !inputs.dry_run }}
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Submit package update
+        uses: vedantmgoyal2009/winget-releaser@v2
+        with:
+          identifier: ${{ env.WINGET_PACKAGE_ID }}
+          release-tag: ${{ needs.release_information.outputs.tag }}
+          version: ${{ needs.release_information.outputs.version }}
+          token: ${{ secrets.WINGET_TOKEN }}

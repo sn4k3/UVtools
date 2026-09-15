@@ -9,6 +9,7 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Text;
+using StageKit.Extensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
