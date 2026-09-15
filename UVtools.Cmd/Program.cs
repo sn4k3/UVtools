@@ -64,10 +64,7 @@ internal class Program
         };
 
         HandleGlobals();
-        await rootCommand.Parse(args).InvokeAsync();
-
-        return 1;
-
+        return await rootCommand.Parse(args).InvokeAsync().ConfigureAwait(false);
     }
 
     internal static void HandleGlobals()

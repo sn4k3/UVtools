@@ -164,11 +164,9 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
             CvInvoke.DrawContours(output, externals, -1, EmguCvExtensions.BlackColor, -1);
         }
 
-        /// <summary>
-        /// Gets the rectangle that encloses every contour of <paramref name="group"/>, clamped to <paramref name="bounds"/>.
-        /// The resin trap passes only ever touch pixels inside this rectangle, so all the per-contour
-        /// mat work can be confined to it instead of running over the whole layer.
-        /// </summary>
+        /* Gets the rectangle that encloses every contour of the group, clamped to bounds.
+         * The resin trap passes only ever touch pixels inside this rectangle, so all the per-contour
+         * mat work can be confined to it instead of running over the whole layer. */
         static Rectangle GetContourGroupRoi(VectorOfVectorOfPoint group, Size bounds)
         {
             if (group.Size == 0) return Rectangle.Empty;

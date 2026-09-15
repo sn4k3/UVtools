@@ -1,6 +1,6 @@
 # Changelog
 
-## /09/2026 - v6.3.0
+## 15/09/2026 - v6.3.0
 
 - **AdvancedImageBox**
   - (Add) `PanBoundsMode` property to choose the pan bounds mode, if `Padding` is selected it will add that padding to
@@ -24,7 +24,10 @@
 - (Fix) empty-layer classification in linear time by @apullin (#1145)
 - (Fix) Object reference not set to an instance of an object after clicking File -> Reload (#1141)
 - (Fix) Disposed generated tracker and ROI crop bitmaps
+- (Fix) UVtoolsCmd: it always return 1 exit code
 - (Upgrade) .NET from 10.0.10 to 10.0.12
+- (Fix) SL1 layer height round trips by @apullin (#1147)
+- (Upgrade) .NET from 10.0.10 to 10.0.11
 - (Upgrade) AvaloniaUI from 12.1.1 to 12.1.2
 
 ## 06/08/2026 - v6.2.0
