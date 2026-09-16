@@ -7,6 +7,7 @@
 using System;
 using System.Buffers;
 using System.ComponentModel;
+using System.Drawing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -110,7 +111,13 @@ public sealed class VoxelPreviewMesh : IDisposable
         Vector3 maximumBounds,
         int samplingStride,
         VoxelPreviewSourceSnapshot source,
-        VoxelPreviewQuality quality)
+        VoxelPreviewQuality quality,
+        Rectangle modelBounds,
+        float pixelWidth,
+        float pixelHeight,
+        int gridWidth,
+        int gridHeight,
+        FlipDirection workAroundFlip)
     {
         _vertices = vertices;
         VertexCount = vertexCount;
@@ -122,6 +129,12 @@ public sealed class VoxelPreviewMesh : IDisposable
         SourceRevision = source.Revision;
         Quality = quality;
         _source = source;
+        ModelBounds = modelBounds;
+        PixelWidth = pixelWidth;
+        PixelHeight = pixelHeight;
+        GridWidth = gridWidth;
+        GridHeight = gridHeight;
+        WorkAroundFlip = workAroundFlip;
     }
 
     public int VertexCount { get; }
@@ -135,6 +148,16 @@ public sealed class VoxelPreviewMesh : IDisposable
     public long SourceRevision { get; }
     public VoxelPreviewQuality Quality { get; }
     public TimeSpan BuildDuration { get; internal set; }
+    public Rectangle ModelBounds { get; }
+    public float PixelWidth { get; }
+    public float PixelHeight { get; }
+    public int GridWidth { get; }
+    public int GridHeight { get; }
+    public FlipDirection WorkAroundFlip { get; }
+    public float BoundsMinX => ModelBounds.X * PixelWidth;
+    public float BoundsMinY => ModelBounds.Y * PixelHeight;
+    public float BoundsMaxX => ModelBounds.Right * PixelWidth;
+    public float BoundsMaxY => ModelBounds.Bottom * PixelHeight;
 
     public ReadOnlySpan<VoxelPreviewVertex> Vertices => _vertices.AsSpan(0, VertexCount);
     public ReadOnlySpan<uint> Indices => _indices.AsSpan(0, IndexCount);

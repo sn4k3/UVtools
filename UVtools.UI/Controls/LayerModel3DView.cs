@@ -44,11 +44,11 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                                  #version 330 core
                                                  in vec3 vNormal;
                                                  in vec3 vWorldPosition;
-                                                  uniform vec3 uColor;
-                                                  uniform float uAlpha;
-                                                  uniform int uUnlit;
-                                                  uniform vec3 uLightDirection;
-                                                  uniform float uAmbientLight;
+                                                 uniform vec3 uColor;
+                                                 uniform float uAlpha;
+                                                 uniform int uUnlit;
+                                                 uniform vec3 uLightDirection;
+                                                 uniform float uAmbientLight;
                                                  uniform float uClipZ;
                                                  uniform int uClipEnabled;
                                                  out vec4 fragmentColor;
@@ -57,10 +57,45 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                                      if (uClipEnabled != 0 && vWorldPosition.z > uClipZ) discard;
                                                      float diffuse = max(dot(normalize(vNormal), uLightDirection), 0.0);
                                                      float lighting = uAmbientLight + diffuse * (1.0 - uAmbientLight);
-                                                      vec3 color = uUnlit != 0 ? uColor : uColor * lighting;
-                                                      fragmentColor = vec4(color, uAlpha);
+                                                     vec3 color = uUnlit != 0 ? uColor : uColor * lighting;
+                                                     fragmentColor = vec4(color, uAlpha);
                                                  }
                                                  """;
+
+    private const string DesktopCapVertexShader = """
+                                                  #version 330 core
+                                                  layout (location = 0) in vec3 aPosition;
+                                                  layout (location = 1) in vec2 aTexCoord;
+                                                  uniform mat4 uViewProjection;
+                                                  out vec2 vTexCoord;
+                                                  void main()
+                                                  {
+                                                      vTexCoord = aTexCoord;
+                                                      gl_Position = uViewProjection * vec4(aPosition, 1.0);
+                                                  }
+                                                  """;
+
+    private const string DesktopCapFragmentShader = """
+                                                    #version 330 core
+                                                    in vec2 vTexCoord;
+                                                    uniform sampler2D uCapTexture;
+                                                    uniform vec3 uColor;
+                                                    uniform float uAlpha;
+                                                    uniform int uUnlit;
+                                                    uniform vec3 uLightDirection;
+                                                    uniform float uAmbientLight;
+                                                    out vec4 fragmentColor;
+                                                    void main()
+                                                    {
+                                                        float mask = texture(uCapTexture, vTexCoord).r;
+                                                        if (mask < 0.5) discard;
+                                                        vec3 normal = gl_FrontFacing ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 0.0, -1.0);
+                                                        float diffuse = max(dot(normal, uLightDirection), 0.0);
+                                                        float lighting = uAmbientLight + diffuse * (1.0 - uAmbientLight);
+                                                        vec3 color = uUnlit != 0 ? uColor : uColor * lighting;
+                                                        fragmentColor = vec4(color, uAlpha);
+                                                    }
+                                                    """;
 
     private const string EsVertexShader = """
                                           #version 300 es
@@ -83,11 +118,11 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                             precision highp float;
                                             in vec3 vNormal;
                                             in vec3 vWorldPosition;
-                                             uniform vec3 uColor;
-                                             uniform float uAlpha;
-                                             uniform int uUnlit;
-                                             uniform vec3 uLightDirection;
-                                             uniform float uAmbientLight;
+                                            uniform vec3 uColor;
+                                            uniform float uAlpha;
+                                            uniform int uUnlit;
+                                            uniform vec3 uLightDirection;
+                                            uniform float uAmbientLight;
                                             uniform float uClipZ;
                                             uniform int uClipEnabled;
                                             out vec4 fragmentColor;
@@ -96,10 +131,47 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                                 if (uClipEnabled != 0 && vWorldPosition.z > uClipZ) discard;
                                                 float diffuse = max(dot(normalize(vNormal), uLightDirection), 0.0);
                                                 float lighting = uAmbientLight + diffuse * (1.0 - uAmbientLight);
-                                                 vec3 color = uUnlit != 0 ? uColor : uColor * lighting;
-                                                 fragmentColor = vec4(color, uAlpha);
+                                                vec3 color = uUnlit != 0 ? uColor : uColor * lighting;
+                                                fragmentColor = vec4(color, uAlpha);
                                             }
                                             """;
+
+    private const string EsCapVertexShader = """
+                                             #version 300 es
+                                             precision highp float;
+                                             layout (location = 0) in vec3 aPosition;
+                                             layout (location = 1) in vec2 aTexCoord;
+                                             uniform mat4 uViewProjection;
+                                             out vec2 vTexCoord;
+                                             void main()
+                                             {
+                                                 vTexCoord = aTexCoord;
+                                                 gl_Position = uViewProjection * vec4(aPosition, 1.0);
+                                             }
+                                             """;
+
+    private const string EsCapFragmentShader = """
+                                               #version 300 es
+                                               precision highp float;
+                                               in vec2 vTexCoord;
+                                               uniform sampler2D uCapTexture;
+                                               uniform vec3 uColor;
+                                               uniform float uAlpha;
+                                               uniform int uUnlit;
+                                               uniform vec3 uLightDirection;
+                                               uniform float uAmbientLight;
+                                               out vec4 fragmentColor;
+                                               void main()
+                                               {
+                                                   float mask = texture(uCapTexture, vTexCoord).r;
+                                                   if (mask < 0.5) discard;
+                                                   vec3 normal = gl_FrontFacing ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 0.0, -1.0);
+                                                   float diffuse = max(dot(normal, uLightDirection), 0.0);
+                                                   float lighting = uAmbientLight + diffuse * (1.0 - uAmbientLight);
+                                                   vec3 color = uUnlit != 0 ? uColor : uColor * lighting;
+                                                   fragmentColor = vec4(color, uAlpha);
+                                               }
+                                               """;
 
     public static readonly StyledProperty<Avalonia.Media.Color> VoxelColorProperty =
         AvaloniaProperty.Register<LayerModel3DView, Avalonia.Media.Color>(nameof(VoxelColor),
@@ -173,6 +245,32 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private float _cameraAnimationYawDelta;
     private float _cameraAnimationTargetPitch;
 
+    private uint _capVertexArray;
+    private uint _capVertexBuffer;
+    private uint _capIndexBuffer;
+    private uint _capTexture;
+    private uint _capShaderProgram;
+    private int _capViewProjectionLocation;
+    private int _capColorLocation;
+    private int _capAlphaLocation;
+    private int _capUnlitLocation;
+    private int _capLightDirectionLocation;
+    private int _capAmbientLightLocation;
+    private int _capTextureLocation;
+    private int _capTextureWidth;
+    private int _capTextureHeight;
+
+    private byte[]? _pendingCapData;
+    private int _pendingCapWidth;
+    private int _pendingCapHeight;
+    private float _capMinX;
+    private float _capMinY;
+    private float _capMaxX;
+    private float _capMaxY;
+    private bool _hasCapData;
+    private bool _needsCapUpload;
+    private bool _needsCapGeometryUpload;
+
     static LayerModel3DView()
     {
         VoxelColorProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
@@ -203,6 +301,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             var resetCamera = _mesh is null && value is not null;
             _mesh = value;
             _needsUpload = true;
+            if (value is null) ClearCap();
             if (resetCamera) ResetCamera();
             RequestNextFrameRendering();
         }
@@ -234,6 +333,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         {
             if (_clipToLayer == value) return;
             _clipToLayer = value;
+            if (!value) ClearCap();
             RequestNextFrameRendering();
         }
     }
@@ -243,10 +343,42 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         get => _clipZ;
         set
         {
-            if (_clipZ.Equals(value)) return;
+            if (Math.Abs(_clipZ - value) < 0.0001f) return;
             _clipZ = value;
+            _needsCapGeometryUpload = true;
             RequestNextFrameRendering();
         }
+    }
+
+    public void SetCap(byte[] data, int width, int height, float minX, float minY, float maxX, float maxY)
+    {
+        if (_pendingCapData is not null)
+        {
+            ArrayPool<byte>.Shared.Return(_pendingCapData);
+        }
+
+        _pendingCapData = data;
+        _pendingCapWidth = width;
+        _pendingCapHeight = height;
+        _capMinX = minX;
+        _capMinY = minY;
+        _capMaxX = maxX;
+        _capMaxY = maxY;
+        _needsCapUpload = true;
+        _needsCapGeometryUpload = true;
+        RequestNextFrameRendering();
+    }
+
+    public void ClearCap()
+    {
+        if (_pendingCapData is not null)
+        {
+            ArrayPool<byte>.Shared.Return(_pendingCapData);
+            _pendingCapData = null;
+        }
+
+        _hasCapData = false;
+        RequestNextFrameRendering();
     }
 
     public Avalonia.Media.Color VoxelColor
@@ -357,7 +489,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         _cameraAnimationTimer.Start();
     }
 
-    protected override void OnOpenGlInit(GlInterface gl)
+    protected override unsafe void OnOpenGlInit(GlInterface gl)
     {
         try
         {
@@ -387,10 +519,55 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             _issueVertexArray = _gl.GenVertexArray();
             _issueVertexBuffer = _gl.GenBuffer();
             _issueIndexBuffer = _gl.GenBuffer();
+
+            _capShaderProgram = CreateShaderProgram(
+                isOpenGles ? EsCapVertexShader : DesktopCapVertexShader,
+                isOpenGles ? EsCapFragmentShader : DesktopCapFragmentShader);
+            _capViewProjectionLocation = _gl.GetUniformLocation(_capShaderProgram, "uViewProjection");
+            _capColorLocation = _gl.GetUniformLocation(_capShaderProgram, "uColor");
+            _capAlphaLocation = _gl.GetUniformLocation(_capShaderProgram, "uAlpha");
+            _capUnlitLocation = _gl.GetUniformLocation(_capShaderProgram, "uUnlit");
+            _capLightDirectionLocation = _gl.GetUniformLocation(_capShaderProgram, "uLightDirection");
+            _capAmbientLightLocation = _gl.GetUniformLocation(_capShaderProgram, "uAmbientLight");
+            _capTextureLocation = _gl.GetUniformLocation(_capShaderProgram, "uCapTexture");
+
+            _capVertexArray = _gl.GenVertexArray();
+            _capVertexBuffer = _gl.GenBuffer();
+            _capIndexBuffer = _gl.GenBuffer();
+            _capTexture = _gl.GenTexture();
+
+            _gl.BindVertexArray(_capVertexArray);
+            _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _capVertexBuffer);
+            _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _capIndexBuffer);
+
+            uint[] capIndices = [0, 1, 2, 0, 2, 3];
+            fixed (uint* indexPointer = capIndices)
+            {
+                _gl.BufferData(BufferTargetARB.ElementArrayBuffer, (nuint)(6 * sizeof(uint)), indexPointer,
+                    BufferUsageARB.StaticDraw);
+            }
+
+            var capVertexSize = (uint)sizeof(CapVertex);
+            _gl.EnableVertexAttribArray(0);
+            _gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, capVertexSize, (void*)0);
+            _gl.EnableVertexAttribArray(1);
+            _gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, capVertexSize,
+                (void*)sizeof(Vector3));
+
+            _gl.BindTexture(TextureTarget.Texture2D, _capTexture);
+            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)GLEnum.Nearest);
+            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)GLEnum.Nearest);
+            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)GLEnum.ClampToEdge);
+            _gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)GLEnum.ClampToEdge);
+            _gl.BindTexture(TextureTarget.Texture2D, 0);
+            _gl.BindVertexArray(0);
+
             _rendererInitialized = true;
             _needsUpload = true;
             _needsWireframeUpload = true;
             _needsIssueUpload = true;
+            _needsCapUpload = true;
+            _needsCapGeometryUpload = true;
             RendererStatusChanged?.Invoke(null);
         }
         catch (Exception exception)
@@ -437,12 +614,14 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         if (RenderMode == VoxelPreviewRenderMode.Wireframe && _needsWireframeUpload)
             UploadWireframeIndices();
         if (_needsIssueUpload) UploadIssueMesh();
+        if (_needsCapUpload) UploadCapTexture();
+        if (_needsCapGeometryUpload) UploadCapGeometry();
         if ((_uploadedIndexCount == 0 || _mesh is null) &&
             (_uploadedIssueIndexCount == 0 || _issueMesh is null)) return;
 
         var viewProjection = GetViewProjection(width / (float)height);
         _gl.UseProgram(_shaderProgram);
-        ApplyLighting();
+        ApplyLighting(_lightDirectionLocation, _ambientLightLocation);
         _gl.Uniform1(_clipZLocation, _clipZ);
         _gl.Uniform1(_clipEnabledLocation, _clipToLayer ? 1 : 0);
         _gl.UniformMatrix4(_viewProjectionLocation, 1, false, (float*)&viewProjection);
@@ -450,9 +629,14 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         if (_uploadedIndexCount > 0 && _mesh is not null)
         {
             DrawModel();
+            if (_clipToLayer) DrawCap(viewProjection);
         }
 
-        if (_uploadedIssueIndexCount > 0 && _issueMesh is not null) DrawIssueOverlay();
+        if (_uploadedIssueIndexCount > 0 && _issueMesh is not null)
+        {
+            _gl.UseProgram(_shaderProgram);
+            DrawIssueOverlay();
+        }
     }
 
     private unsafe void UploadMesh()
@@ -539,6 +723,107 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         }
     }
 
+    private unsafe void UploadCapTexture()
+    {
+        if (_gl is null || _capTexture == 0) return;
+        _needsCapUpload = false;
+
+        var data = _pendingCapData;
+        _pendingCapData = null;
+        var width = _pendingCapWidth;
+        var height = _pendingCapHeight;
+
+        if (data is null || width <= 0 || height <= 0)
+        {
+            _hasCapData = false;
+            return;
+        }
+
+        try
+        {
+            _gl.BindTexture(TextureTarget.Texture2D, _capTexture);
+            _gl.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
+            fixed (byte* ptr = data)
+            {
+                if (_capTextureWidth == width && _capTextureHeight == height)
+                {
+                    _gl.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, (uint)width, (uint)height,
+                        PixelFormat.Red, PixelType.UnsignedByte, ptr);
+                }
+                else
+                {
+                    _gl.TexImage2D(TextureTarget.Texture2D, 0, (int)GLEnum.R8, (uint)width, (uint)height, 0,
+                        PixelFormat.Red, PixelType.UnsignedByte, ptr);
+                    _capTextureWidth = width;
+                    _capTextureHeight = height;
+                }
+            }
+
+            _hasCapData = true;
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(data);
+        }
+    }
+
+    private unsafe void UploadCapGeometry()
+    {
+        if (_gl is null || _capVertexBuffer == 0) return;
+        _needsCapGeometryUpload = false;
+
+        Span<CapVertex> vertices = stackalloc CapVertex[4]
+        {
+            new(new Vector3(_capMinX, _capMinY, _clipZ), new Vector2(0, 0)),
+            new(new Vector3(_capMaxX, _capMinY, _clipZ), new Vector2(1, 0)),
+            new(new Vector3(_capMaxX, _capMaxY, _clipZ), new Vector2(1, 1)),
+            new(new Vector3(_capMinX, _capMaxY, _clipZ), new Vector2(0, 1))
+        };
+
+        _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _capVertexBuffer);
+        fixed (CapVertex* vertexPointer = vertices)
+        {
+            _gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(4 * sizeof(CapVertex)), vertexPointer,
+                BufferUsageARB.DynamicDraw);
+        }
+    }
+
+    private unsafe void DrawCap(Matrix4x4 viewProjection)
+    {
+        if (_gl is null || !_hasCapData || _capShaderProgram == 0 ||
+            RenderMode == VoxelPreviewRenderMode.Wireframe) return;
+
+        _gl.UseProgram(_capShaderProgram);
+        _gl.UniformMatrix4(_capViewProjectionLocation, 1, false, (float*)&viewProjection);
+        _gl.Uniform3(_capColorLocation, VoxelColor.R / 255f, VoxelColor.G / 255f, VoxelColor.B / 255f);
+        _gl.Uniform1(_capAlphaLocation, RenderMode == VoxelPreviewRenderMode.XRay ? XRayOpacity : 1f);
+        _gl.Uniform1(_capUnlitLocation, 0);
+        ApplyLighting(_capLightDirectionLocation, _capAmbientLightLocation);
+
+        _gl.ActiveTexture(TextureUnit.Texture0);
+        _gl.BindTexture(TextureTarget.Texture2D, _capTexture);
+        _gl.Uniform1(_capTextureLocation, 0);
+
+        _gl.BindVertexArray(_capVertexArray);
+        _gl.Disable(EnableCap.CullFace);
+
+        if (RenderMode == VoxelPreviewRenderMode.XRay)
+        {
+            _gl.Enable(EnableCap.Blend);
+            _gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+            _gl.DepthMask(false);
+            _gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, null);
+            _gl.DepthMask(true);
+            _gl.Disable(EnableCap.Blend);
+        }
+        else
+        {
+            _gl.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, null);
+        }
+
+        _gl.Enable(EnableCap.CullFace);
+    }
+
     private unsafe void DrawModel()
     {
         if (_gl is null) return;
@@ -592,7 +877,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         }
     }
 
-    private void ApplyLighting()
+    private void ApplyLighting(int lightDirectionLocation, int ambientLightLocation)
     {
         if (_gl is null) return;
 
@@ -616,8 +901,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                 throw new ArgumentOutOfRangeException(nameof(LightingMode), LightingMode, null);
         }
 
-        _gl.Uniform3(_lightDirectionLocation, direction.X, direction.Y, direction.Z);
-        _gl.Uniform1(_ambientLightLocation, ambientLight);
+        _gl.Uniform3(lightDirectionLocation, direction.X, direction.Y, direction.Z);
+        _gl.Uniform1(ambientLightLocation, ambientLight);
     }
 
     private unsafe void DrawDepthPrepass()
@@ -830,6 +1115,25 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private void DeleteGpuResources()
     {
         if (_gl is null) return;
+        if (_pendingCapData is not null)
+        {
+            ArrayPool<byte>.Shared.Return(_pendingCapData);
+            _pendingCapData = null;
+        }
+        if (_capVertexArray != 0) _gl.DeleteVertexArray(_capVertexArray);
+        if (_capVertexBuffer != 0) _gl.DeleteBuffer(_capVertexBuffer);
+        if (_capIndexBuffer != 0) _gl.DeleteBuffer(_capIndexBuffer);
+        if (_capTexture != 0) _gl.DeleteTexture(_capTexture);
+        if (_capShaderProgram != 0) _gl.DeleteProgram(_capShaderProgram);
+        _capVertexArray = 0;
+        _capVertexBuffer = 0;
+        _capIndexBuffer = 0;
+        _capTexture = 0;
+        _capShaderProgram = 0;
+        _capTextureWidth = 0;
+        _capTextureHeight = 0;
+        _hasCapData = false;
+
         if (_vertexArray != 0) _gl.DeleteVertexArray(_vertexArray);
         if (_vertexBuffer != 0) _gl.DeleteBuffer(_vertexBuffer);
         if (_indexBuffer != 0) _gl.DeleteBuffer(_indexBuffer);
@@ -1018,5 +1322,12 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         base.OnDoubleTapped(e);
         ResetCamera();
         e.Handled = true;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private readonly struct CapVertex(Vector3 position, Vector2 texCoord)
+    {
+        public readonly Vector3 Position = position;
+        public readonly Vector2 TexCoord = texCoord;
     }
 }

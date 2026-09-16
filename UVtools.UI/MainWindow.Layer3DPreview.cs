@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -26,6 +27,12 @@ public partial class MainWindow
 {
     private bool _isLayer3DBuilding;
     private bool _layer3DClipToCurrentLayer;
+    private readonly object _layer3DCapLock = new();
+    private bool _isLayer3DCapBuilding;
+    private Layer? _layer3DCapTargetLayer;
+    private VoxelPreviewMesh? _layer3DCapTargetMesh;
+    private int _layer3DCapTargetGeneration;
+    private int _layer3DAppliedCapGeneration;
     private int _layer3DIssueBuildGeneration;
     private VoxelPreviewIssueMesh? _layer3DIssueMesh;
     private string? _layer3DIssueOverlayError;
@@ -42,6 +49,11 @@ public partial class MainWindow
         {
             if (!RaiseAndSetIfChanged(ref _layer3DPreviewTabIndex, value)) return;
             InvalidateLayer3DPreviewStatus();
+            if (value == 0)
+            {
+                ShowLayer();
+                return;
+            }
             if (value != 1) return;
 
             /* Focus the viewport so that the camera shortcuts work without clicking into it first. */
@@ -50,6 +62,10 @@ public partial class MainWindow
             if (_layer3DMesh is null && !_isLayer3DBuilding && string.IsNullOrEmpty(_layer3DRendererError))
             {
                 Dispatcher.UIThread.InvokeAsync(RebuildLayer3DPreview);
+            }
+            else if (Layer3DClipToCurrentLayer && _layer3DMesh is not null)
+            {
+                UpdateLayer3DClip();
             }
         }
     }
@@ -347,7 +363,117 @@ public partial class MainWindow
     private void UpdateLayer3DClip()
     {
         if (SlicerFile is null || !SlicerFile.ContainsLayer(ActualLayer)) return;
-        LayerModel3DView.ClipZ = SlicerFile[ActualLayer].PositionZ;
+        var layer = SlicerFile[ActualLayer];
+        LayerModel3DView.ClipZ = layer.PositionZ;
+
+        if (!Layer3DClipToCurrentLayer || _layer3DMesh is null)
+        {
+            lock (_layer3DCapLock)
+            {
+                _layer3DCapTargetGeneration++;
+                _layer3DAppliedCapGeneration = _layer3DCapTargetGeneration;
+                _layer3DCapTargetLayer = null;
+                _layer3DCapTargetMesh = null;
+            }
+            LayerModel3DView.ClearCap();
+            return;
+        }
+
+        var slicerFile = SlicerFile;
+        var mesh = _layer3DMesh;
+
+        lock (_layer3DCapLock)
+        {
+            _layer3DCapTargetLayer = layer;
+            _layer3DCapTargetMesh = mesh;
+            _layer3DCapTargetGeneration++;
+
+            if (_isLayer3DCapBuilding)
+            {
+                return;
+            }
+
+            _isLayer3DCapBuilding = true;
+        }
+
+        Task.Run(() =>
+        {
+            while (true)
+            {
+                Layer currentLayer;
+                VoxelPreviewMesh currentMesh;
+                int currentGeneration;
+
+                lock (_layer3DCapLock)
+                {
+                    if (_layer3DCapTargetLayer is null || _layer3DCapTargetMesh is null)
+                    {
+                        _isLayer3DCapBuilding = false;
+                        break;
+                    }
+
+                    currentLayer = _layer3DCapTargetLayer;
+                    currentMesh = _layer3DCapTargetMesh;
+                    currentGeneration = _layer3DCapTargetGeneration;
+                    _layer3DCapTargetLayer = null;
+                }
+
+                if (!ReferenceEquals(SlicerFile, slicerFile) || !ReferenceEquals(_layer3DMesh, currentMesh))
+                {
+                    lock (_layer3DCapLock)
+                    {
+                        _isLayer3DCapBuilding = false;
+                    }
+                    break;
+                }
+
+                byte[] occupancy;
+                try
+                {
+                    occupancy = VoxelPreviewMeshBuilder.BuildLayerOccupancy(slicerFile, currentLayer, currentMesh);
+                }
+                catch
+                {
+                    lock (_layer3DCapLock)
+                    {
+                        _isLayer3DCapBuilding = false;
+                    }
+                    break;
+                }
+
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (!ReferenceEquals(_layer3DMesh, currentMesh) || currentGeneration < _layer3DAppliedCapGeneration)
+                    {
+                        if (occupancy.Length > 0)
+                        {
+                            ArrayPool<byte>.Shared.Return(occupancy);
+                        }
+                        return;
+                    }
+
+                    _layer3DAppliedCapGeneration = currentGeneration;
+
+                    if (occupancy.Length == 0)
+                    {
+                        LayerModel3DView.ClearCap();
+                        return;
+                    }
+
+                    LayerModel3DView.SetCap(occupancy, currentMesh.GridWidth, currentMesh.GridHeight,
+                        currentMesh.BoundsMinX, currentMesh.BoundsMinY, currentMesh.BoundsMaxX, currentMesh.BoundsMaxY);
+                });
+
+                lock (_layer3DCapLock)
+                {
+                    if (_layer3DCapTargetLayer is null)
+                    {
+                        _isLayer3DCapBuilding = false;
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     private void InvalidateLayer3DPreviewStatus()
@@ -364,6 +490,14 @@ public partial class MainWindow
     private void DisposeLayer3DPreview()
     {
         if (IsLayer3DBuilding && Progress.CanCancel) Progress.TokenSource.Cancel();
+        lock (_layer3DCapLock)
+        {
+            _layer3DCapTargetGeneration++;
+            _layer3DAppliedCapGeneration = _layer3DCapTargetGeneration;
+            _layer3DCapTargetLayer = null;
+            _layer3DCapTargetMesh = null;
+        }
+        LayerModel3DView.ClearCap();
         LayerModel3DView.Mesh = null;
         LayerModel3DView.IssueMesh = null;
         _layer3DMesh?.Dispose();

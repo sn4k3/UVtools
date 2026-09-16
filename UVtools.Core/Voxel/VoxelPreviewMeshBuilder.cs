@@ -82,6 +82,24 @@ public static class VoxelPreviewMeshBuilder
         }
     }
 
+    /// <summary>
+    /// Builds the 1-byte-per-voxel occupancy mask for the specified layer, matching the voxel preview mesh's
+    /// sampling stride, boundaries, and orientation. The returned array is rented from <see cref="ArrayPool{T}.Shared"/>
+    /// and must be returned to the pool by the caller if not empty.
+    /// </summary>
+    public static byte[] BuildLayerOccupancy(FileFormat slicerFile, Layer layer, VoxelPreviewMesh mesh)
+    {
+        ArgumentNullException.ThrowIfNull(slicerFile);
+        ArgumentNullException.ThrowIfNull(layer);
+        ArgumentNullException.ThrowIfNull(mesh);
+
+        var gridLength = checked(mesh.GridWidth * mesh.GridHeight);
+        if (gridLength == 0) return [];
+
+        return BuildOccupancy(slicerFile, layer, mesh.ModelBounds, mesh.GridWidth, mesh.GridHeight, gridLength,
+            mesh.WorkAroundFlip);
+    }
+
     private static VoxelPreviewMesh BuildAtStride(
         FileFormat slicerFile,
         VoxelPreviewMeshOptions options,
@@ -207,7 +225,8 @@ public static class VoxelPreviewMeshBuilder
             {
                 indexArray = indices.Detach(out var indexCount);
                 return new VoxelPreviewMesh(vertexArray, vertexCount, indexArray, indexCount,
-                    context.MinimumBounds, context.MaximumBounds, stride, source, options.Quality);
+                    context.MinimumBounds, context.MaximumBounds, stride, source, options.Quality,
+                    bounds, pixelWidth, pixelHeight, gridWidth, gridHeight, workAroundFlip);
             }
             catch
             {

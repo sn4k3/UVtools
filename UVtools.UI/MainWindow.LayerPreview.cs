@@ -553,7 +553,10 @@ public partial class MainWindow
             if (!_layerNavigationSliderDebounceTimer.Enabled) // Doesn't come from ActualLayerSlider timer
             {
                 ActualLayerSlider = _actualLayer; // sync when required
-                ShowLayer(); // Show layer only if timer is not present
+                if (Layer3DPreviewTabIndex == 0)
+                {
+                    ShowLayer(); // Show layer only if timer is not present and on 2D preview tab
+                }
             }
 
             _pendingPixelStroke = null;
@@ -675,7 +678,10 @@ public partial class MainWindow
             : Settings.LayerPreview.LayerSliderDebounce;
         _layerNavigationSliderDebounceTimer.Elapsed += (sender, args) =>
         {
-            Dispatcher.UIThread.InvokeAsync(ShowLayer);
+            if (Layer3DPreviewTabIndex == 0)
+            {
+                Dispatcher.UIThread.InvokeAsync(ShowLayer);
+            }
         };
     }
 

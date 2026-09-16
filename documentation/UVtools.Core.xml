@@ -9983,6 +9983,13 @@
             cost more than it saves. The mesh is instead allowed to finish over budget at the current detail.
             </summary>
         </member>
+        <member name="M:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.BuildLayerOccupancy(UVtools.Core.FileFormats.FileFormat,UVtools.Core.Layers.Layer,UVtools.Core.Voxel.VoxelPreviewMesh)">
+            <summary>
+            Builds the 1-byte-per-voxel occupancy mask for the specified layer, matching the voxel preview mesh's
+            sampling stride, boundaries, and orientation. The returned array is rented from <see cref="P:System.Buffers.ArrayPool`1.Shared"/>
+            and must be returned to the pool by the caller if not empty.
+            </summary>
+        </member>
         <member name="M:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.GetPipelineSizing(UVtools.Core.FileFormats.FileFormat,System.Int32)">
             <summary>
             Gets how many layers may be decoded at once and how many of them to hold in the meshing window, scaling
