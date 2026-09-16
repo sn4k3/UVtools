@@ -2109,14 +2109,6 @@
             Raise notification for aspect changes, like <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/>, <see cref="P:UVtools.Core.FileFormats.FileFormat.Display"/> and relatives
             </summary>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.ExpandLayerRange(UVtools.Core.PixelEditor.PixelOperation)">
-            <summary>
-            Expands a stroke operation into one tuple per layer in its propagation range
-            (<see cref="P:UVtools.Core.PixelEditor.PixelOperation.LayersBelow"/> to <see cref="P:UVtools.Core.PixelEditor.PixelOperation.LayersAbove"/>).
-            </summary>
-            <param name="operation">The stroke operation to expand.</param>
-            <returns>One (LayerIndex, operation) tuple per target layer, in ascending order.</returns>
-        </member>
         <member name="T:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier">
             <summary>
             Available Print Parameters to modify
@@ -2171,6 +2163,14 @@
             <summary>
             Gets if the value has changed
             </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ExpandLayerRange(UVtools.Core.PixelEditor.PixelOperation)">
+            <summary>
+            Expands a stroke operation into one tuple per layer in its propagation range
+            (<see cref="P:UVtools.Core.PixelEditor.PixelOperation.LayersBelow"/> to <see cref="P:UVtools.Core.PixelEditor.PixelOperation.LayersAbove"/>).
+            </summary>
+            <param name="operation">The stroke operation to expand.</param>
+            <returns>One (LayerIndex, operation) tuple per target layer, in ascending order.</returns>
         </member>
         <member name="F:UVtools.Core.FileFormats.FileFormat.DisplayFloatPrecision">
             <summary>
@@ -2322,6 +2322,11 @@
             <param name="filename">The file name only, without path</param>
             <param name="onlyAsciiCharacters">If true, the <paramref name="filename"/> must contain only ASCII characters.</param>
             <returns></returns>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.ModelGeometryRevision">
+            <summary>
+            Gets a runtime revision that changes whenever data used to reconstruct the model geometry changes.
+            </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.FileType">
             <summary>

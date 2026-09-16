@@ -99,6 +99,10 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
     private const float OrbitSensitivity = 0.008f;
     private const double CameraAnimationSeconds = 0.2;
+    private const float ZoomSensitivity = 0.14f;
+
+    /// <summary>Orbit amount of a single arrow key press.</summary>
+    private const float OrbitKeyStep = MathF.PI / 12;
 
     private float _cameraDistance = 100;
     private float _cameraPitch = 0.55f;
@@ -205,6 +209,12 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     public event Action<string?>? RendererStatusChanged;
     public event Action<float, float>? CameraOrientationChanged;
 
+    /// <summary>
+    /// Raised when the user asks to flip between the perspective and the orthographic projection.
+    /// <see cref="IsOrthographic"/> is bound to an user setting, so the owner is the one to flip it.
+    /// </summary>
+    public event Action? ProjectionToggleRequested;
+
     public void ResetCamera()
     {
         if (_mesh is null || _mesh.VertexCount == 0) return;
@@ -237,6 +247,27 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             : -MathF.PI / 2;
         var targetPitch = MathF.Asin(Math.Clamp(direction.Z, -1, 1));
 
+        AnimateToOrientation(targetYaw, targetPitch);
+    }
+
+    /// <summary>Orbits by a fixed amount, animated, so that key presses feel like the orientation cube clicks.</summary>
+    public void OrbitStep(float yawDelta, float pitchDelta)
+    {
+        AnimateToOrientation(_cameraYaw + yawDelta,
+            Math.Clamp(_cameraPitch + pitchDelta, -MathF.PI / 2, MathF.PI / 2));
+    }
+
+    /// <summary>Zooms by <paramref name="steps"/> wheel notches, positive being closer to the model.</summary>
+    public void Zoom(float steps)
+    {
+        CancelCameraAnimation();
+        _cameraDistance *= MathF.Exp(-steps * ZoomSensitivity);
+        _cameraDistance = Math.Clamp(_cameraDistance, _modelRadius * 0.08f, _modelRadius * 100);
+        RequestNextFrameRendering();
+    }
+
+    private void AnimateToOrientation(float targetYaw, float targetPitch)
+    {
         _cameraAnimationStartYaw = _cameraYaw;
         _cameraAnimationStartPitch = _cameraPitch;
         _cameraAnimationYawDelta = ShortestAngleDelta(_cameraYaw, targetYaw);
@@ -547,11 +578,79 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
         base.OnPointerWheelChanged(e);
-        CancelCameraAnimation();
-        _cameraDistance *= MathF.Exp((float)-e.Delta.Y * 0.14f);
-        _cameraDistance = Math.Clamp(_cameraDistance, _modelRadius * 0.08f, _modelRadius * 100);
-        RequestNextFrameRendering();
+        Zoom((float)e.Delta.Y);
         e.Handled = true;
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (HandleCameraKey(e)) e.Handled = true;
+    }
+
+    /// <summary>
+    /// Runs the camera shortcut bound to <paramref name="e"/>, if any, and reports whether it was consumed.
+    /// Public so that the owner can forward the keys of controls that take the focus away from the viewport,
+    /// such as the orientation cube.
+    /// </summary>
+    public bool HandleCameraKey(KeyEventArgs e)
+    {
+        if (e.Handled || _mesh is null || e.KeyModifiers != KeyModifiers.None) return false;
+
+        switch (e.Key)
+        {
+            /* The six axis views, matching the orientation cube faces. */
+            case Key.D1 or Key.NumPad1:
+                SnapToDirection(-Vector3.UnitY); // Front
+                return true;
+            case Key.D2 or Key.NumPad2:
+                SnapToDirection(Vector3.UnitY); // Back
+                return true;
+            case Key.D3 or Key.NumPad3:
+                SnapToDirection(-Vector3.UnitX); // Left
+                return true;
+            case Key.D4 or Key.NumPad4:
+                SnapToDirection(Vector3.UnitX); // Right
+                return true;
+            case Key.D5 or Key.NumPad5:
+                SnapToDirection(Vector3.UnitZ); // Top
+                return true;
+            case Key.D6 or Key.NumPad6:
+                SnapToDirection(-Vector3.UnitZ); // Bottom
+                return true;
+
+            case Key.D0 or Key.NumPad0 or Key.Home:
+                ResetCamera();
+                return true;
+
+            /* Arrows orbit as if dragging the model towards that direction, matching the pointer and the cube. */
+            case Key.Left:
+                OrbitStep(OrbitKeyStep, 0);
+                return true;
+            case Key.Right:
+                OrbitStep(-OrbitKeyStep, 0);
+                return true;
+            case Key.Up:
+                OrbitStep(0, -OrbitKeyStep);
+                return true;
+            case Key.Down:
+                OrbitStep(0, OrbitKeyStep);
+                return true;
+
+            case Key.OemPlus or Key.Add:
+                Zoom(1);
+                return true;
+            case Key.OemMinus or Key.Subtract:
+                Zoom(-1);
+                return true;
+
+            case Key.P:
+                ProjectionToggleRequested?.Invoke();
+                return true;
+
+            default:
+                return false;
+        }
     }
 
     protected override void OnDoubleTapped(TappedEventArgs e)

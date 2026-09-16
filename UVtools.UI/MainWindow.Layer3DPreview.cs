@@ -29,8 +29,12 @@ public partial class MainWindow
         {
             if (!RaiseAndSetIfChanged(ref _layer3DPreviewTabIndex, value)) return;
             InvalidateLayer3DPreviewStatus();
-            if (value == 1 && _layer3DMesh is null && !_isLayer3DBuilding &&
-                string.IsNullOrEmpty(_layer3DRendererError))
+            if (value != 1) return;
+
+            /* Focus the viewport so that the camera shortcuts work without clicking into it first. */
+            Dispatcher.UIThread.Post(() => LayerModel3DView.Focus());
+
+            if (_layer3DMesh is null && !_isLayer3DBuilding && string.IsNullOrEmpty(_layer3DRendererError))
             {
                 Dispatcher.UIThread.InvokeAsync(RebuildLayer3DPreview);
             }
@@ -101,6 +105,15 @@ public partial class MainWindow
         LayerModelOrientationCube.OrbitRequested += LayerModel3DView.Orbit;
         LayerModelOrientationCube.SnapRequested += LayerModel3DView.SnapToDirection;
         LayerModelOrientationCube.SetCameraOrientation(LayerModel3DView.CameraYaw, LayerModel3DView.CameraPitch);
+
+        /* The cube takes the focus when clicked, keep the camera shortcuts working from there as well. */
+        LayerModelOrientationCube.KeyDown += (_, e) => e.Handled = LayerModel3DView.HandleCameraKey(e);
+
+        LayerModel3DView.ProjectionToggleRequested += () =>
+        {
+            Settings.LayerPreview.Preview3DOrthographic = !Settings.LayerPreview.Preview3DOrthographic;
+            RefreshLayer3DPreviewSettings();
+        };
 
         LayerModel3DView.RendererStatusChanged += error =>
         {
