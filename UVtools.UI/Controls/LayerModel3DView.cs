@@ -928,8 +928,28 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     /// </summary>
     public bool HandleCameraKey(KeyEventArgs e)
     {
-        if (e.Handled || _mesh is null || e.KeyModifiers != KeyModifiers.None) return false;
+        if (e.Handled || _mesh is null) return false;
 
+        if (e.KeyModifiers == AppSettings.SystemCommandKeyModifier)
+        {
+            switch (e.Key)
+            {
+                /* The six axis views, matching the orientation cube faces. */
+                case Key.D1 or Key.NumPad1:
+                    UserSettings.Instance.Layer3DPreview.LightingMode = VoxelPreviewLightingMode.Camera;
+                    return true;
+                case Key.D2 or Key.NumPad2:
+                    UserSettings.Instance.Layer3DPreview.LightingMode = VoxelPreviewLightingMode.Studio;
+                    return true;
+                case Key.D3 or Key.NumPad3:
+                    UserSettings.Instance.Layer3DPreview.LightingMode = VoxelPreviewLightingMode.Flat;
+                    return true;
+            }
+            
+            return false;
+        }
+        
+        if (e.KeyModifiers != KeyModifiers.None) return false;
         switch (e.Key)
         {
             /* The six axis views, matching the orientation cube faces. */
@@ -974,13 +994,13 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                 Zoom(-1);
                 return true;
             case Key.S:
-                UserSettings.Instance.Layer3DPreview.Preview3DRenderMode = VoxelPreviewRenderMode.Solid;
+                UserSettings.Instance.Layer3DPreview.RenderMode = VoxelPreviewRenderMode.Solid;
                 return true;
             case Key.X:
-                UserSettings.Instance.Layer3DPreview.Preview3DRenderMode = VoxelPreviewRenderMode.XRay;
+                UserSettings.Instance.Layer3DPreview.RenderMode = VoxelPreviewRenderMode.XRay;
                 return true;
             case Key.W:
-                UserSettings.Instance.Layer3DPreview.Preview3DRenderMode = VoxelPreviewRenderMode.Wireframe;
+                UserSettings.Instance.Layer3DPreview.RenderMode = VoxelPreviewRenderMode.Wireframe;
                 return true;
             case Key.C:
                 App.MainWindow.Layer3DClipToCurrentLayer = !App.MainWindow.Layer3DClipToCurrentLayer;

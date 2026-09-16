@@ -9,6 +9,7 @@
 using Avalonia.Platform.Storage;
 using System.Collections.Generic;
 using System.Linq;
+using UVtools.Core.MeshFormats;
 using UVtools.Core.Scripting;
 
 namespace UVtools.UI.Controls;
@@ -229,6 +230,11 @@ public static class AvaloniaStatic
             ]
         }
     ];
+
+    public static readonly  List<FilePickerFileType> MeshFileFilter =
+        MeshFile.AvailableMeshFiles
+            .Select(fileExtension => CreateFilePickerFileType(fileExtension.Description, fileExtension.Extension))
+            .ToList();
 
     public static FilePickerFileType CreateFilePickerFileType(string name, params string[] extensions)
     {

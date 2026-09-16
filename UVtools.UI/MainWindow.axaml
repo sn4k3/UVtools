@@ -2348,52 +2348,59 @@
                                                    Kind="CubeOutline"
                                                    Text="3D Preview" />
                         </TabItem.Header>
-                        <Grid RowDefinitions="Auto,*,Auto">
+                        <Grid RowDefinitions="Auto,*,Auto"
+                              RowSpacing="5">
                             <WrapPanel Grid.Row="0"
-                                       Margin="0,5"
                                        ItemSpacing="5"
                                        LineSpacing="5">
                                 <Button Command="{Binding RebuildLayer3DPreviewCommand}"
                                         Content="{Binding Layer3DBuildButtonText}"
                                         IsEnabled="{Binding CanBuildLayer3DPreview}"
+                                        VerticalAlignment="Stretch"
                                         ToolTip.Tip="Generate and cache a 3D model from the current slices." />
 
                                 <ComboBox Width="130"
                                           ItemsSource="{Binding Layer3DQualityOptions}"
                                           SelectedItem="{Binding SelectedLayer3DQuality}"
+                                          VerticalAlignment="Stretch"
                                           ToolTip.Tip="Preview detail. Higher detail takes more time and memory." />
 
                                 <ComboBox Width="140"
                                           IsEnabled="{Binding HasLayer3DMesh}"
-                                          ItemsSource="{Binding Settings.Layer3DPreview.Preview3DRenderMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                                          SelectedItem="{Binding Settings.Layer3DPreview.Preview3DRenderMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
+                                          ItemsSource="{Binding Settings.Layer3DPreview.RenderMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                          SelectedItem="{Binding Settings.Layer3DPreview.RenderMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
+                                          VerticalAlignment="Stretch"
                                           ToolTip.Tip="Switch between [S]olid, [X]-Ray, and [W]ireframe views without rebuilding the model." />
 
                                 <ComboBox Width="140"
                                           IsEnabled="{Binding HasLayer3DMesh}"
-                                          ItemsSource="{Binding Settings.Layer3DPreview.Preview3DLightingMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                                          SelectedItem="{Binding Settings.Layer3DPreview.Preview3DLightingMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
+                                          ItemsSource="{Binding Settings.Layer3DPreview.LightingMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                          SelectedItem="{Binding Settings.Layer3DPreview.LightingMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
+                                          VerticalAlignment="Stretch"
                                           ToolTip.Tip="Camera follows the view&#x0a;Studio uses a fixed light&#x0a;Flat disables shading" />
 
                                 
-                                <ToggleButton IsChecked="{Binding Settings.Layer3DPreview.Preview3DOrthographic}"
+                                <ToggleButton IsChecked="{Binding Settings.Layer3DPreview.UseOthographicProjection}"
                                               IsEnabled="{Binding HasLayer3DMesh}"
                                               Content="{icon:MaterialIconExt Kind=CameraEnhanceOutline, Classes='Fill'}"
+                                              VerticalAlignment="Stretch"
                                               ToolTip.Tip="Toggle on for a orthographic [p]rojection otherwise default is perspective projection." />
 
                                 <ToggleButton Content="{icon:MaterialIconExt LayersSearchOutline, Classes='Fill'}"
                                               IsChecked="{Binding Layer3DClipToCurrentLayer}"
                                               IsEnabled="{Binding HasLayer3DMesh}"
+                                              VerticalAlignment="Stretch"
                                               ToolTip.Tip="[C]lip the cached model at the selected layer without rebuilding it." />
                                 
-                                <ToggleButton VerticalAlignment="Stretch"
-                                              IsChecked="{Binding ShowLayerImageIssues, Mode=TwoWay}"
+                                <ToggleButton IsChecked="{Binding ShowLayerImageIssues, Mode=TwoWay}"
                                               Content="{icon:MaterialIconExt Kind=RadiationCircleOutline, Classes='Fill'}"
+                                              VerticalAlignment="Stretch"
                                               ToolTip.Tip="Highlight Issues on 3D model (Also affects 2D previewer)."/>
                                 
                                 <Button Command="{Binding ResetLayer3DCameraCommand}"
                                         Content="{icon:MaterialIconExt CubeScan, Classes='Fill'}"
                                         IsEnabled="{Binding HasLayer3DMesh}"
+                                        VerticalAlignment="Stretch"
                                         ToolTip.Tip="Fit the model and reset rotation and panning. [0 or Home]" />
 
                                 <TextBlock VerticalAlignment="Center"
@@ -2403,10 +2410,18 @@
                             </WrapPanel>
                             
                             <StackPanel Grid.Row="0"
-                                        HorizontalAlignment="Right">
+                                        HorizontalAlignment="Right"
+                                        Orientation="Horizontal"
+                                        Spacing="5">
+                                <Button Command="{Binding ExportLayer3DMeshCommand}"
+                                        Content="{icon:MaterialIconExt CubeSend, Classes='Fill'}"
+                                        IsEnabled="{Binding HasLayer3DMesh}"
+                                        VerticalAlignment="Stretch"
+                                        ToolTip.Tip="Export the cached 3D model to a mesh file (STL, 3MF, OBJ, and more)." />
+
                                 <icon:MaterialIcon Kind="InformationOutline"
                                                    Background="Transparent"
-                                                   VerticalAlignment="Center"
+                                                   VerticalAlignment="Stretch"
                                                    FontSize="28"
                                                    ToolTip.Tip="Views:&#x0a;» (S)olid: shaded opaque model&#x0a;» (X)-Ray: translucent model with internal geometry visible&#x0a;» (W)ireframe: visible optimized mesh edges&#x0a;&#x0a;Mouse:&#x0a;» Left-click drag to orbit&#x0a;» Right/middle-click drag to pan&#x0a;» Wheel to zoom, double-click to reset&#x0a;&#x0a;Keyboard:&#x0a;» 1-6: front, back, left, right, top, bottom view&#x0a;» 0 or Home: reset the camera&#x0a;» Arrows: orbit in steps&#x0a;» + and -: zoom in and out&#x0a;» C: toggle clip to current layer&#x0a;» P: toggle perspective/orthographic" />
                             </StackPanel>
@@ -2418,11 +2433,11 @@
                                     ClipToBounds="True">
                                 <Grid>
                                     <controls:LayerModel3DView Name="LayerModel3DView"
-                                                               BackgroundColor="{Binding Settings.Layer3DPreview.Preview3DBackgroundBrush}"
-                                                               IsOrthographic="{Binding Settings.Layer3DPreview.Preview3DOrthographic}"
-                                                               LightingMode="{Binding Settings.Layer3DPreview.Preview3DLightingMode}"
-                                                               RenderMode="{Binding Settings.Layer3DPreview.Preview3DRenderMode}"
-                                                               VoxelColor="{Binding Settings.Layer3DPreview.Preview3DVoxelBrush}" />
+                                                               BackgroundColor="{Binding Settings.Layer3DPreview.BackgroundBrush}"
+                                                               IsOrthographic="{Binding Settings.Layer3DPreview.UseOthographicProjection}"
+                                                               LightingMode="{Binding Settings.Layer3DPreview.LightingMode}"
+                                                               RenderMode="{Binding Settings.Layer3DPreview.RenderMode}"
+                                                               VoxelColor="{Binding Settings.Layer3DPreview.VoxelBrush}" />
 
                                     <controls:LayerModelOrientationCube Name="LayerModelOrientationCube"
                                                                         Width="112"

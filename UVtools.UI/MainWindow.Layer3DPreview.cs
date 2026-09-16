@@ -6,12 +6,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Media;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
+using StageKit.Primitives;
+using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
+using UVtools.Core.MeshFormats;
 using UVtools.Core.Voxel;
+using UVtools.UI.Controls;
+using UVtools.UI.Extensions;
 
 namespace UVtools.UI;
 
@@ -70,11 +77,11 @@ public partial class MainWindow
 
     public VoxelPreviewQuality SelectedLayer3DQuality
     {
-        get => Settings.Layer3DPreview.Preview3DQuality;
+        get => Settings.Layer3DPreview.Quality;
         set
         {
-            if (Settings.Layer3DPreview.Preview3DQuality == value) return;
-            Settings.Layer3DPreview.Preview3DQuality = value;
+            if (Settings.Layer3DPreview.Quality == value) return;
+            Settings.Layer3DPreview.Quality = value;
             RaisePropertyChanged();
             InvalidateLayer3DPreviewStatus();
         }
@@ -123,7 +130,7 @@ public partial class MainWindow
 
         LayerModel3DView.ProjectionToggleRequested += () =>
         {
-            Settings.Layer3DPreview.Preview3DOrthographic = !Settings.Layer3DPreview.Preview3DOrthographic;
+            Settings.Layer3DPreview.UseOthographicProjection = !Settings.Layer3DPreview.UseOthographicProjection;
             RefreshLayer3DPreviewSettings();
         };
 
@@ -158,7 +165,7 @@ public partial class MainWindow
 
     private void RefreshLayer3DPreviewSettings()
     {
-        LayerModel3DView.VoxelColor = Settings.Layer3DPreview.Preview3DVoxelBrush;
+        LayerModel3DView.VoxelColor = Settings.Layer3DPreview.VoxelBrush;
         var issueColors = new Dictionary<MainIssue.IssueType, Color>();
         foreach (var (type, brush) in GetIssueColors())
         {
@@ -166,7 +173,7 @@ public partial class MainWindow
         }
 
         LayerModel3DView.SetIssueColors(issueColors);
-        LayerModel3DView.IsOrthographic = Settings.Layer3DPreview.Preview3DOrthographic;
+        LayerModel3DView.IsOrthographic = Settings.Layer3DPreview.UseOthographicProjection;
         RaisePropertyChanged(nameof(SelectedLayer3DQuality));
         InvalidateLayer3DPreviewStatus();
     }
@@ -274,6 +281,67 @@ public partial class MainWindow
     public void ResetLayer3DCamera()
     {
         LayerModel3DView.ResetCamera();
+    }
+
+    [RelayCommand]
+    public async Task ExportLayer3DMesh()
+    {
+        var mesh = _layer3DMesh;
+        if (mesh is null || SlicerFile is null) return;
+
+        using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath,
+            $"{SlicerFile.FilenameNoExt}.{STLMeshFile.FileExtension.Extension}", AvaloniaStatic.MeshFileFilter);
+        if (file?.TryGetLocalPath() is not { } filePath) return;
+
+        var fileExtension = MeshFile.FindFileExtension(filePath);
+        if (fileExtension is null)
+        {
+            await this.MessageBoxError("The chosen file extension is not a supported mesh format.",
+                "Unable to export the 3D mesh");
+            return;
+        }
+
+        /* Vertices/Indices are spans and can't cross the Task.Run boundary below, so copy them once here
+         * on the UI thread before doing the (fast, but still worth offloading) triangle write in the background. */
+        var vertices = mesh.Vertices.ToArray();
+        var indices = mesh.Indices.ToArray();
+        var tmpFile = $"{filePath}.tmp";
+
+        IsGUIEnabled = false;
+        try
+        {
+            await Task.Run(() =>
+            {
+                using var meshFile = fileExtension.FileFormatType.CreateInstance<MeshFile>(tmpFile, FileMode.Create, MeshFile.MeshFileFormat.BINARY, SlicerFile)
+                    ?? throw new InvalidOperationException(
+                        $"Unable to create mesh exporter for '.{fileExtension.Extension}'.");
+                meshFile.BeginWrite();
+                for (var i = 0; i < indices.Length; i += 3)
+                {
+                    var v0 = vertices[indices[i]];
+                    var v1 = vertices[indices[i + 1]];
+                    var v2 = vertices[indices[i + 2]];
+                    meshFile.WriteTriangle(v0.Position, v1.Position, v2.Position, v0.Normal);
+                }
+
+                meshFile.EndWrite();
+            });
+
+            File.Move(tmpFile, filePath, true);
+        }
+        catch (Exception exception)
+        {
+            if (File.Exists(tmpFile)) File.Delete(tmpFile);
+            await HandleException(exception, "Unable to export the 3D mesh");
+            return;
+        }
+        finally
+        {
+            IsGUIEnabled = true;
+        }
+
+        await this.MessageBoxInfo($"The 3D mesh ({mesh.TriangleCount:N0} triangles) was exported to:\n{filePath}",
+            "3D mesh exported");
     }
 
     private void UpdateLayer3DClip()

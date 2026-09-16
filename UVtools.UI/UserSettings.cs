@@ -565,37 +565,37 @@ public partial class UserSettings : ObservableObject
     public sealed partial class Layer3DPreviewUserSettings : ObservableObject
     {
         [ObservableProperty]
-        public partial VoxelPreviewQuality Preview3DQuality { get; set; } = VoxelPreviewQuality.Balanced;
+        public partial VoxelPreviewQuality Quality { get; set; } = VoxelPreviewQuality.Balanced;
 
         [ObservableProperty]
-        public partial VoxelPreviewRenderMode Preview3DRenderMode { get; set; } = VoxelPreviewRenderMode.Solid;
+        public partial VoxelPreviewRenderMode RenderMode { get; set; } = VoxelPreviewRenderMode.Solid;
 
         [ObservableProperty]
-        public partial VoxelPreviewLightingMode Preview3DLightingMode { get; set; } = VoxelPreviewLightingMode.Camera;
+        public partial VoxelPreviewLightingMode LightingMode { get; set; } = VoxelPreviewLightingMode.Camera;
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(Preview3DBackgroundBrush))]
-        public partial Color Preview3DBackgroundColor { get; set; } = new(255, 14, 17, 20);
+        [NotifyPropertyChangedFor(nameof(BackgroundBrush))]
+        public partial Color BackgroundColor { get; set; } = new(255, 14, 17, 20);
 
         [XmlIgnore]
-        public Avalonia.Media.Color Preview3DBackgroundBrush
+        public Avalonia.Media.Color BackgroundBrush
         {
-            get => Preview3DBackgroundColor.ToAvalonia();
-            set => Preview3DBackgroundColor = new Color(value);
+            get => BackgroundColor.ToAvalonia();
+            set => BackgroundColor = new Color(value);
         }
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(Preview3DVoxelBrush))]
-        public partial Color Preview3DVoxelColor { get; set; } = new(255, 51, 184, 235);
+        [NotifyPropertyChangedFor(nameof(VoxelBrush))]
+        public partial Color VoxelColor { get; set; } = new(255, 51, 184, 235);
 
         [XmlIgnore]
-        public Avalonia.Media.Color Preview3DVoxelBrush
+        public Avalonia.Media.Color VoxelBrush
         {
-            get => Preview3DVoxelColor.ToAvalonia();
-            set => Preview3DVoxelColor = new Color(value);
+            get => VoxelColor.ToAvalonia();
+            set => VoxelColor = new Color(value);
         }
 
-        [ObservableProperty] public partial bool Preview3DOrthographic { get; set; }
+        [ObservableProperty] public partial bool UseOthographicProjection { get; set; }
 
         public Layer3DPreviewUserSettings Clone()
         {
