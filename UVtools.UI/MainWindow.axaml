@@ -25,6 +25,18 @@
                        Icon="/Assets/Icons/UVtools.ico"
                        mc:Ignorable="d">
     <windows:GenericWindow.KeyBindings>
+        <KeyBinding Command="{Binding GoToLayerPreviewTabCommand}"
+                    Gesture="{OnPlatform Ctrl+D1,
+					macOS=⌘+D1}" />
+        <KeyBinding Command="{Binding GoToLayerPreviewTabCommand}"
+                    Gesture="{OnPlatform Ctrl+NumPad1,
+					macOS=⌘+NumPad1}" />
+        <KeyBinding Command="{Binding GoTo3DLayerPreviewTabCommand}"
+                    Gesture="{OnPlatform Ctrl+D2,
+					macOS=⌘+D2}" />
+        <KeyBinding Command="{Binding GoTo3DLayerPreviewTabCommand}"
+                    Gesture="{OnPlatform Ctrl+NumPad2,
+					macOS=⌘+NumPad2}" />
         <KeyBinding Command="{Binding MenuFileOpenClickedCommand}"
                     Gesture="{OnPlatform Ctrl+O,
 					macOS=⌘+O}" />
@@ -2031,7 +2043,7 @@
                             Padding="10"
                             IsEnabled="{Binding IsFileLoaded}">
                 <TabControl Name="LayerPreviewTabControl"
-                            SelectedIndex="{Binding Layer3DPreviewTabIndex}">
+                            SelectedIndex="{Binding LayerPreviewTabIndex}">
                     <TabItem>
                         <TabItem.Header>
                             <icon:MaterialIconText Kind="Layers"
@@ -2350,7 +2362,11 @@
                         </TabItem.Header>
                         <Grid RowDefinitions="Auto,*,Auto"
                               RowSpacing="5">
-                            <WrapPanel Grid.Row="0"
+                            <Grid Grid.Row="0"
+                                  ColumnDefinitions="*,Auto"
+                                  ColumnSpacing="5">
+                                <WrapPanel Grid.Row="0"
+                                           Grid.Column="0"
                                        ItemSpacing="5"
                                        LineSpacing="5">
                                 <Button Command="{Binding RebuildLayer3DPreviewCommand}"
@@ -2377,7 +2393,21 @@
                                           ItemsSource="{Binding Settings.Layer3DPreview.LightingMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                                           SelectedItem="{Binding Settings.Layer3DPreview.LightingMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
                                           VerticalAlignment="Stretch"
-                                          ToolTip.Tip="Camera follows the view&#x0a;Studio uses a fixed light&#x0a;Flat disables shading" />
+                                          ToolTip.Tip="Lighting mode [L]:&#x0a;Camera follows the view&#x0a;Studio uses a fixed light&#x0a;Flat disables shading" />
+
+                                <ComboBox Width="140"
+                                          IsEnabled="{Binding HasLayer3DMesh}"
+                                          ItemsSource="{Binding Settings.Layer3DPreview.ColorMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                          SelectedItem="{Binding Settings.Layer3DPreview.ColorMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
+                                          VerticalAlignment="Stretch"
+                                          ToolTip.Tip="Color mode:&#x0a;Solid: resin color&#x0a;Overhang heatmap: highlights steep overhangs [H]&#x0a;Layer zones: highlights bottom and transition layers" />
+
+                                <ComboBox Width="120"
+                                          IsEnabled="{Binding Layer3DClipToCurrentLayer}"
+                                          ItemsSource="{Binding Settings.Layer3DPreview.ClipMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                          SelectedItem="{Binding Settings.Layer3DPreview.ClipMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
+                                          VerticalAlignment="Stretch"
+                                          ToolTip.Tip="Clipping direction: Clip top, Clip bottom (Inverted) [I], or Slab band." />
 
                                 
                                 <ToggleButton IsChecked="{Binding Settings.Layer3DPreview.UseOthographicProjection}"
@@ -2391,6 +2421,18 @@
                                               IsEnabled="{Binding HasLayer3DMesh}"
                                               VerticalAlignment="Stretch"
                                               ToolTip.Tip="[C]lip the cached model at the selected layer without rebuilding it." />
+
+                                <ToggleButton Content="{icon:MaterialIconExt Ghost, Classes='Fill'}"
+                                              IsChecked="{Binding Settings.Layer3DPreview.GhostClippedModel}"
+                                              IsEnabled="{Binding Layer3DClipToCurrentLayer}"
+                                              VerticalAlignment="Stretch"
+                                              ToolTip.Tip="Show faint ghost silhouette of clipped model [O]." />
+
+                                <ToggleButton Content="{icon:MaterialIconExt Grid, Classes='Fill'}"
+                                              IsChecked="{Binding Settings.Layer3DPreview.ShowBuildPlateGrid}"
+                                              IsEnabled="{Binding HasLayer3DMesh}"
+                                              VerticalAlignment="Stretch"
+                                              ToolTip.Tip="Toggle build plate grid and printable volume wireframe [G]." />
                                 
                                 <ToggleButton IsChecked="{Binding ShowLayerImageIssues, Mode=TwoWay}"
                                               Content="{icon:MaterialIconExt Kind=RadiationCircleOutline, Classes='Fill'}"
@@ -2410,6 +2452,7 @@
                             </WrapPanel>
                             
                             <StackPanel Grid.Row="0"
+                                        Grid.Column="1"
                                         HorizontalAlignment="Right"
                                         Orientation="Horizontal"
                                         Spacing="5">
@@ -2423,8 +2466,10 @@
                                                    Background="Transparent"
                                                    VerticalAlignment="Stretch"
                                                    FontSize="28"
-                                                   ToolTip.Tip="Views:&#x0a;» (S)olid: shaded opaque model&#x0a;» (X)-Ray: translucent model with internal geometry visible&#x0a;» (W)ireframe: visible optimized mesh edges&#x0a;&#x0a;Mouse:&#x0a;» Left-click drag to orbit&#x0a;» Right/middle-click drag to pan&#x0a;» Wheel to zoom, double-click to reset&#x0a;&#x0a;Keyboard:&#x0a;» 1-6: front, back, left, right, top, bottom view&#x0a;» 0 or Home: reset the camera&#x0a;» Arrows: orbit in steps&#x0a;» + and -: zoom in and out&#x0a;» C: toggle clip to current layer&#x0a;» P: toggle perspective/orthographic" />
+                                                   ToolTip.Tip="Views:&#x0a;» (S)olid: shaded opaque model&#x0a;» (X)-Ray: translucent model with internal geometry visible&#x0a;» (W)ireframe: visible optimized mesh edges&#x0a;&#x0a;Mouse:&#x0a;» Left-click drag to orbit&#x0a;» Right/middle-click drag to pan&#x0a;» Click model: Click-to-Layer (jump to slice)&#x0a;» Wheel to zoom, double-click to reset&#x0a;&#x0a;Keyboard:&#x0a;» 1-6: front, back, left, right, top, bottom view&#x0a;» 0 or Home: reset the camera&#x0a;» Arrows: orbit in steps&#x0a;» + and -: zoom in and out&#x0a;» C: toggle clip to current layer&#x0a;» I: invert clipping&#x0a;» G: toggle build plate grid&#x0a;» H: cycle overhang heatmap / layer zones&#x0a;» O: toggle ghost silhouette of clipped model&#x0a;» P: toggle perspective/orthographic" />
                             </StackPanel>
+                            </Grid>
+                            
                             
 
                             <Border Grid.Row="1"
@@ -2437,6 +2482,11 @@
                                                                IsOrthographic="{Binding Settings.Layer3DPreview.UseOthographicProjection}"
                                                                LightingMode="{Binding Settings.Layer3DPreview.LightingMode}"
                                                                RenderMode="{Binding Settings.Layer3DPreview.RenderMode}"
+                                                               ColorMode="{Binding Settings.Layer3DPreview.ColorMode}"
+                                                               ClipMode="{Binding Settings.Layer3DPreview.ClipMode}"
+                                                               ShowBuildPlateGrid="{Binding Settings.Layer3DPreview.ShowBuildPlateGrid}"
+                                                               GhostClippedModel="{Binding Settings.Layer3DPreview.GhostClippedModel}"
+                                                               SlabThickness="{Binding Settings.Layer3DPreview.SlabThicknessMm}"
                                                                VoxelColor="{Binding Settings.Layer3DPreview.VoxelBrush}" />
 
                                     <controls:LayerModelOrientationCube Name="LayerModelOrientationCube"

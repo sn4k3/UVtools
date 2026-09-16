@@ -14,6 +14,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using StageKit.Primitives;
+using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.MeshFormats;
@@ -37,17 +38,17 @@ public partial class MainWindow
     private VoxelPreviewIssueMesh? _layer3DIssueMesh;
     private string? _layer3DIssueOverlayError;
     private VoxelPreviewMesh? _layer3DMesh;
-    private int _layer3DPreviewTabIndex;
+    private int _layerPreviewTabIndex;
     private string? _layer3DRendererError;
 
     public static VoxelPreviewQuality[] Layer3DQualityOptions { get; } = Enum.GetValues<VoxelPreviewQuality>();
 
-    public int Layer3DPreviewTabIndex
+    public int LayerPreviewTabIndex
     {
-        get => _layer3DPreviewTabIndex;
+        get => _layerPreviewTabIndex;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _layer3DPreviewTabIndex, value)) return;
+            if (!RaiseAndSetIfChanged(ref _layerPreviewTabIndex, value)) return;
             InvalidateLayer3DPreviewStatus();
             if (value == 0)
             {
@@ -129,6 +130,15 @@ public partial class MainWindow
             var issueError = string.IsNullOrWhiteSpace(_layer3DIssueOverlayError)
                 ? string.Empty
                 : $" • issue overlay unavailable: {_layer3DIssueOverlayError}";
+
+            if (Layer3DClipToCurrentLayer && SlicerFile is not null && SlicerFile.ContainsLayer(ActualLayer))
+            {
+                var curLayer = SlicerFile[ActualLayer];
+                var maxZ = _layer3DMesh.MaximumBounds.Z;
+                var pct = maxZ > 0 ? (curLayer.PositionZ / maxZ * 100f) : 0f;
+                return $"Layer {ActualLayer + 1}/{SlicerFile.LayerCount} • Z: {curLayer.PositionZ:F2}/{maxZ:F2} mm ({pct:F1}%) • {_layer3DMesh.TriangleCount:N0} triangles{issues}{stale}{issueError}";
+            }
+
             return $"{_layer3DMesh.TriangleCount:N0} triangles • detail 1:{_layer3DMesh.SamplingStride} • " +
                    $"built in {_layer3DMesh.BuildDuration.TotalSeconds:F2}s{issues}{stale}{issueError}";
         }
@@ -140,6 +150,7 @@ public partial class MainWindow
         LayerModelOrientationCube.OrbitRequested += LayerModel3DView.Orbit;
         LayerModelOrientationCube.SnapRequested += LayerModel3DView.SnapToDirection;
         LayerModelOrientationCube.SetCameraOrientation(LayerModel3DView.CameraYaw, LayerModel3DView.CameraPitch);
+        LayerModel3DView.ModelPointClicked += OnLayer3DModelPointClicked;
 
         /* The cube takes the focus when clicked, keep the camera shortcuts working from there as well. */
         LayerModelOrientationCube.KeyDown += (_, e) => e.Handled = LayerModel3DView.HandleCameraKey(e);
@@ -161,7 +172,7 @@ public partial class MainWindow
                 }
 
                 InvalidateLayer3DPreviewStatus();
-                if (error is null && Layer3DPreviewTabIndex == 1 && _layer3DMesh is null)
+                if (error is null && LayerPreviewTabIndex == 1 && _layer3DMesh is null)
                 {
                     Dispatcher.UIThread.InvokeAsync(RebuildLayer3DPreview);
                 }
@@ -190,6 +201,30 @@ public partial class MainWindow
 
         LayerModel3DView.SetIssueColors(issueColors);
         LayerModel3DView.IsOrthographic = Settings.Layer3DPreview.UseOthographicProjection;
+        LayerModel3DView.ColorMode = Settings.Layer3DPreview.ColorMode;
+        LayerModel3DView.ClipMode = Settings.Layer3DPreview.ClipMode;
+        LayerModel3DView.ShowBuildPlateGrid = Settings.Layer3DPreview.ShowBuildPlateGrid;
+        LayerModel3DView.GhostClippedModel = Settings.Layer3DPreview.GhostClippedModel;
+        LayerModel3DView.SlabThickness = Settings.Layer3DPreview.SlabThicknessMm;
+
+        if (SlicerFile is not null)
+        {
+            LayerModel3DView.PlateWidth = SlicerFile.DisplayWidth;
+            LayerModel3DView.PlateHeight = SlicerFile.DisplayHeight;
+            LayerModel3DView.PrintHeight = SlicerFile.MachineZ > 0 ? SlicerFile.MachineZ : (SlicerFile.Layers.Length > 0 ? SlicerFile.Layers[^1].PositionZ : 0);
+
+            var bottomLayerCount = SlicerFile.BottomLayerCount;
+            var transitionLayerCount = SlicerFile.TransitionLayerCount;
+            if (bottomLayerCount > 0 && bottomLayerCount <= SlicerFile.LayerCount)
+            {
+                LayerModel3DView.BottomLayersHeight = SlicerFile[bottomLayerCount - 1].PositionZ;
+            }
+            if (transitionLayerCount > 0 && bottomLayerCount + transitionLayerCount <= SlicerFile.LayerCount)
+            {
+                LayerModel3DView.TransitionLayersHeight = SlicerFile[bottomLayerCount + transitionLayerCount - 1].PositionZ;
+            }
+        }
+
         RaisePropertyChanged(nameof(SelectedLayer3DQuality));
         InvalidateLayer3DPreviewStatus();
     }
@@ -236,8 +271,13 @@ public partial class MainWindow
         _layer3DMesh = newMesh;
         LayerModel3DView.Mesh = newMesh;
         previousMesh?.Dispose();
+        RefreshLayer3DPreviewSettings();
         await RebuildLayer3DIssueOverlay();
         UpdateLayer3DClip();
+        if (_lastFocusedIssue is not null)
+        {
+            FocusIssueIn3D(_lastFocusedIssue);
+        }
         InvalidateLayer3DPreviewStatus();
     }
 
@@ -365,6 +405,7 @@ public partial class MainWindow
         if (SlicerFile is null || !SlicerFile.ContainsLayer(ActualLayer)) return;
         var layer = SlicerFile[ActualLayer];
         LayerModel3DView.ClipZ = layer.PositionZ;
+        InvalidateLayer3DPreviewStatus();
 
         if (!Layer3DClipToCurrentLayer || _layer3DMesh is null)
         {
@@ -476,6 +517,90 @@ public partial class MainWindow
         });
     }
 
+    private void OnLayer3DModelPointClicked(System.Numerics.Vector3 hitPoint)
+    {
+        if (SlicerFile is null || SlicerFile.LayerCount == 0) return;
+
+        var closestIndex = 0;
+        var minDiff = float.MaxValue;
+        for (var i = 0; i < SlicerFile.LayerCount; i++)
+        {
+            var diff = Math.Abs(SlicerFile[i].PositionZ - hitPoint.Z);
+            if (diff < minDiff)
+            {
+                minDiff = diff;
+                closestIndex = i;
+            }
+        }
+
+        ActualLayer = (uint)closestIndex;
+    }
+
+    private Issue? _lastFocusedIssue;
+
+    public void FocusIssueIn3D(Issue issue)
+    {
+        _lastFocusedIssue = issue;
+        if (SlicerFile is null || !SlicerFile.ContainsLayer(issue.LayerIndex)) return;
+        var rect = issue.BoundingRectangle;
+        if (rect.IsEmpty)
+        {
+            if (issue.Parent is not null && !issue.Parent.BoundingRectangle.IsEmpty)
+            {
+                rect = issue.Parent.BoundingRectangle;
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        var bounds = _layer3DMesh?.ModelBounds ?? SlicerFile.BoundingRectangle;
+        if (bounds.IsEmpty) return;
+
+        var pixelSize = SlicerFile.PixelSize;
+        var pixelW = _layer3DMesh?.PixelWidth ?? (pixelSize.Width > 0 ? pixelSize.Width : 0.035f);
+        var pixelH = _layer3DMesh?.PixelHeight ?? (pixelSize.Height > 0 ? pixelSize.Height : 0.035f);
+
+        var flip = _layer3DMesh?.WorkAroundFlip ?? SlicerFile.DisplayMirror switch
+        {
+            FlipDirection.None => FlipDirection.Vertically,
+            FlipDirection.Horizontally => FlipDirection.Both,
+            FlipDirection.Vertically => FlipDirection.None,
+            FlipDirection.Both => FlipDirection.Horizontally,
+            _ => FlipDirection.None
+        };
+
+        var flipH = flip is FlipDirection.Horizontally or FlipDirection.Both;
+        var flipV = flip is FlipDirection.Vertically or FlipDirection.Both;
+
+        var minXPixel = flipH ? bounds.X + bounds.Right - rect.Right : rect.Left;
+        var maxXPixel = flipH ? bounds.X + bounds.Right - rect.Left : rect.Right;
+
+        var minYPixel = flipV ? bounds.Y + bounds.Bottom - rect.Bottom : rect.Top;
+        var maxYPixel = flipV ? bounds.Y + bounds.Bottom - rect.Top : rect.Bottom;
+
+        var minX = Math.Min(minXPixel, maxXPixel) * pixelW;
+        var maxX = Math.Max(minXPixel, maxXPixel) * pixelW;
+        var minY = Math.Min(minYPixel, maxYPixel) * pixelH;
+        var maxY = Math.Max(minYPixel, maxYPixel) * pixelH;
+
+        var z = SlicerFile[issue.LayerIndex].PositionZ;
+        var layerH = Math.Max(SlicerFile[issue.LayerIndex].LayerHeight, SlicerFile.LayerHeight);
+
+        var padX = Math.Max((maxX - minX) * 0.1f, 0.5f);
+        var padY = Math.Max((maxY - minY) * 0.1f, 0.5f);
+        var padZ = Math.Max(layerH * 0.5f, 0.3f);
+
+        var min = new System.Numerics.Vector3(minX - padX, minY - padY, Math.Max(0f, z - layerH - padZ));
+        var max = new System.Numerics.Vector3(maxX + padX, maxY + padY, z + padZ);
+        var center = (min + max) / 2;
+        var radius = Math.Max((max - min).Length() / 2, 3.0f);
+
+        LayerModel3DView.FocusOnRegion(center, radius);
+        LayerModel3DView.SetFocusedBoundingBox(min, max);
+    }
+
     private void InvalidateLayer3DPreviewStatus()
     {
         RaisePropertyChanged(nameof(IsLayer3DPreviewStale));
@@ -505,8 +630,8 @@ public partial class MainWindow
         _layer3DMesh = null;
         _layer3DIssueMesh = null;
         _layer3DIssueBuildGeneration++;
-        _layer3DPreviewTabIndex = 0;
-        RaisePropertyChanged(nameof(Layer3DPreviewTabIndex));
+        _layerPreviewTabIndex = 0;
+        RaisePropertyChanged(nameof(LayerPreviewTabIndex));
         InvalidateLayer3DPreviewStatus();
     }
 }

@@ -532,11 +532,14 @@ public partial class MainWindow
 
         if (IssuesGrid.SelectedItem is not MainIssue mainIssue)
         {
+            _lastFocusedIssue = null;
+            LayerModel3DView.ClearFocusedBoundingBox();
             ShowLayer();
             return;
         }
 
-        var issue = mainIssue.AsValueEnumerable().FirstOrDefault();
+        var issue = mainIssue.AsValueEnumerable().FirstOrDefault(i => i.LayerIndex == ActualLayer)
+                    ?? mainIssue.AsValueEnumerable().FirstOrDefault();
         if (issue is null) return;
         ZoomToIssue(issue, true);
     }

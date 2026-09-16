@@ -1037,6 +1037,18 @@ public partial class MainWindow : GenericWindow
         Settings.LastBirthdayYearsOld = About.YearsOld;
         UserSettings.Save();
     }
+    
+    [RelayCommand]
+    public void GoToLayerPreviewTab()
+    {
+        LayerPreviewTabIndex = 0;
+    }
+    
+    [RelayCommand]
+    public void GoTo3DLayerPreviewTab()
+    {
+        LayerPreviewTabIndex = 1;
+    }
 
     [RelayCommand]
     public async Task MenuFileOpenClicked()

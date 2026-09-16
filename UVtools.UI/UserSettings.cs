@@ -597,6 +597,21 @@ public partial class UserSettings : ObservableObject
 
         [ObservableProperty] public partial bool UseOthographicProjection { get; set; }
 
+        [ObservableProperty]
+        public partial VoxelPreviewColorMode ColorMode { get; set; } = VoxelPreviewColorMode.Solid;
+
+        [ObservableProperty]
+        public partial VoxelPreviewClipMode ClipMode { get; set; } = VoxelPreviewClipMode.Below;
+
+        [ObservableProperty]
+        public partial bool ShowBuildPlateGrid { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool GhostClippedModel { get; set; } = true;
+
+        [ObservableProperty]
+        public partial float SlabThicknessMm { get; set; } = 5f;
+
         public Layer3DPreviewUserSettings Clone()
         {
             return (MemberwiseClone() as Layer3DPreviewUserSettings)!;

@@ -36,6 +36,26 @@ public enum VoxelPreviewLightingMode : byte
     Flat
 }
 
+public enum VoxelPreviewColorMode : byte
+{
+    [Description("Solid")]
+    Solid,
+    [Description("Overhang heatmap")]
+    OverhangHeatmap,
+    [Description("Layer zones")]
+    LayerZones
+}
+
+public enum VoxelPreviewClipMode : byte
+{
+    [Description("Clip top")]
+    Below,
+    [Description("Clip bottom (Inverted)")]
+    Above,
+    [Description("Slab (Band)")]
+    Slab
+}
+
 public readonly record struct VoxelPreviewMeshOptions(
     VoxelPreviewQuality Quality,
     int MaximumPlaneDimension,
@@ -154,6 +174,8 @@ public sealed class VoxelPreviewMesh : IDisposable
     public int GridWidth { get; }
     public int GridHeight { get; }
     public FlipDirection WorkAroundFlip { get; }
+    public float DisplayWidth => _source.DisplayWidth;
+    public float DisplayHeight => _source.DisplayHeight;
     public float BoundsMinX => ModelBounds.X * PixelWidth;
     public float BoundsMinY => ModelBounds.Y * PixelHeight;
     public float BoundsMaxX => ModelBounds.Right * PixelWidth;

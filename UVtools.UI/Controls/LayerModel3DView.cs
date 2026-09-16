@@ -49,15 +49,53 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                                  uniform int uUnlit;
                                                  uniform vec3 uLightDirection;
                                                  uniform float uAmbientLight;
-                                                 uniform float uClipZ;
+                                                 uniform float uClipZMin;
+                                                 uniform float uClipZMax;
                                                  uniform int uClipEnabled;
+                                                 uniform int uColorMode;
+                                                 uniform float uOverhangThreshold;
+                                                 uniform float uBottomZ;
+                                                 uniform float uTransitionZ;
+                                                 uniform vec3 uBottomColor;
                                                  out vec4 fragmentColor;
                                                  void main()
                                                  {
-                                                     if (uClipEnabled != 0 && vWorldPosition.z > uClipZ) discard;
+                                                     if (uClipEnabled != 0 && (vWorldPosition.z < uClipZMin || vWorldPosition.z > uClipZMax)) discard;
+
+                                                     vec3 baseColor = uColor;
+                                                     if (uColorMode == 1)
+                                                     {
+                                                         vec3 norm = normalize(vNormal);
+                                                         float downward = -norm.z;
+                                                         if (downward > 0.0)
+                                                         {
+                                                             if (downward >= uOverhangThreshold)
+                                                             {
+                                                                 baseColor = vec3(1.0, 0.15, 0.15);
+                                                             }
+                                                             else if (downward >= 0.5)
+                                                             {
+                                                                 float t = (downward - 0.5) / max(uOverhangThreshold - 0.5, 0.001);
+                                                                 baseColor = mix(vec3(1.0, 0.85, 0.0), vec3(1.0, 0.15, 0.15), t);
+                                                             }
+                                                         }
+                                                     }
+                                                     else if (uColorMode == 2)
+                                                     {
+                                                         if (vWorldPosition.z <= uBottomZ)
+                                                         {
+                                                             baseColor = uBottomColor;
+                                                         }
+                                                         else if (vWorldPosition.z <= uTransitionZ)
+                                                         {
+                                                             float t = (vWorldPosition.z - uBottomZ) / max(uTransitionZ - uBottomZ, 0.001);
+                                                             baseColor = mix(uBottomColor, uColor, t);
+                                                         }
+                                                     }
+
                                                      float diffuse = max(dot(normalize(vNormal), uLightDirection), 0.0);
                                                      float lighting = uAmbientLight + diffuse * (1.0 - uAmbientLight);
-                                                     vec3 color = uUnlit != 0 ? uColor : uColor * lighting;
+                                                     vec3 color = uUnlit != 0 ? baseColor : baseColor * lighting;
                                                      fragmentColor = vec4(color, uAlpha);
                                                  }
                                                  """;
@@ -123,15 +161,53 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                             uniform int uUnlit;
                                             uniform vec3 uLightDirection;
                                             uniform float uAmbientLight;
-                                            uniform float uClipZ;
+                                            uniform float uClipZMin;
+                                            uniform float uClipZMax;
                                             uniform int uClipEnabled;
+                                            uniform int uColorMode;
+                                            uniform float uOverhangThreshold;
+                                            uniform float uBottomZ;
+                                            uniform float uTransitionZ;
+                                            uniform vec3 uBottomColor;
                                             out vec4 fragmentColor;
                                             void main()
                                             {
-                                                if (uClipEnabled != 0 && vWorldPosition.z > uClipZ) discard;
+                                                if (uClipEnabled != 0 && (vWorldPosition.z < uClipZMin || vWorldPosition.z > uClipZMax)) discard;
+
+                                                vec3 baseColor = uColor;
+                                                if (uColorMode == 1)
+                                                {
+                                                    vec3 norm = normalize(vNormal);
+                                                    float downward = -norm.z;
+                                                    if (downward > 0.0)
+                                                    {
+                                                        if (downward >= uOverhangThreshold)
+                                                        {
+                                                            baseColor = vec3(1.0, 0.15, 0.15);
+                                                        }
+                                                        else if (downward >= 0.5)
+                                                        {
+                                                            float t = (downward - 0.5) / max(uOverhangThreshold - 0.5, 0.001);
+                                                            baseColor = mix(vec3(1.0, 0.85, 0.0), vec3(1.0, 0.15, 0.15), t);
+                                                        }
+                                                    }
+                                                }
+                                                else if (uColorMode == 2)
+                                                {
+                                                    if (vWorldPosition.z <= uBottomZ)
+                                                    {
+                                                        baseColor = uBottomColor;
+                                                    }
+                                                    else if (vWorldPosition.z <= uTransitionZ)
+                                                    {
+                                                        float t = (vWorldPosition.z - uBottomZ) / max(uTransitionZ - uBottomZ, 0.001);
+                                                        baseColor = mix(uBottomColor, uColor, t);
+                                                    }
+                                                }
+
                                                 float diffuse = max(dot(normalize(vNormal), uLightDirection), 0.0);
                                                 float lighting = uAmbientLight + diffuse * (1.0 - uAmbientLight);
-                                                vec3 color = uUnlit != 0 ? uColor : uColor * lighting;
+                                                vec3 color = uUnlit != 0 ? baseColor : baseColor * lighting;
                                                 fragmentColor = vec4(color, uAlpha);
                                             }
                                             """;
@@ -190,6 +266,36 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     public static readonly StyledProperty<VoxelPreviewRenderMode> RenderModeProperty =
         AvaloniaProperty.Register<LayerModel3DView, VoxelPreviewRenderMode>(nameof(RenderMode));
 
+    public static readonly StyledProperty<VoxelPreviewColorMode> ColorModeProperty =
+        AvaloniaProperty.Register<LayerModel3DView, VoxelPreviewColorMode>(nameof(ColorMode));
+
+    public static readonly StyledProperty<VoxelPreviewClipMode> ClipModeProperty =
+        AvaloniaProperty.Register<LayerModel3DView, VoxelPreviewClipMode>(nameof(ClipMode));
+
+    public static readonly StyledProperty<bool> ShowBuildPlateGridProperty =
+        AvaloniaProperty.Register<LayerModel3DView, bool>(nameof(ShowBuildPlateGrid), true);
+
+    public static readonly StyledProperty<bool> GhostClippedModelProperty =
+        AvaloniaProperty.Register<LayerModel3DView, bool>(nameof(GhostClippedModel), true);
+
+    public static readonly StyledProperty<float> SlabThicknessProperty =
+        AvaloniaProperty.Register<LayerModel3DView, float>(nameof(SlabThickness), 5.0f);
+
+    public static readonly StyledProperty<float> PlateWidthProperty =
+        AvaloniaProperty.Register<LayerModel3DView, float>(nameof(PlateWidth));
+
+    public static readonly StyledProperty<float> PlateHeightProperty =
+        AvaloniaProperty.Register<LayerModel3DView, float>(nameof(PlateHeight));
+
+    public static readonly StyledProperty<float> PrintHeightProperty =
+        AvaloniaProperty.Register<LayerModel3DView, float>(nameof(PrintHeight));
+
+    public static readonly StyledProperty<float> BottomLayersHeightProperty =
+        AvaloniaProperty.Register<LayerModel3DView, float>(nameof(BottomLayersHeight));
+
+    public static readonly StyledProperty<float> TransitionLayersHeightProperty =
+        AvaloniaProperty.Register<LayerModel3DView, float>(nameof(TransitionLayersHeight));
+
     private const float OrbitSensitivity = 0.008f;
     private const double CameraAnimationSeconds = 0.2;
     private const float XRayOpacity = 0.18f;
@@ -205,12 +311,20 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private Vector3 _cameraTarget;
     private float _cameraYaw = -0.8f;
     private IPointer? _capturedPointer;
+    private Point? _pointerDownPosition;
+    private bool _isDragging;
     private int _clipEnabledLocation;
     private int _alphaLocation;
 
     private bool _clipToLayer;
     private float _clipZ = float.MaxValue;
-    private int _clipZLocation;
+    private int _clipZMinLocation;
+    private int _clipZMaxLocation;
+    private int _colorModeLocation;
+    private int _overhangThresholdLocation;
+    private int _bottomZLocation;
+    private int _transitionZLocation;
+    private int _bottomColorLocation;
     private int _colorLocation;
     private int _unlitLocation;
     private int _lightDirectionLocation;
@@ -271,6 +385,20 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private bool _needsCapUpload;
     private bool _needsCapGeometryUpload;
 
+    private uint _gridVertexArray;
+    private uint _gridVertexBuffer;
+    private int _gridVertexCount;
+    private bool _needsGridUpload = true;
+
+    private uint _focusBoxVertexArray;
+    private uint _focusBoxVertexBuffer;
+    private bool _hasFocusedBox;
+    private Vector3 _focusBoxMin;
+    private Vector3 _focusBoxMax;
+    private bool _needsFocusBoxUpload;
+
+    public event Action<Vector3>? ModelPointClicked;
+
     static LayerModel3DView()
     {
         VoxelColorProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
@@ -282,6 +410,35 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         LightingModeProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
         RenderModeProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+            control.RequestNextFrameRendering());
+        ColorModeProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+            control.RequestNextFrameRendering());
+        ClipModeProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+            control.RequestNextFrameRendering());
+        ShowBuildPlateGridProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+            control.RequestNextFrameRendering());
+        GhostClippedModelProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+            control.RequestNextFrameRendering());
+        SlabThicknessProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+            control.RequestNextFrameRendering());
+        PlateWidthProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+        {
+            control._needsGridUpload = true;
+            control.RequestNextFrameRendering();
+        });
+        PlateHeightProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+        {
+            control._needsGridUpload = true;
+            control.RequestNextFrameRendering();
+        });
+        PrintHeightProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+        {
+            control._needsGridUpload = true;
+            control.RequestNextFrameRendering();
+        });
+        BottomLayersHeightProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+            control.RequestNextFrameRendering());
+        TransitionLayersHeightProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
     }
 
@@ -301,7 +458,12 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             var resetCamera = _mesh is null && value is not null;
             _mesh = value;
             _needsUpload = true;
-            if (value is null) ClearCap();
+            _needsGridUpload = true;
+            if (value is null)
+            {
+                ClearCap();
+                ClearFocusedBoundingBox();
+            }
             if (resetCamera) ResetCamera();
             RequestNextFrameRendering();
         }
@@ -381,6 +543,30 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         RequestNextFrameRendering();
     }
 
+    public void FocusOnRegion(Vector3 center, float radius)
+    {
+        CancelCameraAnimation();
+        _cameraTarget = center;
+        var maxDistance = Math.Max(20f, _modelRadius * 2.5f);
+        _cameraDistance = Math.Clamp(radius * 3.5f, 15f, maxDistance);
+        CameraChanged();
+    }
+
+    public void SetFocusedBoundingBox(Vector3 min, Vector3 max)
+    {
+        _focusBoxMin = min;
+        _focusBoxMax = max;
+        _hasFocusedBox = true;
+        _needsFocusBoxUpload = true;
+        RequestNextFrameRendering();
+    }
+
+    public void ClearFocusedBoundingBox()
+    {
+        _hasFocusedBox = false;
+        RequestNextFrameRendering();
+    }
+
     public Avalonia.Media.Color VoxelColor
     {
         get => GetValue(VoxelColorProperty);
@@ -409,6 +595,66 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     {
         get => GetValue(RenderModeProperty);
         set => SetValue(RenderModeProperty, value);
+    }
+
+    public VoxelPreviewColorMode ColorMode
+    {
+        get => GetValue(ColorModeProperty);
+        set => SetValue(ColorModeProperty, value);
+    }
+
+    public VoxelPreviewClipMode ClipMode
+    {
+        get => GetValue(ClipModeProperty);
+        set => SetValue(ClipModeProperty, value);
+    }
+
+    public bool ShowBuildPlateGrid
+    {
+        get => GetValue(ShowBuildPlateGridProperty);
+        set => SetValue(ShowBuildPlateGridProperty, value);
+    }
+
+    public bool GhostClippedModel
+    {
+        get => GetValue(GhostClippedModelProperty);
+        set => SetValue(GhostClippedModelProperty, value);
+    }
+
+    public float SlabThickness
+    {
+        get => GetValue(SlabThicknessProperty);
+        set => SetValue(SlabThicknessProperty, value);
+    }
+
+    public float PlateWidth
+    {
+        get => GetValue(PlateWidthProperty);
+        set => SetValue(PlateWidthProperty, value);
+    }
+
+    public float PlateHeight
+    {
+        get => GetValue(PlateHeightProperty);
+        set => SetValue(PlateHeightProperty, value);
+    }
+
+    public float PrintHeight
+    {
+        get => GetValue(PrintHeightProperty);
+        set => SetValue(PrintHeightProperty, value);
+    }
+
+    public float BottomLayersHeight
+    {
+        get => GetValue(BottomLayersHeightProperty);
+        set => SetValue(BottomLayersHeightProperty, value);
+    }
+
+    public float TransitionLayersHeight
+    {
+        get => GetValue(TransitionLayersHeightProperty);
+        set => SetValue(TransitionLayersHeightProperty, value);
     }
 
     public float CameraYaw => _cameraYaw;
@@ -509,8 +755,14 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             _unlitLocation = _gl.GetUniformLocation(_shaderProgram, "uUnlit");
             _lightDirectionLocation = _gl.GetUniformLocation(_shaderProgram, "uLightDirection");
             _ambientLightLocation = _gl.GetUniformLocation(_shaderProgram, "uAmbientLight");
-            _clipZLocation = _gl.GetUniformLocation(_shaderProgram, "uClipZ");
+            _clipZMinLocation = _gl.GetUniformLocation(_shaderProgram, "uClipZMin");
+            _clipZMaxLocation = _gl.GetUniformLocation(_shaderProgram, "uClipZMax");
             _clipEnabledLocation = _gl.GetUniformLocation(_shaderProgram, "uClipEnabled");
+            _colorModeLocation = _gl.GetUniformLocation(_shaderProgram, "uColorMode");
+            _overhangThresholdLocation = _gl.GetUniformLocation(_shaderProgram, "uOverhangThreshold");
+            _bottomZLocation = _gl.GetUniformLocation(_shaderProgram, "uBottomZ");
+            _transitionZLocation = _gl.GetUniformLocation(_shaderProgram, "uTransitionZ");
+            _bottomColorLocation = _gl.GetUniformLocation(_shaderProgram, "uBottomColor");
 
             _vertexArray = _gl.GenVertexArray();
             _vertexBuffer = _gl.GenBuffer();
@@ -519,6 +771,12 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             _issueVertexArray = _gl.GenVertexArray();
             _issueVertexBuffer = _gl.GenBuffer();
             _issueIndexBuffer = _gl.GenBuffer();
+
+            _gridVertexArray = _gl.GenVertexArray();
+            _gridVertexBuffer = _gl.GenBuffer();
+
+            _focusBoxVertexArray = _gl.GenVertexArray();
+            _focusBoxVertexBuffer = _gl.GenBuffer();
 
             _capShaderProgram = CreateShaderProgram(
                 isOpenGles ? EsCapVertexShader : DesktopCapVertexShader,
@@ -568,6 +826,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             _needsIssueUpload = true;
             _needsCapUpload = true;
             _needsCapGeometryUpload = true;
+            _needsGridUpload = true;
             RendererStatusChanged?.Invoke(null);
         }
         catch (Exception exception)
@@ -616,26 +875,81 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         if (_needsIssueUpload) UploadIssueMesh();
         if (_needsCapUpload) UploadCapTexture();
         if (_needsCapGeometryUpload) UploadCapGeometry();
+        if (_needsGridUpload) UploadBuildPlateGrid();
+        if (_needsFocusBoxUpload) UploadFocusedBoundingBox();
+
         if ((_uploadedIndexCount == 0 || _mesh is null) &&
-            (_uploadedIssueIndexCount == 0 || _issueMesh is null)) return;
+            (_uploadedIssueIndexCount == 0 || _issueMesh is null) &&
+            !ShowBuildPlateGrid) return;
 
         var viewProjection = GetViewProjection(width / (float)height);
         _gl.UseProgram(_shaderProgram);
         ApplyLighting(_lightDirectionLocation, _ambientLightLocation);
-        _gl.Uniform1(_clipZLocation, _clipZ);
+
+        var clipMinZ = -1e9f;
+        var clipMaxZ = 1e9f;
+        var ghostMinZ = 0f;
+        var ghostMaxZ = 0f;
+        var hasGhost = false;
+
+        if (_clipToLayer)
+        {
+            switch (ClipMode)
+            {
+                case VoxelPreviewClipMode.Below:
+                    clipMaxZ = _clipZ;
+                    ghostMinZ = _clipZ;
+                    ghostMaxZ = 1e9f;
+                    hasGhost = true;
+                    break;
+                case VoxelPreviewClipMode.Above:
+                    clipMinZ = _clipZ;
+                    ghostMinZ = -1e9f;
+                    ghostMaxZ = _clipZ;
+                    hasGhost = true;
+                    break;
+                case VoxelPreviewClipMode.Slab:
+                    clipMinZ = _clipZ - SlabThickness;
+                    clipMaxZ = _clipZ;
+                    break;
+            }
+        }
+
+        _gl.Uniform1(_clipZMinLocation, clipMinZ);
+        _gl.Uniform1(_clipZMaxLocation, clipMaxZ);
         _gl.Uniform1(_clipEnabledLocation, _clipToLayer ? 1 : 0);
+        _gl.Uniform1(_colorModeLocation, (int)ColorMode);
+        _gl.Uniform1(_overhangThresholdLocation, 0.7071f);
+        _gl.Uniform1(_bottomZLocation, BottomLayersHeight);
+        _gl.Uniform1(_transitionZLocation, TransitionLayersHeight);
+        _gl.Uniform3(_bottomColorLocation, 0.15f, 0.6f, 1.0f);
         _gl.UniformMatrix4(_viewProjectionLocation, 1, false, (float*)&viewProjection);
 
         if (_uploadedIndexCount > 0 && _mesh is not null)
         {
             DrawModel();
             if (_clipToLayer) DrawCap(viewProjection);
+
+            if (_clipToLayer && GhostClippedModel && hasGhost && RenderMode != VoxelPreviewRenderMode.Wireframe)
+            {
+                DrawGhost(ghostMinZ, ghostMaxZ);
+            }
+        }
+
+        if (ShowBuildPlateGrid)
+        {
+            DrawBuildPlate();
         }
 
         if (_uploadedIssueIndexCount > 0 && _issueMesh is not null)
         {
             _gl.UseProgram(_shaderProgram);
             DrawIssueOverlay();
+        }
+
+        if (_hasFocusedBox)
+        {
+            DrawFocusedBoundingBox();
         }
     }
 
@@ -786,6 +1100,192 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             _gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(4 * sizeof(CapVertex)), vertexPointer,
                 BufferUsageARB.DynamicDraw);
         }
+    }
+
+    private unsafe void UploadBuildPlateGrid()
+    {
+        if (_gl is null || _gridVertexBuffer == 0) return;
+        _needsGridUpload = false;
+
+        var plateW = PlateWidth > 0 ? PlateWidth : (_mesh?.DisplayWidth > 0 ? _mesh.DisplayWidth : (_mesh?.MaximumBounds.X ?? 120f));
+        var plateH = PlateHeight > 0 ? PlateHeight : (_mesh?.DisplayHeight > 0 ? _mesh.DisplayHeight : (_mesh?.MaximumBounds.Y ?? 68f));
+        var maxZ = PrintHeight > 0 ? PrintHeight : (_mesh is not null ? Math.Max(_mesh.MaximumBounds.Z + 10f, 50f) : 150f);
+
+        var lines = new List<VoxelPreviewVertex>();
+
+        // Grid lines every 10mm along X
+        for (var x = 0f; x <= plateW + 0.001f; x += 10f)
+        {
+            lines.Add(new VoxelPreviewVertex(new Vector3(x, 0, 0), Vector3.UnitZ));
+            lines.Add(new VoxelPreviewVertex(new Vector3(x, plateH, 0), Vector3.UnitZ));
+        }
+
+        // Grid lines every 10mm along Y
+        for (var y = 0f; y <= plateH + 0.001f; y += 10f)
+        {
+            lines.Add(new VoxelPreviewVertex(new Vector3(0, y, 0), Vector3.UnitZ));
+            lines.Add(new VoxelPreviewVertex(new Vector3(plateW, y, 0), Vector3.UnitZ));
+        }
+
+        // 4 vertical columns of print volume box
+        lines.Add(new VoxelPreviewVertex(new Vector3(0, 0, 0), Vector3.UnitZ));
+        lines.Add(new VoxelPreviewVertex(new Vector3(0, 0, maxZ), Vector3.UnitZ));
+
+        lines.Add(new VoxelPreviewVertex(new Vector3(plateW, 0, 0), Vector3.UnitZ));
+        lines.Add(new VoxelPreviewVertex(new Vector3(plateW, 0, maxZ), Vector3.UnitZ));
+
+        lines.Add(new VoxelPreviewVertex(new Vector3(plateW, plateH, 0), Vector3.UnitZ));
+        lines.Add(new VoxelPreviewVertex(new Vector3(plateW, plateH, maxZ), Vector3.UnitZ));
+
+        lines.Add(new VoxelPreviewVertex(new Vector3(0, plateH, 0), Vector3.UnitZ));
+        lines.Add(new VoxelPreviewVertex(new Vector3(0, plateH, maxZ), Vector3.UnitZ));
+
+        // Top rectangle at maxZ
+        lines.Add(new VoxelPreviewVertex(new Vector3(0, 0, maxZ), Vector3.UnitZ));
+        lines.Add(new VoxelPreviewVertex(new Vector3(plateW, 0, maxZ), Vector3.UnitZ));
+
+        lines.Add(new VoxelPreviewVertex(new Vector3(plateW, 0, maxZ), Vector3.UnitZ));
+        lines.Add(new VoxelPreviewVertex(new Vector3(plateW, plateH, maxZ), Vector3.UnitZ));
+
+        lines.Add(new VoxelPreviewVertex(new Vector3(plateW, plateH, maxZ), Vector3.UnitZ));
+        lines.Add(new VoxelPreviewVertex(new Vector3(0, plateH, maxZ), Vector3.UnitZ));
+
+        lines.Add(new VoxelPreviewVertex(new Vector3(0, plateH, maxZ), Vector3.UnitZ));
+        lines.Add(new VoxelPreviewVertex(new Vector3(0, 0, maxZ), Vector3.UnitZ));
+
+        _gridVertexCount = lines.Count;
+        _gl.BindVertexArray(_gridVertexArray);
+        _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _gridVertexBuffer);
+
+        var span = CollectionsMarshal.AsSpan(lines);
+        fixed (VoxelPreviewVertex* ptr = span)
+        {
+            _gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(lines.Count * sizeof(VoxelPreviewVertex)), ptr,
+                BufferUsageARB.StaticDraw);
+        }
+
+        var vertexSize = (uint)sizeof(VoxelPreviewVertex);
+        _gl.EnableVertexAttribArray(0);
+        _gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, vertexSize, (void*)0);
+        _gl.EnableVertexAttribArray(1);
+        _gl.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, vertexSize, (void*)sizeof(Vector3));
+        _gl.BindVertexArray(0);
+    }
+
+    private unsafe void UploadFocusedBoundingBox()
+    {
+        if (_gl is null || _focusBoxVertexBuffer == 0) return;
+        _needsFocusBoxUpload = false;
+
+        var min = _focusBoxMin;
+        var max = _focusBoxMax;
+
+        Span<VoxelPreviewVertex> boxVertices = stackalloc VoxelPreviewVertex[24]
+        {
+            new(new Vector3(min.X, min.Y, min.Z), Vector3.UnitZ),
+            new(new Vector3(max.X, min.Y, min.Z), Vector3.UnitZ),
+
+            new(new Vector3(max.X, min.Y, min.Z), Vector3.UnitZ),
+            new(new Vector3(max.X, max.Y, min.Z), Vector3.UnitZ),
+
+            new(new Vector3(max.X, max.Y, min.Z), Vector3.UnitZ),
+            new(new Vector3(min.X, max.Y, min.Z), Vector3.UnitZ),
+
+            new(new Vector3(min.X, max.Y, min.Z), Vector3.UnitZ),
+            new(new Vector3(min.X, min.Y, min.Z), Vector3.UnitZ),
+
+            new(new Vector3(min.X, min.Y, max.Z), Vector3.UnitZ),
+            new(new Vector3(max.X, min.Y, max.Z), Vector3.UnitZ),
+
+            new(new Vector3(max.X, min.Y, max.Z), Vector3.UnitZ),
+            new(new Vector3(max.X, max.Y, max.Z), Vector3.UnitZ),
+
+            new(new Vector3(max.X, max.Y, max.Z), Vector3.UnitZ),
+            new(new Vector3(min.X, max.Y, max.Z), Vector3.UnitZ),
+
+            new(new Vector3(min.X, max.Y, max.Z), Vector3.UnitZ),
+            new(new Vector3(min.X, min.Y, max.Z), Vector3.UnitZ),
+
+            new(new Vector3(min.X, min.Y, min.Z), Vector3.UnitZ),
+            new(new Vector3(min.X, min.Y, max.Z), Vector3.UnitZ),
+
+            new(new Vector3(max.X, min.Y, min.Z), Vector3.UnitZ),
+            new(new Vector3(max.X, min.Y, max.Z), Vector3.UnitZ),
+
+            new(new Vector3(max.X, max.Y, min.Z), Vector3.UnitZ),
+            new(new Vector3(max.X, max.Y, max.Z), Vector3.UnitZ),
+
+            new(new Vector3(min.X, max.Y, min.Z), Vector3.UnitZ),
+            new(new Vector3(min.X, max.Y, max.Z), Vector3.UnitZ)
+        };
+
+        _gl.BindVertexArray(_focusBoxVertexArray);
+        _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _focusBoxVertexBuffer);
+        fixed (VoxelPreviewVertex* ptr = boxVertices)
+        {
+            _gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(24 * sizeof(VoxelPreviewVertex)), ptr,
+                BufferUsageARB.DynamicDraw);
+        }
+
+        var vertexSize = (uint)sizeof(VoxelPreviewVertex);
+        _gl.EnableVertexAttribArray(0);
+        _gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, vertexSize, (void*)0);
+        _gl.EnableVertexAttribArray(1);
+        _gl.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, vertexSize, (void*)sizeof(Vector3));
+        _gl.BindVertexArray(0);
+    }
+
+    private unsafe void DrawBuildPlate()
+    {
+        if (_gl is null || !ShowBuildPlateGrid || _gridVertexCount == 0 || _gridVertexArray == 0) return;
+
+        _gl.UseProgram(_shaderProgram);
+        _gl.Uniform1(_unlitLocation, 1);
+        _gl.Uniform1(_clipEnabledLocation, 0);
+        _gl.Uniform1(_alphaLocation, 0.35f);
+        _gl.Uniform3(_colorLocation, 0.35f, 0.55f, 0.85f);
+        _gl.BindVertexArray(_gridVertexArray);
+        _gl.Enable(EnableCap.Blend);
+        _gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+        _gl.DrawArrays(PrimitiveType.Lines, 0, (uint)_gridVertexCount);
+        _gl.Disable(EnableCap.Blend);
+    }
+
+    private unsafe void DrawFocusedBoundingBox()
+    {
+        if (_gl is null || !_hasFocusedBox || _focusBoxVertexArray == 0) return;
+
+        _gl.UseProgram(_shaderProgram);
+        _gl.Uniform1(_unlitLocation, 1);
+        _gl.Uniform1(_clipEnabledLocation, 0);
+        _gl.Uniform1(_alphaLocation, 0.95f);
+        _gl.Uniform3(_colorLocation, 1.0f, 0.85f, 0.1f);
+        _gl.BindVertexArray(_focusBoxVertexArray);
+        _gl.Disable(EnableCap.DepthTest);
+        _gl.DrawArrays(PrimitiveType.Lines, 0, 24);
+        _gl.Enable(EnableCap.DepthTest);
+    }
+
+    private unsafe void DrawGhost(float ghostMinZ, float ghostMaxZ)
+    {
+        if (_gl is null || _mesh is null) return;
+
+        _gl.UseProgram(_shaderProgram);
+        _gl.Uniform1(_clipEnabledLocation, 1);
+        _gl.Uniform1(_clipZMinLocation, ghostMinZ);
+        _gl.Uniform1(_clipZMaxLocation, ghostMaxZ);
+        _gl.Uniform1(_alphaLocation, 0.12f);
+        _gl.Uniform1(_unlitLocation, 1);
+        _gl.Uniform3(_colorLocation, VoxelColor.R / 255f * 0.7f, VoxelColor.G / 255f * 0.7f, VoxelColor.B / 255f * 0.7f);
+
+        _gl.BindVertexArray(_vertexArray);
+        _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _indexBuffer);
+        _gl.Enable(EnableCap.Blend);
+        _gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+        _gl.DepthMask(false);
+        _gl.DrawElements(PrimitiveType.Triangles, (uint)_uploadedIndexCount, DrawElementsType.UnsignedInt, null);
+        _gl.DepthMask(true);
+        _gl.Disable(EnableCap.Blend);
     }
 
     private unsafe void DrawCap(Matrix4x4 viewProjection)
@@ -999,6 +1499,129 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         }
     }
 
+    public bool TryPickModel(Point screenPoint, out Vector3 hitPoint)
+    {
+        hitPoint = Vector3.Zero;
+        if (_mesh is null || _mesh.VertexCount == 0 || Bounds.Width <= 0 || Bounds.Height <= 0)
+            return false;
+
+        var width = (float)Bounds.Width;
+        var height = (float)Bounds.Height;
+        var ndcX = (float)(2.0 * screenPoint.X / width - 1.0);
+        var ndcY = (float)(1.0 - 2.0 * screenPoint.Y / height);
+
+        var viewProjection = GetViewProjection(width / height);
+        if (!Matrix4x4.Invert(viewProjection, out var invViewProj))
+            return false;
+
+        var nearSource = new Vector4(ndcX, ndcY, -1.0f, 1.0f);
+        var farSource = new Vector4(ndcX, ndcY, 1.0f, 1.0f);
+
+        var nearWorld = Vector4.Transform(nearSource, invViewProj);
+        var farWorld = Vector4.Transform(farSource, invViewProj);
+
+        if (Math.Abs(nearWorld.W) < 1e-6f || Math.Abs(farWorld.W) < 1e-6f)
+            return false;
+
+        var rayOrigin = new Vector3(nearWorld.X / nearWorld.W, nearWorld.Y / nearWorld.W, nearWorld.Z / nearWorld.W);
+        var rayFar = new Vector3(farWorld.X / farWorld.W, farWorld.Y / farWorld.W, farWorld.Z / farWorld.W);
+        var rayDirection = Vector3.Normalize(rayFar - rayOrigin);
+
+        var vertices = _mesh.Vertices;
+        var indices = _mesh.Indices;
+        var closestT = float.MaxValue;
+        var hasHit = false;
+
+        var clipMinZ = -1e9f;
+        var clipMaxZ = 1e9f;
+        if (ClipToLayer)
+        {
+            switch (ClipMode)
+            {
+                case VoxelPreviewClipMode.Below:
+                    clipMaxZ = _clipZ;
+                    break;
+                case VoxelPreviewClipMode.Above:
+                    clipMinZ = _clipZ;
+                    break;
+                case VoxelPreviewClipMode.Slab:
+                    clipMinZ = _clipZ - SlabThickness;
+                    clipMaxZ = _clipZ;
+                    break;
+            }
+        }
+
+        // Test cap quad plane if clipped and cap exists
+        if (ClipToLayer && _hasCapData && Math.Abs(rayDirection.Z) > 1e-6f)
+        {
+            var tCap = (_clipZ - rayOrigin.Z) / rayDirection.Z;
+            if (tCap > 0 && tCap < closestT)
+            {
+                var pCap = rayOrigin + rayDirection * tCap;
+                if (pCap.X >= _capMinX && pCap.X <= _capMaxX && pCap.Y >= _capMinY && pCap.Y <= _capMaxY)
+                {
+                    closestT = tCap;
+                    hitPoint = pCap;
+                    hasHit = true;
+                }
+            }
+        }
+
+        for (var i = 0; i < indices.Length; i += 3)
+        {
+            var p0 = vertices[(int)indices[i]].Position;
+            var p1 = vertices[(int)indices[i + 1]].Position;
+            var p2 = vertices[(int)indices[i + 2]].Position;
+
+            if (ClipToLayer)
+            {
+                if (p0.Z < clipMinZ && p1.Z < clipMinZ && p2.Z < clipMinZ) continue;
+                if (p0.Z > clipMaxZ && p1.Z > clipMaxZ && p2.Z > clipMaxZ) continue;
+            }
+
+            if (RayIntersectsTriangle(rayOrigin, rayDirection, p0, p1, p2, out var t) && t < closestT)
+            {
+                closestT = t;
+                hitPoint = rayOrigin + rayDirection * t;
+                hasHit = true;
+            }
+        }
+
+        return hasHit;
+    }
+
+    private static bool RayIntersectsTriangle(
+        Vector3 rayOrigin, Vector3 rayDirection,
+        Vector3 v0, Vector3 v1, Vector3 v2,
+        out float distance)
+    {
+        distance = 0;
+        var edge1 = v1 - v0;
+        var edge2 = v2 - v0;
+        var h = Vector3.Cross(rayDirection, edge2);
+        var a = Vector3.Dot(edge1, h);
+
+        if (a > -1e-6f && a < 1e-6f) return false;
+
+        var f = 1.0f / a;
+        var s = rayOrigin - v0;
+        var u = f * Vector3.Dot(s, h);
+        if (u < 0.0f || u > 1.0f) return false;
+
+        var q = Vector3.Cross(s, edge1);
+        var v = f * Vector3.Dot(rayDirection, q);
+        if (v < 0.0f || u + v > 1.0f) return false;
+
+        var t = f * Vector3.Dot(edge2, q);
+        if (t > 1e-4f)
+        {
+            distance = t;
+            return true;
+        }
+
+        return false;
+    }
+
     private Matrix4x4 GetViewProjection(float aspectRatio)
     {
         GetCameraBasis(out var direction, out _, out var up);
@@ -1134,6 +1757,18 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         _capTextureHeight = 0;
         _hasCapData = false;
 
+        if (_gridVertexArray != 0) _gl.DeleteVertexArray(_gridVertexArray);
+        if (_gridVertexBuffer != 0) _gl.DeleteBuffer(_gridVertexBuffer);
+        _gridVertexArray = 0;
+        _gridVertexBuffer = 0;
+        _gridVertexCount = 0;
+
+        if (_focusBoxVertexArray != 0) _gl.DeleteVertexArray(_focusBoxVertexArray);
+        if (_focusBoxVertexBuffer != 0) _gl.DeleteBuffer(_focusBoxVertexBuffer);
+        _focusBoxVertexArray = 0;
+        _focusBoxVertexBuffer = 0;
+        _hasFocusedBox = false;
+
         if (_vertexArray != 0) _gl.DeleteVertexArray(_vertexArray);
         if (_vertexBuffer != 0) _gl.DeleteBuffer(_vertexBuffer);
         if (_indexBuffer != 0) _gl.DeleteBuffer(_indexBuffer);
@@ -1161,6 +1796,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         Focus();
         _capturedPointer = e.Pointer;
         _lastPointerPosition = e.GetPosition(this);
+        _pointerDownPosition = _lastPointerPosition;
+        _isDragging = false;
         e.Pointer.Capture(this);
         e.Handled = true;
     }
@@ -1173,6 +1810,16 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         var current = e.GetPosition(this);
         var delta = current - previous;
         _lastPointerPosition = current;
+
+        if (_pointerDownPosition is { } downPos)
+        {
+            var moveDist = current - downPos;
+            if (moveDist.X * moveDist.X + moveDist.Y * moveDist.Y > 25.0)
+            {
+                _isDragging = true;
+            }
+        }
+
         var properties = e.GetCurrentPoint(this).Properties;
 
         if (properties.IsLeftButtonPressed)
@@ -1197,9 +1844,20 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         base.OnPointerReleased(e);
         if (ReferenceEquals(_capturedPointer, e.Pointer))
         {
+            if (!_isDragging && e.InitialPressMouseButton == MouseButton.Left)
+            {
+                var clickPos = e.GetPosition(this);
+                if (TryPickModel(clickPos, out var hitPoint))
+                {
+                    ModelPointClicked?.Invoke(hitPoint);
+                }
+            }
+
             e.Pointer.Capture(null);
             _capturedPointer = null;
             _lastPointerPosition = null;
+            _pointerDownPosition = null;
+            _isDragging = false;
         }
 
         e.Handled = true;
@@ -1210,6 +1868,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         base.OnPointerCaptureLost(e);
         _capturedPointer = null;
         _lastPointerPosition = null;
+        _pointerDownPosition = null;
+        _isDragging = false;
     }
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
@@ -1234,25 +1894,6 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     {
         if (e.Handled || _mesh is null) return false;
 
-        if (e.KeyModifiers == AppSettings.SystemCommandKeyModifier)
-        {
-            switch (e.Key)
-            {
-                /* The six axis views, matching the orientation cube faces. */
-                case Key.D1 or Key.NumPad1:
-                    UserSettings.Instance.Layer3DPreview.LightingMode = VoxelPreviewLightingMode.Camera;
-                    return true;
-                case Key.D2 or Key.NumPad2:
-                    UserSettings.Instance.Layer3DPreview.LightingMode = VoxelPreviewLightingMode.Studio;
-                    return true;
-                case Key.D3 or Key.NumPad3:
-                    UserSettings.Instance.Layer3DPreview.LightingMode = VoxelPreviewLightingMode.Flat;
-                    return true;
-            }
-            
-            return false;
-        }
-        
         if (e.KeyModifiers != KeyModifiers.None) return false;
         switch (e.Key)
         {
@@ -1297,6 +1938,12 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             case Key.OemMinus or Key.Subtract:
                 Zoom(-1);
                 return true;
+            case Key.Q:
+                App.MainWindow.GoPreviousLayer();
+                return true;
+            case Key.E:
+                App.MainWindow.GoNextLayer();
+                return true;
             case Key.S:
                 UserSettings.Instance.Layer3DPreview.RenderMode = VoxelPreviewRenderMode.Solid;
                 return true;
@@ -1311,6 +1958,39 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                 return true;
             case Key.P:
                 ProjectionToggleRequested?.Invoke();
+                return true;
+            case Key.G:
+                ShowBuildPlateGrid = !ShowBuildPlateGrid;
+                UserSettings.Instance.Layer3DPreview.ShowBuildPlateGrid = ShowBuildPlateGrid;
+                return true;
+            case Key.H:
+                ColorMode = ColorMode switch
+                {
+                    VoxelPreviewColorMode.Solid => VoxelPreviewColorMode.OverhangHeatmap,
+                    VoxelPreviewColorMode.OverhangHeatmap => VoxelPreviewColorMode.LayerZones,
+                    _ => VoxelPreviewColorMode.Solid
+                };
+                UserSettings.Instance.Layer3DPreview.ColorMode = ColorMode;
+                return true;
+            case Key.O:
+                GhostClippedModel = !GhostClippedModel;
+                UserSettings.Instance.Layer3DPreview.GhostClippedModel = GhostClippedModel;
+                return true;
+            case Key.I:
+                ClipMode = ClipMode == VoxelPreviewClipMode.Below
+                    ? VoxelPreviewClipMode.Above
+                    : VoxelPreviewClipMode.Below;
+                UserSettings.Instance.Layer3DPreview.ClipMode = ClipMode;
+                return true;
+            case Key.L:
+                var nextLighting = LightingMode switch
+                {
+                    VoxelPreviewLightingMode.Camera => VoxelPreviewLightingMode.Studio,
+                    VoxelPreviewLightingMode.Studio => VoxelPreviewLightingMode.Flat,
+                    _ => VoxelPreviewLightingMode.Camera
+                };
+                LightingMode = nextLighting;
+                UserSettings.Instance.Layer3DPreview.LightingMode = nextLighting;
                 return true;
             default:
                 return false;
