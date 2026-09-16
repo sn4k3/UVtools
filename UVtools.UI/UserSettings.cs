@@ -612,6 +612,9 @@ public partial class UserSettings : ObservableObject
         [ObservableProperty]
         public partial float SlabThicknessMm { get; set; } = 5f;
 
+        [ObservableProperty]
+        public partial bool ShowBoundingBox { get; set; } = false;
+
         public Layer3DPreviewUserSettings Clone()
         {
             return (MemberwiseClone() as Layer3DPreviewUserSettings)!;

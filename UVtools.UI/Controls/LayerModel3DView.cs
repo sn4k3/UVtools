@@ -278,6 +278,22 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     public static readonly StyledProperty<bool> GhostClippedModelProperty =
         AvaloniaProperty.Register<LayerModel3DView, bool>(nameof(GhostClippedModel), true);
 
+    public static readonly StyledProperty<bool> ShowBoundingBoxProperty =
+        AvaloniaProperty.Register<LayerModel3DView, bool>(nameof(ShowBoundingBox), false);
+
+    public static readonly DirectProperty<LayerModel3DView, string?> ModelDimensionsTextProperty =
+        AvaloniaProperty.RegisterDirect<LayerModel3DView, string?>(
+            nameof(ModelDimensionsText),
+            o => o.ModelDimensionsText);
+
+    public static readonly StyledProperty<bool> IsMeasureModeProperty =
+        AvaloniaProperty.Register<LayerModel3DView, bool>(nameof(IsMeasureMode), false);
+
+    public static readonly DirectProperty<LayerModel3DView, string?> MeasureDistanceTextProperty =
+        AvaloniaProperty.RegisterDirect<LayerModel3DView, string?>(
+            nameof(MeasureDistanceText),
+            o => o.MeasureDistanceText);
+
     public static readonly StyledProperty<float> SlabThicknessProperty =
         AvaloniaProperty.Register<LayerModel3DView, float>(nameof(SlabThickness), 5.0f);
 
@@ -397,6 +413,18 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private Vector3 _focusBoxMax;
     private bool _needsFocusBoxUpload;
 
+    private Vector3? _measurePoint1;
+    private Vector3? _measurePoint2;
+    private uint _measureVertexArray;
+    private uint _measureVertexBuffer;
+    private int _measureVertexCount;
+    private bool _needsMeasureUpload;
+    private string? _measureDistanceText;
+    private string? _modelDimensionsText;
+    private uint _boundingBoxVertexArray;
+    private uint _boundingBoxVertexBuffer;
+    private bool _needsBoundingBoxUpload;
+
     public event Action<Vector3>? ModelPointClicked;
 
     static LayerModel3DView()
@@ -419,6 +447,20 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             control.RequestNextFrameRendering());
         GhostClippedModelProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
+        ShowBoundingBoxProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+            control.RequestNextFrameRendering());
+        IsMeasureModeProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+        {
+            if (!control.IsMeasureMode)
+            {
+                control.ClearMeasure();
+            }
+            else
+            {
+                control.UpdateMeasureText();
+                control.RequestNextFrameRendering();
+            }
+        });
         SlabThicknessProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
         PlateWidthProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
@@ -447,6 +489,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         Focusable = true;
         _cameraAnimationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
         _cameraAnimationTimer.Tick += CameraAnimationTimerOnTick;
+        UpdateMeasureText();
+        UpdateModelDimensions();
     }
 
     public VoxelPreviewMesh? Mesh
@@ -459,6 +503,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             _mesh = value;
             _needsUpload = true;
             _needsGridUpload = true;
+            _needsBoundingBoxUpload = true;
+            UpdateModelDimensions();
             if (value is null)
             {
                 ClearCap();
@@ -621,6 +667,72 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         set => SetValue(GhostClippedModelProperty, value);
     }
 
+    public bool ShowBoundingBox
+    {
+        get => GetValue(ShowBoundingBoxProperty);
+        set => SetValue(ShowBoundingBoxProperty, value);
+    }
+
+    public string? ModelDimensionsText
+    {
+        get => _modelDimensionsText;
+        private set => SetAndRaise(ModelDimensionsTextProperty, ref _modelDimensionsText, value);
+    }
+
+    private void UpdateModelDimensions()
+    {
+        if (_mesh is { } mesh && mesh.VertexCount > 0)
+        {
+            var size = mesh.Size;
+            ModelDimensionsText = $"{size.X:F2} × {size.Y:F2} × {size.Z:F2} mm";
+        }
+        else
+        {
+            ModelDimensionsText = null;
+        }
+    }
+
+    public bool IsMeasureMode
+    {
+        get => GetValue(IsMeasureModeProperty);
+        set => SetValue(IsMeasureModeProperty, value);
+    }
+
+    public string? MeasureDistanceText
+    {
+        get => _measureDistanceText;
+        private set => SetAndRaise(MeasureDistanceTextProperty, ref _measureDistanceText, value);
+    }
+
+    public void ClearMeasure()
+    {
+        _measurePoint1 = null;
+        _measurePoint2 = null;
+        _needsMeasureUpload = true;
+        UpdateMeasureText();
+        RequestNextFrameRendering();
+    }
+
+    private void UpdateMeasureText()
+    {
+        if (_measurePoint1 is { } p1 && _measurePoint2 is { } p2)
+        {
+            var dist = (p2 - p1).Length();
+            var dx = Math.Abs(p2.X - p1.X);
+            var dy = Math.Abs(p2.Y - p1.Y);
+            var dz = Math.Abs(p2.Z - p1.Z);
+            MeasureDistanceText = $"Distance: {dist:F3} mm  |  dx: {dx:F3}  dy: {dy:F3}  dz: {dz:F3}";
+        }
+        else if (_measurePoint1 is not null)
+        {
+            MeasureDistanceText = "Click second point...";
+        }
+        else
+        {
+            MeasureDistanceText = "Click two points on the model...";
+        }
+    }
+
     public float SlabThickness
     {
         get => GetValue(SlabThicknessProperty);
@@ -777,6 +889,11 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
             _focusBoxVertexArray = _gl.GenVertexArray();
             _focusBoxVertexBuffer = _gl.GenBuffer();
+            
+            _measureVertexArray = _gl.GenVertexArray();
+            _measureVertexBuffer = _gl.GenBuffer();
+            _boundingBoxVertexArray = _gl.GenVertexArray();
+            _boundingBoxVertexBuffer = _gl.GenBuffer();
 
             _capShaderProgram = CreateShaderProgram(
                 isOpenGles ? EsCapVertexShader : DesktopCapVertexShader,
@@ -877,6 +994,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         if (_needsCapGeometryUpload) UploadCapGeometry();
         if (_needsGridUpload) UploadBuildPlateGrid();
         if (_needsFocusBoxUpload) UploadFocusedBoundingBox();
+        if (_needsMeasureUpload) UploadMeasureLine();
+        if (_needsBoundingBoxUpload) UploadModelBoundingBox();
 
         if ((_uploadedIndexCount == 0 || _mesh is null) &&
             (_uploadedIssueIndexCount == 0 || _issueMesh is null) &&
@@ -950,6 +1069,16 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         if (_hasFocusedBox)
         {
             DrawFocusedBoundingBox();
+        }
+
+        if (ShowBoundingBox && _mesh is not null && _mesh.VertexCount > 0)
+        {
+            DrawModelBoundingBox();
+        }
+
+        if (IsMeasureMode)
+        {
+            DrawMeasureLine();
         }
     }
 
@@ -1251,7 +1380,169 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         _gl.Disable(EnableCap.Blend);
     }
 
-    private unsafe void DrawFocusedBoundingBox()
+    
+    private unsafe void UploadModelBoundingBox()
+    {
+        if (_gl is null || _boundingBoxVertexBuffer == 0 || _mesh is null || _mesh.VertexCount == 0) return;
+        _needsBoundingBoxUpload = false;
+
+        var min = _mesh.MinimumBounds;
+        var max = _mesh.MaximumBounds;
+
+        Span<VoxelPreviewVertex> boxVertices = stackalloc VoxelPreviewVertex[24]
+        {
+            // Bottom 4 edges
+            new(new Vector3(min.X, min.Y, min.Z), Vector3.UnitZ),
+            new(new Vector3(max.X, min.Y, min.Z), Vector3.UnitZ),
+
+            new(new Vector3(max.X, min.Y, min.Z), Vector3.UnitZ),
+            new(new Vector3(max.X, max.Y, min.Z), Vector3.UnitZ),
+
+            new(new Vector3(max.X, max.Y, min.Z), Vector3.UnitZ),
+            new(new Vector3(min.X, max.Y, min.Z), Vector3.UnitZ),
+
+            new(new Vector3(min.X, max.Y, min.Z), Vector3.UnitZ),
+            new(new Vector3(min.X, min.Y, min.Z), Vector3.UnitZ),
+
+            // Top 4 edges
+            new(new Vector3(min.X, min.Y, max.Z), Vector3.UnitZ),
+            new(new Vector3(max.X, min.Y, max.Z), Vector3.UnitZ),
+
+            new(new Vector3(max.X, min.Y, max.Z), Vector3.UnitZ),
+            new(new Vector3(max.X, max.Y, max.Z), Vector3.UnitZ),
+
+            new(new Vector3(max.X, max.Y, max.Z), Vector3.UnitZ),
+            new(new Vector3(min.X, max.Y, max.Z), Vector3.UnitZ),
+
+            new(new Vector3(min.X, max.Y, max.Z), Vector3.UnitZ),
+            new(new Vector3(min.X, min.Y, max.Z), Vector3.UnitZ),
+
+            // 4 Vertical Pillars
+            new(new Vector3(min.X, min.Y, min.Z), Vector3.UnitZ),
+            new(new Vector3(min.X, min.Y, max.Z), Vector3.UnitZ),
+
+            new(new Vector3(max.X, min.Y, min.Z), Vector3.UnitZ),
+            new(new Vector3(max.X, min.Y, max.Z), Vector3.UnitZ),
+
+            new(new Vector3(max.X, max.Y, min.Z), Vector3.UnitZ),
+            new(new Vector3(max.X, max.Y, max.Z), Vector3.UnitZ),
+
+            new(new Vector3(min.X, max.Y, min.Z), Vector3.UnitZ),
+            new(new Vector3(min.X, max.Y, max.Z), Vector3.UnitZ)
+        };
+
+        _gl.BindVertexArray(_boundingBoxVertexArray);
+        _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _boundingBoxVertexBuffer);
+        fixed (VoxelPreviewVertex* ptr = boxVertices)
+        {
+            _gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(24 * sizeof(VoxelPreviewVertex)), ptr,
+                BufferUsageARB.DynamicDraw);
+        }
+
+        var vertexSize = (uint)sizeof(VoxelPreviewVertex);
+        _gl.EnableVertexAttribArray(0);
+        _gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, vertexSize, (void*)0);
+        _gl.EnableVertexAttribArray(1);
+        _gl.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, vertexSize, (void*)sizeof(Vector3));
+        _gl.BindVertexArray(0);
+    }
+
+    private unsafe void DrawModelBoundingBox()
+    {
+        if (_gl is null || !ShowBoundingBox || _boundingBoxVertexArray == 0 || _mesh is null) return;
+
+        _gl.UseProgram(_shaderProgram);
+        _gl.Uniform1(_unlitLocation, 1);
+        _gl.Uniform1(_clipEnabledLocation, 0);
+        _gl.Uniform3(_colorLocation, 0.0f, 0.82f, 1.0f);
+        _gl.BindVertexArray(_boundingBoxVertexArray);
+
+        // Pass 1: Draw faint behind occluded geometry
+        _gl.Disable(EnableCap.DepthTest);
+        _gl.Uniform1(_alphaLocation, 0.35f);
+        _gl.DrawArrays(PrimitiveType.Lines, 0, 24);
+
+        // Pass 2: Draw crisp in front of geometry
+        _gl.Enable(EnableCap.DepthTest);
+        _gl.Uniform1(_alphaLocation, 0.95f);
+        _gl.DrawArrays(PrimitiveType.Lines, 0, 24);
+    }
+
+    private unsafe void UploadMeasureLine()
+    {
+        if (_gl is null || _measureVertexBuffer == 0) return;
+        _needsMeasureUpload = false;
+
+        if (_measurePoint1 is not { } p1) 
+        {
+            _measureVertexCount = 0;
+            return;
+        }
+
+        var p2 = _measurePoint2 ?? p1;
+        var lines = new System.Collections.Generic.List<VoxelPreviewVertex>();
+        
+        // Main line between points
+        lines.Add(new VoxelPreviewVertex(p1, Vector3.UnitZ));
+        lines.Add(new VoxelPreviewVertex(p2, Vector3.UnitZ));
+
+        // Cross for point 1
+        float crossSize = 1.0f;
+        lines.Add(new VoxelPreviewVertex(p1 - Vector3.UnitX * crossSize, Vector3.UnitZ));
+        lines.Add(new VoxelPreviewVertex(p1 + Vector3.UnitX * crossSize, Vector3.UnitZ));
+        lines.Add(new VoxelPreviewVertex(p1 - Vector3.UnitY * crossSize, Vector3.UnitZ));
+        lines.Add(new VoxelPreviewVertex(p1 + Vector3.UnitY * crossSize, Vector3.UnitZ));
+        lines.Add(new VoxelPreviewVertex(p1 - Vector3.UnitZ * crossSize, Vector3.UnitZ));
+        lines.Add(new VoxelPreviewVertex(p1 + Vector3.UnitZ * crossSize, Vector3.UnitZ));
+
+        if (_measurePoint2 is not null)
+        {
+            // Cross for point 2
+            lines.Add(new VoxelPreviewVertex(p2 - Vector3.UnitX * crossSize, Vector3.UnitZ));
+            lines.Add(new VoxelPreviewVertex(p2 + Vector3.UnitX * crossSize, Vector3.UnitZ));
+            lines.Add(new VoxelPreviewVertex(p2 - Vector3.UnitY * crossSize, Vector3.UnitZ));
+            lines.Add(new VoxelPreviewVertex(p2 + Vector3.UnitY * crossSize, Vector3.UnitZ));
+            lines.Add(new VoxelPreviewVertex(p2 - Vector3.UnitZ * crossSize, Vector3.UnitZ));
+            lines.Add(new VoxelPreviewVertex(p2 + Vector3.UnitZ * crossSize, Vector3.UnitZ));
+        }
+
+        _measureVertexCount = lines.Count;
+
+        _gl.BindVertexArray(_measureVertexArray);
+        _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _measureVertexBuffer);
+
+        var span = System.Runtime.InteropServices.CollectionsMarshal.AsSpan(lines);
+        fixed (VoxelPreviewVertex* ptr = span)
+        {
+            _gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(lines.Count * sizeof(VoxelPreviewVertex)), ptr,
+                BufferUsageARB.StaticDraw);
+        }
+
+        var vertexSize = (uint)sizeof(VoxelPreviewVertex);
+        _gl.EnableVertexAttribArray(0);
+        _gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, vertexSize, (void*)0);
+        _gl.EnableVertexAttribArray(1);
+        _gl.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, vertexSize, (void*)sizeof(Vector3));
+        _gl.BindVertexArray(0);
+    }
+
+    private unsafe void DrawMeasureLine()
+    {
+        if (_gl is null || _measureVertexCount == 0 || _measureVertexArray == 0) return;
+
+        // Draw opaque geometry on top of model without depth testing so it's always visible
+        _gl.UseProgram(_shaderProgram);
+        _gl.Uniform1(_unlitLocation, 1);
+        _gl.Uniform1(_clipEnabledLocation, 0);
+        _gl.Uniform1(_alphaLocation, 1f);
+        _gl.Uniform3(_colorLocation, 1.0f, 0.4f, 0.7f); // Distinct pinkish/magenta color
+        
+        _gl.Disable(EnableCap.DepthTest);
+        _gl.BindVertexArray(_measureVertexArray);
+        _gl.DrawArrays(PrimitiveType.Lines, 0, (uint)_measureVertexCount);
+        _gl.Enable(EnableCap.DepthTest);
+    }
+private unsafe void DrawFocusedBoundingBox()
     {
         if (_gl is null || !_hasFocusedBox || _focusBoxVertexArray == 0) return;
 
@@ -1765,6 +2056,12 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
         if (_focusBoxVertexArray != 0) _gl.DeleteVertexArray(_focusBoxVertexArray);
         if (_focusBoxVertexBuffer != 0) _gl.DeleteBuffer(_focusBoxVertexBuffer);
+        if (_measureVertexArray != 0) _gl.DeleteVertexArray(_measureVertexArray);
+        if (_measureVertexBuffer != 0) _gl.DeleteBuffer(_measureVertexBuffer);
+        if (_boundingBoxVertexArray != 0) _gl.DeleteVertexArray(_boundingBoxVertexArray);
+        if (_boundingBoxVertexBuffer != 0) _gl.DeleteBuffer(_boundingBoxVertexBuffer);
+        _boundingBoxVertexArray = 0;
+        _boundingBoxVertexBuffer = 0;
         _focusBoxVertexArray = 0;
         _focusBoxVertexBuffer = 0;
         _hasFocusedBox = false;
@@ -1849,7 +2146,25 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                 var clickPos = e.GetPosition(this);
                 if (TryPickModel(clickPos, out var hitPoint))
                 {
-                    ModelPointClicked?.Invoke(hitPoint);
+                    if (IsMeasureMode)
+                    {
+                        if (_measurePoint1 is null || _measurePoint2 is not null)
+                        {
+                            _measurePoint1 = hitPoint;
+                            _measurePoint2 = null;
+                        }
+                        else
+                        {
+                            _measurePoint2 = hitPoint;
+                        }
+                        _needsMeasureUpload = true;
+                        UpdateMeasureText();
+                        RequestNextFrameRendering();
+                    }
+                    else
+                    {
+                        ModelPointClicked?.Invoke(hitPoint);
+                    }
                 }
             }
 
@@ -1991,6 +2306,16 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                 };
                 LightingMode = nextLighting;
                 UserSettings.Instance.Layer3DPreview.LightingMode = nextLighting;
+                return true;
+            case Key.B:
+                ShowBoundingBox = !ShowBoundingBox;
+                UserSettings.Instance.Layer3DPreview.ShowBoundingBox = ShowBoundingBox;
+                return true;
+            case Key.M:
+                IsMeasureMode = !IsMeasureMode;
+                return true;
+            case Key.Escape when IsMeasureMode:
+                ClearMeasure();
                 return true;
             default:
                 return false;

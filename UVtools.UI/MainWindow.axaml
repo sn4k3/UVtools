@@ -2439,6 +2439,18 @@
                                               VerticalAlignment="Stretch"
                                               ToolTip.Tip="Highlight Issues on 3D model (Also affects 2D previewer)."/>
                                 
+                                <ToggleButton IsChecked="{Binding Settings.Layer3DPreview.ShowBoundingBox}"
+                                              IsEnabled="{Binding HasLayer3DMesh}"
+                                              Content="{icon:MaterialIconExt Kind=CubeOutline, Classes='Fill'}"
+                                              VerticalAlignment="Stretch"
+                                              ToolTip.Tip="Toggle model bounding box and dimensions [B]."/>
+
+                                <ToggleButton IsChecked="{Binding #LayerModel3DView.IsMeasureMode}"
+                                              IsEnabled="{Binding HasLayer3DMesh}"
+                                              Content="{icon:MaterialIconExt Kind=Ruler, Classes='Fill'}"
+                                              VerticalAlignment="Stretch"
+                                              ToolTip.Tip="[M]easure tool. Click two points on the 3D model."/>
+                                              
                                 <Button Command="{Binding ResetLayer3DCameraCommand}"
                                         Content="{icon:MaterialIconExt CubeScan, Classes='Fill'}"
                                         IsEnabled="{Binding HasLayer3DMesh}"
@@ -2466,7 +2478,7 @@
                                                    Background="Transparent"
                                                    VerticalAlignment="Stretch"
                                                    FontSize="28"
-                                                   ToolTip.Tip="Views:&#x0a;» (S)olid: shaded opaque model&#x0a;» (X)-Ray: translucent model with internal geometry visible&#x0a;» (W)ireframe: visible optimized mesh edges&#x0a;&#x0a;Mouse:&#x0a;» Left-click drag to orbit&#x0a;» Right/middle-click drag to pan&#x0a;» Click model: Click-to-Layer (jump to slice)&#x0a;» Wheel to zoom, double-click to reset&#x0a;&#x0a;Keyboard:&#x0a;» 1-6: front, back, left, right, top, bottom view&#x0a;» 0 or Home: reset the camera&#x0a;» Arrows: orbit in steps&#x0a;» + and -: zoom in and out&#x0a;» C: toggle clip to current layer&#x0a;» I: invert clipping&#x0a;» G: toggle build plate grid&#x0a;» H: cycle overhang heatmap / layer zones&#x0a;» O: toggle ghost silhouette of clipped model&#x0a;» P: toggle perspective/orthographic" />
+                                                   ToolTip.Tip="Views:&#x0a;» (S)olid: shaded opaque model&#x0a;» (X)-Ray: translucent model with internal geometry visible&#x0a;» (W)ireframe: visible optimized mesh edges&#x0a;&#x0a;Mouse:&#x0a;» Left-click drag to orbit&#x0a;» Right/middle-click drag to pan&#x0a;» Click model: Click-to-Layer (jump to slice)&#x0a;» Wheel to zoom, double-click to reset&#x0a;&#x0a;Keyboard:&#x0a;» 1-6: front, back, left, right, top, bottom view&#x0a;» 0 or Home: reset the camera&#x0a;» Arrows: orbit in steps&#x0a;» + and -: zoom in and out&#x0a;» C: toggle clip to current layer&#x0a;» I: invert clipping&#x0a;» G: toggle build plate grid&#x0a;» H: cycle overhang heatmap / layer zones&#x0a;» O: toggle ghost silhouette of clipped model&#x0a;» P: toggle perspective/orthographic&#x0a;» B: toggle model bounding box and dimensions" />
                             </StackPanel>
                             </Grid>
                             
@@ -2486,6 +2498,7 @@
                                                                ClipMode="{Binding Settings.Layer3DPreview.ClipMode}"
                                                                ShowBuildPlateGrid="{Binding Settings.Layer3DPreview.ShowBuildPlateGrid}"
                                                                GhostClippedModel="{Binding Settings.Layer3DPreview.GhostClippedModel}"
+                                                               ShowBoundingBox="{Binding Settings.Layer3DPreview.ShowBoundingBox}"
                                                                SlabThickness="{Binding Settings.Layer3DPreview.SlabThicknessMm}"
                                                                VoxelColor="{Binding Settings.Layer3DPreview.VoxelBrush}" />
 
@@ -2516,6 +2529,61 @@
                                                    Text="{Binding Layer3DStatus}"
                                                    TextAlignment="Center"
                                                    TextWrapping="Wrap" />
+                                    </Border>
+
+                                    <!-- Model Dimensions & Bounding Box HUD Overlay -->
+                                    <Border HorizontalAlignment="Left"
+                                            VerticalAlignment="Top"
+                                            Margin="14"
+                                            Padding="10,6"
+                                            Background="#E0161920"
+                                            BorderBrush="#00D2FF"
+                                            BorderThickness="1.5"
+                                            CornerRadius="6"
+                                            IsHitTestVisible="False"
+                                            IsVisible="{Binding #LayerModel3DView.ShowBoundingBox}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <icon:MaterialIcon Kind="CubeOutline"
+                                                               Width="22"
+                                                               Height="22"
+                                                               Foreground="#00D2FF"
+                                                               VerticalAlignment="Center" />
+                                            <StackPanel VerticalAlignment="Center" Spacing="1">
+                                                <TextBlock FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#A0A8B8"
+                                                           Text="BOUNDING BOX (X × Y × Z)" />
+                                                <TextBlock FontSize="13"
+                                                           FontWeight="Bold"
+                                                           Foreground="White"
+                                                           Text="{Binding #LayerModel3DView.ModelDimensionsText}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Measure tool HUD overlay -->
+                                    <Border HorizontalAlignment="Left"
+                                            VerticalAlignment="Bottom"
+                                            Margin="14"
+                                            Padding="12,8"
+                                            Background="#E0161920"
+                                            BorderBrush="#FF5FA2"
+                                            BorderThickness="1.5"
+                                            CornerRadius="6"
+                                            IsHitTestVisible="False"
+                                            IsVisible="{Binding #LayerModel3DView.IsMeasureMode}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <icon:MaterialIcon Kind="Ruler"
+                                                               Width="20"
+                                                               Height="20"
+                                                               Foreground="#FF5FA2"
+                                                               VerticalAlignment="Center" />
+                                            <TextBlock VerticalAlignment="Center"
+                                                       FontSize="13"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="White"
+                                                       Text="{Binding #LayerModel3DView.MeasureDistanceText}" />
+                                        </StackPanel>
                                     </Border>
                                 </Grid>
                             </Border>
