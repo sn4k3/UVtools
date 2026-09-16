@@ -1396,7 +1396,7 @@
                         <suki:GlassCard Classes="CardNoTop">
                             <suki:GroupBox Header="3D preview">
                                 <Grid ColumnDefinitions="Auto,160,Auto"
-                                      RowDefinitions="Auto,10,Auto,10,Auto">
+                                      RowDefinitions="Auto,10,Auto,10,Auto,10,Auto">
                                     <TextBlock Grid.Row="0"
                                                Grid.Column="0"
                                                VerticalAlignment="Center"
@@ -1412,8 +1412,20 @@
                                     <TextBlock Grid.Row="2"
                                                Grid.Column="0"
                                                VerticalAlignment="Center"
+                                               Text="View:" />
+                                    <ComboBox Grid.Row="2"
+                                              Grid.Column="1"
+                                              Margin="10,0,0,0"
+                                              VerticalAlignment="Center"
+                                              ItemsSource="{Binding Settings.LayerPreview.Preview3DRenderMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                              SelectedItem="{Binding Settings.LayerPreview.Preview3DRenderMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
+                                              ToolTip.Tip="Switches the cached model immediately without rebuilding it." />
+
+                                    <TextBlock Grid.Row="4"
+                                               Grid.Column="0"
+                                               VerticalAlignment="Center"
                                                Text="Projection:" />
-                                    <ToggleSwitch Grid.Row="2"
+                                    <ToggleSwitch Grid.Row="4"
                                                   Grid.Column="1"
                                                   Grid.ColumnSpan="2"
                                                   Margin="10,0,0,0"
@@ -1421,16 +1433,16 @@
                                                   OffContent="Perspective"
                                                   OnContent="Orthographic" />
 
-                                    <TextBlock Grid.Row="4"
+                                    <TextBlock Grid.Row="6"
                                                Grid.Column="0"
                                                VerticalAlignment="Center"
                                                Text="Voxel color:" />
-                                    <ColorPicker Grid.Row="4"
+                                    <ColorPicker Grid.Row="6"
                                                  Grid.Column="1"
                                                  Margin="10,0,0,0"
                                                  VerticalAlignment="Center"
                                                  Color="{Binding Settings.LayerPreview.Preview3DVoxelBrush}" />
-                                    <TextBlock Grid.Row="4"
+                                    <TextBlock Grid.Row="6"
                                                Grid.Column="2"
                                                Margin="10,0,0,0"
                                                VerticalAlignment="Center"

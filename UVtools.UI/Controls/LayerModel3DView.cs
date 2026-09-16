@@ -5,6 +5,8 @@
  */
 
 using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -16,6 +18,7 @@ using Avalonia.OpenGL.Controls;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Silk.NET.OpenGL;
+using UVtools.Core.Layers;
 using UVtools.Core.Voxel;
 
 namespace UVtools.UI.Controls;
@@ -41,7 +44,9 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                                  #version 330 core
                                                  in vec3 vNormal;
                                                  in vec3 vWorldPosition;
-                                                 uniform vec3 uColor;
+                                                  uniform vec3 uColor;
+                                                  uniform float uAlpha;
+                                                  uniform int uUnlit;
                                                  uniform float uClipZ;
                                                  uniform int uClipEnabled;
                                                  out vec4 fragmentColor;
@@ -51,7 +56,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                                      vec3 lightDirection = normalize(vec3(0.45, -0.55, 0.75));
                                                      float diffuse = max(dot(normalize(vNormal), lightDirection), 0.0);
                                                      float lighting = 0.28 + diffuse * 0.72;
-                                                     fragmentColor = vec4(uColor * lighting, 1.0);
+                                                      vec3 color = uUnlit != 0 ? uColor : uColor * lighting;
+                                                      fragmentColor = vec4(color, uAlpha);
                                                  }
                                                  """;
 
@@ -76,7 +82,9 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                             precision highp float;
                                             in vec3 vNormal;
                                             in vec3 vWorldPosition;
-                                            uniform vec3 uColor;
+                                             uniform vec3 uColor;
+                                             uniform float uAlpha;
+                                             uniform int uUnlit;
                                             uniform float uClipZ;
                                             uniform int uClipEnabled;
                                             out vec4 fragmentColor;
@@ -86,7 +94,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                                 vec3 lightDirection = normalize(vec3(0.45, -0.55, 0.75));
                                                 float diffuse = max(dot(normalize(vNormal), lightDirection), 0.0);
                                                 float lighting = 0.28 + diffuse * 0.72;
-                                                fragmentColor = vec4(uColor * lighting, 1.0);
+                                                 vec3 color = uUnlit != 0 ? uColor : uColor * lighting;
+                                                 fragmentColor = vec4(color, uAlpha);
                                             }
                                             """;
 
@@ -97,8 +106,12 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     public static readonly StyledProperty<bool> IsOrthographicProperty =
         AvaloniaProperty.Register<LayerModel3DView, bool>(nameof(IsOrthographic));
 
+    public static readonly StyledProperty<VoxelPreviewRenderMode> RenderModeProperty =
+        AvaloniaProperty.Register<LayerModel3DView, VoxelPreviewRenderMode>(nameof(RenderMode));
+
     private const float OrbitSensitivity = 0.008f;
     private const double CameraAnimationSeconds = 0.2;
+    private const float XRayOpacity = 0.18f;
     private const float ZoomSensitivity = 0.14f;
 
     /// <summary>Orbit amount of a single arrow key press.</summary>
@@ -111,23 +124,35 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private float _cameraYaw = -0.8f;
     private IPointer? _capturedPointer;
     private int _clipEnabledLocation;
+    private int _alphaLocation;
 
     private bool _clipToLayer;
     private float _clipZ = float.MaxValue;
     private int _clipZLocation;
     private int _colorLocation;
+    private int _unlitLocation;
 
     private GL? _gl;
     private uint _indexBuffer;
+    private uint _wireframeIndexBuffer;
+    private uint _issueIndexBuffer;
+    private VoxelPreviewIssueMesh? _issueMesh;
+    private bool _needsIssueUpload;
     private Point? _lastPointerPosition;
     private VoxelPreviewMesh? _mesh;
     private float _modelRadius = 10;
     private bool _needsUpload;
+    private bool _needsWireframeUpload;
     private bool _rendererInitialized;
     private uint _shaderProgram;
     private int _uploadedIndexCount;
+    private int _uploadedWireframeIndexCount;
+    private int _uploadedIssueIndexCount;
     private uint _vertexArray;
     private uint _vertexBuffer;
+    private uint _issueVertexArray;
+    private uint _issueVertexBuffer;
+    private readonly Dictionary<MainIssue.IssueType, Avalonia.Media.Color> _issueColors = [];
     private int _viewProjectionLocation;
     private readonly DispatcherTimer _cameraAnimationTimer;
     private long _cameraAnimationStartTimestamp;
@@ -141,6 +166,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         VoxelColorProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
         IsOrthographicProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+            control.RequestNextFrameRendering());
+        RenderModeProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
     }
 
@@ -162,6 +189,25 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             if (value is not null) ResetCamera();
             RequestNextFrameRendering();
         }
+    }
+
+    public VoxelPreviewIssueMesh? IssueMesh
+    {
+        get => _issueMesh;
+        set
+        {
+            if (ReferenceEquals(_issueMesh, value)) return;
+            _issueMesh = value;
+            _needsIssueUpload = true;
+            RequestNextFrameRendering();
+        }
+    }
+
+    public void SetIssueColors(IReadOnlyDictionary<MainIssue.IssueType, Avalonia.Media.Color> colors)
+    {
+        _issueColors.Clear();
+        foreach (var (type, color) in colors) _issueColors[type] = color;
+        RequestNextFrameRendering();
     }
 
     public bool ClipToLayer
@@ -196,6 +242,12 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     {
         get => GetValue(IsOrthographicProperty);
         set => SetValue(IsOrthographicProperty, value);
+    }
+
+    public VoxelPreviewRenderMode RenderMode
+    {
+        get => GetValue(RenderModeProperty);
+        set => SetValue(RenderModeProperty, value);
     }
 
     public float CameraYaw => _cameraYaw;
@@ -292,14 +344,22 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                 isOpenGles ? EsFragmentShader : DesktopFragmentShader);
             _viewProjectionLocation = _gl.GetUniformLocation(_shaderProgram, "uViewProjection");
             _colorLocation = _gl.GetUniformLocation(_shaderProgram, "uColor");
+            _alphaLocation = _gl.GetUniformLocation(_shaderProgram, "uAlpha");
+            _unlitLocation = _gl.GetUniformLocation(_shaderProgram, "uUnlit");
             _clipZLocation = _gl.GetUniformLocation(_shaderProgram, "uClipZ");
             _clipEnabledLocation = _gl.GetUniformLocation(_shaderProgram, "uClipEnabled");
 
             _vertexArray = _gl.GenVertexArray();
             _vertexBuffer = _gl.GenBuffer();
             _indexBuffer = _gl.GenBuffer();
+            _wireframeIndexBuffer = _gl.GenBuffer();
+            _issueVertexArray = _gl.GenVertexArray();
+            _issueVertexBuffer = _gl.GenBuffer();
+            _issueIndexBuffer = _gl.GenBuffer();
             _rendererInitialized = true;
             _needsUpload = true;
+            _needsWireframeUpload = true;
+            _needsIssueUpload = true;
             RendererStatusChanged?.Invoke(null);
         }
         catch (Exception exception)
@@ -343,16 +403,24 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         _gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
 
         if (_needsUpload) UploadMesh();
-        if (_uploadedIndexCount == 0 || _mesh is null) return;
+        if (RenderMode == VoxelPreviewRenderMode.Wireframe && _needsWireframeUpload)
+            UploadWireframeIndices();
+        if (_needsIssueUpload) UploadIssueMesh();
+        if ((_uploadedIndexCount == 0 || _mesh is null) &&
+            (_uploadedIssueIndexCount == 0 || _issueMesh is null)) return;
 
         var viewProjection = GetViewProjection(width / (float)height);
         _gl.UseProgram(_shaderProgram);
-        _gl.Uniform3(_colorLocation, VoxelColor.R / 255f, VoxelColor.G / 255f, VoxelColor.B / 255f);
         _gl.Uniform1(_clipZLocation, _clipZ);
         _gl.Uniform1(_clipEnabledLocation, _clipToLayer ? 1 : 0);
         _gl.UniformMatrix4(_viewProjectionLocation, 1, false, (float*)&viewProjection);
-        _gl.BindVertexArray(_vertexArray);
-        _gl.DrawElements(PrimitiveType.Triangles, (uint)_uploadedIndexCount, DrawElementsType.UnsignedInt, null);
+
+        if (_uploadedIndexCount > 0 && _mesh is not null)
+        {
+            DrawModel();
+        }
+
+        if (_uploadedIssueIndexCount > 0 && _issueMesh is not null) DrawIssueOverlay();
     }
 
     private unsafe void UploadMesh()
@@ -360,6 +428,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         if (_gl is null) return;
         _needsUpload = false;
         _uploadedIndexCount = 0;
+        _uploadedWireframeIndexCount = 0;
+        _needsWireframeUpload = true;
 
         _gl.BindVertexArray(_vertexArray);
         _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _vertexBuffer);
@@ -389,6 +459,199 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         _gl.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, vertexSize,
             (void*)Marshal.OffsetOf<VoxelPreviewVertex>(nameof(VoxelPreviewVertex.Normal)));
         _uploadedIndexCount = indices.Length;
+    }
+
+    private unsafe void UploadWireframeIndices()
+    {
+        if (_gl is null) return;
+        _needsWireframeUpload = false;
+        _uploadedWireframeIndexCount = 0;
+
+        if (_mesh is null || _mesh.VertexCount == 0) return;
+        if (_mesh.VertexCount % 4 != 0)
+            throw new InvalidOperationException("The 3D preview mesh does not contain complete quad faces.");
+
+        var quadCount = _mesh.VertexCount / 4;
+        var indexCount = checked(quadCount * 8);
+        var wireframeIndices = ArrayPool<uint>.Shared.Rent(indexCount);
+        try
+        {
+            var destination = wireframeIndices.AsSpan(0, indexCount);
+            for (var quadIndex = 0; quadIndex < quadCount; quadIndex++)
+            {
+                var vertex = (uint)(quadIndex * 4);
+                var offset = quadIndex * 8;
+                destination[offset] = vertex;
+                destination[offset + 1] = vertex + 1;
+                destination[offset + 2] = vertex + 1;
+                destination[offset + 3] = vertex + 2;
+                destination[offset + 4] = vertex + 2;
+                destination[offset + 5] = vertex + 3;
+                destination[offset + 6] = vertex + 3;
+                destination[offset + 7] = vertex;
+            }
+
+            _gl.BindVertexArray(_vertexArray);
+            _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _wireframeIndexBuffer);
+            fixed (uint* indexPointer = destination)
+            {
+                _gl.BufferData(BufferTargetARB.ElementArrayBuffer, (nuint)(indexCount * sizeof(uint)), indexPointer,
+                    BufferUsageARB.StaticDraw);
+            }
+
+            _uploadedWireframeIndexCount = indexCount;
+        }
+        finally
+        {
+            ArrayPool<uint>.Shared.Return(wireframeIndices);
+        }
+    }
+
+    private unsafe void DrawModel()
+    {
+        if (_gl is null) return;
+
+        _gl.Uniform3(_colorLocation, VoxelColor.R / 255f, VoxelColor.G / 255f, VoxelColor.B / 255f);
+        _gl.BindVertexArray(_vertexArray);
+
+        switch (RenderMode)
+        {
+            case VoxelPreviewRenderMode.Solid:
+                _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _indexBuffer);
+                _gl.Uniform1(_alphaLocation, 1f);
+                _gl.Uniform1(_unlitLocation, 0);
+                _gl.DrawElements(PrimitiveType.Triangles, (uint)_uploadedIndexCount,
+                    DrawElementsType.UnsignedInt, null);
+                break;
+            case VoxelPreviewRenderMode.XRay:
+                DrawDepthPrepass();
+                _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _indexBuffer);
+                _gl.Uniform1(_alphaLocation, XRayOpacity);
+                _gl.Uniform1(_unlitLocation, 0);
+                _gl.Disable(EnableCap.DepthTest);
+                _gl.Disable(EnableCap.CullFace);
+                _gl.Enable(EnableCap.Blend);
+                _gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+                _gl.DepthMask(false);
+                _gl.DrawElements(PrimitiveType.Triangles, (uint)_uploadedIndexCount,
+                    DrawElementsType.UnsignedInt, null);
+                _gl.DepthMask(true);
+                _gl.Disable(EnableCap.Blend);
+                _gl.Enable(EnableCap.CullFace);
+                _gl.Enable(EnableCap.DepthTest);
+                break;
+            case VoxelPreviewRenderMode.Wireframe:
+                DrawDepthPrepass();
+                if (_uploadedWireframeIndexCount == 0) break;
+                _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _wireframeIndexBuffer);
+                _gl.Uniform1(_alphaLocation, 1f);
+                _gl.Uniform1(_unlitLocation, 1);
+                _gl.DepthFunc(DepthFunction.Lequal);
+                _gl.DepthMask(false);
+                _gl.Disable(EnableCap.CullFace);
+                _gl.DrawElements(PrimitiveType.Lines, (uint)_uploadedWireframeIndexCount,
+                    DrawElementsType.UnsignedInt, null);
+                _gl.Enable(EnableCap.CullFace);
+                _gl.DepthMask(true);
+                _gl.DepthFunc(DepthFunction.Less);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(RenderMode), RenderMode, null);
+        }
+    }
+
+    private unsafe void DrawDepthPrepass()
+    {
+        if (_gl is null) return;
+        _gl.BindVertexArray(_vertexArray);
+        _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _indexBuffer);
+        _gl.Uniform1(_alphaLocation, 1f);
+        _gl.Uniform1(_unlitLocation, 0);
+        _gl.ColorMask(false, false, false, false);
+        _gl.DepthMask(true);
+        _gl.Enable(EnableCap.DepthTest);
+        _gl.Enable(EnableCap.CullFace);
+        _gl.DrawElements(PrimitiveType.Triangles, (uint)_uploadedIndexCount, DrawElementsType.UnsignedInt, null);
+        _gl.ColorMask(true, true, true, true);
+    }
+
+    private unsafe void UploadIssueMesh()
+    {
+        if (_gl is null) return;
+        _needsIssueUpload = false;
+        _uploadedIssueIndexCount = 0;
+
+        _gl.BindVertexArray(_issueVertexArray);
+        _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _issueVertexBuffer);
+        _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _issueIndexBuffer);
+
+        if (_issueMesh is null || _issueMesh.VertexCount == 0) return;
+
+        var vertices = _issueMesh.Vertices;
+        fixed (VoxelPreviewVertex* vertexPointer = vertices)
+        {
+            _gl.BufferData(BufferTargetARB.ArrayBuffer,
+                (nuint)(vertices.Length * Marshal.SizeOf<VoxelPreviewVertex>()), vertexPointer,
+                BufferUsageARB.StaticDraw);
+        }
+
+        var indices = _issueMesh.Indices;
+        fixed (uint* indexPointer = indices)
+        {
+            _gl.BufferData(BufferTargetARB.ElementArrayBuffer, (nuint)(indices.Length * sizeof(uint)), indexPointer,
+                BufferUsageARB.StaticDraw);
+        }
+
+        var vertexSize = (uint)Marshal.SizeOf<VoxelPreviewVertex>();
+        _gl.EnableVertexAttribArray(0);
+        _gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, vertexSize, (void*)0);
+        _gl.EnableVertexAttribArray(1);
+        _gl.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, vertexSize,
+            (void*)Marshal.OffsetOf<VoxelPreviewVertex>(nameof(VoxelPreviewVertex.Normal)));
+        _uploadedIssueIndexCount = indices.Length;
+    }
+
+    private unsafe void DrawIssueOverlay()
+    {
+        if (_gl is null || _issueMesh is null) return;
+
+        _gl.BindVertexArray(_issueVertexArray);
+        _gl.Uniform1(_unlitLocation, 1);
+        _gl.Disable(EnableCap.CullFace);
+        _gl.Enable(EnableCap.Blend);
+        _gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+        _gl.DepthMask(false);
+
+        // A subtle x-ray pass keeps internal traps and buried islands discoverable.
+        _gl.Disable(EnableCap.DepthTest);
+        DrawIssueRanges(0.28f);
+
+        // Draw visible regions at full strength, biased forward to avoid coplanar flicker.
+        _gl.Enable(EnableCap.DepthTest);
+        _gl.Enable(EnableCap.PolygonOffsetFill);
+        _gl.PolygonOffset(-1f, -1f);
+        DrawIssueRanges(1f);
+
+        _gl.Disable(EnableCap.PolygonOffsetFill);
+        _gl.DepthMask(true);
+        _gl.Disable(EnableCap.Blend);
+        _gl.Enable(EnableCap.CullFace);
+    }
+
+    private unsafe void DrawIssueRanges(float alpha)
+    {
+        if (_gl is null || _issueMesh is null) return;
+        _gl.Uniform1(_alphaLocation, alpha);
+
+        foreach (var range in _issueMesh.DrawRanges)
+        {
+            var color = _issueColors.TryGetValue(range.Type, out var configured)
+                ? configured
+                : Avalonia.Media.Colors.Red;
+            _gl.Uniform3(_colorLocation, color.R / 255f, color.G / 255f, color.B / 255f);
+            _gl.DrawElements(PrimitiveType.Triangles, (uint)range.IndexCount, DrawElementsType.UnsignedInt,
+                (void*)(range.IndexOffset * sizeof(uint)));
+        }
     }
 
     private Matrix4x4 GetViewProjection(float aspectRatio)
@@ -510,12 +773,22 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         if (_vertexArray != 0) _gl.DeleteVertexArray(_vertexArray);
         if (_vertexBuffer != 0) _gl.DeleteBuffer(_vertexBuffer);
         if (_indexBuffer != 0) _gl.DeleteBuffer(_indexBuffer);
+        if (_wireframeIndexBuffer != 0) _gl.DeleteBuffer(_wireframeIndexBuffer);
+        if (_issueVertexArray != 0) _gl.DeleteVertexArray(_issueVertexArray);
+        if (_issueVertexBuffer != 0) _gl.DeleteBuffer(_issueVertexBuffer);
+        if (_issueIndexBuffer != 0) _gl.DeleteBuffer(_issueIndexBuffer);
         if (_shaderProgram != 0) _gl.DeleteProgram(_shaderProgram);
         _vertexArray = 0;
         _vertexBuffer = 0;
         _indexBuffer = 0;
+        _wireframeIndexBuffer = 0;
+        _issueVertexArray = 0;
+        _issueVertexBuffer = 0;
+        _issueIndexBuffer = 0;
         _shaderProgram = 0;
         _uploadedIndexCount = 0;
+        _uploadedWireframeIndexCount = 0;
+        _uploadedIssueIndexCount = 0;
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -639,6 +912,15 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                 return true;
             case Key.OemMinus or Key.Subtract:
                 Zoom(-1);
+                return true;
+            case Key.S:
+                UserSettings.Instance.LayerPreview.Preview3DRenderMode = VoxelPreviewRenderMode.Solid;
+                return true;
+            case Key.X:
+                UserSettings.Instance.LayerPreview.Preview3DRenderMode = VoxelPreviewRenderMode.XRay;
+                return true;
+            case Key.W:
+                UserSettings.Instance.LayerPreview.Preview3DRenderMode = VoxelPreviewRenderMode.Wireframe;
                 return true;
             case Key.C:
                 App.MainWindow.Layer3DClipToCurrentLayer = !App.MainWindow.Layer3DClipToCurrentLayer;

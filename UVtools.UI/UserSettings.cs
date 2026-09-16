@@ -558,6 +558,9 @@ public partial class UserSettings : ObservableObject
         [ObservableProperty] public partial bool Preview3DOrthographic { get; set; }
 
         [ObservableProperty]
+        public partial VoxelPreviewRenderMode Preview3DRenderMode { get; set; } = VoxelPreviewRenderMode.Solid;
+
+        [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Preview3DVoxelBrush))]
         public partial Color Preview3DVoxelColor { get; set; } = new(255, 51, 184, 235);
 

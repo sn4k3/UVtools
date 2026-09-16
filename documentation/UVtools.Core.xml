@@ -6272,6 +6272,11 @@
             Collect differences and create a clip
             </summary>
         </member>
+        <member name="P:UVtools.Core.Managers.IssueManager.Revision">
+            <summary>
+            Gets a monotonic revision that changes whenever the visible issue collection changes.
+            </summary>
+        </member>
         <member name="M:UVtools.Core.Managers.IssueManager.GetVisible">
             <summary>
             Gets the visible <see cref="T:UVtools.Core.Layers.MainIssue"/> aka not ignored

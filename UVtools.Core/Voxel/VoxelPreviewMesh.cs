@@ -6,6 +6,7 @@
 
 using System;
 using System.Buffers;
+using System.ComponentModel;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -18,6 +19,13 @@ public enum VoxelPreviewQuality : byte
     Fast,
     Balanced,
     Detailed
+}
+
+public enum VoxelPreviewRenderMode : byte
+{
+    Solid,
+    [Description("X-Ray")] XRay,
+    Wireframe
 }
 
 public readonly record struct VoxelPreviewMeshOptions(

@@ -5,9 +5,12 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Media;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
+using UVtools.Core.Layers;
 using UVtools.Core.Voxel;
 
 namespace UVtools.UI;
@@ -16,6 +19,9 @@ public partial class MainWindow
 {
     private bool _isLayer3DBuilding;
     private bool _layer3DClipToCurrentLayer;
+    private int _layer3DIssueBuildGeneration;
+    private VoxelPreviewIssueMesh? _layer3DIssueMesh;
+    private string? _layer3DIssueOverlayError;
     private VoxelPreviewMesh? _layer3DMesh;
     private int _layer3DPreviewTabIndex;
     private string? _layer3DRendererError;
@@ -94,8 +100,14 @@ public partial class MainWindow
             if (_layer3DMesh is null) return "Select this tab or press Build model to generate a cached 3D preview.";
 
             var stale = IsLayer3DPreviewStale ? " • stale — rebuild to include current slices" : string.Empty;
+            var issues = _layer3DIssueMesh is { IndexCount: > 0 }
+                ? $" • {_layer3DIssueMesh.TriangleCount:N0} issue triangles"
+                : string.Empty;
+            var issueError = string.IsNullOrWhiteSpace(_layer3DIssueOverlayError)
+                ? string.Empty
+                : $" • issue overlay unavailable: {_layer3DIssueOverlayError}";
             return $"{_layer3DMesh.TriangleCount:N0} triangles • detail 1:{_layer3DMesh.SamplingStride} • " +
-                   $"built in {_layer3DMesh.BuildDuration.TotalSeconds:F2}s{stale}";
+                   $"built in {_layer3DMesh.BuildDuration.TotalSeconds:F2}s{issues}{stale}{issueError}";
         }
     }
 
@@ -141,12 +153,19 @@ public partial class MainWindow
 
         LayerModel3DView.ClipToLayer = Layer3DClipToCurrentLayer;
         UpdateLayer3DClip();
-        InvalidateLayer3DPreviewStatus();
+        RefreshLayer3DPreviewSettings();
     }
 
     private void RefreshLayer3DPreviewSettings()
     {
         LayerModel3DView.VoxelColor = Settings.LayerPreview.Preview3DVoxelBrush;
+        var issueColors = new Dictionary<MainIssue.IssueType, Color>();
+        foreach (var (type, brush) in GetIssueColors())
+        {
+            issueColors[type] = brush.Color;
+        }
+
+        LayerModel3DView.SetIssueColors(issueColors);
         LayerModel3DView.IsOrthographic = Settings.LayerPreview.Preview3DOrthographic;
         RaisePropertyChanged(nameof(SelectedLayer3DQuality));
         InvalidateLayer3DPreviewStatus();
@@ -194,7 +213,60 @@ public partial class MainWindow
         _layer3DMesh = newMesh;
         LayerModel3DView.Mesh = newMesh;
         previousMesh?.Dispose();
+        await RebuildLayer3DIssueOverlay();
         UpdateLayer3DClip();
+        InvalidateLayer3DPreviewStatus();
+    }
+
+    private async Task RebuildLayer3DIssueOverlay()
+    {
+        var slicerFile = SlicerFile;
+        var baseMesh = _layer3DMesh;
+        var generation = ++_layer3DIssueBuildGeneration;
+
+        if (slicerFile is null || baseMesh is null || !baseMesh.IsCurrentFor(slicerFile) ||
+            slicerFile.IssueManager.Count == 0)
+        {
+            var previous = _layer3DIssueMesh;
+            _layer3DIssueMesh = null;
+            LayerModel3DView.IssueMesh = null;
+            previous?.Dispose();
+            _layer3DIssueOverlayError = null;
+            InvalidateLayer3DPreviewStatus();
+            return;
+        }
+
+        VoxelPreviewIssueMesh? newIssueMesh = null;
+        try
+        {
+            var options = VoxelPreviewMeshOptions.FromQuality(baseMesh.Quality);
+            newIssueMesh = await Task.Run(() => VoxelPreviewIssueMeshBuilder.Build(slicerFile,
+                baseMesh.SamplingStride, options.MaximumTriangleCount));
+        }
+        catch (Exception exception)
+        {
+            if (generation != _layer3DIssueBuildGeneration) return;
+            var previousMesh = _layer3DIssueMesh;
+            _layer3DIssueMesh = null;
+            LayerModel3DView.IssueMesh = null;
+            previousMesh?.Dispose();
+            _layer3DIssueOverlayError = exception.Message;
+            InvalidateLayer3DPreviewStatus();
+            return;
+        }
+
+        if (generation != _layer3DIssueBuildGeneration || !ReferenceEquals(SlicerFile, slicerFile) ||
+            !ReferenceEquals(_layer3DMesh, baseMesh) || !newIssueMesh.IsCurrentFor(slicerFile))
+        {
+            newIssueMesh.Dispose();
+            return;
+        }
+
+        var previousIssueMesh = _layer3DIssueMesh;
+        _layer3DIssueMesh = newIssueMesh;
+        LayerModel3DView.IssueMesh = newIssueMesh;
+        previousIssueMesh?.Dispose();
+        _layer3DIssueOverlayError = null;
         InvalidateLayer3DPreviewStatus();
     }
 
@@ -225,8 +297,12 @@ public partial class MainWindow
     {
         if (IsLayer3DBuilding && Progress.CanCancel) Progress.TokenSource.Cancel();
         LayerModel3DView.Mesh = null;
+        LayerModel3DView.IssueMesh = null;
         _layer3DMesh?.Dispose();
+        _layer3DIssueMesh?.Dispose();
         _layer3DMesh = null;
+        _layer3DIssueMesh = null;
+        _layer3DIssueBuildGeneration++;
         _layer3DPreviewTabIndex = 0;
         RaisePropertyChanged(nameof(Layer3DPreviewTabIndex));
         InvalidateLayer3DPreviewStatus();

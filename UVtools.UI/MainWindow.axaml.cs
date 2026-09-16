@@ -2128,7 +2128,11 @@ public partial class MainWindow : GenericWindow
             ZoomToFit();
         }
 
-        SlicerFile.IssueManager.CollectionChanged += (sender, e) => { UpdateLayerTrackerHighlightIssues(); };
+        SlicerFile.IssueManager.CollectionChanged += (sender, e) =>
+        {
+            UpdateLayerTrackerHighlightIssues();
+            Dispatcher.UIThread.Post(async () => await RebuildLayer3DIssueOverlay());
+        };
 
         if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Full)
         {

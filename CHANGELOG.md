@@ -19,7 +19,8 @@
 - (Add) Dynamic lifts: Configure separate bottom/normal retract speeds and two-stage retract distance percentages (#927)
 - (Add) Configure bottom height and transition layers for wait time after cure (#1093)
 - (Add) Panel Gamma setting to compensate Exposure Time calibration tool in Multiple Brightness / grayscale mode (#1104)
-- (Add) GPU-accelerated, rotatable 3D preview generated from the layer stack (#38, #602)
+- (Add) GPU-accelerated, rotatable 3D preview generated from the layer stack, with Solid, X-Ray and Wireframe views and
+  per-type issue highlighting (#38, #602)
 - (Fix) Align pixel editor line brush preview and applied position (#966)
 - (Improvement) pixel editor drawing with smooth, interpolated strokes committed on pointer release by @jorgerobles
   (#1139)
