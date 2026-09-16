@@ -184,9 +184,10 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         set
         {
             if (ReferenceEquals(_mesh, value)) return;
+            var resetCamera = _mesh is null && value is not null;
             _mesh = value;
             _needsUpload = true;
-            if (value is not null) ResetCamera();
+            if (resetCamera) ResetCamera();
             RequestNextFrameRendering();
         }
     }

@@ -2382,7 +2382,7 @@
                                               ToolTip.Tip="Switch between perspective and orthographic projection." />
 
                                 <Button Command="{Binding ResetLayer3DCameraCommand}"
-                                        Content="Reset camera"
+                                        Content="{icon:MaterialIconExt CubeScan, Classes=Fill}"
                                         IsEnabled="{Binding HasLayer3DMesh}"
                                         ToolTip.Tip="Fit the model and reset rotation and panning." />
 

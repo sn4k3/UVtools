@@ -492,3 +492,4 @@ manifests/
 
 # AI
 .serena/
+.semgrep/
