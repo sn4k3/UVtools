@@ -11,12 +11,12 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using EmguExtensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
-using UVtools.Core.Managers;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.Voxel;
@@ -93,61 +93,98 @@ public static class VoxelPreviewMeshBuilder
         var pixelWidth = pixelSize.Width > 0 ? pixelSize.Width : 0.035f;
         var pixelHeight = pixelSize.Height > 0 ? pixelSize.Height : 0.035f;
 
+        /* Work around the mirror effect of the voxel algorithm assuming 0,0 is the bottom left corner. */
+        var workAroundFlip = slicerFile.DisplayMirror switch
+        {
+            FlipDirection.None => FlipDirection.Vertically,
+            FlipDirection.Horizontally => FlipDirection.Both,
+            FlipDirection.Vertically => FlipDirection.None,
+            FlipDirection.Both => FlipDirection.Horizontally,
+            _ => throw new ArgumentOutOfRangeException(nameof(slicerFile.DisplayMirror))
+        };
+
         progress?.Reset($"layers (detail 1:{stride})", (uint)layers.Length);
         using var vertices =
             new PooledBuffer<VoxelPreviewVertex>(Math.Min(65_536, (int)options.MaximumTriangleCount * 2));
         using var indices = new PooledBuffer<uint>(Math.Min(98_304, (int)options.MaximumTriangleCount * 3));
-        using var cacheManager = new MatCacheManager(slicerFile, 3)
-        {
-            AutoDispose = true,
-            AutoDisposeKeepLast = 1,
-            StripAntiAliasing = true
-        };
 
         var context = new BuildContext(vertices, indices, options.MaximumTriangleCount, bounds, stride,
             pixelWidth, pixelHeight);
         var activeSides = new Dictionary<SideRunKey, ActiveSide>();
         var nextSides = new Dictionary<SideRunKey, ActiveSide>();
 
-        byte[]? previous = null;
-        byte[]? current = null;
-        byte[]? next = null;
+        /* Decoding a layer costs orders of magnitude more than meshing it, so the occupancy grids of a whole
+         * chunk are produced in parallel while the meshing itself stays sequential, as it carries state from
+         * one layer to the next. The window holds the chunk plus one look ahead grid, which is carried over to
+         * the next chunk instead of being decoded twice. */
+        var (parallelism, chunkSize) = GetPipelineSizing(slicerFile, gridLength);
+        var parallelOptions = CoreSettings.GetParallelOptions(progress?.Token ?? default);
+        parallelOptions.MaxDegreeOfParallelism = parallelism;
+        var window = new byte[]?[chunkSize + 1];
+        byte[]? previousTail = null;
+
         try
         {
-            current = BuildOccupancy(slicerFile, layers[0], cacheManager, bounds, gridWidth, gridHeight,
-                gridLength, progress);
-            if (layers.Length > 1)
-            {
-                next = BuildOccupancy(slicerFile, layers[1], cacheManager, bounds, gridWidth, gridHeight,
-                    gridLength, progress);
-            }
-
-            for (var layerOffset = 0; layerOffset < layers.Length; layerOffset++)
+            for (var chunkStart = 0; chunkStart < layers.Length; chunkStart += chunkSize)
             {
                 progress?.PauseOrCancelIfRequested();
-                var layer = layers[layerOffset];
-                var maximumZ = layer.PositionZ;
-                var minimumZ = layerOffset == 0
-                    ? Math.Max(0, maximumZ - Math.Max(layer.LayerHeight, slicerFile.LayerHeight))
-                    : layers[layerOffset - 1].PositionZ;
-                if (maximumZ <= minimumZ)
+                var chunkLength = Math.Min(chunkSize, layers.Length - chunkStart);
+                var windowLength = chunkLength + (chunkStart + chunkLength < layers.Length ? 1 : 0);
+
+                /* window[0] is already filled when it was the look ahead grid of the previous chunk. */
+                var firstToDecode = window[0] is null ? 0 : 1;
+                Parallel.For(firstToDecode, windowLength, parallelOptions, offset =>
                 {
-                    maximumZ = minimumZ + Math.Max(layer.LayerHeight, slicerFile.LayerHeight);
+                    progress?.PauseIfRequested();
+                    window[offset] = BuildOccupancy(slicerFile, layers[chunkStart + offset], bounds, gridWidth,
+                        gridHeight, gridLength, workAroundFlip);
+                    progress?.LockAndIncrement();
+                });
+
+                for (var offset = 0; offset < chunkLength; offset++)
+                {
+                    progress?.PauseOrCancelIfRequested();
+                    var layerOffset = chunkStart + offset;
+                    var layer = layers[layerOffset];
+                    var maximumZ = layer.PositionZ;
+                    var minimumZ = layerOffset == 0
+                        ? Math.Max(0, maximumZ - Math.Max(layer.LayerHeight, slicerFile.LayerHeight))
+                        : layers[layerOffset - 1].PositionZ;
+                    if (maximumZ <= minimumZ)
+                    {
+                        maximumZ = minimumZ + Math.Max(layer.LayerHeight, slicerFile.LayerHeight);
+                    }
+
+                    var previous = offset == 0 ? previousTail : window[offset - 1];
+                    var current = window[offset]!;
+                    var next = offset + 1 < windowLength ? window[offset + 1] : null;
+
+                    EmitHorizontalFaces(context, previous, current, next, gridWidth, gridHeight, minimumZ,
+                        maximumZ);
+                    MergeSideFaces(context, current, gridWidth, gridHeight, minimumZ, maximumZ, activeSides,
+                        nextSides);
+                    (activeSides, nextSides) = (nextSides, activeSides);
+
+                    /* The grid below the one just meshed is not needed anymore. */
+                    if (offset == 0)
+                    {
+                        Release(ref previousTail);
+                    }
+                    else
+                    {
+                        Release(ref window[offset - 1]);
+                    }
                 }
 
-                EmitHorizontalFaces(context, previous, current!, next, gridWidth, gridHeight, minimumZ, maximumZ);
-                MergeSideFaces(context, current!, gridWidth, gridHeight, minimumZ, maximumZ, activeSides, nextSides);
-                (activeSides, nextSides) = (nextSides, activeSides);
-
-                progress?.LockAndIncrement();
-
-                if (previous is not null) ArrayPool<byte>.Shared.Return(previous);
-                previous = current;
-                current = next;
-                next = layerOffset + 2 < layers.Length
-                    ? BuildOccupancy(slicerFile, layers[layerOffset + 2], cacheManager, bounds, gridWidth,
-                        gridHeight, gridLength, progress)
-                    : null;
+                /* Carry the last meshed grid as the neighbour below the next chunk, and the look ahead grid as
+                 * the first grid of the next chunk. */
+                previousTail = window[chunkLength - 1];
+                window[chunkLength - 1] = null;
+                if (windowLength > chunkLength)
+                {
+                    window[0] = window[chunkLength];
+                    window[chunkLength] = null;
+                }
             }
 
             foreach (var activeSide in activeSides.Values)
@@ -172,50 +209,78 @@ public static class VoxelPreviewMeshBuilder
         }
         finally
         {
-            if (previous is not null) ArrayPool<byte>.Shared.Return(previous);
-            if (current is not null) ArrayPool<byte>.Shared.Return(current);
-            if (next is not null) ArrayPool<byte>.Shared.Return(next);
+            Release(ref previousTail);
+            for (var index = 0; index < window.Length; index++)
+            {
+                Release(ref window[index]);
+            }
         }
+
+        static void Release(ref byte[]? occupancy)
+        {
+            if (occupancy is null) return;
+            ArrayPool<byte>.Shared.Return(occupancy);
+            occupancy = null;
+        }
+    }
+
+    /// <summary>
+    /// Gets how many layers may be decoded at once and how many of them to hold in the meshing window, scaling
+    /// both to the memory that is actually free so that large files do not trade a slow build for swapping.
+    /// </summary>
+    private static (int Parallelism, int ChunkSize) GetPipelineSizing(FileFormat slicerFile, int gridLength)
+    {
+        var memoryInfo = GC.GetGCMemoryInfo();
+        var freeBytes = Math.Max(0, memoryInfo.TotalAvailableMemoryBytes - memoryInfo.MemoryLoadBytes);
+        var budget = Math.Clamp(freeBytes / 4, 256L << 20, 4L << 30);
+
+        var maximumParallelism = CoreSettings.MaxDegreeOfParallelism <= 0
+            ? Environment.ProcessorCount
+            : CoreSettings.MaxDegreeOfParallelism;
+
+        /* Each worker holds one decoded layer plus the transient allocations of the resize. */
+        var layerBytes = Math.Max(1L, (long)slicerFile.ResolutionX * slicerFile.ResolutionY * 2);
+        var parallelism = (int)Math.Clamp(budget * 3 / 4 / layerBytes, 1, maximumParallelism);
+        var chunkSize = (int)Math.Clamp(budget / 4 / Math.Max(1, gridLength), parallelism, parallelism * 4L);
+        return (parallelism, chunkSize);
     }
 
     private static byte[] BuildOccupancy(
         FileFormat slicerFile,
         Layer layer,
-        MatCacheManager cacheManager,
         Rectangle bounds,
         int gridWidth,
         int gridHeight,
         int gridLength,
-        OperationProgress? progress)
+        FlipDirection flip)
     {
         var occupancy = ArrayPool<byte>.Shared.Rent(gridLength);
-        occupancy.AsSpan(0, gridLength).Clear();
 
         try
         {
-            progress?.PauseOrCancelIfRequested();
-            using var merged = slicerFile.GetMergedMatForSequentialPositionedLayers(layer.Index, cacheManager);
-            using var roi = merged.Roi(bounds);
-            using var prepared = roi.Clone();
-            var workAroundFlip = slicerFile.DisplayMirror switch
-            {
-                FlipDirection.None => FlipDirection.Vertically,
-                FlipDirection.Horizontally => FlipDirection.Both,
-                FlipDirection.Vertically => FlipDirection.None,
-                FlipDirection.Both => FlipDirection.Horizontally,
-                _ => throw new ArgumentOutOfRangeException(nameof(slicerFile.DisplayMirror))
-            };
+            using var mat = layer.LayerMat;
+            using var roi = mat.Roi(bounds);
+            CvInvoke.Threshold(roi, roi, 127, byte.MaxValue, ThresholdType.Binary);
 
-            if (workAroundFlip != FlipDirection.None)
+            /* Layers sharing this Z position follow at consecutive indexes, merge them into this one. */
+            for (var layerIndex = layer.Index + 1;
+                 layerIndex < slicerFile.LayerCount && slicerFile[layerIndex].PositionZ == layer.PositionZ;
+                 layerIndex++)
             {
-                CvInvoke.Flip(prepared, prepared, (FlipType)workAroundFlip);
+                using var siblingMat = slicerFile[layerIndex].LayerMat;
+                using var siblingRoi = siblingMat.Roi(bounds);
+                CvInvoke.Threshold(siblingRoi, siblingRoi, 127, byte.MaxValue, ThresholdType.Binary);
+                CvInvoke.Max(roi, siblingRoi, roi);
+            }
+
+            if (flip != FlipDirection.None)
+            {
+                CvInvoke.Flip(roi, roi, (FlipType)flip);
             }
 
             using var sampled = new Mat();
-            CvInvoke.Resize(prepared, sampled, new Size(gridWidth, gridHeight), 0, 0, Inter.Area);
-            progress?.PauseOrCancelIfRequested();
+            CvInvoke.Resize(roi, sampled, new Size(gridWidth, gridHeight), 0, 0, Inter.Area);
 
-            
             var source = sampled.GetReadOnlySpanOfBytes();
             for (var index = 0; index < gridLength; index++)
             {
