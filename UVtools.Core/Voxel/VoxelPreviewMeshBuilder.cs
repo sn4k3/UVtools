@@ -23,6 +23,14 @@ namespace UVtools.Core.Voxel;
 
 public static class VoxelPreviewMeshBuilder
 {
+    /// <summary>
+    /// Once the sequential meshing pass has covered at least this fraction of the layers, exceeding the
+    /// triangle budget no longer restarts the build at a coarser stride: decoding is by far the most expensive
+    /// part of a build, so throwing away a near-finished, full-detail pass to retry at half the detail would
+    /// cost more than it saves. The mesh is instead allowed to finish over budget at the current detail.
+    /// </summary>
+    private const float KeepDetailAfterProgress = 0.75f;
+
     public static VoxelPreviewMesh Build(
         FileFormat slicerFile,
         VoxelPreviewMeshOptions options,
@@ -159,6 +167,7 @@ public static class VoxelPreviewMeshBuilder
                     var current = window[offset]!;
                     var next = offset + 1 < windowLength ? window[offset + 1] : null;
 
+                    context.LayerProgress = (float)(layerOffset + 1) / layers.Length;
                     EmitHorizontalFaces(context, previous, current, next, gridWidth, gridHeight, minimumZ,
                         maximumZ);
                     MergeSideFaces(context, current, gridWidth, gridHeight, minimumZ, maximumZ, activeSides,
@@ -508,6 +517,9 @@ public static class VoxelPreviewMeshBuilder
         public Vector3 MinimumBounds { get; private set; } = new(float.PositiveInfinity);
         public Vector3 MaximumBounds { get; private set; } = new(float.NegativeInfinity);
 
+        /// <summary>Fraction, 0 to 1, of the layers meshed so far. Set by the caller as it walks the layers.</summary>
+        public float LayerProgress { get; set; }
+
         public void EmitHorizontal(int x0, int y0, int x1, int y1, float z, bool positive)
         {
             var minimumX = GetX(x0);
@@ -593,7 +605,8 @@ public static class VoxelPreviewMeshBuilder
 
         private void AddQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3 normal)
         {
-            if (indices.Count / 3 + 2 > maximumTriangleCount) throw new MeshBudgetExceededException();
+            if (indices.Count / 3 + 2 > maximumTriangleCount && LayerProgress < KeepDetailAfterProgress)
+                throw new MeshBudgetExceededException();
             var start = (uint)vertices.Count;
             vertices.Add(new VoxelPreviewVertex(a, normal));
             vertices.Add(new VoxelPreviewVertex(b, normal));

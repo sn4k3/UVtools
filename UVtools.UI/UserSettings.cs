@@ -552,13 +552,37 @@ public partial class UserSettings : ObservableObject
 
         [ObservableProperty] public partial ushort LayerSliderDebounce { get; set; }
 
+        public LayerPreviewUserSettings Clone()
+        {
+            return (MemberwiseClone() as LayerPreviewUserSettings)!;
+        }
+    }
+
+    #endregion
+
+    #region 3D Preview
+
+    public sealed partial class Layer3DPreviewUserSettings : ObservableObject
+    {
         [ObservableProperty]
         public partial VoxelPreviewQuality Preview3DQuality { get; set; } = VoxelPreviewQuality.Balanced;
 
-        [ObservableProperty] public partial bool Preview3DOrthographic { get; set; }
-
         [ObservableProperty]
         public partial VoxelPreviewRenderMode Preview3DRenderMode { get; set; } = VoxelPreviewRenderMode.Solid;
+
+        [ObservableProperty]
+        public partial VoxelPreviewLightingMode Preview3DLightingMode { get; set; } = VoxelPreviewLightingMode.Camera;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Preview3DBackgroundBrush))]
+        public partial Color Preview3DBackgroundColor { get; set; } = new(255, 14, 17, 20);
+
+        [XmlIgnore]
+        public Avalonia.Media.Color Preview3DBackgroundBrush
+        {
+            get => Preview3DBackgroundColor.ToAvalonia();
+            set => Preview3DBackgroundColor = new Color(value);
+        }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Preview3DVoxelBrush))]
@@ -571,9 +595,11 @@ public partial class UserSettings : ObservableObject
             set => Preview3DVoxelColor = new Color(value);
         }
 
-        public LayerPreviewUserSettings Clone()
+        [ObservableProperty] public partial bool Preview3DOrthographic { get; set; }
+
+        public Layer3DPreviewUserSettings Clone()
         {
-            return (MemberwiseClone() as LayerPreviewUserSettings)!;
+            return (MemberwiseClone() as Layer3DPreviewUserSettings)!;
         }
     }
 
@@ -977,6 +1003,7 @@ public partial class UserSettings : ObservableObject
 
     private GeneralUserSettings? _general;
     private LayerPreviewUserSettings? _layerPreview;
+    private Layer3DPreviewUserSettings? _layer3DPreview;
     private IssuesUserSettings? _issues;
     private PixelEditorUserSettings? _pixelEditor;
     private LayerRepairUserSettings? _layerRepair;
@@ -998,6 +1025,12 @@ public partial class UserSettings : ObservableObject
     {
         get => _layerPreview ??= new LayerPreviewUserSettings();
         set => _layerPreview = value;
+    }
+
+    public Layer3DPreviewUserSettings Layer3DPreview
+    {
+        get => _layer3DPreview ??= new Layer3DPreviewUserSettings();
+        set => _layer3DPreview = value;
     }
 
 
@@ -1458,6 +1491,7 @@ public partial class UserSettings : ObservableObject
     [
         Instance.General,
         Instance.LayerPreview,
+        Instance.Layer3DPreview,
         Instance.Issues,
         Instance.PixelEditor,
         Instance.LayerRepair,

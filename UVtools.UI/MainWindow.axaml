@@ -2365,38 +2365,52 @@
 
                                 <ComboBox Width="140"
                                           IsEnabled="{Binding HasLayer3DMesh}"
-                                          ItemsSource="{Binding Settings.LayerPreview.Preview3DRenderMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                                          SelectedItem="{Binding Settings.LayerPreview.Preview3DRenderMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
-                                          ToolTip.Tip="Switch between Solid, X-Ray, and Wireframe views without rebuilding the model." />
+                                          ItemsSource="{Binding Settings.Layer3DPreview.Preview3DRenderMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                          SelectedItem="{Binding Settings.Layer3DPreview.Preview3DRenderMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
+                                          ToolTip.Tip="Switch between [S]olid, [X]-Ray, and [W]ireframe views without rebuilding the model." />
 
-                                <ToggleButton Content="Up to current layer"
+                                <ComboBox Width="140"
+                                          IsEnabled="{Binding HasLayer3DMesh}"
+                                          ItemsSource="{Binding Settings.Layer3DPreview.Preview3DLightingMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                          SelectedItem="{Binding Settings.Layer3DPreview.Preview3DLightingMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
+                                          ToolTip.Tip="Camera follows the view&#x0a;Studio uses a fixed light&#x0a;Flat disables shading" />
+
+                                
+                                <ToggleButton IsChecked="{Binding Settings.Layer3DPreview.Preview3DOrthographic}"
+                                              IsEnabled="{Binding HasLayer3DMesh}"
+                                              Content="{icon:MaterialIconExt Kind=CameraEnhanceOutline, Classes='Fill'}"
+                                              ToolTip.Tip="Toggle on for a orthographic [p]rojection otherwise default is perspective projection." />
+
+                                <ToggleButton Content="{icon:MaterialIconExt LayersSearchOutline, Classes='Fill'}"
                                               IsChecked="{Binding Layer3DClipToCurrentLayer}"
                                               IsEnabled="{Binding HasLayer3DMesh}"
-                                              ToolTip.Tip="Clip the cached model at the selected layer without rebuilding it." />
-
-                                <ToggleSwitch IsChecked="{Binding Settings.LayerPreview.Preview3DOrthographic}"
-                                              IsEnabled="{Binding HasLayer3DMesh}"
-                                              OffContent="Perspective"
-                                              OnContent="Orthographic"
-                                              Margin="0,0,5,0"
-                                              ToolTip.Tip="Switch between perspective and orthographic projection." />
-
+                                              ToolTip.Tip="[C]lip the cached model at the selected layer without rebuilding it." />
+                                
+                                <ToggleButton VerticalAlignment="Stretch"
+                                              IsChecked="{Binding ShowLayerImageIssues, Mode=TwoWay}"
+                                              Content="{icon:MaterialIconExt Kind=RadiationCircleOutline, Classes='Fill'}"
+                                              ToolTip.Tip="Highlight Issues on 3D model (Also affects 2D previewer)."/>
+                                
                                 <Button Command="{Binding ResetLayer3DCameraCommand}"
-                                        Content="{icon:MaterialIconExt CubeScan, Classes=Fill}"
+                                        Content="{icon:MaterialIconExt CubeScan, Classes='Fill'}"
                                         IsEnabled="{Binding HasLayer3DMesh}"
-                                        ToolTip.Tip="Fit the model and reset rotation and panning." />
+                                        ToolTip.Tip="Fit the model and reset rotation and panning. [0 or Home]" />
 
-                                <icon:MaterialIcon Kind="InformationOutline"
-                                                   Background="Transparent"
-                                                   FontSize="28"
-                                                   ToolTip.Tip="Views:&#x0a;» (S)olid: shaded opaque model&#x0a;» (X)-Ray: translucent model with internal geometry visible&#x0a;» (W)ireframe: visible optimized mesh edges&#x0a;&#x0a;Mouse:&#x0a;» Left-click drag to orbit&#x0a;» Right/middle-click drag to pan&#x0a;» Wheel to zoom, double-click to reset&#x0a;&#x0a;Keyboard:&#x0a;» 1-6: front, back, left, right, top, bottom view&#x0a;» 0 or Home: reset the camera&#x0a;» Arrows: orbit in steps&#x0a;» + and -: zoom in and out&#x0a;» C: toggle clip to current layer&#x0a;» P: toggle perspective/orthographic" />
-
-                                <TextBlock Margin="8,0,0,0"
-                                           VerticalAlignment="Center"
-                                           Foreground="Orange"
+                                <TextBlock VerticalAlignment="Center"
+                                           Classes="Warning"
                                            IsVisible="{Binding IsLayer3DPreviewStale}"
                                            Text="Cached preview is stale" />
                             </WrapPanel>
+                            
+                            <StackPanel Grid.Row="0"
+                                        HorizontalAlignment="Right">
+                                <icon:MaterialIcon Kind="InformationOutline"
+                                                   Background="Transparent"
+                                                   VerticalAlignment="Center"
+                                                   FontSize="28"
+                                                   ToolTip.Tip="Views:&#x0a;» (S)olid: shaded opaque model&#x0a;» (X)-Ray: translucent model with internal geometry visible&#x0a;» (W)ireframe: visible optimized mesh edges&#x0a;&#x0a;Mouse:&#x0a;» Left-click drag to orbit&#x0a;» Right/middle-click drag to pan&#x0a;» Wheel to zoom, double-click to reset&#x0a;&#x0a;Keyboard:&#x0a;» 1-6: front, back, left, right, top, bottom view&#x0a;» 0 or Home: reset the camera&#x0a;» Arrows: orbit in steps&#x0a;» + and -: zoom in and out&#x0a;» C: toggle clip to current layer&#x0a;» P: toggle perspective/orthographic" />
+                            </StackPanel>
+                            
 
                             <Border Grid.Row="1"
                                     BorderBrush="{DynamicResource LightBackground}"
@@ -2404,9 +2418,11 @@
                                     ClipToBounds="True">
                                 <Grid>
                                     <controls:LayerModel3DView Name="LayerModel3DView"
-                                                               IsOrthographic="{Binding Settings.LayerPreview.Preview3DOrthographic}"
-                                                               RenderMode="{Binding Settings.LayerPreview.Preview3DRenderMode}"
-                                                               VoxelColor="{Binding Settings.LayerPreview.Preview3DVoxelBrush}" />
+                                                               BackgroundColor="{Binding Settings.Layer3DPreview.Preview3DBackgroundBrush}"
+                                                               IsOrthographic="{Binding Settings.Layer3DPreview.Preview3DOrthographic}"
+                                                               LightingMode="{Binding Settings.Layer3DPreview.Preview3DLightingMode}"
+                                                               RenderMode="{Binding Settings.Layer3DPreview.Preview3DRenderMode}"
+                                                               VoxelColor="{Binding Settings.Layer3DPreview.Preview3DVoxelBrush}" />
 
                                     <controls:LayerModelOrientationCube Name="LayerModelOrientationCube"
                                                                         Width="112"

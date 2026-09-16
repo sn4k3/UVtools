@@ -77,7 +77,9 @@ public class VoxelPreviewMeshBuilderTests
     [Fact]
     public void TriangleBudgetRetriesAtCoarserDetailWithoutReturningPartialGeometry()
     {
-        using var file = CreateFile(8, 8, 1, (_, mat) =>
+        // Several identical layers so the budget is exceeded on the first layer, well before the
+        // 75% mark past which VoxelPreviewMeshBuilder tolerates going over budget instead of retrying.
+        using var file = CreateFile(8, 8, 4, (_, mat) =>
         {
             for (var y = 0; y < 8; y++)
             for (var x = 0; x < 8; x++)
@@ -92,6 +94,36 @@ public class VoxelPreviewMeshBuilderTests
         Assert.True(mesh.SamplingStride > 1);
         Assert.True(mesh.TriangleCount <= options.MaximumTriangleCount);
         Assert.Equal(12u, mesh.TriangleCount);
+    }
+
+    [Fact]
+    public void TriangleBudgetIsToleratedPastSeventyFivePercentProgressInsteadOfRetrying()
+    {
+        // A solid block for every layer except a fragmented checkerboard on the very last one: the cheap
+        // solid layers keep the budget untouched until the last layer's exposed faces blow past it right
+        // at 100% progress. VoxelPreviewMeshBuilder must keep this full detail instead of discarding the
+        // near-finished pass and restarting at a coarser stride.
+        const int layerCount = 40;
+        using var file = CreateFile(8, 8, layerCount, (layerIndex, mat) =>
+        {
+            if (layerIndex < layerCount - 1)
+            {
+                mat.SetTo(new MCvScalar(255));
+                return;
+            }
+
+            for (var y = 0; y < 8; y++)
+            for (var x = 0; x < 8; x++)
+            {
+                if ((x + y) % 2 == 0) mat.SetByte(x, y, 255);
+            }
+        });
+        var options = new VoxelPreviewMeshOptions(VoxelPreviewQuality.Detailed, 8, 12);
+
+        using var mesh = VoxelPreviewMeshBuilder.Build(file, options);
+
+        Assert.Equal(1, mesh.SamplingStride);
+        Assert.True(mesh.TriangleCount > options.MaximumTriangleCount);
     }
 
     [Fact]

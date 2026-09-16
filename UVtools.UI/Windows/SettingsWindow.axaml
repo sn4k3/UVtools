@@ -1394,64 +1394,6 @@
                         </suki:GlassCard>
 
                         <suki:GlassCard Classes="CardNoTop">
-                            <suki:GroupBox Header="3D preview">
-                                <Grid ColumnDefinitions="Auto,160,Auto"
-                                      RowDefinitions="Auto,10,Auto,10,Auto,10,Auto">
-                                    <TextBlock Grid.Row="0"
-                                               Grid.Column="0"
-                                               VerticalAlignment="Center"
-                                               Text="Detail:" />
-                                    <ComboBox Grid.Row="0"
-                                              Grid.Column="1"
-                                              Margin="10,0,0,0"
-                                              VerticalAlignment="Center"
-                                              ItemsSource="{Binding VoxelPreviewQualityOptions}"
-                                              SelectedItem="{Binding Settings.LayerPreview.Preview3DQuality}"
-                                              ToolTip.Tip="Higher detail takes more time and memory when rebuilding the 3D model." />
-
-                                    <TextBlock Grid.Row="2"
-                                               Grid.Column="0"
-                                               VerticalAlignment="Center"
-                                               Text="View:" />
-                                    <ComboBox Grid.Row="2"
-                                              Grid.Column="1"
-                                              Margin="10,0,0,0"
-                                              VerticalAlignment="Center"
-                                              ItemsSource="{Binding Settings.LayerPreview.Preview3DRenderMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                                              SelectedItem="{Binding Settings.LayerPreview.Preview3DRenderMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
-                                              ToolTip.Tip="Switches the cached model immediately without rebuilding it." />
-
-                                    <TextBlock Grid.Row="4"
-                                               Grid.Column="0"
-                                               VerticalAlignment="Center"
-                                               Text="Projection:" />
-                                    <ToggleSwitch Grid.Row="4"
-                                                  Grid.Column="1"
-                                                  Grid.ColumnSpan="2"
-                                                  Margin="10,0,0,0"
-                                                  IsChecked="{Binding Settings.LayerPreview.Preview3DOrthographic}"
-                                                  OffContent="Perspective"
-                                                  OnContent="Orthographic" />
-
-                                    <TextBlock Grid.Row="6"
-                                               Grid.Column="0"
-                                               VerticalAlignment="Center"
-                                               Text="Voxel color:" />
-                                    <ColorPicker Grid.Row="6"
-                                                 Grid.Column="1"
-                                                 Margin="10,0,0,0"
-                                                 VerticalAlignment="Center"
-                                                 Color="{Binding Settings.LayerPreview.Preview3DVoxelBrush}" />
-                                    <TextBlock Grid.Row="6"
-                                               Grid.Column="2"
-                                               Margin="10,0,0,0"
-                                               VerticalAlignment="Center"
-                                               Text="Applies immediately to the cached model." />
-                                </Grid>
-                            </suki:GroupBox>
-                        </suki:GlassCard>
-
-                        <suki:GlassCard Classes="CardNoTop">
                             <suki:GroupBox Header="Miscellaneous">
 
                                 <StackPanel Orientation="Vertical"
@@ -1489,6 +1431,86 @@
 
                                     </StackPanel>
 
+                                </StackPanel>
+                            </suki:GroupBox>
+                        </suki:GlassCard>
+                    </StackPanel>
+                </ScrollViewer>
+
+            </TabItem>
+            <TabItem VerticalContentAlignment="Center"
+                     Header="3D preview">
+                <ScrollViewer Name="ScrollViewer3DPreview">
+                    <StackPanel Orientation="Vertical"
+                                Spacing="5">
+
+                        <suki:GlassCard Classes="Card">
+                            <suki:GroupBox Header="3D preview">
+                                <StackPanel Orientation="Vertical"
+                                            Spacing="10">
+                                    <Grid ColumnDefinitions="Auto,140,20,Auto,140,20,Auto,140">
+                                        <TextBlock Grid.Column="0"
+                                                   VerticalAlignment="Center"
+                                                   Text="Detail:" />
+                                        <ComboBox Grid.Column="1"
+                                                  Margin="10,0,0,0"
+                                                  VerticalAlignment="Center"
+                                                  ItemsSource="{Binding VoxelPreviewQualityOptions}"
+                                                  SelectedItem="{Binding Settings.Layer3DPreview.Preview3DQuality}"
+                                                  ToolTip.Tip="Higher detail takes more time and memory when rebuilding the 3D model." />
+
+                                        <TextBlock Grid.Column="3"
+                                                   VerticalAlignment="Center"
+                                                   Text="View:" />
+                                        <ComboBox Grid.Column="4"
+                                                  Margin="10,0,0,0"
+                                                  VerticalAlignment="Center"
+                                                  ItemsSource="{Binding Settings.Layer3DPreview.Preview3DRenderMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                                  SelectedItem="{Binding Settings.Layer3DPreview.Preview3DRenderMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
+                                                  ToolTip.Tip="Switches the cached model immediately without rebuilding it." />
+
+                                        <TextBlock Grid.Column="6"
+                                                   VerticalAlignment="Center"
+                                                   Text="Illumination:" />
+                                        <ComboBox Grid.Column="7"
+                                                  Margin="10,0,0,0"
+                                                  VerticalAlignment="Center"
+                                                  ItemsSource="{Binding Settings.Layer3DPreview.Preview3DLightingMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                                  SelectedItem="{Binding Settings.Layer3DPreview.Preview3DLightingMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
+                                                  ToolTip.Tip="Studio uses a fixed light, Camera light follows the view, and Flat disables shading." />
+                                    </Grid>
+
+                                    <Grid ColumnDefinitions="Auto,Auto"
+                                          RowDefinitions="Auto,Auto"
+                                          ColumnSpacing="10"
+                                          RowSpacing="10">
+                                        <TextBlock Grid.Row="0"
+                                                   Grid.Column="0"
+                                                   VerticalAlignment="Center"
+                                                   Text="Background / Voxel:" />
+                                        
+                                        <StackPanel Grid.Row="0"
+                                                    Grid.Column="1" 
+                                                    Spacing="5"
+                                                    Orientation="Horizontal">
+                                            <ColorPicker VerticalAlignment="Center"
+                                                         Color="{Binding Settings.Layer3DPreview.Preview3DBackgroundBrush}" />
+                                            <ColorPicker VerticalAlignment="Center"
+                                                         Color="{Binding Settings.Layer3DPreview.Preview3DVoxelBrush}" />
+                                        </StackPanel>
+                                        
+                                        <TextBlock Grid.Row="1"
+                                                   Grid.Column="0"
+                                                   VerticalAlignment="Center"
+                                                   Text="Projection:" />
+                                        <ToggleSwitch Grid.Row="1"
+                                                      Grid.Column="1"
+                                                      Margin="10,0,0,0"
+                                                      IsChecked="{Binding Settings.Layer3DPreview.Preview3DOrthographic}"
+                                                      OffContent="Perspective"
+                                                      OnContent="Orthographic" />
+                                        
+                                    </Grid>
                                 </StackPanel>
                             </suki:GroupBox>
                         </suki:GlassCard>

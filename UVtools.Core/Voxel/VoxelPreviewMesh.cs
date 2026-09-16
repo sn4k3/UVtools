@@ -28,6 +28,13 @@ public enum VoxelPreviewRenderMode : byte
     Wireframe
 }
 
+public enum VoxelPreviewLightingMode : byte
+{
+    Camera,
+    Studio,
+    Flat
+}
+
 public readonly record struct VoxelPreviewMeshOptions(
     VoxelPreviewQuality Quality,
     int MaximumPlaneDimension,

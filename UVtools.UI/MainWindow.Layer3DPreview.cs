@@ -70,11 +70,11 @@ public partial class MainWindow
 
     public VoxelPreviewQuality SelectedLayer3DQuality
     {
-        get => Settings.LayerPreview.Preview3DQuality;
+        get => Settings.Layer3DPreview.Preview3DQuality;
         set
         {
-            if (Settings.LayerPreview.Preview3DQuality == value) return;
-            Settings.LayerPreview.Preview3DQuality = value;
+            if (Settings.Layer3DPreview.Preview3DQuality == value) return;
+            Settings.Layer3DPreview.Preview3DQuality = value;
             RaisePropertyChanged();
             InvalidateLayer3DPreviewStatus();
         }
@@ -123,7 +123,7 @@ public partial class MainWindow
 
         LayerModel3DView.ProjectionToggleRequested += () =>
         {
-            Settings.LayerPreview.Preview3DOrthographic = !Settings.LayerPreview.Preview3DOrthographic;
+            Settings.Layer3DPreview.Preview3DOrthographic = !Settings.Layer3DPreview.Preview3DOrthographic;
             RefreshLayer3DPreviewSettings();
         };
 
@@ -158,7 +158,7 @@ public partial class MainWindow
 
     private void RefreshLayer3DPreviewSettings()
     {
-        LayerModel3DView.VoxelColor = Settings.LayerPreview.Preview3DVoxelBrush;
+        LayerModel3DView.VoxelColor = Settings.Layer3DPreview.Preview3DVoxelBrush;
         var issueColors = new Dictionary<MainIssue.IssueType, Color>();
         foreach (var (type, brush) in GetIssueColors())
         {
@@ -166,7 +166,7 @@ public partial class MainWindow
         }
 
         LayerModel3DView.SetIssueColors(issueColors);
-        LayerModel3DView.IsOrthographic = Settings.LayerPreview.Preview3DOrthographic;
+        LayerModel3DView.IsOrthographic = Settings.Layer3DPreview.Preview3DOrthographic;
         RaisePropertyChanged(nameof(SelectedLayer3DQuality));
         InvalidateLayer3DPreviewStatus();
     }

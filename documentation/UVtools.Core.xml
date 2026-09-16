@@ -9975,11 +9975,22 @@
             </summary>
             <param name="driveLetter">This should be the drive letter. Format: F:/, C:/..</param>
         </member>
+        <member name="F:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.KeepDetailAfterProgress">
+            <summary>
+            Once the sequential meshing pass has covered at least this fraction of the layers, exceeding the
+            triangle budget no longer restarts the build at a coarser stride: decoding is by far the most expensive
+            part of a build, so throwing away a near-finished, full-detail pass to retry at half the detail would
+            cost more than it saves. The mesh is instead allowed to finish over budget at the current detail.
+            </summary>
+        </member>
         <member name="M:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.GetPipelineSizing(UVtools.Core.FileFormats.FileFormat,System.Int32)">
             <summary>
             Gets how many layers may be decoded at once and how many of them to hold in the meshing window, scaling
             both to the memory that is actually free so that large files do not trade a slow build for swapping.
             </summary>
+        </member>
+        <member name="P:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.BuildContext.LayerProgress">
+            <summary>Fraction, 0 to 1, of the layers meshed so far. Set by the caller as it walks the layers.</summary>
         </member>
         <member name="T:System.Collections.ObjectModel.RangeObservableCollection`1">
             <summary>

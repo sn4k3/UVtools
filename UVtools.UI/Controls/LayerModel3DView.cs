@@ -47,15 +47,16 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                                   uniform vec3 uColor;
                                                   uniform float uAlpha;
                                                   uniform int uUnlit;
+                                                  uniform vec3 uLightDirection;
+                                                  uniform float uAmbientLight;
                                                  uniform float uClipZ;
                                                  uniform int uClipEnabled;
                                                  out vec4 fragmentColor;
                                                  void main()
                                                  {
                                                      if (uClipEnabled != 0 && vWorldPosition.z > uClipZ) discard;
-                                                     vec3 lightDirection = normalize(vec3(0.45, -0.55, 0.75));
-                                                     float diffuse = max(dot(normalize(vNormal), lightDirection), 0.0);
-                                                     float lighting = 0.28 + diffuse * 0.72;
+                                                     float diffuse = max(dot(normalize(vNormal), uLightDirection), 0.0);
+                                                     float lighting = uAmbientLight + diffuse * (1.0 - uAmbientLight);
                                                       vec3 color = uUnlit != 0 ? uColor : uColor * lighting;
                                                       fragmentColor = vec4(color, uAlpha);
                                                  }
@@ -85,15 +86,16 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                              uniform vec3 uColor;
                                              uniform float uAlpha;
                                              uniform int uUnlit;
+                                             uniform vec3 uLightDirection;
+                                             uniform float uAmbientLight;
                                             uniform float uClipZ;
                                             uniform int uClipEnabled;
                                             out vec4 fragmentColor;
                                             void main()
                                             {
                                                 if (uClipEnabled != 0 && vWorldPosition.z > uClipZ) discard;
-                                                vec3 lightDirection = normalize(vec3(0.45, -0.55, 0.75));
-                                                float diffuse = max(dot(normalize(vNormal), lightDirection), 0.0);
-                                                float lighting = 0.28 + diffuse * 0.72;
+                                                float diffuse = max(dot(normalize(vNormal), uLightDirection), 0.0);
+                                                float lighting = uAmbientLight + diffuse * (1.0 - uAmbientLight);
                                                  vec3 color = uUnlit != 0 ? uColor : uColor * lighting;
                                                  fragmentColor = vec4(color, uAlpha);
                                             }
@@ -103,8 +105,15 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         AvaloniaProperty.Register<LayerModel3DView, Avalonia.Media.Color>(nameof(VoxelColor),
             Avalonia.Media.Color.FromRgb(51, 184, 235));
 
+    public static readonly StyledProperty<Avalonia.Media.Color> BackgroundColorProperty =
+        AvaloniaProperty.Register<LayerModel3DView, Avalonia.Media.Color>(nameof(BackgroundColor),
+            Avalonia.Media.Color.FromRgb(14, 17, 20));
+
     public static readonly StyledProperty<bool> IsOrthographicProperty =
         AvaloniaProperty.Register<LayerModel3DView, bool>(nameof(IsOrthographic));
+
+    public static readonly StyledProperty<VoxelPreviewLightingMode> LightingModeProperty =
+        AvaloniaProperty.Register<LayerModel3DView, VoxelPreviewLightingMode>(nameof(LightingMode));
 
     public static readonly StyledProperty<VoxelPreviewRenderMode> RenderModeProperty =
         AvaloniaProperty.Register<LayerModel3DView, VoxelPreviewRenderMode>(nameof(RenderMode));
@@ -113,6 +122,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private const double CameraAnimationSeconds = 0.2;
     private const float XRayOpacity = 0.18f;
     private const float ZoomSensitivity = 0.14f;
+    private static readonly Vector3 StudioLightDirection = Vector3.Normalize(new Vector3(0.45f, -0.55f, 0.75f));
 
     /// <summary>Orbit amount of a single arrow key press.</summary>
     private const float OrbitKeyStep = MathF.PI / 12;
@@ -131,6 +141,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private int _clipZLocation;
     private int _colorLocation;
     private int _unlitLocation;
+    private int _lightDirectionLocation;
+    private int _ambientLightLocation;
 
     private GL? _gl;
     private uint _indexBuffer;
@@ -165,7 +177,11 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     {
         VoxelColorProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
+        BackgroundColorProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+            control.RequestNextFrameRendering());
         IsOrthographicProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+            control.RequestNextFrameRendering());
+        LightingModeProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
         RenderModeProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
@@ -239,10 +255,22 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         set => SetValue(VoxelColorProperty, value);
     }
 
+    public Avalonia.Media.Color BackgroundColor
+    {
+        get => GetValue(BackgroundColorProperty);
+        set => SetValue(BackgroundColorProperty, value);
+    }
+
     public bool IsOrthographic
     {
         get => GetValue(IsOrthographicProperty);
         set => SetValue(IsOrthographicProperty, value);
+    }
+
+    public VoxelPreviewLightingMode LightingMode
+    {
+        get => GetValue(LightingModeProperty);
+        set => SetValue(LightingModeProperty, value);
     }
 
     public VoxelPreviewRenderMode RenderMode
@@ -347,6 +375,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             _colorLocation = _gl.GetUniformLocation(_shaderProgram, "uColor");
             _alphaLocation = _gl.GetUniformLocation(_shaderProgram, "uAlpha");
             _unlitLocation = _gl.GetUniformLocation(_shaderProgram, "uUnlit");
+            _lightDirectionLocation = _gl.GetUniformLocation(_shaderProgram, "uLightDirection");
+            _ambientLightLocation = _gl.GetUniformLocation(_shaderProgram, "uAmbientLight");
             _clipZLocation = _gl.GetUniformLocation(_shaderProgram, "uClipZ");
             _clipEnabledLocation = _gl.GetUniformLocation(_shaderProgram, "uClipEnabled");
 
@@ -400,7 +430,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         _gl.Enable(EnableCap.DepthTest);
         _gl.Enable(EnableCap.CullFace);
         _gl.CullFace(TriangleFace.Back);
-        _gl.ClearColor(0.055f, 0.065f, 0.08f, 1);
+        _gl.ClearColor(BackgroundColor.R / 255f, BackgroundColor.G / 255f, BackgroundColor.B / 255f, 1);
         _gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
 
         if (_needsUpload) UploadMesh();
@@ -412,6 +442,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
         var viewProjection = GetViewProjection(width / (float)height);
         _gl.UseProgram(_shaderProgram);
+        ApplyLighting();
         _gl.Uniform1(_clipZLocation, _clipZ);
         _gl.Uniform1(_clipEnabledLocation, _clipToLayer ? 1 : 0);
         _gl.UniformMatrix4(_viewProjectionLocation, 1, false, (float*)&viewProjection);
@@ -559,6 +590,34 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             default:
                 throw new ArgumentOutOfRangeException(nameof(RenderMode), RenderMode, null);
         }
+    }
+
+    private void ApplyLighting()
+    {
+        if (_gl is null) return;
+
+        Vector3 direction;
+        float ambientLight;
+        switch (LightingMode)
+        {
+            case VoxelPreviewLightingMode.Studio:
+                direction = StudioLightDirection;
+                ambientLight = 0.28f;
+                break;
+            case VoxelPreviewLightingMode.Camera:
+                GetCameraBasis(out direction, out _, out _);
+                ambientLight = 0.2f;
+                break;
+            case VoxelPreviewLightingMode.Flat:
+                direction = StudioLightDirection;
+                ambientLight = 1;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(LightingMode), LightingMode, null);
+        }
+
+        _gl.Uniform3(_lightDirectionLocation, direction.X, direction.Y, direction.Z);
+        _gl.Uniform1(_ambientLightLocation, ambientLight);
     }
 
     private unsafe void DrawDepthPrepass()
@@ -915,13 +974,13 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                 Zoom(-1);
                 return true;
             case Key.S:
-                UserSettings.Instance.LayerPreview.Preview3DRenderMode = VoxelPreviewRenderMode.Solid;
+                UserSettings.Instance.Layer3DPreview.Preview3DRenderMode = VoxelPreviewRenderMode.Solid;
                 return true;
             case Key.X:
-                UserSettings.Instance.LayerPreview.Preview3DRenderMode = VoxelPreviewRenderMode.XRay;
+                UserSettings.Instance.Layer3DPreview.Preview3DRenderMode = VoxelPreviewRenderMode.XRay;
                 return true;
             case Key.W:
-                UserSettings.Instance.LayerPreview.Preview3DRenderMode = VoxelPreviewRenderMode.Wireframe;
+                UserSettings.Instance.Layer3DPreview.Preview3DRenderMode = VoxelPreviewRenderMode.Wireframe;
                 return true;
             case Key.C:
                 App.MainWindow.Layer3DClipToCurrentLayer = !App.MainWindow.Layer3DClipToCurrentLayer;
