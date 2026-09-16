@@ -286,6 +286,9 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             nameof(ModelDimensionsText),
             o => o.ModelDimensionsText);
 
+    public static readonly StyledProperty<bool> IsTurntableActiveProperty =
+        AvaloniaProperty.Register<LayerModel3DView, bool>(nameof(IsTurntableActive), false);
+
     public static readonly StyledProperty<bool> IsMeasureModeProperty =
         AvaloniaProperty.Register<LayerModel3DView, bool>(nameof(IsMeasureMode), false);
 
@@ -369,6 +372,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private readonly Dictionary<MainIssue.IssueType, Avalonia.Media.Color> _issueColors = [];
     private int _viewProjectionLocation;
     private readonly DispatcherTimer _cameraAnimationTimer;
+    private readonly DispatcherTimer _turntableTimer;
+    private long _turntableLastTimestamp;
     private long _cameraAnimationStartTimestamp;
     private float _cameraAnimationStartYaw;
     private float _cameraAnimationStartPitch;
@@ -449,6 +454,17 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             control.RequestNextFrameRendering());
         ShowBoundingBoxProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
+        IsTurntableActiveProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+        {
+            if (control.IsTurntableActive)
+            {
+                control.StartTurntable();
+            }
+            else
+            {
+                control.StopTurntable();
+            }
+        });
         IsMeasureModeProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
         {
             if (!control.IsMeasureMode)
@@ -489,6 +505,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         Focusable = true;
         _cameraAnimationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
         _cameraAnimationTimer.Tick += CameraAnimationTimerOnTick;
+        _turntableTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
+        _turntableTimer.Tick += TurntableTimerOnTick;
         UpdateMeasureText();
         UpdateModelDimensions();
     }
@@ -507,6 +525,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             UpdateModelDimensions();
             if (value is null)
             {
+                IsTurntableActive = false;
                 ClearCap();
                 ClearFocusedBoundingBox();
             }
@@ -690,6 +709,42 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         {
             ModelDimensionsText = null;
         }
+    }
+
+    public bool IsTurntableActive
+    {
+        get => GetValue(IsTurntableActiveProperty);
+        set => SetValue(IsTurntableActiveProperty, value);
+    }
+
+    public void StartTurntable()
+    {
+        _turntableLastTimestamp = Stopwatch.GetTimestamp();
+        _turntableTimer.Start();
+    }
+
+    public void StopTurntable()
+    {
+        _turntableTimer.Stop();
+    }
+
+    private void TurntableTimerOnTick(object? sender, EventArgs e)
+    {
+        if (!IsTurntableActive || !IsVisible || _mesh is null)
+        {
+            return;
+        }
+
+        var now = Stopwatch.GetTimestamp();
+        var dt = (float)Stopwatch.GetElapsedTime(_turntableLastTimestamp, now).TotalSeconds;
+        _turntableLastTimestamp = now;
+
+        if (_isDragging) return;
+        if (dt > 0.1f) dt = 0.016f;
+
+        const float rotateSpeedRadPerSec = MathF.PI / 6f; // 30 deg/sec
+        _cameraYaw = NormalizeAngle(_cameraYaw + rotateSpeedRadPerSec * dt);
+        CameraChanged();
     }
 
     public bool IsMeasureMode
@@ -2178,6 +2233,14 @@ private unsafe void DrawFocusedBoundingBox()
         e.Handled = true;
     }
 
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        IsTurntableActive = false;
+        _turntableTimer.Stop();
+        CancelCameraAnimation();
+    }
+
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
         base.OnPointerCaptureLost(e);
@@ -2310,6 +2373,9 @@ private unsafe void DrawFocusedBoundingBox()
             case Key.B:
                 ShowBoundingBox = !ShowBoundingBox;
                 UserSettings.Instance.Layer3DPreview.ShowBoundingBox = ShowBoundingBox;
+                return true;
+            case Key.T or Key.Space:
+                IsTurntableActive = !IsTurntableActive;
                 return true;
             case Key.M:
                 IsMeasureMode = !IsMeasureMode;
