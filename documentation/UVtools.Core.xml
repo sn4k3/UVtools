@@ -6677,6 +6677,9 @@
         <member name="P:UVtools.Core.Objects.ExposureItem.Brightness">
             <inheritdoc/>
         </member>
+        <member name="P:UVtools.Core.Objects.ExposureItem.Gamma">
+            <inheritdoc/>
+        </member>
         <member name="T:UVtools.Core.Objects.GenericFileRepresentation">
             <inheritdoc/>
         </member>
@@ -7651,6 +7654,9 @@
         <member name="P:UVtools.Core.Operations.OperationCalibrateExposureFinder.MultipleBrightnessExcludeFrom">
             <inheritdoc/>
         </member>
+        <member name="P:UVtools.Core.Operations.OperationCalibrateExposureFinder.MultipleBrightnessGamma">
+            <inheritdoc/>
+        </member>
         <member name="P:UVtools.Core.Operations.OperationCalibrateExposureFinder.MultipleBrightnessValues">
             <inheritdoc/>
         </member>
@@ -7747,6 +7753,12 @@
         </member>
         <member name="P:UVtools.Core.Operations.OperationCalibrateExposureFinder.PatternModelTextEnabled">
             <inheritdoc/>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationCalibrateExposureFinder.OnMultipleBrightnessGammaChanged(System.Decimal,System.Decimal)">
+            <summary>Executes the logic for when <see cref="P:UVtools.Core.Operations.OperationCalibrateExposureFinder.MultipleBrightnessGamma"/> just changed.</summary>
+            <param name="oldValue">The previous property value that was replaced.</param>
+            <param name="newValue">The new property value that was set.</param>
+            <remarks>This method is invoked right after the value of <see cref="P:UVtools.Core.Operations.OperationCalibrateExposureFinder.MultipleBrightnessGamma"/> is changed.</remarks>
         </member>
         <member name="M:UVtools.Core.Operations.OperationCalibrateExposureFinder.OnMultipleBrightnessGenEmulatedAALevelChanged(System.Byte)">
             <summary>Executes the logic for when <see cref="P:UVtools.Core.Operations.OperationCalibrateExposureFinder.MultipleBrightnessGenEmulatedAALevel"/> just changed.</summary>
@@ -9958,6 +9970,12 @@
             </summary>
             <param name="driveLetter">This should be the drive letter. Format: F:/, C:/..</param>
         </member>
+        <member name="M:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.GetPipelineSizing(UVtools.Core.FileFormats.FileFormat,System.Int32)">
+            <summary>
+            Gets how many layers may be decoded at once and how many of them to hold in the meshing window, scaling
+            both to the memory that is actually free so that large files do not trade a slow build for swapping.
+            </summary>
+        </member>
         <member name="T:System.Collections.ObjectModel.RangeObservableCollection`1">
             <summary>
             Implementation of a dynamic data collection based on generic Collection&lt;T&gt;,
@@ -10511,6 +10529,9 @@
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.BrightnessPercent">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "BrightnessPercent" generated properties.</summary>
         </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.Gamma">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "Gamma" generated properties.</summary>
+        </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.FilePath">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "FilePath" generated properties.</summary>
         </member>
@@ -10862,11 +10883,14 @@
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.MultipleBrightnessExcludeFrom">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "MultipleBrightnessExcludeFrom" generated properties.</summary>
         </member>
-        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.MultipleBrightnessValues">
-            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "MultipleBrightnessValues" generated properties.</summary>
-        </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.MultipleBrightnessTable">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "MultipleBrightnessTable" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.MultipleBrightnessGamma">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "MultipleBrightnessGamma" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.MultipleBrightnessValues">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "MultipleBrightnessValues" generated properties.</summary>
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.MultipleBrightnessGenExposureTime">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "MultipleBrightnessGenExposureTime" generated properties.</summary>

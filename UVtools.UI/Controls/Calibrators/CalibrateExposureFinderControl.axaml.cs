@@ -78,13 +78,16 @@ public partial class CalibrateExposureFinderControl : ToolControl
     public void BrightnessExposureGenAdd()
     {
         var values = Operation.MultipleBrightnessValuesArray.ToList();
-        // normal exposure - 255
-        //     wanted      -  x
-        byte brightness = (byte) Math.Clamp(Math.Round(Operation.MultipleBrightnessGenExposureTime * byte.MaxValue / Operation.NormalExposure), 1, byte.MaxValue);
+        byte brightness = Operation.CalculateBrightnessFromExposureTime(Operation.MultipleBrightnessGenExposureTime);
         if (values.Contains(brightness)) return;
         values.Add(brightness);
         values.Sort((b, b1) => b1.CompareTo(b));
         Operation.MultipleBrightnessValues = string.Join(", ", values);
+    }
+
+    public void ResetBrightnessValues()
+    {
+        Operation.ResetMultipleBrightnessValues();
     }
 
     public async Task GenerateExposureTable()

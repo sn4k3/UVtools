@@ -49,18 +49,35 @@ public sealed partial class ExposureItem : ObservableObject, IComparable<Exposur
     [NotifyPropertyChangedFor(nameof(BrightnessPercent))]
     public partial byte Brightness { get; set; } = byte.MaxValue;
 
-    public decimal BrightnessPercent => Math.Round(Brightness * 100m / byte.MaxValue, 2);
+    /// <summary>
+    /// Gets or sets the panel gamma exponent used for dosage/percentage calculation
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BrightnessPercent))]
+    public partial decimal Gamma { get; set; } = 1.0m;
+
+    public decimal BrightnessPercent
+    {
+        get
+        {
+            if (Brightness == byte.MaxValue) return 100m;
+            if (Brightness == 0) return 0m;
+            if (Gamma <= 0m || Gamma == 1.0m) return Math.Round(Brightness * 100m / byte.MaxValue, 2);
+            return Math.Round((decimal)Math.Pow((double)Brightness / byte.MaxValue, (double)Gamma) * 100m, 2);
+        }
+    }
 
     public bool IsValid => LayerHeight > 0 && BottomExposure > 0 && Exposure > 0 && Brightness > 0;
 
     public ExposureItem() { }
 
-    public ExposureItem(decimal layerHeight, decimal bottomExposure = 0, decimal exposure = 0, byte brightness = 255)
+    public ExposureItem(decimal layerHeight, decimal bottomExposure = 0, decimal exposure = 0, byte brightness = 255, decimal gamma = 1.0m)
     {
         LayerHeight = layerHeight;
         BottomExposure = bottomExposure;
         Exposure = exposure;
         Brightness = brightness;
+        Gamma = gamma;
     }
 
     public override string ToString()

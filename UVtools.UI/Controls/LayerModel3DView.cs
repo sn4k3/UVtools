@@ -618,11 +618,9 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             case Key.D6 or Key.NumPad6:
                 SnapToDirection(-Vector3.UnitZ); // Bottom
                 return true;
-
             case Key.D0 or Key.NumPad0 or Key.Home:
                 ResetCamera();
                 return true;
-
             /* Arrows orbit as if dragging the model towards that direction, matching the pointer and the cube. */
             case Key.Left:
                 OrbitStep(OrbitKeyStep, 0);
@@ -636,18 +634,18 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             case Key.Down:
                 OrbitStep(0, OrbitKeyStep);
                 return true;
-
             case Key.OemPlus or Key.Add:
                 Zoom(1);
                 return true;
             case Key.OemMinus or Key.Subtract:
                 Zoom(-1);
                 return true;
-
+            case Key.C:
+                App.MainWindow.Layer3DClipToCurrentLayer = !App.MainWindow.Layer3DClipToCurrentLayer;
+                return true;
             case Key.P:
                 ProjectionToggleRequested?.Invoke();
                 return true;
-
             default:
                 return false;
         }

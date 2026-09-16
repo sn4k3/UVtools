@@ -2383,7 +2383,7 @@
                                 <icon:MaterialIcon Kind="InformationOutline"
                                                    Background="Transparent"
                                                    FontSize="28"
-                                                   ToolTip.Tip="Mouse:&#x0a;» Left-click drag to orbit&#x0a;» Right/middle-click drag to pan&#x0a;» Wheel to zoom, double-click to reset&#x0a;&#x0a;Keyboard:&#x0a;» 1-6: front, back, left, right, top, bottom view&#x0a;» 0 or Home: reset the camera&#x0a;» Arrows: orbit in steps&#x0a;» + and -: zoom in and out&#x0a;» P: toggle perspective/orthographic"/>
+                                                   ToolTip.Tip="Mouse:&#x0a;» Left-click drag to orbit&#x0a;» Right/middle-click drag to pan&#x0a;» Wheel to zoom, double-click to reset&#x0a;&#x0a;Keyboard:&#x0a;» 1-6: front, back, left, right, top, bottom view&#x0a;» 0 or Home: reset the camera&#x0a;» Arrows: orbit in steps&#x0a;» + and -: zoom in and out&#x0a;» C: toggle clip to current layer&#x0a;» P: toggle perspective/orthographic"/>
                                 
                                 <TextBlock Margin="8,0,0,0"
                                            VerticalAlignment="Center"
