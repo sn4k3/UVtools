@@ -75,7 +75,11 @@ public partial class MainWindow : GenericWindow
     public bool CanSave
     {
         get => IsFileLoaded && _canSave;
-        set => RaiseAndSetIfChanged(ref _canSave, value);
+        set
+        {
+            RaiseAndSetIfChanged(ref _canSave, value);
+            if (value) InvalidateLayer3DPreviewStatus();
+        }
     }
 
     public IEnumerable<MenuItem> MenuFileOpenRecentItems
@@ -308,6 +312,7 @@ public partial class MainWindow : GenericWindow
         InitPixelEditor();
         InitClipboardLayers();
         InitLayerPreview();
+        InitLayer3DPreview();
         InitSuggestions();
 
         RefreshRecentFiles(true);
@@ -887,6 +892,7 @@ public partial class MainWindow : GenericWindow
 
     protected override void OnClosed(EventArgs e)
     {
+        DisposeLayer3DPreview();
         base.OnClosed(e);
 
         if (!Settings.General.StartMaximized &&
@@ -1212,6 +1218,8 @@ public partial class MainWindow : GenericWindow
     {
         if (!IsFileLoaded) return;
 
+        DisposeLayer3DPreview();
+
         MenuFileConvertItems = [];
 
         ClipboardManager.Instance.Reset();
@@ -1293,6 +1301,9 @@ public partial class MainWindow : GenericWindow
             LayerImageBox.ZoomWithMouseWheelDebounceMilliseconds = Settings.LayerPreview.ZoomDebounceMilliseconds;
             RaisePropertyChanged(nameof(IssuesGridItems));
         }
+
+        ResetDataContext();
+        RefreshLayer3DPreviewSettings();
     }
 
     [RelayCommand]
@@ -2843,15 +2854,15 @@ public partial class MainWindow : GenericWindow
             {
                 await OnClickDetectIssues();
             }
-            
+
             if (changedLayers && SlicerFile!.IssueManager.HaveIssues)
             {
                 if (baseOperation.GetType().Name.StartsWith("OperationCalibrate"))
                 {
                     IssuesClear();
                 }
-                else if (baseOperation 
-                         is OperationMove 
+                else if (baseOperation
+                         is OperationMove
                          or OperationRotate
                          or OperationFlip
                          or OperationLithophane
@@ -2861,7 +2872,6 @@ public partial class MainWindow : GenericWindow
                     await OnClickDetectIssues();
                 }
             }
-            
 
 
             switch (baseOperation)

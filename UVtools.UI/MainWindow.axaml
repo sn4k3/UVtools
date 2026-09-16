@@ -2,6 +2,7 @@
                        xmlns="https://github.com/avaloniaui"
                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                        xmlns:core="clr-namespace:UVtools.Core;assembly=UVtools.Core"
+                       xmlns:controls="clr-namespace:UVtools.UI.Controls"
                        xmlns:layers="clr-namespace:UVtools.Core.Layers;assembly=UVtools.Core"
                        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                        xmlns:fragments="clr-namespace:UVtools.UI.Controls.Fragments"
@@ -2029,307 +2030,410 @@
             <suki:GlassCard Margin="0,10"
                             Padding="10"
                             IsEnabled="{Binding IsFileLoaded}">
-                <Grid ColumnDefinitions="*"
+                <TabControl Name="LayerPreviewTabControl"
+                            SelectedIndex="{Binding Layer3DPreviewTabIndex}">
+                    <TabItem>
+                        <TabItem.Header>
+                            <icon:MaterialIconText Kind="Layers"
+                                                   Text="Layers preview"
+                                                   FontSize="18" />
+                        </TabItem.Header>
+                        <Grid ColumnDefinitions="*"
 
-                      RowDefinitions="Auto,*,Auto">
-                    <Grid Grid.Row="0"
-                          Grid.Column="0"
-                          Margin="0,5,0,5"
-                          ColumnDefinitions="*,Auto"
-                          IsEnabled="{Binding IsFileLoaded}"
-                          RowDefinitions="Auto">
-                        <WrapPanel Grid.Row="0"
-                                   Grid.Column="0"
-                                   HorizontalAlignment="Left"
-                                   Orientation="Horizontal"
-                                   ItemSpacing="5"
-                                   LineSpacing="5">
-                            <ToggleSplitButton VerticalAlignment="Stretch"
-                                               IsChecked="{Binding ShowLayerImageRotated}"
-                                               Content="{icon:MaterialIconTextExt Kind=Sync, Text='Rotate'}"
-                                               ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Auto rotate layer preview image at 90º (This can slow down the layer preview) [{0}+R]'}">
-                                <ToggleSplitButton.Flyout>
-                                    <MenuFlyout>
-                                        <MenuItem
-                                            Header="{icon:MaterialIconTextExt Kind=RotateRight, Text='90º Clockwise (CW)'}"
-                                            ToggleType="Radio"
-                                            GroupName="ShowLayerImageRotateDirection"
-                                            IsChecked="{Binding ShowLayerImageRotateCWDirection, Mode=TwoWay}" />
-                                        <MenuItem
-                                            Header="{icon:MaterialIconTextExt Kind=RotateLeft, Text='90º Counter-clockwise (CCW)'}"
-                                            ToggleType="Radio"
-                                            GroupName="ShowLayerImageRotateDirection"
-                                            IsChecked="{Binding ShowLayerImageRotateCCWDirection, Mode=TwoWay}" />
-                                    </MenuFlyout>
-                                </ToggleSplitButton.Flyout>
-                            </ToggleSplitButton>
-
-
-                            <ToggleSplitButton VerticalAlignment="Stretch"
-                                               IsChecked="{Binding ShowLayerImageFlipped}"
-                                               Content="{icon:MaterialIconTextExt Kind=FlipHorizontal, Text='Flip'}"
-                                               ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Auto flip layer preview image (This can slow down the layer preview) [{0}+F]'}">
-                                <ToggleSplitButton.Flyout>
-                                    <MenuFlyout Placement="Bottom">
-                                        <MenuItem Icon="{icon:MaterialIconExt Kind=FlipHorizontal}"
-                                                  Header="Horizontally}"
-                                                  ToggleType="CheckBox"
-                                                  IsChecked="{Binding ShowLayerImageFlippedHorizontally, Mode=TwoWay}" />
-                                        <MenuItem Icon="{icon:MaterialIconExt Kind=FlipVertical}"
-                                                  Header="Vertically}"
-                                                  ToggleType="CheckBox"
-                                                  IsChecked="{Binding ShowLayerImageFlippedVertically, Mode=TwoWay}" />
-                                    </MenuFlyout>
-                                </ToggleSplitButton.Flyout>
-                            </ToggleSplitButton>
+                              RowDefinitions="Auto,*,Auto">
+                            <Grid Grid.Row="0"
+                                  Grid.Column="0"
+                                  Margin="0,5,0,5"
+                                  ColumnDefinitions="*,Auto"
+                                  IsEnabled="{Binding IsFileLoaded}"
+                                  RowDefinitions="Auto">
+                                <WrapPanel Grid.Row="0"
+                                           Grid.Column="0"
+                                           HorizontalAlignment="Left"
+                                           Orientation="Horizontal"
+                                           ItemSpacing="5"
+                                           LineSpacing="5">
+                                    <ToggleSplitButton VerticalAlignment="Stretch"
+                                                       IsChecked="{Binding ShowLayerImageRotated}"
+                                                       Content="{icon:MaterialIconTextExt Kind=Sync, Text='Rotate'}"
+                                                       ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Auto rotate layer preview image at 90º (This can slow down the layer preview) [{0}+R]'}">
+                                        <ToggleSplitButton.Flyout>
+                                            <MenuFlyout>
+                                                <MenuItem
+                                                    Header="{icon:MaterialIconTextExt Kind=RotateRight, Text='90º Clockwise (CW)'}"
+                                                    ToggleType="Radio"
+                                                    GroupName="ShowLayerImageRotateDirection"
+                                                    IsChecked="{Binding ShowLayerImageRotateCWDirection, Mode=TwoWay}" />
+                                                <MenuItem
+                                                    Header="{icon:MaterialIconTextExt Kind=RotateLeft, Text='90º Counter-clockwise (CCW)'}"
+                                                    ToggleType="Radio"
+                                                    GroupName="ShowLayerImageRotateDirection"
+                                                    IsChecked="{Binding ShowLayerImageRotateCCWDirection, Mode=TwoWay}" />
+                                            </MenuFlyout>
+                                        </ToggleSplitButton.Flyout>
+                                    </ToggleSplitButton>
 
 
-                            <ToggleSplitButton Margin="0,0,1,0"
-                                               VerticalAlignment="Stretch"
-                                               IsChecked="{Binding ShowLayerImageDifference, Mode=TwoWay}"
-                                               Content="{icon:MaterialIconTextExt Kind=Layers, Text='Difference'}"
-                                               ToolTip.Tip="Show layer differences where darker pixels were also present on previous layer and the white pixels the difference between previous and current layer.">
-                                <ToggleSplitButton.Flyout>
-                                    <MenuFlyout>
-                                        <MenuItem Header="Show layer similarity instead of difference"
-                                                  ToggleType="CheckBox"
-                                                  IsChecked="{Binding Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead, Mode=TwoWay}"
-                                                  ToolTip.Tip="If enabled, it will recolor the current layer pixels in common with the previous and next layer" />
-                                    </MenuFlyout>
-                                </ToggleSplitButton.Flyout>
-                            </ToggleSplitButton>
-
-                            <ToggleSplitButton VerticalAlignment="Stretch"
-                                               IsChecked="{Binding ShowLayerImageIssues, Mode=TwoWay}"
-                                               Content="{icon:MaterialIconTextExt Kind=RadiationCircleOutline, Text='Issues'}"
-                                               ToolTip.Tip="Highlight Issues on current layer. Valid only if Issues are calculated.">
-                                <ToggleSplitButton.Flyout>
-                                    <MenuFlyout>
-                                        <MenuItem ToggleType="CheckBox"
-                                                  IsChecked="{Binding ShowLayerImageCrosshairs, Mode=TwoWay}"
-                                                  ToolTip.Tip="Show crosshairs for selected issues on the current layer"
-                                                  Icon="{icon:MaterialIconExt Crosshairs}"
-                                                  Header="Crosshairs" />
-                                    </MenuFlyout>
-                                </ToggleSplitButton.Flyout>
-                            </ToggleSplitButton>
+                                    <ToggleSplitButton VerticalAlignment="Stretch"
+                                                       IsChecked="{Binding ShowLayerImageFlipped}"
+                                                       Content="{icon:MaterialIconTextExt Kind=FlipHorizontal, Text='Flip'}"
+                                                       ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Auto flip layer preview image (This can slow down the layer preview) [{0}+F]'}">
+                                        <ToggleSplitButton.Flyout>
+                                            <MenuFlyout Placement="Bottom">
+                                                <MenuItem Icon="{icon:MaterialIconExt Kind=FlipHorizontal}"
+                                                          Header="Horizontally}"
+                                                          ToggleType="CheckBox"
+                                                          IsChecked="{Binding ShowLayerImageFlippedHorizontally, Mode=TwoWay}" />
+                                                <MenuItem Icon="{icon:MaterialIconExt Kind=FlipVertical}"
+                                                          Header="Vertically}"
+                                                          ToggleType="CheckBox"
+                                                          IsChecked="{Binding ShowLayerImageFlippedVertically, Mode=TwoWay}" />
+                                            </MenuFlyout>
+                                        </ToggleSplitButton.Flyout>
+                                    </ToggleSplitButton>
 
 
-                            <DropDownButton Name="LayerPreviewOutlineButton"
-                                            Margin="1,0,2,0"
-                                            VerticalAlignment="Stretch"
-                                            Content="{icon:MaterialIconTextExt Kind=VectorUnion, Text='Outline'}"
-                                            ToolTip.Tip="Click to access the various outlines.">
-                                <DropDownButton.Flyout>
-                                    <MenuFlyout Placement="Bottom">
-                                        <MenuItem Header="Print volume boundary"
-                                                  ToggleType="CheckBox"
-                                                  IsChecked="{Binding ShowLayerOutlinePrintVolumeBoundary, Mode=TwoWay}" />
-                                        <MenuItem Header="Layer boundary"
-                                                  ToggleType="CheckBox"
-                                                  IsChecked="{Binding ShowLayerOutlineLayerBoundary, Mode=TwoWay}" />
-                                        <MenuItem Header="Blob boundary"
-                                                  ToggleType="CheckBox"
-                                                  IsChecked="{Binding ShowLayerOutlineContourBoundary, Mode=TwoWay}" />
-                                        <MenuItem Header="Enclosing circles"
-                                                  ToggleType="CheckBox"
-                                                  IsChecked="{Binding ShowLayerOutlineEnclosingCircles, Mode=TwoWay}" />
-                                        <MenuItem Header="Hollow areas"
-                                                  ToggleType="CheckBox"
-                                                  IsChecked="{Binding ShowLayerOutlineHollowAreas, Mode=TwoWay}" />
-                                        <MenuItem Header="Centroids"
-                                                  ToggleType="CheckBox"
-                                                  IsChecked="{Binding ShowLayerOutlineCentroids, Mode=TwoWay}" />
-                                        <MenuItem Header="Triangulate"
-                                                  ToggleType="CheckBox"
-                                                  IsChecked="{Binding ShowLayerOutlineTriangulate, Mode=TwoWay}" />
-                                        <MenuItem Header="Edge detection"
-                                                  ToggleType="CheckBox"
-                                                  IsChecked="{Binding ShowLayerOutlineEdgeDetection, Mode=TwoWay}">
-                                            <MenuItem.IsEnabled>
-                                                <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                                    <Binding Path="!ShowLayerOutlineDistanceDetection" />
-                                                    <Binding Path="!ShowLayerOutlineSkeletonize" />
-                                                </MultiBinding>
-                                            </MenuItem.IsEnabled>
-                                        </MenuItem>
-                                        <MenuItem Header="Distance detection"
-                                                  ToggleType="CheckBox"
-                                                  IsChecked="{Binding ShowLayerOutlineDistanceDetection, Mode=TwoWay}"
-                                                  ToolTip.Tip="Calculates the distance to the closest zero pixel for each pixel">
-                                            <MenuItem.IsEnabled>
-                                                <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                                    <Binding Path="!ShowLayerOutlineEdgeDetection" />
-                                                    <Binding Path="!ShowLayerOutlineSkeletonize" />
-                                                </MultiBinding>
-                                            </MenuItem.IsEnabled>
-                                        </MenuItem>
-                                        <MenuItem Header="Skeletonize"
-                                                  ToggleType="CheckBox"
-                                                  IsChecked="{Binding ShowLayerOutlineSkeletonize, Mode=TwoWay}">
-                                            <MenuItem.IsEnabled>
-                                                <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                                    <Binding Path="!ShowLayerOutlineEdgeDetection" />
-                                                    <Binding Path="!ShowLayerOutlineDistanceDetection" />
-                                                </MultiBinding>
-                                            </MenuItem.IsEnabled>
-                                        </MenuItem>
-                                    </MenuFlyout>
-                                </DropDownButton.Flyout>
-                            </DropDownButton>
+                                    <ToggleSplitButton Margin="0,0,1,0"
+                                                       VerticalAlignment="Stretch"
+                                                       IsChecked="{Binding ShowLayerImageDifference, Mode=TwoWay}"
+                                                       Content="{icon:MaterialIconTextExt Kind=Layers, Text='Difference'}"
+                                                       ToolTip.Tip="Show layer differences where darker pixels were also present on previous layer and the white pixels the difference between previous and current layer.">
+                                        <ToggleSplitButton.Flyout>
+                                            <MenuFlyout>
+                                                <MenuItem Header="Show layer similarity instead of difference"
+                                                          ToggleType="CheckBox"
+                                                          IsChecked="{Binding Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead, Mode=TwoWay}"
+                                                          ToolTip.Tip="If enabled, it will recolor the current layer pixels in common with the previous and next layer" />
+                                            </MenuFlyout>
+                                        </ToggleSplitButton.Flyout>
+                                    </ToggleSplitButton>
+
+                                    <ToggleSplitButton VerticalAlignment="Stretch"
+                                                       IsChecked="{Binding ShowLayerImageIssues, Mode=TwoWay}"
+                                                       Content="{icon:MaterialIconTextExt Kind=RadiationCircleOutline, Text='Issues'}"
+                                                       ToolTip.Tip="Highlight Issues on current layer. Valid only if Issues are calculated.">
+                                        <ToggleSplitButton.Flyout>
+                                            <MenuFlyout>
+                                                <MenuItem ToggleType="CheckBox"
+                                                          IsChecked="{Binding ShowLayerImageCrosshairs, Mode=TwoWay}"
+                                                          ToolTip.Tip="Show crosshairs for selected issues on the current layer"
+                                                          Icon="{icon:MaterialIconExt Crosshairs}"
+                                                          Header="Crosshairs" />
+                                            </MenuFlyout>
+                                        </ToggleSplitButton.Flyout>
+                                    </ToggleSplitButton>
 
 
-                            <ToggleButton Margin="-1,0,0,0"
-                                          VerticalAlignment="Stretch"
-                                          HotKey="{OnPlatform Ctrl+E,
+                                    <DropDownButton Name="LayerPreviewOutlineButton"
+                                                    Margin="1,0,2,0"
+                                                    VerticalAlignment="Stretch"
+                                                    Content="{icon:MaterialIconTextExt Kind=VectorUnion, Text='Outline'}"
+                                                    ToolTip.Tip="Click to access the various outlines.">
+                                        <DropDownButton.Flyout>
+                                            <MenuFlyout Placement="Bottom">
+                                                <MenuItem Header="Print volume boundary"
+                                                          ToggleType="CheckBox"
+                                                          IsChecked="{Binding ShowLayerOutlinePrintVolumeBoundary, Mode=TwoWay}" />
+                                                <MenuItem Header="Layer boundary"
+                                                          ToggleType="CheckBox"
+                                                          IsChecked="{Binding ShowLayerOutlineLayerBoundary, Mode=TwoWay}" />
+                                                <MenuItem Header="Blob boundary"
+                                                          ToggleType="CheckBox"
+                                                          IsChecked="{Binding ShowLayerOutlineContourBoundary, Mode=TwoWay}" />
+                                                <MenuItem Header="Enclosing circles"
+                                                          ToggleType="CheckBox"
+                                                          IsChecked="{Binding ShowLayerOutlineEnclosingCircles, Mode=TwoWay}" />
+                                                <MenuItem Header="Hollow areas"
+                                                          ToggleType="CheckBox"
+                                                          IsChecked="{Binding ShowLayerOutlineHollowAreas, Mode=TwoWay}" />
+                                                <MenuItem Header="Centroids"
+                                                          ToggleType="CheckBox"
+                                                          IsChecked="{Binding ShowLayerOutlineCentroids, Mode=TwoWay}" />
+                                                <MenuItem Header="Triangulate"
+                                                          ToggleType="CheckBox"
+                                                          IsChecked="{Binding ShowLayerOutlineTriangulate, Mode=TwoWay}" />
+                                                <MenuItem Header="Edge detection"
+                                                          ToggleType="CheckBox"
+                                                          IsChecked="{Binding ShowLayerOutlineEdgeDetection, Mode=TwoWay}">
+                                                    <MenuItem.IsEnabled>
+                                                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                            <Binding Path="!ShowLayerOutlineDistanceDetection" />
+                                                            <Binding Path="!ShowLayerOutlineSkeletonize" />
+                                                        </MultiBinding>
+                                                    </MenuItem.IsEnabled>
+                                                </MenuItem>
+                                                <MenuItem Header="Distance detection"
+                                                          ToggleType="CheckBox"
+                                                          IsChecked="{Binding ShowLayerOutlineDistanceDetection, Mode=TwoWay}"
+                                                          ToolTip.Tip="Calculates the distance to the closest zero pixel for each pixel">
+                                                    <MenuItem.IsEnabled>
+                                                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                            <Binding Path="!ShowLayerOutlineEdgeDetection" />
+                                                            <Binding Path="!ShowLayerOutlineSkeletonize" />
+                                                        </MultiBinding>
+                                                    </MenuItem.IsEnabled>
+                                                </MenuItem>
+                                                <MenuItem Header="Skeletonize"
+                                                          ToggleType="CheckBox"
+                                                          IsChecked="{Binding ShowLayerOutlineSkeletonize, Mode=TwoWay}">
+                                                    <MenuItem.IsEnabled>
+                                                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                            <Binding Path="!ShowLayerOutlineEdgeDetection" />
+                                                            <Binding Path="!ShowLayerOutlineDistanceDetection" />
+                                                        </MultiBinding>
+                                                    </MenuItem.IsEnabled>
+                                                </MenuItem>
+                                            </MenuFlyout>
+                                        </DropDownButton.Flyout>
+                                    </DropDownButton>
+
+
+                                    <ToggleButton Margin="-1,0,0,0"
+                                                  VerticalAlignment="Stretch"
+                                                  HotKey="{OnPlatform Ctrl+E,
 											 macOS=⌘+E}"
-                                          Content="{icon:MaterialIconTextExt Kind=RulerSquareCompass, Text='Pixel Editor'}"
-                                          IsChecked="{Binding IsPixelEditorActive}"
-                                          ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Edit layer image: Draw pixels, add supports and/or drain holes. [{0}+E]'}" />
-                        </WrapPanel>
+                                                  Content="{icon:MaterialIconTextExt Kind=RulerSquareCompass, Text='Pixel Editor'}"
+                                                  IsChecked="{Binding IsPixelEditorActive}"
+                                                  ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Edit layer image: Draw pixels, add supports and/or drain holes. [{0}+E]'}" />
+                                </WrapPanel>
 
 
-                        <StackPanel Grid.Row="0"
-                                    Grid.Column="1"
-                                    HorizontalAlignment="Right"
-                                    Spacing="5"
-                                    Orientation="Horizontal">
-                            <DropDownButton Name="LayerActionsButton"
-                                            VerticalAlignment="Stretch"
-                                            VerticalContentAlignment="Center"
-                                            Content="{icon:MaterialIconTextExt Kind=LayersEdit, Text='Actions'}">
-                                <DropDownButton.Flyout>
-                                    <MenuFlyout ItemsSource="{Binding LayerActionsMenu}"
-                                                Placement="Bottom" />
-                                </DropDownButton.Flyout>
-                            </DropDownButton>
+                                <StackPanel Grid.Row="0"
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Right"
+                                            Spacing="5"
+                                            Orientation="Horizontal">
+                                    <DropDownButton Name="LayerActionsButton"
+                                                    VerticalAlignment="Stretch"
+                                                    VerticalContentAlignment="Center"
+                                                    Content="{icon:MaterialIconTextExt Kind=LayersEdit, Text='Actions'}">
+                                        <DropDownButton.Flyout>
+                                            <MenuFlyout ItemsSource="{Binding LayerActionsMenu}"
+                                                        Placement="Bottom" />
+                                        </DropDownButton.Flyout>
+                                    </DropDownButton>
 
-                            <Button VerticalAlignment="Stretch"
-                                    Command="{Binding ShowLayerCommand}"
-                                    HotKey="F5"
-                                    Content="{icon:MaterialIconExt Kind=Sync}"
-                                    ToolTip.Tip="Refresh current layer [F5]" />
-
-
-                            <SplitButton VerticalAlignment="Stretch"
-                                         VerticalContentAlignment="Center"
-                                         Command="{Binding SaveCurrentLayerImageCommand}"
-                                         Content="{icon:MaterialIconExt Kind=ContentSave}"
-                                         ToolTip.Tip="Save layer image to a file">
-                                <SplitButton.Flyout>
-                                    <MenuFlyout>
-                                        <MenuItem Icon="{icon:MaterialIconExt Kind=Group}"
-                                                  Command="{Binding SaveCurrentROIImageCommand}"
-                                                  Header="Save the selected region (ROI)" />
-                                    </MenuFlyout>
-                                </SplitButton.Flyout>
-                            </SplitButton>
+                                    <Button VerticalAlignment="Stretch"
+                                            Command="{Binding ShowLayerCommand}"
+                                            HotKey="F5"
+                                            Content="{icon:MaterialIconExt Kind=Sync}"
+                                            ToolTip.Tip="Refresh current layer [F5]" />
 
 
-                        </StackPanel>
-                    </Grid>
-
-                    <Border Grid.Row="1"
-                            BorderBrush="{DynamicResource LightBackground}"
-                            BorderThickness="5">
-                        <uvtava:AdvancedImageBox Name="LayerImageBox"
-                                                 ConstrainZoomOutToFitLevel="True"
-                                                 GridCellSize="15"
-                                                 PanDownKey="S"
-                                                 PanLeftKey="A"
-                                                 PanRightKey="D"
-                                                 PanUpKey="W"
-                                                 PanWithArrows="False"
-                                                 ShowGrid="{Binding Settings.LayerPreview.ShowBackgroundGrid}"
-                                                 ScrollViewer.AllowAutoHide="False"
-                                                 ZoomTo100KeyGestures="{x:Null}"
-                                                 ZoomToFitKeyGestures="{x:Null}" />
-                    </Border>
-
-                    <Canvas Grid.Row="1"
-                            Margin="20"
-                            IsVisible="{Binding IsTooltipOverlayVisible}">
-                        <Border Padding="10"
-                                BorderBrush="Black"
-                                BorderThickness="1"
-                                CornerRadius="5">
-                            <Border.Background>
-                                <SolidColorBrush
-                                    Color="{Binding Settings.LayerPreview.TooltipOverlayBackgroundBrush}" />
-                            </Border.Background>
-                            <TextBlock Foreground="Black"
-                                       Text="{Binding TooltipOverlayText}" />
-                        </Border>
-                    </Canvas>
+                                    <SplitButton VerticalAlignment="Stretch"
+                                                 VerticalContentAlignment="Center"
+                                                 Command="{Binding SaveCurrentLayerImageCommand}"
+                                                 Content="{icon:MaterialIconExt Kind=ContentSave}"
+                                                 ToolTip.Tip="Save layer image to a file">
+                                        <SplitButton.Flyout>
+                                            <MenuFlyout>
+                                                <MenuItem Icon="{icon:MaterialIconExt Kind=Group}"
+                                                          Command="{Binding SaveCurrentROIImageCommand}"
+                                                          Header="Save the selected region (ROI)" />
+                                            </MenuFlyout>
+                                        </SplitButton.Flyout>
+                                    </SplitButton>
 
 
-                    <Grid Grid.Row="2"
-                          Margin="5"
-                          ColumnDefinitions="4*,2*"
-                          IsEnabled="{Binding IsFileLoaded}"
-                          RowDefinitions="Auto">
-                        <WrapPanel Grid.Column="0"
-                                   Orientation="Horizontal"
-                                   ItemSpacing="5" LineSpacing="5">
-                            <Button
-                                Content="{icon:MaterialIconTextExt Kind=GoogleDownasaur, Text={Binding LayerPixelCountStr}}"
-                                ToolTip.Tip="Number of pixels to cure on this layer image and the percentage of them against total lcd pixels and the total cured millimeters." />
+                                </StackPanel>
+                            </Grid>
 
-                            <Button Command="{Binding ZoomToFitPrintVolumeCommand}"
-                                    Content="{icon:MaterialIconTextExt Kind=SquareOutline, Text={Binding LayerBoundsStr}}"
-                                    ToolTip.Tip="Object volume bounds for current layer, position and size in pixels and millimeters. &#x0a;Click: go to region" />
+                            <Border Grid.Row="1"
+                                    BorderBrush="{DynamicResource LightBackground}"
+                                    BorderThickness="5">
+                                <uvtava:AdvancedImageBox Name="LayerImageBox"
+                                                         ConstrainZoomOutToFitLevel="True"
+                                                         GridCellSize="15"
+                                                         PanDownKey="S"
+                                                         PanLeftKey="A"
+                                                         PanRightKey="D"
+                                                         PanUpKey="W"
+                                                         PanWithArrows="False"
+                                                         ShowGrid="{Binding Settings.LayerPreview.ShowBackgroundGrid}"
+                                                         ScrollViewer.AllowAutoHide="False"
+                                                         ZoomTo100KeyGestures="{x:Null}"
+                                                         ZoomToFitKeyGestures="{x:Null}" />
+                            </Border>
 
-                            <SplitButton Command="{Binding ROIClickCommand}"
-                                         IsEnabled="{Binding IsFileLoaded}"
-                                         Content="{icon:MaterialIconTextExt Kind=SquareCircleOutline, Text={Binding LayerROIStr}}"
-                                         ToolTip.Tip="Region of interest selection over layer. &#x0a;(NS): Not selected &#x0a;Click: go to region &#x0a;ESC: Clear ROI &amp; Masks | ESC + Shift: Clear ROI">
-                                <SplitButton.Flyout>
-                                    <MenuFlyout Placement="Top">
-                                        <MenuItem Command="{Binding SelectLayerPositiveAreasMaskCommand}"
-                                                  Header="Mask: Select layer positive areas" />
-                                        <MenuItem Command="{Binding SelectLayerHollowAreasMaskCommand}"
-                                                  Header="Mask: Select layer hollow areas" />
-                                        <Separator />
-                                        <MenuItem Command="{Binding SelectModelVolumeRoiCommand}"
-                                                  Header="ROI: Select model volume" />
-                                        <MenuItem Command="{Binding SelectLayerVolumeRoiCommand}"
-                                                  Header="ROI: Select layer volume" />
-                                        <Separator />
-                                        <MenuItem Command="{Binding ClearMaskCommand}"
-                                                  Header="Clear Mask" />
-                                        <MenuItem Command="{Binding ClearROICommand}"
-                                                  Header="Clear ROI" />
-                                    </MenuFlyout>
-                                </SplitButton.Flyout>
-                            </SplitButton>
+                            <Canvas Grid.Row="1"
+                                    Margin="20"
+                                    IsVisible="{Binding IsTooltipOverlayVisible}">
+                                <Border Padding="10"
+                                        BorderBrush="Black"
+                                        BorderThickness="1"
+                                        CornerRadius="5">
+                                    <Border.Background>
+                                        <SolidColorBrush
+                                            Color="{Binding Settings.LayerPreview.TooltipOverlayBackgroundBrush}" />
+                                    </Border.Background>
+                                    <TextBlock Foreground="Black"
+                                               Text="{Binding TooltipOverlayText}" />
+                                </Border>
+                            </Canvas>
 
-                        </WrapPanel>
 
-                        <WrapPanel Grid.Column="1"
-                                   ItemSpacing="5" LineSpacing="5"
-                                   HorizontalAlignment="Right"
-                                   VerticalAlignment="Center"
-                                   Orientation="Horizontal">
-                            <Button Command="{Binding LayerPixelPickerClickedCommand}"
-                                    IsEnabled="{Binding LayerPixelPicker.IsSet}"
-                                    Content="{icon:MaterialIconTextExt Kind=MapMarkerOutline, Text={Binding LayerPixelPicker}}"
-                                    ToolTip.Tip="Pixel picker: &#x0a;Use CONTROL and over a pixel to get his position and brightness. &#x0a;Click: Center at position" />
+                            <Grid Grid.Row="2"
+                                  Margin="5"
+                                  ColumnDefinitions="4*,2*"
+                                  IsEnabled="{Binding IsFileLoaded}"
+                                  RowDefinitions="Auto">
+                                <WrapPanel Grid.Column="0"
+                                           Orientation="Horizontal"
+                                           ItemSpacing="5" LineSpacing="5">
+                                    <Button
+                                        Content="{icon:MaterialIconTextExt Kind=GoogleDownasaur, Text={Binding LayerPixelCountStr}}"
+                                        ToolTip.Tip="Number of pixels to cure on this layer image and the percentage of them against total lcd pixels and the total cured millimeters." />
 
-                            <Button Command="{Binding ZoomToNormalCommand}"
-                                    Content="{icon:MaterialIconTextExt Kind=MagnifyExpand, Text={Binding LayerZoomStr}}"
-                                    ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Layer image zoom level, use mouse scroll to zoom in/out into image. &#x0a;Click to set zoom to 100% &#x0a;Shift+Click to set zoom to defined value &#x0a;{0}+0 OR double right click to scale to fit'}" />
+                                    <Button Command="{Binding ZoomToFitPrintVolumeCommand}"
+                                            Content="{icon:MaterialIconTextExt Kind=SquareOutline, Text={Binding LayerBoundsStr}}"
+                                            ToolTip.Tip="Object volume bounds for current layer, position and size in pixels and millimeters. &#x0a;Click: go to region" />
 
-                            <Button Command="{Binding ZoomToFitSimpleCommand}"
-                                    Content="{icon:MaterialIconTextExt Kind=MagnifyScan, Text={Binding LayerResolutionStr}}"
-                                    ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Layer Resolution and display size. &#x0a;Click: Zoom to fit [{0}+Alt+0]'}" />
+                                    <SplitButton Command="{Binding ROIClickCommand}"
+                                                 IsEnabled="{Binding IsFileLoaded}"
+                                                 Content="{icon:MaterialIconTextExt Kind=SquareCircleOutline, Text={Binding LayerROIStr}}"
+                                                 ToolTip.Tip="Region of interest selection over layer. &#x0a;(NS): Not selected &#x0a;Click: go to region &#x0a;ESC: Clear ROI &amp; Masks | ESC + Shift: Clear ROI">
+                                        <SplitButton.Flyout>
+                                            <MenuFlyout Placement="Top">
+                                                <MenuItem Command="{Binding SelectLayerPositiveAreasMaskCommand}"
+                                                          Header="Mask: Select layer positive areas" />
+                                                <MenuItem Command="{Binding SelectLayerHollowAreasMaskCommand}"
+                                                          Header="Mask: Select layer hollow areas" />
+                                                <Separator />
+                                                <MenuItem Command="{Binding SelectModelVolumeRoiCommand}"
+                                                          Header="ROI: Select model volume" />
+                                                <MenuItem Command="{Binding SelectLayerVolumeRoiCommand}"
+                                                          Header="ROI: Select layer volume" />
+                                                <Separator />
+                                                <MenuItem Command="{Binding ClearMaskCommand}"
+                                                          Header="Clear Mask" />
+                                                <MenuItem Command="{Binding ClearROICommand}"
+                                                          Header="Clear ROI" />
+                                            </MenuFlyout>
+                                        </SplitButton.Flyout>
+                                    </SplitButton>
 
-                            <TextBlock Margin="5,0,0,0"
-                                       VerticalAlignment="Center"
-                                       Text="{Binding ShowLayerRenderMs, StringFormat={}{0}ms}"
-                                       ToolTip.Tip="Layer preview computation time." />
-                        </WrapPanel>
-                    </Grid>
-                </Grid>
+                                </WrapPanel>
+
+                                <WrapPanel Grid.Column="1"
+                                           ItemSpacing="5" LineSpacing="5"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center"
+                                           Orientation="Horizontal">
+                                    <Button Command="{Binding LayerPixelPickerClickedCommand}"
+                                            IsEnabled="{Binding LayerPixelPicker.IsSet}"
+                                            Content="{icon:MaterialIconTextExt Kind=MapMarkerOutline, Text={Binding LayerPixelPicker}}"
+                                            ToolTip.Tip="Pixel picker: &#x0a;Use CONTROL and over a pixel to get his position and brightness. &#x0a;Click: Center at position" />
+
+                                    <Button Command="{Binding ZoomToNormalCommand}"
+                                            Content="{icon:MaterialIconTextExt Kind=MagnifyExpand, Text={Binding LayerZoomStr}}"
+                                            ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Layer image zoom level, use mouse scroll to zoom in/out into image. &#x0a;Click to set zoom to 100% &#x0a;Shift+Click to set zoom to defined value &#x0a;{0}+0 OR double right click to scale to fit'}" />
+
+                                    <Button Command="{Binding ZoomToFitSimpleCommand}"
+                                            Content="{icon:MaterialIconTextExt Kind=MagnifyScan, Text={Binding LayerResolutionStr}}"
+                                            ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Layer Resolution and display size. &#x0a;Click: Zoom to fit [{0}+Alt+0]'}" />
+
+                                    <TextBlock Margin="5,0,0,0"
+                                               VerticalAlignment="Center"
+                                               Text="{Binding ShowLayerRenderMs, StringFormat={}{0}ms}"
+                                               ToolTip.Tip="Layer preview computation time." />
+                                </WrapPanel>
+                            </Grid>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem>
+                        <TabItem.Header>
+                            <icon:MaterialIconText VerticalAlignment="Center"
+                                                   FontSize="18"
+                                                   Kind="CubeOutline"
+                                                   Text="3D Preview" />
+                        </TabItem.Header>
+                        <Grid RowDefinitions="Auto,*,Auto">
+                            <WrapPanel Grid.Row="0"
+                                       Margin="0,5"
+                                       ItemSpacing="5"
+                                       LineSpacing="5">
+                                <Button Command="{Binding RebuildLayer3DPreviewCommand}"
+                                        Content="{Binding Layer3DBuildButtonText}"
+                                        IsEnabled="{Binding CanBuildLayer3DPreview}"
+                                        ToolTip.Tip="Generate and cache a 3D model from the current slices." />
+
+                                <ComboBox Width="130"
+                                          ItemsSource="{Binding Layer3DQualityOptions}"
+                                          SelectedItem="{Binding SelectedLayer3DQuality}"
+                                          ToolTip.Tip="Preview detail. Higher detail takes more time and memory." />
+
+                                <ToggleButton Content="Up to current layer"
+                                              IsChecked="{Binding Layer3DClipToCurrentLayer}"
+                                              IsEnabled="{Binding HasLayer3DMesh}"
+                                              ToolTip.Tip="Clip the cached model at the selected layer without rebuilding it." />
+
+                                <ToggleSwitch IsChecked="{Binding Settings.LayerPreview.Preview3DOrthographic}"
+                                              IsEnabled="{Binding HasLayer3DMesh}"
+                                              OffContent="Perspective"
+                                              OnContent="Orthographic"
+                                              ToolTip.Tip="Switch between perspective and orthographic projection." />
+
+                                <Button Command="{Binding ResetLayer3DCameraCommand}"
+                                        Content="Reset camera"
+                                        IsEnabled="{Binding HasLayer3DMesh}"
+                                        ToolTip.Tip="Fit the model and reset rotation and panning." />
+
+                                <TextBlock Margin="8,0,0,0"
+                                           VerticalAlignment="Center"
+                                           Foreground="Orange"
+                                           IsVisible="{Binding IsLayer3DPreviewStale}"
+                                           Text="Cached preview is stale" />
+                            </WrapPanel>
+
+                            <Border Grid.Row="1"
+                                    BorderBrush="{DynamicResource LightBackground}"
+                                    BorderThickness="5"
+                                    ClipToBounds="True">
+                                <Grid>
+                                    <controls:LayerModel3DView Name="LayerModel3DView"
+                                                               IsOrthographic="{Binding Settings.LayerPreview.Preview3DOrthographic}"
+                                                               VoxelColor="{Binding Settings.LayerPreview.Preview3DVoxelBrush}" />
+
+                                    <controls:LayerModelOrientationCube Name="LayerModelOrientationCube"
+                                                                        Width="112"
+                                                                        Height="112"
+                                                                        Margin="12"
+                                                                        HorizontalAlignment="Right"
+                                                                        VerticalAlignment="Top"
+                                                                        ToolTip.Tip="Drag to orbit. Click a face, edge, or corner to align the view.">
+                                        <controls:LayerModelOrientationCube.IsVisible>
+                                            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                <Binding Path="HasLayer3DMesh" />
+                                                <Binding Path="IsLayer3DRendererAvailable" />
+                                            </MultiBinding>
+                                        </controls:LayerModelOrientationCube.IsVisible>
+                                    </controls:LayerModelOrientationCube>
+
+                                    <Border HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            MaxWidth="560"
+                                            Padding="20"
+                                            Background="#CC20242C"
+                                            CornerRadius="6"
+                                            IsHitTestVisible="False"
+                                            IsVisible="{Binding ShowLayer3DStatusOverlay}">
+                                        <TextBlock HorizontalAlignment="Center"
+                                                   Text="{Binding Layer3DStatus}"
+                                                   TextAlignment="Center"
+                                                   TextWrapping="Wrap" />
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <TextBlock Grid.Row="2"
+                                       Margin="5"
+                                       HorizontalAlignment="Center"
+                                       Text="{Binding Layer3DStatus}"
+                                       TextAlignment="Center" />
+                        </Grid>
+                    </TabItem>
+                </TabControl>
             </suki:GlassCard>
 
 

@@ -558,6 +558,7 @@ public partial class MainWindow
 
             _pendingPixelStroke = null;
             InvalidateLayerNavigation();
+            UpdateLayer3DClip();
         }
     }
 

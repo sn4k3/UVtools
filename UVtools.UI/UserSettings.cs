@@ -23,6 +23,7 @@ using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
+using UVtools.Core.Voxel;
 using ZLinq;
 using Color = UVtools.UI.Structures.Color;
 
@@ -36,6 +37,41 @@ public partial class UserSettings : ObservableObject
 
     #endregion
 
+    #region Constructor
+
+    private UserSettings()
+    {
+        if (OperatingSystem.IsMacOS()) // Fix macOS scaling information
+        {
+            var monjave = new Version(10, 14, 6);
+            if (Environment.OSVersion.Version.CompareTo(monjave) >= 0)
+            {
+                General.WindowsTakeIntoAccountScreenScaling = false;
+            }
+        }
+    }
+
+    #endregion
+
+    #region Methods
+
+    public UserSettings Clone()
+    {
+        /*var clone = MemberwiseClone() as UserSettings;
+        clone.General = General.Clone();
+        clone.LayerPreview = LayerPreview.Clone();
+        clone.Issues = Issues.Clone();
+        clone.PixelEditor = PixelEditor.Clone();
+        clone.LayerRepair = LayerRepair.Clone();
+        clone.Automations = Automations.Clone();
+        clone.Network = Network.Clone();
+        return clone;*/
+
+        return this.CloneByXmlSerialization();
+    }
+
+    #endregion
+
     #region Sub classes
 
     #region General
@@ -43,6 +79,10 @@ public partial class UserSettings : ObservableObject
     public partial class GeneralUserSettings : ObservableObject
     {
         public const byte LockedFilesMaxOpenCounter = 10;
+
+        public GeneralUserSettings()
+        {
+        }
 
         [ObservableProperty]
         public partial App.ApplicationTheme Theme { get; set; } = App.ApplicationTheme.FluentSystem;
@@ -165,10 +205,6 @@ public partial class UserSettings : ObservableObject
         [ObservableProperty] public partial RangeObservableCollection<MappedProcess> SendToProcess { get; set; } = [];
 
         [ObservableProperty] public partial ushort LockedFilesOpenCounter { get; set; }
-
-        public GeneralUserSettings()
-        {
-        }
 
         protected override void OnPropertyChanged(PropertyChangedEventArgs e)
         {
@@ -515,6 +551,22 @@ public partial class UserSettings : ObservableObject
         [ObservableProperty] public partial bool ShowBackgroundGrid { get; set; }
 
         [ObservableProperty] public partial ushort LayerSliderDebounce { get; set; }
+
+        [ObservableProperty]
+        public partial VoxelPreviewQuality Preview3DQuality { get; set; } = VoxelPreviewQuality.Balanced;
+
+        [ObservableProperty] public partial bool Preview3DOrthographic { get; set; }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Preview3DVoxelBrush))]
+        public partial Color Preview3DVoxelColor { get; set; } = new(255, 51, 184, 235);
+
+        [XmlIgnore]
+        public Avalonia.Media.Color Preview3DVoxelBrush
+        {
+            get => Preview3DVoxelColor.ToAvalonia();
+            set => Preview3DVoxelColor = new Color(value);
+        }
 
         public LayerPreviewUserSettings Clone()
         {
@@ -1024,22 +1076,6 @@ public partial class UserSettings : ObservableObject
 
     #endregion
 
-    #region Constructor
-
-    private UserSettings()
-    {
-        if (OperatingSystem.IsMacOS()) // Fix macOS scaling information
-        {
-            var monjave = new Version(10, 14, 6);
-            if (Environment.OSVersion.Version.CompareTo(monjave) >= 0)
-            {
-                General.WindowsTakeIntoAccountScreenScaling = false;
-            }
-        }
-    }
-
-    #endregion
-
     #region Static Methods
 
     /// <summary>
@@ -1426,25 +1462,6 @@ public partial class UserSettings : ObservableObject
         Instance.Automations,
         Instance.Network
     ];
-
-    #endregion
-
-    #region Methods
-
-    public UserSettings Clone()
-    {
-        /*var clone = MemberwiseClone() as UserSettings;
-        clone.General = General.Clone();
-        clone.LayerPreview = LayerPreview.Clone();
-        clone.Issues = Issues.Clone();
-        clone.PixelEditor = PixelEditor.Clone();
-        clone.LayerRepair = LayerRepair.Clone();
-        clone.Automations = Automations.Clone();
-        clone.Network = Network.Clone();
-        return clone;*/
-
-        return this.CloneByXmlSerialization();
-    }
 
     #endregion
 }

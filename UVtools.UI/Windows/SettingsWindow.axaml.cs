@@ -1,17 +1,18 @@
-﻿using Avalonia.Platform.Storage;
-using CommunityToolkit.Mvvm.Input;
-using SukiUI.MessageBox;
-using SukiUI.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.Input;
+using SukiUI.MessageBox;
+using SukiUI.Models;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
+using UVtools.Core.Voxel;
 using UVtools.UI.Controls;
 using UVtools.UI.Extensions;
 using ZLinq;
@@ -23,10 +24,39 @@ public partial class SettingsWindow : GenericWindow
     private double _scrollViewerMaxHeight;
     private int _selectedTabIndex;
 
+    public SettingsWindow()
+    {
+        Title += $" [v{About.VersionString}]";
+        SettingsBackup = UserSettings.Instance.Clone();
+
+        var fileFormats = new List<string>
+        {
+            "All slicer files"
+        };
+        fileFormats.AddRange(FileFormat.AvailableFormats
+            .SelectMany(fileFormat => fileFormat.FileExtensions,
+                (fileFormat, extension) => new { fileFormat = fileFormat, extension })
+            .Where(obj => obj.extension.IsVisibleOnFileFilters)
+            .Select(obj => $"{obj.extension.Description} (.{obj.extension.Extension})"));
+        FileOpenDialogFilters = fileFormats.ToArray();
+
+
+        // Derive strings for the zoom lock and crosshair fade combo-boxes from the
+        // ZoomLevels constant array, and add those strings to the comboboxes.
+        ZoomRanges = AppSettings.ZoomLevels.AsValueEnumerable().Skip(AppSettings.ZoomLevelSkipCount)
+            .Select(s => Convert.ToString(s / 100, CultureInfo.InvariantCulture) + "x").ToArray();
+
+        ScrollViewerMaxHeight = this.GetScreenWorkingArea().Height - Settings.General.WindowsMaxHeightScreenRatio;
+
+        DataContext = this;
+        InitializeComponent();
+    }
+
     public UserSettings SettingsBackup { get; }
 
     public string[] FileOpenDialogFilters { get; }
     public string[] ZoomRanges { get; }
+    public VoxelPreviewQuality[] VoxelPreviewQualityOptions { get; } = Enum.GetValues<VoxelPreviewQuality>();
 
     public int SelectedTabIndex
     {
@@ -38,33 +68,6 @@ public partial class SettingsWindow : GenericWindow
     {
         get => _scrollViewerMaxHeight;
         set => RaiseAndSetIfChanged(ref _scrollViewerMaxHeight, value);
-    }
-
-    public SettingsWindow()
-    {
-        Title += $" [v{About.VersionString}]";
-        SettingsBackup = UserSettings.Instance.Clone();
-
-        var fileFormats = new List<string>
-        {
-            "All slicer files"
-        };
-        fileFormats.AddRange(FileFormat.AvailableFormats
-            .SelectMany(fileFormat => fileFormat.FileExtensions, (fileFormat, extension) => new { fileFormat = fileFormat, extension })
-            .Where(obj => obj.extension.IsVisibleOnFileFilters)
-            .Select(obj => $"{obj.extension.Description} (.{obj.extension.Extension})"));
-        FileOpenDialogFilters = fileFormats.ToArray();
-
-
-        // Derive strings for the zoom lock and crosshair fade combo-boxes from the
-        // ZoomLevels constant array, and add those strings to the comboboxes.
-        ZoomRanges = AppSettings.ZoomLevels.AsValueEnumerable().Skip(AppSettings.ZoomLevelSkipCount).Select(
-            s => Convert.ToString(s / 100, CultureInfo.InvariantCulture) + "x").ToArray();
-
-        ScrollViewerMaxHeight = this.GetScreenWorkingArea().Height - Settings.General.WindowsMaxHeightScreenRatio;
-
-        DataContext = this;
-        InitializeComponent();
     }
 
     protected override void OnClosed(EventArgs e)
@@ -120,7 +123,8 @@ public partial class SettingsWindow : GenericWindow
     public async Task GeneralOpenFolderField(object fieldObj)
     {
         var field = fieldObj.ToString()!;
-        foreach (var propertyInfo in Settings.General.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        foreach (var propertyInfo in Settings.General.GetType()
+                     .GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
             if (propertyInfo.Name != field) continue;
             var folders = await OpenFolderPickerAsync();
@@ -128,7 +132,6 @@ public partial class SettingsWindow : GenericWindow
             propertyInfo.SetValue(Settings.General, folders[0].TryGetLocalPath());
             return;
         }
-
     }
 
     public void GeneralClearField(object fieldObj)
@@ -141,13 +144,13 @@ public partial class SettingsWindow : GenericWindow
             propertyInfo.SetValue(Settings.General, null);
             return;
         }
-
     }
 
     public async Task AutomationsOpenFileField(object fieldObj)
     {
         var field = fieldObj.ToString()!;
-        foreach (var propertyInfo in Settings.Automations.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        foreach (var propertyInfo in Settings.Automations.GetType()
+                     .GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
             if (propertyInfo.Name != field) continue;
             var folders = await OpenFilePickerAsync(AvaloniaStatic.ScriptsFileFilter);
@@ -155,7 +158,6 @@ public partial class SettingsWindow : GenericWindow
             propertyInfo.SetValue(Settings.Automations, folders[0].TryGetLocalPath());
             return;
         }
-
     }
 
 
@@ -200,7 +202,8 @@ public partial class SettingsWindow : GenericWindow
                 $"Are you sure you want to remove the {SendToCustomLocationsGrid.SelectedItems.Count} selected entries?") !=
             SukiMessageBoxResult.Yes) return;
 
-        Settings.General.SendToCustomLocations.RemoveRange(SendToCustomLocationsGrid.SelectedItems.Cast<MappedDevice>());
+        Settings.General.SendToCustomLocations.RemoveRange(SendToCustomLocationsGrid.SelectedItems
+            .Cast<MappedDevice>());
     }
 
     public async Task SendToAddProcess()
@@ -231,7 +234,8 @@ public partial class SettingsWindow : GenericWindow
 
     public async Task AddNetworkRemotePrinter()
     {
-        var result = await this.MessageBoxQuestion("Are you sure you want to add a new remote printer", "Add new remote printer?");
+        var result = await this.MessageBoxQuestion("Are you sure you want to add a new remote printer",
+            "Add new remote printer?");
         if (result != SukiMessageBoxResult.Yes) return;
 
         var remotePrinter = new RemotePrinter
@@ -255,8 +259,9 @@ public partial class SettingsWindow : GenericWindow
     public async Task DuplicateSelectedNetworkRemotePrinter()
     {
         if (NetworkRemotePrinterComboBox.SelectedItem is not RemotePrinter remotePrinter) return;
-        var result = await this.MessageBoxQuestion("Are you sure you want to duplicate the following remote printer?\n" +
-                                                   remotePrinter, "Duplicate remote printer?");
+        var result = await this.MessageBoxQuestion(
+            "Are you sure you want to duplicate the following remote printer?\n" +
+            remotePrinter, "Duplicate remote printer?");
         if (result != SukiMessageBoxResult.Yes) return;
         var clone = remotePrinter.Clone();
         clone.Name += " Duplicated";
@@ -266,7 +271,8 @@ public partial class SettingsWindow : GenericWindow
 
     public async Task OnClickResetAllDefaults()
     {
-        var result = await this.MessageBoxQuestion("Are you sure you want to reset all settings to the default values?", "Reset settings?");
+        var result = await this.MessageBoxQuestion("Are you sure you want to reset all settings to the default values?",
+            "Reset settings?");
         if (result != SukiMessageBoxResult.Yes) return;
         UserSettings.Reset();
         ResetDataContext();

@@ -20,7 +20,6 @@ using Emgu.CV.CvEnum;
 using EmguExtensions;
 using StageKit.Extensions;
 using UVtools.Core.Compressors;
-using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 
@@ -485,6 +484,7 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
         set
         {
             if (!SetProperty(ref _index, value)) return;
+            SlicerFile.NotifyModelGeometryChanged();
             OnPropertyChanged(nameof(Number));
         }
     }
@@ -504,6 +504,7 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
         {
             //if (value < 0) throw new ArgumentOutOfRangeException(nameof(PositionZ), "Value can't be negative");
             if (!SetProperty(ref _positionZ, RoundHeight(value))) return;
+            SlicerFile.NotifyModelGeometryChanged();
             OnPropertyChanged(nameof(RelativePositionZ));
             OnPropertyChanged(nameof(LayerHeight));
             //MaterialMilliliters = -1; // Recalculate
@@ -945,6 +946,7 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     private void InvalidateImage()
     {
         IsModified = true;
+        SlicerFile.NotifyModelGeometryChanged();
         SlicerFile.BoundingRectangle = Rectangle.Empty;
         _contours?.Dispose();
         _contours = null;

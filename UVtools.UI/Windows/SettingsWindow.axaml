@@ -1394,6 +1394,52 @@
                         </suki:GlassCard>
 
                         <suki:GlassCard Classes="CardNoTop">
+                            <suki:GroupBox Header="3D preview">
+                                <Grid ColumnDefinitions="Auto,160,Auto"
+                                      RowDefinitions="Auto,10,Auto,10,Auto">
+                                    <TextBlock Grid.Row="0"
+                                               Grid.Column="0"
+                                               VerticalAlignment="Center"
+                                               Text="Detail:" />
+                                    <ComboBox Grid.Row="0"
+                                              Grid.Column="1"
+                                              Margin="10,0,0,0"
+                                              VerticalAlignment="Center"
+                                              ItemsSource="{Binding VoxelPreviewQualityOptions}"
+                                              SelectedItem="{Binding Settings.LayerPreview.Preview3DQuality}"
+                                              ToolTip.Tip="Higher detail takes more time and memory when rebuilding the 3D model." />
+
+                                    <TextBlock Grid.Row="2"
+                                               Grid.Column="0"
+                                               VerticalAlignment="Center"
+                                               Text="Projection:" />
+                                    <ToggleSwitch Grid.Row="2"
+                                                  Grid.Column="1"
+                                                  Grid.ColumnSpan="2"
+                                                  Margin="10,0,0,0"
+                                                  IsChecked="{Binding Settings.LayerPreview.Preview3DOrthographic}"
+                                                  OffContent="Perspective"
+                                                  OnContent="Orthographic" />
+
+                                    <TextBlock Grid.Row="4"
+                                               Grid.Column="0"
+                                               VerticalAlignment="Center"
+                                               Text="Voxel color:" />
+                                    <ColorPicker Grid.Row="4"
+                                                 Grid.Column="1"
+                                                 Margin="10,0,0,0"
+                                                 VerticalAlignment="Center"
+                                                 Color="{Binding Settings.LayerPreview.Preview3DVoxelBrush}" />
+                                    <TextBlock Grid.Row="4"
+                                               Grid.Column="2"
+                                               Margin="10,0,0,0"
+                                               VerticalAlignment="Center"
+                                               Text="Applies immediately to the cached model." />
+                                </Grid>
+                            </suki:GroupBox>
+                        </suki:GlassCard>
+
+                        <suki:GlassCard Classes="CardNoTop">
                             <suki:GroupBox Header="Miscellaneous">
 
                                 <StackPanel Orientation="Vertical"
