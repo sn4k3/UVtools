@@ -1481,7 +1481,7 @@
                                     </Grid>
 
                                     <Grid ColumnDefinitions="Auto,Auto"
-                                          RowDefinitions="Auto,Auto"
+                                          RowDefinitions="Auto,Auto,Auto"
                                           ColumnSpacing="10"
                                           RowSpacing="10">
                                         <TextBlock Grid.Row="0"
@@ -1509,7 +1509,16 @@
                                                       IsChecked="{Binding Settings.Layer3DPreview.UseOthographicProjection}"
                                                       OffContent="Perspective"
                                                       OnContent="Orthographic" />
-                                        
+
+                                        <TextBlock Grid.Row="2"
+                                                   Grid.Column="0"
+                                                   VerticalAlignment="Center"
+                                                   Text="Build on file open:" />
+                                        <ToggleSwitch Grid.Row="2"
+                                                      Grid.Column="1"
+                                                      Margin="10,0,0,0"
+                                                      IsChecked="{Binding Settings.Layer3DPreview.Build3DAfterFileOpen}"
+                                                      ToolTip.Tip="Automatically builds the 3D preview model after opening a file." />
                                     </Grid>
                                 </StackPanel>
                             </suki:GroupBox>

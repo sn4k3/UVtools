@@ -565,6 +565,9 @@ public partial class UserSettings : ObservableObject
     public sealed partial class Layer3DPreviewUserSettings : ObservableObject
     {
         [ObservableProperty]
+        public partial bool Build3DAfterFileOpen { get; set; } = false;
+        
+        [ObservableProperty]
         public partial VoxelPreviewQuality Quality { get; set; } = VoxelPreviewQuality.Balanced;
 
         [ObservableProperty]
@@ -616,13 +619,16 @@ public partial class UserSettings : ObservableObject
         public partial bool ShowBoundingBox { get; set; } = false;
 
         [ObservableProperty]
-        public partial bool ShowModelStats { get; set; } = false;
+        public partial bool ShowModelStats { get; set; } = true;
 
         [ObservableProperty]
-        public partial bool ShowCenterOfMass { get; set; } = false;
+        public partial bool ShowCenterOfMass { get; set; } = true;
 
         [ObservableProperty]
-        public partial bool ShowPeelCurve { get; set; } = false;
+        public partial bool ShowPeelCurve { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool ShowMeasure { get; set; } = false;
 
         [ObservableProperty]
         public partial VoxelPreviewCutawayAxis CutawayAxis { get; set; } = VoxelPreviewCutawayAxis.Off;
@@ -632,15 +638,6 @@ public partial class UserSettings : ObservableObject
 
         [ObservableProperty]
         public partial bool CutawayInvert { get; set; } = false;
-
-        [ObservableProperty]
-        public partial float ResinCostPerLiter { get; set; } = 35f;
-
-        [ObservableProperty]
-        public partial int PrintSimulationSpeed { get; set; } = 1;
-
-        [ObservableProperty]
-        public partial bool ShowTsmcCurve { get; set; } = true;
 
         public Layer3DPreviewUserSettings Clone()
         {

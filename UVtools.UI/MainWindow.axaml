@@ -2413,11 +2413,19 @@
                                            Grid.Column="0"
                                            ItemSpacing="5"
                                            LineSpacing="5">
-                                    <Button Command="{Binding RebuildLayer3DPreviewCommand}"
-                                            Content="{Binding Layer3DBuildButtonText}"
+                                    <SplitButton Command="{Binding RebuildLayer3DPreviewCommand}"
+                                            Content="{icon:MaterialIconTextExt Kind=Refresh, Text='{Binding Layer3DBuildButtonText}'}"
                                             IsEnabled="{Binding CanBuildLayer3DPreview}"
                                             VerticalAlignment="Stretch"
-                                            ToolTip.Tip="Generate and cache a 3D model from the current slices." />
+                                            ToolTip.Tip="Generate and cache a 3D model from the current slices. (Right-click for options)">
+                                        <SplitButton.Flyout>
+                                            <MenuFlyout>
+                                                <MenuItem Header="Build 3D on file open"
+                                                          ToggleType="CheckBox"
+                                                          IsChecked="{Binding Settings.Layer3DPreview.Build3DAfterFileOpen, Mode=TwoWay}" />
+                                            </MenuFlyout>
+                                        </SplitButton.Flyout>
+                                    </SplitButton>
 
                                     <ComboBox Width="130"
                                               ItemsSource="{Binding Layer3DQualityOptions}"
@@ -2524,7 +2532,7 @@
                                                   VerticalAlignment="Stretch"
                                                   ToolTip.Tip="Toggle Center of Mass and first-layer contact stability [K]." />
 
-                                    <ToggleButton IsChecked="{Binding #LayerModel3DView.IsMeasureMode}"
+                                    <ToggleButton IsChecked="{Binding Settings.Layer3DPreview.ShowMeasure, Mode=TwoWay}"
                                                   IsEnabled="{Binding HasLayer3DMesh}"
                                                   Content="{icon:MaterialIconExt Kind=Ruler, Classes='Fill'}"
                                                   VerticalAlignment="Stretch"
@@ -2612,10 +2620,11 @@
                                                                ClipMode="{Binding Layer3DClipMode}"
                                                                ShowBuildPlateGrid="{Binding Settings.Layer3DPreview.ShowBuildPlateGrid}"
                                                                GhostClippedModel="{Binding Settings.Layer3DPreview.GhostClippedModel}"
-                                                               ShowBoundingBox="{Binding Settings.Layer3DPreview.ShowBoundingBox}"
-                                                               ShowModelStats="{Binding Settings.Layer3DPreview.ShowModelStats}"
-                                                               ShowCenterOfMass="{Binding Settings.Layer3DPreview.ShowCenterOfMass}"
-                                                               ShowPeelCurve="{Binding Settings.Layer3DPreview.ShowPeelCurve}"
+                                                               ShowBoundingBox="{Binding Settings.Layer3DPreview.ShowBoundingBox, Mode=TwoWay}"
+                                                               ShowModelStats="{Binding Settings.Layer3DPreview.ShowModelStats, Mode=TwoWay}"
+                                                               ShowCenterOfMass="{Binding Settings.Layer3DPreview.ShowCenterOfMass, Mode=TwoWay}"
+                                                               ShowPeelCurve="{Binding Settings.Layer3DPreview.ShowPeelCurve, Mode=TwoWay}"
+                                                               IsMeasureMode="{Binding Settings.Layer3DPreview.ShowMeasure, Mode=TwoWay}"
                                                                CutawayAxis="{Binding Settings.Layer3DPreview.CutawayAxis}"
                                                                CutawayPosition="{Binding Settings.Layer3DPreview.CutawayPosition}"
                                                                CutawayInvert="{Binding Settings.Layer3DPreview.CutawayInvert}"
@@ -2656,8 +2665,7 @@
                                     <StackPanel HorizontalAlignment="Left"
                                                 VerticalAlignment="Top"
                                                 Margin="14"
-                                                Spacing="8"
-                                                IsHitTestVisible="False">
+                                                Spacing="8">
                                         <!-- Model Dimensions & Bounding Box HUD Overlay -->
                                         <Border Padding="10,6"
                                                 Background="#E0161920"
@@ -2670,13 +2678,14 @@
                                                     <Binding Path="#LayerModel3DView.ShowBoundingBox" />
                                                 </MultiBinding>
                                             </Border.IsVisible>
-                                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <icon:MaterialIcon Kind="CubeOutline"
+                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                                <icon:MaterialIcon Grid.Column="0"
+                                                                   Kind="CubeOutline"
                                                                    Width="22"
                                                                    Height="22"
                                                                    Foreground="#00D2FF"
                                                                    VerticalAlignment="Center" />
-                                                <StackPanel VerticalAlignment="Center" Spacing="1">
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
                                                     <TextBlock FontSize="10"
                                                                FontWeight="SemiBold"
                                                                Foreground="#A0A8B8"
@@ -2686,7 +2695,18 @@
                                                                Foreground="White"
                                                                Text="{Binding #LayerModel3DView.ModelDimensionsText}" />
                                                 </StackPanel>
-                                            </StackPanel>
+                                                <Button Grid.Column="2"
+                                                        Margin="6,0,0,0"
+                                                        Padding="4"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        VerticalAlignment="Center"
+                                                        Command="{Binding ToggleBoundingBoxCommand}"
+                                                        ToolTip.Tip="Close Bounding Box [B]">
+                                                    <icon:MaterialIcon Kind="Close" Width="16" Height="16"
+                                                                       Foreground="#8B949E" />
+                                                </Button>
+                                            </Grid>
                                         </Border>
 
                                         <!-- Model Volume, Weight & Resin Cost HUD Overlay -->
@@ -2701,13 +2721,14 @@
                                                     <Binding Path="#LayerModel3DView.ShowModelStats" />
                                                 </MultiBinding>
                                             </Border.IsVisible>
-                                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <icon:MaterialIcon Kind="ScaleBalance"
+                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                                <icon:MaterialIcon Grid.Column="0"
+                                                                   Kind="ScaleBalance"
                                                                    Width="22"
                                                                    Height="22"
                                                                    Foreground="#FFB300"
                                                                    VerticalAlignment="Center" />
-                                                <StackPanel VerticalAlignment="Center" Spacing="1">
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
                                                     <TextBlock FontSize="10"
                                                                FontWeight="SemiBold"
                                                                Foreground="#A0A8B8"
@@ -2717,7 +2738,18 @@
                                                                Foreground="White"
                                                                Text="{Binding #LayerModel3DView.ModelStatsText}" />
                                                 </StackPanel>
-                                            </StackPanel>
+                                                <Button Grid.Column="2"
+                                                        Margin="6,0,0,0"
+                                                        Padding="4"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        VerticalAlignment="Center"
+                                                        Command="{Binding ToggleModelStatsCommand}"
+                                                        ToolTip.Tip="Close Model Estimates [V]">
+                                                    <icon:MaterialIcon Kind="Close" Width="16" Height="16"
+                                                                       Foreground="#8B949E" />
+                                                </Button>
+                                            </Grid>
                                         </Border>
                                     </StackPanel>
 
@@ -2725,8 +2757,7 @@
                                     <StackPanel HorizontalAlignment="Left"
                                                 VerticalAlignment="Bottom"
                                                 Margin="14"
-                                                Spacing="8"
-                                                IsHitTestVisible="False">
+                                                Spacing="8">
                                         <!-- Center of Mass & First-Layer Contact HUD Overlay -->
                                         <Border Padding="10,6"
                                                 Background="#E0161920"
@@ -2739,13 +2770,14 @@
                                                     <Binding Path="#LayerModel3DView.ShowCenterOfMass" />
                                                 </MultiBinding>
                                             </Border.IsVisible>
-                                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <icon:MaterialIcon Kind="CrosshairsGps"
+                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                                <icon:MaterialIcon Grid.Column="0"
+                                                                   Kind="CrosshairsGps"
                                                                    Width="22"
                                                                    Height="22"
                                                                    Foreground="#FFD700"
                                                                    VerticalAlignment="Center" />
-                                                <StackPanel VerticalAlignment="Center" Spacing="1">
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
                                                     <TextBlock FontSize="10"
                                                                FontWeight="SemiBold"
                                                                Foreground="#A0A8B8"
@@ -2755,7 +2787,18 @@
                                                                Foreground="White"
                                                                Text="{Binding #LayerModel3DView.CenterOfMassText}" />
                                                 </StackPanel>
-                                            </StackPanel>
+                                                <Button Grid.Column="2"
+                                                        Margin="6,0,0,0"
+                                                        Padding="4"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        VerticalAlignment="Center"
+                                                        Command="{Binding ToggleCenterOfMassCommand}"
+                                                        ToolTip.Tip="Close Center of Mass [K]">
+                                                    <icon:MaterialIcon Kind="Close" Width="16" Height="16"
+                                                                       Foreground="#8B949E" />
+                                                </Button>
+                                            </Grid>
                                         </Border>
 
                                         <!-- Measure tool HUD overlay -->
@@ -2770,18 +2813,35 @@
                                                     <Binding Path="#LayerModel3DView.IsMeasureMode" />
                                                 </MultiBinding>
                                             </Border.IsVisible>
-                                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <icon:MaterialIcon Kind="Ruler"
+                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                                <icon:MaterialIcon Grid.Column="0"
+                                                                   Kind="Ruler"
                                                                    Width="20"
                                                                    Height="20"
                                                                    Foreground="#FF5FA2"
                                                                    VerticalAlignment="Center" />
-                                                <TextBlock VerticalAlignment="Center"
-                                                           FontSize="13"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="White"
-                                                           Text="{Binding #LayerModel3DView.MeasureDistanceText}" />
-                                            </StackPanel>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                                                    <TextBlock FontSize="10"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="#FFA8D0"
+                                                               Text="DISTANCE MEASUREMENT" />
+                                                    <TextBlock FontSize="13"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="White"
+                                                               Text="{Binding #LayerModel3DView.MeasureDistanceText}" />
+                                                </StackPanel>
+                                                <Button Grid.Column="2"
+                                                        Margin="6,0,0,0"
+                                                        Padding="4"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        VerticalAlignment="Center"
+                                                        Command="{Binding ToggleMeasureModeCommand}"
+                                                        ToolTip.Tip="Close Measure Tool [M]">
+                                                    <icon:MaterialIcon Kind="Close" Width="16" Height="16"
+                                                                       Foreground="#8B949E" />
+                                                </Button>
+                                            </Grid>
                                         </Border>
                                     </StackPanel>
 

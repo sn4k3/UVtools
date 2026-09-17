@@ -684,7 +684,10 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         GhostClippedModelProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
         ShowBoundingBoxProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
-            control.RequestNextFrameRendering());
+        {
+            UserSettings.Instance.Layer3DPreview.ShowBoundingBox = control.ShowBoundingBox;
+            control.RequestNextFrameRendering();
+        });
         IsTurntableActiveProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
         {
             if (control.IsTurntableActive)
@@ -698,6 +701,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         });
         IsMeasureModeProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
         {
+            UserSettings.Instance.Layer3DPreview.ShowMeasure = control.IsMeasureMode;
             if (!control.IsMeasureMode)
             {
                 control.ClearMeasure();
@@ -714,10 +718,12 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             control.RequestNextFrameRendering());
         ShowModelStatsProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
         {
+            UserSettings.Instance.Layer3DPreview.ShowModelStats = control.ShowModelStats;
             control.RequestNextFrameRendering();
         });
         ShowCenterOfMassProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
         {
+            UserSettings.Instance.Layer3DPreview.ShowCenterOfMass = control.ShowCenterOfMass;
             control._needsComUpload = true;
             control.RequestNextFrameRendering();
         });
@@ -3367,6 +3373,7 @@ private unsafe void DrawFocusedBoundingBox()
                 return true;
             case Key.M:
                 IsMeasureMode = !IsMeasureMode;
+                UserSettings.Instance.Layer3DPreview.ShowMeasure = IsMeasureMode;
                 return true;
             case Key.Escape when IsMeasureMode:
                 ClearMeasure();

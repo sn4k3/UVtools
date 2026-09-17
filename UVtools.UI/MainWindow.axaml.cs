@@ -895,12 +895,7 @@ public partial class MainWindow : GenericWindow
         DisposeLayer3DPreview();
         base.OnClosed(e);
 
-        if (!Settings.General.StartMaximized &&
-            (Settings.General.RestoreWindowLastPosition ||
-             Settings.General.RestoreWindowLastSize))
-        {
-            UserSettings.Save();
-        }
+        UserSettings.Save();
     }
 
     private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -1690,7 +1685,6 @@ public partial class MainWindow : GenericWindow
     {
         if (!File.Exists(fileName)) return;
         CloseFile();
-        LayerModel3DView.IsMeasureMode = false;
         LayerModel3DView.ClearMeasure();
         var fileNameOnly = Path.GetFileName(fileName);
         SlicerFile = FileFormat.FindByExtensionOrFilePath(fileName, true);
@@ -2212,6 +2206,11 @@ public partial class MainWindow : GenericWindow
             }
             UserSettings.Save();
         }*/
+
+        if (Settings.Layer3DPreview.Build3DAfterFileOpen)
+        {
+            await RebuildLayer3DPreview();
+        }
 
         if (!string.IsNullOrWhiteSpace(Settings.Automations.EventAfterFileLoadScriptFile) &&
             File.Exists(Settings.Automations.EventAfterFileLoadScriptFile))
