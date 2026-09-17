@@ -893,9 +893,9 @@ public partial class MainWindow : GenericWindow
     protected override void OnClosed(EventArgs e)
     {
         DisposeLayer3DPreview();
-        base.OnClosed(e);
-
         UserSettings.Save();
+        
+        base.OnClosed(e);
     }
 
     private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)

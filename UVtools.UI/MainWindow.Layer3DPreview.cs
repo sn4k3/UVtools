@@ -450,14 +450,6 @@ public partial class MainWindow
                 RaisePropertyChanged(nameof(IsCutawayY));
                 RaisePropertyChanged(nameof(IsCutawayOff));
             }
-            else if (e.PropertyName is nameof(Settings.Layer3DPreview.ShowBoundingBox) or
-                                       nameof(Settings.Layer3DPreview.ShowModelStats) or
-                                       nameof(Settings.Layer3DPreview.ShowCenterOfMass) or
-                                       nameof(Settings.Layer3DPreview.ShowPeelCurve) or
-                                       nameof(Settings.Layer3DPreview.ShowMeasure))
-            {
-                UserSettings.Save();
-            }
         };
 
         if (OperatingSystem.IsMacOS())
@@ -535,7 +527,6 @@ public partial class MainWindow
     {
         Settings.Layer3DPreview.ShowBoundingBox = !Settings.Layer3DPreview.ShowBoundingBox;
         LayerModel3DView.ShowBoundingBox = Settings.Layer3DPreview.ShowBoundingBox;
-        UserSettings.Save();
     }
 
     [RelayCommand]
@@ -543,7 +534,6 @@ public partial class MainWindow
     {
         Settings.Layer3DPreview.ShowModelStats = !Settings.Layer3DPreview.ShowModelStats;
         LayerModel3DView.ShowModelStats = Settings.Layer3DPreview.ShowModelStats;
-        UserSettings.Save();
     }
 
     [RelayCommand]
@@ -551,7 +541,6 @@ public partial class MainWindow
     {
         Settings.Layer3DPreview.ShowCenterOfMass = !Settings.Layer3DPreview.ShowCenterOfMass;
         LayerModel3DView.ShowCenterOfMass = Settings.Layer3DPreview.ShowCenterOfMass;
-        UserSettings.Save();
     }
 
     [RelayCommand]
@@ -559,7 +548,6 @@ public partial class MainWindow
     {
         Settings.Layer3DPreview.ShowMeasure = !Settings.Layer3DPreview.ShowMeasure;
         LayerModel3DView.IsMeasureMode = Settings.Layer3DPreview.ShowMeasure;
-        UserSettings.Save();
     }
 
     [RelayCommand]
@@ -567,7 +555,6 @@ public partial class MainWindow
     {
         Settings.Layer3DPreview.ShowPeelCurve = !Settings.Layer3DPreview.ShowPeelCurve;
         LayerModel3DView.ShowPeelCurve = Settings.Layer3DPreview.ShowPeelCurve;
-        UserSettings.Save();
     }
 
     [RelayCommand]

@@ -365,6 +365,17 @@
             Generic exception to show only the message instead of the full stack-trace
             </summary>
         </member>
+        <member name="M:UVtools.Core.Extensions.ClassExtensions.CopyValuesFrom(System.Object,System.Object)">
+            <summary>
+            Copies every readable public property value from <paramref name="source"/> onto <paramref name="target"/>,
+            in place. A property whose type is nested inside the type currently being copied (e.g. a settings class
+            holding sub-settings objects) is recursed into instead of having its reference overwritten, so the
+            target object graph keeps its original object identity throughout. This matters for objects with live data
+            bindings or event subscribers keyed to that identity, such as a singleton settings object: restoring it by
+            reference-swap (<c>target = source</c>) would silently orphan every binding/subscriber still pointing at
+            the old object, while restoring values in place lets them observe the change through their own setters.
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Extensions.DateTimeExtensions.Timestamp">
             <summary>
             Gets the Unix timestamp since Jan 1, 1970 UTC

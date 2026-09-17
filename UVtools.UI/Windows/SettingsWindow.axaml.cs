@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using SukiUI.MessageBox;
 using SukiUI.Models;
 using UVtools.Core;
+using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
@@ -76,7 +77,14 @@ public partial class SettingsWindow : GenericWindow
 
         if (DialogResult != DialogResults.OK)
         {
-            UserSettings.Instance = SettingsBackup;
+            /* Restore values in place (never swap the Instance reference): MainWindow's bindings and the
+             * Settings.Layer3DPreview.PropertyChanged auto-save subscription were set up once against the
+             * original singleton object graph and never re-evaluate that lookup, since none of the
+             * lazily-initialized sub-settings properties (General, Layer3DPreview, etc.) raise PropertyChanged
+             * on assignment. Reassigning Instance here used to silently orphan all of that: the live UI kept
+             * mutating the old, now-unsaved object while UserSettings.Save() persisted this unrelated backup
+             * copy, which looked like settings resetting themselves after a Cancel and, later, after a Save. */
+            UserSettings.Instance.CopyValuesFrom(SettingsBackup);
         }
         else
         {

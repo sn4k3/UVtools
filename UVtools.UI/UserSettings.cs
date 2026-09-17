@@ -1162,7 +1162,19 @@ public partial class UserSettings : ObservableObject
     /// <param name="save">True to save settings on file, otherwise false</param>
     public static void Reset(bool save = false)
     {
-        _instance = new UserSettings();
+        if (_instance is null)
+        {
+            _instance = new UserSettings();
+        }
+        else
+        {
+            /* Restore in place rather than replacing _instance: this can run while the app is live (the
+             * "Reset all settings" button), and swapping the reference would silently orphan every binding
+             * and subscriber already keyed to the original object, the same way the Settings window Cancel
+             * path used to, see SettingsWindow.OnClosed. */
+            _instance.CopyValuesFrom(new UserSettings());
+        }
+
         if (save) Save();
     }
 

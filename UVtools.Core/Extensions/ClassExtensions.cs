@@ -7,6 +7,7 @@
  */
 
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Xml;
@@ -57,5 +58,37 @@ public static class ClassExtensions
 
         stream.Seek(0, SeekOrigin.Begin);
         return (T)xmlSerializer.Deserialize(stream)!;
+    }
+
+    /// <summary>
+    /// Copies every readable public property value from <paramref name="source"/> onto <paramref name="target"/>,
+    /// in place. A property whose type is nested inside the type currently being copied (e.g. a settings class
+    /// holding sub-settings objects) is recursed into instead of having its reference overwritten, so the
+    /// target object graph keeps its original object identity throughout. This matters for objects with live data
+    /// bindings or event subscribers keyed to that identity, such as a singleton settings object: restoring it by
+    /// reference-swap (<c>target = source</c>) would silently orphan every binding/subscriber still pointing at
+    /// the old object, while restoring values in place lets them observe the change through their own setters.
+    /// </summary>
+    public static void CopyValuesFrom(this object target, object source)
+    {
+        var type = target.GetType();
+        foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (!property.CanRead || property.GetIndexParameters().Length > 0) continue;
+
+            var sourceValue = property.GetValue(source);
+
+            if (sourceValue is not null && property.PropertyType.DeclaringType == type)
+            {
+                var targetValue = property.GetValue(target);
+                if (targetValue is not null)
+                {
+                    targetValue.CopyValuesFrom(sourceValue);
+                    continue;
+                }
+            }
+
+            if (property.CanWrite) property.SetValue(target, sourceValue);
+        }
     }
 }
