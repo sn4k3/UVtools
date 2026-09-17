@@ -410,7 +410,22 @@ public partial class UserSettings : ObservableObject
 
         [ObservableProperty] public partial bool ShowLayerDifference { get; set; }
 
+        public enum LayerDifferenceMode : byte
+        {
+            Difference = 0,
+            Similarity = 1,
+            OnionSkin = 2
+        }
+
+        [ObservableProperty] public partial LayerDifferenceMode DifferenceMode { get; set; } = LayerDifferenceMode.Difference;
+
+        [ObservableProperty] public partial int OnionSkinLayers { get; set; } = 3;
+
         [ObservableProperty] public partial bool LayerDifferenceHighlightSimilarityInstead { get; set; }
+
+        [ObservableProperty] public partial bool ShowPeelCurve { get; set; } = false;
+
+        [ObservableProperty] public partial bool ShowMeasure { get; set; } = false;
 
         [ObservableProperty] public partial bool UseIssueColorOnTracker { get; set; } = true;
 

@@ -240,6 +240,277 @@ public partial class MainWindow
         }
     }
 
+    public bool Show2DPeelCurve
+    {
+        get => Settings.LayerPreview.ShowPeelCurve;
+        set
+        {
+            if (Settings.LayerPreview.ShowPeelCurve == value) return;
+            Settings.LayerPreview.ShowPeelCurve = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    [RelayCommand]
+    public void Toggle2DPeelCurve()
+    {
+        Show2DPeelCurve = !Show2DPeelCurve;
+    }
+
+    public bool IsLayerDiffModeDifference
+    {
+        get => Settings.LayerPreview.DifferenceMode == UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.Difference;
+        set
+        {
+            if (value)
+            {
+                Settings.LayerPreview.DifferenceMode = UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.Difference;
+                Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead = false;
+                ShowLayerImageDifference = true;
+                NotifyAllDiffModesChanged();
+            }
+        }
+    }
+
+    public bool IsLayerDiffModeSimilarity
+    {
+        get => Settings.LayerPreview.DifferenceMode == UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.Similarity;
+        set
+        {
+            if (value)
+            {
+                Settings.LayerPreview.DifferenceMode = UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.Similarity;
+                Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead = true;
+                ShowLayerImageDifference = true;
+                NotifyAllDiffModesChanged();
+            }
+        }
+    }
+
+    public bool IsLayerDiffModeOnionSkin
+    {
+        get => Settings.LayerPreview.DifferenceMode == UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
+        set
+        {
+            if (value)
+            {
+                Settings.LayerPreview.DifferenceMode = UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
+                ShowLayerImageDifference = true;
+                NotifyAllDiffModesChanged();
+            }
+        }
+    }
+
+    public bool IsLayerDiffModeOnionSkin3
+    {
+        get => Settings.LayerPreview.DifferenceMode == UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin && Settings.LayerPreview.OnionSkinLayers == 3;
+        set
+        {
+            if (value)
+            {
+                Settings.LayerPreview.DifferenceMode = UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
+                Settings.LayerPreview.OnionSkinLayers = 3;
+                ShowLayerImageDifference = true;
+                NotifyAllDiffModesChanged();
+            }
+        }
+    }
+
+    public bool IsLayerDiffModeOnionSkin4
+    {
+        get => Settings.LayerPreview.DifferenceMode == UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin && Settings.LayerPreview.OnionSkinLayers == 4;
+        set
+        {
+            if (value)
+            {
+                Settings.LayerPreview.DifferenceMode = UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
+                Settings.LayerPreview.OnionSkinLayers = 4;
+                ShowLayerImageDifference = true;
+                NotifyAllDiffModesChanged();
+            }
+        }
+    }
+
+    public bool IsLayerDiffModeOnionSkin5
+    {
+        get => Settings.LayerPreview.DifferenceMode == UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin && Settings.LayerPreview.OnionSkinLayers == 5;
+        set
+        {
+            if (value)
+            {
+                Settings.LayerPreview.DifferenceMode = UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
+                Settings.LayerPreview.OnionSkinLayers = 5;
+                ShowLayerImageDifference = true;
+                NotifyAllDiffModesChanged();
+            }
+        }
+    }
+
+    public bool IsLayerDiffModeOnionSkin6
+    {
+        get => Settings.LayerPreview.DifferenceMode == UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin && Settings.LayerPreview.OnionSkinLayers == 6;
+        set
+        {
+            if (value)
+            {
+                Settings.LayerPreview.DifferenceMode = UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
+                Settings.LayerPreview.OnionSkinLayers = 6;
+                ShowLayerImageDifference = true;
+                NotifyAllDiffModesChanged();
+            }
+        }
+    }
+
+    private void NotifyAllDiffModesChanged()
+    {
+        RaisePropertyChanged(nameof(IsLayerDiffModeDifference));
+        RaisePropertyChanged(nameof(IsLayerDiffModeSimilarity));
+        RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin));
+        RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin3));
+        RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin4));
+        RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin5));
+        RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin6));
+        ShowLayer();
+    }
+
+    private bool _isMeasureMode2D;
+    private Avalonia.Point? _measure2DStartPoint;
+    private Avalonia.Point? _measure2DEndPoint;
+    private Avalonia.Point? _measure2DCursorPoint;
+
+    public bool IsMeasureMode2D
+    {
+        get => _isMeasureMode2D;
+        set
+        {
+            if (!RaiseAndSetIfChanged(ref _isMeasureMode2D, value)) return;
+            if (!value)
+            {
+                ClearMeasure2D();
+                if (LayerImageBox != null)
+                {
+                    LayerImageBox.Cursor = Cursor.Default;
+                    LayerImageBox.AutoPan = true;
+                }
+            }
+            else
+            {
+                if (LayerImageBox != null)
+                {
+                    LayerImageBox.Cursor = new Cursor(StandardCursorType.Cross);
+                    LayerImageBox.AutoPan = false;
+                }
+            }
+            RaisePropertyChanged(nameof(HasMeasure2DPoints));
+            RaisePropertyChanged(nameof(Measure2DStatusText));
+            RaisePropertyChanged(nameof(Measure2DDetailText));
+        }
+    }
+
+    public Avalonia.Point? Measure2DStartPoint
+    {
+        get => _measure2DStartPoint;
+        set
+        {
+            if (RaiseAndSetIfChanged(ref _measure2DStartPoint, value))
+            {
+                RaisePropertyChanged(nameof(HasMeasure2DPoints));
+                RaisePropertyChanged(nameof(Measure2DStatusText));
+                RaisePropertyChanged(nameof(Measure2DDetailText));
+            }
+        }
+    }
+
+    public Avalonia.Point? Measure2DEndPoint
+    {
+        get => _measure2DEndPoint;
+        set
+        {
+            if (RaiseAndSetIfChanged(ref _measure2DEndPoint, value))
+            {
+                RaisePropertyChanged(nameof(HasMeasure2DPoints));
+                RaisePropertyChanged(nameof(Measure2DStatusText));
+                RaisePropertyChanged(nameof(Measure2DDetailText));
+            }
+        }
+    }
+
+    public Avalonia.Point? Measure2DCursorPoint
+    {
+        get => _measure2DCursorPoint;
+        set
+        {
+            if (RaiseAndSetIfChanged(ref _measure2DCursorPoint, value))
+            {
+                RaisePropertyChanged(nameof(Measure2DStatusText));
+                RaisePropertyChanged(nameof(Measure2DDetailText));
+            }
+        }
+    }
+
+    public double PixelPitchX => SlicerFile?.PixelSize.Width > 0 ? SlicerFile.PixelSize.Width : 0.05;
+    public double PixelPitchY => SlicerFile?.PixelSize.Height > 0 ? SlicerFile.PixelSize.Height : 0.05;
+
+    public bool HasMeasure2DPoints => _measure2DStartPoint.HasValue;
+
+    public string Measure2DStatusText
+    {
+        get
+        {
+            if (!_isMeasureMode2D) return string.Empty;
+            if (!_measure2DStartPoint.HasValue) return "Click on slice to set point A";
+            var target = _measure2DEndPoint ?? _measure2DCursorPoint;
+            if (!target.HasValue) return "Click to set point B [Esc: Clear]";
+
+            var p1 = _measure2DStartPoint.Value;
+            var p2 = target.Value;
+            double dx = Math.Abs(p2.X - p1.X);
+            double dy = Math.Abs(p2.Y - p1.Y);
+            double dxMm = dx * PixelPitchX;
+            double dyMm = dy * PixelPitchY;
+            double distMm = Math.Sqrt(dxMm * dxMm + dyMm * dyMm);
+            double distPx = Math.Sqrt(dx * dx + dy * dy);
+
+            return _measure2DEndPoint.HasValue
+                ? $"Distance: {distMm:F2} mm ({distPx:F0} px)"
+                : $"Measuring: {distMm:F2} mm ({distPx:F0} px)";
+        }
+    }
+
+    public string Measure2DDetailText
+    {
+        get
+        {
+            if (!_isMeasureMode2D || !_measure2DStartPoint.HasValue) return string.Empty;
+            var target = _measure2DEndPoint ?? _measure2DCursorPoint;
+            if (!target.HasValue) return $"A: ({_measure2DStartPoint.Value.X:F0}, {_measure2DStartPoint.Value.Y:F0})";
+
+            var p1 = _measure2DStartPoint.Value;
+            var p2 = target.Value;
+            double dx = Math.Abs(p2.X - p1.X);
+            double dy = Math.Abs(p2.Y - p1.Y);
+            double dxMm = dx * PixelPitchX;
+            double dyMm = dy * PixelPitchY;
+            double angleDeg = Math.Atan2(dyMm, dxMm) * 180.0 / Math.PI;
+
+            return $"A: ({p1.X:F0}, {p1.Y:F0})  B: ({p2.X:F0}, {p2.Y:F0})\r\nΔX: {dxMm:F2} mm ({dx:F0} px) | ΔY: {dyMm:F2} mm ({dy:F0} px)\r\nAngle: {angleDeg:F1}°";
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleMeasureMode2D()
+    {
+        IsMeasureMode2D = !IsMeasureMode2D;
+    }
+
+    [RelayCommand]
+    public void ClearMeasure2D()
+    {
+        Measure2DStartPoint = null;
+        Measure2DEndPoint = null;
+        Measure2DCursorPoint = null;
+    }
+
     public bool ShowLayerImageDifference
     {
         get => _showLayerImageDifference;
@@ -882,122 +1153,305 @@ public partial class MainWindow
             }
             else if (_showLayerImageDifference)
             {
-                //if (_actualLayer > 0 && _actualLayer < SlicerFile.LayerCount - 1)
-                // {
-                var previousLayer = _actualLayer > 0 ? SlicerFile[_actualLayer - 1] : null;
-                var nextLayer = _actualLayer < SlicerFile.LastLayerIndex ? SlicerFile[_actualLayer + 1] : null;
-                Mat? previousImage = null;
-                Mat? nextImage = null;
-
-                // Optimize empties for now...
-                var rect = Rectangle.Empty;
-                if (!LayerCache.Layer.IsEmpty)
+                var diffMode = Settings.LayerPreview.DifferenceMode;
+                if (diffMode == UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin)
                 {
-                    rect = LayerCache.Layer.BoundingRectangle;
-                }
-                else if (previousLayer is not null && !previousLayer.IsEmpty)
-                {
-                    rect = previousLayer.BoundingRectangle;
-                }
-                else if (nextLayer is not null && !nextLayer.IsEmpty)
-                {
-                    rect = nextLayer.BoundingRectangle;
-                }
-
-                if (previousLayer is not null && !previousLayer.IsEmpty)
-                {
-                    rect = Rectangle.Union(rect, previousLayer.BoundingRectangle);
-                }
-
-                if (nextLayer is not null && !nextLayer.IsEmpty)
-                {
-                    rect = Rectangle.Union(rect, nextLayer.BoundingRectangle);
-                }
-
-                /*var rect = Rectangle.Union(
-                    Rectangle.Union(LayerCache.Layer.BoundingRectangle, previousLayer.BoundingRectangle),
-                    nextLayer.BoundingRectangle);*/
-
-                if (!rect.IsEmpty && (previousLayer is not null || nextLayer is not null))
-                {
-                    byte* previousSpan = null;
-                    byte* nextSpan = null;
-                    // Can improve performance on >4K images?
-                    Parallel.Invoke(
-                        () =>
-                        {
-                            if (previousLayer is null) return;
-                            previousImage = previousLayer.LayerMat;
-                            previousSpan = previousImage.BytePointer;
-                        },
-                        () =>
-                        {
-                            if (nextLayer is null) return;
-                            nextImage = nextLayer.LayerMat;
-                            nextSpan = nextImage.BytePointer;
-                        });
-
-                    /*using (var previousImage = SlicerFile[_actualLayer - 1].LayerMat)
-                        using (var nextImage = SlicerFile[_actualLayer + 1].LayerMat)
-                        {*/
-                    //var previousSpan = previousImage.GetPixelSpan<byte>();
-                    //var nextSpan = nextImage.GetPixelSpan<byte>();
-
-
-                    var width = LayerCache.Image.RealStep;
-                    var channels = LayerCache.ImageBgra.NumberOfChannels;
-                    var showSimilarityInstead = Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead;
-
-                    Parallel.For(rect.Y, rect.Bottom, CoreSettings.ParallelOptions, y =>
+                    int onionLayers = Settings.LayerPreview.OnionSkinLayers;
+                    int prevCount = onionLayers switch
                     {
-                        for (var x = rect.X; x < rect.Right; x++)
+                        4 => 2,
+                        5 => 2,
+                        6 => 3,
+                        _ => 1
+                    };
+                    int nextCount = onionLayers switch
+                    {
+                        5 => 2,
+                        6 => 2,
+                        _ => 1
+                    };
+
+                    var prevLayer1 = (_actualLayer >= 1 && prevCount >= 1) ? SlicerFile[_actualLayer - 1] : null;
+                    var prevLayer2 = (_actualLayer >= 2 && prevCount >= 2) ? SlicerFile[_actualLayer - 2] : null;
+                    var prevLayer3 = (_actualLayer >= 3 && prevCount >= 3) ? SlicerFile[_actualLayer - 3] : null;
+
+                    var nextLayer1 = (_actualLayer + 1 <= SlicerFile.LastLayerIndex && nextCount >= 1) ? SlicerFile[_actualLayer + 1] : null;
+                    var nextLayer2 = (_actualLayer + 2 <= SlicerFile.LastLayerIndex && nextCount >= 2) ? SlicerFile[_actualLayer + 2] : null;
+
+                    Mat? prev1Mat = null;
+                    Mat? prev2Mat = null;
+                    Mat? prev3Mat = null;
+                    Mat? next1Mat = null;
+                    Mat? next2Mat = null;
+
+                    try
+                    {
+                        var rect = Rectangle.Empty;
+                        if (!LayerCache.Layer.IsEmpty)
                         {
-                            var pixel = y * width + x;
-                            if (showSimilarityInstead)
-                            {
-                                if (imageSpan[pixel] == 0) continue;
-                            }
-                            else
-                            {
-                                if (imageSpan[pixel] != 0) continue;
-                            }
-
-                            byte brightness = 0;
-
-                            var color = Color.Empty;
-                            if (previousSpan is not null && nextSpan is not null && previousSpan[pixel] > 0 &&
-                                nextSpan[pixel] > 0)
-                            {
-                                brightness = Math.Max(previousSpan[pixel], nextSpan[pixel]);
-                                color = Settings.LayerPreview.BothLayerDifferenceColor;
-                            }
-                            else if (previousSpan is not null && previousSpan[pixel] > 0)
-                            {
-                                brightness = previousSpan[pixel];
-                                color = Settings.LayerPreview.PreviousLayerDifferenceColor;
-                            }
-                            else if (nextSpan is not null && nextSpan[pixel] > 0)
-                            {
-                                brightness = nextSpan[pixel];
-                                color = Settings.LayerPreview.NextLayerDifferenceColor;
-                            }
-
-                            if (color.IsEmpty) continue;
-
-                            color = color.FactorColor(brightness);
-
-                            var bgrPixel = pixel * channels;
-                            imageBgrSpan[bgrPixel] = color.B; // B
-                            imageBgrSpan[bgrPixel + 1] = color.G; // G
-                            imageBgrSpan[bgrPixel + 2] = color.R; // R
-                            imageBgrSpan[bgrPixel + 3] = color.A; // A
+                            rect = LayerCache.Layer.BoundingRectangle;
                         }
-                    });
-                }
+                        void UnionRect(Layer? l)
+                        {
+                            if (l is not null && !l.IsEmpty)
+                            {
+                                rect = rect.IsEmpty ? l.BoundingRectangle : Rectangle.Union(rect, l.BoundingRectangle);
+                            }
+                        }
+                        UnionRect(prevLayer1);
+                        UnionRect(prevLayer2);
+                        UnionRect(prevLayer3);
+                        UnionRect(nextLayer1);
+                        UnionRect(nextLayer2);
 
-                previousImage?.Dispose();
-                nextImage?.Dispose();
-                // }
+                        rect = Rectangle.Intersect(rect, new Rectangle(0, 0, LayerCache.Image.Width, LayerCache.Image.Height));
+
+                        if (!rect.IsEmpty)
+                        {
+                            byte* prev1Span = null;
+                            byte* prev2Span = null;
+                            byte* prev3Span = null;
+                            byte* next1Span = null;
+                            byte* next2Span = null;
+
+                            Parallel.Invoke(
+                                () =>
+                                {
+                                    if (prevLayer1 is null || prevLayer1.IsEmpty) return;
+                                    prev1Mat = prevLayer1.LayerMat;
+                                    if (prev1Mat is not null && !prev1Mat.IsEmpty && prev1Mat.Width == LayerCache.Image.Width && prev1Mat.Height == LayerCache.Image.Height)
+                                        prev1Span = prev1Mat.BytePointer;
+                                },
+                                () =>
+                                {
+                                    if (prevLayer2 is null || prevLayer2.IsEmpty) return;
+                                    prev2Mat = prevLayer2.LayerMat;
+                                    if (prev2Mat is not null && !prev2Mat.IsEmpty && prev2Mat.Width == LayerCache.Image.Width && prev2Mat.Height == LayerCache.Image.Height)
+                                        prev2Span = prev2Mat.BytePointer;
+                                },
+                                () =>
+                                {
+                                    if (prevLayer3 is null || prevLayer3.IsEmpty) return;
+                                    prev3Mat = prevLayer3.LayerMat;
+                                    if (prev3Mat is not null && !prev3Mat.IsEmpty && prev3Mat.Width == LayerCache.Image.Width && prev3Mat.Height == LayerCache.Image.Height)
+                                        prev3Span = prev3Mat.BytePointer;
+                                },
+                                () =>
+                                {
+                                    if (nextLayer1 is null || nextLayer1.IsEmpty) return;
+                                    next1Mat = nextLayer1.LayerMat;
+                                    if (next1Mat is not null && !next1Mat.IsEmpty && next1Mat.Width == LayerCache.Image.Width && next1Mat.Height == LayerCache.Image.Height)
+                                        next1Span = next1Mat.BytePointer;
+                                },
+                                () =>
+                                {
+                                    if (nextLayer2 is null || nextLayer2.IsEmpty) return;
+                                    next2Mat = nextLayer2.LayerMat;
+                                    if (next2Mat is not null && !next2Mat.IsEmpty && next2Mat.Width == LayerCache.Image.Width && next2Mat.Height == LayerCache.Image.Height)
+                                        next2Span = next2Mat.BytePointer;
+                                }
+                            );
+
+                            if (prev1Span is not null || prev2Span is not null || prev3Span is not null || next1Span is not null || next2Span is not null || !LayerCache.Layer.IsEmpty)
+                            {
+                                var width = LayerCache.Image.RealStep;
+                                var channels = LayerCache.ImageBgra.NumberOfChannels;
+
+                                Parallel.For(rect.Y, rect.Bottom, CoreSettings.ParallelOptions, y =>
+                                {
+                                    for (var x = rect.X; x < rect.Right; x++)
+                                    {
+                                        var pixel = y * width + x;
+
+                                        byte curVal = imageSpan[pixel];
+                                        bool hasCur = curVal > 0;
+
+                                        bool hasP1 = prev1Span is not null && prev1Span[pixel] > 0;
+                                        bool hasP2 = prev2Span is not null && prev2Span[pixel] > 0;
+                                        bool hasP3 = prev3Span is not null && prev3Span[pixel] > 0;
+
+                                        bool hasN1 = next1Span is not null && next1Span[pixel] > 0;
+                                        bool hasN2 = next2Span is not null && next2Span[pixel] > 0;
+
+                                        Color onionColor = Color.Empty;
+
+                                        if (hasCur)
+                                        {
+                                            if (hasP1 || hasP2 || hasP3)
+                                            {
+                                                // Supported solid geometry: White
+                                                onionColor = new Color(curVal, 255, 255, 255);
+                                            }
+                                            else
+                                            {
+                                                // Unsupported island / overhang starting on current layer: Yellow
+                                                onionColor = new Color(curVal, 255, 220, 50);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            bool hasBelow = hasP1 || hasP2 || hasP3;
+                                            bool hasAbove = hasN1 || hasN2;
+
+                                            if (hasBelow && hasAbove)
+                                            {
+                                                // Cavity / internal hollow tunnel: Magenta
+                                                onionColor = new Color(255, 220, 60, 220);
+                                            }
+                                            else if (hasP1)
+                                            {
+                                                // Layer -1 (immediate foundation): Bright Red
+                                                onionColor = new Color(prev1Span[pixel], 240, 50, 50);
+                                            }
+                                            else if (hasP2)
+                                            {
+                                                // Layer -2 (2 layers down): Deep Orange-Red / Rust
+                                                onionColor = new Color(prev2Span[pixel], 215, 80, 20);
+                                            }
+                                            else if (hasP3)
+                                            {
+                                                // Layer -3 (3 layers down): Crimson / Dark Red
+                                                onionColor = new Color(prev3Span[pixel], 160, 25, 25);
+                                            }
+                                            else if (hasN1)
+                                            {
+                                                // Layer +1 (immediate upcoming): Bright Cyan
+                                                onionColor = new Color(next1Span[pixel], 30, 215, 255);
+                                            }
+                                            else if (hasN2)
+                                            {
+                                                // Layer +2 (2 layers up): Deep Azure / Royal Blue
+                                                onionColor = new Color(next2Span[pixel], 25, 120, 215);
+                                            }
+                                        }
+
+                                        if (!onionColor.IsEmpty)
+                                        {
+                                            var onionBgrPixel = pixel * channels;
+                                            imageBgrSpan[onionBgrPixel] = onionColor.B; // B
+                                            imageBgrSpan[onionBgrPixel + 1] = onionColor.G; // G
+                                            imageBgrSpan[onionBgrPixel + 2] = onionColor.R; // R
+                                            imageBgrSpan[onionBgrPixel + 3] = onionColor.A; // A
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        prev1Mat?.Dispose();
+                        prev2Mat?.Dispose();
+                        prev3Mat?.Dispose();
+                        next1Mat?.Dispose();
+                        next2Mat?.Dispose();
+                    }
+                }
+                else
+                {
+                    var previousLayer = _actualLayer > 0 ? SlicerFile[_actualLayer - 1] : null;
+                    var nextLayer = _actualLayer < SlicerFile.LastLayerIndex ? SlicerFile[_actualLayer + 1] : null;
+                    Mat? previousImage = null;
+                    Mat? nextImage = null;
+
+                    // Optimize empties for now...
+                    var rect = Rectangle.Empty;
+                    if (!LayerCache.Layer.IsEmpty)
+                    {
+                        rect = LayerCache.Layer.BoundingRectangle;
+                    }
+                    else if (previousLayer is not null && !previousLayer.IsEmpty)
+                    {
+                        rect = previousLayer.BoundingRectangle;
+                    }
+                    else if (nextLayer is not null && !nextLayer.IsEmpty)
+                    {
+                        rect = nextLayer.BoundingRectangle;
+                    }
+
+                    if (previousLayer is not null && !previousLayer.IsEmpty)
+                    {
+                        rect = Rectangle.Union(rect, previousLayer.BoundingRectangle);
+                    }
+
+                    if (nextLayer is not null && !nextLayer.IsEmpty)
+                    {
+                        rect = Rectangle.Union(rect, nextLayer.BoundingRectangle);
+                    }
+
+                    if (!rect.IsEmpty && (previousLayer is not null || nextLayer is not null))
+                    {
+                        byte* previousSpan = null;
+                        byte* nextSpan = null;
+                        Parallel.Invoke(
+                            () =>
+                            {
+                                if (previousLayer is null) return;
+                                previousImage = previousLayer.LayerMat;
+                                previousSpan = previousImage.BytePointer;
+                            },
+                            () =>
+                            {
+                                if (nextLayer is null) return;
+                                nextImage = nextLayer.LayerMat;
+                                nextSpan = nextImage.BytePointer;
+                            });
+
+                        var width = LayerCache.Image.RealStep;
+                        var channels = LayerCache.ImageBgra.NumberOfChannels;
+                        var showSimilarityInstead = Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead;
+
+                        Parallel.For(rect.Y, rect.Bottom, CoreSettings.ParallelOptions, y =>
+                        {
+                            for (var x = rect.X; x < rect.Right; x++)
+                            {
+                                var pixel = y * width + x;
+
+                                if (showSimilarityInstead)
+                                {
+                                    if (imageSpan[pixel] == 0) continue;
+                                }
+                                else
+                                {
+                                    if (imageSpan[pixel] != 0) continue;
+                                }
+
+                                byte brightness = 0;
+
+                                var color = Color.Empty;
+                                if (previousSpan is not null && nextSpan is not null && previousSpan[pixel] > 0 &&
+                                    nextSpan[pixel] > 0)
+                                {
+                                    brightness = Math.Max(previousSpan[pixel], nextSpan[pixel]);
+                                    color = Settings.LayerPreview.BothLayerDifferenceColor;
+                                }
+                                else if (previousSpan is not null && previousSpan[pixel] > 0)
+                                {
+                                    brightness = previousSpan[pixel];
+                                    color = Settings.LayerPreview.PreviousLayerDifferenceColor;
+                                }
+                                else if (nextSpan is not null && nextSpan[pixel] > 0)
+                                {
+                                    brightness = nextSpan[pixel];
+                                    color = Settings.LayerPreview.NextLayerDifferenceColor;
+                                }
+
+                                if (color.IsEmpty) continue;
+
+                                color = color.FactorColor(brightness);
+
+                                var bgrPixel = pixel * channels;
+                                imageBgrSpan[bgrPixel] = color.B; // B
+                                imageBgrSpan[bgrPixel + 1] = color.G; // G
+                                imageBgrSpan[bgrPixel + 2] = color.R; // R
+                                imageBgrSpan[bgrPixel + 3] = color.A; // A
+                            }
+                        });
+                    }
+
+                    previousImage?.Dispose();
+                    nextImage?.Dispose();
+                }
             }
 
 
@@ -1961,6 +2415,43 @@ public partial class MainWindow
 
     private void LayerImageBoxOnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        if (_isMeasureMode2D)
+        {
+            var p = e.GetCurrentPoint(LayerImageBox);
+            if (p.Properties.IsLeftButtonPressed)
+            {
+                if (LayerImageBox.IsPointInImage(p.Position))
+                {
+                    var imgPt = LayerImageBox.PointToImage(p.Position);
+                    var snappedPt = new Avalonia.Point(Math.Round(imgPt.X), Math.Round(imgPt.Y));
+                    if (!_measure2DStartPoint.HasValue || _measure2DEndPoint.HasValue)
+                    {
+                        Measure2DStartPoint = snappedPt;
+                        Measure2DEndPoint = null;
+                        Measure2DCursorPoint = null;
+                    }
+                    else
+                    {
+                        Measure2DEndPoint = snappedPt;
+                        Measure2DCursorPoint = null;
+                    }
+                }
+                return;
+            }
+            else if (p.Properties.IsRightButtonPressed)
+            {
+                if (HasMeasure2DPoints)
+                {
+                    ClearMeasure2D();
+                }
+                else
+                {
+                    IsMeasureMode2D = false;
+                }
+                return;
+            }
+        }
+
         if (e.ClickCount != 2 || (e.KeyModifiers & KeyModifiers.Alt) != 0 ||
             (e.KeyModifiers & KeyModifiers.Shift) != 0) return;
         var pointer = e.GetCurrentPoint(LayerImageBox);
@@ -2023,6 +2514,20 @@ public partial class MainWindow
         {
             case Key.Escape:
             {
+                if (_isMeasureMode2D)
+                {
+                    if (HasMeasure2DPoints)
+                    {
+                        ClearMeasure2D();
+                    }
+                    else
+                    {
+                        IsMeasureMode2D = false;
+                    }
+                    e.Handled = true;
+                    return;
+                }
+
                 if (e.KeyModifiers == KeyModifiers.Shift)
                 {
                     ClearROI();
@@ -2231,6 +2736,15 @@ public partial class MainWindow
     {
         if (!LayerCache.IsCached) return;
         var pointer = e.GetCurrentPoint(LayerImageBox);
+
+        if (_isMeasureMode2D && _measure2DStartPoint.HasValue && !_measure2DEndPoint.HasValue)
+        {
+            if (LayerImageBox.IsPointInImage(pointer.Position))
+            {
+                var imgPt = LayerImageBox.PointToImage(pointer.Position);
+                Measure2DCursorPoint = new Avalonia.Point(Math.Round(imgPt.X), Math.Round(imgPt.Y));
+            }
+        }
 
         if (!LayerImageBox.IsPointInImage(pointer.Position)) return;
         var location = LayerImageBox.PointToImage(pointer.Position).ToDotNet();

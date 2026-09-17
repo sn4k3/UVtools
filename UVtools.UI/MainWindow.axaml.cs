@@ -1005,12 +1005,11 @@ public partial class MainWindow : GenericWindow
             return;
         }
 
-        if (e.Key is Key.LeftShift or Key.RightShift
-            || (e.KeyModifiers & KeyModifiers.Shift) == 0 || (e.KeyModifiers & KeyModifiers.Control) == 0)
+        if (e.Key is Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl)
         {
             SetLayerImageBoxTrackerImage(null);
-            LayerImageBox.Cursor = StaticControls.ArrowCursor;
-            LayerImageBox.AutoPan = true;
+            LayerImageBox.Cursor = _isMeasureMode2D ? StaticControls.CrossCursor : StaticControls.ArrowCursor;
+            LayerImageBox.AutoPan = !_isMeasureMode2D;
             LayerImageBox.SelectionMode = AdvancedImageBox.SelectionModes.None;
             IsTooltipOverlayVisible = false;
             e.Handled = true;
@@ -1261,6 +1260,8 @@ public partial class MainWindow : GenericWindow
         LayerPixelPicker.Reset();
 
         ClearROIAndMask();
+        IsMeasureMode2D = false;
+        ClearMeasure2D();
 
         if (!Settings.Tools.LastUsedSettingsKeepOnCloseFile) OperationSessionManager.Instance.Clear();
         if (_menuFileOpenRecentItems.AsValueEnumerable().Any())

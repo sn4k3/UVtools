@@ -1855,7 +1855,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             if (factor != 0)
             {
                 Offset = Offset.WithX(Offset.X - e.Delta.X * factor);
-                e.Handled = true;
             }
         }
 
@@ -1875,7 +1874,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                 Offset = Offset.WithY(Offset.Y - e.Delta.Y * factor);
             }
 
-            e.Handled = true;
             return;
         }
 
@@ -1898,7 +1896,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         };
 
         if (!canZoom) return;
-        e.Handled = true;
 
         // Debounce for sensitive touchpads
         var zoomWithMouseWheelDebounceMilliseconds = ZoomWithMouseWheelDebounceMilliseconds;
@@ -1995,7 +1992,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
         _startMousePosition = location;
         e.Pointer.Capture(viewPort);
-        e.Handled = true;
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -2006,7 +2002,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         if (wasInteracting)
         {
             e.Pointer.Capture(null);
-            e.Handled = true;
         }
 
         base.OnPointerReleased(e);
@@ -2023,7 +2018,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     {
         PointerPosition = new Point(-1, -1);
         TriggerRender(true);
-        e.Handled = true;
     }
 
     /*protected override void OnPointerLeave(PointerEventArgs e)
@@ -2031,7 +2025,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         base.OnPointerLeave(e);
         PointerPosition = new Point(-1, -1);
         TriggerRender(true);
-        e.Handled = true;
     }*/
 
     private void ViewPortOnPointerMoved(object? sender, PointerEventArgs e)
@@ -2121,8 +2114,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                 SelectionRegion = FitRectangle(new Rect(x, y, w, h));
             }
         }
-
-        e.Handled = true;
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
@@ -2205,28 +2196,24 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         if (panLeft)
         {
             Offset = new Vector(Offset.X - PanOffset * ZoomFactor, Offset.Y);
-            e.Handled = true;
             return;
         }
 
         if (panUp)
         {
             Offset = new Vector(Offset.X, Offset.Y - PanOffset * ZoomFactor);
-            e.Handled = true;
             return;
         }
 
         if (panRight)
         {
             Offset = new Vector(Offset.X + PanOffset * ZoomFactor, Offset.Y);
-            e.Handled = true;
             return;
         }
 
         if (panDown)
         {
             Offset = new Vector(Offset.X, Offset.Y + PanOffset * ZoomFactor);
-            e.Handled = true;
             return;
         }
     }

@@ -2151,13 +2151,44 @@
                                                        VerticalAlignment="Stretch"
                                                        IsChecked="{Binding ShowLayerImageDifference, Mode=TwoWay}"
                                                        Content="{icon:MaterialIconTextExt Kind=Layers, Text='Difference'}"
-                                                       ToolTip.Tip="Show layer differences where darker pixels were also present on previous layer and the white pixels the difference between previous and current layer.">
+                                                       ToolTip.Tip="Show layer differences or comparison modes between current, previous, and next layers.">
                                         <ToggleSplitButton.Flyout>
-                                            <MenuFlyout>
-                                                <MenuItem Header="Show layer similarity instead of difference"
-                                                          ToggleType="CheckBox"
-                                                          IsChecked="{Binding Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead, Mode=TwoWay}"
-                                                          ToolTip.Tip="If enabled, it will recolor the current layer pixels in common with the previous and next layer" />
+                                            <MenuFlyout Placement="Bottom">
+                                                <MenuItem Header="Difference (highlight changes)"
+                                                          ToggleType="Radio"
+                                                          GroupName="LayerDiffModeGroup"
+                                                          IsChecked="{Binding IsLayerDiffModeDifference, Mode=TwoWay}"
+                                                          ToolTip.Tip="Show changes between previous, current, and next layer" />
+                                                <MenuItem Header="Similarity (highlight common pixels)"
+                                                          ToggleType="Radio"
+                                                          GroupName="LayerDiffModeGroup"
+                                                          IsChecked="{Binding IsLayerDiffModeSimilarity, Mode=TwoWay}"
+                                                          ToolTip.Tip="Recolor pixels in common with previous and next layers" />
+                                                <MenuItem Header="Onion skinning"
+                                                          ToggleType="Radio"
+                                                          GroupName="LayerDiffModeGroup"
+                                                          IsChecked="{Binding IsLayerDiffModeOnionSkin, Mode=TwoWay}">
+                                                    <MenuItem Header="3 Layers (-1, +1) [2 Ghost]"
+                                                              ToggleType="Radio"
+                                                              GroupName="OnionSkinLayerGroup"
+                                                              IsChecked="{Binding IsLayerDiffModeOnionSkin3, Mode=TwoWay}"
+                                                              ToolTip.Tip="3 Layers: Previous (-1), Current, Next (+1)" />
+                                                    <MenuItem Header="4 Layers (-2, -1, +1) [3 Ghost]"
+                                                              ToggleType="Radio"
+                                                              GroupName="OnionSkinLayerGroup"
+                                                              IsChecked="{Binding IsLayerDiffModeOnionSkin4, Mode=TwoWay}"
+                                                              ToolTip.Tip="4 Layers: 2 foundation layers below, Current layer, 1 upcoming layer above" />
+                                                    <MenuItem Header="5 Layers (-2 to +2) [4 Ghost]"
+                                                              ToggleType="Radio"
+                                                              GroupName="OnionSkinLayerGroup"
+                                                              IsChecked="{Binding IsLayerDiffModeOnionSkin5, Mode=TwoWay}"
+                                                              ToolTip.Tip="5 Layers (4 ghost): 2 foundation layers below, Current layer, 2 upcoming layers above" />
+                                                    <MenuItem Header="6 Layers (-3 to +2) [5 Ghost]"
+                                                              ToggleType="Radio"
+                                                              GroupName="OnionSkinLayerGroup"
+                                                              IsChecked="{Binding IsLayerDiffModeOnionSkin6, Mode=TwoWay}"
+                                                              ToolTip.Tip="6 Layers (5 ghost): 3 foundation layers below, Current layer, 2 upcoming layers above" />
+                                                </MenuItem>
                                             </MenuFlyout>
                                         </ToggleSplitButton.Flyout>
                                     </ToggleSplitButton>
@@ -2249,6 +2280,18 @@
                                                   Content="{icon:MaterialIconTextExt Kind=RulerSquareCompass, Text='Pixel Editor'}"
                                                   IsChecked="{Binding IsPixelEditorActive}"
                                                   ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Edit layer image: Draw pixels, add supports and/or drain holes. [{0}+E]'}" />
+                                    <ToggleButton Margin="1,0,1,0"
+                                                  VerticalAlignment="Stretch"
+                                                  HotKey="M"
+                                                  Content="{icon:MaterialIconExt Kind=Ruler, Classes='Fill'}"
+                                                  IsChecked="{Binding IsMeasureMode2D, Mode=TwoWay}"
+                                                  ToolTip.Tip="Measure distance and wall thickness on 2D slice [M]. Click two points to measure." />
+                                    <ToggleButton Margin="1,0,1,0"
+                                                  VerticalAlignment="Stretch"
+                                                  HotKey="A"
+                                                  Content="{icon:MaterialIconExt Kind=ChartAreaspline, Classes='Fill'}"
+                                                  IsChecked="{Binding Show2DPeelCurve, Mode=TwoWay}"
+                                                  ToolTip.Tip="Toggle layer cross-section area and peel force curve HUD [A]" />
                                 </WrapPanel>
 
 
@@ -2295,18 +2338,129 @@
                             <Border Grid.Row="1"
                                     BorderBrush="{DynamicResource LightBackground}"
                                     BorderThickness="5">
-                                <uvtava:AdvancedImageBox Name="LayerImageBox"
-                                                         ConstrainZoomOutToFitLevel="True"
-                                                         GridCellSize="15"
-                                                         PanDownKey="S"
-                                                         PanLeftKey="A"
-                                                         PanRightKey="D"
-                                                         PanUpKey="W"
-                                                         PanWithArrows="False"
-                                                         ShowGrid="{Binding Settings.LayerPreview.ShowBackgroundGrid}"
-                                                         ScrollViewer.AllowAutoHide="False"
-                                                         ZoomTo100KeyGestures="{x:Null}"
-                                                         ZoomToFitKeyGestures="{x:Null}" />
+                                <Grid>
+                                    <uvtava:AdvancedImageBox Name="LayerImageBox"
+                                                             ConstrainZoomOutToFitLevel="True"
+                                                             GridCellSize="15"
+                                                             PanDownKey="S"
+                                                             PanLeftKey="A"
+                                                             PanRightKey="D"
+                                                             PanUpKey="W"
+                                                             PanWithArrows="False"
+                                                             ShowGrid="{Binding Settings.LayerPreview.ShowBackgroundGrid}"
+                                                             ScrollViewer.AllowAutoHide="False"
+                                                             ZoomTo100KeyGestures="{x:Null}"
+                                                             ZoomToFitKeyGestures="{x:Null}" />
+
+                                    <!-- 2D Caliper Measurement Overlay Lines and Dimension Badges -->
+                                    <controls:LayerMeasure2DOverlayControl ImageBox="{Binding #LayerImageBox}"
+                                                                           IsActive="{Binding IsMeasureMode2D}"
+                                                                           StartPoint="{Binding Measure2DStartPoint}"
+                                                                           EndPoint="{Binding Measure2DEndPoint}"
+                                                                           CursorPoint="{Binding Measure2DCursorPoint}"
+                                                                           PixelPitchX="{Binding PixelPitchX}"
+                                                                           PixelPitchY="{Binding PixelPitchY}"
+                                                                           IsHitTestVisible="False" />
+                                </Grid>
+                            </Border>
+
+                            <!-- 2D Measurement Floating HUD -->
+                            <suki:GlassCard Grid.Row="1"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Top"
+                                            Margin="16,16,0,0"
+                                            Padding="10,8"
+                                            IsVisible="{Binding IsMeasureMode2D}">
+                                <StackPanel Spacing="6" Width="260">
+                                    <DockPanel LastChildFill="True">
+                                        <StackPanel Orientation="Horizontal" Spacing="6" DockPanel.Dock="Left" VerticalAlignment="Center">
+                                            <icon:MaterialIcon Kind="Ruler" Width="18" Height="18" Foreground="#29B6F6" />
+                                            <TextBlock Text="2D Measurement" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <Button DockPanel.Dock="Right"
+                                                Command="{Binding ToggleMeasureMode2DCommand}"
+                                                Classes="Basic"
+                                                Padding="4"
+                                                Width="24" Height="24"
+                                                ToolTip.Tip="Close measurement [Esc]">
+                                            <icon:MaterialIcon Kind="Close" Width="14" Height="14" />
+                                        </Button>
+                                        <Border />
+                                    </DockPanel>
+
+                                    <TextBlock Text="{Binding Measure2DStatusText}"
+                                               FontSize="12"
+                                               FontWeight="Medium"
+                                               Foreground="#81D4FA"
+                                               TextWrapping="Wrap" />
+
+                                    <TextBlock Text="{Binding Measure2DDetailText}"
+                                               FontSize="11"
+                                               Opacity="0.85"
+                                               FontFamily="Consolas, Cascadia Code, monospace"
+                                               TextWrapping="Wrap"
+                                               IsVisible="{Binding HasMeasure2DPoints}" />
+
+                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                                        <Button Content="Clear"
+                                                Classes="Outlined"
+                                                Padding="8,3"
+                                                FontSize="11"
+                                                Command="{Binding ClearMeasure2DCommand}"
+                                                IsEnabled="{Binding HasMeasure2DPoints}"
+                                                ToolTip.Tip="Clear measured points [Esc]" />
+                                        <TextBlock Text="Click: Set A / B  |  R-Click: Clear"
+                                                   FontSize="10"
+                                                   Opacity="0.6"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </suki:GlassCard>
+
+                            <!-- 2D Peel Force & Area Curve HUD -->
+                            <Border Grid.Row="1"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Bottom"
+                                    Margin="0,0,16,16"
+                                    CornerRadius="8"
+                                    Background="#D81E1E2E"
+                                    BorderBrush="#3B4252"
+                                    BorderThickness="1"
+                                    MinWidth="340"
+                                    MaxWidth="480"
+                                    Height="150"
+                                    IsVisible="{Binding Show2DPeelCurve}">
+                                <Grid RowDefinitions="Auto,*">
+                                    <Grid Grid.Row="0" Margin="10,6,6,2" ColumnDefinitions="Auto,*,Auto">
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <icon:MaterialIcon Kind="ChartAreaspline" Width="14" Height="14" Foreground="#89B4FA" />
+                                            <TextBlock Text="Cross-Section &amp; Peel Curve" FontSize="11" FontWeight="SemiBold" Foreground="#CDD6F4" />
+                                        </StackPanel>
+                                        <Button Grid.Column="2"
+                                                Classes="Basic"
+                                                Padding="2"
+                                                Width="22" Height="22"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Command="{Binding Toggle2DPeelCurveCommand}"
+                                                ToolTip.Tip="Close Peel Force Curve [A]">
+                                            <icon:MaterialIcon Kind="Close" Width="14" Height="14" Foreground="#8B949E" />
+                                        </Button>
+                                    </Grid>
+                                    <controls:LayerAreaPeelCurveControl Grid.Row="1"
+                                            Margin="6,0,6,6"
+                                            LayerAreas="{Binding LayerAreas}"
+                                            PeelSpikes="{Binding PeelSpikes}"
+                                            LayerLiftSpeeds="{Binding LayerLiftSpeeds}"
+                                            LayerLiftSpeeds2="{Binding LayerLiftSpeeds2}"
+                                            LayerLiftHeights="{Binding LayerLiftHeights}"
+                                            LayerLiftHeights2="{Binding LayerLiftHeights2}"
+                                            CurrentLayer="{Binding ActualLayer}"
+                                            MaxArea="{Binding MaxLayerArea}"
+                                            PeakLayer="{Binding PeakLayerIndex}"
+                                            HaveTiltingVat="{Binding SlicerFile.HaveTiltingVat}"
+                                            LayerSelectedCommand="{Binding SelectLayerCommand}" />
+                                </Grid>
                             </Border>
 
                             <Canvas Grid.Row="1"
