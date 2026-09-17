@@ -13,6 +13,8 @@ using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
+using System.Threading.Tasks;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
 using Avalonia.Rendering;
@@ -57,13 +59,23 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                                  uniform float uBottomZ;
                                                  uniform float uTransitionZ;
                                                  uniform vec3 uBottomColor;
+                                                 uniform vec3 uBuildVolumeMin;
+                                                 uniform vec3 uBuildVolumeMax;
+                                                 uniform int uHighlightOutOfBounds;
                                                  out vec4 fragmentColor;
                                                  void main()
                                                  {
                                                      if (uClipEnabled != 0 && (vWorldPosition.z < uClipZMin || vWorldPosition.z > uClipZMax)) discard;
 
                                                      vec3 baseColor = uColor;
-                                                     if (uColorMode == 1)
+                                                     if (uHighlightOutOfBounds != 0 && (
+                                                         vWorldPosition.x < uBuildVolumeMin.x || vWorldPosition.x > uBuildVolumeMax.x ||
+                                                         vWorldPosition.y < uBuildVolumeMin.y || vWorldPosition.y > uBuildVolumeMax.y ||
+                                                         vWorldPosition.z < uBuildVolumeMin.z || vWorldPosition.z > uBuildVolumeMax.z))
+                                                     {
+                                                         baseColor = vec3(1.0, 0.08, 0.18);
+                                                     }
+                                                     else if (uColorMode == 1)
                                                      {
                                                          vec3 norm = normalize(vNormal);
                                                          float downward = -norm.z;
@@ -169,13 +181,23 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                             uniform float uBottomZ;
                                             uniform float uTransitionZ;
                                             uniform vec3 uBottomColor;
+                                            uniform vec3 uBuildVolumeMin;
+                                            uniform vec3 uBuildVolumeMax;
+                                            uniform int uHighlightOutOfBounds;
                                             out vec4 fragmentColor;
                                             void main()
                                             {
                                                 if (uClipEnabled != 0 && (vWorldPosition.z < uClipZMin || vWorldPosition.z > uClipZMax)) discard;
 
                                                 vec3 baseColor = uColor;
-                                                if (uColorMode == 1)
+                                                if (uHighlightOutOfBounds != 0 && (
+                                                    vWorldPosition.x < uBuildVolumeMin.x || vWorldPosition.x > uBuildVolumeMax.x ||
+                                                    vWorldPosition.y < uBuildVolumeMin.y || vWorldPosition.y > uBuildVolumeMax.y ||
+                                                    vWorldPosition.z < uBuildVolumeMin.z || vWorldPosition.z > uBuildVolumeMax.z))
+                                                {
+                                                    baseColor = vec3(1.0, 0.08, 0.18);
+                                                }
+                                                else if (uColorMode == 1)
                                                 {
                                                     vec3 norm = normalize(vNormal);
                                                     float downward = -norm.z;
@@ -315,6 +337,60 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     public static readonly StyledProperty<float> TransitionLayersHeightProperty =
         AvaloniaProperty.Register<LayerModel3DView, float>(nameof(TransitionLayersHeight));
 
+    public static readonly StyledProperty<bool> ShowModelStatsProperty =
+        AvaloniaProperty.Register<LayerModel3DView, bool>(nameof(ShowModelStats), false);
+
+    public static readonly DirectProperty<LayerModel3DView, string?> ModelStatsTextProperty =
+        AvaloniaProperty.RegisterDirect<LayerModel3DView, string?>(
+            nameof(ModelStatsText),
+            o => o.ModelStatsText);
+
+    public static readonly DirectProperty<LayerModel3DView, float> ModelVolumeMlProperty =
+        AvaloniaProperty.RegisterDirect<LayerModel3DView, float>(
+            nameof(ModelVolumeMl),
+            o => o.ModelVolumeMl);
+
+    public static readonly DirectProperty<LayerModel3DView, float> ModelWeightGramsProperty =
+        AvaloniaProperty.RegisterDirect<LayerModel3DView, float>(
+            nameof(ModelWeightGrams),
+            o => o.ModelWeightGrams);
+
+    public static readonly DirectProperty<LayerModel3DView, float> ModelResinCostProperty =
+        AvaloniaProperty.RegisterDirect<LayerModel3DView, float>(
+            nameof(ModelResinCost),
+            o => o.ModelResinCost);
+
+    public static readonly StyledProperty<bool> ShowCenterOfMassProperty =
+        AvaloniaProperty.Register<LayerModel3DView, bool>(nameof(ShowCenterOfMass), false);
+
+    public static readonly DirectProperty<LayerModel3DView, string?> CenterOfMassTextProperty =
+        AvaloniaProperty.RegisterDirect<LayerModel3DView, string?>(
+            nameof(CenterOfMassText),
+            o => o.CenterOfMassText);
+
+    public static readonly DirectProperty<LayerModel3DView, Vector3> CenterOfMassProperty =
+        AvaloniaProperty.RegisterDirect<LayerModel3DView, Vector3>(
+            nameof(CenterOfMass),
+            o => o.CenterOfMass);
+
+    public static readonly DirectProperty<LayerModel3DView, float> BaseContactAreaProperty =
+        AvaloniaProperty.RegisterDirect<LayerModel3DView, float>(
+            nameof(BaseContactArea),
+            o => o.BaseContactArea);
+
+    public static readonly DirectProperty<LayerModel3DView, bool> IsOutOfBoundsProperty =
+        AvaloniaProperty.RegisterDirect<LayerModel3DView, bool>(
+            nameof(IsOutOfBounds),
+            o => o.IsOutOfBounds);
+
+    public static readonly DirectProperty<LayerModel3DView, string?> OutOfBoundsWarningTextProperty =
+        AvaloniaProperty.RegisterDirect<LayerModel3DView, string?>(
+            nameof(OutOfBoundsWarningText),
+            o => o.OutOfBoundsWarningText);
+
+    public event Action? SnapshotToClipboardRequested;
+    public event Action? SnapshotToFileRequested;
+
     private const float OrbitSensitivity = 0.008f;
     private const double CameraAnimationSeconds = 0.2;
     private const float XRayOpacity = 0.18f;
@@ -430,6 +506,27 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private uint _boundingBoxVertexBuffer;
     private bool _needsBoundingBoxUpload;
 
+    private int _buildVolumeMinLocation;
+    private int _buildVolumeMaxLocation;
+    private int _highlightOutOfBoundsLocation;
+
+    private uint _comVertexArray;
+    private uint _comVertexBuffer;
+    private int _comVertexCount;
+    private bool _needsComUpload;
+
+    private bool _isOutOfBounds;
+    private string? _outOfBoundsWarningText;
+    private float _modelVolumeMl;
+    private float _modelWeightGrams;
+    private float _modelResinCost;
+    private string? _modelStatsText;
+    private Vector3 _centerOfMass;
+    private string? _centerOfMassText;
+    private float _baseContactArea;
+
+    private TaskCompletionSource<WriteableBitmap?>? _snapshotCompletionSource;
+
     public event Action<Vector3>? ModelPointClicked;
 
     static LayerModel3DView()
@@ -479,25 +576,37 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         });
         SlabThicknessProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
+        TransitionLayersHeightProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+            control.RequestNextFrameRendering());
+        ShowModelStatsProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+        {
+            UserSettings.Instance.Layer3DPreview.ShowModelStats = control.ShowModelStats;
+            control.RequestNextFrameRendering();
+        });
+        ShowCenterOfMassProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+        {
+            UserSettings.Instance.Layer3DPreview.ShowCenterOfMass = control.ShowCenterOfMass;
+            control._needsComUpload = true;
+            control.RequestNextFrameRendering();
+        });
         PlateWidthProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
         {
             control._needsGridUpload = true;
+            control.UpdateModelMetrics();
             control.RequestNextFrameRendering();
         });
         PlateHeightProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
         {
             control._needsGridUpload = true;
+            control.UpdateModelMetrics();
             control.RequestNextFrameRendering();
         });
         PrintHeightProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
         {
             control._needsGridUpload = true;
+            control.UpdateModelMetrics();
             control.RequestNextFrameRendering();
         });
-        BottomLayersHeightProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
-            control.RequestNextFrameRendering());
-        TransitionLayersHeightProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
-            control.RequestNextFrameRendering());
     }
 
     public LayerModel3DView()
@@ -508,7 +617,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         _turntableTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
         _turntableTimer.Tick += TurntableTimerOnTick;
         UpdateMeasureText();
-        UpdateModelDimensions();
+        UpdateModelMetrics();
     }
 
     public VoxelPreviewMesh? Mesh
@@ -522,7 +631,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             _needsUpload = true;
             _needsGridUpload = true;
             _needsBoundingBoxUpload = true;
-            UpdateModelDimensions();
+            UpdateModelMetrics();
             if (value is null)
             {
                 IsTurntableActive = false;
@@ -698,17 +807,227 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         private set => SetAndRaise(ModelDimensionsTextProperty, ref _modelDimensionsText, value);
     }
 
-    private void UpdateModelDimensions()
+    public bool ShowModelStats
     {
-        if (_mesh is { } mesh && mesh.VertexCount > 0)
+        get => GetValue(ShowModelStatsProperty);
+        set => SetValue(ShowModelStatsProperty, value);
+    }
+
+    public string? ModelStatsText
+    {
+        get => _modelStatsText;
+        private set => SetAndRaise(ModelStatsTextProperty, ref _modelStatsText, value);
+    }
+
+    public float ModelVolumeMl
+    {
+        get => _modelVolumeMl;
+        private set => SetAndRaise(ModelVolumeMlProperty, ref _modelVolumeMl, value);
+    }
+
+    public float ModelWeightGrams
+    {
+        get => _modelWeightGrams;
+        private set => SetAndRaise(ModelWeightGramsProperty, ref _modelWeightGrams, value);
+    }
+
+    public float ModelResinCost
+    {
+        get => _modelResinCost;
+        private set => SetAndRaise(ModelResinCostProperty, ref _modelResinCost, value);
+    }
+
+    public bool ShowCenterOfMass
+    {
+        get => GetValue(ShowCenterOfMassProperty);
+        set => SetValue(ShowCenterOfMassProperty, value);
+    }
+
+    public string? CenterOfMassText
+    {
+        get => _centerOfMassText;
+        private set => SetAndRaise(CenterOfMassTextProperty, ref _centerOfMassText, value);
+    }
+
+    public Vector3 CenterOfMass
+    {
+        get => _centerOfMass;
+        private set => SetAndRaise(CenterOfMassProperty, ref _centerOfMass, value);
+    }
+
+    public float BaseContactArea
+    {
+        get => _baseContactArea;
+        private set => SetAndRaise(BaseContactAreaProperty, ref _baseContactArea, value);
+    }
+
+    public bool IsOutOfBounds
+    {
+        get => _isOutOfBounds;
+        private set => SetAndRaise(IsOutOfBoundsProperty, ref _isOutOfBounds, value);
+    }
+
+    public string? OutOfBoundsWarningText
+    {
+        get => _outOfBoundsWarningText;
+        private set => SetAndRaise(OutOfBoundsWarningTextProperty, ref _outOfBoundsWarningText, value);
+    }
+
+    public Task<WriteableBitmap?> CaptureSnapshotAsync()
+    {
+        var tcs = new TaskCompletionSource<WriteableBitmap?>();
+        _snapshotCompletionSource = tcs;
+        RequestNextFrameRendering();
+        return tcs.Task;
+    }
+
+    private void UpdateModelMetrics()
+    {
+        if (_mesh is not { } mesh || mesh.VertexCount == 0)
         {
-            var size = mesh.Size;
-            ModelDimensionsText = $"{size.X:F2} × {size.Y:F2} × {size.Z:F2} mm";
+            ModelDimensionsText = null;
+            ModelStatsText = null;
+            CenterOfMassText = null;
+            IsOutOfBounds = false;
+            OutOfBoundsWarningText = null;
+            ModelVolumeMl = 0f;
+            ModelWeightGrams = 0f;
+            ModelResinCost = 0f;
+            CenterOfMass = Vector3.Zero;
+            BaseContactArea = 0f;
+            return;
+        }
+
+        var size = mesh.Size;
+        ModelDimensionsText = $"{size.X:F2} × {size.Y:F2} × {size.Z:F2} mm";
+
+        // Build volume & out-of-bounds check
+        if (PlateWidth > 0 && PlateHeight > 0)
+        {
+            var min = mesh.MinimumBounds;
+            var max = mesh.MaximumBounds;
+            var oobList = new List<string>(3);
+
+            if (min.X < -0.05f || max.X > PlateWidth + 0.05f)
+            {
+                var left = min.X < -0.05f ? -min.X : 0f;
+                var right = max.X > PlateWidth + 0.05f ? max.X - PlateWidth : 0f;
+                oobList.Add($"X: +{Math.Max(left, right):F1}mm");
+            }
+            if (min.Y < -0.05f || max.Y > PlateHeight + 0.05f)
+            {
+                var front = min.Y < -0.05f ? -min.Y : 0f;
+                var back = max.Y > PlateHeight + 0.05f ? max.Y - PlateHeight : 0f;
+                oobList.Add($"Y: +{Math.Max(front, back):F1}mm");
+            }
+            if (PrintHeight > 0 && max.Z > PrintHeight + 0.05f)
+            {
+                oobList.Add($"Z: +{max.Z - PrintHeight:F1}mm");
+            }
+
+            var isOob = oobList.Count > 0;
+            IsOutOfBounds = isOob;
+            OutOfBoundsWarningText = isOob ? string.Join(", ", oobList) : null;
         }
         else
         {
-            ModelDimensionsText = null;
+            IsOutOfBounds = false;
+            OutOfBoundsWarningText = null;
         }
+
+        // Divergence theorem for exact mesh volume & center of mass (tetrahedral decomposition)
+        double totalVolume = 0.0;
+        double sumVx = 0.0, sumVy = 0.0, sumVz = 0.0;
+        var vertices = mesh.Vertices;
+        var indices = mesh.Indices;
+        var minZ = mesh.MinimumBounds.Z;
+        var contactZThreshold = minZ + 0.06f;
+        double contactArea = 0.0;
+        float contactMinX = float.MaxValue, contactMaxX = float.MinValue;
+        float contactMinY = float.MaxValue, contactMaxY = float.MinValue;
+
+        for (int i = 0; i < indices.Length; i += 3)
+        {
+            var p0 = vertices[(int)indices[i]].Position;
+            var p1 = vertices[(int)indices[i + 1]].Position;
+            var p2 = vertices[(int)indices[i + 2]].Position;
+
+            double vDet = p0.X * (p1.Y * p2.Z - p1.Z * p2.Y) -
+                         p0.Y * (p1.X * p2.Z - p1.Z * p2.X) +
+                         p0.Z * (p1.X * p2.Y - p1.Y * p2.X);
+            double vol = vDet / 6.0;
+            totalVolume += vol;
+
+            double cx = (p0.X + p1.X + p2.X) * 0.25;
+            double cy = (p0.Y + p1.Y + p2.Y) * 0.25;
+            double cz = (p0.Z + p1.Z + p2.Z) * 0.25;
+
+            sumVx += vol * cx;
+            sumVy += vol * cy;
+            sumVz += vol * cz;
+
+            if (p0.Z <= contactZThreshold && p1.Z <= contactZThreshold && p2.Z <= contactZThreshold)
+            {
+                var crossX = (p1.Y - p0.Y) * (p2.Z - p0.Z) - (p1.Z - p0.Z) * (p2.Y - p0.Y);
+                var crossY = (p1.Z - p0.Z) * (p2.X - p0.X) - (p1.X - p0.X) * (p2.Z - p0.Z);
+                var crossZ = (p1.X - p0.X) * (p2.Y - p0.Y) - (p1.Y - p0.Y) * (p2.X - p0.X);
+                var triArea = 0.5 * Math.Sqrt(crossX * crossX + crossY * crossY + crossZ * crossZ);
+                contactArea += triArea;
+
+                contactMinX = Math.Min(contactMinX, Math.Min(p0.X, Math.Min(p1.X, p2.X)));
+                contactMaxX = Math.Max(contactMaxX, Math.Max(p0.X, Math.Max(p1.X, p2.X)));
+                contactMinY = Math.Min(contactMinY, Math.Min(p0.Y, Math.Min(p1.Y, p2.Y)));
+                contactMaxY = Math.Max(contactMaxY, Math.Max(p0.Y, Math.Max(p1.Y, p2.Y)));
+            }
+        }
+
+        double absVolume = Math.Abs(totalVolume);
+        float volumeMl = (float)(absVolume / 1000.0);
+        float weightG = volumeMl * 1.1f;
+        float bottleCost = UserSettings.Instance.General.AverageResin1000MlBottleCost;
+        float cost = volumeMl * (bottleCost / 1000.0f);
+
+        ModelVolumeMl = volumeMl;
+        ModelWeightGrams = weightG;
+        ModelResinCost = cost;
+        ModelStatsText = $"Volume: {volumeMl:F1} mL (cm³)  •  Weight: {weightG:F1} g  •  Cost: ${cost:F2}";
+
+        Vector3 com;
+        if (absVolume > 1e-4)
+        {
+            com = new Vector3(
+                (float)(sumVx / totalVolume),
+                (float)(sumVy / totalVolume),
+                (float)(sumVz / totalVolume));
+        }
+        else
+        {
+            com = mesh.Center;
+        }
+
+        if (float.IsNaN(com.X) || float.IsNaN(com.Y) || float.IsNaN(com.Z) ||
+            float.IsInfinity(com.X) || float.IsInfinity(com.Y) || float.IsInfinity(com.Z))
+        {
+            com = mesh.Center;
+        }
+
+        CenterOfMass = com;
+        BaseContactArea = (float)contactArea;
+
+        string stabilityText;
+        if (contactArea < 0.5)
+        {
+            stabilityText = "No direct base contact (raft/supports needed)";
+        }
+        else
+        {
+            bool withinContact = com.X >= (contactMinX - 1.0f) && com.X <= (contactMaxX + 1.0f) &&
+                                 com.Y >= (contactMinY - 1.0f) && com.Y <= (contactMaxY + 1.0f);
+            stabilityText = withinContact ? "Stable (CoM over base)" : "High peel/tilt risk (CoM outside base)";
+        }
+
+        CenterOfMassText = $"CoM: ({com.X:F1}, {com.Y:F1}, {com.Z:F1}) mm  •  Base Contact: {contactArea:F1} mm²  •  {stabilityText}";
+        _needsComUpload = true;
     }
 
     public bool IsTurntableActive
@@ -930,6 +1249,9 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             _bottomZLocation = _gl.GetUniformLocation(_shaderProgram, "uBottomZ");
             _transitionZLocation = _gl.GetUniformLocation(_shaderProgram, "uTransitionZ");
             _bottomColorLocation = _gl.GetUniformLocation(_shaderProgram, "uBottomColor");
+            _buildVolumeMinLocation = _gl.GetUniformLocation(_shaderProgram, "uBuildVolumeMin");
+            _buildVolumeMaxLocation = _gl.GetUniformLocation(_shaderProgram, "uBuildVolumeMax");
+            _highlightOutOfBoundsLocation = _gl.GetUniformLocation(_shaderProgram, "uHighlightOutOfBounds");
 
             _vertexArray = _gl.GenVertexArray();
             _vertexBuffer = _gl.GenBuffer();
@@ -949,6 +1271,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             _measureVertexBuffer = _gl.GenBuffer();
             _boundingBoxVertexArray = _gl.GenVertexArray();
             _boundingBoxVertexBuffer = _gl.GenBuffer();
+            _comVertexArray = _gl.GenVertexArray();
+            _comVertexBuffer = _gl.GenBuffer();
 
             _capShaderProgram = CreateShaderProgram(
                 isOpenGles ? EsCapVertexShader : DesktopCapVertexShader,
@@ -1051,6 +1375,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         if (_needsFocusBoxUpload) UploadFocusedBoundingBox();
         if (_needsMeasureUpload) UploadMeasureLine();
         if (_needsBoundingBoxUpload) UploadModelBoundingBox();
+        if (_needsComUpload) UploadCenterOfMass();
 
         if ((_uploadedIndexCount == 0 || _mesh is null) &&
             (_uploadedIssueIndexCount == 0 || _issueMesh is null) &&
@@ -1131,9 +1456,28 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             DrawModelBoundingBox();
         }
 
+        if (ShowCenterOfMass && _mesh is not null && _mesh.VertexCount > 0)
+        {
+            DrawCenterOfMass();
+        }
+
         if (IsMeasureMode)
         {
             DrawMeasureLine();
+        }
+
+        if (_snapshotCompletionSource is { } snapshotTcs)
+        {
+            _snapshotCompletionSource = null;
+            try
+            {
+                var bitmap = ReadFramebufferToBitmap(width, height, renderScaling);
+                snapshotTcs.TrySetResult(bitmap);
+            }
+            catch (Exception ex)
+            {
+                snapshotTcs.TrySetException(ex);
+            }
         }
     }
 
@@ -1426,8 +1770,16 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         _gl.UseProgram(_shaderProgram);
         _gl.Uniform1(_unlitLocation, 1);
         _gl.Uniform1(_clipEnabledLocation, 0);
-        _gl.Uniform1(_alphaLocation, 0.35f);
-        _gl.Uniform3(_colorLocation, 0.35f, 0.55f, 0.85f);
+        _gl.Uniform1(_highlightOutOfBoundsLocation, 0);
+        _gl.Uniform1(_alphaLocation, IsOutOfBounds ? 0.65f : 0.35f);
+        if (IsOutOfBounds)
+        {
+            _gl.Uniform3(_colorLocation, 1.0f, 0.25f, 0.25f);
+        }
+        else
+        {
+            _gl.Uniform3(_colorLocation, 0.35f, 0.55f, 0.85f);
+        }
         _gl.BindVertexArray(_gridVertexArray);
         _gl.Enable(EnableCap.Blend);
         _gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
@@ -1521,6 +1873,159 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         _gl.Enable(EnableCap.DepthTest);
         _gl.Uniform1(_alphaLocation, 0.95f);
         _gl.DrawArrays(PrimitiveType.Lines, 0, 24);
+    }
+
+    private unsafe void UploadCenterOfMass()
+    {
+        if (_gl is null || _comVertexBuffer == 0) return;
+        _needsComUpload = false;
+
+        if (_mesh is null || _mesh.VertexCount == 0)
+        {
+            _comVertexCount = 0;
+            return;
+        }
+
+        var lines = new List<VoxelPreviewVertex>(64);
+        var c = _centerOfMass;
+        var r = 7.0f;
+        var d = 3.5f;
+
+        // 1. 3D Crosshair at CoM
+        lines.Add(new(new Vector3(c.X - r, c.Y, c.Z), Vector3.UnitZ));
+        lines.Add(new(new Vector3(c.X + r, c.Y, c.Z), Vector3.UnitZ));
+
+        lines.Add(new(new Vector3(c.X, c.Y - r, c.Z), Vector3.UnitZ));
+        lines.Add(new(new Vector3(c.X, c.Y + r, c.Z), Vector3.UnitZ));
+
+        lines.Add(new(new Vector3(c.X, c.Y, c.Z - r), Vector3.UnitZ));
+        lines.Add(new(new Vector3(c.X, c.Y, c.Z + r), Vector3.UnitZ));
+
+        // 2. Diamond / octahedron wireframe around CoM
+        var top = new Vector3(c.X, c.Y, c.Z + d);
+        var bot = new Vector3(c.X, c.Y, c.Z - d);
+        var pXp = new Vector3(c.X + d, c.Y, c.Z);
+        var pXm = new Vector3(c.X - d, c.Y, c.Z);
+        var pYp = new Vector3(c.X, c.Y + d, c.Z);
+        var pYm = new Vector3(c.X - d, c.Y, c.Z);
+
+        lines.Add(new(top, Vector3.UnitZ)); lines.Add(new(pXp, Vector3.UnitZ));
+        lines.Add(new(top, Vector3.UnitZ)); lines.Add(new(pXm, Vector3.UnitZ));
+        lines.Add(new(top, Vector3.UnitZ)); lines.Add(new(pYp, Vector3.UnitZ));
+        lines.Add(new(top, Vector3.UnitZ)); lines.Add(new(pYm, Vector3.UnitZ));
+
+        lines.Add(new(bot, Vector3.UnitZ)); lines.Add(new(pXp, Vector3.UnitZ));
+        lines.Add(new(bot, Vector3.UnitZ)); lines.Add(new(pXm, Vector3.UnitZ));
+        lines.Add(new(bot, Vector3.UnitZ)); lines.Add(new(pYp, Vector3.UnitZ));
+        lines.Add(new(bot, Vector3.UnitZ)); lines.Add(new(pYm, Vector3.UnitZ));
+
+        lines.Add(new(pXp, Vector3.UnitZ)); lines.Add(new(pYp, Vector3.UnitZ));
+        lines.Add(new(pYp, Vector3.UnitZ)); lines.Add(new(pXm, Vector3.UnitZ));
+        lines.Add(new(pXm, Vector3.UnitZ)); lines.Add(new(pYm, Vector3.UnitZ));
+        lines.Add(new(pYm, Vector3.UnitZ)); lines.Add(new(pXp, Vector3.UnitZ));
+
+        // 3. Plumb line down to build plate (Z = 0)
+        lines.Add(new(new Vector3(c.X, c.Y, c.Z), Vector3.UnitZ));
+        lines.Add(new(new Vector3(c.X, c.Y, 0f), Vector3.UnitZ));
+
+        // 4. Base landing target (cross & circle at Z = 0.05f to avoid z-fighting)
+        var bz = 0.05f;
+        lines.Add(new(new Vector3(c.X - r, c.Y, bz), Vector3.UnitZ));
+        lines.Add(new(new Vector3(c.X + r, c.Y, bz), Vector3.UnitZ));
+        lines.Add(new(new Vector3(c.X, c.Y - r, bz), Vector3.UnitZ));
+        lines.Add(new(new Vector3(c.X, c.Y + r, bz), Vector3.UnitZ));
+
+        const int segments = 12;
+        for (int i = 0; i < segments; i++)
+        {
+            var a1 = i * (MathF.Tau / segments);
+            var a2 = (i + 1) * (MathF.Tau / segments);
+            lines.Add(new(new Vector3(c.X + MathF.Cos(a1) * (r * 0.5f), c.Y + MathF.Sin(a1) * (r * 0.5f), bz), Vector3.UnitZ));
+            lines.Add(new(new Vector3(c.X + MathF.Cos(a2) * (r * 0.5f), c.Y + MathF.Sin(a2) * (r * 0.5f), bz), Vector3.UnitZ));
+        }
+
+        _comVertexCount = lines.Count;
+        _gl.BindVertexArray(_comVertexArray);
+        _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _comVertexBuffer);
+
+        var span = CollectionsMarshal.AsSpan(lines);
+        fixed (VoxelPreviewVertex* ptr = span)
+        {
+            _gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(lines.Count * sizeof(VoxelPreviewVertex)), ptr,
+                BufferUsageARB.StaticDraw);
+        }
+
+        var vertexSize = (uint)sizeof(VoxelPreviewVertex);
+        _gl.EnableVertexAttribArray(0);
+        _gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, vertexSize, (void*)0);
+        _gl.EnableVertexAttribArray(1);
+        _gl.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, vertexSize, (void*)sizeof(Vector3));
+        _gl.BindVertexArray(0);
+    }
+
+    private unsafe void DrawCenterOfMass()
+    {
+        if (_gl is null || !ShowCenterOfMass || _comVertexCount == 0 || _comVertexArray == 0) return;
+
+        _gl.UseProgram(_shaderProgram);
+        _gl.Uniform1(_unlitLocation, 1);
+        _gl.Uniform1(_clipEnabledLocation, 0);
+        _gl.Uniform1(_highlightOutOfBoundsLocation, 0);
+        _gl.BindVertexArray(_comVertexArray);
+        _gl.Enable(EnableCap.Blend);
+        _gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+
+        // Pass 1: X-ray / through model
+        _gl.Disable(EnableCap.DepthTest);
+        _gl.Uniform1(_alphaLocation, 0.35f);
+        _gl.Uniform3(_colorLocation, 1.0f, 0.82f, 0.1f);
+        _gl.DrawArrays(PrimitiveType.Lines, 0, (uint)_comVertexCount);
+
+        // Pass 2: In-front crisp
+        _gl.Enable(EnableCap.DepthTest);
+        _gl.Uniform1(_alphaLocation, 1.0f);
+        _gl.Uniform3(_colorLocation, 1.0f, 0.85f, 0.15f);
+        _gl.DrawArrays(PrimitiveType.Lines, 0, (uint)_comVertexCount);
+
+        _gl.Disable(EnableCap.Blend);
+    }
+
+    private unsafe WriteableBitmap ReadFramebufferToBitmap(uint width, uint height, double renderScaling)
+    {
+        var pixelWidth = (int)width;
+        var pixelHeight = (int)height;
+        var stride = pixelWidth * 4;
+        var rawBytes = new byte[stride * pixelHeight];
+
+        fixed (byte* pRaw = rawBytes)
+        {
+            _gl!.PixelStore(PixelStoreParameter.PackAlignment, 1);
+            _gl.ReadPixels(0, 0, width, height, Silk.NET.OpenGL.PixelFormat.Rgba, PixelType.UnsignedByte, pRaw);
+        }
+
+        var dpi = 96.0 * renderScaling;
+        var bitmap = new WriteableBitmap(
+            new PixelSize(pixelWidth, pixelHeight),
+            new Avalonia.Vector(dpi, dpi),
+            Avalonia.Platform.PixelFormat.Rgba8888,
+            Avalonia.Platform.AlphaFormat.Premul);
+
+        using (var fb = bitmap.Lock())
+        {
+            var destPtr = (byte*)fb.Address;
+            var destStride = fb.RowBytes;
+            fixed (byte* srcPtr = rawBytes)
+            {
+                for (var y = 0; y < pixelHeight; y++)
+                {
+                    var srcRow = srcPtr + (pixelHeight - 1 - y) * stride;
+                    var destRow = destPtr + y * destStride;
+                    System.Buffer.MemoryCopy(srcRow, destRow, destStride, stride);
+                }
+            }
+        }
+
+        return bitmap;
     }
 
     private unsafe void UploadMeasureLine()
@@ -1673,6 +2178,17 @@ private unsafe void DrawFocusedBoundingBox()
     private unsafe void DrawModel()
     {
         if (_gl is null) return;
+
+        if (IsOutOfBounds && PlateWidth > 0 && PlateHeight > 0)
+        {
+            _gl.Uniform1(_highlightOutOfBoundsLocation, 1);
+            _gl.Uniform3(_buildVolumeMinLocation, 0f, 0f, 0f);
+            _gl.Uniform3(_buildVolumeMaxLocation, PlateWidth, PlateHeight, PrintHeight > 0 ? PrintHeight : 1e9f);
+        }
+        else
+        {
+            _gl.Uniform1(_highlightOutOfBoundsLocation, 0);
+        }
 
         _gl.Uniform3(_colorLocation, VoxelColor.R / 255f, VoxelColor.G / 255f, VoxelColor.B / 255f);
         _gl.BindVertexArray(_vertexArray);
@@ -2117,6 +2633,11 @@ private unsafe void DrawFocusedBoundingBox()
         if (_boundingBoxVertexBuffer != 0) _gl.DeleteBuffer(_boundingBoxVertexBuffer);
         _boundingBoxVertexArray = 0;
         _boundingBoxVertexBuffer = 0;
+        if (_comVertexArray != 0) _gl.DeleteVertexArray(_comVertexArray);
+        if (_comVertexBuffer != 0) _gl.DeleteBuffer(_comVertexBuffer);
+        _comVertexArray = 0;
+        _comVertexBuffer = 0;
+        _comVertexCount = 0;
         _focusBoxVertexArray = 0;
         _focusBoxVertexBuffer = 0;
         _hasFocusedBox = false;
@@ -2272,9 +2793,26 @@ private unsafe void DrawFocusedBoundingBox()
     {
         if (e.Handled || _mesh is null) return false;
 
+        if ((e.KeyModifiers & KeyModifiers.Control) != 0 && e.Key == Key.C)
+        {
+            SnapshotToClipboardRequested?.Invoke();
+            return true;
+        }
+
         if (e.KeyModifiers != KeyModifiers.None) return false;
         switch (e.Key)
         {
+            case Key.F12:
+                SnapshotToFileRequested?.Invoke();
+                return true;
+            case Key.V:
+                ShowModelStats = !ShowModelStats;
+                UserSettings.Instance.Layer3DPreview.ShowModelStats = ShowModelStats;
+                return true;
+            case Key.K:
+                ShowCenterOfMass = !ShowCenterOfMass;
+                UserSettings.Instance.Layer3DPreview.ShowCenterOfMass = ShowCenterOfMass;
+                return true;
             /* The six axis views, matching the orientation cube faces. */
             case Key.D1 or Key.NumPad1:
                 SnapToDirection(-Vector3.UnitY); // Front

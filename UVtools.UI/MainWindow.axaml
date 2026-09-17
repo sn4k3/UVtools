@@ -2444,6 +2444,18 @@
                                               Content="{icon:MaterialIconExt Kind=CubeOutline, Classes='Fill'}"
                                               VerticalAlignment="Stretch"
                                               ToolTip.Tip="Toggle model bounding box and dimensions [B]."/>
+                                
+                                <ToggleButton IsChecked="{Binding Settings.Layer3DPreview.ShowModelStats}"
+                                              IsEnabled="{Binding HasLayer3DMesh}"
+                                              Content="{icon:MaterialIconExt Kind=ScaleBalance, Classes='Fill'}"
+                                              VerticalAlignment="Stretch"
+                                              ToolTip.Tip="Toggle model volume, weight &amp; resin cost HUD [V]."/>
+
+                                <ToggleButton IsChecked="{Binding Settings.Layer3DPreview.ShowCenterOfMass}"
+                                              IsEnabled="{Binding HasLayer3DMesh}"
+                                              Content="{icon:MaterialIconExt Kind=CrosshairsGps, Classes='Fill'}"
+                                              VerticalAlignment="Stretch"
+                                              ToolTip.Tip="Toggle Center of Mass and first-layer contact stability [K]."/>
 
                                 <ToggleButton IsChecked="{Binding #LayerModel3DView.IsMeasureMode}"
                                               IsEnabled="{Binding HasLayer3DMesh}"
@@ -2456,6 +2468,23 @@
                                               Content="{icon:MaterialIconExt Kind=Rotate360, Classes='Fill'}"
                                               VerticalAlignment="Stretch"
                                               ToolTip.Tip="Turntable / auto-rotate view [T or Space]"/>
+
+                                <Button Command="{Binding CopyLayer3DSnapshotToClipboardCommand}"
+                                        IsEnabled="{Binding HasLayer3DMesh}"
+                                        VerticalAlignment="Stretch"
+                                        ToolTip.Tip="Take viewport snapshot to clipboard [Ctrl+C]. Right-click for save file option [F12].">
+                                    <Button.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Copy Snapshot to Clipboard (Ctrl+C)"
+                                                      Command="{Binding CopyLayer3DSnapshotToClipboardCommand}"
+                                                      Icon="{icon:MaterialIconExt ContentCopy}" />
+                                            <MenuItem Header="Save Snapshot to File... (F12)"
+                                                      Command="{Binding SaveLayer3DSnapshotToFileCommand}"
+                                                      Icon="{icon:MaterialIconExt ContentSave}" />
+                                        </ContextMenu>
+                                    </Button.ContextMenu>
+                                    <icon:MaterialIcon Kind="Camera" Classes="Fill" />
+                                </Button>
                                               
                                 <Button Command="{Binding ResetLayer3DCameraCommand}"
                                         Content="{icon:MaterialIconExt CubeScan, Classes='Fill'}"
@@ -2484,7 +2513,7 @@
                                                    Background="Transparent"
                                                    VerticalAlignment="Stretch"
                                                    FontSize="28"
-                                                   ToolTip.Tip="Views:&#x0a;» (S)olid: shaded opaque model&#x0a;» (X)-Ray: translucent model with internal geometry visible&#x0a;» (W)ireframe: visible optimized mesh edges&#x0a;&#x0a;Mouse:&#x0a;» Left-click drag to orbit&#x0a;» Right/middle-click drag to pan&#x0a;» Click model: Click-to-Layer (jump to slice)&#x0a;» Wheel to zoom, double-click to reset&#x0a;&#x0a;Keyboard:&#x0a;» 1-6: front, back, left, right, top, bottom view&#x0a;» 0 or Home: reset the camera&#x0a;» Arrows: orbit in steps&#x0a;» + and -: zoom in and out&#x0a;» C: toggle clip to current layer&#x0a;» I: invert clipping&#x0a;» G: toggle build plate grid&#x0a;» H: cycle overhang heatmap / layer zones&#x0a;» O: toggle ghost silhouette of clipped model&#x0a;» P: toggle perspective/orthographic&#x0a;» B: toggle model bounding box and dimensions&#x0a;» T or Space: toggle turntable auto-rotate" />
+                                                   ToolTip.Tip="Views:&#x0a;» (S)olid: shaded opaque model&#x0a;» (X)-Ray: translucent model with internal geometry visible&#x0a;» (W)ireframe: visible optimized mesh edges&#x0a;&#x0a;Mouse:&#x0a;» Left-click drag to orbit&#x0a;» Right/middle-click drag to pan&#x0a;» Click model: Click-to-Layer (jump to slice)&#x0a;» Wheel to zoom, double-click to reset&#x0a;&#x0a;Keyboard:&#x0a;» 1-6: front, back, left, right, top, bottom view&#x0a;» 0 or Home: reset the camera&#x0a;» Arrows: orbit in steps&#x0a;» + and -: zoom in and out&#x0a;» C: toggle clip to current layer&#x0a;» I: invert clipping&#x0a;» G: toggle build plate grid&#x0a;» H: cycle overhang heatmap / layer zones&#x0a;» O: toggle ghost silhouette of clipped model&#x0a;» P: toggle perspective/orthographic&#x0a;» B: toggle model bounding box and dimensions&#x0a;» V: toggle model volume, weight &amp; cost&#x0a;» K: toggle center of mass &amp; contact&#x0a;» Ctrl+C / F12: snapshot to clipboard / file&#x0a;» T or Space: toggle turntable auto-rotate" />
                             </StackPanel>
                             </Grid>
                             
@@ -2505,6 +2534,8 @@
                                                                ShowBuildPlateGrid="{Binding Settings.Layer3DPreview.ShowBuildPlateGrid}"
                                                                GhostClippedModel="{Binding Settings.Layer3DPreview.GhostClippedModel}"
                                                                ShowBoundingBox="{Binding Settings.Layer3DPreview.ShowBoundingBox}"
+                                                               ShowModelStats="{Binding Settings.Layer3DPreview.ShowModelStats}"
+                                                               ShowCenterOfMass="{Binding Settings.Layer3DPreview.ShowCenterOfMass}"
                                                                SlabThickness="{Binding Settings.Layer3DPreview.SlabThicknessMm}"
                                                                VoxelColor="{Binding Settings.Layer3DPreview.VoxelBrush}" />
 
@@ -2535,6 +2566,96 @@
                                                    Text="{Binding Layer3DStatus}"
                                                    TextAlignment="Center"
                                                    TextWrapping="Wrap" />
+                                    </Border>
+
+                                    <!-- Out-of-bounds Build Volume Warning Overlay -->
+                                    <Border HorizontalAlignment="Right"
+                                            VerticalAlignment="Top"
+                                            Margin="14,136,14,0"
+                                            Padding="10,6"
+                                            Background="#E0301014"
+                                            BorderBrush="#FF2040"
+                                            BorderThickness="1.5"
+                                            CornerRadius="6"
+                                            IsHitTestVisible="False"
+                                            IsVisible="{Binding #LayerModel3DView.IsOutOfBounds}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <icon:MaterialIcon Kind="AlertDecagram"
+                                                               Width="22"
+                                                               Height="22"
+                                                               Foreground="#FF3355"
+                                                               VerticalAlignment="Center" />
+                                            <StackPanel VerticalAlignment="Center" Spacing="1">
+                                                <TextBlock FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#FFA0B0"
+                                                           Text="OUT OF BOUNDS WARNING" />
+                                                <TextBlock FontSize="12"
+                                                           FontWeight="Bold"
+                                                           Foreground="White"
+                                                           Text="{Binding #LayerModel3DView.OutOfBoundsWarningText}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Model Volume, Weight & Resin Cost HUD Overlay -->
+                                    <Border HorizontalAlignment="Left"
+                                            VerticalAlignment="Top"
+                                            Margin="14,64,14,0"
+                                            Padding="10,6"
+                                            Background="#E0161920"
+                                            BorderBrush="#FFB300"
+                                            BorderThickness="1.5"
+                                            CornerRadius="6"
+                                            IsHitTestVisible="False"
+                                            IsVisible="{Binding #LayerModel3DView.ShowModelStats}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <icon:MaterialIcon Kind="ScaleBalance"
+                                                               Width="22"
+                                                               Height="22"
+                                                               Foreground="#FFB300"
+                                                               VerticalAlignment="Center" />
+                                            <StackPanel VerticalAlignment="Center" Spacing="1">
+                                                <TextBlock FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#A0A8B8"
+                                                           Text="MODEL ESTIMATES (VOLUME / WEIGHT / COST)" />
+                                                <TextBlock FontSize="12"
+                                                           FontWeight="Bold"
+                                                           Foreground="White"
+                                                           Text="{Binding #LayerModel3DView.ModelStatsText}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Center of Mass & First-Layer Contact HUD Overlay -->
+                                    <Border HorizontalAlignment="Left"
+                                            VerticalAlignment="Bottom"
+                                            Margin="14,0,14,64"
+                                            Padding="10,6"
+                                            Background="#E0161920"
+                                            BorderBrush="#FFD700"
+                                            BorderThickness="1.5"
+                                            CornerRadius="6"
+                                            IsHitTestVisible="False"
+                                            IsVisible="{Binding #LayerModel3DView.ShowCenterOfMass}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <icon:MaterialIcon Kind="CrosshairsGps"
+                                                               Width="22"
+                                                               Height="22"
+                                                               Foreground="#FFD700"
+                                                               VerticalAlignment="Center" />
+                                            <StackPanel VerticalAlignment="Center" Spacing="1">
+                                                <TextBlock FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#A0A8B8"
+                                                           Text="CENTER OF MASS &amp; FIRST-LAYER CONTACT" />
+                                                <TextBlock FontSize="12"
+                                                           FontWeight="Bold"
+                                                           Foreground="White"
+                                                           Text="{Binding #LayerModel3DView.CenterOfMassText}" />
+                                            </StackPanel>
+                                        </StackPanel>
                                     </Border>
 
                                     <!-- Model Dimensions & Bounding Box HUD Overlay -->

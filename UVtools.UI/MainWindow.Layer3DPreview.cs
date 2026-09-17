@@ -9,6 +9,8 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
@@ -179,6 +181,9 @@ public partial class MainWindow
             });
         };
 
+        LayerModel3DView.SnapshotToClipboardRequested += () => Dispatcher.UIThread.InvokeAsync(CopyLayer3DSnapshotToClipboard);
+        LayerModel3DView.SnapshotToFileRequested += () => Dispatcher.UIThread.InvokeAsync(SaveLayer3DSnapshotToFile);
+
         if (OperatingSystem.IsMacOS())
         {
             _layer3DRendererError =
@@ -206,6 +211,8 @@ public partial class MainWindow
         LayerModel3DView.ShowBuildPlateGrid = Settings.Layer3DPreview.ShowBuildPlateGrid;
         LayerModel3DView.GhostClippedModel = Settings.Layer3DPreview.GhostClippedModel;
         LayerModel3DView.SlabThickness = Settings.Layer3DPreview.SlabThicknessMm;
+        LayerModel3DView.ShowModelStats = Settings.Layer3DPreview.ShowModelStats;
+        LayerModel3DView.ShowCenterOfMass = Settings.Layer3DPreview.ShowCenterOfMass;
 
         if (SlicerFile is not null)
         {
@@ -337,6 +344,56 @@ public partial class MainWindow
     public void ResetLayer3DCamera()
     {
         LayerModel3DView.ResetCamera();
+    }
+
+    [RelayCommand]
+    public async Task CopyLayer3DSnapshotToClipboard()
+    {
+        if (!HasLayer3DMesh) return;
+
+        try
+        {
+            var bitmap = await LayerModel3DView.CaptureSnapshotAsync();
+            if (bitmap is null) return;
+
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard is not null)
+            {
+                await clipboard.SetBitmapAsync(bitmap);
+                AddLog("3D preview snapshot copied to clipboard.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await this.MessageBoxError(ex.Message, "Snapshot Error");
+        }
+    }
+
+    [RelayCommand]
+    public async Task SaveLayer3DSnapshotToFile()
+    {
+        if (!HasLayer3DMesh) return;
+
+        try
+        {
+            var bitmap = await LayerModel3DView.CaptureSnapshotAsync();
+            if (bitmap is null) return;
+
+            var defaultName = SlicerFile is not null
+                ? $"{SlicerFile.FilenameNoExt}_3D.png"
+                : "UVtools_3D_snapshot.png";
+            var dir = SlicerFile?.DirectoryPath ?? Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+
+            using var file = await SaveFilePickerAsync(dir, defaultName, AvaloniaStatic.PngFileFilter);
+            if (file?.TryGetLocalPath() is not { } filePath) return;
+
+            bitmap.Save(filePath);
+            AddLog($"3D preview snapshot saved to {filePath}");
+        }
+        catch (Exception ex)
+        {
+            await this.MessageBoxError(ex.Message, "Snapshot Error");
+        }
     }
 
     [RelayCommand]

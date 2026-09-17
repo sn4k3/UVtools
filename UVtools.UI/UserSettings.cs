@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -614,6 +614,12 @@ public partial class UserSettings : ObservableObject
 
         [ObservableProperty]
         public partial bool ShowBoundingBox { get; set; } = false;
+
+        [ObservableProperty]
+        public partial bool ShowModelStats { get; set; } = false;
+
+        [ObservableProperty]
+        public partial bool ShowCenterOfMass { get; set; } = false;
 
         public Layer3DPreviewUserSettings Clone()
         {
