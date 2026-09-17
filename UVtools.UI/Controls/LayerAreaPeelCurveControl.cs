@@ -45,6 +45,9 @@ public class LayerAreaPeelCurveControl : Control
     public static readonly StyledProperty<bool> ShowTsmcProperty =
         AvaloniaProperty.Register<LayerAreaPeelCurveControl, bool>(nameof(ShowTsmc), true);
 
+    public static readonly StyledProperty<bool> HaveTiltingVatProperty =
+        AvaloniaProperty.Register<LayerAreaPeelCurveControl, bool>(nameof(HaveTiltingVat));
+
     public static readonly StyledProperty<System.Windows.Input.ICommand?> LayerSelectedCommandProperty =
         AvaloniaProperty.Register<LayerAreaPeelCurveControl, System.Windows.Input.ICommand?>(nameof(LayerSelectedCommand));
 
@@ -119,6 +122,16 @@ public class LayerAreaPeelCurveControl : Control
         set => SetValue(ShowTsmcProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether the loaded file uses a tilting vat, which peels by tilt rather than a vertical
+    /// lift, so any lift speed value read from it does not reflect the actual release motion.
+    /// </summary>
+    public bool HaveTiltingVat
+    {
+        get => GetValue(HaveTiltingVatProperty);
+        set => SetValue(HaveTiltingVatProperty, value);
+    }
+
     static LayerAreaPeelCurveControl()
     {
         AffectsRender<LayerAreaPeelCurveControl>(
@@ -131,7 +144,8 @@ public class LayerAreaPeelCurveControl : Control
             LayerLiftSpeeds2Property,
             LayerLiftHeightsProperty,
             LayerLiftHeights2Property,
-            ShowTsmcProperty);
+            ShowTsmcProperty,
+            HaveTiltingVatProperty);
     }
 
     public LayerAreaPeelCurveControl()
@@ -345,7 +359,7 @@ public class LayerAreaPeelCurveControl : Control
         {
             tsmcDesc = $"TSMC: {speed1:F0}mm/m ({h1:F1}mm) → {speed2:F0}mm/m ({h2:F1}mm)";
         }
-        else if (speed1 > 0f)
+        else if (speed1 > 0f && !HaveTiltingVat)
         {
             tsmcDesc = $"Lift Speed: {speed1:F0}mm/m ({h1:F1}mm)";
         }

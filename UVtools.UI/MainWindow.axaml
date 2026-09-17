@@ -3035,6 +3035,7 @@
                                                     CurrentLayer="{Binding ActualLayer}"
                                                     MaxArea="{Binding MaxLayerArea}"
                                                     PeakLayer="{Binding PeakLayerIndex}"
+                                                    HaveTiltingVat="{Binding SlicerFile.HaveTiltingVat}"
                                                     LayerSelectedCommand="{Binding SelectLayerCommand}" />
                                         </Grid>
                                     </Border>
