@@ -37,6 +37,12 @@
         <KeyBinding Command="{Binding GoTo3DLayerPreviewTabCommand}"
                     Gesture="{OnPlatform Ctrl+NumPad2,
 					macOS=⌘+NumPad2}" />
+        <KeyBinding Command="{Binding GoToDualPreviewTabCommand}"
+                    Gesture="{OnPlatform Ctrl+D3,
+					macOS=⌘+D3}" />
+        <KeyBinding Command="{Binding GoToDualPreviewTabCommand}"
+                    Gesture="{OnPlatform Ctrl+NumPad3,
+					macOS=⌘+NumPad3}" />
         <KeyBinding Command="{Binding MenuFileOpenClickedCommand}"
                     Gesture="{OnPlatform Ctrl+O,
 					macOS=⌘+O}" />
@@ -2042,17 +2048,53 @@
             <suki:GlassCard Margin="0,10"
                             Padding="10"
                             IsEnabled="{Binding IsFileLoaded}">
-                <TabControl Name="LayerPreviewTabControl"
-                            SelectedIndex="{Binding LayerPreviewTabIndex}">
-                    <TabItem>
-                        <TabItem.Header>
-                            <icon:MaterialIconText Kind="Layers"
-                                                   Text="Layers preview"
-                                                   FontSize="18" />
-                        </TabItem.Header>
-                        <Grid ColumnDefinitions="*"
+                <Grid RowDefinitions="Auto,*">
+                    <TabControl Name="LayerPreviewTabControl"
+                                Grid.Row="0"
+                                SelectedIndex="{Binding LayerPreviewTabIndex}">
+                        <TabControl.Template>
+                            <ControlTemplate>
+                                <ItemsPresenter Name="PART_ItemsPresenter"
+                                                ItemsPanel="{TemplateBinding ItemsPanel}" />
+                            </ControlTemplate>
+                        </TabControl.Template>
+                        <TabItem>
+                            <TabItem.Header>
+                                <icon:MaterialIconText Kind="Layers"
+                                                       Text="Layers preview [Ctrl+1]"
+                                                       FontSize="16" />
+                            </TabItem.Header>
+                        </TabItem>
+                        <TabItem>
+                            <TabItem.Header>
+                                <icon:MaterialIconText VerticalAlignment="Center"
+                                                       FontSize="16"
+                                                       Kind="CubeOutline"
+                                                       Text="3D Preview [Ctrl+2]" />
+                            </TabItem.Header>
+                        </TabItem>
+                        <TabItem>
+                            <TabItem.Header>
+                                <icon:MaterialIconText VerticalAlignment="Center"
+                                                       FontSize="16"
+                                                       Kind="ViewSplitVertical"
+                                                       Text="Split View [Ctrl+3]" />
+                            </TabItem.Header>
+                        </TabItem>
+                    </TabControl>
 
-                              RowDefinitions="Auto,*,Auto">
+                    <Grid Grid.Row="1" Margin="0,6,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding LayerPreview2DWidth}" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="{Binding LayerPreview3DWidth}" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Column 0: 2D Layer Preview -->
+                        <Grid Grid.Column="0"
+                              ColumnDefinitions="*"
+                              RowDefinitions="Auto,*,Auto"
+                              IsVisible="{Binding IsLayerPreviewVisible}">
                             <Grid Grid.Row="0"
                                   Grid.Column="0"
                                   Margin="0,5,0,5"
@@ -2351,17 +2393,19 @@
                                 </WrapPanel>
                             </Grid>
                         </Grid>
-                    </TabItem>
 
-                    <TabItem>
-                        <TabItem.Header>
-                            <icon:MaterialIconText VerticalAlignment="Center"
-                                                   FontSize="18"
-                                                   Kind="CubeOutline"
-                                                   Text="3D Preview" />
-                        </TabItem.Header>
-                        <Grid RowDefinitions="Auto,*,Auto"
-                              RowSpacing="5">
+                        <!-- Column 1: Draggable Splitter (Dual View) -->
+                        <GridSplitter Grid.Column="1"
+                                      Width="6"
+                                      Background="{DynamicResource SukiBorderBrush}"
+                                      IsVisible="{Binding IsDualPreviewTabActive}"
+                                      ResizeDirection="Columns" />
+
+                        <!-- Column 2: 3D Preview -->
+                        <Grid Grid.Column="2"
+                              RowDefinitions="Auto,*,Auto"
+                              RowSpacing="5"
+                              IsVisible="{Binding Is3DPreviewVisible}">
                             <Grid Grid.Row="0"
                                   ColumnDefinitions="*,Auto"
                                   ColumnSpacing="5">
@@ -2427,6 +2471,47 @@
                                               IsEnabled="{Binding Layer3DClipToCurrentLayer}"
                                               VerticalAlignment="Stretch"
                                               ToolTip.Tip="Show faint ghost silhouette of clipped model [O]." />
+
+                                <DropDownButton Content="{icon:MaterialIconTextExt Kind=RayStartArrow, Text={Binding #LayerModel3DView.CutawayText}}"
+                                                IsEnabled="{Binding HasLayer3DMesh}"
+                                                VerticalAlignment="Stretch"
+                                                ToolTip.Tip="Cross-Section Cutaway Plane [Y]. Cut model along X or Y axis to inspect internal geometry.">
+                                    <DropDownButton.Flyout>
+                                        <Flyout Placement="BottomEdgeAlignedLeft">
+                                            <Border MinWidth="260" Padding="12">
+                                                <StackPanel Spacing="10">
+                                                    <TextBlock Text="Cross-Section Cutaway Plane" FontWeight="Bold" FontSize="13" />
+                                                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="10">
+                                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Axis:" VerticalAlignment="Center" />
+                                                        <ComboBox Grid.Row="0" Grid.Column="1"
+                                                                  ItemsSource="{Binding Settings.Layer3DPreview.CutawayAxis, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                                                  SelectedItem="{Binding Settings.Layer3DPreview.CutawayAxis, Converter={StaticResource FromValueDescriptionToEnumConverter}}" />
+
+                                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Cut Pos:" VerticalAlignment="Center" />
+                                                        <StackPanel Grid.Row="1" Grid.Column="1" Spacing="4">
+                                                            <TextBlock Text="{Binding #LayerModel3DView.CutawayPosition, StringFormat='{}{0:F1} mm'}" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                                                            <Slider Minimum="{Binding #LayerModel3DView.CutawayMin}"
+                                                                    Maximum="{Binding #LayerModel3DView.CutawayMax}"
+                                                                    Value="{Binding Settings.Layer3DPreview.CutawayPosition, Mode=TwoWay}"
+                                                                    SmallChange="0.5"
+                                                                    LargeChange="5" />
+                                                        </StackPanel>
+
+                                                        <CheckBox Grid.Row="2" Grid.Column="1"
+                                                                  IsChecked="{Binding Settings.Layer3DPreview.CutawayInvert, Mode=TwoWay}"
+                                                                  Content="Invert cut direction" />
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Border>
+                                        </Flyout>
+                                    </DropDownButton.Flyout>
+                                </DropDownButton>
+
+                                <ToggleButton Content="{icon:MaterialIconExt Kind=ChartAreaspline, Classes='Fill'}"
+                                              IsChecked="{Binding Settings.Layer3DPreview.ShowPeelCurve, Mode=TwoWay}"
+                                              IsEnabled="{Binding HasLayer3DMesh}"
+                                              VerticalAlignment="Stretch"
+                                              ToolTip.Tip="Toggle Cross-Section Area &amp; Peel Force Curve HUD [A]." />
 
                                 <ToggleButton Content="{icon:MaterialIconExt Grid, Classes='Fill'}"
                                               IsChecked="{Binding Settings.Layer3DPreview.ShowBuildPlateGrid}"
@@ -2536,6 +2621,10 @@
                                                                ShowBoundingBox="{Binding Settings.Layer3DPreview.ShowBoundingBox}"
                                                                ShowModelStats="{Binding Settings.Layer3DPreview.ShowModelStats}"
                                                                ShowCenterOfMass="{Binding Settings.Layer3DPreview.ShowCenterOfMass}"
+                                                               ShowPeelCurve="{Binding Settings.Layer3DPreview.ShowPeelCurve}"
+                                                               CutawayAxis="{Binding Settings.Layer3DPreview.CutawayAxis}"
+                                                               CutawayPosition="{Binding Settings.Layer3DPreview.CutawayPosition}"
+                                                               CutawayInvert="{Binding Settings.Layer3DPreview.CutawayInvert}"
                                                                SlabThickness="{Binding Settings.Layer3DPreview.SlabThicknessMm}"
                                                                VoxelColor="{Binding Settings.Layer3DPreview.VoxelBrush}" />
 
@@ -2712,6 +2801,71 @@
                                                        Text="{Binding #LayerModel3DView.MeasureDistanceText}" />
                                         </StackPanel>
                                     </Border>
+
+                                    <!-- Suction Cup / Cavity Alert HUD Overlay -->
+                                    <Border HorizontalAlignment="Center"
+                                            VerticalAlignment="Top"
+                                            Margin="0,14,0,0"
+                                            Padding="10,6"
+                                            Background="#E0161920"
+                                            BorderBrush="#D08800"
+                                            BorderThickness="1.5"
+                                            CornerRadius="6"
+                                            IsVisible="{Binding HasSuctionCups}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                            <icon:MaterialIcon Kind="AlertDecagram" Foreground="#FFAB70" Width="20" Height="20" />
+                                            <TextBlock Text="{Binding SuctionCupSummary}" Foreground="#F0F6FC" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12" />
+                                            <Button Command="{Binding GoToPreviousSuctionCupCommand}"
+                                                    Padding="4,2"
+                                                    ToolTip.Tip="Go to previous cavity/suction cup issue">
+                                                <icon:MaterialIcon Kind="ChevronLeft" Width="16" Height="16" />
+                                            </Button>
+                                            <Button Command="{Binding GoToNextSuctionCupCommand}"
+                                                    Padding="4,2"
+                                                    ToolTip.Tip="Go to next cavity/suction cup issue">
+                                                <icon:MaterialIcon Kind="ChevronRight" Width="16" Height="16" />
+                                            </Button>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Cross-Section Area & Peel Force HUD Overlay -->
+                                    <Border HorizontalAlignment="Right"
+                                            VerticalAlignment="Bottom"
+                                            Margin="14,0,14,40"
+                                            Width="370"
+                                            Height="175"
+                                            Background="#E00D1117"
+                                            BorderBrush="#00D2FF"
+                                            BorderThickness="1.5"
+                                            CornerRadius="8"
+                                            BoxShadow="0 4 12 0 #50000000"
+                                            ClipToBounds="True"
+                                            IsVisible="{Binding #LayerModel3DView.ShowPeelCurve}">
+                                        <Grid RowDefinitions="Auto,*">
+                                            <Grid Grid.Row="0" Margin="8,6,8,2" ColumnDefinitions="*,Auto">
+                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <icon:MaterialIcon Kind="ChartAreaspline" Foreground="#00D2FF" Width="16" Height="16" />
+                                                    <TextBlock Text="Peel Force &amp; Cross-Section" FontSize="11" FontWeight="SemiBold" Foreground="#E6EDF3" />
+                                                </StackPanel>
+                                                <Button Grid.Column="1"
+                                                        Padding="2"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Command="{Binding TogglePeelCurveCommand}"
+                                                        ToolTip.Tip="Close Peel Force Curve [A]">
+                                                    <icon:MaterialIcon Kind="Close" Width="14" Height="14" Foreground="#8B949E" />
+                                                </Button>
+                                            </Grid>
+                                            <controls:LayerAreaPeelCurveControl Grid.Row="1"
+                                                                                Margin="4,0,4,4"
+                                                                                LayerAreas="{Binding LayerAreas}"
+                                                                                PeelSpikes="{Binding PeelSpikes}"
+                                                                                CurrentLayer="{Binding ActualLayer}"
+                                                                                MaxArea="{Binding MaxLayerArea}"
+                                                                                PeakLayer="{Binding PeakLayerIndex}"
+                                                                                LayerSelectedCommand="{Binding SelectLayerCommand}" />
+                                        </Grid>
+                                    </Border>
                                 </Grid>
                             </Border>
 
@@ -2721,8 +2875,8 @@
                                        Text="{Binding Layer3DStatus}"
                                        TextAlignment="Center" />
                         </Grid>
-                    </TabItem>
-                </TabControl>
+                    </Grid>
+                </Grid>
             </suki:GlassCard>
 
 

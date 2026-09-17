@@ -621,6 +621,18 @@ public partial class UserSettings : ObservableObject
         [ObservableProperty]
         public partial bool ShowCenterOfMass { get; set; } = false;
 
+        [ObservableProperty]
+        public partial bool ShowPeelCurve { get; set; } = false;
+
+        [ObservableProperty]
+        public partial VoxelPreviewCutawayAxis CutawayAxis { get; set; } = VoxelPreviewCutawayAxis.Off;
+
+        [ObservableProperty]
+        public partial float CutawayPosition { get; set; } = 0f;
+
+        [ObservableProperty]
+        public partial bool CutawayInvert { get; set; } = false;
+
         public Layer3DPreviewUserSettings Clone()
         {
             return (MemberwiseClone() as Layer3DPreviewUserSettings)!;

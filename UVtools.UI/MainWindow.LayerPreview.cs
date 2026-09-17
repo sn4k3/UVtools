@@ -553,9 +553,9 @@ public partial class MainWindow
             if (!_layerNavigationSliderDebounceTimer.Enabled) // Doesn't come from ActualLayerSlider timer
             {
                 ActualLayerSlider = _actualLayer; // sync when required
-                if (LayerPreviewTabIndex == 0)
+                if (LayerPreviewTabIndex is 0 or 2)
                 {
-                    ShowLayer(); // Show layer only if timer is not present and on 2D preview tab
+                    ShowLayer(); // Show layer only if timer is not present and on 2D preview or Dual tab
                 }
             }
 
@@ -678,7 +678,7 @@ public partial class MainWindow
             : Settings.LayerPreview.LayerSliderDebounce;
         _layerNavigationSliderDebounceTimer.Elapsed += (sender, args) =>
         {
-            if (LayerPreviewTabIndex == 0)
+            if (LayerPreviewTabIndex is 0 or 2)
             {
                 Dispatcher.UIThread.InvokeAsync(ShowLayer);
             }

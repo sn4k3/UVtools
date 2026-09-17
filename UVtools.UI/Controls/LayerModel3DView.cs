@@ -62,10 +62,21 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                                  uniform vec3 uBuildVolumeMin;
                                                  uniform vec3 uBuildVolumeMax;
                                                  uniform int uHighlightOutOfBounds;
+                                                 uniform int uCutawayAxis;
+                                                 uniform float uCutawayPosition;
+                                                 uniform int uCutawayInvert;
                                                  out vec4 fragmentColor;
                                                  void main()
                                                  {
                                                      if (uClipEnabled != 0 && (vWorldPosition.z < uClipZMin || vWorldPosition.z > uClipZMax)) discard;
+                                                     if (uCutawayAxis == 1)
+                                                     {
+                                                         if (uCutawayInvert == 0 ? (vWorldPosition.x > uCutawayPosition) : (vWorldPosition.x < uCutawayPosition)) discard;
+                                                     }
+                                                     else if (uCutawayAxis == 2)
+                                                     {
+                                                         if (uCutawayInvert == 0 ? (vWorldPosition.y > uCutawayPosition) : (vWorldPosition.y < uCutawayPosition)) discard;
+                                                     }
 
                                                      vec3 baseColor = uColor;
                                                      if (uHighlightOutOfBounds != 0 && (
@@ -104,6 +115,21 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                                              baseColor = mix(uBottomColor, uColor, t);
                                                          }
                                                      }
+                                                     else if (uColorMode == 3)
+                                                     {
+                                                         vec3 norm = normalize(vNormal);
+                                                         float downward = -norm.z;
+                                                         vec3 dNdx = dFdx(norm);
+                                                         vec3 dNdy = dFdy(norm);
+                                                         float curvature = clamp((length(dNdx) + length(dNdy)) * 2.5, 0.0, 1.0);
+                                                         float fragility = clamp(curvature * 0.7 + max(downward, 0.0) * 0.5, 0.0, 1.0);
+                                                         if (fragility < 0.35)
+                                                             baseColor = mix(vec3(0.2, 0.45, 0.85), vec3(0.0, 0.8, 0.9), fragility / 0.35);
+                                                         else if (fragility < 0.7)
+                                                             baseColor = mix(vec3(0.0, 0.8, 0.9), vec3(1.0, 0.85, 0.1), (fragility - 0.35) / 0.35);
+                                                         else
+                                                             baseColor = mix(vec3(1.0, 0.85, 0.1), vec3(1.0, 0.1, 0.2), (fragility - 0.7) / 0.3);
+                                                     }
 
                                                      float diffuse = max(dot(normalize(vNormal), uLightDirection), 0.0);
                                                      float lighting = uAmbientLight + diffuse * (1.0 - uAmbientLight);
@@ -118,9 +144,11 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                                   layout (location = 1) in vec2 aTexCoord;
                                                   uniform mat4 uViewProjection;
                                                   out vec2 vTexCoord;
+                                                  out vec3 vWorldPosition;
                                                   void main()
                                                   {
                                                       vTexCoord = aTexCoord;
+                                                      vWorldPosition = aPosition;
                                                       gl_Position = uViewProjection * vec4(aPosition, 1.0);
                                                   }
                                                   """;
@@ -128,15 +156,27 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private const string DesktopCapFragmentShader = """
                                                     #version 330 core
                                                     in vec2 vTexCoord;
+                                                    in vec3 vWorldPosition;
                                                     uniform sampler2D uCapTexture;
                                                     uniform vec3 uColor;
                                                     uniform float uAlpha;
                                                     uniform int uUnlit;
                                                     uniform vec3 uLightDirection;
                                                     uniform float uAmbientLight;
+                                                    uniform int uCutawayAxis;
+                                                    uniform float uCutawayPosition;
+                                                    uniform int uCutawayInvert;
                                                     out vec4 fragmentColor;
                                                     void main()
                                                     {
+                                                        if (uCutawayAxis == 1)
+                                                        {
+                                                            if (uCutawayInvert == 0 ? (vWorldPosition.x > uCutawayPosition) : (vWorldPosition.x < uCutawayPosition)) discard;
+                                                        }
+                                                        else if (uCutawayAxis == 2)
+                                                        {
+                                                            if (uCutawayInvert == 0 ? (vWorldPosition.y > uCutawayPosition) : (vWorldPosition.y < uCutawayPosition)) discard;
+                                                        }
                                                         float mask = texture(uCapTexture, vTexCoord).r;
                                                         if (mask < 0.5) discard;
                                                         vec3 normal = gl_FrontFacing ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 0.0, -1.0);
@@ -184,10 +224,21 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                             uniform vec3 uBuildVolumeMin;
                                             uniform vec3 uBuildVolumeMax;
                                             uniform int uHighlightOutOfBounds;
+                                            uniform int uCutawayAxis;
+                                            uniform float uCutawayPosition;
+                                            uniform int uCutawayInvert;
                                             out vec4 fragmentColor;
                                             void main()
                                             {
                                                 if (uClipEnabled != 0 && (vWorldPosition.z < uClipZMin || vWorldPosition.z > uClipZMax)) discard;
+                                                if (uCutawayAxis == 1)
+                                                {
+                                                    if (uCutawayInvert == 0 ? (vWorldPosition.x > uCutawayPosition) : (vWorldPosition.x < uCutawayPosition)) discard;
+                                                }
+                                                else if (uCutawayAxis == 2)
+                                                {
+                                                    if (uCutawayInvert == 0 ? (vWorldPosition.y > uCutawayPosition) : (vWorldPosition.y < uCutawayPosition)) discard;
+                                                }
 
                                                 vec3 baseColor = uColor;
                                                 if (uHighlightOutOfBounds != 0 && (
@@ -226,6 +277,17 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                                         baseColor = mix(uBottomColor, uColor, t);
                                                     }
                                                 }
+                                                else if (uColorMode == 3)
+                                                {
+                                                    vec3 norm = normalize(vNormal);
+                                                    float downward = max(-norm.z, 0.0);
+                                                    float shear = abs(norm.x * norm.y);
+                                                    float fragility = clamp(downward * 0.6 + shear * 0.6, 0.0, 1.0);
+                                                    if (fragility < 0.5)
+                                                        baseColor = mix(vec3(0.2, 0.45, 0.85), vec3(1.0, 0.85, 0.1), fragility * 2.0);
+                                                    else
+                                                        baseColor = mix(vec3(1.0, 0.85, 0.1), vec3(1.0, 0.1, 0.2), (fragility - 0.5) * 2.0);
+                                                }
 
                                                 float diffuse = max(dot(normalize(vNormal), uLightDirection), 0.0);
                                                 float lighting = uAmbientLight + diffuse * (1.0 - uAmbientLight);
@@ -241,9 +303,11 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                              layout (location = 1) in vec2 aTexCoord;
                                              uniform mat4 uViewProjection;
                                              out vec2 vTexCoord;
+                                             out vec3 vWorldPosition;
                                              void main()
                                              {
                                                  vTexCoord = aTexCoord;
+                                                 vWorldPosition = aPosition;
                                                  gl_Position = uViewProjection * vec4(aPosition, 1.0);
                                              }
                                              """;
@@ -252,15 +316,27 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                                #version 300 es
                                                precision highp float;
                                                in vec2 vTexCoord;
+                                               in vec3 vWorldPosition;
                                                uniform sampler2D uCapTexture;
                                                uniform vec3 uColor;
                                                uniform float uAlpha;
                                                uniform int uUnlit;
                                                uniform vec3 uLightDirection;
                                                uniform float uAmbientLight;
+                                               uniform int uCutawayAxis;
+                                               uniform float uCutawayPosition;
+                                               uniform int uCutawayInvert;
                                                out vec4 fragmentColor;
                                                void main()
                                                {
+                                                   if (uCutawayAxis == 1)
+                                                   {
+                                                       if (uCutawayInvert == 0 ? (vWorldPosition.x > uCutawayPosition) : (vWorldPosition.x < uCutawayPosition)) discard;
+                                                   }
+                                                   else if (uCutawayAxis == 2)
+                                                   {
+                                                       if (uCutawayInvert == 0 ? (vWorldPosition.y > uCutawayPosition) : (vWorldPosition.y < uCutawayPosition)) discard;
+                                                   }
                                                    float mask = texture(uCapTexture, vTexCoord).r;
                                                    if (mask < 0.5) discard;
                                                    vec3 normal = gl_FrontFacing ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 0.0, -1.0);
@@ -367,6 +443,27 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         AvaloniaProperty.RegisterDirect<LayerModel3DView, string?>(
             nameof(CenterOfMassText),
             o => o.CenterOfMassText);
+
+    public static readonly StyledProperty<VoxelPreviewCutawayAxis> CutawayAxisProperty =
+        AvaloniaProperty.Register<LayerModel3DView, VoxelPreviewCutawayAxis>(nameof(CutawayAxis), VoxelPreviewCutawayAxis.Off);
+
+    public static readonly StyledProperty<float> CutawayPositionProperty =
+        AvaloniaProperty.Register<LayerModel3DView, float>(nameof(CutawayPosition), 0f);
+
+    public static readonly StyledProperty<bool> CutawayInvertProperty =
+        AvaloniaProperty.Register<LayerModel3DView, bool>(nameof(CutawayInvert), false);
+
+    public static readonly DirectProperty<LayerModel3DView, float> CutawayMinProperty =
+        AvaloniaProperty.RegisterDirect<LayerModel3DView, float>(nameof(CutawayMin), o => o.CutawayMin);
+
+    public static readonly DirectProperty<LayerModel3DView, float> CutawayMaxProperty =
+        AvaloniaProperty.RegisterDirect<LayerModel3DView, float>(nameof(CutawayMax), o => o.CutawayMax);
+
+    public static readonly DirectProperty<LayerModel3DView, string> CutawayTextProperty =
+        AvaloniaProperty.RegisterDirect<LayerModel3DView, string>(nameof(CutawayText), o => o.CutawayText);
+
+    public static readonly StyledProperty<bool> ShowPeelCurveProperty =
+        AvaloniaProperty.Register<LayerModel3DView, bool>(nameof(ShowPeelCurve), false);
 
     public static readonly DirectProperty<LayerModel3DView, Vector3> CenterOfMassProperty =
         AvaloniaProperty.RegisterDirect<LayerModel3DView, Vector3>(
@@ -525,6 +622,17 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private string? _centerOfMassText;
     private float _baseContactArea;
 
+    private float _cutawayMin = -100f;
+    private float _cutawayMax = 100f;
+    private string _cutawayText = "Cut: Off";
+
+    private int _cutawayAxisLocation = -1;
+    private int _cutawayPositionLocation = -1;
+    private int _cutawayInvertLocation = -1;
+    private int _capCutawayAxisLocation = -1;
+    private int _capCutawayPositionLocation = -1;
+    private int _capCutawayInvertLocation = -1;
+
     private TaskCompletionSource<WriteableBitmap?>? _snapshotCompletionSource;
 
     public event Action<Vector3>? ModelPointClicked;
@@ -589,6 +697,26 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             control._needsComUpload = true;
             control.RequestNextFrameRendering();
         });
+        CutawayAxisProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+        {
+            control.UpdateCutawayRange();
+            control.UpdateCutawayText();
+            control.RequestNextFrameRendering();
+        });
+        CutawayPositionProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+        {
+            control.UpdateCutawayText();
+            control.RequestNextFrameRendering();
+        });
+        CutawayInvertProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+        {
+            control.UpdateCutawayText();
+            control.RequestNextFrameRendering();
+        });
+        ShowPeelCurveProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+        {
+            control.RequestNextFrameRendering();
+        });
         PlateWidthProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
         {
             control._needsGridUpload = true;
@@ -618,6 +746,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         _turntableTimer.Tick += TurntableTimerOnTick;
         UpdateMeasureText();
         UpdateModelMetrics();
+        UpdateCutawayRange();
+        UpdateCutawayText();
     }
 
     public VoxelPreviewMesh? Mesh
@@ -849,6 +979,48 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         private set => SetAndRaise(CenterOfMassTextProperty, ref _centerOfMassText, value);
     }
 
+    public VoxelPreviewCutawayAxis CutawayAxis
+    {
+        get => GetValue(CutawayAxisProperty);
+        set => SetValue(CutawayAxisProperty, value);
+    }
+
+    public float CutawayPosition
+    {
+        get => GetValue(CutawayPositionProperty);
+        set => SetValue(CutawayPositionProperty, value);
+    }
+
+    public bool CutawayInvert
+    {
+        get => GetValue(CutawayInvertProperty);
+        set => SetValue(CutawayInvertProperty, value);
+    }
+
+    public float CutawayMin
+    {
+        get => _cutawayMin;
+        private set => SetAndRaise(CutawayMinProperty, ref _cutawayMin, value);
+    }
+
+    public float CutawayMax
+    {
+        get => _cutawayMax;
+        private set => SetAndRaise(CutawayMaxProperty, ref _cutawayMax, value);
+    }
+
+    public string CutawayText
+    {
+        get => _cutawayText;
+        private set => SetAndRaise(CutawayTextProperty, ref _cutawayText, value);
+    }
+
+    public bool ShowPeelCurve
+    {
+        get => GetValue(ShowPeelCurveProperty);
+        set => SetValue(ShowPeelCurveProperty, value);
+    }
+
     public Vector3 CenterOfMass
     {
         get => _centerOfMass;
@@ -1078,6 +1250,48 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         private set => SetAndRaise(MeasureDistanceTextProperty, ref _measureDistanceText, value);
     }
 
+    public void UpdateCutawayRange()
+    {
+        if (_mesh is not null && _mesh.VertexCount > 0)
+        {
+            var min = _mesh.MinimumBounds;
+            var max = _mesh.MaximumBounds;
+            if (CutawayAxis == VoxelPreviewCutawayAxis.X)
+            {
+                CutawayMin = min.X;
+                CutawayMax = max.X;
+            }
+            else if (CutawayAxis == VoxelPreviewCutawayAxis.Y)
+            {
+                CutawayMin = min.Y;
+                CutawayMax = max.Y;
+            }
+            else
+            {
+                CutawayMin = Math.Min(min.X, min.Y);
+                CutawayMax = Math.Max(max.X, max.Y);
+            }
+            if (CutawayPosition < CutawayMin || CutawayPosition > CutawayMax)
+            {
+                CutawayPosition = (CutawayMin + CutawayMax) / 2f;
+            }
+        }
+    }
+
+    public void UpdateCutawayText()
+    {
+        if (CutawayAxis == VoxelPreviewCutawayAxis.Off)
+        {
+            CutawayText = "Cut: Off";
+        }
+        else
+        {
+            var axisName = CutawayAxis == VoxelPreviewCutawayAxis.X ? "Sagittal (X)" : "Coronal (Y)";
+            var inv = CutawayInvert ? " [Inverted]" : string.Empty;
+            CutawayText = $"{axisName}: {CutawayPosition:F1} mm{inv}";
+        }
+    }
+
     public void ClearMeasure()
     {
         _measurePoint1 = null;
@@ -1252,6 +1466,9 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             _buildVolumeMinLocation = _gl.GetUniformLocation(_shaderProgram, "uBuildVolumeMin");
             _buildVolumeMaxLocation = _gl.GetUniformLocation(_shaderProgram, "uBuildVolumeMax");
             _highlightOutOfBoundsLocation = _gl.GetUniformLocation(_shaderProgram, "uHighlightOutOfBounds");
+            _cutawayAxisLocation = _gl.GetUniformLocation(_shaderProgram, "uCutawayAxis");
+            _cutawayPositionLocation = _gl.GetUniformLocation(_shaderProgram, "uCutawayPosition");
+            _cutawayInvertLocation = _gl.GetUniformLocation(_shaderProgram, "uCutawayInvert");
 
             _vertexArray = _gl.GenVertexArray();
             _vertexBuffer = _gl.GenBuffer();
@@ -1278,6 +1495,9 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                 isOpenGles ? EsCapVertexShader : DesktopCapVertexShader,
                 isOpenGles ? EsCapFragmentShader : DesktopCapFragmentShader);
             _capViewProjectionLocation = _gl.GetUniformLocation(_capShaderProgram, "uViewProjection");
+            _capCutawayAxisLocation = _gl.GetUniformLocation(_capShaderProgram, "uCutawayAxis");
+            _capCutawayPositionLocation = _gl.GetUniformLocation(_capShaderProgram, "uCutawayPosition");
+            _capCutawayInvertLocation = _gl.GetUniformLocation(_capShaderProgram, "uCutawayInvert");
             _capColorLocation = _gl.GetUniformLocation(_capShaderProgram, "uColor");
             _capAlphaLocation = _gl.GetUniformLocation(_capShaderProgram, "uAlpha");
             _capUnlitLocation = _gl.GetUniformLocation(_capShaderProgram, "uUnlit");
@@ -1422,6 +1642,9 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         _gl.Uniform1(_bottomZLocation, BottomLayersHeight);
         _gl.Uniform1(_transitionZLocation, TransitionLayersHeight);
         _gl.Uniform3(_bottomColorLocation, 0.15f, 0.6f, 1.0f);
+        _gl.Uniform1(_cutawayAxisLocation, (int)CutawayAxis);
+        _gl.Uniform1(_cutawayPositionLocation, CutawayPosition);
+        _gl.Uniform1(_cutawayInvertLocation, CutawayInvert ? 1 : 0);
         _gl.UniformMatrix4(_viewProjectionLocation, 1, false, (float*)&viewProjection);
 
         if (_uploadedIndexCount > 0 && _mesh is not null)
@@ -2149,6 +2372,9 @@ private unsafe void DrawFocusedBoundingBox()
         _gl.Uniform3(_capColorLocation, VoxelColor.R / 255f, VoxelColor.G / 255f, VoxelColor.B / 255f);
         _gl.Uniform1(_capAlphaLocation, RenderMode == VoxelPreviewRenderMode.XRay ? XRayOpacity : 1f);
         _gl.Uniform1(_capUnlitLocation, 0);
+        _gl.Uniform1(_capCutawayAxisLocation, (int)CutawayAxis);
+        _gl.Uniform1(_capCutawayPositionLocation, CutawayPosition);
+        _gl.Uniform1(_capCutawayInvertLocation, CutawayInvert ? 1 : 0);
         ApplyLighting(_capLightDirectionLocation, _capAmbientLightLocation);
 
         _gl.ActiveTexture(TextureUnit.Texture0);
@@ -2884,9 +3110,23 @@ private unsafe void DrawFocusedBoundingBox()
                 {
                     VoxelPreviewColorMode.Solid => VoxelPreviewColorMode.OverhangHeatmap,
                     VoxelPreviewColorMode.OverhangHeatmap => VoxelPreviewColorMode.LayerZones,
+                    VoxelPreviewColorMode.LayerZones => VoxelPreviewColorMode.Fragility,
                     _ => VoxelPreviewColorMode.Solid
                 };
                 UserSettings.Instance.Layer3DPreview.ColorMode = ColorMode;
+                return true;
+            case Key.A:
+                ShowPeelCurve = !ShowPeelCurve;
+                UserSettings.Instance.Layer3DPreview.ShowPeelCurve = ShowPeelCurve;
+                return true;
+            case Key.Y:
+                CutawayAxis = CutawayAxis switch
+                {
+                    VoxelPreviewCutawayAxis.Off => VoxelPreviewCutawayAxis.X,
+                    VoxelPreviewCutawayAxis.X => VoxelPreviewCutawayAxis.Y,
+                    _ => VoxelPreviewCutawayAxis.Off
+                };
+                UserSettings.Instance.Layer3DPreview.CutawayAxis = CutawayAxis;
                 return true;
             case Key.O:
                 GhostClippedModel = !GhostClippedModel;

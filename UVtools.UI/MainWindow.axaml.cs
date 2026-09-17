@@ -1051,6 +1051,12 @@ public partial class MainWindow : GenericWindow
     }
 
     [RelayCommand]
+    public void GoToDualPreviewTab()
+    {
+        LayerPreviewTabIndex = 2;
+    }
+
+    [RelayCommand]
     public async Task MenuFileOpenClicked()
     {
         await OpenFile();

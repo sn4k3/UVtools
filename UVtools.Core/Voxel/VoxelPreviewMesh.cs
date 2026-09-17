@@ -43,7 +43,9 @@ public enum VoxelPreviewColorMode : byte
     [Description("Overhang heatmap")]
     OverhangHeatmap,
     [Description("Layer zones")]
-    LayerZones
+    LayerZones,
+    [Description("Fragility / Thin walls")]
+    Fragility
 }
 
 public enum VoxelPreviewClipMode : byte
@@ -54,6 +56,16 @@ public enum VoxelPreviewClipMode : byte
     Above,
     [Description("Slab (Band)")]
     Slab
+}
+
+public enum VoxelPreviewCutawayAxis : byte
+{
+    [Description("Off")]
+    Off,
+    [Description("Sagittal (X-Axis)")]
+    X,
+    [Description("Coronal (Y-Axis)")]
+    Y
 }
 
 public readonly record struct VoxelPreviewMeshOptions(

@@ -37,6 +37,22 @@ public partial class MainWindow
     private int _layer3DCapTargetGeneration;
     private int _layer3DAppliedCapGeneration;
     private int _layer3DIssueBuildGeneration;
+    private float[]? _layerAreas;
+    private List<int>? _peelSpikes;
+    private float _maxLayerArea;
+    private int _peakLayerIndex;
+    private readonly List<MainIssue> _suctionCupIssues = new();
+    private int _currentSuctionCupIndex = -1;
+    private bool _hasSuctionCups;
+    private string _suctionCupSummary = string.Empty;
+
+    public float[]? LayerAreas => _layerAreas;
+    public List<int>? PeelSpikes => _peelSpikes;
+    public float MaxLayerArea => _maxLayerArea;
+    public int PeakLayerIndex => _peakLayerIndex;
+    public bool HasSuctionCups => _hasSuctionCups;
+    public string SuctionCupSummary => _suctionCupSummary;
+
     private VoxelPreviewIssueMesh? _layer3DIssueMesh;
     private string? _layer3DIssueOverlayError;
     private VoxelPreviewMesh? _layer3DMesh;
@@ -51,27 +67,68 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _layerPreviewTabIndex, value)) return;
+            this.RaisePropertyChanged(nameof(IsLayerPreviewVisible));
+            this.RaisePropertyChanged(nameof(Is3DPreviewVisible));
+            this.RaisePropertyChanged(nameof(IsDualPreviewTabActive));
+            this.RaisePropertyChanged(nameof(IsLayerPreviewTabActive));
+            this.RaisePropertyChanged(nameof(Is3DPreviewTabActive));
+            this.RaisePropertyChanged(nameof(IsDualPreviewTabSelected));
+            this.RaisePropertyChanged(nameof(LayerPreview2DWidth));
+            this.RaisePropertyChanged(nameof(LayerPreview3DWidth));
             InvalidateLayer3DPreviewStatus();
-            if (value == 0)
+
+            if (value is 0 or 2)
             {
                 ShowLayer();
-                return;
             }
-            if (value != 1) return;
 
-            /* Focus the viewport so that the camera shortcuts work without clicking into it first. */
-            Dispatcher.UIThread.Post(() => LayerModel3DView.Focus());
+            if (value is 1 or 2)
+            {
+                if (_layerAreas is null)
+                {
+                    UpdateLayerAreas();
+                    UpdateSuctionCupStatus();
+                }
 
-            if (_layer3DMesh is null && !_isLayer3DBuilding && string.IsNullOrEmpty(_layer3DRendererError))
-            {
-                Dispatcher.UIThread.InvokeAsync(RebuildLayer3DPreview);
-            }
-            else if (Layer3DClipToCurrentLayer && _layer3DMesh is not null)
-            {
-                UpdateLayer3DClip();
+                /* Focus the viewport so that the camera shortcuts work without clicking into it first. */
+                Dispatcher.UIThread.Post(() => LayerModel3DView.Focus());
+
+                if (_layer3DMesh is null && !_isLayer3DBuilding && string.IsNullOrEmpty(_layer3DRendererError))
+                {
+                    Dispatcher.UIThread.InvokeAsync(RebuildLayer3DPreview);
+                }
+                else if (Layer3DClipToCurrentLayer && _layer3DMesh is not null)
+                {
+                    UpdateLayer3DClip();
+                }
             }
         }
     }
+
+    public bool IsLayerPreviewVisible => LayerPreviewTabIndex is 0 or 2;
+    public bool Is3DPreviewVisible => LayerPreviewTabIndex is 1 or 2;
+    public bool IsDualPreviewTabActive => LayerPreviewTabIndex == 2;
+
+    public bool IsLayerPreviewTabActive
+    {
+        get => LayerPreviewTabIndex == 0;
+        set { if (value) LayerPreviewTabIndex = 0; }
+    }
+
+    public bool Is3DPreviewTabActive
+    {
+        get => LayerPreviewTabIndex == 1;
+        set { if (value) LayerPreviewTabIndex = 1; }
+    }
+
+    public bool IsDualPreviewTabSelected
+    {
+        get => LayerPreviewTabIndex == 2;
+        set { if (value) LayerPreviewTabIndex = 2; }
+    }
+
+    public GridLength LayerPreview2DWidth => LayerPreviewTabIndex == 1 ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
+    public GridLength LayerPreview3DWidth => LayerPreviewTabIndex == 0 ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
 
     public bool IsLayer3DBuilding
     {
@@ -213,6 +270,10 @@ public partial class MainWindow
         LayerModel3DView.SlabThickness = Settings.Layer3DPreview.SlabThicknessMm;
         LayerModel3DView.ShowModelStats = Settings.Layer3DPreview.ShowModelStats;
         LayerModel3DView.ShowCenterOfMass = Settings.Layer3DPreview.ShowCenterOfMass;
+        LayerModel3DView.ShowPeelCurve = Settings.Layer3DPreview.ShowPeelCurve;
+        LayerModel3DView.CutawayAxis = Settings.Layer3DPreview.CutawayAxis;
+        LayerModel3DView.CutawayPosition = Settings.Layer3DPreview.CutawayPosition;
+        LayerModel3DView.CutawayInvert = Settings.Layer3DPreview.CutawayInvert;
 
         if (SlicerFile is not null)
         {
@@ -278,6 +339,8 @@ public partial class MainWindow
         _layer3DMesh = newMesh;
         LayerModel3DView.Mesh = newMesh;
         previousMesh?.Dispose();
+        UpdateLayerAreas();
+        UpdateSuctionCupStatus();
         RefreshLayer3DPreviewSettings();
         await RebuildLayer3DIssueOverlay();
         UpdateLayer3DClip();
@@ -336,6 +399,7 @@ public partial class MainWindow
         _layer3DIssueMesh = newIssueMesh;
         LayerModel3DView.IssueMesh = newIssueMesh;
         previousIssueMesh?.Dispose();
+        UpdateSuctionCupStatus();
         _layer3DIssueOverlayError = null;
         InvalidateLayer3DPreviewStatus();
     }
@@ -669,6 +733,138 @@ public partial class MainWindow
         RaisePropertyChanged(nameof(Layer3DStatus));
     }
 
+    public void UpdateLayerAreas()
+    {
+        var file = SlicerFile;
+        if (file is null || file.LayerCount == 0)
+        {
+            _layerAreas = null;
+            _peelSpikes = null;
+            _maxLayerArea = 0f;
+            _peakLayerIndex = 0;
+            RaisePropertyChanged(nameof(LayerAreas));
+            RaisePropertyChanged(nameof(PeelSpikes));
+            RaisePropertyChanged(nameof(MaxLayerArea));
+            RaisePropertyChanged(nameof(PeakLayerIndex));
+            return;
+        }
+
+        int count = (int)file.LayerCount;
+        var areas = new float[count];
+        var spikes = new List<int>();
+        float maxA = 0f;
+        int peakIdx = 0;
+
+        for (int i = 0; i < count; i++)
+        {
+            var layer = file.Layers[i];
+            float a = (float)layer.GetArea();
+            areas[i] = a;
+            if (a > maxA)
+            {
+                maxA = a;
+                peakIdx = i;
+            }
+
+            if (i > 0 && areas[i - 1] > 0.05f)
+            {
+                float delta = a - areas[i - 1];
+                if (delta / areas[i - 1] >= 0.35f && delta > 4.0f)
+                {
+                    spikes.Add(i);
+                }
+            }
+        }
+
+        _layerAreas = areas;
+        _peelSpikes = spikes;
+        _maxLayerArea = maxA;
+        _peakLayerIndex = peakIdx;
+
+        RaisePropertyChanged(nameof(LayerAreas));
+        RaisePropertyChanged(nameof(PeelSpikes));
+        RaisePropertyChanged(nameof(MaxLayerArea));
+        RaisePropertyChanged(nameof(PeakLayerIndex));
+    }
+
+    public void UpdateSuctionCupStatus()
+    {
+        _suctionCupIssues.Clear();
+        var manager = SlicerFile?.IssueManager;
+        if (manager is not null)
+        {
+            foreach (var issue in manager.GetVisible())
+            {
+                if (issue.IsSuctionCup || issue.IsResinTrap)
+                {
+                    _suctionCupIssues.Add(issue);
+                }
+            }
+        }
+
+        _hasSuctionCups = _suctionCupIssues.Count > 0;
+        if (_hasSuctionCups)
+        {
+            _suctionCupSummary = $"{_suctionCupIssues.Count} Cavity/Suction issue{(_suctionCupIssues.Count > 1 ? "s" : "")} detected";
+        }
+        else
+        {
+            _suctionCupSummary = "No suction cups detected";
+        }
+
+        RaisePropertyChanged(nameof(HasSuctionCups));
+        RaisePropertyChanged(nameof(SuctionCupSummary));
+    }
+
+    [RelayCommand]
+    public void GoToNextSuctionCup()
+    {
+        if (_suctionCupIssues.Count == 0) return;
+        _currentSuctionCupIndex = (_currentSuctionCupIndex + 1) % _suctionCupIssues.Count;
+        var mainIssue = _suctionCupIssues[_currentSuctionCupIndex];
+        var issue = mainIssue.Count > 0 ? mainIssue[0] : null;
+        if (issue is not null)
+        {
+            ZoomToIssue(issue, true);
+        }
+        else
+        {
+            ActualLayer = mainIssue.StartLayerIndex;
+        }
+    }
+
+    [RelayCommand]
+    public void GoToPreviousSuctionCup()
+    {
+        if (_suctionCupIssues.Count == 0) return;
+        _currentSuctionCupIndex = (_currentSuctionCupIndex - 1 + _suctionCupIssues.Count) % _suctionCupIssues.Count;
+        var mainIssue = _suctionCupIssues[_currentSuctionCupIndex];
+        var issue = mainIssue.Count > 0 ? mainIssue[0] : null;
+        if (issue is not null)
+        {
+            ZoomToIssue(issue, true);
+        }
+        else
+        {
+            ActualLayer = mainIssue.StartLayerIndex;
+        }
+    }
+
+    [RelayCommand]
+    public void SelectLayer(int layer)
+    {
+        if (SlicerFile is null || SlicerFile.LayerCount == 0) return;
+        ActualLayer = (uint)Math.Clamp(layer, 0, (int)SlicerFile.LayerCount - 1);
+    }
+
+    [RelayCommand]
+    public void TogglePeelCurve()
+    {
+        Settings.Layer3DPreview.ShowPeelCurve = !Settings.Layer3DPreview.ShowPeelCurve;
+        LayerModel3DView.ShowPeelCurve = Settings.Layer3DPreview.ShowPeelCurve;
+        RaisePropertyChanged(nameof(Settings));
+    }
+
     private void DisposeLayer3DPreview()
     {
         if (IsLayer3DBuilding && Progress.CanCancel) Progress.TokenSource.Cancel();
@@ -686,6 +882,14 @@ public partial class MainWindow
         _layer3DIssueMesh?.Dispose();
         _layer3DMesh = null;
         _layer3DIssueMesh = null;
+        _layerAreas = null;
+        _peelSpikes = null;
+        _maxLayerArea = 0f;
+        _peakLayerIndex = 0;
+        _suctionCupIssues.Clear();
+        _currentSuctionCupIndex = -1;
+        _hasSuctionCups = false;
+        _suctionCupSummary = string.Empty;
         _layer3DIssueBuildGeneration++;
         _layerPreviewTabIndex = 0;
         RaisePropertyChanged(nameof(LayerPreviewTabIndex));
