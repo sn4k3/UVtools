@@ -517,9 +517,12 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
     private float _cameraDistance = 100;
     private float _cameraPitch = 0.55f;
+    private float _cameraRoll;
 
     private Vector3 _cameraTarget;
     private float _cameraYaw = -0.8f;
+    private int _pitchCycleState;
+    private float _pitchBaseYaw = -MathF.PI / 2f;
     private IPointer? _capturedPointer;
     private Point? _pointerDownPosition;
     private bool _isDragging;
@@ -568,8 +571,11 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private long _cameraAnimationStartTimestamp;
     private float _cameraAnimationStartYaw;
     private float _cameraAnimationStartPitch;
+    private float _cameraAnimationStartRoll;
     private float _cameraAnimationYawDelta;
+    private float _cameraAnimationRollDelta;
     private float _cameraAnimationTargetPitch;
+    private float _cameraAnimationTargetRoll;
 
     private uint _capVertexArray;
     private uint _capVertexBuffer;
@@ -709,12 +715,10 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             control.RequestNextFrameRendering());
         ShowModelStatsProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
         {
-            UserSettings.Instance.Layer3DPreview.ShowModelStats = control.ShowModelStats;
             control.RequestNextFrameRendering();
         });
         ShowCenterOfMassProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
         {
-            UserSettings.Instance.Layer3DPreview.ShowCenterOfMass = control.ShowCenterOfMass;
             control._needsComUpload = true;
             control.RequestNextFrameRendering();
         });
@@ -783,6 +787,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             _needsGridUpload = true;
             _needsBoundingBoxUpload = true;
             UpdateModelMetrics();
+            IsMeasureMode = false;
+            ClearMeasure();
             if (value is null)
             {
                 IsTurntableActive = false;
@@ -1273,11 +1279,13 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
     public float CameraYaw => _cameraYaw;
     public float CameraPitch => _cameraPitch;
+    public float CameraRoll => _cameraRoll;
 
     public void SetCameraAngles(float yaw, float pitch)
     {
         _cameraYaw = NormalizeAngle(yaw);
         _cameraPitch = Math.Clamp(pitch, -MathF.PI / 2, MathF.PI / 2);
+        _cameraRoll = 0f;
         CameraChanged();
     }
 
@@ -1394,7 +1402,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     }
 
     public event Action<string?>? RendererStatusChanged;
-    public event Action<float, float>? CameraOrientationChanged;
+    public event Action<float, float, float>? CameraOrientationChanged;
 
     /// <summary>
     /// Raised when the user asks to flip between the perspective and the orthographic projection.
@@ -1405,18 +1413,110 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     public void ResetCamera()
     {
         if (_mesh is null || _mesh.VertexCount == 0) return;
+        _cameraTarget = _mesh.Center;
+        _modelRadius = Math.Max(_mesh.Size.Length() / 2, 0.5f);
+        _cameraDistance = _modelRadius * 2.6f;
+        _pitchBaseYaw = -MathF.PI / 2f;
+        _pitchCycleState = 0;
+        _cameraRoll = 0f;
+        AnimateToOrientation(-0.8f, 0.55f, 0f);
+    }
+
+    /// <summary>
+    /// Centers the model target and zooms the camera distance to fit the model in the viewport,
+    /// without modifying the camera orientation (yaw, pitch, roll).
+    /// </summary>
+    public void FitToView()
+    {
+        if (_mesh is null || _mesh.VertexCount == 0) return;
         CancelCameraAnimation();
         _cameraTarget = _mesh.Center;
         _modelRadius = Math.Max(_mesh.Size.Length() / 2, 0.5f);
         _cameraDistance = _modelRadius * 2.6f;
-        _cameraYaw = -0.8f;
-        _cameraPitch = 0.55f;
         CameraChanged();
+    }
+
+    /// <summary>
+    /// Rotates the camera orientation by 90-degree increments in the specified direction,
+    /// continuously rotating around the axis without getting stuck.
+    /// </summary>
+    public void RotateStep(float yawDelta, float pitchDelta)
+    {
+        const float halfPi = MathF.PI / 2f;
+        if (pitchDelta != 0)
+        {
+            if (_cameraPitch >= MathF.PI / 4f)
+            {
+                _pitchCycleState = 1;
+            }
+            else if (_cameraPitch <= -MathF.PI / 4f)
+            {
+                _pitchCycleState = 3;
+            }
+            else
+            {
+                var yawDiff = MathF.Abs(ShortestAngleDelta(_cameraYaw, _pitchBaseYaw));
+                if (yawDiff > MathF.PI / 2f)
+                {
+                    _pitchCycleState = 2;
+                }
+                else
+                {
+                    _pitchBaseYaw = MathF.Round(_cameraYaw / halfPi) * halfPi;
+                    _pitchCycleState = 0;
+                }
+            }
+
+            var step = pitchDelta > 0 ? 1 : 3;
+            _pitchCycleState = (_pitchCycleState + step) % 4;
+
+            float targetPitch;
+            float targetYaw;
+            switch (_pitchCycleState)
+            {
+                case 0:
+                    targetPitch = 0f;
+                    targetYaw = _pitchBaseYaw;
+                    break;
+                case 1:
+                    targetPitch = halfPi;
+                    targetYaw = _pitchBaseYaw;
+                    break;
+                case 2:
+                    targetPitch = 0f;
+                    targetYaw = NormalizeAngle(_pitchBaseYaw + MathF.PI);
+                    break;
+                default: // 3
+                    targetPitch = -halfPi;
+                    targetYaw = _pitchBaseYaw;
+                    break;
+            }
+
+            AnimateToOrientation(targetYaw, targetPitch, 0f);
+        }
+        else if (yawDelta != 0)
+        {
+            var currentYawStep = MathF.Round(_cameraYaw / halfPi);
+            var targetYaw = (currentYawStep + MathF.Sign(yawDelta)) * halfPi;
+            var targetPitch = MathF.Abs(_cameraPitch) < MathF.PI / 4f ? 0f : MathF.Round(_cameraPitch / halfPi) * halfPi;
+            _pitchBaseYaw = targetYaw;
+            _pitchCycleState = 0;
+            AnimateToOrientation(targetYaw, targetPitch, 0f);
+        }
+    }
+
+    public void RollStep(float deltaRoll)
+    {
+        var halfPi = MathF.PI / 2f;
+        var currentRollStep = MathF.Round(_cameraRoll / halfPi);
+        var targetRoll = (currentRollStep + MathF.Sign(deltaRoll)) * halfPi;
+        AnimateToOrientation(_cameraYaw, _cameraPitch, targetRoll);
     }
 
     public void Orbit(double deltaX, double deltaY)
     {
         CancelCameraAnimation();
+        _cameraRoll = 0f;
         _cameraYaw = NormalizeAngle(_cameraYaw - (float)deltaX * OrbitSensitivity);
         _cameraPitch = Math.Clamp(_cameraPitch + (float)deltaY * OrbitSensitivity,
             -MathF.PI / 2, MathF.PI / 2);
@@ -1434,14 +1534,24 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             : -MathF.PI / 2;
         var targetPitch = MathF.Asin(Math.Clamp(direction.Z, -1, 1));
 
-        AnimateToOrientation(targetYaw, targetPitch);
+        if (MathF.Abs(targetPitch) < MathF.PI / 4f)
+        {
+            _pitchBaseYaw = targetYaw;
+            _pitchCycleState = 0;
+        }
+        else
+        {
+            _pitchCycleState = targetPitch > 0 ? 1 : 3;
+        }
+
+        AnimateToOrientation(targetYaw, targetPitch, 0f);
     }
 
     /// <summary>Orbits by a fixed amount, animated, so that key presses feel like the orientation cube clicks.</summary>
     public void OrbitStep(float yawDelta, float pitchDelta)
     {
         AnimateToOrientation(_cameraYaw + yawDelta,
-            Math.Clamp(_cameraPitch + pitchDelta, -MathF.PI / 2, MathF.PI / 2));
+            Math.Clamp(_cameraPitch + pitchDelta, -MathF.PI / 2, MathF.PI / 2), 0f);
     }
 
     /// <summary>Zooms by <paramref name="steps"/> wheel notches, positive being closer to the model.</summary>
@@ -1453,12 +1563,15 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         RequestNextFrameRendering();
     }
 
-    private void AnimateToOrientation(float targetYaw, float targetPitch)
+    private void AnimateToOrientation(float targetYaw, float targetPitch, float targetRoll = 0f)
     {
         _cameraAnimationStartYaw = _cameraYaw;
         _cameraAnimationStartPitch = _cameraPitch;
+        _cameraAnimationStartRoll = _cameraRoll;
         _cameraAnimationYawDelta = ShortestAngleDelta(_cameraYaw, targetYaw);
+        _cameraAnimationRollDelta = ShortestAngleDelta(_cameraRoll, targetRoll);
         _cameraAnimationTargetPitch = targetPitch;
+        _cameraAnimationTargetRoll = targetRoll;
         _cameraAnimationStartTimestamp = Stopwatch.GetTimestamp();
         _cameraAnimationTimer.Start();
     }
@@ -2763,8 +2876,20 @@ private unsafe void DrawFocusedBoundingBox()
             cosPitch * MathF.Cos(_cameraYaw),
             cosPitch * MathF.Sin(_cameraYaw),
             MathF.Sin(_cameraPitch));
-        right = new Vector3(-MathF.Sin(_cameraYaw), MathF.Cos(_cameraYaw), 0);
-        up = Vector3.Normalize(Vector3.Cross(direction, right));
+        var baseRight = new Vector3(-MathF.Sin(_cameraYaw), MathF.Cos(_cameraYaw), 0);
+        var baseUp = Vector3.Normalize(Vector3.Cross(direction, baseRight));
+
+        if (MathF.Abs(_cameraRoll) > 0.0001f)
+        {
+            var rollMatrix = Matrix4x4.CreateFromAxisAngle(direction, _cameraRoll);
+            right = Vector3.Transform(baseRight, rollMatrix);
+            up = Vector3.Transform(baseUp, rollMatrix);
+        }
+        else
+        {
+            right = baseRight;
+            up = baseUp;
+        }
     }
 
     private void CameraAnimationTimerOnTick(object? sender, EventArgs e)
@@ -2774,13 +2899,14 @@ private unsafe void DrawFocusedBoundingBox()
         var easedProgress = (float)(progress * progress * (3 - 2 * progress));
         _cameraYaw = NormalizeAngle(_cameraAnimationStartYaw + _cameraAnimationYawDelta * easedProgress);
         _cameraPitch = float.Lerp(_cameraAnimationStartPitch, _cameraAnimationTargetPitch, easedProgress);
+        _cameraRoll = NormalizeAngle(_cameraAnimationStartRoll + _cameraAnimationRollDelta * easedProgress);
         CameraChanged();
         if (progress >= 1) _cameraAnimationTimer.Stop();
     }
 
     private void CameraChanged()
     {
-        CameraOrientationChanged?.Invoke(_cameraYaw, _cameraPitch);
+        CameraOrientationChanged?.Invoke(_cameraYaw, _cameraPitch, _cameraRoll);
         RequestNextFrameRendering();
     }
 
@@ -3060,6 +3186,14 @@ private unsafe void DrawFocusedBoundingBox()
             return true;
         }
 
+        if ((e.KeyModifiers & KeyModifiers.Shift) != 0 && e.Key == Key.C)
+        {
+            App.MainWindow.Layer3DClipMode = App.MainWindow.Layer3DClipMode == VoxelPreviewClipMode.Below
+                ? VoxelPreviewClipMode.Above
+                : VoxelPreviewClipMode.Below;
+            return true;
+        }
+
         if (e.KeyModifiers != KeyModifiers.None) return false;
         switch (e.Key)
         {
@@ -3096,6 +3230,9 @@ private unsafe void DrawFocusedBoundingBox()
             case Key.D0 or Key.NumPad0 or Key.Home:
                 ResetCamera();
                 return true;
+            case Key.F:
+                FitToView();
+                return true;
             /* Arrows orbit as if dragging the model towards that direction, matching the pointer and the cube. */
             case Key.Left:
                 OrbitStep(OrbitKeyStep, 0);
@@ -3122,13 +3259,13 @@ private unsafe void DrawFocusedBoundingBox()
                 App.MainWindow.GoNextLayer();
                 return true;
             case Key.S:
-                UserSettings.Instance.Layer3DPreview.RenderMode = VoxelPreviewRenderMode.Solid;
+                App.MainWindow.Layer3DRenderMode = VoxelPreviewRenderMode.Solid;
                 return true;
             case Key.X:
-                UserSettings.Instance.Layer3DPreview.RenderMode = VoxelPreviewRenderMode.XRay;
+                App.MainWindow.Layer3DRenderMode = VoxelPreviewRenderMode.XRay;
                 return true;
             case Key.W:
-                UserSettings.Instance.Layer3DPreview.RenderMode = VoxelPreviewRenderMode.Wireframe;
+                App.MainWindow.Layer3DRenderMode = VoxelPreviewRenderMode.Wireframe;
                 return true;
             case Key.C:
                 App.MainWindow.Layer3DClipToCurrentLayer = !App.MainWindow.Layer3DClipToCurrentLayer;
@@ -3141,7 +3278,7 @@ private unsafe void DrawFocusedBoundingBox()
                 UserSettings.Instance.Layer3DPreview.ShowBuildPlateGrid = ShowBuildPlateGrid;
                 return true;
             case Key.H:
-                ColorMode = ColorMode switch
+                var nextColor = ColorMode switch
                 {
                     VoxelPreviewColorMode.Solid => VoxelPreviewColorMode.OverhangHeatmap,
                     VoxelPreviewColorMode.OverhangHeatmap => VoxelPreviewColorMode.LayerZones,
@@ -3149,7 +3286,7 @@ private unsafe void DrawFocusedBoundingBox()
                     VoxelPreviewColorMode.Fragility => VoxelPreviewColorMode.ResinDrainage,
                     _ => VoxelPreviewColorMode.Solid
                 };
-                UserSettings.Instance.Layer3DPreview.ColorMode = ColorMode;
+                App.MainWindow.Layer3DColorMode = nextColor;
                 return true;
             case Key.A:
                 ShowPeelCurve = !ShowPeelCurve;
@@ -3168,12 +3305,7 @@ private unsafe void DrawFocusedBoundingBox()
                 GhostClippedModel = !GhostClippedModel;
                 UserSettings.Instance.Layer3DPreview.GhostClippedModel = GhostClippedModel;
                 return true;
-            case Key.I:
-                ClipMode = ClipMode == VoxelPreviewClipMode.Below
-                    ? VoxelPreviewClipMode.Above
-                    : VoxelPreviewClipMode.Below;
-                UserSettings.Instance.Layer3DPreview.ClipMode = ClipMode;
-                return true;
+
             case Key.L:
                 var nextLighting = LightingMode switch
                 {
@@ -3181,8 +3313,7 @@ private unsafe void DrawFocusedBoundingBox()
                     VoxelPreviewLightingMode.Studio => VoxelPreviewLightingMode.Flat,
                     _ => VoxelPreviewLightingMode.Camera
                 };
-                LightingMode = nextLighting;
-                UserSettings.Instance.Layer3DPreview.LightingMode = nextLighting;
+                App.MainWindow.Layer3DLightingMode = nextLighting;
                 return true;
             case Key.B:
                 ShowBoundingBox = !ShowBoundingBox;

@@ -1690,6 +1690,8 @@ public partial class MainWindow : GenericWindow
     {
         if (!File.Exists(fileName)) return;
         CloseFile();
+        LayerModel3DView.IsMeasureMode = false;
+        LayerModel3DView.ClearMeasure();
         var fileNameOnly = Path.GetFileName(fileName);
         SlicerFile = FileFormat.FindByExtensionOrFilePath(fileName, true);
         if (SlicerFile is null) return;

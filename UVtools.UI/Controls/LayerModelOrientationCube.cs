@@ -11,11 +11,28 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Material.Icons;
+using Material.Icons.Avalonia;
 
 namespace UVtools.UI.Controls;
 
 public sealed class LayerModelOrientationCube : Control
 {
+    public enum CubeHitTarget
+    {
+        None,
+        Cube,
+        Home,
+        ArrowUp,
+        ArrowDown,
+        ArrowLeft,
+        ArrowRight,
+        RollCcw,
+        RollCw,
+        Turntable,
+        Menu
+    }
+
     private const double DragThreshold = 3;
 
     /// <summary>
@@ -30,7 +47,7 @@ public sealed class LayerModelOrientationCube : Control
     /// <summary>Half size of an edge/corner cell, per axis.</summary>
     private const float CellOuterHalf = (1 - TargetEdgeThreshold) / 2f;
 
-    private const double ProjectionScale = 0.27;
+    private const double ProjectionScale = 0.22;
 
     private static readonly Vector3[] Vertices =
     [
@@ -48,27 +65,44 @@ public sealed class LayerModelOrientationCube : Control
         new(Vector3.UnitY, "BACK", 3, 7, 6, 2)
     ];
 
-    private static readonly IBrush BackgroundBrush = new SolidColorBrush(Color.FromArgb(178, 18, 22, 29));
+    private static readonly IBrush BackgroundBrush = new SolidColorBrush(Color.FromArgb(195, 18, 22, 29));
+    private static readonly IBrush ShadowBrush = new SolidColorBrush(Color.FromArgb(90, 0, 0, 0));
     private static readonly IBrush FaceBrush = new SolidColorBrush(Color.FromRgb(74, 84, 99));
     private static readonly IBrush FaceSecondaryBrush = new SolidColorBrush(Color.FromRgb(61, 70, 84));
+    private static readonly IBrush ActiveFaceBrush = new SolidColorBrush(Color.FromRgb(140, 185, 225));
     private static readonly IBrush HighlightBrush = new SolidColorBrush(Color.FromRgb(36, 150, 215));
+    private static readonly IBrush ElementBrush = new SolidColorBrush(Color.FromRgb(190, 202, 218));
+    private static readonly IBrush ElementHoverBrush = new SolidColorBrush(Color.FromRgb(56, 155, 255));
+    private static readonly IBrush TurntableActiveBgBrush = new SolidColorBrush(Color.FromArgb(60, 56, 155, 255));
+    private static readonly IBrush TurntableDotBrush = new SolidColorBrush(Color.FromRgb(0, 230, 160));
     private static readonly IBrush TextBrush = Brushes.White;
+    private static readonly IBrush ActiveTextBrush = new SolidColorBrush(Color.FromRgb(35, 42, 54));
+
     private static readonly Pen BorderPen = new(new SolidColorBrush(Color.FromRgb(145, 157, 175)), 1);
+    private static readonly Pen ActiveFacePen = new(new SolidColorBrush(Color.FromRgb(175, 212, 245)), 1.5);
     private static readonly Pen HighlightPen = new(new SolidColorBrush(Color.FromRgb(121, 213, 255)), 2);
+    private static readonly Pen ElementBorderPen = new(new SolidColorBrush(Color.FromArgb(180, 20, 24, 32)), 1);
+    private static readonly Pen ElementHoverPen = new(new SolidColorBrush(Color.FromRgb(121, 213, 255)), 1.5);
+    private static readonly Pen TurntableActivePen = new(new SolidColorBrush(Color.FromRgb(56, 155, 255)), 1.2);
+    private static readonly Pen ArcPen = new(new SolidColorBrush(Color.FromRgb(185, 198, 215)), 2.2);
+    private static readonly Pen ArcHoverPen = new(new SolidColorBrush(Color.FromRgb(56, 155, 255)), 2.8);
+
     private static readonly Typeface LabelTypeface = new("Inter", FontStyle.Normal, FontWeight.SemiBold);
     private static readonly Cursor HandCursor = new(StandardCursorType.Hand);
 
-    private readonly Point[] _projectedVertices = new Point[Vertices.Length];
-    private readonly int[] _visibleFaceIndices = new int[3];
+    public static readonly StyledProperty<bool> IsTurntableActiveProperty =
+        AvaloniaProperty.Register<LayerModelOrientationCube, bool>(nameof(IsTurntableActive), false);
+
+    private readonly FormattedText?[] _activeFaceTexts = new FormattedText?[Faces.Length];
 
     private readonly FormattedText?[] _faceTexts = new FormattedText?[Faces.Length];
 
-    private float _cameraYaw = -0.8f;
+    private readonly Point[] _projectedVertices = new Point[Vertices.Length];
+    private readonly int[] _visibleFaceIndices = new int[3];
     private float _cameraPitch = 0.55f;
+    private float _cameraYaw = -0.8f;
+    private float _cameraRoll;
     private IPointer? _capturedPointer;
-    private Point _pressedPosition;
-    private Point _lastPointerPosition;
-    private bool _isDragging;
 
     /// <summary>
     /// The hovered target cell, each component being -1, 0 or 1, where 0 spans the middle of that axis.
@@ -76,20 +110,47 @@ public sealed class LayerModelOrientationCube : Control
     /// </summary>
     private Vector3? _hoverCell;
 
+    private CubeHitTarget _hoverTarget = CubeHitTarget.None;
+    private bool _isDragging;
+    private Point _lastPointerPosition;
+    private Point _pressedPosition;
+    private CubeHitTarget _pressedTarget = CubeHitTarget.None;
+    private ContextMenu? _contextMenu;
+    private MenuItem? _turntableMenuItem;
+
+    static LayerModelOrientationCube()
+    {
+        IsTurntableActiveProperty.Changed.AddClassHandler<LayerModelOrientationCube>((control, _) =>
+            control.InvalidateVisual());
+    }
+
     public LayerModelOrientationCube()
     {
         Cursor = HandCursor;
         Focusable = true;
     }
 
+    public bool IsTurntableActive
+    {
+        get => GetValue(IsTurntableActiveProperty);
+        set => SetValue(IsTurntableActiveProperty, value);
+    }
+
     public event Action<double, double>? OrbitRequested;
     public event Action<Vector3>? SnapRequested;
+    public event Action? HomeRequested;
+    public event Action<float, float>? RotateRequested;
+    public event Action<float>? RollRequested;
+    public event Action? TurntableToggleRequested;
+    public event Action? ProjectionToggleRequested;
+    public event Action? FitToViewRequested;
 
-    public void SetCameraOrientation(float yaw, float pitch)
+    public void SetCameraOrientation(float yaw, float pitch, float roll = 0f)
     {
-        if (_cameraYaw.Equals(yaw) && _cameraPitch.Equals(pitch)) return;
+        if (_cameraYaw.Equals(yaw) && _cameraPitch.Equals(pitch) && _cameraRoll.Equals(roll)) return;
         _cameraYaw = yaw;
         _cameraPitch = pitch;
+        _cameraRoll = roll;
         if (_capturedPointer is not null) _hoverCell = null;
         InvalidateVisual();
     }
@@ -97,9 +158,15 @@ public sealed class LayerModelOrientationCube : Control
     public override void Render(DrawingContext context)
     {
         base.Render(context);
-        context.DrawRectangle(BackgroundBrush, BorderPen, new Rect(Bounds.Size), 8, 8);
+        context.DrawRectangle(BackgroundBrush, BorderPen, new Rect(Bounds.Size), 10, 10);
 
         GetProjection(out var center, out var scale, out var direction, out var right, out var up);
+
+        // Ground drop shadow under cube
+        context.DrawEllipse(ShadowBrush, null, new Point(center.X, center.Y + scale * 1.42), scale * 1.25,
+            scale * 0.22);
+
+        // Project cube vertices
         for (var index = 0; index < Vertices.Length; index++)
         {
             _projectedVertices[index] = Project(Vertices[index], center, scale, right, up);
@@ -126,17 +193,24 @@ public sealed class LayerModelOrientationCube : Control
             _visibleFaceIndices[position] = value;
         }
 
-        /* Visible faces of a convex cube tile the silhouette without overlapping each other, so the
-         * highlight and the labels can be drawn as later passes without any of them bleeding over a face
-         * that should occlude them. */
+        /* Visible faces of a convex cube tile the silhouette without overlapping each other. */
         for (var index = 0; index < visibleCount; index++)
         {
             var face = Faces[_visibleFaceIndices[index]];
+            var isFacingCamera = Vector3.Dot(face.Normal, direction) > 0.96f;
+
             context.DrawGeometry(index % 2 == 0 ? FaceBrush : FaceSecondaryBrush, BorderPen,
                 CreateFaceGeometry(face));
+
+            if (isFacingCamera)
+            {
+                // Active front-facing face has a light blue center highlight
+                context.DrawGeometry(ActiveFaceBrush, ActiveFacePen,
+                    CreateCellGeometry(face, face.Normal, center, scale, right, up));
+            }
         }
 
-        if (_hoverCell is { } hoverCell)
+        if (_hoverTarget == CubeHitTarget.Cube && _hoverCell is { } hoverCell)
         {
             for (var index = 0; index < visibleCount; index++)
             {
@@ -151,8 +225,262 @@ public sealed class LayerModelOrientationCube : Control
         for (var index = 0; index < visibleCount; index++)
         {
             var faceIndex = _visibleFaceIndices[index];
-            DrawFaceLabel(context, faceIndex, Faces[faceIndex]);
+            var face = Faces[faceIndex];
+            var isFacingCamera = Vector3.Dot(face.Normal, direction) > 0.96f;
+            DrawFaceLabel(context, faceIndex, face, isFacingCamera);
         }
+
+        // Draw ViewCube UI controls: Home, 4 Directional Arrows, Roll Arc, Turntable, and Menu
+        DrawViewCubeControls(context, center, scale);
+    }
+
+    private void DrawViewCubeControls(DrawingContext context, Point center, double scale)
+    {
+        // 1. Home Icon (top-left)
+        var isHomeHover = _hoverTarget == CubeHitTarget.Home;
+        var homeBrush = isHomeHover ? ElementHoverBrush : ElementBrush;
+        var homePen = isHomeHover ? ElementHoverPen : ElementBorderPen;
+        context.DrawGeometry(homeBrush, homePen, CreateHomeGeometry(center, scale));
+
+        // 2. Directional Arrows
+        var isUpHover = _hoverTarget == CubeHitTarget.ArrowUp;
+        context.DrawGeometry(isUpHover ? ElementHoverBrush : ElementBrush,
+            isUpHover ? ElementHoverPen : ElementBorderPen, CreateArrowUpGeometry(center, scale));
+
+        var isDownHover = _hoverTarget == CubeHitTarget.ArrowDown;
+        context.DrawGeometry(isDownHover ? ElementHoverBrush : ElementBrush,
+            isDownHover ? ElementHoverPen : ElementBorderPen, CreateArrowDownGeometry(center, scale));
+
+        var isLeftHover = _hoverTarget == CubeHitTarget.ArrowLeft;
+        context.DrawGeometry(isLeftHover ? ElementHoverBrush : ElementBrush,
+            isLeftHover ? ElementHoverPen : ElementBorderPen, CreateArrowLeftGeometry(center, scale));
+
+        var isRightHover = _hoverTarget == CubeHitTarget.ArrowRight;
+        context.DrawGeometry(isRightHover ? ElementHoverBrush : ElementBrush,
+            isRightHover ? ElementHoverPen : ElementBorderPen, CreateArrowRightGeometry(center, scale));
+
+        // 3. Roll Curved Arrows (top-right corner with ample clearance from cube)
+        GetRollArcPoints(center, scale, out var pCcw, out var pCw, out var rArc);
+        var isCcwHover = _hoverTarget == CubeHitTarget.RollCcw;
+        var isCwHover = _hoverTarget == CubeHitTarget.RollCw;
+
+        context.DrawGeometry(null, isCcwHover || isCwHover ? ArcHoverPen : ArcPen,
+            CreateRollArcGeometry(pCcw, pCw, rArc));
+
+        context.DrawGeometry(isCcwHover ? ElementHoverBrush : ElementBrush,
+            isCcwHover ? ElementHoverPen : ElementBorderPen, CreateRollCcwArrowGeometry(pCcw));
+
+        context.DrawGeometry(isCwHover ? ElementHoverBrush : ElementBrush,
+            isCwHover ? ElementHoverPen : ElementBorderPen, CreateRollCwArrowGeometry(pCw));
+
+        // 4. Turntable / Auto-Rotate Button (bottom-left, styled equal to Home)
+        var isTurntableHover = _hoverTarget == CubeHitTarget.Turntable;
+        var isTurntableOn = IsTurntableActive;
+        var ttCenter = new Point(center.X - scale * 1.55, center.Y + scale * 1.75);
+
+        if (isTurntableOn)
+        {
+            context.DrawRectangle(TurntableActiveBgBrush, TurntableActivePen,
+                new Rect(ttCenter.X - 10, ttCenter.Y - 9, 20, 19), 3, 3);
+            context.DrawEllipse(TurntableDotBrush, null,
+                new Point(ttCenter.X + 6.5, ttCenter.Y - 6.5), 2, 2);
+        }
+
+        var ttBrush = isTurntableOn || isTurntableHover ? ElementHoverBrush : ElementBrush;
+        var ttPen = isTurntableOn || isTurntableHover ? ElementHoverPen : ElementBorderPen;
+        context.DrawGeometry(ttBrush, ttPen, CreateTurntableGeometry(center, scale));
+
+        // 5. Menu Button (bottom-right dropdown arrow, pushed more to bottom)
+        var isMenuHover = _hoverTarget == CubeHitTarget.Menu;
+        var menuBrush = isMenuHover ? ElementHoverBrush : ElementBrush;
+        var menuPen = isMenuHover ? ElementHoverPen : ElementBorderPen;
+        context.DrawGeometry(menuBrush, menuPen, CreateMenuGeometry(center, scale));
+    }
+
+    private static StreamGeometry CreateHomeGeometry(Point center, double scale)
+    {
+        var hc = new Point(center.X - scale * 1.55, center.Y - scale * 1.55);
+        const double half = 7.5;
+        var geometry = new StreamGeometry();
+        using var ctx = geometry.Open();
+        ctx.BeginFigure(new Point(hc.X, hc.Y - half));
+        ctx.LineTo(new Point(hc.X + half + 1, hc.Y - 1));
+        ctx.LineTo(new Point(hc.X + half - 1.5, hc.Y - 1));
+        ctx.LineTo(new Point(hc.X + half - 1.5, hc.Y + half));
+        ctx.LineTo(new Point(hc.X + 2, hc.Y + half));
+        ctx.LineTo(new Point(hc.X + 2, hc.Y + 2));
+        ctx.LineTo(new Point(hc.X - 2, hc.Y + 2));
+        ctx.LineTo(new Point(hc.X - 2, hc.Y + half));
+        ctx.LineTo(new Point(hc.X - half + 1.5, hc.Y + half));
+        ctx.LineTo(new Point(hc.X - half + 1.5, hc.Y - 1));
+        ctx.LineTo(new Point(hc.X - half - 1, hc.Y - 1));
+        ctx.EndFigure(true);
+        return geometry;
+    }
+
+    private static StreamGeometry CreateArrowUpGeometry(Point center, double scale)
+    {
+        var dTip = scale * 1.25;
+        var dBase = dTip + 8.5;
+        var geometry = new StreamGeometry();
+        using var ctx = geometry.Open();
+        ctx.BeginFigure(new Point(center.X, center.Y - dTip));
+        ctx.LineTo(new Point(center.X - 6.5, center.Y - dBase));
+        ctx.LineTo(new Point(center.X + 6.5, center.Y - dBase));
+        ctx.EndFigure(true);
+        return geometry;
+    }
+
+    private static StreamGeometry CreateArrowDownGeometry(Point center, double scale)
+    {
+        var dTip = scale * 1.25;
+        var dBase = dTip + 8.5;
+        var geometry = new StreamGeometry();
+        using var ctx = geometry.Open();
+        ctx.BeginFigure(new Point(center.X, center.Y + dTip));
+        ctx.LineTo(new Point(center.X - 6.5, center.Y + dBase));
+        ctx.LineTo(new Point(center.X + 6.5, center.Y + dBase));
+        ctx.EndFigure(true);
+        return geometry;
+    }
+
+    private static StreamGeometry CreateArrowLeftGeometry(Point center, double scale)
+    {
+        var dTip = scale * 1.25;
+        var dBase = dTip + 8.5;
+        var geometry = new StreamGeometry();
+        using var ctx = geometry.Open();
+        ctx.BeginFigure(new Point(center.X - dTip, center.Y));
+        ctx.LineTo(new Point(center.X - dBase, center.Y - 6.5));
+        ctx.LineTo(new Point(center.X - dBase, center.Y + 6.5));
+        ctx.EndFigure(true);
+        return geometry;
+    }
+
+    private static StreamGeometry CreateArrowRightGeometry(Point center, double scale)
+    {
+        var dTip = scale * 1.25;
+        var dBase = dTip + 8.5;
+        var geometry = new StreamGeometry();
+        using var ctx = geometry.Open();
+        ctx.BeginFigure(new Point(center.X + dTip, center.Y));
+        ctx.LineTo(new Point(center.X + dBase, center.Y - 6.5));
+        ctx.LineTo(new Point(center.X + dBase, center.Y + 6.5));
+        ctx.EndFigure(true);
+        return geometry;
+    }
+
+    private static void GetRollArcPoints(Point center, double scale,
+        out Point pCcw, out Point pCw, out double rArc)
+    {
+        rArc = scale * 2.1;
+        const double aStart = -1.2566; // -72 deg
+        const double aEnd = -0.3142; // -18 deg
+        pCcw = new Point(center.X + rArc * Math.Cos(aStart), center.Y + rArc * Math.Sin(aStart));
+        pCw = new Point(center.X + rArc * Math.Cos(aEnd), center.Y + rArc * Math.Sin(aEnd));
+    }
+
+    private static StreamGeometry CreateRollArcGeometry(Point pCcw, Point pCw, double rArc)
+    {
+        var geometry = new StreamGeometry();
+        using var ctx = geometry.Open();
+        ctx.BeginFigure(pCcw);
+        ctx.ArcTo(pCw, new Size(rArc, rArc), 0, false, SweepDirection.Clockwise);
+        ctx.EndFigure(false);
+        return geometry;
+    }
+
+    private static StreamGeometry CreateRollCcwArrowGeometry(Point pCcw)
+    {
+        const double tx = -0.951;
+        const double ty = -0.309;
+        const double nx = 0.309;
+        const double ny = -0.951;
+        const double len = 6.5;
+        const double w = 4.0;
+
+        var geometry = new StreamGeometry();
+        using var ctx = geometry.Open();
+        ctx.BeginFigure(pCcw);
+        ctx.LineTo(new Point(pCcw.X - tx * len + nx * w, pCcw.Y - ty * len + ny * w));
+        ctx.LineTo(new Point(pCcw.X - tx * len - nx * w, pCcw.Y - ty * len - ny * w));
+        ctx.EndFigure(true);
+        return geometry;
+    }
+
+    private static StreamGeometry CreateRollCwArrowGeometry(Point pCw)
+    {
+        const double tx = 0.309;
+        const double ty = 0.951;
+        const double nx = -0.951;
+        const double ny = 0.309;
+        const double len = 6.5;
+        const double w = 4.0;
+
+        var geometry = new StreamGeometry();
+        using var ctx = geometry.Open();
+        ctx.BeginFigure(pCw);
+        ctx.LineTo(new Point(pCw.X - tx * len + nx * w, pCw.Y - ty * len + ny * w));
+        ctx.LineTo(new Point(pCw.X - tx * len - nx * w, pCw.Y - ty * len - ny * w));
+        ctx.EndFigure(true);
+        return geometry;
+    }
+
+    private static StreamGeometry CreateTurntableGeometry(Point center, double scale)
+    {
+        var tc = new Point(center.X - scale * 1.55, center.Y + scale * 1.75);
+        var geometry = new StreamGeometry();
+        using var ctx = geometry.Open();
+
+        // Figure 1: Circular orbit sweep ribbon with arrowhead
+        ctx.BeginFigure(new Point(tc.X - 3.5, tc.Y + 3.0), true);
+        ctx.ArcTo(new Point(tc.X, tc.Y - 7.0), new Size(7.0, 7.0), 0, false, SweepDirection.Clockwise);
+        ctx.ArcTo(new Point(tc.X + 6.0, tc.Y - 1.5), new Size(7.0, 7.0), 0, false, SweepDirection.Clockwise);
+        ctx.LineTo(new Point(tc.X + 8.5, tc.Y - 1.5));
+        ctx.LineTo(new Point(tc.X + 5.0, tc.Y + 3.5));
+        ctx.LineTo(new Point(tc.X + 1.8, tc.Y + 0.0));
+        ctx.LineTo(new Point(tc.X + 3.6, tc.Y + 0.0));
+        ctx.ArcTo(new Point(tc.X, tc.Y - 4.2), new Size(4.2, 4.2), 0, false, SweepDirection.CounterClockwise);
+        ctx.ArcTo(new Point(tc.X - 2.1, tc.Y + 1.8), new Size(4.2, 4.2), 0, false, SweepDirection.CounterClockwise);
+        ctx.EndFigure(true);
+
+        // Figure 2: Central turntable platter pedestal
+        ctx.BeginFigure(new Point(tc.X - 4.5, tc.Y + 4.5), true);
+        ctx.LineTo(new Point(tc.X + 4.5, tc.Y + 4.5));
+        ctx.LineTo(new Point(tc.X + 3.5, tc.Y + 6.8));
+        ctx.LineTo(new Point(tc.X - 3.5, tc.Y + 6.8));
+        ctx.EndFigure(true);
+
+        // Figure 3: Spindle pin
+        ctx.BeginFigure(new Point(tc.X - 1.2, tc.Y - 0.5), true);
+        ctx.LineTo(new Point(tc.X + 1.2, tc.Y - 0.5));
+        ctx.LineTo(new Point(tc.X + 1.2, tc.Y + 3.5));
+        ctx.LineTo(new Point(tc.X - 1.2, tc.Y + 3.5));
+        ctx.EndFigure(true);
+
+        return geometry;
+    }
+
+    private static StreamGeometry CreateMenuGeometry(Point center, double scale)
+    {
+        var mc = new Point(center.X + scale * 1.55, center.Y + scale * 1.75);
+        var geometry = new StreamGeometry();
+        using var ctx = geometry.Open();
+
+        // Figure 1: Horizontal header bar
+        ctx.BeginFigure(new Point(mc.X - 5.5, mc.Y - 3.5), true);
+        ctx.LineTo(new Point(mc.X + 5.5, mc.Y - 3.5));
+        ctx.LineTo(new Point(mc.X + 5.5, mc.Y - 1.5));
+        ctx.LineTo(new Point(mc.X - 5.5, mc.Y - 1.5));
+        ctx.EndFigure(true);
+
+        // Figure 2: Downward triangle
+        ctx.BeginFigure(new Point(mc.X - 4.5, mc.Y + 0.5), true);
+        ctx.LineTo(new Point(mc.X + 4.5, mc.Y + 0.5));
+        ctx.LineTo(new Point(mc.X, mc.Y + 5.0));
+        ctx.EndFigure(true);
+
+        return geometry;
     }
 
     private StreamGeometry CreateFaceGeometry(Face face)
@@ -206,13 +534,23 @@ public sealed class LayerModelOrientationCube : Control
             ComponentHalf(faceNormal.Y, cell.Y),
             ComponentHalf(faceNormal.Z, cell.Z));
 
-        static float ComponentCenter(float normal, float cell) => normal != 0
-            ? normal
-            : cell == 0 ? 0 : MathF.CopySign(CellOuterCenter, cell);
+        static float ComponentCenter(float normal, float cell)
+        {
+            return normal != 0
+                ? normal
+                : cell == 0
+                    ? 0
+                    : MathF.CopySign(CellOuterCenter, cell);
+        }
 
-        static float ComponentHalf(float normal, float cell) => normal != 0
-            ? 0
-            : cell == 0 ? TargetEdgeThreshold : CellOuterHalf;
+        static float ComponentHalf(float normal, float cell)
+        {
+            return normal != 0
+                ? 0
+                : cell == 0
+                    ? TargetEdgeThreshold
+                    : CellOuterHalf;
+        }
     }
 
     /// <summary>Gets the two unit axes that span the plane of an axis aligned <paramref name="faceNormal"/>.</summary>
@@ -236,25 +574,101 @@ public sealed class LayerModelOrientationCube : Control
         axisB = Vector3.UnitY;
     }
 
-    private void DrawFaceLabel(DrawingContext context, int faceIndex, Face face)
+    private void DrawFaceLabel(DrawingContext context, int faceIndex, Face face, bool isFacingCamera)
     {
         var center = new Point(
             (_projectedVertices[face.Vertex0].X + _projectedVertices[face.Vertex1].X +
              _projectedVertices[face.Vertex2].X + _projectedVertices[face.Vertex3].X) / 4,
             (_projectedVertices[face.Vertex0].Y + _projectedVertices[face.Vertex1].Y +
              _projectedVertices[face.Vertex2].Y + _projectedVertices[face.Vertex3].Y) / 4);
-        var text = _faceTexts[faceIndex] ??= new FormattedText(face.Label, CultureInfo.CurrentCulture,
-            FlowDirection.LeftToRight, LabelTypeface, face.Label.Length > 5 ? 7 : 8, TextBrush);
+
+        var text = isFacingCamera
+            ? _activeFaceTexts[faceIndex] ??= new FormattedText(face.Label, CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight, LabelTypeface, face.Label.Length > 5 ? 7.5 : 8.5, ActiveTextBrush)
+            : _faceTexts[faceIndex] ??= new FormattedText(face.Label, CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight, LabelTypeface, face.Label.Length > 5 ? 7 : 8, TextBrush);
+
         context.DrawText(text, new Point(center.X - text.Width / 2, center.Y - text.Height / 2));
+    }
+
+    private CubeHitTarget HitTest(Point p)
+    {
+        if (Math.Min(Bounds.Width, Bounds.Height) <= 0) return CubeHitTarget.None;
+        GetProjection(out var center, out var scale, out _, out _, out _);
+
+        // Home button (top-left)
+        var homeCenter = new Point(center.X - scale * 1.55, center.Y - scale * 1.55);
+        if (new Rect(homeCenter.X - 10, homeCenter.Y - 10, 20, 20).Contains(p))
+            return CubeHitTarget.Home;
+
+        // Turntable button (bottom-left)
+        var turntableCenter = new Point(center.X - scale * 1.55, center.Y + scale * 1.75);
+        if (new Rect(turntableCenter.X - 10, turntableCenter.Y - 10, 20, 20).Contains(p))
+            return CubeHitTarget.Turntable;
+
+        // Menu button (bottom-right)
+        var menuCenter = new Point(center.X + scale * 1.55, center.Y + scale * 1.75);
+        if (new Rect(menuCenter.X - 10, menuCenter.Y - 10, 20, 20).Contains(p))
+            return CubeHitTarget.Menu;
+
+        // Directional arrows
+        var dTip = scale * 1.25;
+        var dBase = dTip + 8.5;
+
+        // ArrowUp
+        if (new Rect(center.X - 11, center.Y - dBase - 2, 22, 14).Contains(p))
+            return CubeHitTarget.ArrowUp;
+
+        // ArrowDown
+        if (new Rect(center.X - 11, center.Y + dTip - 1, 22, 14).Contains(p))
+            return CubeHitTarget.ArrowDown;
+
+        // ArrowLeft
+        if (new Rect(center.X - dBase - 2, center.Y - 11, 14, 22).Contains(p))
+            return CubeHitTarget.ArrowLeft;
+
+        // ArrowRight
+        if (new Rect(center.X + dTip - 1, center.Y - 11, 14, 22).Contains(p))
+            return CubeHitTarget.ArrowRight;
+
+        // Roll arc in top-right corner
+        var dx = p.X - center.X;
+        var dy = p.Y - center.Y;
+        var distSq = dx * dx + dy * dy;
+        var rMin = scale * 1.7;
+        var rMax = scale * 2.45;
+        if (distSq >= rMin * rMin && distSq <= rMax * rMax && dx > 8 && dy < -8)
+        {
+            var angle = Math.Atan2(dy, dx);
+            if (angle is >= -Math.PI / 2 and <= 0)
+            {
+                return angle < -Math.PI / 4 ? CubeHitTarget.RollCcw : CubeHitTarget.RollCw;
+            }
+        }
+
+        // Test 3D cube
+        if (HitTestCell(p) != null)
+            return CubeHitTarget.Cube;
+
+        return CubeHitTarget.None;
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
-        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
+        var pointerPoint = e.GetCurrentPoint(this);
+        if (pointerPoint.Properties.IsRightButtonPressed)
+        {
+            ShowContextMenu();
+            e.Handled = true;
+            return;
+        }
+
+        if (!pointerPoint.Properties.IsLeftButtonPressed) return;
         Focus();
         _capturedPointer = e.Pointer;
         _pressedPosition = _lastPointerPosition = e.GetPosition(this);
+        _pressedTarget = HitTest(_pressedPosition);
         _isDragging = false;
         e.Pointer.Capture(this);
         e.Handled = true;
@@ -270,24 +684,74 @@ public sealed class LayerModelOrientationCube : Control
             _lastPointerPosition = currentPosition;
             var totalDelta = currentPosition - _pressedPosition;
             _isDragging |= Math.Abs(totalDelta.X) >= DragThreshold || Math.Abs(totalDelta.Y) >= DragThreshold;
-            if (_isDragging) OrbitRequested?.Invoke(delta.X, delta.Y);
+            if (_isDragging && _pressedTarget is CubeHitTarget.Cube or CubeHitTarget.None)
+            {
+                OrbitRequested?.Invoke(delta.X, delta.Y);
+            }
+
             e.Handled = true;
             return;
         }
 
-        var hoverCell = HitTestCell(currentPosition);
-        if (_hoverCell == hoverCell) return;
-        _hoverCell = hoverCell;
-        InvalidateVisual();
+        var newTarget = HitTest(currentPosition);
+        var newHoverCell = newTarget == CubeHitTarget.Cube ? HitTestCell(currentPosition) : null;
+
+        if (_hoverTarget != newTarget || _hoverCell != newHoverCell)
+        {
+            _hoverTarget = newTarget;
+            _hoverCell = newHoverCell;
+            UpdateTooltip(newTarget);
+            InvalidateVisual();
+        }
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
         if (!ReferenceEquals(_capturedPointer, e.Pointer)) return;
-        if (!_isDragging && HitTestCell(e.GetPosition(this)) is { } cell)
+
+        var releasePosition = e.GetPosition(this);
+        var releaseTarget = HitTest(releasePosition);
+
+        if (!_isDragging && releaseTarget == _pressedTarget)
         {
-            SnapRequested?.Invoke(Vector3.Normalize(cell));
+            switch (releaseTarget)
+            {
+                case CubeHitTarget.Home:
+                    HomeRequested?.Invoke();
+                    break;
+                case CubeHitTarget.ArrowUp:
+                    RotateRequested?.Invoke(0, MathF.PI / 2f);
+                    break;
+                case CubeHitTarget.ArrowDown:
+                    RotateRequested?.Invoke(0, -MathF.PI / 2f);
+                    break;
+                case CubeHitTarget.ArrowLeft:
+                    RotateRequested?.Invoke(-MathF.PI / 2f, 0);
+                    break;
+                case CubeHitTarget.ArrowRight:
+                    RotateRequested?.Invoke(MathF.PI / 2f, 0);
+                    break;
+                case CubeHitTarget.RollCcw:
+                    RollRequested?.Invoke(-MathF.PI / 2f);
+                    break;
+                case CubeHitTarget.RollCw:
+                    RollRequested?.Invoke(MathF.PI / 2f);
+                    break;
+                case CubeHitTarget.Turntable:
+                    TurntableToggleRequested?.Invoke();
+                    break;
+                case CubeHitTarget.Menu:
+                    ShowContextMenu();
+                    break;
+                case CubeHitTarget.Cube:
+                    if (HitTestCell(releasePosition) is { } cell)
+                    {
+                        SnapRequested?.Invoke(Vector3.Normalize(cell));
+                    }
+
+                    break;
+            }
         }
 
         e.Pointer.Capture(null);
@@ -299,6 +763,7 @@ public sealed class LayerModelOrientationCube : Control
     {
         base.OnPointerExited(e);
         if (_capturedPointer is not null) return;
+        _hoverTarget = CubeHitTarget.None;
         _hoverCell = null;
         InvalidateVisual();
     }
@@ -313,8 +778,144 @@ public sealed class LayerModelOrientationCube : Control
     {
         _capturedPointer = null;
         _isDragging = false;
+        _hoverTarget = CubeHitTarget.None;
         _hoverCell = null;
         InvalidateVisual();
+    }
+
+    private void UpdateTooltip(CubeHitTarget target)
+    {
+        ToolTip.SetTip(this, target switch
+        {
+            CubeHitTarget.Home => "Home view (Reset camera) [0 / Home]",
+            CubeHitTarget.ArrowUp => "Rotate view up 90° [Up]",
+            CubeHitTarget.ArrowDown => "Rotate view down 90° [Down]",
+            CubeHitTarget.ArrowLeft => "Rotate view left 90° [Left]",
+            CubeHitTarget.ArrowRight => "Rotate view right 90° [Right]",
+            CubeHitTarget.RollCcw => "Rotate 90° counter-clockwise",
+            CubeHitTarget.RollCw => "Rotate 90° clockwise",
+            CubeHitTarget.Turntable => IsTurntableActive
+                ? "Stop turntable / auto-rotate view [T or Space]"
+                : "Turntable / auto-rotate view [T or Space]",
+            CubeHitTarget.Menu => "View options & projections",
+            _ => "Drag to orbit. Click a face, edge, or corner to align the view."
+        });
+    }
+
+    public void ShowContextMenu()
+    {
+        if (_contextMenu is null)
+        {
+            _contextMenu = new ContextMenu();
+
+            var homeItem = new MenuItem
+            {
+                Icon = new MaterialIcon
+                {
+                    Kind = MaterialIconKind.CubeScan
+                },
+                InputGesture = new KeyGesture(Key.Home),
+                Header = "Home View (Isometric)"
+            };
+            homeItem.Click += (_, _) => HomeRequested?.Invoke();
+            _contextMenu.Items.Add(homeItem);
+
+            _turntableMenuItem = new MenuItem
+            {
+                Icon = new MaterialIcon
+                {
+                    Kind = MaterialIconKind.Rotate360
+                },
+                InputGesture = new KeyGesture(Key.T),
+                ToggleType = MenuItemToggleType.CheckBox
+            };
+            _turntableMenuItem.Click += (_, _) => TurntableToggleRequested?.Invoke();
+            _contextMenu.Items.Add(_turntableMenuItem);
+
+            var fitItem = new MenuItem
+            {
+                Icon = new MaterialIcon
+                {
+                    Kind = MaterialIconKind.FitToScreen
+                },
+                InputGesture = new KeyGesture(Key.F),
+                Header = "Fit to View"
+            };
+            fitItem.Click += (_, _) => FitToViewRequested?.Invoke();
+            _contextMenu.Items.Add(fitItem);
+
+            var projItem = new MenuItem
+            {
+                Icon = new MaterialIcon
+                {
+                    Kind = MaterialIconKind.CameraOutline
+                },
+                InputGesture = new KeyGesture(Key.P),
+                Header = "Toggle Orthographic / Perspective"
+            };
+            projItem.Click += (_, _) => ProjectionToggleRequested?.Invoke();
+            _contextMenu.Items.Add(projItem);
+
+            _contextMenu.Items.Add(new Separator());
+
+            var frontItem = new MenuItem
+            {
+                Header = "Front View [1]",
+                InputGesture = new KeyGesture(Key.D1)
+            };
+            frontItem.Click += (_, _) => SnapRequested?.Invoke(-Vector3.UnitY);
+            _contextMenu.Items.Add(frontItem);
+
+            var backItem = new MenuItem
+            {
+                Header = "Back View [2]",
+                InputGesture = new KeyGesture(Key.D2)
+            };
+            backItem.Click += (_, _) => SnapRequested?.Invoke(Vector3.UnitY);
+            _contextMenu.Items.Add(backItem);
+
+            var leftItem = new MenuItem
+            {
+                Header = "Left View [3]",
+                InputGesture = new KeyGesture(Key.D3)
+            };
+            leftItem.Click += (_, _) => SnapRequested?.Invoke(-Vector3.UnitX);
+            _contextMenu.Items.Add(leftItem);
+
+            var rightItem = new MenuItem
+            {
+                Header = "Right View [4]",
+                InputGesture = new KeyGesture(Key.D4)
+            };
+            rightItem.Click += (_, _) => SnapRequested?.Invoke(Vector3.UnitX);
+            _contextMenu.Items.Add(rightItem);
+
+            var topItem = new MenuItem
+            {
+                Header = "Top View [5]",
+                InputGesture = new KeyGesture(Key.D5)
+            };
+            topItem.Click += (_, _) => SnapRequested?.Invoke(Vector3.UnitZ);
+            _contextMenu.Items.Add(topItem);
+
+            var bottomItem = new MenuItem
+            {
+                Header = "Bottom View [6]",
+                InputGesture = new KeyGesture(Key.D6)
+            };
+            bottomItem.Click += (_, _) => SnapRequested?.Invoke(-Vector3.UnitZ);
+            _contextMenu.Items.Add(bottomItem);
+
+            ContextMenu = _contextMenu;
+        }
+
+        if (_turntableMenuItem is not null)
+        {
+            _turntableMenuItem.IsChecked = IsTurntableActive;
+            _turntableMenuItem.Header = IsTurntableActive ? "Stop Turntable [T]" : "Start Turntable [T]";
+        }
+
+        _contextMenu.Open(this);
     }
 
     /// <summary>
@@ -388,8 +989,20 @@ public sealed class LayerModelOrientationCube : Control
             cosPitch * MathF.Cos(_cameraYaw),
             cosPitch * MathF.Sin(_cameraYaw),
             MathF.Sin(_cameraPitch));
-        right = new Vector3(-MathF.Sin(_cameraYaw), MathF.Cos(_cameraYaw), 0);
-        up = Vector3.Normalize(Vector3.Cross(direction, right));
+        var baseRight = new Vector3(-MathF.Sin(_cameraYaw), MathF.Cos(_cameraYaw), 0);
+        var baseUp = Vector3.Normalize(Vector3.Cross(direction, baseRight));
+
+        if (MathF.Abs(_cameraRoll) > 0.0001f)
+        {
+            var rollMatrix = Matrix4x4.CreateFromAxisAngle(direction, _cameraRoll);
+            right = Vector3.Transform(baseRight, rollMatrix);
+            up = Vector3.Transform(baseUp, rollMatrix);
+        }
+        else
+        {
+            right = baseRight;
+            up = baseUp;
+        }
     }
 
     private readonly record struct Face

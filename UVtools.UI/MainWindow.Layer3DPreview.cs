@@ -11,15 +11,14 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
-using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
-using StageKit.Primitives;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.MeshFormats;
+using UVtools.Core.Objects;
 using UVtools.Core.Voxel;
 using UVtools.UI.Controls;
 using UVtools.UI.Extensions;
@@ -31,7 +30,6 @@ using Color = Avalonia.Media.Color;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats;
 
 namespace UVtools.UI;
@@ -220,6 +218,123 @@ public partial class MainWindow
         }
     }
 
+    public static ValueDescription[] Layer3DRenderModeOptions { get; } =
+        EnumExtensions.GetAllValuesAndDescriptions(typeof(VoxelPreviewRenderMode));
+
+    public ValueDescription? SelectedLayer3DRenderMode
+    {
+        get => Layer3DRenderModeOptions.FirstOrDefault(vd => Equals(vd.Value, Settings.Layer3DPreview.RenderMode))
+               ?? Layer3DRenderModeOptions[0];
+        set
+        {
+            if (value?.Value is VoxelPreviewRenderMode mode)
+            {
+                Layer3DRenderMode = mode;
+            }
+        }
+    }
+
+    public VoxelPreviewRenderMode Layer3DRenderMode
+    {
+        get => Settings.Layer3DPreview.RenderMode;
+        set
+        {
+            if (Settings.Layer3DPreview.RenderMode == value && LayerModel3DView.RenderMode == value) return;
+            Settings.Layer3DPreview.RenderMode = value;
+            LayerModel3DView.RenderMode = value;
+            RaisePropertyChanged(nameof(Layer3DRenderMode));
+            RaisePropertyChanged(nameof(SelectedLayer3DRenderMode));
+        }
+    }
+
+    public static ValueDescription[] Layer3DLightingModeOptions { get; } =
+        EnumExtensions.GetAllValuesAndDescriptions(typeof(VoxelPreviewLightingMode));
+
+    public ValueDescription? SelectedLayer3DLightingMode
+    {
+        get => Layer3DLightingModeOptions.FirstOrDefault(vd => Equals(vd.Value, Settings.Layer3DPreview.LightingMode))
+               ?? Layer3DLightingModeOptions[0];
+        set
+        {
+            if (value?.Value is VoxelPreviewLightingMode mode)
+            {
+                Layer3DLightingMode = mode;
+            }
+        }
+    }
+
+    public VoxelPreviewLightingMode Layer3DLightingMode
+    {
+        get => Settings.Layer3DPreview.LightingMode;
+        set
+        {
+            if (Settings.Layer3DPreview.LightingMode == value && LayerModel3DView.LightingMode == value) return;
+            Settings.Layer3DPreview.LightingMode = value;
+            LayerModel3DView.LightingMode = value;
+            RaisePropertyChanged(nameof(Layer3DLightingMode));
+            RaisePropertyChanged(nameof(SelectedLayer3DLightingMode));
+        }
+    }
+
+    public static ValueDescription[] Layer3DColorModeOptions { get; } =
+        EnumExtensions.GetAllValuesAndDescriptions(typeof(VoxelPreviewColorMode));
+
+    public ValueDescription? SelectedLayer3DColorMode
+    {
+        get => Layer3DColorModeOptions.FirstOrDefault(vd => Equals(vd.Value, Settings.Layer3DPreview.ColorMode))
+               ?? Layer3DColorModeOptions[0];
+        set
+        {
+            if (value?.Value is VoxelPreviewColorMode mode)
+            {
+                Layer3DColorMode = mode;
+            }
+        }
+    }
+
+    public VoxelPreviewColorMode Layer3DColorMode
+    {
+        get => Settings.Layer3DPreview.ColorMode;
+        set
+        {
+            if (Settings.Layer3DPreview.ColorMode == value && LayerModel3DView.ColorMode == value) return;
+            Settings.Layer3DPreview.ColorMode = value;
+            LayerModel3DView.ColorMode = value;
+            RaisePropertyChanged(nameof(Layer3DColorMode));
+            RaisePropertyChanged(nameof(SelectedLayer3DColorMode));
+        }
+    }
+
+    public static ValueDescription[] Layer3DClipModeOptions { get; } =
+        EnumExtensions.GetAllValuesAndDescriptions(typeof(VoxelPreviewClipMode));
+
+    public ValueDescription? SelectedLayer3DClipMode
+    {
+        get => Layer3DClipModeOptions.FirstOrDefault(vd => Equals(vd.Value, Settings.Layer3DPreview.ClipMode))
+               ?? Layer3DClipModeOptions[0];
+        set
+        {
+            if (value?.Value is VoxelPreviewClipMode mode)
+            {
+                Layer3DClipMode = mode;
+            }
+        }
+    }
+
+    public VoxelPreviewClipMode Layer3DClipMode
+    {
+        get => Settings.Layer3DPreview.ClipMode;
+        set
+        {
+            if (Settings.Layer3DPreview.ClipMode == value && LayerModel3DView.ClipMode == value) return;
+            Settings.Layer3DPreview.ClipMode = value;
+            LayerModel3DView.ClipMode = value;
+            RaisePropertyChanged(nameof(Layer3DClipMode));
+            RaisePropertyChanged(nameof(SelectedLayer3DClipMode));
+            UpdateLayer3DClip();
+        }
+    }
+
     public VoxelPreviewQuality SelectedLayer3DQuality
     {
         get => Settings.Layer3DPreview.Quality;
@@ -277,7 +392,17 @@ public partial class MainWindow
         LayerModel3DView.CameraOrientationChanged += LayerModelOrientationCube.SetCameraOrientation;
         LayerModelOrientationCube.OrbitRequested += LayerModel3DView.Orbit;
         LayerModelOrientationCube.SnapRequested += LayerModel3DView.SnapToDirection;
-        LayerModelOrientationCube.SetCameraOrientation(LayerModel3DView.CameraYaw, LayerModel3DView.CameraPitch);
+        LayerModelOrientationCube.HomeRequested += () => LayerModel3DView.ResetCamera();
+        LayerModelOrientationCube.RotateRequested += (yawDelta, pitchDelta) => LayerModel3DView.RotateStep(yawDelta, pitchDelta);
+        LayerModelOrientationCube.RollRequested += LayerModel3DView.RollStep;
+        LayerModelOrientationCube.TurntableToggleRequested += () => LayerModel3DView.IsTurntableActive = !LayerModel3DView.IsTurntableActive;
+        LayerModelOrientationCube.ProjectionToggleRequested += () =>
+        {
+            Settings.Layer3DPreview.UseOthographicProjection = !Settings.Layer3DPreview.UseOthographicProjection;
+            RefreshLayer3DPreviewSettings();
+        };
+        LayerModelOrientationCube.FitToViewRequested += LayerModel3DView.FitToView;
+        LayerModelOrientationCube.SetCameraOrientation(LayerModel3DView.CameraYaw, LayerModel3DView.CameraPitch, LayerModel3DView.CameraRoll);
         LayerModel3DView.ModelPointClicked += OnLayer3DModelPointClicked;
 
         /* The cube takes the focus when clicked, keep the camera shortcuts working from there as well. */
@@ -309,6 +434,23 @@ public partial class MainWindow
 
         LayerModel3DView.SnapshotToClipboardRequested += () => Dispatcher.UIThread.InvokeAsync(CopyLayer3DSnapshotToClipboard);
         LayerModel3DView.SnapshotToFileRequested += () => Dispatcher.UIThread.InvokeAsync(SaveLayer3DSnapshotToFile);
+
+        Settings.Layer3DPreview.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(Settings.Layer3DPreview.CutawayAxis))
+            {
+                if (Settings.Layer3DPreview.CutawayAxis != VoxelPreviewCutawayAxis.Off && Settings.Layer3DPreview.CutawayPosition == 0f)
+                {
+                    float mid = (LayerModel3DView.CutawayMin + LayerModel3DView.CutawayMax) / 2f;
+                    Settings.Layer3DPreview.CutawayPosition = mid;
+                    LayerModel3DView.CutawayPosition = mid;
+                }
+                RaisePropertyChanged(nameof(IsCutawayActive));
+                RaisePropertyChanged(nameof(IsCutawayX));
+                RaisePropertyChanged(nameof(IsCutawayY));
+                RaisePropertyChanged(nameof(IsCutawayOff));
+            }
+        };
 
         if (OperatingSystem.IsMacOS())
         {
@@ -343,6 +485,10 @@ public partial class MainWindow
         LayerModel3DView.CutawayAxis = Settings.Layer3DPreview.CutawayAxis;
         LayerModel3DView.CutawayPosition = Settings.Layer3DPreview.CutawayPosition;
         LayerModel3DView.CutawayInvert = Settings.Layer3DPreview.CutawayInvert;
+        RaisePropertyChanged(nameof(IsCutawayActive));
+        RaisePropertyChanged(nameof(IsCutawayX));
+        RaisePropertyChanged(nameof(IsCutawayY));
+        RaisePropertyChanged(nameof(IsCutawayOff));
 
         if (SlicerFile is not null)
         {
@@ -363,6 +509,14 @@ public partial class MainWindow
         }
 
         RaisePropertyChanged(nameof(SelectedLayer3DQuality));
+        RaisePropertyChanged(nameof(SelectedLayer3DRenderMode));
+        RaisePropertyChanged(nameof(Layer3DRenderMode));
+        RaisePropertyChanged(nameof(SelectedLayer3DLightingMode));
+        RaisePropertyChanged(nameof(Layer3DLightingMode));
+        RaisePropertyChanged(nameof(SelectedLayer3DColorMode));
+        RaisePropertyChanged(nameof(Layer3DColorMode));
+        RaisePropertyChanged(nameof(SelectedLayer3DClipMode));
+        RaisePropertyChanged(nameof(Layer3DClipMode));
         InvalidateLayer3DPreviewStatus();
     }
 
@@ -764,6 +918,10 @@ public partial class MainWindow
     public void FocusIssueIn3D(Issue issue)
     {
         _lastFocusedIssue = issue;
+        if (issue.Parent is { } parent)
+        {
+            SetCurrent3DIssue(parent);
+        }
         if (SlicerFile is null || !SlicerFile.ContainsLayer(issue.LayerIndex)) return;
         var rect = issue.BoundingRectangle;
         if (rect.IsEmpty)
@@ -969,12 +1127,42 @@ public partial class MainWindow
         RaisePropertyChanged(nameof(CanRepairCurrent3DIssue));
     }
 
+    public void SetCurrent3DIssue(MainIssue mainIssue)
+    {
+        if (_all3DIssues.Count == 0 && SlicerFile?.IssueManager is not null)
+        {
+            UpdateSuctionCupStatus();
+        }
+
+        var idx = _all3DIssues.IndexOf(mainIssue);
+        if (idx >= 0)
+        {
+            _current3DIssueIndex = idx;
+            UpdateCurrent3DIssueDetails();
+        }
+        else
+        {
+            _current3DIssueCounterText = "-";
+            SetCurrent3DIssueDisplay(mainIssue);
+        }
+
+        if (!_has3DIssues)
+        {
+            _has3DIssues = true;
+            RaisePropertyChanged(nameof(Has3DIssues));
+        }
+    }
+
     private void UpdateCurrent3DIssueDetails()
     {
         if (_current3DIssueIndex < 0 || _current3DIssueIndex >= _all3DIssues.Count) return;
         var issue = _all3DIssues[_current3DIssueIndex];
         _current3DIssueCounterText = $"{_current3DIssueIndex + 1} / {_all3DIssues.Count}";
+        SetCurrent3DIssueDisplay(issue);
+    }
 
+    private void SetCurrent3DIssueDisplay(MainIssue issue)
+    {
         if (issue.IsSuctionCup)
         {
             double ml = issue.Area / 1000.0;
@@ -1116,6 +1304,11 @@ public partial class MainWindow
         }
         else
         {
+            if (!Layer3DClipToCurrentLayer)
+            {
+                Layer3DClipToCurrentLayer = true;
+            }
+
             if (ActualLayer >= SlicerFile.LayerCount - 1)
             {
                 ActualLayer = 0;
@@ -1169,6 +1362,46 @@ public partial class MainWindow
 
 
     public bool IsResinDrainageActive => Settings.Layer3DPreview.ColorMode == VoxelPreviewColorMode.ResinDrainage;
+
+    [RelayCommand]
+    public async Task CopyLayer3DModelStatsToClipboard()
+    {
+        if (!HasLayer3DMesh) return;
+
+        try
+        {
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard is null) return;
+
+            var sb = new StringBuilder();
+            sb.AppendLine("=== 3D Model Estimates ===");
+            if (!string.IsNullOrEmpty(LayerModel3DView.ModelDimensionsText))
+            {
+                sb.AppendLine($"Dimensions: {LayerModel3DView.ModelDimensionsText}");
+            }
+            if (!string.IsNullOrEmpty(LayerModel3DView.ModelStatsText))
+            {
+                sb.AppendLine($"Estimates: {LayerModel3DView.ModelStatsText}");
+            }
+            if (!string.IsNullOrEmpty(LayerModel3DView.CenterOfMassText))
+            {
+                sb.AppendLine($"Center of Mass & Contact: {LayerModel3DView.CenterOfMassText}");
+            }
+            if (SlicerFile is not null)
+            {
+                sb.AppendLine($"Total Layers: {SlicerFile.LayerCount}");
+                sb.AppendLine($"Print Height: {SlicerFile.PrintHeight:F2} mm");
+                sb.AppendLine($"Layer Height: {SlicerFile.LayerHeight:F3} mm");
+            }
+
+            await clipboard.SetTextAsync(sb.ToString().TrimEnd());
+            AddLog("3D model estimates copied to clipboard.");
+        }
+        catch (Exception ex)
+        {
+            await this.MessageBoxError(ex.Message, "Copy Error");
+        }
+    }
 
     [RelayCommand]
     public async Task ExportMeshToStl(bool clipped = false)

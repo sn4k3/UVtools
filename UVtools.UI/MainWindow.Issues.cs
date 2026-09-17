@@ -538,9 +538,15 @@ public partial class MainWindow
             return;
         }
 
+        SetCurrent3DIssue(mainIssue);
+
         var issue = mainIssue.AsValueEnumerable().FirstOrDefault(i => i.LayerIndex == ActualLayer)
                     ?? mainIssue.AsValueEnumerable().FirstOrDefault();
-        if (issue is null) return;
+        if (issue is null)
+        {
+            ActualLayer = mainIssue.StartLayerIndex;
+            return;
+        }
         ZoomToIssue(issue, true);
     }
 

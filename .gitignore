@@ -493,3 +493,4 @@ manifests/
 # AI
 .serena/
 .semgrep/
+.codebase-memory/
