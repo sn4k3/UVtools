@@ -566,7 +566,6 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private readonly Dictionary<MainIssue.IssueType, Avalonia.Media.Color> _issueColors = [];
     private int _viewProjectionLocation;
     private readonly DispatcherTimer _cameraAnimationTimer;
-    private readonly DispatcherTimer _turntableTimer;
     private long _turntableLastTimestamp;
     private long _cameraAnimationStartTimestamp;
     private float _cameraAnimationStartYaw;
@@ -765,10 +764,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     public LayerModel3DView()
     {
         Focusable = true;
-        _cameraAnimationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
+        _cameraAnimationTimer = new DispatcherTimer(DispatcherPriority.Render) { Interval = TimeSpan.FromMilliseconds(16) };
         _cameraAnimationTimer.Tick += CameraAnimationTimerOnTick;
-        _turntableTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
-        _turntableTimer.Tick += TurntableTimerOnTick;
         UpdateMeasureText();
         UpdateModelMetrics();
         UpdateCutawayRange();
@@ -1238,31 +1235,12 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     public void StartTurntable()
     {
         _turntableLastTimestamp = Stopwatch.GetTimestamp();
-        _turntableTimer.Start();
+        RequestNextFrameRendering();
     }
 
     public void StopTurntable()
     {
-        _turntableTimer.Stop();
-    }
-
-    private void TurntableTimerOnTick(object? sender, EventArgs e)
-    {
-        if (!IsTurntableActive || !IsVisible || _mesh is null)
-        {
-            return;
-        }
-
-        var now = Stopwatch.GetTimestamp();
-        var dt = (float)Stopwatch.GetElapsedTime(_turntableLastTimestamp, now).TotalSeconds;
-        _turntableLastTimestamp = now;
-
-        if (_isDragging) return;
-        if (dt > 0.1f) dt = 0.016f;
-
-        const float rotateSpeedRadPerSec = MathF.PI / 6f; // 30 deg/sec
-        _cameraYaw = NormalizeAngle(_cameraYaw + rotateSpeedRadPerSec * dt);
-        CameraChanged();
+        _turntableLastTimestamp = 0;
     }
 
     public bool IsMeasureMode
@@ -1741,6 +1719,29 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         if ((_uploadedIndexCount == 0 || _mesh is null) &&
             (_uploadedIssueIndexCount == 0 || _issueMesh is null) &&
             !ShowBuildPlateGrid) return;
+
+        if (IsTurntableActive && !_isDragging && _mesh is not null)
+        {
+            var now = Stopwatch.GetTimestamp();
+            if (_turntableLastTimestamp != 0)
+            {
+                var dt = (float)Stopwatch.GetElapsedTime(_turntableLastTimestamp, now).TotalSeconds;
+                if (dt > 0f)
+                {
+                    if (dt > 0.1f) dt = 0.033f;
+                    const float rotateSpeedRadPerSec = MathF.PI / 6f; // 30 deg/sec
+                    _cameraYaw = NormalizeAngle(_cameraYaw + rotateSpeedRadPerSec * dt);
+                    NotifyCameraOrientationChanged();
+                }
+            }
+            _turntableLastTimestamp = now;
+            RequestNextFrameRendering();
+        }
+        else if (IsTurntableActive)
+        {
+            _turntableLastTimestamp = Stopwatch.GetTimestamp();
+            RequestNextFrameRendering();
+        }
 
         var viewProjection = GetViewProjection(width / (float)height);
         _gl.UseProgram(_shaderProgram);
@@ -2790,12 +2791,23 @@ private unsafe void DrawFocusedBoundingBox()
                 var pCap = rayOrigin + rayDirection * tCap;
                 if (pCap.X >= _capMinX && pCap.X <= _capMaxX && pCap.Y >= _capMinY && pCap.Y <= _capMaxY)
                 {
-                    closestT = tCap;
-                    hitPoint = pCap;
-                    hasHit = true;
+                    var isCut = false;
+                    if (CutawayAxis == VoxelPreviewCutawayAxis.X)
+                        isCut = CutawayInvert ? (pCap.X < CutawayPosition) : (pCap.X > CutawayPosition);
+                    else if (CutawayAxis == VoxelPreviewCutawayAxis.Y)
+                        isCut = CutawayInvert ? (pCap.Y < CutawayPosition) : (pCap.Y > CutawayPosition);
+
+                    if (!isCut)
+                    {
+                        closestT = tCap;
+                        hitPoint = pCap;
+                        hasHit = true;
+                    }
                 }
             }
         }
+
+        var filterByClip = ClipToLayer && !GhostClippedModel;
 
         for (var i = 0; i < indices.Length; i += 3)
         {
@@ -2803,7 +2815,7 @@ private unsafe void DrawFocusedBoundingBox()
             var p1 = vertices[(int)indices[i + 1]].Position;
             var p2 = vertices[(int)indices[i + 2]].Position;
 
-            if (ClipToLayer)
+            if (filterByClip)
             {
                 if (p0.Z < clipMinZ && p1.Z < clipMinZ && p2.Z < clipMinZ) continue;
                 if (p0.Z > clipMaxZ && p1.Z > clipMaxZ && p2.Z > clipMaxZ) continue;
@@ -2811,8 +2823,20 @@ private unsafe void DrawFocusedBoundingBox()
 
             if (RayIntersectsTriangle(rayOrigin, rayDirection, p0, p1, p2, out var t) && t < closestT)
             {
+                var candidatePoint = rayOrigin + rayDirection * t;
+                if (CutawayAxis == VoxelPreviewCutawayAxis.X)
+                {
+                    if (CutawayInvert ? (candidatePoint.X < CutawayPosition) : (candidatePoint.X > CutawayPosition))
+                        continue;
+                }
+                else if (CutawayAxis == VoxelPreviewCutawayAxis.Y)
+                {
+                    if (CutawayInvert ? (candidatePoint.Y < CutawayPosition) : (candidatePoint.Y > CutawayPosition))
+                        continue;
+                }
+
                 closestT = t;
-                hitPoint = rayOrigin + rayDirection * t;
+                hitPoint = candidatePoint;
                 hasHit = true;
             }
         }
@@ -2906,8 +2930,23 @@ private unsafe void DrawFocusedBoundingBox()
 
     private void CameraChanged()
     {
-        CameraOrientationChanged?.Invoke(_cameraYaw, _cameraPitch, _cameraRoll);
+        NotifyCameraOrientationChanged();
         RequestNextFrameRendering();
+    }
+
+    private void NotifyCameraOrientationChanged()
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            CameraOrientationChanged?.Invoke(_cameraYaw, _cameraPitch, _cameraRoll);
+        }
+        else
+        {
+            var yaw = _cameraYaw;
+            var pitch = _cameraPitch;
+            var roll = _cameraRoll;
+            Dispatcher.UIThread.Post(() => CameraOrientationChanged?.Invoke(yaw, pitch, roll));
+        }
     }
 
     private void CancelCameraAnimation()
@@ -3047,6 +3086,7 @@ private unsafe void DrawFocusedBoundingBox()
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
+        CancelCameraAnimation();
         Focus();
         _capturedPointer = e.Pointer;
         _lastPointerPosition = e.GetPosition(this);
@@ -3139,7 +3179,7 @@ private unsafe void DrawFocusedBoundingBox()
     {
         base.OnDetachedFromVisualTree(e);
         IsTurntableActive = false;
-        _turntableTimer.Stop();
+        StopTurntable();
         CancelCameraAnimation();
     }
 
@@ -3191,6 +3231,18 @@ private unsafe void DrawFocusedBoundingBox()
             App.MainWindow.Layer3DClipMode = App.MainWindow.Layer3DClipMode == VoxelPreviewClipMode.Below
                 ? VoxelPreviewClipMode.Above
                 : VoxelPreviewClipMode.Below;
+            return true;
+        }
+
+        if ((e.KeyModifiers & KeyModifiers.Shift) != 0 && e.Key == Key.X)
+        {
+            CutawayAxis = CutawayAxis switch
+            {
+                VoxelPreviewCutawayAxis.Off => VoxelPreviewCutawayAxis.X,
+                VoxelPreviewCutawayAxis.X => VoxelPreviewCutawayAxis.Y,
+                _ => VoxelPreviewCutawayAxis.Off
+            };
+            UserSettings.Instance.Layer3DPreview.CutawayAxis = CutawayAxis;
             return true;
         }
 
@@ -3292,15 +3344,6 @@ private unsafe void DrawFocusedBoundingBox()
                 ShowPeelCurve = !ShowPeelCurve;
                 UserSettings.Instance.Layer3DPreview.ShowPeelCurve = ShowPeelCurve;
                 return true;
-            case Key.Y:
-                CutawayAxis = CutawayAxis switch
-                {
-                    VoxelPreviewCutawayAxis.Off => VoxelPreviewCutawayAxis.X,
-                    VoxelPreviewCutawayAxis.X => VoxelPreviewCutawayAxis.Y,
-                    _ => VoxelPreviewCutawayAxis.Off
-                };
-                UserSettings.Instance.Layer3DPreview.CutawayAxis = CutawayAxis;
-                return true;
             case Key.O:
                 GhostClippedModel = !GhostClippedModel;
                 UserSettings.Instance.Layer3DPreview.GhostClippedModel = GhostClippedModel;
@@ -3319,7 +3362,7 @@ private unsafe void DrawFocusedBoundingBox()
                 ShowBoundingBox = !ShowBoundingBox;
                 UserSettings.Instance.Layer3DPreview.ShowBoundingBox = ShowBoundingBox;
                 return true;
-            case Key.T:
+            case Key.T or Key.Space:
                 IsTurntableActive = !IsTurntableActive;
                 return true;
             case Key.M:
