@@ -2061,7 +2061,7 @@
                         <TabItem>
                             <TabItem.Header>
                                 <icon:MaterialIconText Kind="Layers"
-                                                       Text="Layers preview [Ctrl+1]"
+                                                       Text="Layers preview"
                                                        FontSize="16" />
                             </TabItem.Header>
                         </TabItem>
@@ -2070,7 +2070,7 @@
                                 <icon:MaterialIconText VerticalAlignment="Center"
                                                        FontSize="16"
                                                        Kind="CubeOutline"
-                                                       Text="3D Preview [Ctrl+2]" />
+                                                       Text="3D Preview" />
                             </TabItem.Header>
                         </TabItem>
                         <TabItem>
@@ -2078,7 +2078,7 @@
                                 <icon:MaterialIconText VerticalAlignment="Center"
                                                        FontSize="16"
                                                        Kind="ViewSplitVertical"
-                                                       Text="Split View [Ctrl+3]" />
+                                                       Text="Split View" />
                             </TabItem.Header>
                         </TabItem>
                     </TabControl>
@@ -2403,7 +2403,7 @@
 
                         <!-- Column 2: 3D Preview -->
                         <Grid Grid.Column="2"
-                              RowDefinitions="Auto,*,Auto"
+                              RowDefinitions="Auto,*,Auto,Auto"
                               RowSpacing="5"
                               IsVisible="{Binding Is3DPreviewVisible}">
                             <Grid Grid.Row="0"
@@ -2472,38 +2472,49 @@
                                               VerticalAlignment="Stretch"
                                               ToolTip.Tip="Show faint ghost silhouette of clipped model [O]." />
 
-                                <DropDownButton Content="{icon:MaterialIconTextExt Kind=RayStartArrow, Text={Binding #LayerModel3DView.CutawayText}}"
-                                                IsEnabled="{Binding HasLayer3DMesh}"
+                                <Button Command="{Binding TogglePrintSimulationCommand}"
+                                        IsEnabled="{Binding HasLayer3DMesh}"
+                                        VerticalAlignment="Stretch"
+                                        ToolTip.Tip="Play / Pause Print Simulation [Shift+Space]">
+                                    <icon:MaterialIcon Kind="{Binding PrintSimulationPlayIcon}" Classes="Fill" />
+                                </Button>
+
+                                <Button Command="{Binding CyclePrintSimulationSpeedCommand}"
+                                        IsEnabled="{Binding HasLayer3DMesh}"
+                                        VerticalAlignment="Stretch"
+                                        Padding="6,0"
+                                        ToolTip.Tip="Cycle Simulation Speed: 1x, 2x, 5x, 10x, 25x, 50x">
+                                    <TextBlock Text="{Binding PrintSimulationSpeedText}" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" />
+                                </Button>
+
+                                <DropDownButton IsEnabled="{Binding HasLayer3DMesh}"
                                                 VerticalAlignment="Stretch"
-                                                ToolTip.Tip="Cross-Section Cutaway Plane [Y]. Cut model along X or Y axis to inspect internal geometry.">
+                                                ToolTip.Tip="Export 3D Mesh (STL/OBJ) or Turntable Animation (GIF)">
+                                    <icon:MaterialIcon Kind="Export" Classes="Fill" />
                                     <DropDownButton.Flyout>
-                                        <Flyout Placement="BottomEdgeAlignedLeft">
-                                            <Border MinWidth="260" Padding="12">
-                                                <StackPanel Spacing="10">
-                                                    <TextBlock Text="Cross-Section Cutaway Plane" FontWeight="Bold" FontSize="13" />
-                                                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="10">
-                                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Axis:" VerticalAlignment="Center" />
-                                                        <ComboBox Grid.Row="0" Grid.Column="1"
-                                                                  ItemsSource="{Binding Settings.Layer3DPreview.CutawayAxis, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                                                                  SelectedItem="{Binding Settings.Layer3DPreview.CutawayAxis, Converter={StaticResource FromValueDescriptionToEnumConverter}}" />
-
-                                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Cut Pos:" VerticalAlignment="Center" />
-                                                        <StackPanel Grid.Row="1" Grid.Column="1" Spacing="4">
-                                                            <TextBlock Text="{Binding #LayerModel3DView.CutawayPosition, StringFormat='{}{0:F1} mm'}" FontWeight="SemiBold" HorizontalAlignment="Right" />
-                                                            <Slider Minimum="{Binding #LayerModel3DView.CutawayMin}"
-                                                                    Maximum="{Binding #LayerModel3DView.CutawayMax}"
-                                                                    Value="{Binding Settings.Layer3DPreview.CutawayPosition, Mode=TwoWay}"
-                                                                    SmallChange="0.5"
-                                                                    LargeChange="5" />
-                                                        </StackPanel>
-
-                                                        <CheckBox Grid.Row="2" Grid.Column="1"
-                                                                  IsChecked="{Binding Settings.Layer3DPreview.CutawayInvert, Mode=TwoWay}"
-                                                                  Content="Invert cut direction" />
-                                                    </Grid>
-                                                </StackPanel>
-                                            </Border>
-                                        </Flyout>
+                                        <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                            <MenuItem Header="Export Full Mesh to STL..."
+                                                      Command="{Binding ExportMeshToStlCommand}"
+                                                      CommandParameter="{x:False}"
+                                                      Icon="{icon:MaterialIconExt CubeOutline}" />
+                                            <MenuItem Header="Export Clipped Mesh to STL..."
+                                                      Command="{Binding ExportMeshToStlCommand}"
+                                                      CommandParameter="{x:True}"
+                                                      Icon="{icon:MaterialIconExt ContentCut}" />
+                                            <Separator />
+                                            <MenuItem Header="Export Full Mesh to OBJ..."
+                                                      Command="{Binding ExportMeshToObjCommand}"
+                                                      CommandParameter="{x:False}"
+                                                      Icon="{icon:MaterialIconExt FileDocumentOutline}" />
+                                            <MenuItem Header="Export Clipped Mesh to OBJ..."
+                                                      Command="{Binding ExportMeshToObjCommand}"
+                                                      CommandParameter="{x:True}"
+                                                      Icon="{icon:MaterialIconExt ContentCut}" />
+                                            <Separator />
+                                            <MenuItem Header="Export 360° Turntable Animation (GIF)..."
+                                                      Command="{Binding ExportTurntableAnimationCommand}"
+                                                      Icon="{icon:MaterialIconExt Filmstrip}" />
+                                        </MenuFlyout>
                                     </DropDownButton.Flyout>
                                 </DropDownButton>
 
@@ -2802,64 +2813,124 @@
                                         </StackPanel>
                                     </Border>
 
-                                    <!-- Suction Cup / Cavity Alert HUD Overlay -->
+                                    <!-- Universal 3D Issue Navigator HUD Overlay -->
                                     <Border HorizontalAlignment="Center"
                                             VerticalAlignment="Top"
                                             Margin="0,14,0,0"
-                                            Padding="10,6"
+                                            Padding="12,6"
                                             Background="#E0161920"
-                                            BorderBrush="#D08800"
+                                            BorderBrush="{Binding Current3DIssueBorderColor}"
                                             BorderThickness="1.5"
                                             CornerRadius="6"
-                                            IsVisible="{Binding HasSuctionCups}">
+                                            IsVisible="{Binding Has3DIssues}">
                                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                            <icon:MaterialIcon Kind="AlertDecagram" Foreground="#FFAB70" Width="20" Height="20" />
-                                            <TextBlock Text="{Binding SuctionCupSummary}" Foreground="#F0F6FC" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12" />
-                                            <Button Command="{Binding GoToPreviousSuctionCupCommand}"
+                                            <icon:MaterialIcon Kind="{Binding Current3DIssueIcon}" Foreground="{Binding Current3DIssueBorderColor}" Width="20" Height="20" />
+                                            <TextBlock Text="{Binding Current3DIssueCounterText}" Foreground="#A0A8B8" VerticalAlignment="Center" FontWeight="Bold" FontSize="11.5" />
+                                            <TextBlock Text="{Binding Current3DIssueSummary}" Foreground="#F0F6FC" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12.5" />
+                                            <Button Command="{Binding GoToPrevious3DIssueCommand}"
                                                     Padding="4,2"
-                                                    ToolTip.Tip="Go to previous cavity/suction cup issue">
+                                                    ToolTip.Tip="Go to previous 3D issue [ [ ]">
                                                 <icon:MaterialIcon Kind="ChevronLeft" Width="16" Height="16" />
                                             </Button>
-                                            <Button Command="{Binding GoToNextSuctionCupCommand}"
+                                            <Button Command="{Binding GoToNext3DIssueCommand}"
                                                     Padding="4,2"
-                                                    ToolTip.Tip="Go to next cavity/suction cup issue">
+                                                    ToolTip.Tip="Go to next 3D issue [ ] ]">
                                                 <icon:MaterialIcon Kind="ChevronRight" Width="16" Height="16" />
                                             </Button>
+                                            <Button Command="{Binding RepairCurrent3DIssueSolidifyCommand}"
+                                                    IsVisible="{Binding CanRepairCurrent3DIssue}"
+                                                    Padding="6,2"
+                                                    ToolTip.Tip="Solidify cavity / fill suction cup">
+                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                    <icon:MaterialIcon Kind="Cube" Width="14" Height="14" Foreground="#00D2FF" />
+                                                    <TextBlock Text="Solidify" FontSize="11" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Command="{Binding RepairCurrent3DIssueDrillCommand}"
+                                                    IsVisible="{Binding CanRepairCurrent3DIssue}"
+                                                    Padding="6,2"
+                                                    ToolTip.Tip="Drill drain hole into cavity">
+                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                    <icon:MaterialIcon Kind="Wrench" Width="14" Height="14" Foreground="#FF9800" />
+                                                    <TextBlock Text="Drill Drain" FontSize="11" />
+                                                </StackPanel>
+                                            </Button>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Resin Drainage & Washability Angle Legend HUD -->
+                                    <Border HorizontalAlignment="Right"
+                                            VerticalAlignment="Top"
+                                            Margin="0,135,14,0"
+                                            Padding="14,10"
+                                            Background="#E8161B22"
+                                            BorderBrush="#388BFD"
+                                            BorderThickness="1.5"
+                                            CornerRadius="8"
+                                            BoxShadow="0 4 16 0 #70000000"
+                                            IsVisible="{Binding #LayerModel3DView.IsResinDrainageActive}">
+                                        <StackPanel Spacing="8" Width="280">
+                                            <DockPanel>
+                                                <icon:MaterialIcon Kind="WaterPercent" Foreground="#388BFD" Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                                <TextBlock Text="Resin Drainage Angles" FontSize="12.5" FontWeight="Bold" Foreground="#F0F6FC" VerticalAlignment="Center" />
+                                            </DockPanel>
+                                            <StackPanel Spacing="5">
+                                                <DockPanel>
+                                                    <Border Width="14" Height="14" Background="#2EA043" CornerRadius="3" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                    <TextBlock Text="Free Draining (> 60° walls)" FontSize="11.5" FontWeight="SemiBold" Foreground="#E6EDF3" VerticalAlignment="Center" />
+                                                </DockPanel>
+                                                <DockPanel>
+                                                    <Border Width="14" Height="14" Background="#D29922" CornerRadius="3" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                    <TextBlock Text="Sluggish Flow (20°–60° slopes)" FontSize="11.5" FontWeight="SemiBold" Foreground="#E6EDF3" VerticalAlignment="Center" />
+                                                </DockPanel>
+                                                <DockPanel>
+                                                    <Border Width="14" Height="14" Background="#F85149" CornerRadius="3" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                    <TextBlock Text="Pooling Trap (&lt; 20° flat basins)" FontSize="11.5" FontWeight="SemiBold" Foreground="#E6EDF3" VerticalAlignment="Center" />
+                                                </DockPanel>
+                                            </StackPanel>
+                                            <TextBlock Text="⚠️ Red basins cause suction cups and liquid resin retention during wash."
+                                                       FontSize="11"
+                                                       Foreground="#A0A8B8"
+                                                       TextWrapping="Wrap" />
                                         </StackPanel>
                                     </Border>
 
                                     <!-- Cross-Section Area & Peel Force HUD Overlay -->
                                     <Border HorizontalAlignment="Right"
                                             VerticalAlignment="Bottom"
-                                            Margin="14,0,14,40"
-                                            Width="370"
-                                            Height="175"
-                                            Background="#E00D1117"
+                                            Margin="14,0,14,36"
+                                            Width="450"
+                                            Height="210"
+                                            Background="#E80D1117"
                                             BorderBrush="#00D2FF"
                                             BorderThickness="1.5"
                                             CornerRadius="8"
-                                            BoxShadow="0 4 12 0 #50000000"
+                                            BoxShadow="0 4 16 0 #70000000"
                                             ClipToBounds="True"
                                             IsVisible="{Binding #LayerModel3DView.ShowPeelCurve}">
                                         <Grid RowDefinitions="Auto,*">
-                                            <Grid Grid.Row="0" Margin="8,6,8,2" ColumnDefinitions="*,Auto">
-                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                    <icon:MaterialIcon Kind="ChartAreaspline" Foreground="#00D2FF" Width="16" Height="16" />
-                                                    <TextBlock Text="Peel Force &amp; Cross-Section" FontSize="11" FontWeight="SemiBold" Foreground="#E6EDF3" />
+                                            <Grid Grid.Row="0" Margin="10,8,8,4" ColumnDefinitions="*,Auto">
+                                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                    <icon:MaterialIcon Kind="ChartAreaspline" Foreground="#00D2FF" Width="18" Height="18" VerticalAlignment="Center" />
+                                                    <TextBlock Text="Peel Force &amp; Cross-Section" FontSize="13" FontWeight="Bold" Foreground="#F0F6FC" VerticalAlignment="Center" />
                                                 </StackPanel>
                                                 <Button Grid.Column="1"
-                                                        Padding="2"
+                                                        Padding="4"
                                                         Background="Transparent"
                                                         BorderThickness="0"
                                                         Command="{Binding TogglePeelCurveCommand}"
                                                         ToolTip.Tip="Close Peel Force Curve [A]">
-                                                    <icon:MaterialIcon Kind="Close" Width="14" Height="14" Foreground="#8B949E" />
+                                                    <icon:MaterialIcon Kind="Close" Width="16" Height="16" Foreground="#8B949E" />
                                                 </Button>
                                             </Grid>
                                             <controls:LayerAreaPeelCurveControl Grid.Row="1"
-                                                                                Margin="4,0,4,4"
+                                                                                Margin="6,0,6,6"
                                                                                 LayerAreas="{Binding LayerAreas}"
                                                                                 PeelSpikes="{Binding PeelSpikes}"
+                                                                                LayerLiftSpeeds="{Binding LayerLiftSpeeds}"
+                                                                                LayerLiftSpeeds2="{Binding LayerLiftSpeeds2}"
+                                                                                LayerLiftHeights="{Binding LayerLiftHeights}"
+                                                                                LayerLiftHeights2="{Binding LayerLiftHeights2}"
                                                                                 CurrentLayer="{Binding ActualLayer}"
                                                                                 MaxArea="{Binding MaxLayerArea}"
                                                                                 PeakLayer="{Binding PeakLayerIndex}"
@@ -2869,7 +2940,60 @@
                                 </Grid>
                             </Border>
 
-                            <TextBlock Grid.Row="2"
+                            <!-- Bottom Horizontal Cutaway & Cross-Section Control Bar -->
+                            <suki:GlassCard Grid.Row="2"
+                                    Margin="0,2,0,0"
+                                    Padding="8,4"
+                                    IsEnabled="{Binding HasLayer3DMesh}">
+                                <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto" ColumnSpacing="8" VerticalAlignment="Center">
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <icon:MaterialIcon Kind="ContentCut" FontSize="16" VerticalAlignment="Center" />
+                                        <TextBlock Text="Cutaway:" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center" />
+                                    </StackPanel>
+
+                                    <ComboBox Grid.Column="1"
+                                              Width="140"
+                                              Height="28"
+                                              ItemsSource="{Binding Settings.Layer3DPreview.CutawayAxis, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                              SelectedItem="{Binding Settings.Layer3DPreview.CutawayAxis, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
+                                              ToolTip.Tip="Cutaway plane axis: Off, X-axis, or Y-axis" />
+
+                                    <Slider Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Minimum="{Binding #LayerModel3DView.CutawayMin}"
+                                            Maximum="{Binding #LayerModel3DView.CutawayMax}"
+                                            Value="{Binding Settings.Layer3DPreview.CutawayPosition, Mode=TwoWay}"
+                                            SmallChange="0.5"
+                                            LargeChange="5"
+                                            ToolTip.Tip="Cutaway plane position along selected axis" />
+
+                                    <TextBlock Grid.Column="3"
+                                               Width="70"
+                                               TextAlignment="Right"
+                                               FontWeight="SemiBold"
+                                               FontSize="12"
+                                               VerticalAlignment="Center"
+                                               Text="{Binding #LayerModel3DView.CutawayPosition, StringFormat='{}{0:F1} mm'}" />
+
+                                    <ToggleButton Grid.Column="4"
+                                                  Height="28"
+                                                  Padding="6,2"
+                                                  IsChecked="{Binding Settings.Layer3DPreview.CutawayInvert, Mode=TwoWay}"
+                                                  ToolTip.Tip="Invert cut direction">
+                                        <icon:MaterialIcon Kind="SwapHorizontal" Width="16" Height="16" />
+                                    </ToggleButton>
+
+                                    <Button Grid.Column="5"
+                                            Height="28"
+                                            Padding="6,2"
+                                            Command="{Binding ResetCutawayPositionCommand}"
+                                            ToolTip.Tip="Reset cutaway position to model center">
+                                        <icon:MaterialIcon Kind="ImageFilterCenterFocus" Width="16" Height="16" />
+                                    </Button>
+                                </Grid>
+                            </suki:GlassCard>
+
+                            <TextBlock Grid.Row="3"
                                        Margin="5"
                                        HorizontalAlignment="Center"
                                        Text="{Binding Layer3DStatus}"

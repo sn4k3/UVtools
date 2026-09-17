@@ -633,6 +633,15 @@ public partial class UserSettings : ObservableObject
         [ObservableProperty]
         public partial bool CutawayInvert { get; set; } = false;
 
+        [ObservableProperty]
+        public partial float ResinCostPerLiter { get; set; } = 35f;
+
+        [ObservableProperty]
+        public partial int PrintSimulationSpeed { get; set; } = 1;
+
+        [ObservableProperty]
+        public partial bool ShowTsmcCurve { get; set; } = true;
+
         public Layer3DPreviewUserSettings Clone()
         {
             return (MemberwiseClone() as Layer3DPreviewUserSettings)!;

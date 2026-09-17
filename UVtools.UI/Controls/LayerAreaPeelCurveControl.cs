@@ -30,6 +30,21 @@ public class LayerAreaPeelCurveControl : Control
     public static readonly StyledProperty<IReadOnlyList<int>?> PeelSpikesProperty =
         AvaloniaProperty.Register<LayerAreaPeelCurveControl, IReadOnlyList<int>?>(nameof(PeelSpikes));
 
+    public static readonly StyledProperty<IReadOnlyList<float>?> LayerLiftSpeedsProperty =
+        AvaloniaProperty.Register<LayerAreaPeelCurveControl, IReadOnlyList<float>?>(nameof(LayerLiftSpeeds));
+
+    public static readonly StyledProperty<IReadOnlyList<float>?> LayerLiftSpeeds2Property =
+        AvaloniaProperty.Register<LayerAreaPeelCurveControl, IReadOnlyList<float>?>(nameof(LayerLiftSpeeds2));
+
+    public static readonly StyledProperty<IReadOnlyList<float>?> LayerLiftHeightsProperty =
+        AvaloniaProperty.Register<LayerAreaPeelCurveControl, IReadOnlyList<float>?>(nameof(LayerLiftHeights));
+
+    public static readonly StyledProperty<IReadOnlyList<float>?> LayerLiftHeights2Property =
+        AvaloniaProperty.Register<LayerAreaPeelCurveControl, IReadOnlyList<float>?>(nameof(LayerLiftHeights2));
+
+    public static readonly StyledProperty<bool> ShowTsmcProperty =
+        AvaloniaProperty.Register<LayerAreaPeelCurveControl, bool>(nameof(ShowTsmc), true);
+
     public static readonly StyledProperty<System.Windows.Input.ICommand?> LayerSelectedCommandProperty =
         AvaloniaProperty.Register<LayerAreaPeelCurveControl, System.Windows.Input.ICommand?>(nameof(LayerSelectedCommand));
 
@@ -74,6 +89,36 @@ public class LayerAreaPeelCurveControl : Control
         set => SetValue(PeelSpikesProperty, value);
     }
 
+    public IReadOnlyList<float>? LayerLiftSpeeds
+    {
+        get => GetValue(LayerLiftSpeedsProperty);
+        set => SetValue(LayerLiftSpeedsProperty, value);
+    }
+
+    public IReadOnlyList<float>? LayerLiftSpeeds2
+    {
+        get => GetValue(LayerLiftSpeeds2Property);
+        set => SetValue(LayerLiftSpeeds2Property, value);
+    }
+
+    public IReadOnlyList<float>? LayerLiftHeights
+    {
+        get => GetValue(LayerLiftHeightsProperty);
+        set => SetValue(LayerLiftHeightsProperty, value);
+    }
+
+    public IReadOnlyList<float>? LayerLiftHeights2
+    {
+        get => GetValue(LayerLiftHeights2Property);
+        set => SetValue(LayerLiftHeights2Property, value);
+    }
+
+    public bool ShowTsmc
+    {
+        get => GetValue(ShowTsmcProperty);
+        set => SetValue(ShowTsmcProperty, value);
+    }
+
     static LayerAreaPeelCurveControl()
     {
         AffectsRender<LayerAreaPeelCurveControl>(
@@ -81,7 +126,12 @@ public class LayerAreaPeelCurveControl : Control
             CurrentLayerProperty,
             MaxAreaProperty,
             PeakLayerProperty,
-            PeelSpikesProperty);
+            PeelSpikesProperty,
+            LayerLiftSpeedsProperty,
+            LayerLiftSpeeds2Property,
+            LayerLiftHeightsProperty,
+            LayerLiftHeights2Property,
+            ShowTsmcProperty);
     }
 
     public LayerAreaPeelCurveControl()
@@ -151,8 +201,8 @@ public class LayerAreaPeelCurveControl : Control
         var areas = LayerAreas;
         if (areas is null || areas.Count == 0) return;
 
-        const double padL = 10.0;
-        double padR = Bounds.Width - 10.0;
+        const double padL = 12.0;
+        double padR = Bounds.Width - 12.0;
         double plotW = Math.Max(1.0, padR - padL);
 
         double ratio = Math.Clamp((pt.X - padL) / plotW, 0.0, 1.0);
@@ -171,9 +221,9 @@ public class LayerAreaPeelCurveControl : Control
         var bounds = Bounds;
         if (bounds.Width < 20 || bounds.Height < 20) return;
 
-        // Background card
-        var cardBrush = new SolidColorBrush(Color.FromArgb(235, 18, 22, 30));
-        var borderPen = new Pen(new SolidColorBrush(Color.FromArgb(160, 45, 60, 80)), 1.0);
+        // Background canvas card for the chart
+        var cardBrush = new SolidColorBrush(Color.FromArgb(225, 14, 18, 26));
+        var borderPen = new Pen(new SolidColorBrush(Color.FromArgb(140, 40, 55, 75)), 1.0);
         context.DrawRectangle(cardBrush, borderPen, new Rect(0, 0, bounds.Width, bounds.Height), 6, 6);
 
         var areas = LayerAreas;
@@ -184,9 +234,9 @@ public class LayerAreaPeelCurveControl : Control
                 System.Globalization.CultureInfo.InvariantCulture,
                 FlowDirection.LeftToRight,
                 new Typeface(FontFamily.Default, FontStyle.Normal, FontWeight.SemiBold),
-                11.0,
+                13.0,
                 new SolidColorBrush(Color.FromRgb(160, 168, 184)));
-            context.DrawText(noDataText, new Point(12, bounds.Height / 2.0 - 7));
+            context.DrawText(noDataText, new Point(14, bounds.Height / 2.0 - 9));
             return;
         }
 
@@ -198,62 +248,145 @@ public class LayerAreaPeelCurveControl : Control
         }
         if (maxArea <= 0.001f) maxArea = 1.0f;
 
+        bool isHovered = _hoveredLayer.HasValue && _hoveredLayer.Value >= 0 && _hoveredLayer.Value < count;
+        int activeLayer = isHovered ? _hoveredLayer!.Value : Math.Clamp(CurrentLayer, 0, count - 1);
         int curLayer = Math.Clamp(CurrentLayer, 0, count - 1);
+        float activeArea = areas[activeLayer];
         float curArea = areas[curLayer];
 
-        // Check if current layer is a peel spike
+        // Check if active layer is a peel spike
         bool isCurrentSpike = false;
-        if (curLayer > 0 && areas[curLayer - 1] > 0.01f)
+        float spikeDeltaPercent = 0f;
+        if (activeLayer > 0 && areas[activeLayer - 1] > 0.01f)
         {
-            float delta = curArea - areas[curLayer - 1];
-            if (delta / areas[curLayer - 1] >= 0.35f && delta > 4.0f)
+            float delta = activeArea - areas[activeLayer - 1];
+            if (delta / areas[activeLayer - 1] >= 0.35f && delta > 4.0f)
             {
                 isCurrentSpike = true;
+                spikeDeltaPercent = (delta / areas[activeLayer - 1]) * 100f;
             }
         }
 
-        // Header info text
-        var titleText = new FormattedText(
-            "PEEL FORCE / CROSS-SECTION AREA PROFILE",
+        float speed1 = LayerLiftSpeeds is not null && activeLayer < LayerLiftSpeeds.Count ? LayerLiftSpeeds[activeLayer] : 0f;
+        float speed2 = LayerLiftSpeeds2 is not null && activeLayer < LayerLiftSpeeds2.Count ? LayerLiftSpeeds2[activeLayer] : 0f;
+        float h1 = LayerLiftHeights is not null && activeLayer < LayerLiftHeights.Count ? LayerLiftHeights[activeLayer] : 0f;
+        float h2 = LayerLiftHeights2 is not null && activeLayer < LayerLiftHeights2.Count ? LayerLiftHeights2[activeLayer] : 0f;
+
+        bool hasTsmc = speed1 > 0f && (speed2 > 0f || h2 > 0f);
+        bool isTsmcSpeedDanger = (activeArea > 0.40f * maxArea && speed1 > 90f);
+        bool isTsmcHeightDanger = (activeArea > 0.45f * maxArea && h1 > 0f && h1 < 2.5f);
+        bool isDelamHazard = isCurrentSpike || isTsmcSpeedDanger || isTsmcHeightDanger;
+
+        const double padL = 12.0;
+        double padR = bounds.Width - 12.0;
+
+        // =========================================================================
+        // LINE 1: Active Layer & Area (Left), Peak Area & Layer (Right)
+        // =========================================================================
+        string layerPrefix = isHovered ? $"Layer {activeLayer + 1}/{count} (Hover):" : $"Layer {activeLayer + 1}/{count}:";
+        string line1LeftStr = $"{layerPrefix}  {activeArea:N1} mm²";
+
+        var line1LeftText = new FormattedText(
+            line1LeftStr,
             System.Globalization.CultureInfo.InvariantCulture,
             FlowDirection.LeftToRight,
             new Typeface(FontFamily.Default, FontStyle.Normal, FontWeight.Bold),
-            9.5,
-            new SolidColorBrush(Color.FromRgb(140, 155, 175)));
-        context.DrawText(titleText, new Point(10, 6));
+            12.5,
+            isHovered ? new SolidColorBrush(Color.FromRgb(100, 220, 255)) : Brushes.White);
+        context.DrawText(line1LeftText, new Point(padL, 6));
 
-        string readout = $"Layer {curLayer + 1}/{count} • {curArea:F1} mm² (Peak: {maxArea:F1} mm²)";
-        var readoutText = new FormattedText(
-            readout,
+        string peakStr = PeakLayer >= 0 ? $"Peak: {maxArea:N1} mm² (L{PeakLayer + 1})" : $"Peak: {maxArea:N1} mm²";
+        var peakText = new FormattedText(
+            peakStr,
             System.Globalization.CultureInfo.InvariantCulture,
             FlowDirection.LeftToRight,
             new Typeface(FontFamily.Default, FontStyle.Normal, FontWeight.SemiBold),
-            11.0,
-            Brushes.White);
-        context.DrawText(readoutText, new Point(10, 20));
+            11.5,
+            new SolidColorBrush(Color.FromRgb(145, 160, 180)));
+        context.DrawText(peakText, new Point(padR - peakText.Width, 7));
 
-        if (isCurrentSpike)
+        // =========================================================================
+        // LINE 2: TSMC / Lift Speeds (Left) and Delamination Hazard Alert Badge (Right)
+        // =========================================================================
+        double rightBadgeWidth = 0.0;
+        if (isDelamHazard)
         {
-            var spikeText = new FormattedText(
-                "⚠️ PEEL SURGE",
+            string hazardLabel = isCurrentSpike
+                ? $"⚠️ PEEL SPIKE (+{spikeDeltaPercent:F0}%)"
+                : (isTsmcSpeedDanger
+                    ? $"⚠️ FAST PEEL ({speed1:F0}mm/m)"
+                    : "⚠️ SHORT LIFT STAGE");
+
+            var hazardText = new FormattedText(
+                hazardLabel,
                 System.Globalization.CultureInfo.InvariantCulture,
                 FlowDirection.LeftToRight,
                 new Typeface(FontFamily.Default, FontStyle.Normal, FontWeight.Bold),
-                10.0,
-                new SolidColorBrush(Color.FromRgb(255, 60, 60)));
-            context.DrawText(spikeText, new Point(bounds.Width - spikeText.Width - 10, 20));
+                10.5,
+                new SolidColorBrush(Color.FromRgb(255, 110, 110)));
+
+            double badgePadX = 6.0;
+            double badgePadY = 2.0;
+            double badgeW = hazardText.Width + badgePadX * 2.0;
+            double badgeH = hazardText.Height + badgePadY * 2.0;
+            double badgeX = padR - badgeW;
+            double badgeY = 25.0;
+
+            var hazardBg = new SolidColorBrush(Color.FromArgb(60, 248, 81, 73));
+            var hazardPen = new Pen(new SolidColorBrush(Color.FromArgb(180, 248, 81, 73)), 1.0);
+            context.DrawRectangle(hazardBg, hazardPen, new Rect(badgeX, badgeY, badgeW, badgeH), 4, 4);
+            context.DrawText(hazardText, new Point(badgeX + badgePadX, badgeY + badgePadY));
+
+            rightBadgeWidth = badgeW + 8.0;
         }
 
-        // Graph area bounds
-        const double padL = 10.0;
-        double padR = bounds.Width - 10.0;
-        const double padTop = 38.0;
-        double padBtm = bounds.Height - 8.0;
+        string tsmcDesc;
+        if (hasTsmc)
+        {
+            tsmcDesc = $"TSMC: {speed1:F0}mm/m ({h1:F1}mm) → {speed2:F0}mm/m ({h2:F1}mm)";
+        }
+        else if (speed1 > 0f)
+        {
+            tsmcDesc = $"Lift Speed: {speed1:F0}mm/m ({h1:F1}mm)";
+        }
+        else
+        {
+            tsmcDesc = "Cross-section area profile";
+        }
+
+        double availableLine2Width = Math.Max(50.0, padR - padL - rightBadgeWidth);
+        var tsmcText = new FormattedText(
+            tsmcDesc,
+            System.Globalization.CultureInfo.InvariantCulture,
+            FlowDirection.LeftToRight,
+            new Typeface(FontFamily.Default, FontStyle.Normal, FontWeight.Normal),
+            11.0,
+            new SolidColorBrush(Color.FromRgb(120, 195, 255)));
+
+        if (tsmcText.Width > availableLine2Width && hasTsmc)
+        {
+            tsmcDesc = $"TSMC: {speed1:F0} → {speed2:F0}mm/m";
+            tsmcText = new FormattedText(
+                tsmcDesc,
+                System.Globalization.CultureInfo.InvariantCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(FontFamily.Default, FontStyle.Normal, FontWeight.Normal),
+                11.0,
+                new SolidColorBrush(Color.FromRgb(120, 195, 255)));
+        }
+
+        context.DrawText(tsmcText, new Point(padL, 27));
+
+        // =========================================================================
+        // GRAPH AREA BOUNDS & PLOT
+        // =========================================================================
+        const double padTop = 50.0;
+        double padBtm = bounds.Height - 10.0;
         double plotW = Math.Max(1.0, padR - padL);
         double plotH = Math.Max(1.0, padBtm - padTop);
 
-        // Grid lines (2 horizontal lines)
-        var gridPen = new Pen(new SolidColorBrush(Color.FromArgb(45, 255, 255, 255)), 0.7, DashStyle.Dash);
+        // Grid lines (3 horizontal dashed lines: Top, Mid, Btm)
+        var gridPen = new Pen(new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)), 0.8, DashStyle.Dash);
         context.DrawLine(gridPen, new Point(padL, padTop), new Point(padR, padTop));
         context.DrawLine(gridPen, new Point(padL, padTop + plotH * 0.5), new Point(padR, padTop + plotH * 0.5));
         context.DrawLine(gridPen, new Point(padL, padBtm), new Point(padR, padBtm));
@@ -309,6 +442,22 @@ public class LayerAreaPeelCurveControl : Control
         // Stroke curve
         var curvePen = new Pen(new SolidColorBrush(Color.FromRgb(0, 225, 255)), 1.5);
         context.DrawGeometry(null, curvePen, lineGeo);
+
+        // Draw TSMC hazard bands (layers with high peel suction & high lift speed)
+        var speeds = LayerLiftSpeeds;
+        if (ShowTsmc && speeds is not null && speeds.Count >= count)
+        {
+            var hazardBrush = new SolidColorBrush(Color.FromArgb(50, 255, 60, 40));
+            for (int i = 0; i < count; i += Math.Max(1, count / 100))
+            {
+                if (areas[i] > 0.40f * maxArea && speeds[i] > 90f)
+                {
+                    double hx = padL + (double)i / (count - 1) * plotW;
+                    double bandW = Math.Max(2.0, plotW / 100.0);
+                    context.DrawRectangle(hazardBrush, null, new Rect(hx - bandW * 0.5, padTop, bandW, plotH));
+                }
+            }
+        }
 
         // Draw peel hazard spikes (red dots / vertical lines)
         var spikes = PeelSpikes;

@@ -130,6 +130,17 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                                                          else
                                                              baseColor = mix(vec3(1.0, 0.85, 0.1), vec3(1.0, 0.1, 0.2), (fragility - 0.7) / 0.3);
                                                      }
+                                                     else if (uColorMode == 4)
+                                                     {
+                                                         vec3 norm = normalize(vNormal);
+                                                         float poolRisk = clamp(norm.z, 0.0, 1.0);
+                                                         if (poolRisk < 0.15)
+                                                             baseColor = mix(vec3(0.1, 0.85, 0.3), vec3(0.0, 0.8, 0.7), poolRisk / 0.15);
+                                                         else if (poolRisk < 0.55)
+                                                             baseColor = mix(vec3(0.0, 0.8, 0.7), vec3(1.0, 0.85, 0.0), (poolRisk - 0.15) / 0.4);
+                                                         else
+                                                             baseColor = mix(vec3(1.0, 0.85, 0.0), vec3(1.0, 0.15, 0.15), (poolRisk - 0.55) / 0.45);
+                                                     }
 
                                                      float diffuse = max(dot(normalize(vNormal), uLightDirection), 0.0);
                                                      float lighting = uAmbientLight + diffuse * (1.0 - uAmbientLight);
@@ -485,6 +496,13 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             nameof(OutOfBoundsWarningText),
             o => o.OutOfBoundsWarningText);
 
+    public static readonly DirectProperty<LayerModel3DView, bool> IsResinDrainageActiveProperty =
+        AvaloniaProperty.RegisterDirect<LayerModel3DView, bool>(
+            nameof(IsResinDrainageActive),
+            o => o.IsResinDrainageActive);
+
+    public bool IsResinDrainageActive => ColorMode == VoxelPreviewColorMode.ResinDrainage;
+
     public event Action? SnapshotToClipboardRequested;
     public event Action? SnapshotToFileRequested;
 
@@ -650,7 +668,10 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         RenderModeProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
         ColorModeProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
-            control.RequestNextFrameRendering());
+        {
+            control.RaisePropertyChanged(IsResinDrainageActiveProperty, !control.IsResinDrainageActive, control.IsResinDrainageActive);
+            control.RequestNextFrameRendering();
+        });
         ClipModeProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
         ShowBuildPlateGridProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
@@ -1250,6 +1271,16 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         private set => SetAndRaise(MeasureDistanceTextProperty, ref _measureDistanceText, value);
     }
 
+    public float CameraYaw => _cameraYaw;
+    public float CameraPitch => _cameraPitch;
+
+    public void SetCameraAngles(float yaw, float pitch)
+    {
+        _cameraYaw = NormalizeAngle(yaw);
+        _cameraPitch = Math.Clamp(pitch, -MathF.PI / 2, MathF.PI / 2);
+        CameraChanged();
+    }
+
     public void UpdateCutawayRange()
     {
         if (_mesh is not null && _mesh.VertexCount > 0)
@@ -1356,9 +1387,6 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         get => GetValue(TransitionLayersHeightProperty);
         set => SetValue(TransitionLayersHeightProperty, value);
     }
-
-    public float CameraYaw => _cameraYaw;
-    public float CameraPitch => _cameraPitch;
 
     bool ICustomHitTest.HitTest(Point point)
     {
@@ -1656,6 +1684,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             {
                 DrawGhost(ghostMinZ, ghostMaxZ);
             }
+
         }
 
         if (ShowBuildPlateGrid)
@@ -3025,6 +3054,12 @@ private unsafe void DrawFocusedBoundingBox()
             return true;
         }
 
+        if ((e.KeyModifiers & KeyModifiers.Shift) != 0 && e.Key == Key.Space)
+        {
+            App.MainWindow.TogglePrintSimulation();
+            return true;
+        }
+
         if (e.KeyModifiers != KeyModifiers.None) return false;
         switch (e.Key)
         {
@@ -3111,6 +3146,7 @@ private unsafe void DrawFocusedBoundingBox()
                     VoxelPreviewColorMode.Solid => VoxelPreviewColorMode.OverhangHeatmap,
                     VoxelPreviewColorMode.OverhangHeatmap => VoxelPreviewColorMode.LayerZones,
                     VoxelPreviewColorMode.LayerZones => VoxelPreviewColorMode.Fragility,
+                    VoxelPreviewColorMode.Fragility => VoxelPreviewColorMode.ResinDrainage,
                     _ => VoxelPreviewColorMode.Solid
                 };
                 UserSettings.Instance.Layer3DPreview.ColorMode = ColorMode;
@@ -3152,8 +3188,14 @@ private unsafe void DrawFocusedBoundingBox()
                 ShowBoundingBox = !ShowBoundingBox;
                 UserSettings.Instance.Layer3DPreview.ShowBoundingBox = ShowBoundingBox;
                 return true;
-            case Key.T or Key.Space:
+            case Key.T:
                 IsTurntableActive = !IsTurntableActive;
+                return true;
+            case Key.OemOpenBrackets:
+                App.MainWindow.GoToPrevious3DIssue();
+                return true;
+            case Key.OemCloseBrackets:
+                App.MainWindow.GoToNext3DIssue();
                 return true;
             case Key.M:
                 IsMeasureMode = !IsMeasureMode;

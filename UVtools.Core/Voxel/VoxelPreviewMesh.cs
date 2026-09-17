@@ -45,7 +45,9 @@ public enum VoxelPreviewColorMode : byte
     [Description("Layer zones")]
     LayerZones,
     [Description("Fragility / Thin walls")]
-    Fragility
+    Fragility,
+    [Description("Resin drainage & washability")]
+    ResinDrainage
 }
 
 public enum VoxelPreviewClipMode : byte
