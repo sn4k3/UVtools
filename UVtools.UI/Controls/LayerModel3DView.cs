@@ -685,7 +685,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             control.RequestNextFrameRendering());
         ShowBoundingBoxProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
         {
-            UserSettings.Instance.Layer3DPreview.ShowBoundingBox = control.ShowBoundingBox;
+            control._needsBoundingBoxUpload = true;
             control.RequestNextFrameRendering();
         });
         IsTurntableActiveProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
@@ -701,7 +701,6 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         });
         IsMeasureModeProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
         {
-            UserSettings.Instance.Layer3DPreview.ShowMeasure = control.IsMeasureMode;
             if (!control.IsMeasureMode)
             {
                 control.ClearMeasure();
@@ -717,13 +716,9 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         TransitionLayersHeightProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
         ShowModelStatsProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
-        {
-            UserSettings.Instance.Layer3DPreview.ShowModelStats = control.ShowModelStats;
-            control.RequestNextFrameRendering();
-        });
+            control.RequestNextFrameRendering());
         ShowCenterOfMassProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
         {
-            UserSettings.Instance.Layer3DPreview.ShowCenterOfMass = control.ShowCenterOfMass;
             control._needsComUpload = true;
             control.RequestNextFrameRendering();
         });
