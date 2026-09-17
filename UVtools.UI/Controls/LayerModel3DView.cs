@@ -3322,12 +3322,6 @@ private unsafe void DrawFocusedBoundingBox()
             case Key.T:
                 IsTurntableActive = !IsTurntableActive;
                 return true;
-            case Key.OemOpenBrackets:
-                App.MainWindow.GoToPrevious3DIssue();
-                return true;
-            case Key.OemCloseBrackets:
-                App.MainWindow.GoToNext3DIssue();
-                return true;
             case Key.M:
                 IsMeasureMode = !IsMeasureMode;
                 return true;
