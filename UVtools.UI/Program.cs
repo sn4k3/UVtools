@@ -1,16 +1,11 @@
-﻿using Avalonia;
-using StageKit;
-using System;
-using System.Buffers;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.Text.Json;
-using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.OpenGL;
+using StageKit;
 using UVtools.Core;
 using UVtools.Core.Extensions;
-using UVtools.Core.SystemOS;
-using ZLinq;
 
 namespace UVtools.UI;
 
@@ -232,7 +227,26 @@ public static class Program
                 .WithInterFont()
                 .With(new SkiaOptions { MaxGpuResourceSizeBytes = 256_000_000 })
                 .With(new Win32PlatformOptions())
-                .With(new X11PlatformOptions())
+                .With(new X11PlatformOptions
+                {
+                    RenderingMode =
+                    [
+                        X11RenderingMode.Glx,
+                        X11RenderingMode.Egl,
+                        X11RenderingMode.Software
+                    ],
+                    GlProfiles =
+                    [
+                        new GlVersion(GlProfileType.OpenGL, 4, 3),
+                        new GlVersion(GlProfileType.OpenGL, 4, 0),
+                        new GlVersion(GlProfileType.OpenGL, 3, 3),
+                        new GlVersion(GlProfileType.OpenGLES, 3, 1),
+                        new GlVersion(GlProfileType.OpenGLES, 3, 0),
+                        new GlVersion(GlProfileType.OpenGL, 3, 2),
+                        new GlVersion(GlProfileType.OpenGL, 3, 0),
+                        new GlVersion(GlProfileType.OpenGLES, 2, 0)
+                    ]
+                })
                 .With(new MacOSPlatformOptions { ShowInDock = true })
                 /* Prefer OpenGL over the default Metal backend on macOS: the 3D layer preview renders through
                  * OpenGlControlBase, which can not obtain a context under Metal. Metal stays as the fallback so

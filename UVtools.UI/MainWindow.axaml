@@ -2373,9 +2373,11 @@
                                             IsVisible="{Binding IsMeasureMode2D}">
                                 <StackPanel Spacing="6" Width="260">
                                     <DockPanel LastChildFill="True">
-                                        <StackPanel Orientation="Horizontal" Spacing="6" DockPanel.Dock="Left" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" Spacing="6" DockPanel.Dock="Left"
+                                                    VerticalAlignment="Center">
                                             <icon:MaterialIcon Kind="Ruler" Width="18" Height="18" Foreground="#29B6F6" />
-                                            <TextBlock Text="2D Measurement" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                                            <TextBlock Text="2D Measurement" FontWeight="SemiBold" FontSize="13"
+                                                       VerticalAlignment="Center" />
                                         </StackPanel>
                                         <Button DockPanel.Dock="Right"
                                                 Command="{Binding ToggleMeasureMode2DCommand}"
@@ -2432,9 +2434,12 @@
                                     IsVisible="{Binding Show2DPeelCurve}">
                                 <Grid RowDefinitions="Auto,*">
                                     <Grid Grid.Row="0" Margin="10,6,6,2" ColumnDefinitions="Auto,*,Auto">
-                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                            <icon:MaterialIcon Kind="ChartAreaspline" Width="14" Height="14" Foreground="#89B4FA" />
-                                            <TextBlock Text="Cross-Section &amp; Peel Curve" FontSize="11" FontWeight="SemiBold" Foreground="#CDD6F4" />
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6"
+                                                    VerticalAlignment="Center">
+                                            <icon:MaterialIcon Kind="ChartAreaspline" Width="14" Height="14"
+                                                               Foreground="#89B4FA" />
+                                            <TextBlock Text="Cross-Section &amp; Peel Curve" FontSize="11"
+                                                       FontWeight="SemiBold" Foreground="#CDD6F4" />
                                         </StackPanel>
                                         <Button Grid.Column="2"
                                                 Classes="Basic"
@@ -2448,18 +2453,18 @@
                                         </Button>
                                     </Grid>
                                     <controls:LayerAreaPeelCurveControl Grid.Row="1"
-                                            Margin="6,0,6,6"
-                                            LayerAreas="{Binding LayerAreas}"
-                                            PeelSpikes="{Binding PeelSpikes}"
-                                            LayerLiftSpeeds="{Binding LayerLiftSpeeds}"
-                                            LayerLiftSpeeds2="{Binding LayerLiftSpeeds2}"
-                                            LayerLiftHeights="{Binding LayerLiftHeights}"
-                                            LayerLiftHeights2="{Binding LayerLiftHeights2}"
-                                            CurrentLayer="{Binding ActualLayer}"
-                                            MaxArea="{Binding MaxLayerArea}"
-                                            PeakLayer="{Binding PeakLayerIndex}"
-                                            HaveTiltingVat="{Binding SlicerFile.HaveTiltingVat}"
-                                            LayerSelectedCommand="{Binding SelectLayerCommand}" />
+                                                                        Margin="6,0,6,6"
+                                                                        LayerAreas="{Binding LayerAreas}"
+                                                                        PeelSpikes="{Binding PeelSpikes}"
+                                                                        LayerLiftSpeeds="{Binding LayerLiftSpeeds}"
+                                                                        LayerLiftSpeeds2="{Binding LayerLiftSpeeds2}"
+                                                                        LayerLiftHeights="{Binding LayerLiftHeights}"
+                                                                        LayerLiftHeights2="{Binding LayerLiftHeights2}"
+                                                                        CurrentLayer="{Binding ActualLayer}"
+                                                                        MaxArea="{Binding MaxLayerArea}"
+                                                                        PeakLayer="{Binding PeakLayerIndex}"
+                                                                        HaveTiltingVat="{Binding SlicerFile.HaveTiltingVat}"
+                                                                        LayerSelectedCommand="{Binding SelectLayerCommand}" />
                                 </Grid>
                             </Border>
 
@@ -2568,10 +2573,10 @@
                                            ItemSpacing="5"
                                            LineSpacing="5">
                                     <SplitButton Command="{Binding RebuildLayer3DPreviewCommand}"
-                                            Content="{icon:MaterialIconTextExt Kind=Refresh, Text='{Binding Layer3DBuildButtonText}'}"
-                                            IsEnabled="{Binding CanBuildLayer3DPreview}"
-                                            VerticalAlignment="Stretch"
-                                            ToolTip.Tip="Generate and cache a 3D model from the current slices. (Right-click for options)">
+                                                 Content="{icon:MaterialIconTextExt Kind=Refresh, Text='{Binding Layer3DBuildButtonText}'}"
+                                                 IsEnabled="{Binding CanBuildLayer3DPreview}"
+                                                 VerticalAlignment="Stretch"
+                                                 ToolTip.Tip="Generate and cache a 3D model from the current slices. (Right-click for options)">
                                         <SplitButton.Flyout>
                                             <MenuFlyout>
                                                 <MenuItem Header="Build 3D on file open"
@@ -2663,35 +2668,40 @@
                                                   VerticalAlignment="Stretch"
                                                   ToolTip.Tip="Toggle build plate grid and printable volume wireframe [G]." />
 
-                                    <ToggleButton IsChecked="{Binding Settings.Layer3DPreview.ShowLayerIssues, Mode=TwoWay}"
-                                                  IsEnabled="{Binding HasLayer3DMesh}"
-                                                  Content="{icon:MaterialIconExt Kind=RadiationCircleOutline, Classes='Fill'}"
-                                                  VerticalAlignment="Stretch"
-                                                  ToolTip.Tip="Highlight Issues on 3D model [I]." />
+                                    <ToggleButton
+                                        IsChecked="{Binding Settings.Layer3DPreview.ShowLayerIssues, Mode=TwoWay}"
+                                        IsEnabled="{Binding HasLayer3DMesh}"
+                                        Content="{icon:MaterialIconExt Kind=RadiationCircleOutline, Classes='Fill'}"
+                                        VerticalAlignment="Stretch"
+                                        ToolTip.Tip="Highlight Issues on 3D model [I]." />
 
-                                    <ToggleButton IsChecked="{Binding Settings.Layer3DPreview.ShowBoundingBox, Mode=TwoWay}"
-                                                  IsEnabled="{Binding HasLayer3DMesh}"
-                                                  Content="{icon:MaterialIconExt Kind=CubeOutline, Classes='Fill'}"
-                                                  VerticalAlignment="Stretch"
-                                                  ToolTip.Tip="Toggle model bounding box and dimensions [B]." />
+                                    <ToggleButton
+                                        IsChecked="{Binding Settings.Layer3DPreview.ShowBoundingBox, Mode=TwoWay}"
+                                        IsEnabled="{Binding HasLayer3DMesh}"
+                                        Content="{icon:MaterialIconExt Kind=CubeOutline, Classes='Fill'}"
+                                        VerticalAlignment="Stretch"
+                                        ToolTip.Tip="Toggle model bounding box and dimensions [B]." />
 
-                                    <ToggleButton IsChecked="{Binding Settings.Layer3DPreview.ShowModelStats, Mode=TwoWay}"
-                                                  IsEnabled="{Binding HasLayer3DMesh}"
-                                                  Content="{icon:MaterialIconExt Kind=ScaleBalance, Classes='Fill'}"
-                                                  VerticalAlignment="Stretch"
-                                                  ToolTip.Tip="Toggle model volume, weight &amp; resin cost HUD [V]." />
+                                    <ToggleButton
+                                        IsChecked="{Binding Settings.Layer3DPreview.ShowModelStats, Mode=TwoWay}"
+                                        IsEnabled="{Binding HasLayer3DMesh}"
+                                        Content="{icon:MaterialIconExt Kind=ScaleBalance, Classes='Fill'}"
+                                        VerticalAlignment="Stretch"
+                                        ToolTip.Tip="Toggle model volume, weight &amp; resin cost HUD [V]." />
 
-                                    <ToggleButton IsChecked="{Binding Settings.Layer3DPreview.ShowCenterOfMass, Mode=TwoWay}"
-                                                  IsEnabled="{Binding HasLayer3DMesh}"
-                                                  Content="{icon:MaterialIconExt Kind=CrosshairsGps, Classes='Fill'}"
-                                                  VerticalAlignment="Stretch"
-                                                  ToolTip.Tip="Toggle Center of Mass and first-layer contact stability [K]." />
+                                    <ToggleButton
+                                        IsChecked="{Binding Settings.Layer3DPreview.ShowCenterOfMass, Mode=TwoWay}"
+                                        IsEnabled="{Binding HasLayer3DMesh}"
+                                        Content="{icon:MaterialIconExt Kind=CrosshairsGps, Classes='Fill'}"
+                                        VerticalAlignment="Stretch"
+                                        ToolTip.Tip="Toggle Center of Mass and first-layer contact stability [K]." />
 
-                                    <ToggleButton IsChecked="{Binding Settings.Layer3DPreview.ShowMeasure, Mode=TwoWay}"
-                                                  IsEnabled="{Binding HasLayer3DMesh}"
-                                                  Content="{icon:MaterialIconExt Kind=Ruler, Classes='Fill'}"
-                                                  VerticalAlignment="Stretch"
-                                                  ToolTip.Tip="Measure tool. Click two points on the 3D model. [M]" />
+                                    <ToggleButton
+                                        IsChecked="{Binding Settings.Layer3DPreview.ShowMeasure, Mode=TwoWay}"
+                                        IsEnabled="{Binding HasLayer3DMesh}"
+                                        Content="{icon:MaterialIconExt Kind=Ruler, Classes='Fill'}"
+                                        VerticalAlignment="Stretch"
+                                        ToolTip.Tip="Measure tool. Click two points on the 3D model. [M]" />
 
                                     <!-- <ToggleButton IsChecked="{Binding #LayerModel3DView.IsTurntableActive}" -->
                                     <!--               IsEnabled="{Binding HasLayer3DMesh}" -->
@@ -2754,7 +2764,7 @@
                                             </MenuFlyout>
                                         </DropDownButton.Flyout>
                                     </DropDownButton>
-                                    
+
                                     <icon:MaterialIcon Kind="InformationOutline"
                                                        Background="Transparent"
                                                        VerticalAlignment="Stretch"
@@ -2767,8 +2777,9 @@
                             <Border Grid.Row="1"
                                     BorderBrush="{DynamicResource LightBackground}"
                                     BorderThickness="5"
+                                    Background="{Binding Settings.Layer3DPreview.BackgroundBrush}"
                                     ClipToBounds="True">
-                                <Grid>
+                                <Grid Background="{Binding Settings.Layer3DPreview.BackgroundBrush}">
                                     <controls:LayerModel3DView Name="LayerModel3DView"
                                                                BackgroundColor="{Binding Settings.Layer3DPreview.BackgroundBrush}"
                                                                IsOrthographic="{Binding Settings.Layer3DPreview.UseOthographicProjection}"
@@ -3107,7 +3118,8 @@
                                             </Border.IsVisible>
                                             <StackPanel Spacing="8" Width="280">
                                                 <DockPanel>
-                                                    <icon:MaterialIcon Kind="ChartAreaspline" Foreground="#FF5252" Width="20"
+                                                    <icon:MaterialIcon Kind="ChartAreaspline" Foreground="#FF5252"
+                                                                       Width="20"
                                                                        Height="20" VerticalAlignment="Center"
                                                                        Margin="0,0,8,0" />
                                                     <TextBlock Text="Peel Force &amp; Area Risk" FontSize="12.5"
@@ -3119,7 +3131,8 @@
                                                         <Border Width="14" Height="14" Background="#FF1455"
                                                                 CornerRadius="3" Margin="0,0,8,0"
                                                                 VerticalAlignment="Center" />
-                                                        <TextBlock Text="Critical Peel Spike (ΔArea ≥ 35%)" FontSize="11.5"
+                                                        <TextBlock Text="Critical Peel Spike (ΔArea ≥ 35%)"
+                                                                   FontSize="11.5"
                                                                    FontWeight="Bold" Foreground="#FF7B90"
                                                                    VerticalAlignment="Center" />
                                                     </DockPanel>
@@ -3127,7 +3140,8 @@
                                                         <Border Width="14" Height="14" Background="#E65100"
                                                                 CornerRadius="3" Margin="0,0,8,0"
                                                                 VerticalAlignment="Center" />
-                                                        <TextBlock Text="High Peel Area (&gt; 80% peak)" FontSize="11.5"
+                                                        <TextBlock Text="High Peel Area (&gt; 80% peak)"
+                                                                   FontSize="11.5"
                                                                    FontWeight="SemiBold" Foreground="#E6EDF3"
                                                                    VerticalAlignment="Center" />
                                                     </DockPanel>
@@ -3143,7 +3157,8 @@
                                                         <Border Width="14" Height="14" Background="#19D74B"
                                                                 CornerRadius="3" Margin="0,0,8,0"
                                                                 VerticalAlignment="Center" />
-                                                        <TextBlock Text="Stable Cross-Section (25%–55%)" FontSize="11.5"
+                                                        <TextBlock Text="Stable Cross-Section (25%–55%)"
+                                                                   FontSize="11.5"
                                                                    FontWeight="SemiBold" Foreground="#E6EDF3"
                                                                    VerticalAlignment="Center" />
                                                     </DockPanel>
@@ -3151,7 +3166,8 @@
                                                         <Border Width="14" Height="14" Background="#235AE1"
                                                                 CornerRadius="3" Margin="0,0,8,0"
                                                                 VerticalAlignment="Center" />
-                                                        <TextBlock Text="Minimal Peel Force (&lt; 25% peak)" FontSize="11.5"
+                                                        <TextBlock Text="Minimal Peel Force (&lt; 25% peak)"
+                                                                   FontSize="11.5"
                                                                    FontWeight="SemiBold" Foreground="#E6EDF3"
                                                                    VerticalAlignment="Center" />
                                                     </DockPanel>
@@ -3179,7 +3195,8 @@
                                             </Border.IsVisible>
                                             <StackPanel Spacing="8" Width="280">
                                                 <DockPanel>
-                                                    <icon:MaterialIcon Kind="LayersOutline" Foreground="#00E676" Width="20"
+                                                    <icon:MaterialIcon Kind="LayersOutline" Foreground="#00E676"
+                                                                       Width="20"
                                                                        Height="20" VerticalAlignment="Center"
                                                                        Margin="0,0,8,0" />
                                                     <TextBlock Text="Bed Contact &amp; Adhesion" FontSize="12.5"
@@ -3215,7 +3232,8 @@
                                                         <Border Width="14" Height="14" Background="#FF4119"
                                                                 CornerRadius="3" Margin="0,0,8,0"
                                                                 VerticalAlignment="Center" />
-                                                        <TextBlock Text="Unsupported Low Overhang (&lt; 3mm)" FontSize="11.5"
+                                                        <TextBlock Text="Unsupported Low Overhang (&lt; 3mm)"
+                                                                   FontSize="11.5"
                                                                    FontWeight="SemiBold" Foreground="#FF8A80"
                                                                    VerticalAlignment="Center" />
                                                     </DockPanel>
