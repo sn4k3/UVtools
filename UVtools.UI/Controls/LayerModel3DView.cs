@@ -29,8 +29,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 {
     private const string DesktopVertexShader = """
                                                #version 330 core
-                                               layout (location = 0) in vec3 aPosition;
-                                               layout (location = 1) in vec3 aNormal;
+                                               in vec3 aPosition;
+                                               in vec3 aNormal;
                                                uniform mat4 uViewProjection;
                                                out vec3 vNormal;
                                                out vec3 vWorldPosition;
@@ -160,8 +160,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
     private const string DesktopCapVertexShader = """
                                                   #version 330 core
-                                                  layout (location = 0) in vec3 aPosition;
-                                                  layout (location = 1) in vec2 aTexCoord;
+                                                  in vec3 aPosition;
+                                                  in vec2 aTexCoord;
                                                   uniform mat4 uViewProjection;
                                                   out vec2 vTexCoord;
                                                   out vec3 vWorldPosition;
@@ -1719,15 +1719,23 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         try
         {
             var isOpenGles = GlVersion.Type == GlProfileType.OpenGLES;
-            if (GlVersion.Major < 3 || (!isOpenGles && GlVersion.Major == 3 && GlVersion.Minor < 3))
+            if (GlVersion.Major < 3 || (!isOpenGles && GlVersion.Major == 3 && GlVersion.Minor < 2))
             {
-                throw new NotSupportedException($"OpenGL 3.3 or OpenGL ES 3.0 is required; detected {GlVersion}.");
+                throw new NotSupportedException($"OpenGL 3.2 or OpenGL ES 3.0 is required; detected {GlVersion}.");
             }
 
             _gl = GL.GetApi(gl.GetProcAddress);
+            var isGl32 = !isOpenGles && GlVersion.Major == 3 && GlVersion.Minor == 2;
+            var vertexSource = isOpenGles
+                ? EsVertexShader
+                : (isGl32 ? DesktopVertexShader.Replace("#version 330 core", "#version 150") : DesktopVertexShader);
+            var fragmentSource = isOpenGles
+                ? EsFragmentShader
+                : (isGl32 ? DesktopFragmentShader.Replace("#version 330 core", "#version 150") : DesktopFragmentShader);
             _shaderProgram = CreateShaderProgram(
-                isOpenGles ? EsVertexShader : DesktopVertexShader,
-                isOpenGles ? EsFragmentShader : DesktopFragmentShader);
+                vertexSource,
+                fragmentSource,
+                [(0, "aPosition"), (1, "aNormal")]);
             _viewProjectionLocation = _gl.GetUniformLocation(_shaderProgram, "uViewProjection");
             _colorLocation = _gl.GetUniformLocation(_shaderProgram, "uColor");
             _alphaLocation = _gl.GetUniformLocation(_shaderProgram, "uAlpha");
@@ -1786,9 +1794,16 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             _comVertexArray = _gl.GenVertexArray();
             _comVertexBuffer = _gl.GenBuffer();
 
+            var capVertexSource = isOpenGles
+                ? EsCapVertexShader
+                : (isGl32 ? DesktopCapVertexShader.Replace("#version 330 core", "#version 150") : DesktopCapVertexShader);
+            var capFragmentSource = isOpenGles
+                ? EsCapFragmentShader
+                : (isGl32 ? DesktopCapFragmentShader.Replace("#version 330 core", "#version 150") : DesktopCapFragmentShader);
             _capShaderProgram = CreateShaderProgram(
-                isOpenGles ? EsCapVertexShader : DesktopCapVertexShader,
-                isOpenGles ? EsCapFragmentShader : DesktopCapFragmentShader);
+                capVertexSource,
+                capFragmentSource,
+                [(0, "aPosition"), (1, "aTexCoord")]);
             _capViewProjectionLocation = _gl.GetUniformLocation(_capShaderProgram, "uViewProjection");
             _capCutawayAxisLocation = _gl.GetUniformLocation(_capShaderProgram, "uCutawayAxis");
             _capCutawayPositionLocation = _gl.GetUniformLocation(_capShaderProgram, "uCutawayPosition");
@@ -3429,7 +3444,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         return MathF.IEEERemainder(angle, MathF.Tau);
     }
 
-    private uint CreateShaderProgram(string vertexSource, string fragmentSource)
+    private uint CreateShaderProgram(string vertexSource, string fragmentSource, (uint index, string name)[]? attribBindings = null)
     {
         var vertexShader = CompileShader(ShaderType.VertexShader, vertexSource);
         try
@@ -3442,6 +3457,13 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                 {
                     _gl.AttachShader(program, vertexShader);
                     _gl.AttachShader(program, fragmentShader);
+                    if (attribBindings is not null)
+                    {
+                        foreach (var (index, name) in attribBindings)
+                        {
+                            _gl.BindAttribLocation(program, index, name);
+                        }
+                    }
                     _gl.LinkProgram(program);
                     _gl.GetProgram(program, ProgramPropertyARB.LinkStatus, out var status);
                     if (status == 0)
@@ -3664,7 +3686,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             if (!_rendererInitialized && VisualRoot is not null)
             {
                 RendererStatusChanged?.Invoke(
-                    "OpenGL 3D preview failed to initialize. Ensure your graphics driver supports OpenGL 3.3 or OpenGL ES 3.0, or try running with hardware acceleration enabled.");
+                    "OpenGL 3D preview failed to initialize. Ensure your graphics driver supports OpenGL 3.2 or OpenGL ES 3.0, or try running with hardware acceleration enabled.");
             }
         };
         _initCheckTimer.Start();
