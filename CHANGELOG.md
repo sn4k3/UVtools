@@ -11,16 +11,34 @@
   - (Breaking) `ZoomLevelCollection` now exposes `ICollection<int>` rather than positional
     `IList<int>` operations, because zoom levels are sorted and unique.
   - (Improvement) Rewrite the installer scripts, add windows install script and uninstall scripts
+  - (Improvement) Remove `e.Handled = true;` from handlers to allow subscribers to handle the event in same conditions
 - **Packaging:**
   - (Add) Linux native packages for .deb, .rpm and .pkg.tar.zst and arm64 packages (maybe fix #1124)
   - (Improvement) Rewrite the installers, use more keys on registry and registers the known file extensions to make
     double click on files to prompt for open with UVtools, it also allow to select it as default program (maybe fix
     #459)
+- **3D layer preview:** GPU-accelerated, rotatable 3D model generated from the layer stack (#38, #602)
+  - (Add) Solid, X-Ray and Wireframe render modes, with Camera/Studio/Flat lighting and configurable voxel/background
+    colors
+  - (Add) Color modes: overhang heatmap, layer-height zones, peel force & area risk, and bed adhesion footprint
+  - (Add) Clip modes (top/bottom/slab, with adjustable slab thickness) and X/Y cutaway with an invertible slider, to
+    inspect the model's interior
+  - (Add) Model dimensions, bounding box, volume/weight/resin cost, center of mass & first-layer contact stability,
+    and cross-section area/peel-force curve HUD overlays, each independently toggleable
+  - (Add) Per-type issue highlighting in 3D, with next/prev navigation and in-place solidify/drill repair
+  - (Add) Measure tool: click two points on the model to get the distance between them
+  - (Add) Orbit cube navigation (faces/edges/corners, roll, turntable/auto-rotate, home, fit-to-view), full keyboard
+    shortcuts, and click-to-select-layer
+  - (Add) Print simulation playback with adjustable speed
+  - (Add) Export: mesh to STL/OBJ (full or clipped), current cross-section to PNG, snapshot to clipboard or file,
+    and 360° turntable animation to GIF
+- **2D layer preview:**
+  - (Add) Elapsed print time readout
+  - (Add) Measure tool: click two points on the model to get the distance between them
+  - (Add) Cross-section area/peel-force curve HUD overlay
 - (Add) Dynamic lifts: Configure separate bottom/normal retract speeds and two-stage retract distance percentages (#927)
 - (Add) Configure bottom height and transition layers for wait time after cure (#1093)
 - (Add) Panel Gamma setting to compensate Exposure Time calibration tool in Multiple Brightness / grayscale mode (#1104)
-- (Add) GPU-accelerated, rotatable 3D preview generated from the layer stack, with Solid, X-Ray and Wireframe views and
-  per-type issue highlighting (#38, #602)
 - (Fix) Align pixel editor line brush preview and applied position (#966)
 - (Improvement) pixel editor drawing with smooth, interpolated strokes committed on pointer release by @jorgerobles
   (#1139)

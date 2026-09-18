@@ -2718,9 +2718,12 @@
                                                 <MenuItem Header="Copy Snapshot to Clipboard (Ctrl+C)"
                                                           Command="{Binding CopyLayer3DSnapshotToClipboardCommand}"
                                                           Icon="{icon:MaterialIconExt ContentCopy}" />
-                                                <MenuItem Header="Save Snapshot to File... (F12)"
+                                                <MenuItem Header="Save Snapshot to File (F12)"
                                                           Command="{Binding SaveLayer3DSnapshotToFileCommand}"
                                                           Icon="{icon:MaterialIconExt ContentSave}" />
+                                                <MenuItem Header="Export Current Cross-Section to PNG"
+                                                          Command="{Binding ExportCrossSectionToPngCommand}"
+                                                          Icon="{icon:MaterialIconExt ContentCut}" />
                                                 <Separator />
                                                 <MenuItem Header="Export Full Mesh to STL"
                                                           Command="{Binding ExportMeshToStlCommand}"

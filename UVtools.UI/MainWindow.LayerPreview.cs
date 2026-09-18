@@ -668,9 +668,11 @@ public partial class MainWindow
 
     public string ActualLayerTooltip => SlicerFile is null || !SlicerFile.ContainsLayer(_actualLayer)
         ? "???"
-        : $"{Layer.ShowHeight(SlicerFile[_actualLayer]?.PositionZ ?? 0)}mm\n" +
-          $"{_actualLayer}\n" +
-          $"{(_actualLayer + 1) * 100 / SlicerFile.LayerCount}%";
+        : $"""
+            {Layer.ShowHeight(SlicerFile[_actualLayer]?.PositionZ ?? 0)}mm
+            {_actualLayer} ({(_actualLayer + 1) * 100 / SlicerFile.LayerCount}%)
+            {SlicerFile[ActualLayer].StartTimeString}
+            """;
 
     public uint SliderMaximumValue => SlicerFile?.LastLayerIndex ?? 0;
 

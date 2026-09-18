@@ -26,6 +26,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
+using EmguExtensions;
 using Color = Avalonia.Media.Color;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -102,6 +103,12 @@ public partial class MainWindow
     }
 
     public string PrintSimulationSpeedText => $"{_printSimulationSpeed}x";
+
+    /// <summary>Elapsed print time estimate at the current layer, over the total estimated print time.</summary>
+    public string PrintSimulationElapsedTimeText =>
+        SlicerFile is not null && SlicerFile.ContainsLayer(ActualLayer)
+            ? $"{SlicerFile[ActualLayer].StartTimeString} / {SlicerFile.PrintTimeString}"
+            : "--:--:-- / --:--:--";
 
     public bool IsCutawayActive => Settings.Layer3DPreview.CutawayAxis != VoxelPreviewCutawayAxis.Off;
     public bool IsCutawayX => Settings.Layer3DPreview.CutawayAxis == VoxelPreviewCutawayAxis.X;
@@ -750,6 +757,42 @@ public partial class MainWindow
         }
     }
 
+    /// <summary>
+    /// Exports the actual, full-resolution layer image at <see cref="ActualLayer"/>, cropped to the model's
+    /// bounding rectangle, as a PNG. Unlike the mesh/snapshot exports, this reads straight from the decoded
+    /// layer instead of the coarser, sampled voxel mesh, so the cross-section keeps full pixel detail.
+    /// </summary>
+    [RelayCommand]
+    public async Task ExportCrossSectionToPng()
+    {
+        if (SlicerFile is null || !SlicerFile.ContainsLayer(ActualLayer)) return;
+
+        var bounds = SlicerFile.BoundingRectangle;
+        if (bounds.IsEmpty) return;
+
+        var defaultName = !string.IsNullOrEmpty(SlicerFile.FileFullPath)
+            ? $"{SlicerFile.FilenameNoExt}_layer{ActualLayer + 1}_cross-section.png"
+            : "UVtools_cross-section.png";
+        var dir = SlicerFile.DirectoryPath ?? Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+
+        using var file = await SaveFilePickerAsync(dir, defaultName, AvaloniaStatic.PngFileFilter);
+        if (file?.TryGetLocalPath() is not { } filePath) return;
+
+        try
+        {
+            var layerIndex = ActualLayer;
+            using var mat = SlicerFile[layerIndex].LayerMat;
+            using var roi = mat.Roi(bounds);
+            roi.Save(filePath);
+            await this.MessageBoxInfo($"Saved cross-section of layer {layerIndex + 1} to {file.Name}.",
+                "Cross-Section Exported");
+        }
+        catch (Exception ex)
+        {
+            await this.MessageBoxError(ex.Message, "Cross-Section Export Failed");
+        }
+    }
+
     [RelayCommand]
     public async Task ExportLayer3DMesh()
     {
@@ -1106,6 +1149,7 @@ public partial class MainWindow
         RaisePropertyChanged(nameof(ShowLayer3DStatusOverlay));
         RaisePropertyChanged(nameof(Layer3DBuildButtonText));
         RaisePropertyChanged(nameof(Layer3DStatus));
+        RaisePropertyChanged(nameof(PrintSimulationElapsedTimeText));
     }
 
     public void UpdateLayerAreas()

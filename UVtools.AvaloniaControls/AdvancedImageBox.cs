@@ -2130,7 +2130,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                 if (e.KeyModifiers == zoomInKeyGesture.KeyModifiers && e.Key == zoomInKeyGesture.Key)
                 {
                     ZoomIn();
-                    e.Handled = true;
                     return;
                 }
             }
@@ -2144,7 +2143,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                 if (e.KeyModifiers == zoomOutKeyGesture.KeyModifiers && e.Key == zoomOutKeyGesture.Key)
                 {
                     ZoomOut();
-                    e.Handled = true;
                     return;
                 }
             }
@@ -2231,7 +2229,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                 if (e.KeyModifiers == zoomTo100KeyGesture.KeyModifiers && e.Key == zoomTo100KeyGesture.Key)
                 {
                     Zoom = 100;
-                    e.Handled = true;
                     return;
                 }
             }
@@ -2245,7 +2242,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                 if (e.KeyModifiers == zoomToFitKeyGesture.KeyModifiers && e.Key == zoomToFitKeyGesture.Key)
                 {
                     Zoom = ZoomLevelToFit;
-                    e.Handled = true;
                     return;
                 }
             }
@@ -2332,7 +2328,6 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             }
         }
 
-        e.Handled = true;
     }*/
 
     #endregion
