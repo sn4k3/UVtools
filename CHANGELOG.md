@@ -40,6 +40,7 @@
 - (Add) Configure bottom height and transition layers for wait time after cure (#1093)
 - (Add) Panel Gamma setting to compensate Exposure Time calibration tool in Multiple Brightness / grayscale mode (#1104)
 - (Fix) Align pixel editor line brush preview and applied position (#966)
+- (Add) Diagnostics tab to About window
 - (Improvement) pixel editor drawing with smooth, interpolated strokes committed on pointer release by @jorgerobles
   (#1139)
 - (Improvement) Avoid eager pixel lists during island detection by @apullin (#1142)

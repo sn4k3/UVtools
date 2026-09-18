@@ -4,7 +4,8 @@
         <OutputType>Exe</OutputType>
         <AssemblyName>UVtoolsCmd</AssemblyName>
         <Description>Commandline utility for UVtools</Description>
-        <Version>2.1.0</Version>
+        <Version>2.2.0</Version>
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>

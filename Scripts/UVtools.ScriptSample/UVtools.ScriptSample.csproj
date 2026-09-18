@@ -2,6 +2,8 @@
 
 	<PropertyGroup>
 		<Description>Scripting samples</Description>
+
+		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup>

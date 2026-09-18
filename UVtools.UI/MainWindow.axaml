@@ -2285,7 +2285,7 @@
                                                   HotKey="M"
                                                   Content="{icon:MaterialIconExt Kind=Ruler, Classes='Fill'}"
                                                   IsChecked="{Binding IsMeasureMode2D, Mode=TwoWay}"
-                                                  ToolTip.Tip="Measure distance and wall thickness on 2D slice [M]. Click two points to measure." />
+                                                  ToolTip.Tip="Measure distance and wall thickness on 2D slice [M].&#x0a;Click two points to measure.&#x0a;Use middle mouse button to pan.&#x0a;Use right click to clear the measurement." />
                                     <ToggleButton Margin="1,0,1,0"
                                                   VerticalAlignment="Stretch"
                                                   HotKey="A"

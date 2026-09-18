@@ -390,7 +390,9 @@ public partial class MainWindow
                 if (LayerImageBox != null)
                 {
                     LayerImageBox.Cursor = Cursor.Default;
-                    LayerImageBox.AutoPan = true;
+                    LayerImageBox.PanWithMouseButtons = AdvancedImageBox.MouseButtons.LeftButton |
+                                                        AdvancedImageBox.MouseButtons.MiddleButton |
+                                                        AdvancedImageBox.MouseButtons.RightButton;
                 }
             }
             else
@@ -398,7 +400,7 @@ public partial class MainWindow
                 if (LayerImageBox != null)
                 {
                     LayerImageBox.Cursor = new Cursor(StandardCursorType.Cross);
-                    LayerImageBox.AutoPan = false;
+                    LayerImageBox.PanWithMouseButtons = AdvancedImageBox.MouseButtons.MiddleButton;
                 }
             }
             RaisePropertyChanged(nameof(HasMeasure2DPoints));

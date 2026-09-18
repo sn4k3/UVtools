@@ -5,8 +5,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
+using CommunityToolkit.Mvvm.Input;
 using Material.Icons;
 using StageKit.Primitives.System;
+using StageKit.Runtime;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.SystemOS;
@@ -117,6 +119,8 @@ public partial class AboutWindow : GenericWindow
             return result.ToString().TrimEnd();
         }
     }
+    
+    public string DiagnosticsInformation => RuntimeDiagnostics.GetReport();
 
     public AboutWindow()
     {
@@ -124,6 +128,7 @@ public partial class AboutWindow : GenericWindow
         DataContext = this;
     }
 
+    [RelayCommand]
     public async Task TermsOfUseClicked()
     {
         var messageWindow = new MessageWindow(About.TermsOfUseTitle, MaterialIconKind.Handshake,
@@ -139,7 +144,7 @@ public partial class AboutWindow : GenericWindow
         var message = new StringBuilder();
         message.AppendLine($"{About.SoftwareWithVersionArch}");
         message.AppendLine($"Operative system: {OSDescription}");
-        if (string.IsNullOrWhiteSpace(gpu)) message.AppendLine($"Graphic card: {gpu}");
+        if(!string.IsNullOrWhiteSpace(gpu)) message.AppendLine($"Graphic card: {gpu}");
         message.AppendLine($"Processor: {ProcessorName}");
         message.AppendLine($"Processor cores: {ProcessorCount}");
         message.AppendLine($"Memory RAM: {MemoryRAMDescription}");
@@ -164,7 +169,7 @@ public partial class AboutWindow : GenericWindow
         var message = new StringBuilder();
         message.AppendLine($"{About.SoftwareWithVersionArch}");
         message.AppendLine($"Operative system: {OSDescription}");
-        if(string.IsNullOrWhiteSpace(gpu)) message.AppendLine($"Graphic card: {gpu}");
+        if(!string.IsNullOrWhiteSpace(gpu)) message.AppendLine($"Graphic card: {gpu}");
         message.AppendLine($"Processor: {ProcessorName}");
         message.AppendLine($"Processor cores: {ProcessorCount}");
         message.AppendLine($"Memory RAM: {MemoryRAMDescription}");
@@ -186,22 +191,26 @@ public partial class AboutWindow : GenericWindow
         return message.ToString();
     }
 
+    [RelayCommand]
     public void CopyEssentialInformation()
     {
         Clipboard?.SetTextAsync(GetEssentialInformation());
     }
 
 
+    [RelayCommand]
     public void CopyOpenCVInformationToClipboard()
     {
         Clipboard?.SetTextAsync(CvInvoke.BuildInformation);
     }
 
+    [RelayCommand]
     public void CopyLoadedAssembliesToClipboard()
     {
         Clipboard?.SetTextAsync(LoadedAssemblies);
     }
 
+    [RelayCommand]
     public async Task CopyInformationToClipboard()
     {
         var message = new StringBuilder();
@@ -209,6 +218,8 @@ public partial class AboutWindow : GenericWindow
         message.AppendLine(CvInvoke.BuildInformation);
         message.AppendLine("Loaded Assemblies:");
         message.AppendLine(LoadedAssemblies);
+        message.AppendLine("Diagnostics Information:");
+        message.AppendLine(DiagnosticsInformation);
         await Clipboard?.SetTextAsync(message.ToString())!;
     }
 }

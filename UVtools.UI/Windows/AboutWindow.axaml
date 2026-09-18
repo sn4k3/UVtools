@@ -23,17 +23,17 @@
                 <SplitButton Grid.Column="0"
                              HorizontalAlignment="Right"
                              VerticalContentAlignment="Center"
-                             Command="{Binding CopyEssentialInformation}"
+                             Command="{Binding CopyEssentialInformationCommand}"
                              Content="{icon:MaterialIconTextExt Kind=ClipboardOutline, Text='Copy information'}">
                     <SplitButton.Flyout>
                         <MenuFlyout Placement="TopEdgeAlignedLeft">
-                            <MenuItem Command="{Binding CopyEssentialInformation}"
+                            <MenuItem Command="{Binding CopyEssentialInformationCommand}"
                                       Header="Copy the essential information" />
-                            <MenuItem Command="{Binding CopyOpenCVInformationToClipboard}"
+                            <MenuItem Command="{Binding CopyOpenCVInformationToClipboardCommand}"
                                       Header="Copy OpenCV build information" />
-                            <MenuItem Command="{Binding CopyLoadedAssembliesToClipboard}"
+                            <MenuItem Command="{Binding CopyLoadedAssembliesToClipboardCommand}"
                                       Header="Copy loaded assemblies" />
-                            <MenuItem Command="{Binding CopyInformationToClipboard}"
+                            <MenuItem Command="{Binding CopyInformationToClipboardCommand}"
                                       Header="All information" />
                         </MenuFlyout>
                     </SplitButton.Flyout>
@@ -166,7 +166,7 @@
                         Orientation="Horizontal"
                         Spacing="5">
                 <Button VerticalAlignment="Center"
-                        Command="{Binding TermsOfUseClicked}"
+                        Command="{Binding TermsOfUseClickedCommand}"
                         Content="{icon:MaterialIconTextExt Kind=Handshake, Text='Terms of Use'}"
                         Classes="Outlined" />
 
@@ -198,6 +198,12 @@
                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
                              ScrollViewer.VerticalScrollBarVisibility="Auto"
                              Text="{Binding LoadedAssemblies}" />
+                </TabItem>
+                <TabItem Header="Diagnostics">
+                    <TextBox IsReadOnly="True"
+                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             Text="{Binding DiagnosticsInformation}" />
                 </TabItem>
             </TabControl>
         </Grid>
