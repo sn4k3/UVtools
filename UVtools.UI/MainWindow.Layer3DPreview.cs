@@ -375,7 +375,7 @@ public partial class MainWindow
             if (_layer3DMesh is null) return "Select this tab or press Build model to generate a cached 3D preview.";
 
             var stale = IsLayer3DPreviewStale ? " • stale — rebuild to include current slices" : string.Empty;
-            var issues = _layer3DIssueMesh is { IndexCount: > 0 }
+            var issues = Settings.Layer3DPreview.ShowLayerIssues && _layer3DIssueMesh is { IndexCount: > 0 }
                 ? $" • {_layer3DIssueMesh.TriangleCount:N0} issue triangles"
                 : string.Empty;
             var issueError = string.IsNullOrWhiteSpace(_layer3DIssueOverlayError)
@@ -451,6 +451,11 @@ public partial class MainWindow
                 UpdateLayer3DClip();
                 RaisePropertyChanged(nameof(Layer3DClipToCurrentLayer));
             }
+            if (e.PropertyName == nameof(Settings.Layer3DPreview.ShowLayerIssues))
+            {
+                LayerModel3DView.ShowLayerIssues = Settings.Layer3DPreview.ShowLayerIssues;
+                InvalidateLayer3DPreviewStatus();
+            }
             if (e.PropertyName == nameof(Settings.Layer3DPreview.CutawayAxis))
             {
                 if (Settings.Layer3DPreview.CutawayAxis != VoxelPreviewCutawayAxis.Off && Settings.Layer3DPreview.CutawayPosition == 0f)
@@ -487,6 +492,7 @@ public partial class MainWindow
         LayerModel3DView.ColorMode = Settings.Layer3DPreview.ColorMode;
         LayerModel3DView.ClipMode = Settings.Layer3DPreview.ClipMode;
         LayerModel3DView.ShowBuildPlateGrid = Settings.Layer3DPreview.ShowBuildPlateGrid;
+        LayerModel3DView.ShowLayerIssues = Settings.Layer3DPreview.ShowLayerIssues;
         LayerModel3DView.GhostClippedModel = Settings.Layer3DPreview.GhostClippedModel;
         LayerModel3DView.SlabThickness = Settings.Layer3DPreview.SlabThicknessMm;
         LayerModel3DView.ShowBoundingBox = Settings.Layer3DPreview.ShowBoundingBox;
@@ -531,6 +537,13 @@ public partial class MainWindow
         RaisePropertyChanged(nameof(SelectedLayer3DClipMode));
         RaisePropertyChanged(nameof(Layer3DClipMode));
         InvalidateLayer3DPreviewStatus();
+    }
+
+    [RelayCommand]
+    public void ToggleLayerIssues()
+    {
+        Settings.Layer3DPreview.ShowLayerIssues = !Settings.Layer3DPreview.ShowLayerIssues;
+        LayerModel3DView.ShowLayerIssues = Settings.Layer3DPreview.ShowLayerIssues;
     }
 
     [RelayCommand]

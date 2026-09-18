@@ -417,6 +417,9 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     public static readonly StyledProperty<bool> ShowBuildPlateGridProperty =
         AvaloniaProperty.Register<LayerModel3DView, bool>(nameof(ShowBuildPlateGrid), true);
 
+    public static readonly StyledProperty<bool> ShowLayerIssuesProperty =
+        AvaloniaProperty.Register<LayerModel3DView, bool>(nameof(ShowLayerIssues), true);
+
     public static readonly StyledProperty<bool> GhostClippedModelProperty =
         AvaloniaProperty.Register<LayerModel3DView, bool>(nameof(GhostClippedModel), true);
 
@@ -761,6 +764,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             control.RequestNextFrameRendering());
         ShowBuildPlateGridProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
+        ShowLayerIssuesProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
+            control.RequestNextFrameRendering());
         GhostClippedModelProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
             control.RequestNextFrameRendering());
         ShowBoundingBoxProperty.Changed.AddClassHandler<LayerModel3DView>((control, _) =>
@@ -876,6 +881,12 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             if (resetCamera) ResetCamera();
             RequestNextFrameRendering();
         }
+    }
+
+    public bool ShowLayerIssues
+    {
+        get => GetValue(ShowLayerIssuesProperty);
+        set => SetValue(ShowLayerIssuesProperty, value);
     }
 
     public VoxelPreviewIssueMesh? IssueMesh
@@ -1871,7 +1882,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         if (_needsCavityUpload) UploadCavityMarkers();
 
         if ((_uploadedIndexCount == 0 || _mesh is null) &&
-            (_uploadedIssueIndexCount == 0 || _issueMesh is null) &&
+            (!ShowLayerIssues || _uploadedIssueIndexCount == 0 || _issueMesh is null) &&
             !ShowBuildPlateGrid) return;
 
         if (IsTurntableActive && !_isDragging && _mesh is not null)
@@ -1965,7 +1976,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             DrawBuildPlate();
         }
 
-        if (_uploadedIssueIndexCount > 0 && _issueMesh is not null)
+        if (ShowLayerIssues && _uploadedIssueIndexCount > 0 && _issueMesh is not null)
         {
             _gl.UseProgram(_shaderProgram);
             DrawIssueOverlay();
@@ -1976,7 +1987,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             DrawFocusedBoundingBox();
         }
 
-        if (_uploadedCavityVertexCount > 0)
+        if (ShowLayerIssues && _uploadedCavityVertexCount > 0)
         {
             DrawCavityMarkers();
         }
@@ -2848,7 +2859,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
     private unsafe void DrawCavityMarkers()
     {
-        if (_gl is null || _uploadedCavityVertexCount == 0 || _cavityVertexArray == 0) return;
+        if (_gl is null || !ShowLayerIssues || _uploadedCavityVertexCount == 0 || _cavityVertexArray == 0) return;
 
         _gl.UseProgram(_shaderProgram);
         _gl.Uniform1(_unlitLocation, 1);
@@ -3097,7 +3108,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
     private unsafe void DrawIssueOverlay()
     {
-        if (_gl is null || _issueMesh is null) return;
+        if (_gl is null || !ShowLayerIssues || _issueMesh is null) return;
 
         _gl.BindVertexArray(_issueVertexArray);
         _gl.Uniform1(_unlitLocation, 1);
@@ -3667,6 +3678,10 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         {
             case Key.F12:
                 SnapshotToFileRequested?.Invoke();
+                return true;
+            case Key.I:
+                ShowLayerIssues = !ShowLayerIssues;
+                UserSettings.Instance.Layer3DPreview.ShowLayerIssues = ShowLayerIssues;
                 return true;
             case Key.V:
                 ShowModelStats = !ShowModelStats;

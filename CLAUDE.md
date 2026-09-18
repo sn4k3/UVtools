@@ -6,79 +6,136 @@ Follow the repository-wide agent instructions in `AGENTS.md` in addition to this
 
 ## Project Overview
 
-UVtools is a cross-platform (Windows, Linux, macOS) MSLA/DLP resin printer file analysis, calibration, repair, conversion, and manipulation application. It supports 35+ proprietary file formats (CTB, SL1, GOO, PWS, etc.) and provides both a desktop GUI and CLI.
+UVtools is a cross-platform (Windows, Linux, macOS) MSLA/DLP resin printer file analysis, calibration, repair,
+conversion, and manipulation application. It supports 35+ proprietary file formats (CTB, SL1, GOO, PWS, etc.) and
+provides both a desktop GUI and a CLI.
 
-## Build & Run
+## Build, Run & Test
+
+The solution file is `UVtools.slnx` (XML solution format — there is no `.sln`).
 
 ```bash
-# Build entire solution
-dotnet build
-
-# Build release
+dotnet build                                   # whole solution
 dotnet build -c Release
+dotnet run --project UVtools.UI                # desktop GUI (assembly name: UVtools)
+dotnet run --project UVtools.Cmd -- <args>     # CLI (assembly name: UVtoolsCmd)
 
-# Run the desktop UI
-dotnet run --project UVtools.UI
-
-# Run the CLI
-dotnet run --project UVtools.Cmd -- <args>
+dotnet test tests/UVtools.Tests                                   # all tests (xUnit)
+dotnet test tests/UVtools.Tests --filter "FullyQualifiedName~SL1RoundTrip"   # single class/test
 ```
 
-Build scripts in `build/` offer platform-specific shortcuts (`compile.bat`, `compile.sh`), but plain `dotnet build` works for development.
+Notes:
 
-**Note:** Assemblies are signed with `build/UVtools.snk`. This file must be present to build successfully.
+- `nuget.config` clears inherited sources and adds the **Avalonia nightly feed** — restore fails without it (SukiUI and
+  Avalonia 12 preview packages come from there).
+- Assemblies are signed with `UVtools.snk` **at the repo root** (`Directory.Build.props` → `AssemblyOriginatorKeyFile`).
+  This file must be present to build.
+- Build output goes to `artifacts/` at the repo root (`ArtifactsPath`).
+- `build.ps1` / `build.sh` / `build.cmd` bootstrap the SDK and run `build/build.csproj`, a Fallout/StageKit build
+  (`build/Build.cs`, default target `Compile`). That project is what produces the real release artifacts: portable zip,
+  Windows installer, AppImage, deb, rpm, Arch package, macOS app bundle, plus file associations derived from
+  `FileFormat.AllFileExtensions`. For day-to-day work plain `dotnet build` is enough; `build/createRelease.(ps1|sh)`
+  packs a release for one runtime. See `build/README.md`, including the `cvextern`/`libcvextern` native-library notes.
 
-## Project Structure
+## Projects
 
-| Project | Purpose |
-|---------|---------|
-| `UVtools.Core` | Core library: file formats, layer processing, image ops |
-| `UVtools.UI` | Avalonia desktop GUI |
-| `UVtools.Cmd` | CLI (uses `System.CommandLine`) |
-| `UVtools.AvaloniaControls` | Reusable Avalonia controls (multi-targeted net8/9/10) |
-| `UVtools.Installer` | WiX MSI installer for Windows |
-| `UVtools.ScriptSample` | Example project for the built-in C# scripting engine |
+| Project                            | Purpose                                                      |
+|------------------------------------|--------------------------------------------------------------|
+| `UVtools.Core`                     | Core library: file formats, layers, operations, image ops     |
+| `UVtools.UI`                       | Avalonia desktop GUI (references Core **and** Cmd)            |
+| `UVtools.Cmd`                      | CLI built on `System.CommandLine`                             |
+| `UVtools.AvaloniaControls`         | Reusable Avalonia controls, published as its own NuGet package |
+| `UVtools.WixInstaller`             | WiX MSI installer for Windows                                 |
+| `Scripts/UVtools.ScriptSample`     | Reference project for the built-in C# scripting engine        |
+| `tests/UVtools.Tests`              | xUnit tests against `UVtools.Core`                            |
 
-Global build properties (version, target framework, artifact paths, signing) are centralized in `Directory.Build.props`. The version is the single `<UVtoolsVersion>` property there.
+`Directory.Build.props` centralizes everything global: `net10.0`, nullable enabled, platforms `AnyCPU;x64;ARM64`,
+signing, artifact paths, and the two version knobs `<UVtoolsVersion>` and `<AvaloniaVersion>`. There is no
+`Directory.Packages.props`; package versions live in each `.csproj`. `UVtools.AvaloniaControls` is the exception to the
+single TFM — it multi-targets `net8.0;net9.0;net10.0` and carries its own version and `.snk`. `UVtools.UI` uses
+`LangVersion=preview`.
 
-Build output goes to `artifacts/` at the repo root.
+`UVtools.Installer/` is a leftover directory with no project file — the live installer project is `UVtools.WixInstaller`.
 
 ## Architecture
 
-### Core Abstractions
+### `FileFormat` — `UVtools.Core/FileFormats/FileFormat.cs`
 
-**`FileFormat`** (`UVtools.Core/FileFormats/FileFormat.cs`) — Abstract base for every supported printer file format. Implements `IList<Layer>`. All 35+ format classes (e.g., `ChituboxFile`, `GooFile`, `SL1File`) inherit from it. The class handles decode/encode lifecycle, GCode, thumbnails, print settings, and per-layer overrides.
+Abstract base for every supported printer file, and the largest/most central type in the codebase (~7k lines). It
+implements `IList<Layer>` and owns the decode/encode lifecycle, print settings and per-layer overrides, thumbnails,
+GCode, and cross-format conversion. Every format class (`ChituboxFile`, `GooFile`, `SL1File`, `AnycubicFile`, …) derives
+from it and is registered in the static `FileFormat.AvailableFormats` array; extension lookup, file-type filters, and
+installer file associations are all derived from that array via `FileExtension`. To add a format: create the class in
+`UVtools.Core/FileFormats/`, implement at minimum `DecodeInternally`, `EncodeInternally`, `FileExtensions`, and the
+format's header/layer structures, then add it to `AvailableFormats`.
 
-**`Layer`** (`UVtools.Core/Layers/`) — Represents a single print layer. Stores compressed image data; decompresses on demand via codec classes in the same folder.
+`Scripts/010 Editor/*.bt` holds binary templates for most formats — useful when reverse-engineering or verifying a
+header layout.
 
-**`Operation`** (`UVtools.Core/Operations/`) — Abstract base for all layer-level mutations (resize, hollow, repair, calibration tests, etc.). Operations are designed to be UI-agnostic and are executed by both the GUI and the CLI.
+### `Layer` — `UVtools.Core/Layers/`
 
-### Image Processing
+A single print layer. Pixel data is held compressed in a `CMat` and decompressed on demand; the codec is selectable via
+`LayerCompressionCodec` (PNG, GZip, Deflate, Brotli, LZ4, Zstd) and implemented by `MatCompressor*` classes in
+`UVtools.Core/Compressors/`. Issue types (islands, overhangs, resin traps, …) also live here and are driven by
+`Managers/IssueManager`.
 
-All pixel/image work goes through **EmguCV** (OpenCV C# wrapper). The native library (`cvextern.dll` / `libcvextern.so` / `libcvextern.dylib`) is bundled via NuGet (`Emgu.CV.runtime.mini.*`). Do not replace EmguCV calls with pure-managed alternatives—performance is critical here.
+### `Operation` — `UVtools.Core/Operations/`
 
-### UI Layer
+Abstract base for every layer mutation (resize, hollow, repair, morph, calibration tests, …). Operations are UI-agnostic
+`ObservableObject`s with a `SlicerFile`, `Validate()`/`ValidateSpawn()` gates, and `Execute(progress)`, and they are the
+shared unit of work between the GUI and the CLI. Profiles/undo/session state go through `Managers/OperationSessionManager`
+and `ClipboardManager`.
 
-`UVtools.UI` uses **Avalonia 11** with `CommunityToolkit.Mvvm`. The main window (`MainWindow.axaml/.cs`) is intentionally large and monolithic. Custom reusable controls live in `UVtools.AvaloniaControls`.
+`Suggestions/` is a parallel, smaller hierarchy (`Suggestion` + `SuggestionManager`) for auto-detected corrections rather
+than user-invoked tools.
 
-### Scripting Engine
+### Image processing
 
-`UVtools.Core/Scripting/` hosts a C# scripting runtime (`Microsoft.CodeAnalysis.CSharp.Scripting`) that lets users write and execute custom operations at runtime. `UVtools.ScriptSample` is the reference project for script authors.
+All pixel work goes through **EmguCV** (OpenCV wrapper). The native library (`cvextern.dll` / `libcvextern.so` /
+`libcvextern.dylib`) comes from the `Emgu.CV.runtime.mini.*` packages and from `build/platforms/*`, copied into the
+output by `UVtools.UI.csproj`. Do not replace EmguCV calls with pure-managed alternatives — performance is critical.
+`MatCacheManager` and `KernelCacheManager` exist to avoid repeated allocations; prefer them over ad-hoc `Mat`/kernel
+creation.
 
-## Testing
+### UI layer — `UVtools.UI`
 
-There is no formal test project or test framework in this solution. Validation is done manually via the UI/CLI or through the built-in calibration/test operations.
+Avalonia **12** with `CommunityToolkit.Mvvm`, SukiUI theming, and compiled bindings on by default
+(`AvaloniaUseCompiledBindingsByDefault`). `MainWindow` is intentionally large and is split into feature partial classes
+(`MainWindow.Issues.cs`, `MainWindow.LayerPreview.cs`, `MainWindow.Layer3DPreview.cs`, `MainWindow.PixelEditor.cs`,
+`MainWindow.GCode.cs`, …) — put new main-window behaviour in the matching partial rather than growing
+`MainWindow.axaml.cs`.
+
+Each `Operation` is surfaced by a matching `ToolControl` in `Controls/Tools/` (`OperationBlur` → `ToolBlurControl`),
+hosted generically by `Windows/ToolWindow`; calibration operations pair with `Controls/Calibrators/`, suggestions with
+`Controls/Suggestions/`. Adding a tool means adding both halves plus the wiring in `MainWindow`.
+
+### CLI — `UVtools.Cmd`
+
+One class per verb under `Symbols/` (`ConvertCommand`, `ExtractCommand`, `RunCommand`, `SetPropertiesCommand`, …), with
+shared `GlobalArguments`/`GlobalOptions`. `RunCommand` executes Core `Operation`s and scripts, so CLI parity usually
+comes for free when an operation is added to Core.
+
+### Scripting
+
+`UVtools.Core/Scripting/` hosts a Roslyn C# scripting runtime (`Scripter`, `ScriptParser`, typed `Script*Input`
+controls) letting users write runtime operations; `OperationScripting` is the bridge into the normal operation pipeline.
+`Scripts/UVtools.ScriptSample` is the reference project for script authors.
 
 ## Code Guidelines
 
 - Follow existing naming conventions and code style — match the surrounding file.
-- Unsafe blocks are allowed (enabled in `UVtools.Core.csproj`) and are used for performance-critical image processing.
+- Every source file starts with the AGPL-3.0 header comment block; keep it on new files.
+- Unsafe blocks are enabled in `UVtools.Core`, `UVtools.UI`, and `UVtools.AvaloniaControls`, and are used for
+  performance-critical image processing.
 - Nullable reference types are enabled solution-wide — respect nullability annotations.
+- `ZLinq` (`AsValueEnumerable()`) is used in hot paths instead of LINQ; follow that pattern where the surrounding code
+  does. See `AGENTS.md` for the DotNext buffer-writer and allocation rules.
 - Do not leave large blocks of commented-out code.
-- XML doc comments (`///`) are expected on public API members in `UVtools.Core` (a documentation XML is generated to `documentation/UVtools.Core.xml`).
+- XML doc comments (`///`) are expected on public API members in `UVtools.Core` (documentation XML is generated to
+  `documentation/UVtools.Core.xml`).
 
-## Adding a New File Format
+## Testing
 
-1. Create a class in `UVtools.Core/FileFormats/` inheriting `FileFormat`.
-2. Implement at minimum: `Decode`, `Encode`, `FileExtensions`, and the format-specific header/layer structures.
-3. Register the format in `FileFormat.AvailableFormats` (static list in `FileFormat.cs`).
+`tests/UVtools.Tests` (xUnit) covers targeted regression areas — format round-trips, specific operations, Gerber/Excellon
+parsing, mesh building. It is not comprehensive: most validation still happens manually through the UI/CLI or the
+built-in calibration tests. Add tests there when changing the covered areas or fixing a reproducible bug.

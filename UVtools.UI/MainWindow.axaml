@@ -2663,10 +2663,11 @@
                                                   VerticalAlignment="Stretch"
                                                   ToolTip.Tip="Toggle build plate grid and printable volume wireframe [G]." />
 
-                                    <ToggleButton IsChecked="{Binding ShowLayerImageIssues, Mode=TwoWay}"
+                                    <ToggleButton IsChecked="{Binding Settings.Layer3DPreview.ShowLayerIssues, Mode=TwoWay}"
+                                                  IsEnabled="{Binding HasLayer3DMesh}"
                                                   Content="{icon:MaterialIconExt Kind=RadiationCircleOutline, Classes='Fill'}"
                                                   VerticalAlignment="Stretch"
-                                                  ToolTip.Tip="Highlight Issues on 3D model (Also affects 2D previewer)." />
+                                                  ToolTip.Tip="Highlight Issues on 3D model [I]." />
 
                                     <ToggleButton IsChecked="{Binding Settings.Layer3DPreview.ShowBoundingBox, Mode=TwoWay}"
                                                   IsEnabled="{Binding HasLayer3DMesh}"
@@ -2776,6 +2777,7 @@
                                                                ColorMode="{Binding Layer3DColorMode}"
                                                                ClipMode="{Binding Layer3DClipMode}"
                                                                ShowBuildPlateGrid="{Binding Settings.Layer3DPreview.ShowBuildPlateGrid, Mode=TwoWay}"
+                                                               ShowLayerIssues="{Binding Settings.Layer3DPreview.ShowLayerIssues, Mode=TwoWay}"
                                                                GhostClippedModel="{Binding Settings.Layer3DPreview.GhostClippedModel, Mode=TwoWay}"
                                                                ShowBoundingBox="{Binding Settings.Layer3DPreview.ShowBoundingBox, Mode=TwoWay}"
                                                                ShowModelStats="{Binding Settings.Layer3DPreview.ShowModelStats, Mode=TwoWay}"
