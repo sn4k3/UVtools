@@ -107,57 +107,79 @@ public sealed partial class ClipboardManager : ObservableObject, IList<Clipboard
         {
             if (_currentIndex == value) return;
             value = Math.Clamp(value, -1, Count - 1);
-            var oldIndex = _currentIndex;
             _currentIndex = value;
             if (value >= 0 && !SuppressRestore)
             {
                 ReallocatedLayerCount = false;
-                int dir = oldIndex < _currentIndex ? 1 : -1;
+                var targetClip = this[value];
 
-                for (int i = oldIndex + dir; i >= 0 && i < Count; i += dir)
+                Layer[] layers;
+                if (targetClip.IsFullBackup)
                 {
-                    var clip = this[i];
-
-                    Layer[] layers;
-                    if (clip.IsFullBackup)
-                    {
-                        if(!ReallocatedLayerCount && SlicerFile.LayerCount != clip.Count) ReallocatedLayerCount = true;
-                        layers = clip.ToArray();
-                    }
-                    else
-                    {
-                        layers = SlicerFile.Layers.AsValueEnumerable().ToArray();
-
-                        if (SlicerFile.LayerCount != clip.LayerCount) // Need resize layer manager
-                        {
-                            //layers = SlicerFile.LayerManager.ReallocateNew(clip.LayerCount);
-                            layers = SlicerFile.ReallocateNew(clip.LayerCount);
-                            ReallocatedLayerCount = true;
-                        }
-
-                        foreach (var layer in clip)
-                        {
-                            layers[layer.Index] = layer;
-                        }
-                    }
-
-                    if (SlicerFile.LayerHeight != clip.LayerHeight)
-                    {
-                        SlicerFile.LayerHeight = clip.LayerHeight;
-                    }
-
-                    if (SlicerFile.Resolution != clip.Resolution)
-                    {
-                        SlicerFile.Resolution = clip.Resolution;
-                    }
-
-                    SlicerFile.SuppressRebuildPropertiesWork(() =>
-                    {
-                        SlicerFile.Layers = Layer.CloneLayers(layers);
-                    });
-
-                    if (i == _currentIndex) break;
+                    if (!ReallocatedLayerCount && SlicerFile.LayerCount != targetClip.Count) ReallocatedLayerCount = true;
+                    layers = targetClip.ToArray();
                 }
+                else
+                {
+                    // Find the nearest full backup at or above targetIndex (chronologically older)
+                    int baseIndex = value + 1;
+                    while (baseIndex < Count && !this[baseIndex].IsFullBackup)
+                    {
+                        baseIndex++;
+                    }
+
+                    if (baseIndex >= Count)
+                    {
+                        baseIndex = Count - 1;
+                    }
+
+                    var baseClip = this[baseIndex];
+                    layers = baseClip.ToArray();
+
+                    // Replay forward changes from baseIndex - 1 down to targetIndex
+                    for (int i = baseIndex - 1; i >= value; i--)
+                    {
+                        var stepClip = this[i];
+                        if (stepClip.IsFullBackup)
+                        {
+                            layers = stepClip.ToArray();
+                            continue;
+                        }
+
+                        if (layers.Length != stepClip.LayerCount)
+                        {
+                            Array.Resize(ref layers, (int)stepClip.LayerCount);
+                        }
+
+                        foreach (var layer in stepClip)
+                        {
+                            if (layer.Index < layers.Length)
+                            {
+                                layers[layer.Index] = layer;
+                            }
+                        }
+                    }
+
+                    if (!ReallocatedLayerCount && SlicerFile.LayerCount != targetClip.LayerCount)
+                    {
+                        ReallocatedLayerCount = true;
+                    }
+                }
+
+                if (SlicerFile.LayerHeight != targetClip.LayerHeight)
+                {
+                    SlicerFile.LayerHeight = targetClip.LayerHeight;
+                }
+
+                if (SlicerFile.Resolution != targetClip.Resolution)
+                {
+                    SlicerFile.Resolution = targetClip.Resolution;
+                }
+
+                SlicerFile.SuppressRebuildPropertiesWork(() =>
+                {
+                    SlicerFile.Layers = Layer.CloneLayers(layers);
+                });
             }
 
             OnPropertyChanged();
