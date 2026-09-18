@@ -760,8 +760,9 @@ public partial class MainWindow
         LayerNavigationIssuesCanvas.Children.Clear();
         if (!IsFileLoaded || SlicerFile!.IssueManager.Count == 0) return;
 
+        var sliderRange = LayerSlider.Maximum - LayerSlider.Minimum;
         var tickFrequencySize =
-            LayerNavigationIssuesCanvas.Bounds.Height * LayerSlider.TickFrequency / LayerSlider.Maximum;
+            LayerNavigationIssuesCanvas.Bounds.Height * LayerSlider.TickFrequency / (sliderRange > 0 ? sliderRange : 1);
         var stroke = (int)Math.Ceiling(tickFrequencySize);
 
         var colorDictionary = GetIssueColors(true);

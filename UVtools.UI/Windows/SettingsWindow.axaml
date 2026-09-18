@@ -1416,6 +1416,10 @@
                                     <CheckBox Content="Show square grid as background"
                                               IsChecked="{Binding Settings.LayerPreview.ShowBackgroundGrid}" />
 
+                                    <CheckBox Content="Start layer number at 1 instead of 0 (Preview only)"
+                                              IsChecked="{Binding Settings.LayerPreview.StartLayerNumberAt1}"
+                                              ToolTip.Tip="Displays layer numbers starting at 1 instead of 0 on the layer preview slider and navigation panel to match slicers like Chitubox. Internal processing and layer indices elsewhere remain 0-based." />
+
                                     <StackPanel Orientation="Horizontal"
                                                 Spacing="10">
                                         <NumericUpDown VerticalAlignment="Center"

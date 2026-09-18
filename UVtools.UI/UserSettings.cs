@@ -567,6 +567,8 @@ public partial class UserSettings : ObservableObject
 
         [ObservableProperty] public partial ushort LayerSliderDebounce { get; set; }
 
+        [ObservableProperty] public partial bool StartLayerNumberAt1 { get; set; }
+
         public LayerPreviewUserSettings Clone()
         {
             return (MemberwiseClone() as LayerPreviewUserSettings)!;

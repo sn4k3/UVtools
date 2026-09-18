@@ -1317,6 +1317,15 @@ public partial class MainWindow : GenericWindow
         }
 
         ResetDataContext();
+        ActualLayerSlider = _actualLayer + LayerNumberOffset;
+        RaisePropertyChanged(nameof(ActualLayerSlider));
+        RaisePropertyChanged(nameof(ActualLayerDisplay));
+        RaisePropertyChanged(nameof(SliderMinimumValue));
+        RaisePropertyChanged(nameof(SliderMaximumValue));
+        RaisePropertyChanged(nameof(MinimumLayerString));
+        RaisePropertyChanged(nameof(MaximumLayerString));
+        InvalidateLayerNavigation();
+        UpdateLayerTrackerHighlightIssues();
         RefreshLayer3DPreviewSettings();
     }
 

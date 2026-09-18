@@ -1963,7 +1963,7 @@
                                 IsSnapToTickEnabled="True"
                                 LargeChange="10"
                                 Maximum="{Binding SliderMaximumValue}"
-                                Minimum="0"
+                                Minimum="{Binding SliderMinimumValue}"
                                 Orientation="Vertical"
                                 SmallChange="1"
                                 TickFrequency="1"
@@ -1983,8 +1983,8 @@
                     <NumericUpDown Grid.Row="4"
                                    Margin="0,5"
                                    Maximum="{Binding SliderMaximumValue}"
-                                   Minimum="0"
-                                   Value="{Binding ActualLayer}" />
+                                   Minimum="{Binding SliderMinimumValue}"
+                                   Value="{Binding ActualLayerDisplay}" />
 
                     <Grid Grid.Row="5"
                           ColumnDefinitions="Auto,*,Auto"

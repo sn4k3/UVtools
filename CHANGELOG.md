@@ -36,6 +36,7 @@
   - (Add) Elapsed print time readout
   - (Add) Measure tool: click two points on the model to get the distance between them
   - (Add) Cross-section area/peel-force curve HUD overlay
+  - (Add) Setting to start layer number at 1 instead of 0 on layer slider and navigation panel (#948)
 - (Add) Dynamic lifts: Configure separate bottom/normal retract speeds and two-stage retract distance percentages (#927)
 - (Add) Configure bottom height and transition layers for wait time after cure (#1093)
 - (Add) Panel Gamma setting to compensate Exposure Time calibration tool in Multiple Brightness / grayscale mode (#1104)

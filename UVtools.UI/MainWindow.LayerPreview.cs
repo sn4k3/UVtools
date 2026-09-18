@@ -663,22 +663,26 @@ public partial class MainWindow
         }
     }
 
-    public string MinimumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.LayerHeight}mm\n0";
+    public uint LayerNumberOffset => Settings.LayerPreview.StartLayerNumberAt1 ? 1u : 0u;
+
+    public string MinimumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.LayerHeight}mm\n{(Settings.LayerPreview.StartLayerNumberAt1 ? 1 : 0)}";
 
     public string MaximumLayerString =>
-        SlicerFile is null ? "???" : $"{SlicerFile.PrintHeight}mm\n{SlicerFile.LastLayerIndex}";
+        SlicerFile is null ? "???" : $"{SlicerFile.PrintHeight}mm\n{SlicerFile.LastLayerIndex + LayerNumberOffset}";
 
     public string ActualLayerTooltip => SlicerFile is null || !SlicerFile.ContainsLayer(_actualLayer)
         ? "???"
         : $"""
             {Layer.ShowHeight(SlicerFile[_actualLayer]?.PositionZ ?? 0)}mm
-            {_actualLayer} ({(_actualLayer + 1) * 100 / SlicerFile.LayerCount}%)
+            {_actualLayer + LayerNumberOffset} ({(_actualLayer + 1) * 100 / SlicerFile.LayerCount}%)
             {SlicerFile[ActualLayer].StartTimeString}
             """;
 
-    public uint SliderMaximumValue => SlicerFile?.LastLayerIndex ?? 0;
+    public uint SliderMinimumValue => Settings.LayerPreview.StartLayerNumberAt1 ? 1u : 0u;
 
-    public bool CanGoUp => _actualLayer < SliderMaximumValue;
+    public uint SliderMaximumValue => (SlicerFile?.LastLayerIndex ?? 0) + LayerNumberOffset;
+
+    public bool CanGoUp => SlicerFile is not null && _actualLayer < SlicerFile.LastLayerIndex;
     public bool CanGoDown => _actualLayer > 0;
 
     public bool IsTooltipOverlayVisible
@@ -803,16 +807,35 @@ public partial class MainWindow
         {
             if (DataContext is null) return;
             if (!RaiseAndSetIfChanged(ref _actualLayerSlider, value)) return;
+            var targetLayer = _actualLayerSlider >= LayerNumberOffset ? _actualLayerSlider - LayerNumberOffset : 0;
+            if (SlicerFile is not null && targetLayer > SlicerFile.LastLayerIndex)
+            {
+                targetLayer = SlicerFile.LastLayerIndex;
+            }
             if (Settings.LayerPreview.LayerSliderDebounce == 0)
             {
-                ActualLayer = _actualLayerSlider;
+                ActualLayer = targetLayer;
             }
             else
             {
                 _layerNavigationSliderDebounceTimer.Stop();
                 _layerNavigationSliderDebounceTimer.Start();
-                ActualLayer = _actualLayerSlider;
+                ActualLayer = targetLayer;
             }
+        }
+    }
+
+    public uint ActualLayerDisplay
+    {
+        get => _actualLayer + LayerNumberOffset;
+        set
+        {
+            var targetLayer = value >= LayerNumberOffset ? value - LayerNumberOffset : 0;
+            if (SlicerFile is not null && targetLayer > SlicerFile.LastLayerIndex)
+            {
+                targetLayer = SlicerFile.LastLayerIndex;
+            }
+            ActualLayer = targetLayer;
         }
     }
 
@@ -827,13 +850,14 @@ public partial class MainWindow
 
             if (!_layerNavigationSliderDebounceTimer.Enabled) // Doesn't come from ActualLayerSlider timer
             {
-                ActualLayerSlider = _actualLayer; // sync when required
+                ActualLayerSlider = _actualLayer + LayerNumberOffset; // sync when required
                 if (LayerPreviewTabIndex is 0 or 2)
                 {
                     ShowLayer(); // Show layer only if timer is not present and on 2D preview or Dual tab
                 }
             }
 
+            RaisePropertyChanged(nameof(ActualLayerDisplay));
             _pendingPixelStroke = null;
             InvalidateLayerNavigation();
             UpdateLayer3DClip();
@@ -962,9 +986,9 @@ public partial class MainWindow
 
     private void LayerSliderOnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
-        if (e.Delta.Y > 0)
+        if (e.Delta.Y > 0 && CanGoUp)
             ActualLayer++;
-        else if (e.Delta.Y < 0 && _actualLayer > 0)
+        else if (e.Delta.Y < 0 && CanGoDown)
             ActualLayer--;
     }
 
@@ -1018,7 +1042,7 @@ public partial class MainWindow
     {
         if (!IsFileLoaded) return;
         if (!CanGoUp) return;
-        ActualLayer = SliderMaximumValue;
+        ActualLayer = SlicerFile!.LastLayerIndex;
     }
 
     public void GoUpLayers(uint layers)

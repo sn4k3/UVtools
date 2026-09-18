@@ -184,7 +184,7 @@ public partial class ToolWindow : GenericWindow
 
     }
 
-    public uint MaximumLayerIndex => App.MainWindow?.SliderMaximumValue ?? 0;
+    public uint MaximumLayerIndex => App.MainWindow?.SlicerFile?.LastLayerIndex ?? 0;
 
     public void SelectAllLayers()
     {
