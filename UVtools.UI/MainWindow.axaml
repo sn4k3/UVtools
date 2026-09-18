@@ -2365,12 +2365,16 @@
                             </Border>
 
                             <!-- 2D Measurement Floating HUD -->
-                            <suki:GlassCard Grid.Row="1"
-                                            HorizontalAlignment="Left"
-                                            VerticalAlignment="Top"
-                                            Margin="16,16,0,0"
-                                            Padding="10,8"
-                                            IsVisible="{Binding IsMeasureMode2D}">
+                            <Border Grid.Row="1"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    Margin="16,16,0,0"
+                                    Padding="10,8"
+                                    CornerRadius="8"
+                                    Background="#D81E1E2E"
+                                    BorderBrush="#3B4252"
+                                    BorderThickness="1"
+                                    IsVisible="{Binding IsMeasureMode2D}">
                                 <StackPanel Spacing="6" Width="260">
                                     <DockPanel LastChildFill="True">
                                         <StackPanel Orientation="Horizontal" Spacing="6" DockPanel.Dock="Left"
@@ -2384,8 +2388,10 @@
                                                 Classes="Basic"
                                                 Padding="4"
                                                 Width="24" Height="24"
+                                                Background="Transparent"
+                                                BorderThickness="0"
                                                 ToolTip.Tip="Close measurement [Esc]">
-                                            <icon:MaterialIcon Kind="Close" Width="14" Height="14" />
+                                            <icon:MaterialIcon Kind="Close" Width="14" Height="14" Foreground="#8B949E" />
                                         </Button>
                                         <Border />
                                     </DockPanel>
@@ -2417,7 +2423,7 @@
                                                    VerticalAlignment="Center" />
                                     </StackPanel>
                                 </StackPanel>
-                            </suki:GlassCard>
+                            </Border>
 
                             <!-- 2D Peel Force & Area Curve HUD -->
                             <Border Grid.Row="1"
