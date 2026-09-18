@@ -2627,7 +2627,7 @@
                                                   IsChecked="{Binding Layer3DClipToCurrentLayer}"
                                                   IsEnabled="{Binding HasLayer3DMesh}"
                                                   VerticalAlignment="Stretch"
-                                                  ToolTip.Tip="[C]lip the model at the selected layer." />
+                                                  ToolTip.Tip="Clip the model at the selected layer. [C]" />
 
                                     <ToggleButton Content="{icon:MaterialIconExt Ghost, Classes='Fill'}"
                                                   IsChecked="{Binding Settings.Layer3DPreview.GhostClippedModel}"
@@ -2691,7 +2691,7 @@
                                                   IsEnabled="{Binding HasLayer3DMesh}"
                                                   Content="{icon:MaterialIconExt Kind=Ruler, Classes='Fill'}"
                                                   VerticalAlignment="Stretch"
-                                                  ToolTip.Tip="[M]easure tool. Click two points on the 3D model." />
+                                                  ToolTip.Tip="Measure tool. Click two points on the 3D model. [M]" />
 
                                     <!-- <ToggleButton IsChecked="{Binding #LayerModel3DView.IsTurntableActive}" -->
                                     <!--               IsEnabled="{Binding HasLayer3DMesh}" -->

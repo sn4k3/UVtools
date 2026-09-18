@@ -364,7 +364,7 @@ public partial class MainWindow
     public bool HasLayer3DMesh => _layer3DMesh is not null;
     public bool CanBuildLayer3DPreview => SlicerFile is not null && !IsLayer3DBuilding && IsLayer3DRendererAvailable;
     public bool ShowLayer3DStatusOverlay => !HasLayer3DMesh || !IsLayer3DRendererAvailable;
-    public string Layer3DBuildButtonText => _layer3DMesh is null ? "Build model" : "Rebuild model";
+    public string Layer3DBuildButtonText => _layer3DMesh is null ? "Build" : "Rebuild";
 
     public string Layer3DStatus
     {
