@@ -234,7 +234,18 @@ public static class Program
                 .With(new Win32PlatformOptions())
                 .With(new X11PlatformOptions())
                 .With(new MacOSPlatformOptions { ShowInDock = true })
-                .With(new AvaloniaNativePlatformOptions())
+                /* Prefer OpenGL over the default Metal backend on macOS: the 3D layer preview renders through
+                 * OpenGlControlBase, which can not obtain a context under Metal. Metal stays as the fallback so
+                 * machines that can not provide a GL context still start, just without the 3D preview. */
+                .With(new AvaloniaNativePlatformOptions
+                {
+                    RenderingMode =
+                    [
+                        AvaloniaNativeRenderingMode.OpenGl,
+                        AvaloniaNativeRenderingMode.Metal,
+                        AvaloniaNativeRenderingMode.Software
+                    ]
+                })
                 //.UseSkia()
                 .LogToTrace()
 #if DEBUG

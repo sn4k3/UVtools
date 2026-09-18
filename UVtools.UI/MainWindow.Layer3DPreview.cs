@@ -459,12 +459,6 @@ public partial class MainWindow
             }
         };
 
-        if (OperatingSystem.IsMacOS())
-        {
-            _layer3DRendererError =
-                "3D preview is unavailable while Avalonia is using the macOS Metal backend. The layer preview remains available.";
-        }
-
         LayerModel3DView.ClipToLayer = Layer3DClipToCurrentLayer;
         UpdateLayer3DClip();
         RefreshLayer3DPreviewSettings();
@@ -1726,55 +1720,61 @@ public partial class MainWindow
 
             SixLabors.ImageSharp.Image<Bgra32>? masterGif = null;
 
-            for (int f = 0; f < frameCount; f++)
+            try
             {
-                float yaw = originalYaw + (f * (MathF.Tau / frameCount));
-                LayerModel3DView.SetCameraAngles(yaw, originalPitch);
-                await Task.Delay(35);
-
-                var bmp = await LayerModel3DView.CaptureSnapshotAsync();
-                if (bmp is null) continue;
-
-                using var fb = bmp.Lock();
-                var width = bmp.PixelSize.Width;
-                var height = bmp.PixelSize.Height;
-                byte[] raw = new byte[width * height * 4];
-                Marshal.Copy(fb.Address, raw, 0, raw.Length);
-
-                using var frameImg = SixLabors.ImageSharp.Image.LoadPixelData<Bgra32>(raw, width, height);
-
-                if (width > 640)
+                for (int f = 0; f < frameCount; f++)
                 {
-                    int newH = (int)(height * (640f / width));
-                    frameImg.Mutate(x => x.Resize(640, newH));
+                    float yaw = originalYaw + (f * (MathF.Tau / frameCount));
+                    LayerModel3DView.SetCameraAngles(yaw, originalPitch);
+                    await Task.Delay(35);
+
+                    var bmp = await LayerModel3DView.CaptureSnapshotAsync();
+                    if (bmp is null) continue;
+
+                    using var fb = bmp.Lock();
+                    var width = bmp.PixelSize.Width;
+                    var height = bmp.PixelSize.Height;
+                    byte[] raw = new byte[width * height * 4];
+                    Marshal.Copy(fb.Address, raw, 0, raw.Length);
+
+                    using var frameImg = SixLabors.ImageSharp.Image.LoadPixelData<Bgra32>(raw, width, height);
+
+                    if (width > 640)
+                    {
+                        int newH = (int)(height * (640f / width));
+                        frameImg.Mutate(x => x.Resize(640, newH));
+                    }
+
+                    var frameMeta = frameImg.Frames.RootFrame.Metadata.GetGifMetadata();
+                    frameMeta.FrameDelay = delay;
+                    frameMeta.DisposalMode = FrameDisposalMode.RestoreToBackground;
+
+                    if (masterGif is null)
+                    {
+                        /* Seed the animation with the first captured frame instead of a freshly allocated image:
+                         * a new Image<Bgra32> keeps its own blank root frame, which showed up as a flash at the
+                         * start of every loop of the exported gif. */
+                        masterGif = frameImg.Clone();
+                        masterGif.Metadata.GetGifMetadata().RepeatCount = 0;
+                        continue;
+                    }
+
+                    masterGif.Frames.AddFrame(frameImg.Frames.RootFrame);
                 }
 
-                if (masterGif is null)
-                {
-                    masterGif = new SixLabors.ImageSharp.Image<Bgra32>(frameImg.Width, frameImg.Height);
-                    var gifMeta = masterGif.Metadata.GetGifMetadata();
-                    gifMeta.RepeatCount = 0;
-                    var rootMeta = masterGif.Frames.RootFrame.Metadata.GetGifMetadata();
-                    rootMeta.FrameDelay = delay;
-                }
+                if (masterGif is null) return;
 
-                var frameMeta = frameImg.Frames.RootFrame.Metadata.GetGifMetadata();
-                frameMeta.FrameDelay = delay;
-                frameMeta.DisposalMode = FrameDisposalMode.RestoreToBackground;
-
-                masterGif.Frames.AddFrame(frameImg.Frames.RootFrame);
-            }
-
-            LayerModel3DView.SetCameraAngles(originalYaw, originalPitch);
-            LayerModel3DView.IsTurntableActive = originalTurntable;
-
-            if (masterGif is not null)
-            {
                 await using var outStream = await file.OpenWriteAsync();
                 await masterGif.SaveAsGifAsync(outStream);
-                masterGif.Dispose();
-                await this.MessageBoxInfo($"Saved 360° turntable animation to {file.Name}.", "Turntable Exported");
             }
+            finally
+            {
+                masterGif?.Dispose();
+                LayerModel3DView.SetCameraAngles(originalYaw, originalPitch);
+                LayerModel3DView.IsTurntableActive = originalTurntable;
+            }
+
+            await this.MessageBoxInfo($"Saved 360° turntable animation to {file.Name}.", "Turntable Exported");
         }
         catch (Exception ex)
         {
@@ -1785,6 +1785,12 @@ public partial class MainWindow
     private void DisposeLayer3DPreview()
     {
         if (IsLayer3DBuilding && Progress.CanCancel) Progress.TokenSource.Cancel();
+
+        /* Stop the simulation before the model goes away, otherwise it keeps driving ActualLayer and would
+         * resume against whatever file is loaded next. */
+        _printSimulationTimer?.Stop();
+        IsPrintSimulationPlaying = false;
+
         lock (_layer3DCapLock)
         {
             _layer3DCapTargetGeneration++;
