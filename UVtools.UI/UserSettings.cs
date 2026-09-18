@@ -619,6 +619,9 @@ public partial class UserSettings : ObservableObject
         public partial VoxelPreviewColorMode ColorMode { get; set; } = VoxelPreviewColorMode.Solid;
 
         [ObservableProperty]
+        public partial bool ClipToCurrentLayer { get; set; } = true;
+        
+        [ObservableProperty]
         public partial VoxelPreviewClipMode ClipMode { get; set; } = VoxelPreviewClipMode.Below;
 
         [ObservableProperty]

@@ -37,7 +37,6 @@ namespace UVtools.UI;
 public partial class MainWindow
 {
     private bool _isLayer3DBuilding;
-    private bool _layer3DClipToCurrentLayer;
     private readonly object _layer3DCapLock = new();
     private bool _isLayer3DCapBuilding;
     private Layer? _layer3DCapTargetLayer;
@@ -209,10 +208,12 @@ public partial class MainWindow
 
     public bool Layer3DClipToCurrentLayer
     {
-        get => _layer3DClipToCurrentLayer;
+        get => Settings.Layer3DPreview.ClipToCurrentLayer;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _layer3DClipToCurrentLayer, value)) return;
+            if (Settings.Layer3DPreview.ClipToCurrentLayer == value) return;
+            Settings.Layer3DPreview.ClipToCurrentLayer = value;
+            RaisePropertyChanged();
             LayerModel3DView.ClipToLayer = value;
             UpdateLayer3DClip();
         }
@@ -437,6 +438,12 @@ public partial class MainWindow
 
         Settings.Layer3DPreview.PropertyChanged += (_, e) =>
         {
+            if (e.PropertyName == nameof(Settings.Layer3DPreview.ClipToCurrentLayer))
+            {
+                LayerModel3DView.ClipToLayer = Settings.Layer3DPreview.ClipToCurrentLayer;
+                UpdateLayer3DClip();
+                RaisePropertyChanged(nameof(Layer3DClipToCurrentLayer));
+            }
             if (e.PropertyName == nameof(Settings.Layer3DPreview.CutawayAxis))
             {
                 if (Settings.Layer3DPreview.CutawayAxis != VoxelPreviewCutawayAxis.Off && Settings.Layer3DPreview.CutawayPosition == 0f)
@@ -465,6 +472,8 @@ public partial class MainWindow
 
     private void RefreshLayer3DPreviewSettings()
     {
+        LayerModel3DView.ClipToLayer = Settings.Layer3DPreview.ClipToCurrentLayer;
+        RaisePropertyChanged(nameof(Layer3DClipToCurrentLayer));
         LayerModel3DView.VoxelColor = Settings.Layer3DPreview.VoxelBrush;
         var issueColors = new Dictionary<MainIssue.IssueType, Color>();
         foreach (var (type, brush) in GetIssueColors())
@@ -497,6 +506,7 @@ public partial class MainWindow
             LayerModel3DView.PlateWidth = SlicerFile.DisplayWidth;
             LayerModel3DView.PlateHeight = SlicerFile.DisplayHeight;
             LayerModel3DView.PrintHeight = SlicerFile.MachineZ > 0 ? SlicerFile.MachineZ : (SlicerFile.Layers.Length > 0 ? SlicerFile.Layers[^1].PositionZ : 0);
+            LayerModel3DView.FirstLayerHeight = SlicerFile.HaveLayers && SlicerFile.LayerCount > 0 ? (SlicerFile[0].LayerHeight > 0 ? SlicerFile[0].LayerHeight : SlicerFile.LayerHeight) : SlicerFile.LayerHeight;
 
             var bottomLayerCount = SlicerFile.BottomLayerCount;
             var transitionLayerCount = SlicerFile.TransitionLayerCount;
@@ -945,6 +955,74 @@ public partial class MainWindow
 
     private Issue? _lastFocusedIssue;
 
+    private void Update3DCavityMarkers()
+    {
+        if (SlicerFile is null || _suctionCupIssues.Count == 0)
+        {
+            LayerModel3DView.SetCavityMarkers(null);
+            return;
+        }
+
+        var bounds = _layer3DMesh?.ModelBounds ?? SlicerFile.BoundingRectangle;
+        if (bounds.IsEmpty)
+        {
+            LayerModel3DView.SetCavityMarkers(null);
+            return;
+        }
+
+        var pixelSize = SlicerFile.PixelSize;
+        var pixelW = _layer3DMesh?.PixelWidth ?? (pixelSize.Width > 0 ? pixelSize.Width : 0.035f);
+        var pixelH = _layer3DMesh?.PixelHeight ?? (pixelSize.Height > 0 ? pixelSize.Height : 0.035f);
+
+        var flip = _layer3DMesh?.WorkAroundFlip ?? SlicerFile.DisplayMirror switch
+        {
+            FlipDirection.None => FlipDirection.Vertically,
+            FlipDirection.Horizontally => FlipDirection.Both,
+            FlipDirection.Vertically => FlipDirection.None,
+            FlipDirection.Both => FlipDirection.Horizontally,
+            _ => FlipDirection.None
+        };
+
+        var flipH = flip is FlipDirection.Horizontally or FlipDirection.Both;
+        var flipV = flip is FlipDirection.Vertically or FlipDirection.Both;
+
+        var markers = new List<LayerModel3DView.CavityMarker3D>(_suctionCupIssues.Count);
+
+        foreach (var mainIssue in _suctionCupIssues)
+        {
+            var rect = mainIssue.BoundingRectangle;
+            if (rect.IsEmpty) continue;
+
+            var minXPixel = flipH ? bounds.X + bounds.Right - rect.Right : rect.Left;
+            var maxXPixel = flipH ? bounds.X + bounds.Right - rect.Left : rect.Right;
+
+            var minYPixel = flipV ? bounds.Y + bounds.Bottom - rect.Bottom : rect.Top;
+            var maxYPixel = flipV ? bounds.Y + bounds.Bottom - rect.Top : rect.Bottom;
+
+            var minX = Math.Min(minXPixel, maxXPixel) * pixelW;
+            var maxX = Math.Max(minXPixel, maxXPixel) * pixelW;
+            var minY = Math.Min(minYPixel, maxYPixel) * pixelH;
+            var maxY = Math.Max(minYPixel, maxYPixel) * pixelH;
+
+            int startL = (int)Math.Clamp((long)mainIssue.StartLayerIndex, 0L, (long)SlicerFile.LayerCount - 1L);
+            int endL = (int)Math.Clamp((long)mainIssue.EndLayerIndex, 0L, (long)SlicerFile.LayerCount - 1L);
+
+            float minZ = SlicerFile[startL].PositionZ;
+            float maxZ = SlicerFile[endL].PositionZ + SlicerFile[endL].LayerHeight;
+
+            var padX = Math.Max((maxX - minX) * 0.05f, 0.3f);
+            var padY = Math.Max((maxY - minY) * 0.05f, 0.3f);
+            var padZ = 0.2f;
+
+            var min = new System.Numerics.Vector3(minX - padX, minY - padY, Math.Max(0f, minZ - padZ));
+            var max = new System.Numerics.Vector3(maxX + padX, maxY + padY, maxZ + padZ);
+
+            markers.Add(new(min, max, mainIssue.IsSuctionCup, mainIssue.IsResinTrap));
+        }
+
+        LayerModel3DView.SetCavityMarkers(markers);
+    }
+
     public void FocusIssueIn3D(Issue issue)
     {
         _lastFocusedIssue = issue;
@@ -953,12 +1031,16 @@ public partial class MainWindow
             SetCurrent3DIssue(parent);
         }
         if (SlicerFile is null || !SlicerFile.ContainsLayer(issue.LayerIndex)) return;
-        var rect = issue.BoundingRectangle;
+        var p = issue.Parent;
+        var rect = (p is not null && !p.BoundingRectangle.IsEmpty && p.Count > 1)
+            ? p.BoundingRectangle
+            : issue.BoundingRectangle;
+
         if (rect.IsEmpty)
         {
-            if (issue.Parent is not null && !issue.Parent.BoundingRectangle.IsEmpty)
+            if (p is not null && !p.BoundingRectangle.IsEmpty)
             {
-                rect = issue.Parent.BoundingRectangle;
+                rect = p.BoundingRectangle;
             }
             else
             {
@@ -999,16 +1081,25 @@ public partial class MainWindow
         var z = SlicerFile[issue.LayerIndex].PositionZ;
         var layerH = Math.Max(SlicerFile[issue.LayerIndex].LayerHeight, SlicerFile.LayerHeight);
 
-        var padX = Math.Max((maxX - minX) * 0.1f, 0.5f);
-        var padY = Math.Max((maxY - minY) * 0.1f, 0.5f);
-        var padZ = Math.Max(layerH * 0.5f, 0.3f);
+        var padX = Math.Max((maxX - minX) * 0.08f, 0.4f);
+        var padY = Math.Max((maxY - minY) * 0.08f, 0.4f);
+        var padZ = Math.Max(layerH * 0.5f, 0.2f);
 
-        var min = new System.Numerics.Vector3(minX - padX, minY - padY, Math.Max(0f, z - layerH - padZ));
-        var max = new System.Numerics.Vector3(maxX + padX, maxY + padY, z + padZ);
-        var center = (min + max) / 2;
-        var radius = Math.Max((max - min).Length() / 2, 3.0f);
+        var minZ = Math.Max(0f, z - layerH - padZ);
+        var maxZ = z + padZ;
 
-        LayerModel3DView.FocusOnRegion(center, radius);
+        if (p is not null && p.Count > 1 && SlicerFile.ContainsLayer(p.StartLayerIndex) && SlicerFile.ContainsLayer(p.EndLayerIndex))
+        {
+            var pStartZ = SlicerFile[p.StartLayerIndex].PositionZ;
+            var pEndZ = SlicerFile[p.EndLayerIndex].PositionZ + SlicerFile[p.EndLayerIndex].LayerHeight;
+            minZ = Math.Min(minZ, Math.Max(0f, pStartZ - padZ));
+            maxZ = Math.Max(maxZ, pEndZ + padZ);
+        }
+
+        var min = new System.Numerics.Vector3(minX - padX, minY - padY, minZ);
+        var max = new System.Numerics.Vector3(maxX + padX, maxY + padY, maxZ);
+
+        LayerModel3DView.FocusOnBoundingBox(min, max);
         LayerModel3DView.SetFocusedBoundingBox(min, max);
     }
 
@@ -1036,6 +1127,7 @@ public partial class MainWindow
             _peelSpikes = null;
             _maxLayerArea = 0f;
             _peakLayerIndex = 0;
+            LayerModel3DView.SetPeelData(null, null, 0f);
             RaisePropertyChanged(nameof(LayerAreas));
             RaisePropertyChanged(nameof(LayerLiftSpeeds));
             RaisePropertyChanged(nameof(LayerLiftSpeeds2));
@@ -1092,6 +1184,9 @@ public partial class MainWindow
         _peelSpikes = spikes;
         _maxLayerArea = maxA;
         _peakLayerIndex = peakIdx;
+
+        LayerModel3DView.SetPeelData(areas, spikes, maxA);
+        LayerModel3DView.FirstLayerHeight = SlicerFile is not null && SlicerFile.HaveLayers && SlicerFile.LayerCount > 0 ? (SlicerFile[0].LayerHeight > 0 ? SlicerFile[0].LayerHeight : SlicerFile.LayerHeight) : (SlicerFile?.LayerHeight ?? 0.05f);
 
         RaisePropertyChanged(nameof(LayerAreas));
         RaisePropertyChanged(nameof(LayerLiftSpeeds));
@@ -1155,6 +1250,7 @@ public partial class MainWindow
         RaisePropertyChanged(nameof(Current3DIssueIcon));
         RaisePropertyChanged(nameof(Current3DIssueBorderColor));
         RaisePropertyChanged(nameof(CanRepairCurrent3DIssue));
+        Update3DCavityMarkers();
     }
 
     public void SetCurrent3DIssue(MainIssue mainIssue)
@@ -1391,7 +1487,7 @@ public partial class MainWindow
     }
 
 
-    public bool IsResinDrainageActive => Settings.Layer3DPreview.ColorMode == VoxelPreviewColorMode.ResinDrainage;
+
 
     [RelayCommand]
     public async Task CopyLayer3DModelStatsToClipboard()

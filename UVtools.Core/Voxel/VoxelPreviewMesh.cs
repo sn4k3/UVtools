@@ -44,10 +44,10 @@ public enum VoxelPreviewColorMode : byte
     OverhangHeatmap,
     [Description("Layer zones")]
     LayerZones,
-    [Description("Fragility / Thin walls")]
-    Fragility,
-    [Description("Resin drainage & washability")]
-    ResinDrainage
+    [Description("Peel force & area risk")]
+    PeelForceRisk,
+    [Description("Bed adhesion footprint")]
+    BedAdhesion
 }
 
 public enum VoxelPreviewClipMode : byte

@@ -1481,7 +1481,7 @@
                                     </Grid>
 
                                     <Grid ColumnDefinitions="Auto,Auto"
-                                          RowDefinitions="Auto,Auto,Auto,Auto"
+                                          RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                                           ColumnSpacing="10"
                                           RowSpacing="10">
                                         <TextBlock Grid.Row="0"
@@ -1523,8 +1523,18 @@
                                         <TextBlock Grid.Row="3"
                                                    Grid.Column="0"
                                                    VerticalAlignment="Center"
+                                                   Text="Clip to current layer:" />
+                                        <ToggleSwitch Grid.Row="3"
+                                                      Grid.Column="1"
+                                                      Margin="10,0,0,0"
+                                                      IsChecked="{Binding Settings.Layer3DPreview.ClipToCurrentLayer}"
+                                                      ToolTip.Tip="Clip the 3D model at the height of the currently selected layer." />
+                                        
+                                        <TextBlock Grid.Row="4"
+                                                   Grid.Column="0"
+                                                   VerticalAlignment="Center"
                                                    Text="Slab clip thickness:" />
-                                        <NumericUpDown Grid.Row="3"
+                                        <NumericUpDown Grid.Row="4"
                                                        Grid.Column="1"
                                                        Width="130"
                                                        Margin="10,0,0,0"
@@ -1537,7 +1547,7 @@
                                                        Maximum="100"
                                                        Value="{Binding Settings.Layer3DPreview.SlabThicknessMm}"
                                                        ToolTip.Tip="Thickness of the slice kept visible below the clip plane when the clip mode is set to Slab." />
-                                    </Grid>
+                                        </Grid>
                                 </StackPanel>
                             </suki:GroupBox>
                         </suki:GlassCard>

@@ -2601,12 +2601,12 @@
                                               VerticalAlignment="Stretch"
                                               ToolTip.Tip="Lighting mode [L]:&#x0a;Camera follows the view&#x0a;Studio uses a fixed light&#x0a;Flat disables shading" />
 
-                                    <ComboBox Width="140"
+                                    <ComboBox Width="175"
                                               IsEnabled="{Binding HasLayer3DMesh}"
                                               ItemsSource="{Binding Layer3DColorModeOptions}"
                                               SelectedItem="{Binding SelectedLayer3DColorMode}"
                                               VerticalAlignment="Stretch"
-                                              ToolTip.Tip="Color mode:&#x0a;Solid: resin color&#x0a;Overhang heatmap: highlights steep overhangs [H]&#x0a;Layer zones: highlights bottom and transition layers" />
+                                              ToolTip.Tip="Color mode [H]:&#x0a;Solid: resin color&#x0a;Overhang heatmap: highlights steep overhangs&#x0a;Layer zones: highlights bottom and transition layers&#x0a;Peel force &amp; area risk: cross-section area &amp; delamination spikes&#x0a;Bed adhesion footprint: build plate contact &amp; stability" />
 
                                     <ComboBox Width="120"
                                               IsEnabled="{Binding Layer3DClipToCurrentLayer}"
@@ -2627,7 +2627,7 @@
                                                   IsChecked="{Binding Layer3DClipToCurrentLayer}"
                                                   IsEnabled="{Binding HasLayer3DMesh}"
                                                   VerticalAlignment="Stretch"
-                                                  ToolTip.Tip="[C]lip the cached model at the selected layer without rebuilding it." />
+                                                  ToolTip.Tip="[C]lip the model at the selected layer." />
 
                                     <ToggleButton Content="{icon:MaterialIconExt Ghost, Classes='Fill'}"
                                                   IsChecked="{Binding Settings.Layer3DPreview.GhostClippedModel}"
@@ -3087,58 +3087,139 @@
                                             </StackPanel>
                                         </Border>
 
-                                        <!-- Resin Drainage & Washability Angle Legend HUD -->
+                                        <!-- Peel Force & Cross-Section Risk Legend HUD -->
                                         <Border Padding="14,10"
                                                 Background="#E8161B22"
-                                                BorderBrush="#388BFD"
+                                                BorderBrush="#FF5252"
                                                 BorderThickness="1.5"
                                                 CornerRadius="8"
                                                 BoxShadow="0 4 16 0 #70000000">
                                             <Border.IsVisible>
                                                 <MultiBinding Converter="{x:Static BoolConverters.And}">
                                                     <Binding Path="HasLayer3DMesh" />
-                                                    <Binding Path="#LayerModel3DView.IsResinDrainageActive" />
+                                                    <Binding Path="#LayerModel3DView.IsPeelRiskActive" />
                                                 </MultiBinding>
                                             </Border.IsVisible>
                                             <StackPanel Spacing="8" Width="280">
                                                 <DockPanel>
-                                                    <icon:MaterialIcon Kind="WaterPercent" Foreground="#388BFD" Width="20"
+                                                    <icon:MaterialIcon Kind="ChartAreaspline" Foreground="#FF5252" Width="20"
                                                                        Height="20" VerticalAlignment="Center"
                                                                        Margin="0,0,8,0" />
-                                                    <TextBlock Text="Resin Drainage Angles" FontSize="12.5"
+                                                    <TextBlock Text="Peel Force &amp; Area Risk" FontSize="12.5"
                                                                FontWeight="Bold" Foreground="#F0F6FC"
                                                                VerticalAlignment="Center" />
                                                 </DockPanel>
                                                 <StackPanel Spacing="5">
                                                     <DockPanel>
-                                                        <Border Width="14" Height="14" Background="#2EA043"
+                                                        <Border Width="14" Height="14" Background="#FF1455"
                                                                 CornerRadius="3" Margin="0,0,8,0"
                                                                 VerticalAlignment="Center" />
-                                                        <TextBlock Text="Free Draining (> 60° walls)" FontSize="11.5"
+                                                        <TextBlock Text="Critical Peel Spike (ΔArea ≥ 35%)" FontSize="11.5"
+                                                                   FontWeight="Bold" Foreground="#FF7B90"
+                                                                   VerticalAlignment="Center" />
+                                                    </DockPanel>
+                                                    <DockPanel>
+                                                        <Border Width="14" Height="14" Background="#E65100"
+                                                                CornerRadius="3" Margin="0,0,8,0"
+                                                                VerticalAlignment="Center" />
+                                                        <TextBlock Text="High Peel Area (&gt; 80% peak)" FontSize="11.5"
                                                                    FontWeight="SemiBold" Foreground="#E6EDF3"
                                                                    VerticalAlignment="Center" />
                                                     </DockPanel>
                                                     <DockPanel>
-                                                        <Border Width="14" Height="14" Background="#D29922"
+                                                        <Border Width="14" Height="14" Background="#FFC107"
                                                                 CornerRadius="3" Margin="0,0,8,0"
                                                                 VerticalAlignment="Center" />
-                                                        <TextBlock Text="Sluggish Flow (20°–60° slopes)" FontSize="11.5"
+                                                        <TextBlock Text="Moderate Load (55%–80% peak)" FontSize="11.5"
                                                                    FontWeight="SemiBold" Foreground="#E6EDF3"
                                                                    VerticalAlignment="Center" />
                                                     </DockPanel>
                                                     <DockPanel>
-                                                        <Border Width="14" Height="14" Background="#F85149"
+                                                        <Border Width="14" Height="14" Background="#19D74B"
                                                                 CornerRadius="3" Margin="0,0,8,0"
                                                                 VerticalAlignment="Center" />
-                                                        <TextBlock Text="Pooling Trap (&lt; 20° flat basins)"
-                                                                   FontSize="11.5" FontWeight="SemiBold"
-                                                                   Foreground="#E6EDF3" VerticalAlignment="Center" />
+                                                        <TextBlock Text="Stable Cross-Section (25%–55%)" FontSize="11.5"
+                                                                   FontWeight="SemiBold" Foreground="#E6EDF3"
+                                                                   VerticalAlignment="Center" />
+                                                    </DockPanel>
+                                                    <DockPanel>
+                                                        <Border Width="14" Height="14" Background="#235AE1"
+                                                                CornerRadius="3" Margin="0,0,8,0"
+                                                                VerticalAlignment="Center" />
+                                                        <TextBlock Text="Minimal Peel Force (&lt; 25% peak)" FontSize="11.5"
+                                                                   FontWeight="SemiBold" Foreground="#E6EDF3"
+                                                                   VerticalAlignment="Center" />
                                                     </DockPanel>
                                                 </StackPanel>
                                                 <TextBlock
-                                                    Text="⚠️ Red basins cause suction cups and liquid resin retention during wash."
+                                                    Text="⚠️ Sudden cross-section spikes cause layer lines or support separation."
                                                     FontSize="11"
                                                     Foreground="#A0A8B8"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Bed Adhesion Footprint Legend HUD -->
+                                        <Border Padding="14,10"
+                                                Background="#E8161B22"
+                                                BorderBrush="#00E676"
+                                                BorderThickness="1.5"
+                                                CornerRadius="8"
+                                                BoxShadow="0 4 16 0 #70000000">
+                                            <Border.IsVisible>
+                                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                    <Binding Path="HasLayer3DMesh" />
+                                                    <Binding Path="#LayerModel3DView.IsBedAdhesionActive" />
+                                                </MultiBinding>
+                                            </Border.IsVisible>
+                                            <StackPanel Spacing="8" Width="280">
+                                                <DockPanel>
+                                                    <icon:MaterialIcon Kind="LayersOutline" Foreground="#00E676" Width="20"
+                                                                       Height="20" VerticalAlignment="Center"
+                                                                       Margin="0,0,8,0" />
+                                                    <TextBlock Text="Bed Contact &amp; Adhesion" FontSize="12.5"
+                                                               FontWeight="Bold" Foreground="#F0F6FC"
+                                                               VerticalAlignment="Center" />
+                                                </DockPanel>
+                                                <StackPanel Spacing="5">
+                                                    <DockPanel>
+                                                        <Border Width="14" Height="14" Background="#00E676"
+                                                                CornerRadius="3" Margin="0,0,8,0"
+                                                                VerticalAlignment="Center" />
+                                                        <TextBlock Text="Direct Plate Contact (Z = 0)" FontSize="11.5"
+                                                                   FontWeight="Bold" Foreground="#00E676"
+                                                                   VerticalAlignment="Center" />
+                                                    </DockPanel>
+                                                    <DockPanel>
+                                                        <Border Width="14" Height="14" Background="#2E52A6"
+                                                                CornerRadius="3" Margin="0,0,8,0"
+                                                                VerticalAlignment="Center" />
+                                                        <TextBlock Text="Bottom Exposure Zone" FontSize="11.5"
+                                                                   FontWeight="SemiBold" Foreground="#E6EDF3"
+                                                                   VerticalAlignment="Center" />
+                                                    </DockPanel>
+                                                    <DockPanel>
+                                                        <Border Width="14" Height="14" Background="#3399A6"
+                                                                CornerRadius="3" Margin="0,0,8,0"
+                                                                VerticalAlignment="Center" />
+                                                        <TextBlock Text="Transition Exposure Zone" FontSize="11.5"
+                                                                   FontWeight="SemiBold" Foreground="#E6EDF3"
+                                                                   VerticalAlignment="Center" />
+                                                    </DockPanel>
+                                                    <DockPanel>
+                                                        <Border Width="14" Height="14" Background="#FF4119"
+                                                                CornerRadius="3" Margin="0,0,8,0"
+                                                                VerticalAlignment="Center" />
+                                                        <TextBlock Text="Unsupported Low Overhang (&lt; 3mm)" FontSize="11.5"
+                                                                   FontWeight="SemiBold" Foreground="#FF8A80"
+                                                                   VerticalAlignment="Center" />
+                                                    </DockPanel>
+                                                </StackPanel>
+                                                <TextBlock
+                                                    Text="{Binding #LayerModel3DView.BedAdhesionText}"
+                                                    FontSize="11.5"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="#F0F6FC"
                                                     TextWrapping="Wrap" />
                                             </StackPanel>
                                         </Border>
