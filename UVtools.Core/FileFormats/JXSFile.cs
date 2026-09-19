@@ -1,4 +1,5 @@
-﻿/*
+﻿using System.Globalization;
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -576,7 +577,7 @@ public sealed class JXSFile : FileFormat
                     break;
                 }
 
-                tw.WriteLine($"{property}={propertyInfo.GetValue(ConfigFile)}");
+                tw.WriteLine($"{property}={System.Convert.ToString(propertyInfo.GetValue(ConfigFile), CultureInfo.InvariantCulture)}");
             }
         }
 
@@ -620,7 +621,7 @@ public sealed class JXSFile : FileFormat
                     break;
                 }
 
-                tw.WriteLine($"{property}={propertyInfo.GetValue(ConfigFile)}");
+                tw.WriteLine($"{property}={System.Convert.ToString(propertyInfo.GetValue(ConfigFile), CultureInfo.InvariantCulture)}");
             }
         }
 

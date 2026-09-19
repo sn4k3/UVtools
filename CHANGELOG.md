@@ -59,6 +59,7 @@
 - (Fix) Disposed generated tracker and ROI crop bitmaps
 - (Fix) UVtoolsCmd: it always return 1 exit code
 - (Fix) SL1 layer height round trips by @apullin (#1147)
+- (Fix) Culture-invariant serialization and parsing for SL1, CWS, and JXS config files and reflection extensions
 - (Fix) Clear stale detected issues after layer image changes, undo, and redo (#879)
 - (Fix) Undo/redo failing to revert differential layer edits in ClipboardManager
 - (Fix) MessageBox from bug report and update show repeated header icon

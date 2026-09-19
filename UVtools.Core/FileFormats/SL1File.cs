@@ -1,4 +1,5 @@
-﻿/*
+﻿using System.Globalization;
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -621,7 +622,7 @@ public sealed class SL1File : FileFormat
             {
                 if (property.Name.Equals("Item")) continue;
                 var name = char.ToLowerInvariant(property.Name[0]) + property.Name[1..];
-                tw.WriteLine($"{name} = {property.GetValue(OutputConfigSettings)}");
+                tw.WriteLine($"{name} = {System.Convert.ToString(property.GetValue(OutputConfigSettings), CultureInfo.InvariantCulture)}");
             }
 
             tw.Close();
@@ -640,7 +641,7 @@ public sealed class SL1File : FileFormat
                 foreach (var property in properties)
                 {
                     if (property.Name.Equals("Item")) continue;
-                    tw.WriteLine($"{MemberNameToIniKey(property.Name)} = {property.GetValue(config)}");
+                    tw.WriteLine($"{MemberNameToIniKey(property.Name)} = {System.Convert.ToString(property.GetValue(config), CultureInfo.InvariantCulture)}");
                 }
             }
 
@@ -809,7 +810,7 @@ public sealed class SL1File : FileFormat
             {
                 if (property.Name.Equals("Item")) continue;
                 var name = char.ToLowerInvariant(property.Name[0]) + property.Name[1..];
-                tw.WriteLine($"{name} = {property.GetValue(OutputConfigSettings)}");
+                tw.WriteLine($"{name} = {System.Convert.ToString(property.GetValue(OutputConfigSettings), CultureInfo.InvariantCulture)}");
             }
 
             tw.Close();
@@ -828,7 +829,7 @@ public sealed class SL1File : FileFormat
                 foreach (var property in properties)
                 {
                     if (property.Name.Equals("Item")) continue;
-                    tw.WriteLine($"{MemberNameToIniKey(property.Name)} = {property.GetValue(config)}");
+                    tw.WriteLine($"{MemberNameToIniKey(property.Name)} = {System.Convert.ToString(property.GetValue(config), CultureInfo.InvariantCulture)}");
                 }
             }
 

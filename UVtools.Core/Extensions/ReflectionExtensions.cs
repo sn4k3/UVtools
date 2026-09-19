@@ -140,25 +140,25 @@ public static class ReflectionExtensions
 
         if (attribute.PropertyType == typeof(Half))
         {
-            attribute.SetValue(obj, Half.Parse(value, CultureInfo.InvariantCulture));
+            attribute.SetValue(obj, Half.Parse(value.Replace(',', '.'), CultureInfo.InvariantCulture));
             return true;
         }
 
         if (attribute.PropertyType == typeof(float))
         {
-            attribute.SetValue(obj, float.Parse(value, CultureInfo.InvariantCulture));
+            attribute.SetValue(obj, float.Parse(value.Replace(',', '.'), CultureInfo.InvariantCulture));
             return true;
         }
 
         if (attribute.PropertyType == typeof(double))
         {
-            attribute.SetValue(obj, double.Parse(value, CultureInfo.InvariantCulture));
+            attribute.SetValue(obj, double.Parse(value.Replace(',', '.'), CultureInfo.InvariantCulture));
             return true;
         }
 
         if (attribute.PropertyType == typeof(decimal))
         {
-            attribute.SetValue(obj, decimal.Parse(value, CultureInfo.InvariantCulture));
+            attribute.SetValue(obj, decimal.Parse(value.Replace(',', '.'), CultureInfo.InvariantCulture));
             return true;
         }
 

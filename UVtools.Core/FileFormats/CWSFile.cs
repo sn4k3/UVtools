@@ -1,4 +1,5 @@
-﻿/*
+﻿using System.Globalization;
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -633,7 +634,7 @@ public sealed class CWSFile : FileFormat
             {
                 var displayNameAttribute = propertyInfo.GetCustomAttributes(false).AsValueEnumerable().OfType<DisplayNameAttribute>().FirstOrDefault();
                 if (displayNameAttribute is null) continue;
-                tw.WriteLine($"{displayNameAttribute.DisplayName.PadRight(24)}= {propertyInfo.GetValue(SliceSettings)}");
+                tw.WriteLine($"{displayNameAttribute.DisplayName.PadRight(24)}= {System.Convert.ToString(propertyInfo.GetValue(SliceSettings), CultureInfo.InvariantCulture)}");
             }
         }
 
@@ -910,7 +911,7 @@ public sealed class CWSFile : FileFormat
             {
                 var displayNameAttribute = propertyInfo.GetCustomAttributes(false).AsValueEnumerable().OfType<DisplayNameAttribute>().FirstOrDefault();
                 if (displayNameAttribute is null) continue;
-                tw.WriteLine($"{displayNameAttribute.DisplayName.PadRight(24)}= {propertyInfo.GetValue(SliceSettings)}");
+                tw.WriteLine($"{displayNameAttribute.DisplayName.PadRight(24)}= {System.Convert.ToString(propertyInfo.GetValue(SliceSettings), CultureInfo.InvariantCulture)}");
             }
         }
 

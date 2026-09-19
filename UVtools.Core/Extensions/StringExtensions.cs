@@ -1,4 +1,5 @@
-﻿/*
+﻿using System.Globalization;
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -56,11 +57,11 @@ public static class StringExtensions
         /// </summary>
         /// <typeparam name="T">Target type to convert into</typeparam>
         /// <returns>Converted value into target type</returns>
-        public T? Convert<T>()
+        public T? Convert<T>(CultureInfo? culture = null)
         {
             var converter = TypeDescriptor.GetConverter(typeof(T));
             //Cast ConvertFromString(string text) : object to (T)
-            var result = converter.ConvertFromString(input);
+            var result = converter.ConvertFromString(null, culture ?? CultureInfo.InvariantCulture, input);
             if (result is null) return default;
             return (T) result;
         }
