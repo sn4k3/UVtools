@@ -579,28 +579,34 @@ public partial class MainWindow
             ShowProgressWindow("Drawing pixels");
             ClipboardManager.Snapshot();
 
-            var task = await Task.Run(() =>
+            bool task;
+            try
             {
-                try
+                task = await Task.Run(() =>
                 {
-                    SlicerFile!.DrawModifications(Drawings, Progress);
-                    return Task.FromResult(true);
-                }
-                catch (OperationCanceledException)
-                {
-                }
-                catch (Exception ex)
-                {
-                    Dispatcher.UIThread.InvokeAsync(async () =>
+                    try
                     {
-                        await this.MessageBoxError(ex.ToString(), "Drawing operation failed!");
-                    });
-                }
+                        SlicerFile!.DrawModifications(Drawings, Progress);
+                        return true;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+                    catch (Exception ex)
+                    {
+                        Dispatcher.UIThread.InvokeAsync(async () =>
+                        {
+                            await this.MessageBoxError(ex.ToString(), "Drawing operation failed!");
+                        });
+                    }
 
-                return Task.FromResult(false);
-            }, Progress.Token);
-
-            IsGUIEnabled = true;
+                    return false;
+                }, Progress.Token);
+            }
+            finally
+            {
+                IsGUIEnabled = true;
+            }
 
             if (!task)
             {

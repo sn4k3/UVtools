@@ -292,25 +292,28 @@ public partial class MainWindow
         {
             await this.MessageBoxError(exception.ToString(), "Error while generating the heatmap");
         }
-
-        IsGUIEnabled = true;
+        finally
+        {
+            IsGUIEnabled = true;
+        }
 
         if (mat is null) return;
 
-        bool result;
-
-        if (replaceAll)
+        using (mat)
         {
-            result = SlicerFile.SetThumbnails(mat);
-        }
-        else
-        {
-            result = SlicerFile.SetThumbnail(_visibleThumbnailIndex, mat);
-        }
+            bool result;
 
-        mat.Dispose();
+            if (replaceAll)
+            {
+                result = SlicerFile.SetThumbnails(mat);
+            }
+            else
+            {
+                result = SlicerFile.SetThumbnail(_visibleThumbnailIndex, mat);
+            }
 
-        if (result) CanSave = true;
+            if (result) CanSave = true;
+        }
     }
 
     public void RefreshThumbnail()

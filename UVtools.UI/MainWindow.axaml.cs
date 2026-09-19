@@ -928,7 +928,14 @@ public partial class MainWindow : GenericWindow
 
     protected override void OnClosed(EventArgs e)
     {
+        _ramUsageTimer.Stop();
+        _ramUsageTimer.Dispose();
+        _progressTimer.Stop();
+        _progressTimer.Dispose();
+        _layerNavigationSliderDebounceTimer.Stop();
         _layerNavigationSliderDebounceTimer.Dispose();
+        _layerNavigationTooltipTimer.Stop();
+        _layerNavigationTooltipTimer.Dispose();
         _visibleThumbnailImage?.Dispose();
         LayerCache.Dispose();
         DisposeLayer3DPreview();
@@ -1384,14 +1391,20 @@ public partial class MainWindow : GenericWindow
     public async Task MenuHelpFreeUnusedRAMClicked()
     {
         IsGUIEnabled = false;
-        ShowProgressWindow("Garbage collector (GC)", "Collecting garbage from LOH", false);
-        await Task.Run(() =>
+        try
         {
-            GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-        });
-        IsGUIEnabled = true;
+            ShowProgressWindow("Garbage collector (GC)", "Collecting garbage from LOH", false);
+            await Task.Run(() =>
+            {
+                GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            });
+        }
+        finally
+        {
+            IsGUIEnabled = true;
+        }
     }
 
     [RelayCommand]
@@ -1553,19 +1566,23 @@ public partial class MainWindow : GenericWindow
         if (ReferenceEquals(result, autoUpdateButton))
         {
             IsGUIEnabled = false;
-            ShowProgressWindow($"Downloading: {asset.Name}");
-            Progress.Reset("Megabytes", (uint)(asset.Size / 1_000_000));
             try
             {
-                await AppUpdater.DownloadAndInstallUpdateAsync(release, Progress.Token);
+                ShowProgressWindow($"Downloading: {asset.Name}");
+                Progress.Reset("Megabytes", (uint)(asset.Size / 1_000_000));
+                try
+                {
+                    await AppUpdater.DownloadAndInstallUpdateAsync(release, Progress.Token);
+                }
+                catch
+                {
+                    // ignored
+                }
             }
-            catch
+            finally
             {
-                // ignored
+                IsGUIEnabled = true;
             }
-
-            //await VersionChecker.AutoUpgrade(Progress);
-            IsGUIEnabled = true;
         }
         else if (ReferenceEquals(result, manualUpdateButton))
         {
@@ -1762,23 +1779,29 @@ public partial class MainWindow : GenericWindow
             await this.MessageBoxError(exception.ToString(), "Error opening the file");
         }*/
 
-        var task = await Task.Run(() =>
+        bool task;
+        try
         {
-            try
+            task = await Task.Run(() =>
             {
-                SlicerFile.Decode(fileName, fileDecodeType, Progress);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                HandleException(ex, "Error opening the file");
-            }
+                try
+                {
+                    SlicerFile.Decode(fileName, fileDecodeType, Progress);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    HandleException(ex, "Error opening the file");
+                }
 
 
-            return false;
-        }, Progress.Token);
-
-        IsGUIEnabled = true;
+                return false;
+            }, Progress.Token);
+        }
+        finally
+        {
+            IsGUIEnabled = true;
+        }
 
         if (!task)
         {
@@ -1942,22 +1965,27 @@ public partial class MainWindow : GenericWindow
                         ShowProgressWindow(
                             $"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {convertFileExtension}");
 
-                        task = await Task.Run(() =>
+                        try
                         {
-                            try
+                            task = await Task.Run(() =>
                             {
-                                convertedFile = SlicerFile.Convert(convertToFormat, outputFile, 0, Progress);
-                                return true;
-                            }
-                            catch (Exception ex)
-                            {
-                                HandleException(ex, "Error while converting the file");
-                            }
+                                try
+                                {
+                                    convertedFile = SlicerFile.Convert(convertToFormat, outputFile, 0, Progress);
+                                    return true;
+                                }
+                                catch (Exception ex)
+                                {
+                                    HandleException(ex, "Error while converting the file");
+                                }
 
-                            return false;
-                        }, Progress.Token);
-
-                        IsGUIEnabled = true;
+                                return false;
+                            }, Progress.Token);
+                        }
+                        finally
+                        {
+                            IsGUIEnabled = true;
+                        }
 
                         if (task && convertedFile is not null)
                         {

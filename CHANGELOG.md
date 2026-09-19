@@ -43,8 +43,10 @@
 - (Fix) Align pixel editor line brush preview and applied position (#966)
 - (Add) Diagnostics tab to About window
 - (Add) Announcements manager and live messages
-- (Improvement) UI safety: Guaranteed GUI re-enabling via `try / finally` across long-running operations, file exports, and send-to actions
+- (Improvement) UI safety: Guaranteed GUI re-enabling via `try / finally` across file operations, exports, suggestions, and send-to actions
 - (Improvement) Optimize issues collection view caching and selection lookups in issues DataGrid
+- (Fix) Prevent SkiaSurface and framebuffer leaks during pixel editor preview drawing in `LayerCache`
+- (Fix) Dispose previous thumbnail bitmaps, native OpenCV Mat instances, and ensure explicit disposal of timers and cache on window close
 - (Improvement) pixel editor drawing with smooth, interpolated strokes committed on pointer release by @jorgerobles
   (#1139)
 - (Improvement) Avoid eager pixel lists during island detection by @apullin (#1142)

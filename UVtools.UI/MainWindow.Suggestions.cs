@@ -96,35 +96,41 @@ public partial class MainWindow
         ShowProgressWindow($"Applying {suggestions.Length} suggestions", false);
 
         bool moved = false;
+        uint executed = 0;
 
-        var executed = await Task.Run(() =>
+        try
         {
-            uint executed = 0;
-
-            try
+            executed = await Task.Run(() =>
             {
-                foreach (var suggestion in suggestions)
+                uint executedCount = 0;
+
+                try
                 {
-                    if (suggestion.Execute(Progress))
+                    foreach (var suggestion in suggestions)
                     {
-                        executed++;
-                        if (suggestion is SuggestionModelPosition) moved = true;
+                        if (suggestion.Execute(Progress))
+                        {
+                            executedCount++;
+                            if (suggestion is SuggestionModelPosition) moved = true;
+                        }
                     }
                 }
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception ex)
-            {
-                Dispatcher.UIThread.InvokeAsync(async () =>
-                    await this.MessageBoxError(ex.ToString(), "Error while applying a suggestion"));
-            }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                        await this.MessageBoxError(ex.ToString(), "Error while applying a suggestion"));
+                }
 
-            return executed;
-        });
-
-        IsGUIEnabled = true;
+                return executedCount;
+            });
+        }
+        finally
+        {
+            IsGUIEnabled = true;
+        }
 
         if (executed > 0)
         {
