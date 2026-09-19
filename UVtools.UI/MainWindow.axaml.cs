@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -675,152 +675,173 @@ public partial class MainWindow : GenericWindow
                 }
             }
 
-            ShowProgressWindow($"Sending: {SlicerFile!.Filename} to {path}");
-            Progress.ItemName = "Sending";
-
-            HttpResponseMessage? response = null;
-            if (remotePrinter.RequestUploadFile.IsValid)
+            IsGUIEnabled = false;
+            try
             {
-                try
+                ShowProgressWindow($"Sending: {SlicerFile!.Filename} to {path}");
+                Progress.ItemName = "Sending";
+
+                HttpResponseMessage? response = null;
+                if (remotePrinter.RequestUploadFile.IsValid)
                 {
-                    response = await remotePrinter.RequestUploadFile.SendRequest(remotePrinter, Progress,
-                        SlicerFile.Filename, SlicerFile.FileFullPath);
-                    if (!response.IsSuccessStatusCode)
+                    try
                     {
-                        await this.MessageBoxError(response.ToString(), "Send to printer");
+                        response = await remotePrinter.RequestUploadFile.SendRequest(remotePrinter, Progress,
+                            SlicerFile.Filename, SlicerFile.FileFullPath);
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            await this.MessageBoxError(response.ToString(), "Send to printer");
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+                    catch (Exception ex)
+                    {
+                        await this.MessageBoxError(ex.Message, "Send to printer");
                     }
                 }
-                catch (OperationCanceledException)
+
+
+                if (startPrint && (!remotePrinter.RequestUploadFile.IsValid ||
+                                   (response is not null && response.IsSuccessStatusCode)))
                 {
-                }
-                catch (Exception ex)
-                {
-                    await this.MessageBoxError(ex.Message, "Send to printer");
+                    response?.Dispose();
+                    Progress.Title = "Waiting 2 seconds...";
+                    await Task.Delay(2000);
+                    try
+                    {
+                        response = await remotePrinter.RequestPrintFile.SendRequest(remotePrinter, Progress,
+                            SlicerFile.Filename);
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            await this.MessageBoxError(response.ToString(), "Unable to send the print command");
+                        }
+
+                        response.Dispose();
+                        /*else
+                        {
+                            await this.MessageBoxInfo(response.ToString(), "Print send command report");
+                        }*/
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+                    catch (Exception ex)
+                    {
+                        await this.MessageBoxError(ex.Message, "Unable to send the print command");
+                    }
                 }
             }
-
-
-            if (startPrint && (!remotePrinter.RequestUploadFile.IsValid ||
-                               (response is not null && response.IsSuccessStatusCode)))
+            finally
             {
-                response?.Dispose();
-                Progress.Title = "Waiting 2 seconds...";
-                await Task.Delay(2000);
-                try
-                {
-                    response = await remotePrinter.RequestPrintFile.SendRequest(remotePrinter, Progress,
-                        SlicerFile.Filename);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        await this.MessageBoxError(response.ToString(), "Unable to send the print command");
-                    }
-
-                    response.Dispose();
-                    /*else
-                    {
-                        await this.MessageBoxInfo(response.ToString(), "Print send command report");
-                    }*/
-                }
-                catch (OperationCanceledException)
-                {
-                }
-                catch (Exception ex)
-                {
-                    await this.MessageBoxError(ex.Message, "Unable to send the print command");
-                }
+                IsGUIEnabled = true;
             }
         }
         else if (menuItem.Tag is MappedProcess process)
         {
-            ShowProgressWindow($"Sending: {SlicerFile!.Filename} to {path}");
-            Progress.ItemName = "Waiting for completion";
+            IsGUIEnabled = false;
             try
             {
-                await process.StartProcess(SlicerFile, Progress.Token);
+                ShowProgressWindow($"Sending: {SlicerFile!.Filename} to {path}");
+                Progress.ItemName = "Waiting for completion";
+                try
+                {
+                    await process.StartProcess(SlicerFile, Progress.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    await this.MessageBoxError(ex.Message, $"Unable to start the process {process.Name}");
+                }
             }
-            catch (OperationCanceledException)
+            finally
             {
-            }
-            catch (Exception ex)
-            {
-                await this.MessageBoxError(ex.Message, $"Unable to start the process {process.Name}");
+                IsGUIEnabled = true;
             }
         }
         else
         {
-            ShowProgressWindow($"Sending: {SlicerFile!.Filename} to {path}");
-            Progress.ItemName = "Sending";
-
-            var copyResult = false;
-            var fileDest = Path.Combine(path, SlicerFile!.Filename!);
+            IsGUIEnabled = false;
             try
             {
-                await using var source = File.OpenRead(SlicerFile!.FileFullPath!);
-                await using var dest = new FileStream(fileDest, FileMode.Create, FileAccess.Write);
+                ShowProgressWindow($"Sending: {SlicerFile!.Filename} to {path}");
+                Progress.ItemName = "Sending";
 
-                Progress.Reset("Megabyte(s)", (uint)(source.Length / 1048576));
-                var copyProgress =
-                    new Progress<long>(copiedBytes => Progress.ProcessedItems = (uint)(copiedBytes / 1048576));
-                await source.CopyToAsync(dest, copyProgress, Progress.Token);
-
-                copyResult = true;
-            }
-            catch (OperationCanceledException)
-            {
+                var copyResult = false;
+                var fileDest = Path.Combine(path, SlicerFile!.Filename!);
                 try
                 {
-                    if (File.Exists(fileDest)) File.Delete(fileDest);
+                    await using var source = File.OpenRead(SlicerFile!.FileFullPath!);
+                    await using var dest = new FileStream(fileDest, FileMode.Create, FileAccess.Write);
+
+                    Progress.Reset("Megabyte(s)", (uint)(source.Length / 1048576));
+                    var copyProgress =
+                        new Progress<long>(copiedBytes => Progress.ProcessedItems = (uint)(copiedBytes / 1048576));
+                    await source.CopyToAsync(dest, copyProgress, Progress.Token);
+
+                    copyResult = true;
                 }
-                catch (Exception ex)
+                catch (OperationCanceledException)
                 {
-                    Debug.WriteLine(ex);
+                    try
+                    {
+                        if (File.Exists(fileDest)) File.Delete(fileDest);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex);
+                    }
                 }
-            }
-            catch (Exception exception)
-            {
-                await this.MessageBoxError(exception.Message, "Unable to copy the file");
-            }
-
-            if (copyResult && menuItem.Tag is DriveInfo removableDrive && OperatingSystem.IsWindows() &&
-                Settings.General.SendToPromptForRemovableDeviceEject)
-            {
-                if (await this.MessageBoxQuestion(
-                        $"File '{SlicerFile.Filename}' has copied successfully into {removableDrive.Name}\n" +
-                        $"Do you want to eject the {removableDrive.Name} drive now?", "Copied ok, eject the drive?") ==
-                    SukiMessageBoxResult.Yes)
+                catch (Exception exception)
                 {
-                    Progress.ResetAll($"Ejecting {removableDrive.Name}");
-                    var ejectResult = await Task.Run(() =>
-                    {
-                        try
-                        {
-                            return Core.SystemOS.Windows.USB.USBEject(removableDrive.Name);
-                        }
-                        catch (Exception ex)
-                        {
-                            HandleException(ex, $"Unable to eject the drive {removableDrive.Name}");
-                        }
+                    await this.MessageBoxError(exception.Message, "Unable to copy the file");
+                }
 
-                        return false;
-                    }, Progress.Token);
-
-                    if (!ejectResult)
+                if (copyResult && menuItem.Tag is DriveInfo removableDrive && OperatingSystem.IsWindows() &&
+                    Settings.General.SendToPromptForRemovableDeviceEject)
+                {
+                    if (await this.MessageBoxQuestion(
+                            $"File '{SlicerFile.Filename}' has copied successfully into {removableDrive.Name}\n" +
+                            $"Do you want to eject the {removableDrive.Name} drive now?", "Copied ok, eject the drive?") ==
+                        SukiMessageBoxResult.Yes)
                     {
-                        await this.MessageBoxError($"Unable to eject the drive {removableDrive.Name}\n\n" +
-                                                   "Possible causes:\n" +
-                                                   "- Drive may be busy or locked\n" +
-                                                   "- Drive was already ejected\n" +
-                                                   "- No permission to eject the drive\n" +
-                                                   "- Another error while trying to eject the drive\n\n" +
-                                                   "Please try to eject the drive manually.",
-                            $"Unable to eject the drive {removableDrive.Name}");
+                        Progress.ResetAll($"Ejecting {removableDrive.Name}");
+                        var ejectResult = await Task.Run(() =>
+                        {
+                            try
+                            {
+                                return Core.SystemOS.Windows.USB.USBEject(removableDrive.Name);
+                            }
+                            catch (Exception ex)
+                            {
+                                HandleException(ex, $"Unable to eject the drive {removableDrive.Name}");
+                            }
+
+                            return false;
+                        }, Progress.Token);
+
+                        if (!ejectResult)
+                        {
+                            await this.MessageBoxError($"Unable to eject the drive {removableDrive.Name}\n\n" +
+                                                       "Possible causes:\n" +
+                                                       "- Drive may be busy or locked\n" +
+                                                       "- Drive was already ejected\n" +
+                                                       "- No permission to eject the drive\n" +
+                                                       "- Another error while trying to eject the drive\n\n" +
+                                                       "Please try to eject the drive manually.",
+                                $"Unable to eject the drive {removableDrive.Name}");
+                        }
                     }
                 }
             }
+            finally
+            {
+                IsGUIEnabled = true;
+            }
         }
-
-
-        IsGUIEnabled = true;
     }
 
     protected override async void OnOpened(EventArgs e)
@@ -865,41 +886,51 @@ public partial class MainWindow : GenericWindow
             }
         }
 
-        await ProcessFiles(ApplicationKit.ApplicationArgs ?? []);
-
-        if (!IsFileLoaded && Settings.General.LoadLastRecentFileOnStartup)
+        try
         {
-            RecentFiles.Load();
-            if (RecentFiles.Instance.Count > 0)
+            await ProcessFiles(ApplicationKit.ApplicationArgs ?? []);
+
+            if (!IsFileLoaded && Settings.General.LoadLastRecentFileOnStartup)
             {
-                await ProcessFile(Path.Combine(App.ApplicationPath, RecentFiles.Instance[0]));
+                RecentFiles.Load();
+                if (RecentFiles.Instance.Count > 0)
+                {
+                    await ProcessFile(Path.Combine(App.ApplicationPath, RecentFiles.Instance[0]));
+                }
+            }
+
+            if (!IsFileLoaded && Settings.General.LoadDemoFileOnStartup)
+            {
+                await ProcessFile(Path.Combine(App.ApplicationPath, About.DemoFile));
+            }
+
+            DispatcherTimer.Run(() =>
+            {
+                UpdateTitle();
+                return true;
+            }, TimeSpan.FromSeconds(1));
+
+            if (About.IsBirthdayWithin7Days && About.YearsOld != UserSettings.Instance.LastBirthdayYearsOld)
+            {
+                await ShowBirthdayMessage();
+            }
+
+            if (Settings.General.CheckAnnouncementsOnStartup)
+            {
+                await AnnouncementManager.CheckAndShowAnnouncementsAsync(this);
             }
         }
-
-        if (!IsFileLoaded && Settings.General.LoadDemoFileOnStartup)
+        catch (Exception ex)
         {
-            await ProcessFile(Path.Combine(App.ApplicationPath, About.DemoFile));
-        }
-
-        DispatcherTimer.Run(() =>
-        {
-            UpdateTitle();
-            return true;
-        }, TimeSpan.FromSeconds(1));
-
-        if (About.IsBirthdayWithin7Days && About.YearsOld != UserSettings.Instance.LastBirthdayYearsOld)
-        {
-            await ShowBirthdayMessage();
-        }
-
-        if (Settings.General.CheckAnnouncementsOnStartup)
-        {
-            await AnnouncementManager.CheckAndShowAnnouncementsAsync(this);
+            Debug.WriteLine(ex);
         }
     }
 
     protected override void OnClosed(EventArgs e)
     {
+        _layerNavigationSliderDebounceTimer.Dispose();
+        _visibleThumbnailImage?.Dispose();
+        LayerCache.Dispose();
         DisposeLayer3DPreview();
         UserSettings.Save();
 
@@ -2395,7 +2426,10 @@ public partial class MainWindow : GenericWindow
         var oldFile = SlicerFile.FileFullPath!;
         ShowProgressWindow($"Converting {oldFileName} to {Path.GetExtension(filePath)}");
 
-        var task = await Task.Run(() =>
+        bool task;
+        try
+        {
+            task = await Task.Run(() =>
         {
             try
             {
@@ -2420,8 +2454,11 @@ public partial class MainWindow : GenericWindow
 
             return false;
         }, Progress.Token);
-
-        IsGUIEnabled = true;
+        }
+        finally
+        {
+            IsGUIEnabled = true;
+        }
 
         if (task)
         {
@@ -2495,6 +2532,10 @@ public partial class MainWindow : GenericWindow
         ShowProgressWindow($"Saving {Path.GetFileName(filepath)}");
 
         var oldFile = SlicerFile!.FileFullPath;
+        var task = false;
+
+        try
+        {
 
         if (!string.IsNullOrWhiteSpace(Settings.Automations.EventBeforeFileSaveScriptFile) &&
             File.Exists(Settings.Automations.EventBeforeFileSaveScriptFile))
@@ -2536,7 +2577,7 @@ public partial class MainWindow : GenericWindow
             Progress.CanCancel = true;
         }
 
-        var task = await Task.Run(() =>
+        task = await Task.Run(() =>
         {
             try
             {
@@ -2615,8 +2656,11 @@ public partial class MainWindow : GenericWindow
                 });
             }
         }
-
-        IsGUIEnabled = true;
+        }
+        finally
+        {
+            IsGUIEnabled = true;
+        }
 
         return task;
     }
@@ -2669,6 +2713,8 @@ public partial class MainWindow : GenericWindow
         ShowProgressWindow($"Copying parameters to {files.Count} files");
 
         Progress.Reset("Copying", (uint)files.Count);
+        try
+        {
         await Task.Run(async () =>
         {
             try
@@ -2694,8 +2740,11 @@ public partial class MainWindow : GenericWindow
                 Debug.WriteLine(e);
             }
         });
-
-        IsGUIEnabled = true;
+        }
+        finally
+        {
+            IsGUIEnabled = true;
+        }
 
         if (count > 0)
         {
@@ -2728,20 +2777,24 @@ public partial class MainWindow : GenericWindow
         IsGUIEnabled = false;
         ShowProgressWindow($"Extracting {Path.GetFileName(SlicerFile.FileFullPath)}");
 
-        await Task.Factory.StartNew(() =>
+        try
         {
-            try
+            await Task.Run(() =>
             {
-                SlicerFile.Extract(finalPath, true, true, Progress);
-            }
-            catch (Exception ex)
-            {
-                HandleException(ex, "Error while try extracting the file");
-            }
-        });
-
-
-        IsGUIEnabled = true;
+                try
+                {
+                    SlicerFile.Extract(finalPath, true, true, Progress);
+                }
+                catch (Exception ex)
+                {
+                    HandleException(ex, "Error while try extracting the file");
+                }
+            });
+        }
+        finally
+        {
+            IsGUIEnabled = true;
+        }
 
 
         if (await this.MessageBoxQuestion(
@@ -2871,21 +2924,27 @@ public partial class MainWindow : GenericWindow
 
         ClipboardManager.Snapshot();
 
-        var result = await Task.Run(() =>
+        bool result;
+        try
         {
-            try
+            result = await Task.Run(() =>
             {
-                return baseOperation.Execute(Progress);
-            }
-            catch (Exception ex)
-            {
-                HandleException(ex, $"{baseOperation.Title} Error");
-            }
+                try
+                {
+                    return baseOperation.Execute(Progress);
+                }
+                catch (Exception ex)
+                {
+                    HandleException(ex, $"{baseOperation.Title} Error");
+                }
 
-            return false;
-        }, Progress.Token);
-
-        IsGUIEnabled = true;
+                return false;
+            }, Progress.Token);
+        }
+        finally
+        {
+            IsGUIEnabled = true;
+        }
 
         if (result)
         {

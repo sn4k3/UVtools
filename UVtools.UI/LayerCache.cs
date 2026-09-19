@@ -85,9 +85,24 @@ public sealed class LayerCache : IDisposable
     }
 
     /// <summary>
+    /// Executes drawing operations on the backing bitmap's Skia surface with proper locking and cleanup.
+    /// </summary>
+    public void DrawOnCanvas(Action<SKCanvas> drawAction)
+    {
+        if (_bitmap is null) return;
+        using var framebuffer = _bitmap.Lock();
+        var info = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
+            framebuffer.Format.ToSkColorType(), SKAlphaType.Premul);
+        using var surface = SKSurface.Create(info, framebuffer.Address, framebuffer.RowBytes);
+        if (surface is null) return;
+        drawAction(surface.Canvas);
+        surface.Canvas.Flush();
+    }
+
+    /// <summary>
     /// Clears the cache
     /// </summary>
-    public void Clear()
+    public unsafe void Clear()
     {
         _image?.Dispose();
         _bitmap?.Dispose();
@@ -95,6 +110,8 @@ public sealed class LayerCache : IDisposable
         _layer = null;
         _image = null;
         _bitmap = null;
+        ImageSpan = null;
+        ImageBgraSpan = null;
     }
 
     private void Dispose(bool disposing)
@@ -104,6 +121,7 @@ public sealed class LayerCache : IDisposable
             if (disposing)
             {
                 Clear();
+                ImageBgra.Dispose();
             }
 
             disposedValue = true;

@@ -140,7 +140,10 @@ public partial class MainWindow
         get => _visibleThumbnailImage;
         set
         {
+            if (ReferenceEquals(_visibleThumbnailImage, value)) return;
+            var old = _visibleThumbnailImage;
             RaiseAndSetIfChanged(ref _visibleThumbnailImage, value);
+            old?.Dispose();
             RaisePropertyChanged(nameof(VisibleThumbnailResolution));
         }
     }

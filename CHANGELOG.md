@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 ## 15/09/2026 - v7.0.0
 
@@ -43,6 +43,8 @@
 - (Fix) Align pixel editor line brush preview and applied position (#966)
 - (Add) Diagnostics tab to About window
 - (Add) Announcements manager and live messages
+- (Improvement) UI safety: Guaranteed GUI re-enabling via `try / finally` across long-running operations, file exports, and send-to actions
+- (Improvement) Optimize issues collection view caching and selection lookups in issues DataGrid
 - (Improvement) pixel editor drawing with smooth, interpolated strokes committed on pointer release by @jorgerobles
   (#1139)
 - (Improvement) Avoid eager pixel lists during island detection by @apullin (#1142)
@@ -57,7 +59,9 @@
 - (Fix) SL1 layer height round trips by @apullin (#1147)
 - (Fix) Clear stale detected issues after layer image changes, undo, and redo (#879)
 - (Fix) Undo/redo failing to revert differential layer edits in ClipboardManager
-- (Fix) MessageBox from bug report and update show repeated header icon 
+- (Fix) MessageBox from bug report and update show repeated header icon
+- (Fix) Prevent SkiaSurface and framebuffer leaks during pixel editor preview drawing in `LayerCache`
+- (Fix) Dispose previous thumbnail bitmaps and ensure explicit disposal of timers and cache on window close
 - (Upgrade) .NET from 10.0.10 to 10.0.12
 - (Upgrade) AvaloniaUI from 12.1.1 to 12.1.2
 

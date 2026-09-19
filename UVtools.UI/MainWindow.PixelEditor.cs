@@ -326,13 +326,14 @@ public partial class MainWindow
     /// <param name="isAdd">True to add pixels, false to remove.</param>
     private void DrawPixelBrushPreview(PixelDrawing operationDrawing, Point location, bool isAdd)
     {
+        if (SlicerFile is null) return;
         var color = isAdd
             ? Settings.PixelEditor.AddPixelColor
             : Settings.PixelEditor.RemovePixelColor;
 
         if (operationDrawing.BrushSize == 1)
         {
-            LayerCache.Canvas?.DrawPoint(location.X, location.Y, new SKColor(color.ToUint32()));
+            LayerCache.DrawOnCanvas(canvas => canvas.DrawPoint(location.X, location.Y, new SKColor(color.ToUint32())));
             LayerImageBox.InvalidateVisual();
             return;
         }
@@ -369,7 +370,7 @@ public partial class MainWindow
                     StrokeCap = SKStrokeCap.Round
                 };
 
-                LayerCache.Canvas?.DrawLine(point1.X, point1.Y, point2.X, point2.Y, linePaint);
+                LayerCache.DrawOnCanvas(canvas => canvas.DrawLine(point1.X, point1.Y, point2.X, point2.Y, linePaint));
                 break;
             }
             case PixelDrawing.BrushShapeType.Circle:
@@ -381,8 +382,7 @@ public partial class MainWindow
                     IsStroke = operationDrawing.Thickness >= 0,
                     StrokeWidth = operationDrawing.Thickness
                 };
-                LayerCache.Canvas?.DrawCircle(location.X, location.Y, operationDrawing.BrushSize / 2f,
-                    circlePaint);
+                LayerCache.DrawOnCanvas(canvas => canvas.DrawCircle(location.X, location.Y, operationDrawing.BrushSize / 2f, circlePaint));
                 break;
             }
             default:
@@ -420,7 +420,6 @@ public partial class MainWindow
                     location, angle, _showLayerImageFlipped && _showLayerImageFlippedHorizontally,
                     _showLayerImageFlipped && _showLayerImageFlippedVertically);
 
-                using var canvas = LayerCache.Canvas;
                 using var linePaint = new SKPaint
                 {
                     IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
@@ -441,19 +440,23 @@ public partial class MainWindow
 
                 using var path = new SKPath();
                 path.MoveTo(vertices[0].X, vertices[0].Y);
-                canvas!.DrawPoint(vertices[0].X, vertices[0].Y, linePaint);
                 for (var i = 1; i < vertices.Length; i++)
                 {
                     path.LineTo(vertices[i].X, vertices[i].Y);
-                    canvas.DrawLine(vertices[i - 1].X, vertices[i - 1].Y, vertices[i].X, vertices[i].Y,
-                        linePaint);
-                    canvas.DrawPoint(vertices[i].X, vertices[i].Y, linePaint);
                 }
-
-                canvas.DrawLine(vertices[0].X, vertices[0].Y, vertices[^1].X, vertices[^1].Y, linePaint);
                 path.Close();
 
-                canvas.DrawPath(path, fillPaint);
+                LayerCache.DrawOnCanvas(canvas =>
+                {
+                    canvas.DrawPoint(vertices[0].X, vertices[0].Y, linePaint);
+                    for (var i = 1; i < vertices.Length; i++)
+                    {
+                        canvas.DrawLine(vertices[i - 1].X, vertices[i - 1].Y, vertices[i].X, vertices[i].Y, linePaint);
+                        canvas.DrawPoint(vertices[i].X, vertices[i].Y, linePaint);
+                    }
+                    canvas.DrawLine(vertices[0].X, vertices[0].Y, vertices[^1].X, vertices[^1].Y, linePaint);
+                    canvas.DrawPath(path, fillPaint);
+                });
 
                 break;
             }

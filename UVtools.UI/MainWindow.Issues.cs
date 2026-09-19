@@ -47,22 +47,41 @@ public partial class MainWindow
 
     private int _issueSelectedIndex = -1;
 
+    private DataGridCollectionView? _issuesGridCollectionView;
+    private bool _cachedGroupByType;
+    private bool _cachedGroupByLayerIndex;
+
     public IEnumerable? IssuesGridItems
     {
         get
         {
-            if (!IsFileLoaded || DataContext is null) return null;
-            if (Settings.Issues.DataGridGroupByType || Settings.Issues.DataGridGroupByLayerIndex)
+            if (!IsFileLoaded || DataContext is null)
             {
-                var groupView = new DataGridCollectionView(SlicerFile!.IssueManager);
-                if (Settings.Issues.DataGridGroupByType)
-                    groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("Type"));
-                if (Settings.Issues.DataGridGroupByLayerIndex)
-                    groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("StartLayerIndex"));
-
-                return groupView;
+                _issuesGridCollectionView = null;
+                return null;
             }
 
+            if (Settings.Issues.DataGridGroupByType || Settings.Issues.DataGridGroupByLayerIndex)
+            {
+                if (_issuesGridCollectionView is null ||
+                    !ReferenceEquals(_issuesGridCollectionView.SourceCollection, SlicerFile!.IssueManager) ||
+                    _cachedGroupByType != Settings.Issues.DataGridGroupByType ||
+                    _cachedGroupByLayerIndex != Settings.Issues.DataGridGroupByLayerIndex)
+                {
+                    _cachedGroupByType = Settings.Issues.DataGridGroupByType;
+                    _cachedGroupByLayerIndex = Settings.Issues.DataGridGroupByLayerIndex;
+                    var groupView = new DataGridCollectionView(SlicerFile!.IssueManager);
+                    if (Settings.Issues.DataGridGroupByType)
+                        groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("Type"));
+                    if (Settings.Issues.DataGridGroupByLayerIndex)
+                        groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("StartLayerIndex"));
+                    _issuesGridCollectionView = groupView;
+                }
+
+                return _issuesGridCollectionView;
+            }
+
+            _issuesGridCollectionView = null;
             return SlicerFile!.IssueManager;
         }
     }
@@ -227,137 +246,142 @@ public partial class MainWindow
         IsGUIEnabled = false;
         ShowProgressWindow("Removing selected issues", false);
 
-        ClipboardManager.Snapshot();
-
-        var task = await Task.Run(() =>
+        try
         {
-            Progress.Reset("Removing selected issues", (uint)processParallelIssues.Count);
-            try
+            ClipboardManager.Snapshot();
+
+            var task = await Task.Run(() =>
             {
-                Parallel.ForEach(processParallelIssues, CoreSettings.GetParallelOptions(Progress), layerIssues =>
+                Progress.Reset("Removing selected issues", (uint)processParallelIssues.Count);
+                try
                 {
-                    Progress.PauseIfRequested();
-                    using (var image = SlicerFile![layerIssues.Key].LayerMat)
+                    Parallel.ForEach(processParallelIssues, CoreSettings.GetParallelOptions(Progress), layerIssues =>
                     {
-                        var bytes = image.GetSpanOfBytes();
-
-                        bool edited = false;
-                        foreach (var issue in layerIssues.Value)
+                        Progress.PauseIfRequested();
+                        using (var image = SlicerFile![layerIssues.Key].LayerMat)
                         {
-                            if (issue.Type == MainIssue.IssueType.Island)
-                            {
-                                var issueOfPoints = (IssueOfPoints)issue;
-                                foreach (var pixel in issueOfPoints.Points)
-                                {
-                                    bytes[image.GetPixelPos(pixel.X, pixel.Y)] = 0;
-                                }
+                            var bytes = image.GetSpanOfBytes();
 
-                                edited = true;
+                            bool edited = false;
+                            foreach (var issue in layerIssues.Value)
+                            {
+                                if (issue.Type == MainIssue.IssueType.Island)
+                                {
+                                    var issueOfPoints = (IssueOfPoints)issue;
+                                    foreach (var pixel in issueOfPoints.Points)
+                                    {
+                                        bytes[image.GetPixelPos(pixel.X, pixel.Y)] = 0;
+                                    }
+
+                                    edited = true;
+                                }
+                                else if (issue.Type == MainIssue.IssueType.ResinTrap ||
+                                         (issue.Type == MainIssue.IssueType.SuctionCup && !suctionCupDrill))
+                                {
+                                    var issueOfContours = (IssueOfContours)issue;
+                                    using var contours = new VectorOfVectorOfPoint(issueOfContours.Contours);
+                                    CvInvoke.DrawContours(image, contours, -1, EmguCvExtensions.WhiteColor, -1);
+                                    if (Settings.LayerRepair.ResinTrapsOverlapBy > 0)
+                                    {
+                                        CvInvoke.DrawContours(image, contours, -1, EmguCvExtensions.WhiteColor,
+                                            Settings.LayerRepair.ResinTrapsOverlapBy * 2 + 1);
+                                    }
+
+                                    edited = true;
+                                }
                             }
-                            else if (issue.Type == MainIssue.IssueType.ResinTrap ||
-                                     (issue.Type == MainIssue.IssueType.SuctionCup && !suctionCupDrill))
-                            {
-                                var issueOfContours = (IssueOfContours)issue;
-                                using var contours = new VectorOfVectorOfPoint(issueOfContours.Contours);
-                                CvInvoke.DrawContours(image, contours, -1, EmguCvExtensions.WhiteColor, -1);
-                                if (Settings.LayerRepair.ResinTrapsOverlapBy > 0)
-                                {
-                                    CvInvoke.DrawContours(image, contours, -1, EmguCvExtensions.WhiteColor,
-                                        Settings.LayerRepair.ResinTrapsOverlapBy * 2 + 1);
-                                }
 
-                                edited = true;
+                            if (edited)
+                            {
+                                SlicerFile[layerIssues.Key].LayerMat = image;
                             }
                         }
 
-                        if (edited)
-                        {
-                            SlicerFile[layerIssues.Key].LayerMat = image;
-                        }
+                        Progress.LockAndIncrement();
+                    });
+
+                    if (layersToRemove.Count > 0)
+                    {
+                        OperationLayerRemove.RemoveLayers(SlicerFile!, layersToRemove);
                     }
 
-                    Progress.LockAndIncrement();
-                });
-
-                if (layersToRemove.Count > 0)
+                    if (suctionCupDrill)
+                        issueRemoveList.AddRange(SlicerFile!.IssueManager.DrillSuctionCupsForIssues(processSuctionCups,
+                            UserSettings.Instance.LayerRepair.SuctionCupsVentHole, Progress));
+                }
+                catch (Exception ex)
                 {
-                    OperationLayerRemove.RemoveLayers(SlicerFile!, layersToRemove);
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                        await this.MessageBoxError(ex.ToString(), "Removal/repair failed"));
+
+                    return false;
                 }
 
-                if (suctionCupDrill)
-                    issueRemoveList.AddRange(SlicerFile!.IssueManager.DrillSuctionCupsForIssues(processSuctionCups,
-                        UserSettings.Instance.LayerRepair.SuctionCupsVentHole, Progress));
-            }
-            catch (Exception ex)
-            {
-                Dispatcher.UIThread.InvokeAsync(async () =>
-                    await this.MessageBoxError(ex.ToString(), "Removal/repair failed"));
+                return true;
+            }, Progress.Token);
 
-                return false;
+            if (!task)
+            {
+                ClipboardManager.RestoreSnapshot();
+                return;
             }
 
-            return true;
-        }, Progress.Token);
+            var whiteListLayers = new List<uint>();
 
-        IsGUIEnabled = true;
+            // Update GUI
 
-        if (!task)
-        {
-            ClipboardManager.RestoreSnapshot();
-            return;
-        }
-
-        var whiteListLayers = new List<uint>();
-
-        // Update GUI
-
-        foreach (MainIssue issue in mainIssues)
-        {
-            if (issue.IsSuctionCup && !suctionCupDrill)
+            foreach (MainIssue issue in mainIssues)
             {
+                if (issue.IsSuctionCup && !suctionCupDrill)
+                {
+                    issueRemoveList.Add(issue);
+                    continue;
+                }
+
+                if (issue.Type
+                    is not MainIssue.IssueType.Island
+                    and not MainIssue.IssueType.ResinTrap
+                    and not MainIssue.IssueType.EmptyLayer) continue;
+
+
                 issueRemoveList.Add(issue);
-                continue;
+
+
+                if (issue.IsIsland)
+                {
+                    var nextLayer = issue.StartLayerIndex + 1;
+                    if (nextLayer >= SlicerFile!.LayerCount) continue;
+                    if (whiteListLayers.Contains(nextLayer)) continue;
+                    whiteListLayers.Add(nextLayer);
+                }
+
+                //Issues.Remove(issue);
             }
 
-            if (issue.Type
-                is not MainIssue.IssueType.Island
-                and not MainIssue.IssueType.ResinTrap
-                and not MainIssue.IssueType.EmptyLayer) continue;
+            if (issueRemoveList.Count == 0) return;
 
+            ClipboardManager.Clip($"Manually removed {issueRemoveList.Count} issues");
 
-            issueRemoveList.Add(issue);
+            IssuesGrid.SelectedIndex = -1;
+            SlicerFile!.IssueManager.RemoveRange(issueRemoveList);
 
-
-            if (issue.IsIsland)
+            if (layersToRemove.Count > 0)
             {
-                var nextLayer = issue.StartLayerIndex + 1;
-                if (nextLayer >= SlicerFile!.LayerCount) continue;
-                if (whiteListLayers.Contains(nextLayer)) continue;
-                whiteListLayers.Add(nextLayer);
+                ResetDataContext();
             }
 
-            //Issues.Remove(issue);
+            if (Settings.PixelEditor.PartialUpdateIslandsOnEditing)
+            {
+                await UpdateIslandsOverhangs(whiteListLayers);
+            }
+
+            ShowLayer(); // It will call latter so its a extra call
+            CanSave = true;
         }
-
-        if (issueRemoveList.Count == 0) return;
-
-        ClipboardManager.Clip($"Manually removed {issueRemoveList.Count} issues");
-
-        IssuesGrid.SelectedIndex = -1;
-        SlicerFile!.IssueManager.RemoveRange(issueRemoveList);
-
-        if (layersToRemove.Count > 0)
+        finally
         {
-            ResetDataContext();
+            IsGUIEnabled = true;
         }
-
-        if (Settings.PixelEditor.PartialUpdateIslandsOnEditing)
-        {
-            await UpdateIslandsOverhangs(whiteListLayers);
-        }
-
-        ShowLayer(); // It will call latter so its a extra call
-        CanSave = true;
     }
 
     [RelayCommand]
@@ -451,65 +475,69 @@ public partial class MainWindow
         IsGUIEnabled = false;
         ShowProgressWindow("Updating Issues");
 
-
-        var issueList = SlicerFile!.IssueManager.ToList();
-        issueList.RemoveAll(issue =>
-            config.IslandConfig.WhiteListLayers.Contains(issue.StartLayerIndex) &&
-            issue.Type is MainIssue.IssueType.Island or MainIssue.IssueType.Overhang);
-        /*foreach (var layerIndex in islandConfig.WhiteListLayers)
+        try
         {
+            var issueList = SlicerFile!.IssueManager.ToList();
             issueList.RemoveAll(issue =>
-                issue.LayerIndex == layerIndex && (issue.Type == LayerIssue.IssueType.Island ||
-                                                   issue.Type == LayerIssue.IssueType.Overhang));
+                config.IslandConfig.WhiteListLayers.Contains(issue.StartLayerIndex) &&
+                issue.Type is MainIssue.IssueType.Island or MainIssue.IssueType.Overhang);
+            /*foreach (var layerIndex in islandConfig.WhiteListLayers)
+            {
+                issueList.RemoveAll(issue =>
+                    issue.LayerIndex == layerIndex && (issue.Type == LayerIssue.IssueType.Island ||
+                                                       issue.Type == LayerIssue.IssueType.Overhang));
 
-        }*/
+            }*/
 
-        var resultIssues = await Task.Run(() =>
+            var resultIssues = await Task.Run(() =>
+            {
+                try
+                {
+                    var issues = SlicerFile.IssueManager.DetectIssues(config, Progress);
+
+                    issues.RemoveAll(issue =>
+                        issue.Type is not MainIssue.IssueType.Island
+                            and not MainIssue.IssueType.Overhang); // Remove all non islands and overhangs
+                    return issues;
+                }
+
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                        await this.MessageBoxError(ex.ToString(), "Error while trying to compute issues"));
+                }
+
+                return null;
+            }, Progress.Token);
+
+            if (resultIssues is not null && resultIssues.Count > 0) issueList.AddRange(resultIssues);
+
+            issueList = Settings.Issues.DataGridOrderBy switch
+            {
+                IssuesOrderBy.TypeAscLayerAscAreaDesc => issueList.OrderBy(issue => issue.Type)
+                    .ThenBy(issue => issue.StartLayerIndex)
+                    .ThenByDescending(issue => issue.Area)
+                    .ToList(),
+                IssuesOrderBy.TypeAscAreaDescLayerAsc => issueList.OrderBy(issue => issue.Type)
+                    .ThenByDescending(issue => issue.Area)
+                    .ThenBy(issue => issue.StartLayerIndex)
+                    .ToList(),
+                IssuesOrderBy.AreaDescLayerIndexAscTypeAsc => issueList.OrderByDescending(issue => issue.Area)
+                    .ThenBy(issue => issue.StartLayerIndex)
+                    .ThenBy(issue => issue.Type)
+                    .ToList(),
+                _ => throw new ArgumentOutOfRangeException(nameof(Settings.Issues.DataGridOrderBy))
+            };
+
+            SlicerFile.IssueManager.ReplaceCollection(issueList);
+        }
+        finally
         {
-            try
-            {
-                var issues = SlicerFile.IssueManager.DetectIssues(config, Progress);
-
-                issues.RemoveAll(issue =>
-                    issue.Type is not MainIssue.IssueType.Island
-                        and not MainIssue.IssueType.Overhang); // Remove all non islands and overhangs
-                return issues;
-            }
-
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception ex)
-            {
-                Dispatcher.UIThread.InvokeAsync(async () =>
-                    await this.MessageBoxError(ex.ToString(), "Error while trying to compute issues"));
-            }
-
-            return null;
-        }, Progress.Token);
-
-        IsGUIEnabled = true;
-
-        if (resultIssues is not null && resultIssues.Count > 0) issueList.AddRange(resultIssues);
-
-        issueList = Settings.Issues.DataGridOrderBy switch
-        {
-            IssuesOrderBy.TypeAscLayerAscAreaDesc => issueList.OrderBy(issue => issue.Type)
-                .ThenBy(issue => issue.StartLayerIndex)
-                .ThenByDescending(issue => issue.Area)
-                .ToList(),
-            IssuesOrderBy.TypeAscAreaDescLayerAsc => issueList.OrderBy(issue => issue.Type)
-                .ThenByDescending(issue => issue.Area)
-                .ThenBy(issue => issue.StartLayerIndex)
-                .ToList(),
-            IssuesOrderBy.AreaDescLayerIndexAscTypeAsc => issueList.OrderByDescending(issue => issue.Area)
-                .ThenBy(issue => issue.StartLayerIndex)
-                .ThenBy(issue => issue.Type)
-                .ToList(),
-            _ => throw new ArgumentOutOfRangeException(nameof(Settings.Issues.DataGridOrderBy))
-        };
-
-        SlicerFile.IssueManager.ReplaceCollection(issueList);
+            IsGUIEnabled = true;
+        }
     }
 
     public int IssueSelectedIndex
@@ -578,7 +606,7 @@ public partial class MainWindow
                 IssuesGrid.SelectedItems.Clear();
                 break;
             case Key.Multiply:
-                var selectedItems = IssuesGrid.SelectedItems.OfType<MainIssue>().ToList();
+                var selectedItems = IssuesGrid.SelectedItems.OfType<MainIssue>().ToHashSet();
                 IssuesGrid.SelectedItems.Clear();
                 foreach (var item in SlicerFile!.IssueManager)
                 {
@@ -621,8 +649,10 @@ public partial class MainWindow
             Debug.WriteLine(e);
             if (File.Exists(filePath)) File.Delete(filePath);
         }
-
-        IsGUIEnabled = true;
+        finally
+        {
+            IsGUIEnabled = true;
+        }
     }
 
     [RelayCommand]
@@ -647,55 +677,60 @@ public partial class MainWindow
         IsGUIEnabled = false;
         ShowProgressWindow("Computing Issues");
 
-        var resultIssues = await Task.Run(() =>
+        try
         {
-            try
+            var resultIssues = await Task.Run(() =>
             {
-                var issues = SlicerFile.IssueManager.DetectIssues(config, Progress);
-
-                switch (Settings.Issues.DataGridOrderBy)
+                try
                 {
-                    case IssuesOrderBy.TypeAscLayerAscAreaDesc:
-                        // This order is already made on the detection
-                        break;
-                    case IssuesOrderBy.TypeAscAreaDescLayerAsc:
-                        issues = issues.AsValueEnumerable().OrderBy(issue => issue.Type)
-                            .ThenByDescending(issue => issue.Area)
-                            .ThenBy(issue => issue.StartLayerIndex).ToList();
-                        break;
-                    case IssuesOrderBy.AreaDescLayerIndexAscTypeAsc:
-                        issues = issues.AsValueEnumerable().OrderByDescending(issue => issue.Area)
-                            .ThenBy(issue => issue.StartLayerIndex)
-                            .ThenBy(issue => issue.Type).ToList();
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(Settings.Issues.DataGridOrderBy));
+                    var issues = SlicerFile.IssueManager.DetectIssues(config, Progress);
+
+                    switch (Settings.Issues.DataGridOrderBy)
+                    {
+                        case IssuesOrderBy.TypeAscLayerAscAreaDesc:
+                            // This order is already made on the detection
+                            break;
+                        case IssuesOrderBy.TypeAscAreaDescLayerAsc:
+                            issues = issues.AsValueEnumerable().OrderBy(issue => issue.Type)
+                                .ThenByDescending(issue => issue.Area)
+                                .ThenBy(issue => issue.StartLayerIndex).ToList();
+                            break;
+                        case IssuesOrderBy.AreaDescLayerIndexAscTypeAsc:
+                            issues = issues.AsValueEnumerable().OrderByDescending(issue => issue.Area)
+                                .ThenBy(issue => issue.StartLayerIndex)
+                                .ThenBy(issue => issue.Type).ToList();
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(Settings.Issues.DataGridOrderBy));
+                    }
+
+                    return issues;
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                        await this.MessageBoxError(ex.ToString(), "Error while trying compute issues"));
                 }
 
-                return issues;
-            }
-            catch (OperationCanceledException)
+                return null;
+            }, Progress.Token);
+
+            if (resultIssues is null)
             {
-            }
-            catch (Exception ex)
-            {
-                Dispatcher.UIThread.InvokeAsync(async () =>
-                    await this.MessageBoxError(ex.ToString(), "Error while trying compute issues"));
+                return;
             }
 
-            return null;
-        }, Progress.Token);
+            SlicerFile.IssueManager.AddRange(resultIssues);
 
-        IsGUIEnabled = true;
-
-        if (resultIssues is null)
-        {
-            return;
+            ShowLayer();
         }
-
-        SlicerFile.IssueManager.AddRange(resultIssues);
-
-        ShowLayer();
+        finally
+        {
+            IsGUIEnabled = true;
+        }
     }
 
     /*public Dictionary<uint, uint> GetIssuesCountPerLayer()
@@ -798,6 +833,7 @@ public partial class MainWindow
                     break;
             }
 
+
             if (issue.LayerIndex == 0 && stroke > 3)
             {
                 yPos += tickFrequencySize / 2;
@@ -897,6 +933,7 @@ public partial class MainWindow
             GetEmptyLayerDetectionConfiguration()
         );
     }
+
 
     public IssuesDetectionConfiguration GetIssuesDetectionConfiguration(bool enable)
     {
