@@ -40,6 +40,9 @@
         <!-- Enable Build Acceleration in Visual Studio. -->
         <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
 
+        <!-- Use RID Graph for backwards compatibility with non-portable runtime packages (e.g. ubuntu-x64) in .NET 8+ -->
+        <UseRIDGraph>true</UseRIDGraph>
+
         <!-- Versions -->
         <UVtoolsVersion>7.0.0</UVtoolsVersion>
         <AvaloniaVersion>12.1.2</AvaloniaVersion>

@@ -1,6 +1,6 @@
 ﻿# Changelog
 
-## 15/09/2026 - v7.0.0
+## 19/09/2026 - v7.0.0
 
 - **AdvancedImageBox**
   - (Add) `PanBoundsMode` property to choose the pan bounds mode, if `Padding` is selected it will add that padding to
