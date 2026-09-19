@@ -6,9 +6,11 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Avalonia.Platform.Storage;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
 using UVtools.Core.MeshFormats;
 using UVtools.Core.Scripting;
 
@@ -53,7 +55,6 @@ public static class AvaloniaStatic
                 "image/x-cmu-raster"
             ]
         }
-
     ];
 
     public static readonly List<FilePickerFileType> ImagesFullFileFilter =
@@ -72,7 +73,6 @@ public static class AvaloniaStatic
             AppleUniformTypeIdentifiers = new[] { "public.tiff" },
             MimeTypes = new[] { "image/tiff" }
         }*/
-
     ];
 
     public static readonly List<FilePickerFileType> PngFileFilter = [FilePickerFileTypes.ImagePng];
@@ -91,7 +91,6 @@ public static class AvaloniaStatic
             AppleUniformTypeIdentifiers = new[] { "public.tiff" },
             MimeTypes = new[] { "image/tiff" }
         }*/
-
     ];
 
     public static readonly List<FilePickerFileType> TxtFileFilter = [FilePickerFileTypes.TextPlain];
@@ -231,10 +230,14 @@ public static class AvaloniaStatic
         }
     ];
 
-    public static readonly  List<FilePickerFileType> MeshFileFilter =
+    public static readonly List<FilePickerFileType> MeshFileFilter =
         MeshFile.AvailableMeshFiles
             .Select(fileExtension => CreateFilePickerFileType(fileExtension.Description, fileExtension.Extension))
             .ToList();
+
+    [field: MaybeNull]
+    [field: AllowNull]
+    public static PngBitmapEncoderOptions PngBitmapEncoderOptions => field ??= new PngBitmapEncoderOptions();
 
     public static FilePickerFileType CreateFilePickerFileType(string name, params string[] extensions)
     {
@@ -245,6 +248,7 @@ public static class AvaloniaStatic
             pattern.Add($"*.{extension}");
             apple.Add(extension);
         }
+
         return new FilePickerFileType(name)
         {
             Patterns = pattern,
@@ -268,12 +272,14 @@ public static class AvaloniaStatic
         return result;
     }
 
-    public static List<FilePickerFileType>? ToAvaloniaFileFilter(IEnumerable<ScriptFileDialogInput.ScriptFileDialogFilter>? filters)
+    public static List<FilePickerFileType>? ToAvaloniaFileFilter(
+        IEnumerable<ScriptFileDialogInput.ScriptFileDialogFilter>? filters)
     {
         if (filters == null) return null;
 
         var result = new List<FilePickerFileType>();
-        result.AddRange(filters.Select(kv => CreateFilePickerFileType(kv.Name ?? "Unspecified file(s)", kv.Extensions.ToArray())));
+        result.AddRange(filters.Select(kv =>
+            CreateFilePickerFileType(kv.Name ?? "Unspecified file(s)", kv.Extensions.ToArray())));
 
         return result;
     }

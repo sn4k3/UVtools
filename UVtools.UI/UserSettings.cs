@@ -114,6 +114,12 @@ public partial class UserSettings : ObservableObject
 
         [ObservableProperty] public partial bool CheckForUpdatesOnStartup { get; set; } = true;
 
+        [ObservableProperty] public partial bool CheckAnnouncementsOnStartup { get; set; } = true;
+
+        [ObservableProperty] public partial DateTime LastAnnouncementCheckTime { get; set; } = DateTime.MinValue;
+
+        [ObservableProperty] public partial HashSet<string> DismissedAnnouncementIds { get; set; } = [];
+
         [ObservableProperty] public partial bool LoadDemoFileOnStartup { get; set; } = true;
 
         [ObservableProperty] public partial bool LoadLastRecentFileOnStartup { get; set; }
@@ -240,6 +246,13 @@ public partial class UserSettings : ObservableObject
 
     public sealed partial class LayerPreviewUserSettings : ObservableObject
     {
+        public enum LayerDifferenceMode : byte
+        {
+            Difference = 0,
+            Similarity = 1,
+            OnionSkin = 2
+        }
+
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(TooltipOverlayBackgroundBrush))]
         public partial Color TooltipOverlayBackgroundColor { get; set; } = new(210, 226, 223, 215);
@@ -410,14 +423,8 @@ public partial class UserSettings : ObservableObject
 
         [ObservableProperty] public partial bool ShowLayerDifference { get; set; }
 
-        public enum LayerDifferenceMode : byte
-        {
-            Difference = 0,
-            Similarity = 1,
-            OnionSkin = 2
-        }
-
-        [ObservableProperty] public partial LayerDifferenceMode DifferenceMode { get; set; } = LayerDifferenceMode.Difference;
+        [ObservableProperty]
+        public partial LayerDifferenceMode DifferenceMode { get; set; } = LayerDifferenceMode.Difference;
 
         [ObservableProperty] public partial int OnionSkinLayers { get; set; } = 3;
 
@@ -581,11 +588,9 @@ public partial class UserSettings : ObservableObject
 
     public sealed partial class Layer3DPreviewUserSettings : ObservableObject
     {
-        [ObservableProperty]
-        public partial bool Build3DAfterFileOpen { get; set; } = false;
-        
-        [ObservableProperty]
-        public partial VoxelPreviewQuality Quality { get; set; } = VoxelPreviewQuality.Balanced;
+        [ObservableProperty] public partial bool Build3DAfterFileOpen { get; set; } = false;
+
+        [ObservableProperty] public partial VoxelPreviewQuality Quality { get; set; } = VoxelPreviewQuality.Balanced;
 
         [ObservableProperty]
         public partial VoxelPreviewRenderMode RenderMode { get; set; } = VoxelPreviewRenderMode.Solid;
@@ -617,50 +622,36 @@ public partial class UserSettings : ObservableObject
 
         [ObservableProperty] public partial bool UseOthographicProjection { get; set; }
 
-        [ObservableProperty]
-        public partial VoxelPreviewColorMode ColorMode { get; set; } = VoxelPreviewColorMode.Solid;
+        [ObservableProperty] public partial VoxelPreviewColorMode ColorMode { get; set; } = VoxelPreviewColorMode.Solid;
 
-        [ObservableProperty]
-        public partial bool ClipToCurrentLayer { get; set; } = true;
-        
-        [ObservableProperty]
-        public partial VoxelPreviewClipMode ClipMode { get; set; } = VoxelPreviewClipMode.Below;
+        [ObservableProperty] public partial bool ClipToCurrentLayer { get; set; } = true;
 
-        [ObservableProperty]
-        public partial bool ShowBuildPlateGrid { get; set; } = true;
+        [ObservableProperty] public partial VoxelPreviewClipMode ClipMode { get; set; } = VoxelPreviewClipMode.Below;
 
-        [ObservableProperty]
-        public partial bool ShowLayerIssues { get; set; } = true;
+        [ObservableProperty] public partial bool ShowBuildPlateGrid { get; set; } = true;
 
-        [ObservableProperty]
-        public partial bool GhostClippedModel { get; set; } = true;
+        [ObservableProperty] public partial bool ShowLayerIssues { get; set; } = true;
 
-        [ObservableProperty]
-        public partial float SlabThicknessMm { get; set; } = 5f;
+        [ObservableProperty] public partial bool GhostClippedModel { get; set; } = true;
 
-        [ObservableProperty]
-        public partial bool ShowBoundingBox { get; set; } = false;
+        [ObservableProperty] public partial float SlabThicknessMm { get; set; } = 5f;
 
-        [ObservableProperty]
-        public partial bool ShowModelStats { get; set; } = true;
+        [ObservableProperty] public partial bool ShowBoundingBox { get; set; } = false;
 
-        [ObservableProperty]
-        public partial bool ShowCenterOfMass { get; set; } = true;
+        [ObservableProperty] public partial bool ShowModelStats { get; set; } = true;
 
-        [ObservableProperty]
-        public partial bool ShowPeelCurve { get; set; } = true;
+        [ObservableProperty] public partial bool ShowCenterOfMass { get; set; } = true;
 
-        [ObservableProperty]
-        public partial bool ShowMeasure { get; set; } = false;
+        [ObservableProperty] public partial bool ShowPeelCurve { get; set; } = true;
+
+        [ObservableProperty] public partial bool ShowMeasure { get; set; } = false;
 
         [ObservableProperty]
         public partial VoxelPreviewCutawayAxis CutawayAxis { get; set; } = VoxelPreviewCutawayAxis.Off;
 
-        [ObservableProperty]
-        public partial float CutawayPosition { get; set; } = 0f;
+        [ObservableProperty] public partial float CutawayPosition { get; set; } = 0f;
 
-        [ObservableProperty]
-        public partial bool CutawayInvert { get; set; } = false;
+        [ObservableProperty] public partial bool CutawayInvert { get; set; } = false;
 
         public Layer3DPreviewUserSettings Clone()
         {

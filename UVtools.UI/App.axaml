@@ -17,9 +17,9 @@
         <FluentTheme x:Key="FluentTheme">
             <FluentTheme.Palettes>
                 <ColorPaletteResources x:Key="Light"
-                                       Accent="#FF8c008c"/>
+                                       Accent="#FF8c008c" />
                 <ColorPaletteResources x:Key="Dark"
-                                       Accent="#FF660066"/>
+                                       Accent="#FF660066" />
             </FluentTheme.Palettes>
         </FluentTheme>
     </Application.Resources>
@@ -27,9 +27,10 @@
         <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
         <suki:SukiTheme ThemeColor="Blue" />
         <avalonia:MaterialIconStyles />
-        <StyleInclude Source="avares://UVtools.AvaloniaControls/Controls.axaml"/>
-        <StyleInclude Source="/Controls/Fragments/PixelEditorProfilesFragment.axaml"/>
-        <StyleInclude Source="/Assets/Styles/Styles.axaml"/>
-        <StyleInclude Source="/Assets/Styles/ToggleSwitch.axaml"/>
+        <StyleInclude Source="avares://MarkView.Avalonia/Themes/MarkdownTheme.axaml" />
+        <StyleInclude Source="avares://UVtools.AvaloniaControls/Controls.axaml" />
+        <StyleInclude Source="/Controls/Fragments/PixelEditorProfilesFragment.axaml" />
+        <StyleInclude Source="/Assets/Styles/Styles.axaml" />
+        <StyleInclude Source="/Assets/Styles/ToggleSwitch.axaml" />
     </Application.Styles>
 </Application>

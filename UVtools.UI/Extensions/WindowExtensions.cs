@@ -6,10 +6,12 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Avalonia.Controls;
-using Avalonia.Threading;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Threading;
+using MarkView.Avalonia;
 using Material.Icons;
 using Material.Icons.Avalonia;
 using SukiUI.Controls;
@@ -49,7 +51,8 @@ public static class WindowExtensions
     extension(Window window)
     {
         public Task<SukiMessageBoxResult> MessageBoxGeneric(string message, string? title = null, string? header = null,
-            SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, MaterialIconKind? headerIcon = null, bool markdown = false,
+            SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, MaterialIconKind? headerIcon = null,
+            bool markdown = false,
             bool topMost = false, WindowStartupLocation location = WindowStartupLocation.CenterOwner)
         {
             var options = SukiMessageBoxUtilities.GetDefaultOptions();
@@ -57,14 +60,14 @@ public static class WindowExtensions
             {
                 WindowStartupLocation = location,
                 Topmost = topMost,
-                Title = title,
+                Title = title
             };
 
-            var host = new SukiMessageBoxHost()
+            var host = new SukiMessageBoxHost
             {
                 Header = header,
                 Content = message,
-                ActionButtonsPreset = buttons,
+                ActionButtonsPreset = buttons
             };
 
             if (headerIcon is not null)
@@ -74,41 +77,81 @@ public static class WindowExtensions
 
             if (markdown)
             {
-                host.Content = new MarkdownViewer.Core.Controls.MarkdownViewer{ MarkdownText = message };
+                host.Content = new MarkdownViewer
+                {
+                    Markdown = message,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                };
             }
 
             return SukiMessageBox.ShowDialogResult(window, host, options);
         }
 
-        public Task<SukiMessageBoxResult> MessageBoxInfo(string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
-            => window.MessageBoxGeneric(message, title ?? $"{window.Title} - Information", null, buttons, MessageWindow.IconHeaderInformation, markdown, topMost, WindowStartupLocation.CenterOwner);
+        public Task<SukiMessageBoxResult> MessageBoxInfo(string message, string? title = null,
+            SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
+        {
+            return window.MessageBoxGeneric(message, title ?? $"{window.Title} - Information", null, buttons,
+                MessageWindow.IconHeaderInformation, markdown, topMost, WindowStartupLocation.CenterOwner);
+        }
 
-        public Task<SukiMessageBoxResult> MessageBoxError(string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
-            => window.MessageBoxGeneric(message, title ?? $"{window.Title} - Error", null, buttons, MessageWindow.IconHeaderError, markdown, topMost, WindowStartupLocation.CenterOwner);
+        public Task<SukiMessageBoxResult> MessageBoxError(string message, string? title = null,
+            SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
+        {
+            return window.MessageBoxGeneric(message, title ?? $"{window.Title} - Error", null, buttons,
+                MessageWindow.IconHeaderError, markdown, topMost, WindowStartupLocation.CenterOwner);
+        }
 
-        public Task<SukiMessageBoxResult> MessageBoxQuestion(string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.YesNo, bool markdown = false, bool topMost = false)
-            => window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", null, buttons, MessageWindow.IconHeaderQuestion, markdown, topMost, WindowStartupLocation.CenterOwner);
+        public Task<SukiMessageBoxResult> MessageBoxQuestion(string message, string? title = null,
+            SukiMessageBoxButtons buttons = SukiMessageBoxButtons.YesNo, bool markdown = false, bool topMost = false)
+        {
+            return window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", null, buttons,
+                MessageWindow.IconHeaderQuestion, markdown, topMost, WindowStartupLocation.CenterOwner);
+        }
 
-        public Task<SukiMessageBoxResult> MessageBoxWaring(string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
-            => window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", null, buttons, MessageWindow.IconHeaderWarning, markdown, topMost, WindowStartupLocation.CenterOwner);
+        public Task<SukiMessageBoxResult> MessageBoxWaring(string message, string? title = null,
+            SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
+        {
+            return window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", null, buttons,
+                MessageWindow.IconHeaderWarning, markdown, topMost, WindowStartupLocation.CenterOwner);
+        }
 
-        public Task<SukiMessageBoxResult> MessageBoxWithHeaderInfo(string header, string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
-            => window.MessageBoxGeneric(message, title ?? $"{window.Title} - Information", header, buttons, MessageWindow.IconHeaderInformation, markdown, topMost, WindowStartupLocation.CenterOwner);
+        public Task<SukiMessageBoxResult> MessageBoxWithHeaderInfo(string header, string message, string? title = null,
+            SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
+        {
+            return window.MessageBoxGeneric(message, title ?? $"{window.Title} - Information", header, buttons,
+                MessageWindow.IconHeaderInformation, markdown, topMost, WindowStartupLocation.CenterOwner);
+        }
 
-        public Task<SukiMessageBoxResult> MessageBoxWithHeaderError(string header, string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
-            => window.MessageBoxGeneric(message, title ?? $"{window.Title} - Error", header, buttons, MessageWindow.IconHeaderError, markdown, topMost, WindowStartupLocation.CenterOwner);
+        public Task<SukiMessageBoxResult> MessageBoxWithHeaderError(string header, string message, string? title = null,
+            SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
+        {
+            return window.MessageBoxGeneric(message, title ?? $"{window.Title} - Error", header, buttons,
+                MessageWindow.IconHeaderError, markdown, topMost, WindowStartupLocation.CenterOwner);
+        }
 
-        public Task<SukiMessageBoxResult> MessageBoxWithHeaderQuestion(string header, string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.YesNo, bool markdown = false, bool topMost = false)
-            => window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", header, buttons, MessageWindow.IconHeaderQuestion, markdown, topMost, WindowStartupLocation.CenterOwner);
+        public Task<SukiMessageBoxResult> MessageBoxWithHeaderQuestion(string header, string message,
+            string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.YesNo, bool markdown = false,
+            bool topMost = false)
+        {
+            return window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", header, buttons,
+                MessageWindow.IconHeaderQuestion, markdown, topMost, WindowStartupLocation.CenterOwner);
+        }
 
-        public Task<SukiMessageBoxResult> MessageBoxWithHeaderWaring(string header, string message, string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
-            => window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", header, buttons, MessageWindow.IconHeaderWarning, markdown, topMost, WindowStartupLocation.CenterOwner);
+        public Task<SukiMessageBoxResult> MessageBoxWithHeaderWaring(string header, string message,
+            string? title = null, SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false,
+            bool topMost = false)
+        {
+            return window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", header, buttons,
+                MessageWindow.IconHeaderWarning, markdown, topMost, WindowStartupLocation.CenterOwner);
+        }
 
         public void ShowDialogSync(Window? parent = null)
         {
             parent ??= window;
             using var source = new CancellationTokenSource();
-            window.ShowDialog(parent).ContinueWith(t => source.Cancel(), TaskScheduler.FromCurrentSynchronizationContext());
+            window.ShowDialog(parent)
+                .ContinueWith(t => source.Cancel(), TaskScheduler.FromCurrentSynchronizationContext());
             Dispatcher.UIThread.MainLoop(source.Token);
         }
 
@@ -130,14 +173,17 @@ public static class WindowExtensions
         }
 
 
-
         public System.Drawing.Size GetScreenWorkingArea()
         {
             var screen = window.GetHostScreen()!;
 
             return new System.Drawing.Size(
-                UserSettings.Instance.General.WindowsTakeIntoAccountScreenScaling ? (int)(screen.WorkingArea.Width / window.RenderScaling) : screen.WorkingArea.Width,
-                UserSettings.Instance.General.WindowsTakeIntoAccountScreenScaling ? (int)(screen.WorkingArea.Height / window.RenderScaling) : screen.WorkingArea.Height);
+                UserSettings.Instance.General.WindowsTakeIntoAccountScreenScaling
+                    ? (int)(screen.WorkingArea.Width / window.RenderScaling)
+                    : screen.WorkingArea.Width,
+                UserSettings.Instance.General.WindowsTakeIntoAccountScreenScaling
+                    ? (int)(screen.WorkingArea.Height / window.RenderScaling)
+                    : screen.WorkingArea.Height);
         }
     }
 }

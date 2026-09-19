@@ -18,6 +18,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Reactive;
 using Avalonia.Threading;
@@ -70,11 +71,16 @@ public partial class MainWindow
     private Track LayerSlicerTrack = null!;
     private uint _actualLayer;
     private uint _actualLayerSlider;
+
+    private bool _isMeasureMode2D;
     private bool _isPixelEditorActive;
 
 
     private bool _isTooltipOverlayVisible;
     private Point _lastPixelMouseLocation = Point.Empty;
+    private Avalonia.Point? _measure2DCursorPoint;
+    private Avalonia.Point? _measure2DEndPoint;
+    private Avalonia.Point? _measure2DStartPoint;
     private bool _showLayerImageCrosshairs = true;
     private bool _showLayerImageDifference;
     private bool _showLayerImageFlipped;
@@ -251,20 +257,16 @@ public partial class MainWindow
         }
     }
 
-    [RelayCommand]
-    public void Toggle2DPeelCurve()
-    {
-        Show2DPeelCurve = !Show2DPeelCurve;
-    }
-
     public bool IsLayerDiffModeDifference
     {
-        get => Settings.LayerPreview.DifferenceMode == UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.Difference;
+        get => Settings.LayerPreview.DifferenceMode ==
+               UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.Difference;
         set
         {
             if (value)
             {
-                Settings.LayerPreview.DifferenceMode = UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.Difference;
+                Settings.LayerPreview.DifferenceMode =
+                    UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.Difference;
                 Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead = false;
                 ShowLayerImageDifference = true;
                 NotifyAllDiffModesChanged();
@@ -274,12 +276,14 @@ public partial class MainWindow
 
     public bool IsLayerDiffModeSimilarity
     {
-        get => Settings.LayerPreview.DifferenceMode == UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.Similarity;
+        get => Settings.LayerPreview.DifferenceMode ==
+               UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.Similarity;
         set
         {
             if (value)
             {
-                Settings.LayerPreview.DifferenceMode = UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.Similarity;
+                Settings.LayerPreview.DifferenceMode =
+                    UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.Similarity;
                 Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead = true;
                 ShowLayerImageDifference = true;
                 NotifyAllDiffModesChanged();
@@ -289,12 +293,14 @@ public partial class MainWindow
 
     public bool IsLayerDiffModeOnionSkin
     {
-        get => Settings.LayerPreview.DifferenceMode == UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
+        get => Settings.LayerPreview.DifferenceMode ==
+               UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
         set
         {
             if (value)
             {
-                Settings.LayerPreview.DifferenceMode = UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
+                Settings.LayerPreview.DifferenceMode =
+                    UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
                 ShowLayerImageDifference = true;
                 NotifyAllDiffModesChanged();
             }
@@ -303,12 +309,15 @@ public partial class MainWindow
 
     public bool IsLayerDiffModeOnionSkin3
     {
-        get => Settings.LayerPreview.DifferenceMode == UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin && Settings.LayerPreview.OnionSkinLayers == 3;
+        get => Settings.LayerPreview.DifferenceMode ==
+               UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin &&
+               Settings.LayerPreview.OnionSkinLayers == 3;
         set
         {
             if (value)
             {
-                Settings.LayerPreview.DifferenceMode = UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
+                Settings.LayerPreview.DifferenceMode =
+                    UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
                 Settings.LayerPreview.OnionSkinLayers = 3;
                 ShowLayerImageDifference = true;
                 NotifyAllDiffModesChanged();
@@ -318,12 +327,15 @@ public partial class MainWindow
 
     public bool IsLayerDiffModeOnionSkin4
     {
-        get => Settings.LayerPreview.DifferenceMode == UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin && Settings.LayerPreview.OnionSkinLayers == 4;
+        get => Settings.LayerPreview.DifferenceMode ==
+               UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin &&
+               Settings.LayerPreview.OnionSkinLayers == 4;
         set
         {
             if (value)
             {
-                Settings.LayerPreview.DifferenceMode = UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
+                Settings.LayerPreview.DifferenceMode =
+                    UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
                 Settings.LayerPreview.OnionSkinLayers = 4;
                 ShowLayerImageDifference = true;
                 NotifyAllDiffModesChanged();
@@ -333,12 +345,15 @@ public partial class MainWindow
 
     public bool IsLayerDiffModeOnionSkin5
     {
-        get => Settings.LayerPreview.DifferenceMode == UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin && Settings.LayerPreview.OnionSkinLayers == 5;
+        get => Settings.LayerPreview.DifferenceMode ==
+               UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin &&
+               Settings.LayerPreview.OnionSkinLayers == 5;
         set
         {
             if (value)
             {
-                Settings.LayerPreview.DifferenceMode = UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
+                Settings.LayerPreview.DifferenceMode =
+                    UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
                 Settings.LayerPreview.OnionSkinLayers = 5;
                 ShowLayerImageDifference = true;
                 NotifyAllDiffModesChanged();
@@ -348,35 +363,21 @@ public partial class MainWindow
 
     public bool IsLayerDiffModeOnionSkin6
     {
-        get => Settings.LayerPreview.DifferenceMode == UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin && Settings.LayerPreview.OnionSkinLayers == 6;
+        get => Settings.LayerPreview.DifferenceMode ==
+               UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin &&
+               Settings.LayerPreview.OnionSkinLayers == 6;
         set
         {
             if (value)
             {
-                Settings.LayerPreview.DifferenceMode = UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
+                Settings.LayerPreview.DifferenceMode =
+                    UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
                 Settings.LayerPreview.OnionSkinLayers = 6;
                 ShowLayerImageDifference = true;
                 NotifyAllDiffModesChanged();
             }
         }
     }
-
-    private void NotifyAllDiffModesChanged()
-    {
-        RaisePropertyChanged(nameof(IsLayerDiffModeDifference));
-        RaisePropertyChanged(nameof(IsLayerDiffModeSimilarity));
-        RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin));
-        RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin3));
-        RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin4));
-        RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin5));
-        RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin6));
-        ShowLayer();
-    }
-
-    private bool _isMeasureMode2D;
-    private Avalonia.Point? _measure2DStartPoint;
-    private Avalonia.Point? _measure2DEndPoint;
-    private Avalonia.Point? _measure2DCursorPoint;
 
     public bool IsMeasureMode2D
     {
@@ -403,6 +404,7 @@ public partial class MainWindow
                     LayerImageBox.PanWithMouseButtons = AdvancedImageBox.MouseButtons.MiddleButton;
                 }
             }
+
             RaisePropertyChanged(nameof(HasMeasure2DPoints));
             RaisePropertyChanged(nameof(Measure2DStatusText));
             RaisePropertyChanged(nameof(Measure2DDetailText));
@@ -466,12 +468,12 @@ public partial class MainWindow
 
             var p1 = _measure2DStartPoint.Value;
             var p2 = target.Value;
-            double dx = Math.Abs(p2.X - p1.X);
-            double dy = Math.Abs(p2.Y - p1.Y);
-            double dxMm = dx * PixelPitchX;
-            double dyMm = dy * PixelPitchY;
-            double distMm = Math.Sqrt(dxMm * dxMm + dyMm * dyMm);
-            double distPx = Math.Sqrt(dx * dx + dy * dy);
+            var dx = Math.Abs(p2.X - p1.X);
+            var dy = Math.Abs(p2.Y - p1.Y);
+            var dxMm = dx * PixelPitchX;
+            var dyMm = dy * PixelPitchY;
+            var distMm = Math.Sqrt(dxMm * dxMm + dyMm * dyMm);
+            var distPx = Math.Sqrt(dx * dx + dy * dy);
 
             return _measure2DEndPoint.HasValue
                 ? $"Distance: {distMm:F2} mm ({distPx:F0} px)"
@@ -489,28 +491,15 @@ public partial class MainWindow
 
             var p1 = _measure2DStartPoint.Value;
             var p2 = target.Value;
-            double dx = Math.Abs(p2.X - p1.X);
-            double dy = Math.Abs(p2.Y - p1.Y);
-            double dxMm = dx * PixelPitchX;
-            double dyMm = dy * PixelPitchY;
-            double angleDeg = Math.Atan2(dyMm, dxMm) * 180.0 / Math.PI;
+            var dx = Math.Abs(p2.X - p1.X);
+            var dy = Math.Abs(p2.Y - p1.Y);
+            var dxMm = dx * PixelPitchX;
+            var dyMm = dy * PixelPitchY;
+            var angleDeg = Math.Atan2(dyMm, dxMm) * 180.0 / Math.PI;
 
-            return $"A: ({p1.X:F0}, {p1.Y:F0})  B: ({p2.X:F0}, {p2.Y:F0})\r\nΔX: {dxMm:F2} mm ({dx:F0} px) | ΔY: {dyMm:F2} mm ({dy:F0} px)\r\nAngle: {angleDeg:F1}°";
+            return
+                $"A: ({p1.X:F0}, {p1.Y:F0})  B: ({p2.X:F0}, {p2.Y:F0})\r\nΔX: {dxMm:F2} mm ({dx:F0} px) | ΔY: {dyMm:F2} mm ({dy:F0} px)\r\nAngle: {angleDeg:F1}°";
         }
-    }
-
-    [RelayCommand]
-    public void ToggleMeasureMode2D()
-    {
-        IsMeasureMode2D = !IsMeasureMode2D;
-    }
-
-    [RelayCommand]
-    public void ClearMeasure2D()
-    {
-        Measure2DStartPoint = null;
-        Measure2DEndPoint = null;
-        Measure2DCursorPoint = null;
     }
 
     public bool ShowLayerImageDifference
@@ -665,7 +654,9 @@ public partial class MainWindow
 
     public uint LayerNumberOffset => Settings.LayerPreview.StartLayerNumberAt1 ? 1u : 0u;
 
-    public string MinimumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.LayerHeight}mm\n{(Settings.LayerPreview.StartLayerNumberAt1 ? 1 : 0)}";
+    public string MinimumLayerString => SlicerFile is null
+        ? "???"
+        : $"{SlicerFile.LayerHeight}mm\n{(Settings.LayerPreview.StartLayerNumberAt1 ? 1 : 0)}";
 
     public string MaximumLayerString =>
         SlicerFile is null ? "???" : $"{SlicerFile.PrintHeight}mm\n{SlicerFile.LastLayerIndex + LayerNumberOffset}";
@@ -673,10 +664,10 @@ public partial class MainWindow
     public string ActualLayerTooltip => SlicerFile is null || !SlicerFile.ContainsLayer(_actualLayer)
         ? "???"
         : $"""
-            {Layer.ShowHeight(SlicerFile[_actualLayer]?.PositionZ ?? 0)}mm
-            {_actualLayer + LayerNumberOffset} ({(_actualLayer + 1) * 100 / SlicerFile.LayerCount}%)
-            {SlicerFile[ActualLayer].StartTimeString}
-            """;
+           {Layer.ShowHeight(SlicerFile[_actualLayer]?.PositionZ ?? 0)}mm
+           {_actualLayer + LayerNumberOffset} ({(_actualLayer + 1) * 100 / SlicerFile.LayerCount}%)
+           {SlicerFile[ActualLayer].StartTimeString}
+           """;
 
     public uint SliderMinimumValue => Settings.LayerPreview.StartLayerNumberAt1 ? 1u : 0u;
 
@@ -812,6 +803,7 @@ public partial class MainWindow
             {
                 targetLayer = SlicerFile.LastLayerIndex;
             }
+
             if (Settings.LayerPreview.LayerSliderDebounce == 0)
             {
                 ActualLayer = targetLayer;
@@ -835,6 +827,7 @@ public partial class MainWindow
             {
                 targetLayer = SlicerFile.LastLayerIndex;
             }
+
             ActualLayer = targetLayer;
         }
     }
@@ -885,7 +878,39 @@ public partial class MainWindow
         }
     }
 
-    private void SetLayerImageBoxTrackerImage(Avalonia.Media.Imaging.Bitmap? image)
+    [RelayCommand]
+    public void Toggle2DPeelCurve()
+    {
+        Show2DPeelCurve = !Show2DPeelCurve;
+    }
+
+    private void NotifyAllDiffModesChanged()
+    {
+        RaisePropertyChanged(nameof(IsLayerDiffModeDifference));
+        RaisePropertyChanged(nameof(IsLayerDiffModeSimilarity));
+        RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin));
+        RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin3));
+        RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin4));
+        RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin5));
+        RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin6));
+        ShowLayer();
+    }
+
+    [RelayCommand]
+    public void ToggleMeasureMode2D()
+    {
+        IsMeasureMode2D = !IsMeasureMode2D;
+    }
+
+    [RelayCommand]
+    public void ClearMeasure2D()
+    {
+        Measure2DStartPoint = null;
+        Measure2DEndPoint = null;
+        Measure2DCursorPoint = null;
+    }
+
+    private void SetLayerImageBoxTrackerImage(Bitmap? image)
     {
         var previousImage = LayerImageBox.TrackerImage;
         if (ReferenceEquals(previousImage, image)) return;
@@ -1184,27 +1209,31 @@ public partial class MainWindow
                 var diffMode = Settings.LayerPreview.DifferenceMode;
                 if (diffMode == UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin)
                 {
-                    int onionLayers = Settings.LayerPreview.OnionSkinLayers;
-                    int prevCount = onionLayers switch
+                    var onionLayers = Settings.LayerPreview.OnionSkinLayers;
+                    var prevCount = onionLayers switch
                     {
                         4 => 2,
                         5 => 2,
                         6 => 3,
                         _ => 1
                     };
-                    int nextCount = onionLayers switch
+                    var nextCount = onionLayers switch
                     {
                         5 => 2,
                         6 => 2,
                         _ => 1
                     };
 
-                    var prevLayer1 = (_actualLayer >= 1 && prevCount >= 1) ? SlicerFile[_actualLayer - 1] : null;
-                    var prevLayer2 = (_actualLayer >= 2 && prevCount >= 2) ? SlicerFile[_actualLayer - 2] : null;
-                    var prevLayer3 = (_actualLayer >= 3 && prevCount >= 3) ? SlicerFile[_actualLayer - 3] : null;
+                    var prevLayer1 = _actualLayer >= 1 && prevCount >= 1 ? SlicerFile[_actualLayer - 1] : null;
+                    var prevLayer2 = _actualLayer >= 2 && prevCount >= 2 ? SlicerFile[_actualLayer - 2] : null;
+                    var prevLayer3 = _actualLayer >= 3 && prevCount >= 3 ? SlicerFile[_actualLayer - 3] : null;
 
-                    var nextLayer1 = (_actualLayer + 1 <= SlicerFile.LastLayerIndex && nextCount >= 1) ? SlicerFile[_actualLayer + 1] : null;
-                    var nextLayer2 = (_actualLayer + 2 <= SlicerFile.LastLayerIndex && nextCount >= 2) ? SlicerFile[_actualLayer + 2] : null;
+                    var nextLayer1 = _actualLayer + 1 <= SlicerFile.LastLayerIndex && nextCount >= 1
+                        ? SlicerFile[_actualLayer + 1]
+                        : null;
+                    var nextLayer2 = _actualLayer + 2 <= SlicerFile.LastLayerIndex && nextCount >= 2
+                        ? SlicerFile[_actualLayer + 2]
+                        : null;
 
                     Mat? prev1Mat = null;
                     Mat? prev2Mat = null;
@@ -1219,6 +1248,7 @@ public partial class MainWindow
                         {
                             rect = LayerCache.Layer.BoundingRectangle;
                         }
+
                         void UnionRect(Layer? l)
                         {
                             if (l is not null && !l.IsEmpty)
@@ -1226,13 +1256,15 @@ public partial class MainWindow
                                 rect = rect.IsEmpty ? l.BoundingRectangle : Rectangle.Union(rect, l.BoundingRectangle);
                             }
                         }
+
                         UnionRect(prevLayer1);
                         UnionRect(prevLayer2);
                         UnionRect(prevLayer3);
                         UnionRect(nextLayer1);
                         UnionRect(nextLayer2);
 
-                        rect = Rectangle.Intersect(rect, new Rectangle(0, 0, LayerCache.Image.Width, LayerCache.Image.Height));
+                        rect = Rectangle.Intersect(rect,
+                            new Rectangle(0, 0, LayerCache.Image.Width, LayerCache.Image.Height));
 
                         if (!rect.IsEmpty)
                         {
@@ -1247,40 +1279,51 @@ public partial class MainWindow
                                 {
                                     if (prevLayer1 is null || prevLayer1.IsEmpty) return;
                                     prev1Mat = prevLayer1.LayerMat;
-                                    if (prev1Mat is not null && !prev1Mat.IsEmpty && prev1Mat.Width == LayerCache.Image.Width && prev1Mat.Height == LayerCache.Image.Height)
+                                    if (prev1Mat is not null && !prev1Mat.IsEmpty &&
+                                        prev1Mat.Width == LayerCache.Image.Width &&
+                                        prev1Mat.Height == LayerCache.Image.Height)
                                         prev1Span = prev1Mat.BytePointer;
                                 },
                                 () =>
                                 {
                                     if (prevLayer2 is null || prevLayer2.IsEmpty) return;
                                     prev2Mat = prevLayer2.LayerMat;
-                                    if (prev2Mat is not null && !prev2Mat.IsEmpty && prev2Mat.Width == LayerCache.Image.Width && prev2Mat.Height == LayerCache.Image.Height)
+                                    if (prev2Mat is not null && !prev2Mat.IsEmpty &&
+                                        prev2Mat.Width == LayerCache.Image.Width &&
+                                        prev2Mat.Height == LayerCache.Image.Height)
                                         prev2Span = prev2Mat.BytePointer;
                                 },
                                 () =>
                                 {
                                     if (prevLayer3 is null || prevLayer3.IsEmpty) return;
                                     prev3Mat = prevLayer3.LayerMat;
-                                    if (prev3Mat is not null && !prev3Mat.IsEmpty && prev3Mat.Width == LayerCache.Image.Width && prev3Mat.Height == LayerCache.Image.Height)
+                                    if (prev3Mat is not null && !prev3Mat.IsEmpty &&
+                                        prev3Mat.Width == LayerCache.Image.Width &&
+                                        prev3Mat.Height == LayerCache.Image.Height)
                                         prev3Span = prev3Mat.BytePointer;
                                 },
                                 () =>
                                 {
                                     if (nextLayer1 is null || nextLayer1.IsEmpty) return;
                                     next1Mat = nextLayer1.LayerMat;
-                                    if (next1Mat is not null && !next1Mat.IsEmpty && next1Mat.Width == LayerCache.Image.Width && next1Mat.Height == LayerCache.Image.Height)
+                                    if (next1Mat is not null && !next1Mat.IsEmpty &&
+                                        next1Mat.Width == LayerCache.Image.Width &&
+                                        next1Mat.Height == LayerCache.Image.Height)
                                         next1Span = next1Mat.BytePointer;
                                 },
                                 () =>
                                 {
                                     if (nextLayer2 is null || nextLayer2.IsEmpty) return;
                                     next2Mat = nextLayer2.LayerMat;
-                                    if (next2Mat is not null && !next2Mat.IsEmpty && next2Mat.Width == LayerCache.Image.Width && next2Mat.Height == LayerCache.Image.Height)
+                                    if (next2Mat is not null && !next2Mat.IsEmpty &&
+                                        next2Mat.Width == LayerCache.Image.Width &&
+                                        next2Mat.Height == LayerCache.Image.Height)
                                         next2Span = next2Mat.BytePointer;
                                 }
                             );
 
-                            if (prev1Span is not null || prev2Span is not null || prev3Span is not null || next1Span is not null || next2Span is not null || !LayerCache.Layer.IsEmpty)
+                            if (prev1Span is not null || prev2Span is not null || prev3Span is not null ||
+                                next1Span is not null || next2Span is not null || !LayerCache.Layer.IsEmpty)
                             {
                                 var width = LayerCache.Image.RealStep;
                                 var channels = LayerCache.ImageBgra.NumberOfChannels;
@@ -1291,17 +1334,17 @@ public partial class MainWindow
                                     {
                                         var pixel = y * width + x;
 
-                                        byte curVal = imageSpan[pixel];
-                                        bool hasCur = curVal > 0;
+                                        var curVal = imageSpan[pixel];
+                                        var hasCur = curVal > 0;
 
-                                        bool hasP1 = prev1Span is not null && prev1Span[pixel] > 0;
-                                        bool hasP2 = prev2Span is not null && prev2Span[pixel] > 0;
-                                        bool hasP3 = prev3Span is not null && prev3Span[pixel] > 0;
+                                        var hasP1 = prev1Span is not null && prev1Span[pixel] > 0;
+                                        var hasP2 = prev2Span is not null && prev2Span[pixel] > 0;
+                                        var hasP3 = prev3Span is not null && prev3Span[pixel] > 0;
 
-                                        bool hasN1 = next1Span is not null && next1Span[pixel] > 0;
-                                        bool hasN2 = next2Span is not null && next2Span[pixel] > 0;
+                                        var hasN1 = next1Span is not null && next1Span[pixel] > 0;
+                                        var hasN2 = next2Span is not null && next2Span[pixel] > 0;
 
-                                        Color onionColor = Color.Empty;
+                                        var onionColor = Color.Empty;
 
                                         if (hasCur)
                                         {
@@ -1318,8 +1361,8 @@ public partial class MainWindow
                                         }
                                         else
                                         {
-                                            bool hasBelow = hasP1 || hasP2 || hasP3;
-                                            bool hasAbove = hasN1 || hasN2;
+                                            var hasBelow = hasP1 || hasP2 || hasP3;
+                                            var hasAbove = hasN1 || hasN2;
 
                                             if (hasBelow && hasAbove)
                                             {
@@ -2464,6 +2507,7 @@ public partial class MainWindow
                         Measure2DCursorPoint = null;
                     }
                 }
+
                 return;
             }
             else if (p.Properties.IsRightButtonPressed)
@@ -2476,6 +2520,7 @@ public partial class MainWindow
                 {
                     IsMeasureMode2D = false;
                 }
+
                 return;
             }
         }
@@ -2552,6 +2597,7 @@ public partial class MainWindow
                     {
                         IsMeasureMode2D = false;
                     }
+
                     e.Handled = true;
                     return;
                 }
@@ -2898,7 +2944,7 @@ public partial class MainWindow
         if (file?.TryGetLocalPath() is not { } filePath) return;
 
         using var selectedBitmap = LayerImageBox.GetSelectedBitmap();
-        selectedBitmap?.Save(filePath);
+        selectedBitmap?.Save(filePath, AvaloniaStatic.PngBitmapEncoderOptions);
     }
 
     public void UpdatePixelEditorCursor()

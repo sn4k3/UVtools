@@ -1,20 +1,29 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Layout;
 using System;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Layout;
 using Avalonia.Media;
+using MarkView.Avalonia;
 using Material.Icons;
 using Material.Icons.Avalonia;
 using StageKit.Primitives.System;
 using UVtools.Core.Dialogs;
-using UVtools.Core.SystemOS;
 
 namespace UVtools.UI.Windows;
 
 public partial class MessageWindow : GenericWindow
 {
+    #region Methods
+
+    public async Task OpenAboutWindow()
+    {
+        await new AboutWindow().ShowDialog(this);
+    }
+
+    #endregion
+
     #region Constants
 
     public const MaterialIconKind IconHeaderInformation = MaterialIconKind.InformationCircle;
@@ -45,9 +54,11 @@ public partial class MessageWindow : GenericWindow
     private bool _aboutButtonIsVisible;
     private string _messageText = null!;
     private bool _renderMarkdown;
+
     #endregion
 
     #region Properties
+
     /// <summary>
     /// Gets the pressed button
     /// </summary>
@@ -58,7 +69,7 @@ public partial class MessageWindow : GenericWindow
         get => _textWrap;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _textWrap, value)) return;
+            if (!RaiseAndSetIfChanged(ref _textWrap, value)) return;
             if (value == TextWrapping.Wrap)
             {
                 ScrollViewer.SetHorizontalScrollBarVisibility(HeaderTextBox, ScrollBarVisibility.Disabled);
@@ -96,7 +107,7 @@ public partial class MessageWindow : GenericWindow
         get => _headerText;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _headerText, value)) return;
+            if (!RaiseAndSetIfChanged(ref _headerText, value)) return;
             RaisePropertyChanged(nameof(HeaderIsVisible));
         }
     }
@@ -123,9 +134,11 @@ public partial class MessageWindow : GenericWindow
         get => _aboutButtonIsVisible;
         set => RaiseAndSetIfChanged(ref _aboutButtonIsVisible, value);
     }
+
     #endregion
 
     #region Constructor
+
     public MessageWindow()
     {
         CanResize = Settings.General.WindowsCanResize;
@@ -133,7 +146,8 @@ public partial class MessageWindow : GenericWindow
         DataContext = this;
     }
 
-    public MessageWindow(string title, MaterialIconKind? headerIcon, string? headerText, string messageText, TextWrapping textWrap, Button[]? rightButtons = null, bool renderMarkdown = false) : this()
+    public MessageWindow(string title, MaterialIconKind? headerIcon, string? headerText, string messageText,
+        TextWrapping textWrap, Button[]? rightButtons = null, bool renderMarkdown = false) : this()
     {
         Title = title.Trim();
         TextWrap = textWrap;
@@ -144,9 +158,11 @@ public partial class MessageWindow : GenericWindow
 
         if (renderMarkdown)
         {
-            MarkdownBorder.Content = new MarkdownViewer.Core.Controls.MarkdownViewer
+            MarkdownBorder.Content = new MarkdownViewer
             {
-                MarkdownText = messageText
+                Markdown = MessageText,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
             };
         }
 
@@ -168,9 +184,21 @@ public partial class MessageWindow : GenericWindow
         }
     }
 
-    public MessageWindow(string title, MaterialIconKind? headerIcon, string? headerText, string messageText, Button[]? rightButtons = null, bool renderMarkdown = false) : this(title, headerIcon, headerText, messageText, TextWrapping.Wrap, rightButtons, renderMarkdown) { }
-    public MessageWindow(string title, string message, TextWrapping textWrap, Button[]? buttons = null, bool renderMarkdown = false) : this(title, null, null, message, textWrap, buttons, renderMarkdown) { }
-    public MessageWindow(string title, string message, Button[]? buttons = null, bool renderMarkdown = false) : this(title, null, null, message, buttons, renderMarkdown) { }
+    public MessageWindow(string title, MaterialIconKind? headerIcon, string? headerText, string messageText,
+        Button[]? rightButtons = null, bool renderMarkdown = false) : this(title, headerIcon, headerText, messageText,
+        TextWrapping.Wrap, rightButtons, renderMarkdown)
+    {
+    }
+
+    public MessageWindow(string title, string message, TextWrapping textWrap, Button[]? buttons = null,
+        bool renderMarkdown = false) : this(title, null, null, message, textWrap, buttons, renderMarkdown)
+    {
+    }
+
+    public MessageWindow(string title, string message, Button[]? buttons = null, bool renderMarkdown = false) : this(
+        title, null, null, message, buttons, renderMarkdown)
+    {
+    }
 
 
     protected override void OnOpened(EventArgs e)
@@ -191,50 +219,57 @@ public partial class MessageWindow : GenericWindow
 
     #endregion
 
-    #region Methods
-    public async Task OpenAboutWindow()
-    {
-        await new AboutWindow().ShowDialog(this);
-    }
-    #endregion
-
     #region Static methods
-    public static Button CreateButtonFunc(string? text, MaterialIconKind? icon, Func<bool> customAction, int padding = 10, object? tag = null)
+
+    public static Button CreateButtonFunc(string? text, MaterialIconKind? icon, Func<bool> customAction,
+        int padding = 10, object? tag = null)
     {
         var button = CreateButton(text, icon, padding);
         button.Click += (sender, e) => e.Handled = customAction.Invoke();
         return button;
     }
 
-    public static Button CreateButtonAction(string? text, MaterialIconKind? icon, Action customAction, int padding = 10, object? tag = null)
+    public static Button CreateButtonAction(string? text, MaterialIconKind? icon, Action customAction, int padding = 10,
+        object? tag = null)
     {
         var button = CreateButton(text, icon, padding);
         button.Click += (sender, e) => customAction.Invoke();
         return button;
     }
 
-    public static Button CreateButtonFunc(string? text, Func<bool> customAction, int padding = 10, object? tag = null) => CreateButtonFunc(text, null, customAction, padding);
-    public static Button CreateButtonAction(string? text, Action customAction, int padding = 10, object? tag = null) => CreateButtonAction(text, null, customAction, padding);
+    public static Button CreateButtonFunc(string? text, Func<bool> customAction, int padding = 10, object? tag = null)
+    {
+        return CreateButtonFunc(text, null, customAction, padding);
+    }
+
+    public static Button CreateButtonAction(string? text, Action customAction, int padding = 10, object? tag = null)
+    {
+        return CreateButtonAction(text, null, customAction, padding);
+    }
 
     public static Button CreateButton(string? text, MaterialIconKind? icon, int padding = 10, object? tag = null)
     {
         return new Button
         {
             Content = new MaterialIconText
-        {
-            Kind = icon,
-            Text = text
-        },
-        VerticalAlignment = VerticalAlignment.Center,
-        Padding = new Thickness(padding),
-        Tag = tag
+            {
+                Kind = icon,
+                Text = text
+            },
+            VerticalAlignment = VerticalAlignment.Center,
+            Padding = new Thickness(padding),
+            Tag = tag
         };
     }
 
-    public static Button CreateButton(string? text, int padding = 10, object? tag = null) => CreateButton(text, null, padding, tag);
+    public static Button CreateButton(string? text, int padding = 10, object? tag = null)
+    {
+        return CreateButton(text, null, padding, tag);
+    }
 
 
-    public static Button CreateLinkButtonAction(string? text, MaterialIconKind? icon, string url, Action customAction, int padding = 10, object? tag = null)
+    public static Button CreateLinkButtonAction(string? text, MaterialIconKind? icon, string url, Action customAction,
+        int padding = 10, object? tag = null)
     {
         var button = CreateButtonFunc(text, icon, () =>
         {
@@ -245,7 +280,8 @@ public partial class MessageWindow : GenericWindow
         return button;
     }
 
-    public static Button CreateLinkButton(string? text, MaterialIconKind? icon, string url, int padding = 10, object? tag = null)
+    public static Button CreateLinkButton(string? text, MaterialIconKind? icon, string url, int padding = 10,
+        object? tag = null)
     {
         var button = CreateButtonFunc(text, icon, () =>
         {
@@ -254,10 +290,20 @@ public partial class MessageWindow : GenericWindow
         }, padding, tag);
         return button;
     }
-    public static Button CreateLinkButtonAction(string? text, string url, Action customAction, int padding = 10, object? tag = null) => CreateLinkButtonAction(text, null, url, customAction, padding, tag);
-    public static Button CreateLinkButton(string? text, string url, int padding = 10, object? tag = null) => CreateLinkButton(text, null, url, padding, tag);
 
-    public static Button CreateOkButton(MaterialIconKind? icon = IconButtonOk, int padding = 10, bool isDefault = true, bool isCancel = false)
+    public static Button CreateLinkButtonAction(string? text, string url, Action customAction, int padding = 10,
+        object? tag = null)
+    {
+        return CreateLinkButtonAction(text, null, url, customAction, padding, tag);
+    }
+
+    public static Button CreateLinkButton(string? text, string url, int padding = 10, object? tag = null)
+    {
+        return CreateLinkButton(text, null, url, padding, tag);
+    }
+
+    public static Button CreateOkButton(MaterialIconKind? icon = IconButtonOk, int padding = 10, bool isDefault = true,
+        bool isCancel = false)
     {
         var btn = CreateButton("Ok", icon, padding, MessageButtonResult.Ok);
         btn.IsDefault = isDefault;
@@ -265,7 +311,8 @@ public partial class MessageWindow : GenericWindow
         return btn;
     }
 
-    public static Button CreateYesButton(MaterialIconKind? icon = IconButtonYes, int padding = 10, bool isDefault = true, bool isCancel = false)
+    public static Button CreateYesButton(MaterialIconKind? icon = IconButtonYes, int padding = 10,
+        bool isDefault = true, bool isCancel = false)
     {
         var btn = CreateButton("Yes", icon, padding, MessageButtonResult.Yes);
         btn.IsDefault = isDefault;
@@ -273,7 +320,8 @@ public partial class MessageWindow : GenericWindow
         return btn;
     }
 
-    public static Button CreateNoButton(MaterialIconKind? icon = IconButtonNo, int padding = 10, bool isDefault = false, bool isCancel = false)
+    public static Button CreateNoButton(MaterialIconKind? icon = IconButtonNo, int padding = 10, bool isDefault = false,
+        bool isCancel = false)
     {
         var btn = CreateButton("No", icon, padding, MessageButtonResult.No);
         btn.IsDefault = isDefault;
@@ -281,7 +329,8 @@ public partial class MessageWindow : GenericWindow
         return btn;
     }
 
-    public static Button CreateNoneButton(MaterialIconKind? icon = IconButtonNone, int padding = 10, bool isDefault = false, bool isCancel = false)
+    public static Button CreateNoneButton(MaterialIconKind? icon = IconButtonNone, int padding = 10,
+        bool isDefault = false, bool isCancel = false)
     {
         var btn = CreateButton("None", icon, padding, MessageButtonResult.None);
         btn.IsDefault = isDefault;
@@ -289,7 +338,8 @@ public partial class MessageWindow : GenericWindow
         return btn;
     }
 
-    public static Button CreateAbortButton(MaterialIconKind? icon = IconButtonAbort, int padding = 10, bool isDefault = false, bool isCancel = true)
+    public static Button CreateAbortButton(MaterialIconKind? icon = IconButtonAbort, int padding = 10,
+        bool isDefault = false, bool isCancel = true)
     {
         var btn = CreateButton("Abort", icon, padding, MessageButtonResult.Abort);
         btn.IsDefault = isDefault;
@@ -297,7 +347,8 @@ public partial class MessageWindow : GenericWindow
         return btn;
     }
 
-    public static Button CreateCancelButton(MaterialIconKind? icon = IconButtonCancel, int padding = 10, bool isDefault = false, bool isCancel = true)
+    public static Button CreateCancelButton(MaterialIconKind? icon = IconButtonCancel, int padding = 10,
+        bool isDefault = false, bool isCancel = true)
     {
         var btn = CreateButton("Cancel", icon, padding, MessageButtonResult.Cancel);
         btn.IsDefault = isDefault;
@@ -305,12 +356,14 @@ public partial class MessageWindow : GenericWindow
         return btn;
     }
 
-    public static Button CreateCloseButton(MaterialIconKind? icon = IconButtonClose, int padding = 10, bool isDefault = false, bool isCancel = true)
+    public static Button CreateCloseButton(MaterialIconKind? icon = IconButtonClose, int padding = 10,
+        bool isDefault = false, bool isCancel = true)
     {
         var btn = CreateButton("Close", icon, padding, MessageButtonResult.Cancel);
         btn.IsDefault = isDefault;
         btn.IsCancel = isCancel;
         return btn;
     }
+
     #endregion
 }

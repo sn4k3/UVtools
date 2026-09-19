@@ -285,6 +285,10 @@
 					  macOS=⌘+F1}"
                       InputGesture="{Binding $self.HotKey}" />
 
+            <MenuItem Icon="{icon:MaterialIconExt Kind=Bullhorn}"
+                      Command="{Binding MenuHelpShowLastAnnouncementClickedCommand}"
+                      Header="_Show last announcement" />
+
             <MenuItem Icon="{icon:MaterialIconExt Kind=Wikipedia}"
                       Command="{Binding OpenWebsiteCommand}"
                       CommandParameter="https://github.com/sn4k3/UVtools/wiki"

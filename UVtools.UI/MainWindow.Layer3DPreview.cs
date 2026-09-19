@@ -8,12 +8,21 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Numerics;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
+using EmguExtensions;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -22,52 +31,51 @@ using UVtools.Core.Objects;
 using UVtools.Core.Voxel;
 using UVtools.UI.Controls;
 using UVtools.UI.Extensions;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Text;
-using EmguExtensions;
 using Color = Avalonia.Media.Color;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Formats;
 
 namespace UVtools.UI;
 
 public partial class MainWindow
 {
-    private bool _isLayer3DBuilding;
-    private readonly object _layer3DCapLock = new();
-    private bool _isLayer3DCapBuilding;
-    private Layer? _layer3DCapTargetLayer;
-    private VoxelPreviewMesh? _layer3DCapTargetMesh;
-    private int _layer3DCapTargetGeneration;
-    private int _layer3DAppliedCapGeneration;
-    private int _layer3DIssueBuildGeneration;
-    private float[]? _layerAreas;
-    private float[]? _layerLiftSpeeds;
-    private float[]? _layerLiftSpeeds2;
-    private float[]? _layerLiftHeights;
-    private float[]? _layerLiftHeights2;
-    private List<int>? _peelSpikes;
-    private float _maxLayerArea;
-    private int _peakLayerIndex;
-    private readonly List<MainIssue> _suctionCupIssues = new();
-    private bool _hasSuctionCups;
-    private string _suctionCupSummary = string.Empty;
     private readonly List<MainIssue> _all3DIssues = new();
-    private int _current3DIssueIndex = -1;
-    private bool _has3DIssues;
-    private string _current3DIssueSummary = string.Empty;
+    private readonly object _layer3DCapLock = new();
+    private readonly List<MainIssue> _suctionCupIssues = new();
+    private bool _canRepairCurrent3DIssue;
+    private string _current3DIssueBorderColor = "#00D2FF";
     private string _current3DIssueCounterText = "0 / 0";
     private string _current3DIssueIcon = "AlertCircle";
-    private string _current3DIssueBorderColor = "#00D2FF";
-    private bool _canRepairCurrent3DIssue;
+    private int _current3DIssueIndex = -1;
+    private string _current3DIssueSummary = string.Empty;
+    private bool _has3DIssues;
+    private bool _hasSuctionCups;
+    private bool _isLayer3DBuilding;
+    private bool _isLayer3DCapBuilding;
+    private bool _isPrintSimulationPlaying;
+
+    private Issue? _lastFocusedIssue;
+    private int _layer3DAppliedCapGeneration;
+    private int _layer3DCapTargetGeneration;
+    private Layer? _layer3DCapTargetLayer;
+    private VoxelPreviewMesh? _layer3DCapTargetMesh;
+    private int _layer3DIssueBuildGeneration;
+
+    private VoxelPreviewIssueMesh? _layer3DIssueMesh;
+    private string? _layer3DIssueOverlayError;
+    private VoxelPreviewMesh? _layer3DMesh;
+    private string? _layer3DRendererError;
+    private float[]? _layerAreas;
+    private float[]? _layerLiftHeights;
+    private float[]? _layerLiftHeights2;
+    private float[]? _layerLiftSpeeds;
+    private float[]? _layerLiftSpeeds2;
+    private int _layerPreviewTabIndex;
+    private float _maxLayerArea;
+    private int _peakLayerIndex;
+    private List<int>? _peelSpikes;
+    private int _printSimulationSpeed = 1;
 
     private DispatcherTimer? _printSimulationTimer;
-    private bool _isPrintSimulationPlaying;
-    private int _printSimulationSpeed = 1;
+    private string _suctionCupSummary = string.Empty;
 
     public bool Has3DIssues => _has3DIssues;
     public string Current3DIssueSummary => _current3DIssueSummary;
@@ -126,12 +134,6 @@ public partial class MainWindow
     public bool HasSuctionCups => _hasSuctionCups;
     public string SuctionCupSummary => _suctionCupSummary;
 
-    private VoxelPreviewIssueMesh? _layer3DIssueMesh;
-    private string? _layer3DIssueOverlayError;
-    private VoxelPreviewMesh? _layer3DMesh;
-    private int _layerPreviewTabIndex;
-    private string? _layer3DRendererError;
-
     public static VoxelPreviewQuality[] Layer3DQualityOptions { get; } = Enum.GetValues<VoxelPreviewQuality>();
 
     public int LayerPreviewTabIndex
@@ -140,14 +142,14 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _layerPreviewTabIndex, value)) return;
-            this.RaisePropertyChanged(nameof(IsLayerPreviewVisible));
-            this.RaisePropertyChanged(nameof(Is3DPreviewVisible));
-            this.RaisePropertyChanged(nameof(IsDualPreviewTabActive));
-            this.RaisePropertyChanged(nameof(IsLayerPreviewTabActive));
-            this.RaisePropertyChanged(nameof(Is3DPreviewTabActive));
-            this.RaisePropertyChanged(nameof(IsDualPreviewTabSelected));
-            this.RaisePropertyChanged(nameof(LayerPreview2DWidth));
-            this.RaisePropertyChanged(nameof(LayerPreview3DWidth));
+            RaisePropertyChanged(nameof(IsLayerPreviewVisible));
+            RaisePropertyChanged(nameof(Is3DPreviewVisible));
+            RaisePropertyChanged(nameof(IsDualPreviewTabActive));
+            RaisePropertyChanged(nameof(IsLayerPreviewTabActive));
+            RaisePropertyChanged(nameof(Is3DPreviewTabActive));
+            RaisePropertyChanged(nameof(IsDualPreviewTabSelected));
+            RaisePropertyChanged(nameof(LayerPreview2DWidth));
+            RaisePropertyChanged(nameof(LayerPreview3DWidth));
             InvalidateLayer3DPreviewStatus();
 
             if (value is 0 or 2)
@@ -185,23 +187,35 @@ public partial class MainWindow
     public bool IsLayerPreviewTabActive
     {
         get => LayerPreviewTabIndex == 0;
-        set { if (value) LayerPreviewTabIndex = 0; }
+        set
+        {
+            if (value) LayerPreviewTabIndex = 0;
+        }
     }
 
     public bool Is3DPreviewTabActive
     {
         get => LayerPreviewTabIndex == 1;
-        set { if (value) LayerPreviewTabIndex = 1; }
+        set
+        {
+            if (value) LayerPreviewTabIndex = 1;
+        }
     }
 
     public bool IsDualPreviewTabSelected
     {
         get => LayerPreviewTabIndex == 2;
-        set { if (value) LayerPreviewTabIndex = 2; }
+        set
+        {
+            if (value) LayerPreviewTabIndex = 2;
+        }
     }
 
-    public GridLength LayerPreview2DWidth => LayerPreviewTabIndex == 1 ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
-    public GridLength LayerPreview3DWidth => LayerPreviewTabIndex == 0 ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
+    public GridLength LayerPreview2DWidth =>
+        LayerPreviewTabIndex == 1 ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
+
+    public GridLength LayerPreview3DWidth =>
+        LayerPreviewTabIndex == 0 ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
 
     public bool IsLayer3DBuilding
     {
@@ -386,8 +400,9 @@ public partial class MainWindow
             {
                 var curLayer = SlicerFile[ActualLayer];
                 var maxZ = _layer3DMesh.MaximumBounds.Z;
-                var pct = maxZ > 0 ? (curLayer.PositionZ / maxZ * 100f) : 0f;
-                return $"Layer {ActualLayer + 1}/{SlicerFile.LayerCount} • Z: {curLayer.PositionZ:F2}/{maxZ:F2} mm ({pct:F1}%) • {_layer3DMesh.TriangleCount:N0} triangles{issues}{stale}{issueError}";
+                var pct = maxZ > 0 ? curLayer.PositionZ / maxZ * 100f : 0f;
+                return
+                    $"Layer {ActualLayer + 1}/{SlicerFile.LayerCount} • Z: {curLayer.PositionZ:F2}/{maxZ:F2} mm ({pct:F1}%) • {_layer3DMesh.TriangleCount:N0} triangles{issues}{stale}{issueError}";
             }
 
             return $"{_layer3DMesh.TriangleCount:N0} triangles • detail 1:{_layer3DMesh.SamplingStride} • " +
@@ -401,16 +416,19 @@ public partial class MainWindow
         LayerModelOrientationCube.OrbitRequested += LayerModel3DView.Orbit;
         LayerModelOrientationCube.SnapRequested += LayerModel3DView.SnapToDirection;
         LayerModelOrientationCube.HomeRequested += () => LayerModel3DView.ResetCamera();
-        LayerModelOrientationCube.RotateRequested += (yawDelta, pitchDelta) => LayerModel3DView.RotateStep(yawDelta, pitchDelta);
+        LayerModelOrientationCube.RotateRequested +=
+            (yawDelta, pitchDelta) => LayerModel3DView.RotateStep(yawDelta, pitchDelta);
         LayerModelOrientationCube.RollRequested += LayerModel3DView.RollStep;
-        LayerModelOrientationCube.TurntableToggleRequested += () => LayerModel3DView.IsTurntableActive = !LayerModel3DView.IsTurntableActive;
+        LayerModelOrientationCube.TurntableToggleRequested +=
+            () => LayerModel3DView.IsTurntableActive = !LayerModel3DView.IsTurntableActive;
         LayerModelOrientationCube.ProjectionToggleRequested += () =>
         {
             Settings.Layer3DPreview.UseOthographicProjection = !Settings.Layer3DPreview.UseOthographicProjection;
             RefreshLayer3DPreviewSettings();
         };
         LayerModelOrientationCube.FitToViewRequested += LayerModel3DView.FitToView;
-        LayerModelOrientationCube.SetCameraOrientation(LayerModel3DView.CameraYaw, LayerModel3DView.CameraPitch, LayerModel3DView.CameraRoll);
+        LayerModelOrientationCube.SetCameraOrientation(LayerModel3DView.CameraYaw, LayerModel3DView.CameraPitch,
+            LayerModel3DView.CameraRoll);
         LayerModel3DView.ModelPointClicked += OnLayer3DModelPointClicked;
 
         /* The cube takes the focus when clicked, keep the camera shortcuts working from there as well. */
@@ -440,7 +458,8 @@ public partial class MainWindow
             });
         };
 
-        LayerModel3DView.SnapshotToClipboardRequested += () => Dispatcher.UIThread.InvokeAsync(CopyLayer3DSnapshotToClipboard);
+        LayerModel3DView.SnapshotToClipboardRequested +=
+            () => Dispatcher.UIThread.InvokeAsync(CopyLayer3DSnapshotToClipboard);
         LayerModel3DView.SnapshotToFileRequested += () => Dispatcher.UIThread.InvokeAsync(SaveLayer3DSnapshotToFile);
 
         Settings.Layer3DPreview.PropertyChanged += (_, e) =>
@@ -451,19 +470,23 @@ public partial class MainWindow
                 UpdateLayer3DClip();
                 RaisePropertyChanged(nameof(Layer3DClipToCurrentLayer));
             }
+
             if (e.PropertyName == nameof(Settings.Layer3DPreview.ShowLayerIssues))
             {
                 LayerModel3DView.ShowLayerIssues = Settings.Layer3DPreview.ShowLayerIssues;
                 InvalidateLayer3DPreviewStatus();
             }
+
             if (e.PropertyName == nameof(Settings.Layer3DPreview.CutawayAxis))
             {
-                if (Settings.Layer3DPreview.CutawayAxis != VoxelPreviewCutawayAxis.Off && Settings.Layer3DPreview.CutawayPosition == 0f)
+                if (Settings.Layer3DPreview.CutawayAxis != VoxelPreviewCutawayAxis.Off &&
+                    Settings.Layer3DPreview.CutawayPosition == 0f)
                 {
-                    float mid = (LayerModel3DView.CutawayMin + LayerModel3DView.CutawayMax) / 2f;
+                    var mid = (LayerModel3DView.CutawayMin + LayerModel3DView.CutawayMax) / 2f;
                     Settings.Layer3DPreview.CutawayPosition = mid;
                     LayerModel3DView.CutawayPosition = mid;
                 }
+
                 RaisePropertyChanged(nameof(IsCutawayActive));
                 RaisePropertyChanged(nameof(IsCutawayX));
                 RaisePropertyChanged(nameof(IsCutawayY));
@@ -512,8 +535,11 @@ public partial class MainWindow
         {
             LayerModel3DView.PlateWidth = SlicerFile.DisplayWidth;
             LayerModel3DView.PlateHeight = SlicerFile.DisplayHeight;
-            LayerModel3DView.PrintHeight = SlicerFile.MachineZ > 0 ? SlicerFile.MachineZ : (SlicerFile.Layers.Length > 0 ? SlicerFile.Layers[^1].PositionZ : 0);
-            LayerModel3DView.FirstLayerHeight = SlicerFile.HaveLayers && SlicerFile.LayerCount > 0 ? (SlicerFile[0].LayerHeight > 0 ? SlicerFile[0].LayerHeight : SlicerFile.LayerHeight) : SlicerFile.LayerHeight;
+            LayerModel3DView.PrintHeight = SlicerFile.MachineZ > 0 ? SlicerFile.MachineZ :
+                SlicerFile.Layers.Length > 0 ? SlicerFile.Layers[^1].PositionZ : 0;
+            LayerModel3DView.FirstLayerHeight = SlicerFile.HaveLayers && SlicerFile.LayerCount > 0
+                ? SlicerFile[0].LayerHeight > 0 ? SlicerFile[0].LayerHeight : SlicerFile.LayerHeight
+                : SlicerFile.LayerHeight;
 
             var bottomLayerCount = SlicerFile.BottomLayerCount;
             var transitionLayerCount = SlicerFile.TransitionLayerCount;
@@ -521,9 +547,11 @@ public partial class MainWindow
             {
                 LayerModel3DView.BottomLayersHeight = SlicerFile[bottomLayerCount - 1].PositionZ;
             }
+
             if (transitionLayerCount > 0 && bottomLayerCount + transitionLayerCount <= SlicerFile.LayerCount)
             {
-                LayerModel3DView.TransitionLayersHeight = SlicerFile[bottomLayerCount + transitionLayerCount - 1].PositionZ;
+                LayerModel3DView.TransitionLayersHeight =
+                    SlicerFile[bottomLayerCount + transitionLayerCount - 1].PositionZ;
             }
         }
 
@@ -591,7 +619,6 @@ public partial class MainWindow
     }
 
 
-
     [RelayCommand]
     public void ToggleCutawayInvert()
     {
@@ -599,13 +626,22 @@ public partial class MainWindow
     }
 
     [RelayCommand]
-    public void SetCutawayOff() => Settings.Layer3DPreview.CutawayAxis = VoxelPreviewCutawayAxis.Off;
+    public void SetCutawayOff()
+    {
+        Settings.Layer3DPreview.CutawayAxis = VoxelPreviewCutawayAxis.Off;
+    }
 
     [RelayCommand]
-    public void SetCutawayX() => Settings.Layer3DPreview.CutawayAxis = VoxelPreviewCutawayAxis.X;
+    public void SetCutawayX()
+    {
+        Settings.Layer3DPreview.CutawayAxis = VoxelPreviewCutawayAxis.X;
+    }
 
     [RelayCommand]
-    public void SetCutawayY() => Settings.Layer3DPreview.CutawayAxis = VoxelPreviewCutawayAxis.Y;
+    public void SetCutawayY()
+    {
+        Settings.Layer3DPreview.CutawayAxis = VoxelPreviewCutawayAxis.Y;
+    }
 
     [RelayCommand]
     public async Task RebuildLayer3DPreview()
@@ -658,6 +694,7 @@ public partial class MainWindow
         {
             FocusIssueIn3D(_lastFocusedIssue);
         }
+
         InvalidateLayer3DPreviewStatus();
     }
 
@@ -730,7 +767,7 @@ public partial class MainWindow
             var bitmap = await LayerModel3DView.CaptureSnapshotAsync();
             if (bitmap is null) return;
 
-            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            var clipboard = GetTopLevel(this)?.Clipboard;
             if (clipboard is not null)
             {
                 await clipboard.SetBitmapAsync(bitmap);
@@ -761,7 +798,7 @@ public partial class MainWindow
             using var file = await SaveFilePickerAsync(dir, defaultName, AvaloniaStatic.PngFileFilter);
             if (file?.TryGetLocalPath() is not { } filePath) return;
 
-            bitmap.Save(filePath);
+            bitmap.Save(filePath, AvaloniaStatic.PngBitmapEncoderOptions);
             AddLog($"3D preview snapshot saved to {filePath}");
         }
         catch (Exception ex)
@@ -835,9 +872,10 @@ public partial class MainWindow
         {
             await Task.Run(() =>
             {
-                using var meshFile = fileExtension.FileFormatType.CreateInstance<MeshFile>(tmpFile, FileMode.Create, MeshFile.MeshFileFormat.BINARY, SlicerFile)
-                    ?? throw new InvalidOperationException(
-                        $"Unable to create mesh exporter for '.{fileExtension.Extension}'.");
+                using var meshFile = fileExtension.FileFormatType.CreateInstance<MeshFile>(tmpFile, FileMode.Create,
+                                         MeshFile.MeshFileFormat.BINARY, SlicerFile)
+                                     ?? throw new InvalidOperationException(
+                                         $"Unable to create mesh exporter for '.{fileExtension.Extension}'.");
                 meshFile.BeginWrite();
                 for (var i = 0; i < indices.Length; i += 3)
                 {
@@ -883,6 +921,7 @@ public partial class MainWindow
                 _layer3DCapTargetLayer = null;
                 _layer3DCapTargetMesh = null;
             }
+
             LayerModel3DView.ClearCap();
             return;
         }
@@ -932,6 +971,7 @@ public partial class MainWindow
                     {
                         _isLayer3DCapBuilding = false;
                     }
+
                     break;
                 }
 
@@ -946,6 +986,7 @@ public partial class MainWindow
                     {
                         _isLayer3DCapBuilding = false;
                     }
+
                     break;
                 }
 
@@ -957,6 +998,7 @@ public partial class MainWindow
                         {
                             ArrayPool<byte>.Shared.Return(occupancy);
                         }
+
                         return;
                     }
 
@@ -984,7 +1026,7 @@ public partial class MainWindow
         });
     }
 
-    private void OnLayer3DModelPointClicked(System.Numerics.Vector3 hitPoint)
+    private void OnLayer3DModelPointClicked(Vector3 hitPoint)
     {
         if (SlicerFile is null || SlicerFile.LayerCount == 0) return;
 
@@ -1002,8 +1044,6 @@ public partial class MainWindow
 
         ActualLayer = (uint)closestIndex;
     }
-
-    private Issue? _lastFocusedIssue;
 
     private void Update3DCavityMarkers()
     {
@@ -1054,20 +1094,20 @@ public partial class MainWindow
             var minY = Math.Min(minYPixel, maxYPixel) * pixelH;
             var maxY = Math.Max(minYPixel, maxYPixel) * pixelH;
 
-            int startL = (int)Math.Clamp((long)mainIssue.StartLayerIndex, 0L, (long)SlicerFile.LayerCount - 1L);
-            int endL = (int)Math.Clamp((long)mainIssue.EndLayerIndex, 0L, (long)SlicerFile.LayerCount - 1L);
+            var startL = (int)Math.Clamp((long)mainIssue.StartLayerIndex, 0L, (long)SlicerFile.LayerCount - 1L);
+            var endL = (int)Math.Clamp((long)mainIssue.EndLayerIndex, 0L, (long)SlicerFile.LayerCount - 1L);
 
-            float minZ = SlicerFile[startL].PositionZ;
-            float maxZ = SlicerFile[endL].PositionZ + SlicerFile[endL].LayerHeight;
+            var minZ = SlicerFile[startL].PositionZ;
+            var maxZ = SlicerFile[endL].PositionZ + SlicerFile[endL].LayerHeight;
 
             var padX = Math.Max((maxX - minX) * 0.05f, 0.3f);
             var padY = Math.Max((maxY - minY) * 0.05f, 0.3f);
             var padZ = 0.2f;
 
-            var min = new System.Numerics.Vector3(minX - padX, minY - padY, Math.Max(0f, minZ - padZ));
-            var max = new System.Numerics.Vector3(maxX + padX, maxY + padY, maxZ + padZ);
+            var min = new Vector3(minX - padX, minY - padY, Math.Max(0f, minZ - padZ));
+            var max = new Vector3(maxX + padX, maxY + padY, maxZ + padZ);
 
-            markers.Add(new(min, max, mainIssue.IsSuctionCup, mainIssue.IsResinTrap));
+            markers.Add(new LayerModel3DView.CavityMarker3D(min, max, mainIssue.IsSuctionCup, mainIssue.IsResinTrap));
         }
 
         LayerModel3DView.SetCavityMarkers(markers);
@@ -1080,9 +1120,10 @@ public partial class MainWindow
         {
             SetCurrent3DIssue(parent);
         }
+
         if (SlicerFile is null || !SlicerFile.ContainsLayer(issue.LayerIndex)) return;
         var p = issue.Parent;
-        var rect = (p is not null && !p.BoundingRectangle.IsEmpty && p.Count > 1)
+        var rect = p is not null && !p.BoundingRectangle.IsEmpty && p.Count > 1
             ? p.BoundingRectangle
             : issue.BoundingRectangle;
 
@@ -1138,7 +1179,8 @@ public partial class MainWindow
         var minZ = Math.Max(0f, z - layerH - padZ);
         var maxZ = z + padZ;
 
-        if (p is not null && p.Count > 1 && SlicerFile.ContainsLayer(p.StartLayerIndex) && SlicerFile.ContainsLayer(p.EndLayerIndex))
+        if (p is not null && p.Count > 1 && SlicerFile.ContainsLayer(p.StartLayerIndex) &&
+            SlicerFile.ContainsLayer(p.EndLayerIndex))
         {
             var pStartZ = SlicerFile[p.StartLayerIndex].PositionZ;
             var pEndZ = SlicerFile[p.EndLayerIndex].PositionZ + SlicerFile[p.EndLayerIndex].LayerHeight;
@@ -1146,8 +1188,8 @@ public partial class MainWindow
             maxZ = Math.Max(maxZ, pEndZ + padZ);
         }
 
-        var min = new System.Numerics.Vector3(minX - padX, minY - padY, minZ);
-        var max = new System.Numerics.Vector3(maxX + padX, maxY + padY, maxZ);
+        var min = new Vector3(minX - padX, minY - padY, minZ);
+        var max = new Vector3(maxX + padX, maxY + padY, maxZ);
 
         LayerModel3DView.FocusOnBoundingBox(min, max);
         LayerModel3DView.SetFocusedBoundingBox(min, max);
@@ -1190,21 +1232,21 @@ public partial class MainWindow
             return;
         }
 
-        int count = (int)file.LayerCount;
+        var count = (int)file.LayerCount;
         var areas = new float[count];
         var spikes = new List<int>();
-        float maxA = 0f;
-        int peakIdx = 0;
+        var maxA = 0f;
+        var peakIdx = 0;
 
         var speeds = new float[count];
         var speeds2 = new float[count];
         var heights = new float[count];
         var heights2 = new float[count];
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             var layer = file.Layers[i];
-            float a = (float)layer.GetArea();
+            var a = (float)layer.GetArea();
             areas[i] = a;
             speeds[i] = layer.LiftSpeed;
             speeds2[i] = layer.LiftSpeed2;
@@ -1219,7 +1261,7 @@ public partial class MainWindow
 
             if (i > 0 && areas[i - 1] > 0.05f)
             {
-                float delta = a - areas[i - 1];
+                var delta = a - areas[i - 1];
                 if (delta / areas[i - 1] >= 0.35f && delta > 4.0f)
                 {
                     spikes.Add(i);
@@ -1237,7 +1279,9 @@ public partial class MainWindow
         _peakLayerIndex = peakIdx;
 
         LayerModel3DView.SetPeelData(areas, spikes, maxA);
-        LayerModel3DView.FirstLayerHeight = SlicerFile is not null && SlicerFile.HaveLayers && SlicerFile.LayerCount > 0 ? (SlicerFile[0].LayerHeight > 0 ? SlicerFile[0].LayerHeight : SlicerFile.LayerHeight) : (SlicerFile?.LayerHeight ?? 0.05f);
+        LayerModel3DView.FirstLayerHeight = SlicerFile is not null && SlicerFile.HaveLayers && SlicerFile.LayerCount > 0
+            ? SlicerFile[0].LayerHeight > 0 ? SlicerFile[0].LayerHeight : SlicerFile.LayerHeight
+            : SlicerFile?.LayerHeight ?? 0.05f;
 
         RaisePropertyChanged(nameof(LayerAreas));
         RaisePropertyChanged(nameof(LayerLiftSpeeds));
@@ -1269,7 +1313,8 @@ public partial class MainWindow
         _hasSuctionCups = _suctionCupIssues.Count > 0;
         if (_hasSuctionCups)
         {
-            _suctionCupSummary = $"{_suctionCupIssues.Count} Cavity/Suction issue{(_suctionCupIssues.Count > 1 ? "s" : "")} detected";
+            _suctionCupSummary =
+                $"{_suctionCupIssues.Count} Cavity/Suction issue{(_suctionCupIssues.Count > 1 ? "s" : "")} detected";
         }
         else
         {
@@ -1283,6 +1328,7 @@ public partial class MainWindow
             {
                 _current3DIssueIndex = 0;
             }
+
             UpdateCurrent3DIssueDetails();
         }
         else
@@ -1342,7 +1388,7 @@ public partial class MainWindow
     {
         if (issue.IsSuctionCup)
         {
-            double ml = issue.Area / 1000.0;
+            var ml = issue.Area / 1000.0;
             _current3DIssueSummary = $"Suction Cup • L{issue.LayerInfoString} • ~{ml:F2} mL resin risk";
             _current3DIssueIcon = "AlertDecagram";
             _current3DIssueBorderColor = "#FF9800";
@@ -1350,7 +1396,7 @@ public partial class MainWindow
         }
         else if (issue.IsResinTrap)
         {
-            double ml = issue.Area / 1000.0;
+            var ml = issue.Area / 1000.0;
             _current3DIssueSummary = $"Resin Trap • L{issue.LayerInfoString} • ~{ml:F2} mL trapped";
             _current3DIssueIcon = "WaterAlert";
             _current3DIssueBorderColor = "#FF5722";
@@ -1431,7 +1477,7 @@ public partial class MainWindow
     {
         if (_current3DIssueIndex < 0 || _current3DIssueIndex >= _all3DIssues.Count) return;
         var mainIssue = _all3DIssues[_current3DIssueIndex];
-        await RemoveRepairIssues([mainIssue], promptConfirmation: true, suctionCupDrill: false);
+        await RemoveRepairIssues([mainIssue], true, false);
     }
 
     [RelayCommand]
@@ -1439,7 +1485,7 @@ public partial class MainWindow
     {
         if (_current3DIssueIndex < 0 || _current3DIssueIndex >= _all3DIssues.Count) return;
         var mainIssue = _all3DIssues[_current3DIssueIndex];
-        await RemoveRepairIssues([mainIssue], promptConfirmation: true, suctionCupDrill: true);
+        await RemoveRepairIssues([mainIssue], true, true);
     }
 
     [RelayCommand]
@@ -1449,10 +1495,11 @@ public partial class MainWindow
         LayerModel3DView.CutawayAxis = axis;
         if (axis != VoxelPreviewCutawayAxis.Off && Settings.Layer3DPreview.CutawayPosition == 0f)
         {
-            float mid = (LayerModel3DView.CutawayMin + LayerModel3DView.CutawayMax) / 2f;
+            var mid = (LayerModel3DView.CutawayMin + LayerModel3DView.CutawayMax) / 2f;
             Settings.Layer3DPreview.CutawayPosition = mid;
             LayerModel3DView.CutawayPosition = mid;
         }
+
         RaisePropertyChanged(nameof(IsCutawayActive));
         RaisePropertyChanged(nameof(IsCutawayX));
         RaisePropertyChanged(nameof(IsCutawayY));
@@ -1463,7 +1510,7 @@ public partial class MainWindow
     [RelayCommand]
     public void ResetCutawayPosition()
     {
-        float mid = (LayerModel3DView.CutawayMin + LayerModel3DView.CutawayMax) / 2f;
+        var mid = (LayerModel3DView.CutawayMin + LayerModel3DView.CutawayMax) / 2f;
         Settings.Layer3DPreview.CutawayPosition = mid;
         LayerModel3DView.CutawayPosition = mid;
         RaisePropertyChanged(nameof(Settings));
@@ -1506,7 +1553,7 @@ public partial class MainWindow
                         return;
                     }
 
-                    uint next = ActualLayer + (uint)_printSimulationSpeed;
+                    var next = ActualLayer + (uint)_printSimulationSpeed;
                     if (next >= SlicerFile.LayerCount)
                     {
                         ActualLayer = 0; // loop playback
@@ -1538,8 +1585,6 @@ public partial class MainWindow
     }
 
 
-
-
     [RelayCommand]
     public async Task CopyLayer3DModelStatsToClipboard()
     {
@@ -1547,7 +1592,7 @@ public partial class MainWindow
 
         try
         {
-            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            var clipboard = GetTopLevel(this)?.Clipboard;
             if (clipboard is null) return;
 
             var sb = new StringBuilder();
@@ -1556,14 +1601,17 @@ public partial class MainWindow
             {
                 sb.AppendLine($"Dimensions: {LayerModel3DView.ModelDimensionsText}");
             }
+
             if (!string.IsNullOrEmpty(LayerModel3DView.ModelStatsText))
             {
                 sb.AppendLine($"Estimates: {LayerModel3DView.ModelStatsText}");
             }
+
             if (!string.IsNullOrEmpty(LayerModel3DView.CenterOfMassText))
             {
                 sb.AppendLine($"Center of Mass & Contact: {LayerModel3DView.CenterOfMassText}");
             }
+
             if (SlicerFile is not null)
             {
                 sb.AppendLine($"Total Layers: {SlicerFile.LayerCount}");
@@ -1586,10 +1634,12 @@ public partial class MainWindow
         var mesh = _layer3DMesh;
         if (mesh is null || mesh.VertexCount == 0) return;
 
-        var topLevel = TopLevel.GetTopLevel(this);
+        var topLevel = GetTopLevel(this);
         if (topLevel?.StorageProvider is null) return;
 
-        var baseName = !string.IsNullOrEmpty(SlicerFile?.FileFullPath) ? Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath) : "model";
+        var baseName = !string.IsNullOrEmpty(SlicerFile?.FileFullPath)
+            ? Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)
+            : "model";
         var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title = clipped ? "Export Clipped 3D Mesh to STL" : "Export 3D Mesh to STL",
@@ -1607,18 +1657,18 @@ public partial class MainWindow
 
             var vertices = mesh.Vertices;
             var indices = mesh.Indices;
-            float clipZ = LayerModel3DView.ClipZ;
-            bool doClipZ = clipped && Layer3DClipToCurrentLayer;
+            var clipZ = LayerModel3DView.ClipZ;
+            var doClipZ = clipped && Layer3DClipToCurrentLayer;
             var clipMode = Settings.Layer3DPreview.ClipMode;
-            float slabThick = Settings.Layer3DPreview.SlabThicknessMm;
+            var slabThick = Settings.Layer3DPreview.SlabThicknessMm;
 
             var cutAxis = Settings.Layer3DPreview.CutawayAxis;
-            float cutPos = Settings.Layer3DPreview.CutawayPosition;
-            bool cutInvert = Settings.Layer3DPreview.CutawayInvert;
-            bool doCut = clipped && cutAxis != VoxelPreviewCutawayAxis.Off;
+            var cutPos = Settings.Layer3DPreview.CutawayPosition;
+            var cutInvert = Settings.Layer3DPreview.CutawayInvert;
+            var doCut = clipped && cutAxis != VoxelPreviewCutawayAxis.Off;
 
             var trianglesToExport = new List<int>(indices.Length / 3);
-            for (int i = 0; i < indices.Length; i += 3)
+            for (var i = 0; i < indices.Length; i += 3)
             {
                 var p0 = vertices[(int)indices[i]].Position;
                 var p1 = vertices[(int)indices[i + 1]].Position;
@@ -1631,9 +1681,9 @@ public partial class MainWindow
                     if (clipMode == VoxelPreviewClipMode.Above && (p0.Z < clipZ || p1.Z < clipZ || p2.Z < clipZ))
                         continue;
                     if (clipMode == VoxelPreviewClipMode.Slab &&
-                        ((p0.Z > clipZ || p0.Z < clipZ - slabThick) ||
-                         (p1.Z > clipZ || p1.Z < clipZ - slabThick) ||
-                         (p2.Z > clipZ || p2.Z < clipZ - slabThick)))
+                        (p0.Z > clipZ || p0.Z < clipZ - slabThick ||
+                         p1.Z > clipZ || p1.Z < clipZ - slabThick ||
+                         p2.Z > clipZ || p2.Z < clipZ - slabThick))
                         continue;
                 }
 
@@ -1641,16 +1691,16 @@ public partial class MainWindow
                 {
                     if (cutAxis == VoxelPreviewCutawayAxis.X)
                     {
-                        bool d0 = cutInvert ? p0.X < cutPos : p0.X > cutPos;
-                        bool d1 = cutInvert ? p1.X < cutPos : p1.X > cutPos;
-                        bool d2 = cutInvert ? p2.X < cutPos : p2.X > cutPos;
+                        var d0 = cutInvert ? p0.X < cutPos : p0.X > cutPos;
+                        var d1 = cutInvert ? p1.X < cutPos : p1.X > cutPos;
+                        var d2 = cutInvert ? p2.X < cutPos : p2.X > cutPos;
                         if (d0 || d1 || d2) continue;
                     }
                     else if (cutAxis == VoxelPreviewCutawayAxis.Y)
                     {
-                        bool d0 = cutInvert ? p0.Y < cutPos : p0.Y > cutPos;
-                        bool d1 = cutInvert ? p1.Y < cutPos : p1.Y > cutPos;
-                        bool d2 = cutInvert ? p2.Y < cutPos : p2.Y > cutPos;
+                        var d0 = cutInvert ? p0.Y < cutPos : p0.Y > cutPos;
+                        var d1 = cutInvert ? p1.Y < cutPos : p1.Y > cutPos;
+                        var d2 = cutInvert ? p2.Y < cutPos : p2.Y > cutPos;
                         if (d0 || d1 || d2) continue;
                     }
                 }
@@ -1658,12 +1708,12 @@ public partial class MainWindow
                 trianglesToExport.Add(i);
             }
 
-            byte[] header = new byte[80];
+            var header = new byte[80];
             Encoding.ASCII.GetBytes("Exported by UVtools 3D Voxel Preview", 0, 36, header, 0);
             writer.Write(header);
             writer.Write((uint)trianglesToExport.Count);
 
-            foreach (int idx in trianglesToExport)
+            foreach (var idx in trianglesToExport)
             {
                 var v0 = vertices[(int)indices[idx]];
                 var v1 = vertices[(int)indices[idx + 1]];
@@ -1674,14 +1724,23 @@ public partial class MainWindow
                 var normal = Vector3.Normalize(Vector3.Cross(edge1, edge2));
                 if (float.IsNaN(normal.X)) normal = v0.Normal;
 
-                writer.Write(normal.X); writer.Write(normal.Y); writer.Write(normal.Z);
-                writer.Write(v0.Position.X); writer.Write(v0.Position.Y); writer.Write(v0.Position.Z);
-                writer.Write(v1.Position.X); writer.Write(v1.Position.Y); writer.Write(v1.Position.Z);
-                writer.Write(v2.Position.X); writer.Write(v2.Position.Y); writer.Write(v2.Position.Z);
+                writer.Write(normal.X);
+                writer.Write(normal.Y);
+                writer.Write(normal.Z);
+                writer.Write(v0.Position.X);
+                writer.Write(v0.Position.Y);
+                writer.Write(v0.Position.Z);
+                writer.Write(v1.Position.X);
+                writer.Write(v1.Position.Y);
+                writer.Write(v1.Position.Z);
+                writer.Write(v2.Position.X);
+                writer.Write(v2.Position.Y);
+                writer.Write(v2.Position.Z);
                 writer.Write((ushort)0);
             }
 
-            await this.MessageBoxInfo($"Saved {trianglesToExport.Count:N0} triangles to {file.Name}.", "3D Model Exported");
+            await this.MessageBoxInfo($"Saved {trianglesToExport.Count:N0} triangles to {file.Name}.",
+                "3D Model Exported");
         }
         catch (Exception ex)
         {
@@ -1695,10 +1754,12 @@ public partial class MainWindow
         var mesh = _layer3DMesh;
         if (mesh is null || mesh.VertexCount == 0) return;
 
-        var topLevel = TopLevel.GetTopLevel(this);
+        var topLevel = GetTopLevel(this);
         if (topLevel?.StorageProvider is null) return;
 
-        var baseName = !string.IsNullOrEmpty(SlicerFile?.FileFullPath) ? Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath) : "model";
+        var baseName = !string.IsNullOrEmpty(SlicerFile?.FileFullPath)
+            ? Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)
+            : "model";
         var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title = clipped ? "Export Clipped 3D Mesh to OBJ" : "Export 3D Mesh to OBJ",
@@ -1718,23 +1779,23 @@ public partial class MainWindow
             var vertices = mesh.Vertices;
             var indices = mesh.Indices;
 
-            for (int i = 0; i < vertices.Length; i++)
+            for (var i = 0; i < vertices.Length; i++)
             {
                 var p = vertices[i].Position;
                 writer.WriteLine(FormattableString.Invariant($"v {p.X:F4} {p.Y:F4} {p.Z:F4}"));
             }
 
-            for (int i = 0; i < vertices.Length; i++)
+            for (var i = 0; i < vertices.Length; i++)
             {
                 var n = vertices[i].Normal;
                 writer.WriteLine(FormattableString.Invariant($"vn {n.X:F4} {n.Y:F4} {n.Z:F4}"));
             }
 
-            for (int i = 0; i < indices.Length; i += 3)
+            for (var i = 0; i < indices.Length; i += 3)
             {
-                int i0 = (int)indices[i] + 1;
-                int i1 = (int)indices[i + 1] + 1;
-                int i2 = (int)indices[i + 2] + 1;
+                var i0 = (int)indices[i] + 1;
+                var i1 = (int)indices[i + 1] + 1;
+                var i2 = (int)indices[i + 2] + 1;
                 writer.WriteLine($"f {i0}//{i0} {i1}//{i1} {i2}//{i2}");
             }
 
@@ -1751,10 +1812,12 @@ public partial class MainWindow
     {
         if (_layer3DMesh is null) return;
 
-        var topLevel = TopLevel.GetTopLevel(this);
+        var topLevel = GetTopLevel(this);
         if (topLevel?.StorageProvider is null) return;
 
-        var baseName = !string.IsNullOrEmpty(SlicerFile?.FileFullPath) ? Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath) : "model";
+        var baseName = !string.IsNullOrEmpty(SlicerFile?.FileFullPath)
+            ? Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)
+            : "model";
         var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title = "Export 360° Turntable Animation",
@@ -1767,21 +1830,21 @@ public partial class MainWindow
 
         try
         {
-            float originalYaw = LayerModel3DView.CameraYaw;
-            float originalPitch = LayerModel3DView.CameraPitch;
-            bool originalTurntable = LayerModel3DView.IsTurntableActive;
+            var originalYaw = LayerModel3DView.CameraYaw;
+            var originalPitch = LayerModel3DView.CameraPitch;
+            var originalTurntable = LayerModel3DView.IsTurntableActive;
             LayerModel3DView.IsTurntableActive = false;
 
             const int frameCount = 24;
             const int delay = 6; // 60ms / 10
 
-            SixLabors.ImageSharp.Image<Bgra32>? masterGif = null;
+            Image<Bgra32>? masterGif = null;
 
             try
             {
-                for (int f = 0; f < frameCount; f++)
+                for (var f = 0; f < frameCount; f++)
                 {
-                    float yaw = originalYaw + (f * (MathF.Tau / frameCount));
+                    var yaw = originalYaw + f * (MathF.Tau / frameCount);
                     LayerModel3DView.SetCameraAngles(yaw, originalPitch);
                     await Task.Delay(35);
 
@@ -1791,14 +1854,14 @@ public partial class MainWindow
                     using var fb = bmp.Lock();
                     var width = bmp.PixelSize.Width;
                     var height = bmp.PixelSize.Height;
-                    byte[] raw = new byte[width * height * 4];
+                    var raw = new byte[width * height * 4];
                     Marshal.Copy(fb.Address, raw, 0, raw.Length);
 
                     using var frameImg = SixLabors.ImageSharp.Image.LoadPixelData<Bgra32>(raw, width, height);
 
                     if (width > 640)
                     {
-                        int newH = (int)(height * (640f / width));
+                        var newH = (int)(height * (640f / width));
                         frameImg.Mutate(x => x.Resize(640, newH));
                     }
 
@@ -1855,6 +1918,7 @@ public partial class MainWindow
             _layer3DCapTargetLayer = null;
             _layer3DCapTargetMesh = null;
         }
+
         LayerModel3DView.ClearCap();
         LayerModel3DView.Mesh = null;
         LayerModel3DView.IssueMesh = null;

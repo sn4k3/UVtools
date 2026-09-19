@@ -6,13 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Markup.Xaml;
-using Avalonia.Media;
-using Avalonia.Platform;
-using Emgu.CV;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -22,7 +15,16 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input.Platform;
+using Avalonia.Markup.Xaml;
+using Avalonia.Media;
+using Avalonia.Platform;
+using Emgu.CV;
+using Markdig;
+using MarkView.Avalonia;
 using Material.Icons;
 using StageKit;
 using StageKit.Primitives.System;
@@ -31,7 +33,6 @@ using StageKit.Updatum;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
-using UVtools.Core.SystemOS;
 using UVtools.UI.Structures;
 using UVtools.UI.Windows;
 using ZLinq;
@@ -77,6 +78,15 @@ public partial class App : Application
         SetupTheme();
         UserSettings.Load();
         UserSettings.SetVersion();
+        
+        MarkdownViewerDefaults.Pipeline = new MarkdownPipelineBuilder()
+            .UseSupportedExtensions()
+            .UseAlertBlocks()
+            .Build();
+
+        MarkdownViewer.LinkClickedEvent.AddClassHandler<MarkdownViewer>((_, e) =>
+            HostSystem.OpenUrl(e.Url)
+        );
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -195,7 +205,9 @@ public partial class App : Application
         {
             try
             {
-                var result = ProcessHelper.GetShellOutput($"-c \"ldd '{Path.Combine(ApplicationPath, "libcvextern.so")}' | grep not\"");
+                var result =
+                    ProcessHelper.GetShellOutput(
+                        $"-c \"ldd '{Path.Combine(ApplicationPath, "libcvextern.so")}' | grep not\"");
                 if (!string.IsNullOrWhiteSpace(result.StandardOutput))
                 {
                     message += $"Missing dependencies:\n{result}\n";
@@ -210,7 +222,8 @@ public partial class App : Application
         {
             try
             {
-                var result = ProcessHelper.GetProcessOutput("otool", $"-L '{Path.Combine(ApplicationPath, "libcvextern.dylib")}'");
+                var result = ProcessHelper.GetProcessOutput("otool",
+                    $"-L '{Path.Combine(ApplicationPath, "libcvextern.dylib")}'");
                 if (!string.IsNullOrWhiteSpace(result.StandardOutput))
                 {
                     message += $"Dependencies:\n{result}\n";

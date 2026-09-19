@@ -1,6 +1,6 @@
 # Changelog
 
-## 15/09/2026 - v6.3.0
+## 15/09/2026 - v7.0.0
 
 - **AdvancedImageBox**
   - (Add) `PanBoundsMode` property to choose the pan bounds mode, if `Padding` is selected it will add that padding to
@@ -42,6 +42,7 @@
 - (Add) Panel Gamma setting to compensate Exposure Time calibration tool in Multiple Brightness / grayscale mode (#1104)
 - (Fix) Align pixel editor line brush preview and applied position (#966)
 - (Add) Diagnostics tab to About window
+- (Add) Announcements manager and live messages
 - (Improvement) pixel editor drawing with smooth, interpolated strokes committed on pointer release by @jorgerobles
   (#1139)
 - (Improvement) Avoid eager pixel lists during island detection by @apullin (#1142)
@@ -56,6 +57,7 @@
 - (Fix) SL1 layer height round trips by @apullin (#1147)
 - (Fix) Clear stale detected issues after layer image changes, undo, and redo (#879)
 - (Fix) Undo/redo failing to revert differential layer edits in ClipboardManager
+- (Fix) MessageBox from bug report and update show repeated header icon 
 - (Upgrade) .NET from 10.0.10 to 10.0.12
 - (Upgrade) AvaloniaUI from 12.1.1 to 12.1.2
 

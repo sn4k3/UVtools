@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -29,10 +29,12 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Platform.Storage;
 using Avalonia.Reactive;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
+using MarkView.Avalonia;
 using Material.Icons;
 using Material.Icons.Avalonia;
 using StageKit;
@@ -55,6 +57,7 @@ using UVtools.UI.Controls;
 using UVtools.UI.Controls.Calibrators;
 using UVtools.UI.Controls.Tools;
 using UVtools.UI.Extensions;
+using UVtools.UI.Managers;
 using UVtools.UI.Structures;
 using UVtools.UI.Windows;
 using ZLinq;
@@ -888,13 +891,18 @@ public partial class MainWindow : GenericWindow
         {
             await ShowBirthdayMessage();
         }
+
+        if (Settings.General.CheckAnnouncementsOnStartup)
+        {
+            await AnnouncementManager.CheckAndShowAnnouncementsAsync(this);
+        }
     }
 
     protected override void OnClosed(EventArgs e)
     {
         DisposeLayer3DPreview();
         UserSettings.Save();
-        
+
         base.OnClosed(e);
     }
 
@@ -1031,13 +1039,13 @@ public partial class MainWindow : GenericWindow
         Settings.LastBirthdayYearsOld = About.YearsOld;
         UserSettings.Save();
     }
-    
+
     [RelayCommand]
     public void GoToLayerPreviewTab()
     {
         LayerPreviewTabIndex = 0;
     }
-    
+
     [RelayCommand]
     public void GoTo3DLayerPreviewTab()
     {
@@ -1336,6 +1344,12 @@ public partial class MainWindow : GenericWindow
     }
 
     [RelayCommand]
+    public async Task MenuHelpShowLastAnnouncementClicked()
+    {
+        await AnnouncementManager.ShowLastAnnouncementAsync(this);
+    }
+
+    [RelayCommand]
     public async Task MenuHelpFreeUnusedRAMClicked()
     {
         IsGUIEnabled = false;
@@ -1464,13 +1478,15 @@ public partial class MainWindow : GenericWindow
         {
             Header =
                 $"Do you like to update {About.Software} from v{About.VersionString} to v{AppUpdater.LatestReleaseTagVersionStr}?",
-            Content = new MarkdownViewer.Core.Controls.MarkdownViewer
+            Content = new MarkdownViewer
             {
-                MarkdownText = $"""
-                                ## Changelog:
+                Markdown = $"""
+                            ## Changelog:
 
-                                {AppUpdater.GetChangelog()}
-                                """
+                            {AppUpdater.GetChangelog()}
+                            """,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                HorizontalAlignment = HorizontalAlignment.Stretch
             }
         };
 

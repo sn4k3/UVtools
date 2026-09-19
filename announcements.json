@@ -1,0 +1,12 @@
+﻿[
+  {
+    "id": "v7.0.0-release",
+    "title": "Welcome to UVtools v7.0.0!",
+    "message": "## 🚀 Welcome to UVtools v7.0.0\n\nUVtools v7.0.0 is one of the biggest releases in the project's six-year history, introducing a new **GPU-accelerated 3D viewer**, advanced analysis tools and many other improvements.\n\nMuch of v7 was accelerated with the help of **multiple AI coding agents**, allowing development to move much faster. They still require significant review, testing, supervision and iteration — and their subscriptions, usage and token costs are paid personally by me.\n\nUVtools remains **free and open source**, with **no ads, tracking or telemetry**. Sponsorship helps cover development costs and directly contributes to keeping UVtools and my other open-source projects actively maintained and moving forward. ❤️\n\n📖 **The full v7.0.0 announcement will open in your browser after this dialog is closed**, with more details about what's new, how the project has grown, and the reality of sustaining open-source development.",
+    "url": "https://github.com/sn4k3/UVtools/discussions/1148",
+    "autoOpenUrl": true,
+    "minVersion": "7.0.0",
+    "maxVersion": null,
+    "expiresAt": null
+  }
+]

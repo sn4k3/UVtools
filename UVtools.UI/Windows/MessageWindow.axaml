@@ -30,7 +30,7 @@
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,20,0"
-                                   IsVisible="{Binding HeaderIcon, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                   IsVisible="{Binding HeaderIcon, Converter={x:Static ObjectConverters.IsNotNull}}" />
 
                 <SelectableTextBlock Grid.Column="1"
                                      Name="HeaderTextBox"
@@ -57,8 +57,8 @@
                                HorizontalAlignment="Center">
                 <icon:MaterialIcon.IsVisible>
                     <MultiBinding Converter="{x:Static BoolConverters.And}">
-                        <Binding Path="HeaderIcon" Converter="{x:Static StringConverters.IsNotNullOrEmpty}" />
-                        <Binding Path="HeaderText" Converter="{x:Static StringConverters.IsNullOrEmpty}" />
+                        <Binding Path="HeaderIcon" Converter="{x:Static ObjectConverters.IsNotNull}" />
+                        <Binding Path="!HeaderIsVisible" />
                     </MultiBinding>
                 </icon:MaterialIcon.IsVisible>
             </icon:MaterialIcon>

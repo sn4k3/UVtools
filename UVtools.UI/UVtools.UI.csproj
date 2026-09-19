@@ -41,7 +41,7 @@
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3" Condition="'$(Configuration)' == 'Debug'"/>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2"/>
         <PackageReference Include="EmguExtensions.Avalonia" Version="0.1.7"/>
-        <PackageReference Include="MarkdownViewer.Core" Version="1.0.5"/>
+        <PackageReference Include="MarkView.Avalonia" Version="12.2.1"/>
         <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2"/>
         <PackageReference Include="Silk.NET.OpenGL" Version="2.23.0"/>
         <PackageReference Include="StageKit.Updatum" Version="0.4.0"/>
