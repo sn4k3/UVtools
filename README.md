@@ -43,8 +43,10 @@ This can also save you, check every setting that was used with or change them!
 - Facebook group: https://www.facebook.com/groups/uvtools
 - Discussions: https://github.com/sn4k3/UVtools/discussions
 
-![GUI Screenshot](https://raw.githubusercontent.com/sn4k3/UVtools/master/wiki/UI1.png)
-![GUI Screenshot Islands](https://raw.githubusercontent.com/sn4k3/UVtools/master/wiki/UI2.png)
+![GUI Screenshot 1](https://raw.githubusercontent.com/sn4k3/UVtools/master/wiki/UVtools_2026-09-19_04-43-54.png)
+![GUI Screenshot 2](https://raw.githubusercontent.com/sn4k3/UVtools/master/wiki/UVtools_2026-09-18_23-14-00.png)
+![GUI Screenshot 3](https://raw.githubusercontent.com/sn4k3/UVtools/master/wiki/UVtools_2026-09-18_23-16-02.png)
+![GUI Screenshot 4](https://raw.githubusercontent.com/sn4k3/UVtools/master/wiki/UVtools_2026-09-18_23-13-08.gif)
 
 # Why this project?
 
