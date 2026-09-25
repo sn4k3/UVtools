@@ -1,5 +1,11 @@
 ﻿# Changelog
 
+## /09/2026 - v7.0.1
+
+- (Improvement) Add a Windows renderer preference in 3D preview settings to prefer native OpenGL (WGL) after restarting
+  UVtools; ANGLE stays the default, with WGL tried before software rendering (#1152)
+- (Add) Pixel Arithmetic options to apply changes only to model top surfaces, with an optional margin from walls (#1151)
+
 ## 19/09/2026 - v7.0.0
 
 - **AdvancedImageBox**
@@ -23,15 +29,15 @@
   - (Add) Color modes: overhang heatmap, layer-height zones, peel force & area risk, and bed adhesion footprint
   - (Add) Clip modes (top/bottom/slab, with adjustable slab thickness) and X/Y cutaway with an invertible slider, to
     inspect the model's interior
-  - (Add) Model dimensions, bounding box, volume/weight/resin cost, center of mass & first-layer contact stability,
-    and cross-section area/peel-force curve HUD overlays, each independently toggleable
+  - (Add) Model dimensions, bounding box, volume/weight/resin cost, center of mass & first-layer contact stability, and
+    cross-section area/peel-force curve HUD overlays, each independently toggleable
   - (Add) Per-type issue highlighting in 3D, with next/prev navigation and in-place solidify/drill repair
   - (Add) Measure tool: click two points on the model to get the distance between them
   - (Add) Orbit cube navigation (faces/edges/corners, roll, turntable/auto-rotate, home, fit-to-view), full keyboard
     shortcuts, and click-to-select-layer
   - (Add) Print simulation playback with adjustable speed
-  - (Add) Export: mesh to STL/OBJ (full or clipped), current cross-section to PNG, snapshot to clipboard or file,
-    and 360° turntable animation to GIF
+  - (Add) Export: mesh to STL/OBJ (full or clipped), current cross-section to PNG, snapshot to clipboard or file, and
+    360° turntable animation to GIF
 - **2D layer preview:**
   - (Add) Elapsed print time readout
   - (Add) Measure tool: click two points on the model to get the distance between them
@@ -43,10 +49,12 @@
 - (Fix) Align pixel editor line brush preview and applied position (#966)
 - (Add) Diagnostics tab to About window
 - (Add) Announcements manager and live messages
-- (Improvement) UI safety: Guaranteed GUI re-enabling via `try / finally` across file operations, exports, suggestions, and send-to actions
+- (Improvement) UI safety: Guaranteed GUI re-enabling via `try / finally` across file operations, exports, suggestions,
+  and send-to actions
 - (Improvement) Optimize issues collection view caching and selection lookups in issues DataGrid
 - (Fix) Prevent SkiaSurface and framebuffer leaks during pixel editor preview drawing in `LayerCache`
-- (Fix) Dispose previous thumbnail bitmaps, native OpenCV Mat instances, and ensure explicit disposal of timers and cache on window close
+- (Fix) Dispose previous thumbnail bitmaps, native OpenCV Mat instances, and ensure explicit disposal of timers and
+  cache on window close
 - (Improvement) pixel editor drawing with smooth, interpolated strokes committed on pointer release by @jorgerobles
   (#1139)
 - (Improvement) Avoid eager pixel lists during island detection by @apullin (#1142)

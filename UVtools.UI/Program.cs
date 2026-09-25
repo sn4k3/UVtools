@@ -222,11 +222,20 @@ public static class Program
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
     {
+        var preferWgl = UserSettings.ReadWindowsRendererPreference() ==
+                        UserSettings.Layer3DPreviewUserSettings.WindowsRendererPreference.NativeOpenGl;
+
         return AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .WithInterFont()
                 .With(new SkiaOptions { MaxGpuResourceSizeBytes = 256_000_000 })
-                .With(new Win32PlatformOptions())
+                .With(new Win32PlatformOptions
+                {
+                    /* ANGLE remains the default. WGL supports the 3D preview when ANGLE is unavailable. */
+                    RenderingMode = preferWgl
+                        ? [Win32RenderingMode.Wgl, Win32RenderingMode.AngleEgl, Win32RenderingMode.Software]
+                        : [Win32RenderingMode.AngleEgl, Win32RenderingMode.Wgl, Win32RenderingMode.Software]
+                })
                 .With(new X11PlatformOptions
                 {
                     RenderingMode =

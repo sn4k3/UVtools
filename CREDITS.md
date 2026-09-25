@@ -120,3 +120,6 @@
 - Waggery LLC
 - David Ayerst
 - Jaromír Jarušek
+- Wm Steele
+- Kevin Aulinger
+- Lars v.

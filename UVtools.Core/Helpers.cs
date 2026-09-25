@@ -6,9 +6,9 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using BinarySerialization;
 using System;
 using System.IO;
+using BinarySerialization;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core;
@@ -56,15 +56,11 @@ public static class Helpers
 
     public static T Deserialize<T>(Stream stream, Endianness endianness)
     {
-        switch (endianness)
+        return endianness switch
         {
-            case Endianness.Big:
-                return SerializerBigEndianness.Deserialize<T>(stream);
-                break;
-            default:
-                return Serializer.Deserialize<T>(stream);
-                break;
-        }
+            Endianness.Big => SerializerBigEndianness.Deserialize<T>(stream),
+            _ => Serializer.Deserialize<T>(stream)
+        };
     }
 
     public static uint SerializeWriteFileStream(FileStream fs, object value, int offset = 0,

@@ -7,6 +7,7 @@
     <Folder Name="/root/">
         <File Path=".gitignore" />
         <File Path="AGENTS.md" />
+        <File Path="announcements.json" />
         <File Path="CHANGELOG.md" />
         <File Path="CREDITS.md" />
         <File Path="Directory.Build.props" />

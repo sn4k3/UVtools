@@ -13,6 +13,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Xml;
 using System.Xml.Serialization;
 using Avalonia.Themes.Fluent;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -588,6 +589,15 @@ public partial class UserSettings : ObservableObject
 
     public sealed partial class Layer3DPreviewUserSettings : ObservableObject
     {
+        public enum WindowsRendererPreference : byte
+        {
+            [Description("Automatic (ANGLE, then WGL)")] Automatic,
+            [Description("Native OpenGL (WGL first)")] NativeOpenGl
+        }
+
+        [ObservableProperty] public partial WindowsRendererPreference WindowsRenderer { get; set; } =
+            WindowsRendererPreference.Automatic;
+
         [ObservableProperty] public partial bool Build3DAfterFileOpen { get; set; } = false;
 
         [ObservableProperty] public partial VoxelPreviewQuality Quality { get; set; } = VoxelPreviewQuality.Balanced;
@@ -1169,6 +1179,36 @@ public partial class UserSettings : ObservableObject
     #endregion
 
     #region Static Methods
+
+    /// <summary>
+    /// Read the renderer preference before Avalonia initializes. The full settings load runs in App.Initialize.
+    /// </summary>
+    public static Layer3DPreviewUserSettings.WindowsRendererPreference ReadWindowsRendererPreference()
+    {
+        const Layer3DPreviewUserSettings.WindowsRendererPreference defaultPreference =
+            Layer3DPreviewUserSettings.WindowsRendererPreference.Automatic;
+
+        if (!OperatingSystem.IsWindows() || !File.Exists(FilePath)) return defaultPreference;
+
+        try
+        {
+            using var reader = XmlReader.Create(FilePath, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit });
+            if (!reader.ReadToFollowing(nameof(Layer3DPreview))) return defaultPreference;
+
+            using var previewReader = reader.ReadSubtree();
+            if (!previewReader.ReadToFollowing(nameof(Layer3DPreviewUserSettings.WindowsRenderer)))
+                return defaultPreference;
+
+            return Enum.TryParse<Layer3DPreviewUserSettings.WindowsRendererPreference>(
+                       previewReader.ReadElementContentAsString(), out var preference) && Enum.IsDefined(preference)
+                ? preference
+                : defaultPreference;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or XmlException)
+        {
+            return defaultPreference;
+        }
+    }
 
     /// <summary>
     /// Reset settings to defaults
