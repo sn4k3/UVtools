@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -7,6 +7,9 @@
  */
 
 using System;
+using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
+using UVtools.UI.Converters;
 
 namespace UVtools.UI.Managers;
 
@@ -37,6 +40,12 @@ public record AnnouncementItem
     /// If false, an explicit "Open announcement in browser" button is provided.
     /// </summary>
     public bool AutoOpenUrl { get; init; }
+
+    /// <summary>
+    /// Operating system this announcement applies to. If null, it applies to all platforms.
+    /// </summary>
+    [JsonConverter(typeof(OSPlatformJsonConverter))]
+    public OSPlatform? Platform { get; init; }
 
     /// <summary>
     /// Minimum UVtools version this announcement applies to (inclusive, e.g. "7.0.0")

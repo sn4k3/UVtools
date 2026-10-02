@@ -700,6 +700,12 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private uint _focusBoxVertexBuffer;
 
     private GL? _gl;
+    private uint _sceneFramebuffer;
+    private uint _sceneColorBuffer;
+    private uint _sceneDepthBuffer;
+    private uint _sceneWidth;
+    private uint _sceneHeight;
+    private bool _sceneFramebufferUnsupported;
 
     private uint _gridVertexArray;
     private uint _gridVertexBuffer;
@@ -967,6 +973,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                 return;
             var resetCamera = _mesh is null && value is not null;
             _mesh = value;
+            if (value is not null && value.VertexCount > 0)
+                _modelRadius = Math.Max(value.Size.Length() / 2, 0.5f); // A rebuilt model may have another size
             _needsUpload = true;
             _needsGridUpload = true;
             _needsBoundingBoxUpload = true;
@@ -1475,6 +1483,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         var indices = mesh.Indices;
         var minZ = mesh.MinimumBounds.Z;
         var contactZThreshold = minZ + 0.06f;
+        var isOnBed = minZ < 0.01f; // A model starting higher floats, nothing touches the build plate
         var contactArea = 0.0;
         float contactMinX = float.MaxValue,
             contactMaxX = float.MinValue;
@@ -1502,7 +1511,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             sumVy += vol * cy;
             sumVz += vol * cz;
 
-            if (p0.Z <= contactZThreshold && p1.Z <= contactZThreshold && p2.Z <= contactZThreshold)
+            if (isOnBed && p0.Z <= contactZThreshold && p1.Z <= contactZThreshold && p2.Z <= contactZThreshold)
             {
                 var crossX = (p1.Y - p0.Y) * (p2.Z - p0.Z) - (p1.Z - p0.Z) * (p2.Y - p0.Y);
                 var crossY = (p1.Z - p0.Z) * (p2.X - p0.X) - (p1.X - p0.X) * (p2.Z - p0.Z);
@@ -1518,7 +1527,10 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         }
 
         var absVolume = Math.Abs(totalVolume);
-        var volumeMl = (float)(absVolume / 1000.0);
+        // The mesh is sampled, prefer the volume measured from the layer pixels when it is known
+        var volumeMl = mesh.VolumeCubicMillimeters > 0f
+            ? mesh.VolumeCubicMillimeters / 1000f
+            : (float)(absVolume / 1000.0);
         var weightG = volumeMl * 1.1f;
         var bottleCost = UserSettings.Instance.General.AverageResin1000MlBottleCost;
         var cost = volumeMl * (bottleCost / 1000.0f);
@@ -1554,6 +1566,10 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         {
             com = mesh.Center;
         }
+
+        // The mesh is sampled, prefer the area measured from the first layer pixels when it is known
+        if (isOnBed && mesh.BaseContactAreaSquareMillimeters > 0f)
+            contactArea = mesh.BaseContactAreaSquareMillimeters;
 
         CenterOfMass = com;
         BaseContactArea = (float)contactArea;
@@ -1862,6 +1878,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
     protected override unsafe void OnOpenGlInit(GlInterface gl)
     {
+        _sceneFramebuffer = _sceneColorBuffer = _sceneDepthBuffer = 0; // A new context owns none of them
+        _sceneWidth = _sceneHeight = 0;
         _initCheckTimer?.Stop();
         _initCheckTimer = null;
         try
@@ -2110,6 +2128,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     protected override void OnOpenGlLost()
     {
         _rendererInitialized = false;
+        _sceneFramebuffer = _sceneColorBuffer = _sceneDepthBuffer = 0; // They belonged to the lost context
+        _sceneWidth = _sceneHeight = 0;
         _gl = null;
         RendererStatusChanged?.Invoke(
             "The OpenGL context was lost. Switch tabs or reopen the file to retry."
@@ -2117,6 +2137,128 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     }
 
     protected override unsafe void OnOpenGlRender(GlInterface gl, int framebuffer)
+    {
+        if (!_rendererInitialized || _gl is null)
+            return;
+
+        /* The framebuffer Avalonia provides only has a 16 bit depth buffer, which can't tell apart the faces of a
+         * voxel model that are a fraction of a millimeter apart, the surfaces fight and the model shows cuts and
+         * stripes. Draw into a framebuffer with a 24 bit depth buffer and copy it to the one of Avalonia. */
+        var renderScaling = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
+        var width = (uint)Math.Max(1, Math.Round(Bounds.Width * renderScaling));
+        var height = (uint)Math.Max(1, Math.Round(Bounds.Height * renderScaling));
+        var sceneFramebuffer = EnsureSceneFramebuffer(width, height);
+
+        RenderScene(sceneFramebuffer != 0 ? (int)sceneFramebuffer : framebuffer);
+
+        if (sceneFramebuffer == 0 || _gl is null)
+            return;
+
+        try
+        {
+            _gl.BindFramebuffer(FramebufferTarget.ReadFramebuffer, sceneFramebuffer);
+            _gl.BindFramebuffer(FramebufferTarget.DrawFramebuffer, (uint)framebuffer);
+            _gl.BlitFramebuffer(
+                0,
+                0,
+                (int)width,
+                (int)height,
+                0,
+                0,
+                (int)width,
+                (int)height,
+                ClearBufferMask.ColorBufferBit,
+                BlitFramebufferFilter.Nearest
+            );
+            _gl.BindFramebuffer(FramebufferTarget.Framebuffer, (uint)framebuffer);
+        }
+        catch (Exception ex)
+        {
+            RendererStatusChanged?.Invoke($"3D Render error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Gets a framebuffer with a 24 bit depth buffer of the given size, or 0 when it can't be created.
+    /// </summary>
+    private uint EnsureSceneFramebuffer(uint width, uint height)
+    {
+        if (_gl is null || _sceneFramebufferUnsupported)
+            return 0;
+        if (_sceneFramebuffer != 0 && _sceneWidth == width && _sceneHeight == height)
+            return _sceneFramebuffer;
+
+        try
+        {
+            if (_sceneFramebuffer == 0)
+            {
+                _sceneFramebuffer = _gl.GenFramebuffer();
+                _sceneColorBuffer = _gl.GenRenderbuffer();
+                _sceneDepthBuffer = _gl.GenRenderbuffer();
+            }
+
+            _gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, _sceneColorBuffer);
+            _gl.RenderbufferStorage(RenderbufferTarget.Renderbuffer, InternalFormat.Rgba8, width, height);
+            _gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, _sceneDepthBuffer);
+            _gl.RenderbufferStorage(RenderbufferTarget.Renderbuffer, InternalFormat.DepthComponent24, width, height);
+            _gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, 0);
+
+            _gl.BindFramebuffer(FramebufferTarget.Framebuffer, _sceneFramebuffer);
+            _gl.FramebufferRenderbuffer(
+                FramebufferTarget.Framebuffer,
+                FramebufferAttachment.ColorAttachment0,
+                RenderbufferTarget.Renderbuffer,
+                _sceneColorBuffer
+            );
+            _gl.FramebufferRenderbuffer(
+                FramebufferTarget.Framebuffer,
+                FramebufferAttachment.DepthAttachment,
+                RenderbufferTarget.Renderbuffer,
+                _sceneDepthBuffer
+            );
+
+            if (
+                _gl.CheckFramebufferStatus(FramebufferTarget.Framebuffer)
+                != GLEnum.FramebufferComplete
+            )
+            {
+                _sceneFramebufferUnsupported = true;
+                DeleteSceneFramebuffer();
+                return 0;
+            }
+
+            _sceneWidth = width;
+            _sceneHeight = height;
+            return _sceneFramebuffer;
+        }
+        catch
+        {
+            _sceneFramebufferUnsupported = true;
+            DeleteSceneFramebuffer();
+            return 0;
+        }
+    }
+
+    private void DeleteSceneFramebuffer()
+    {
+        if (_gl is not null)
+        {
+            if (_sceneFramebuffer != 0)
+                _gl.DeleteFramebuffer(_sceneFramebuffer);
+            if (_sceneColorBuffer != 0)
+                _gl.DeleteRenderbuffer(_sceneColorBuffer);
+            if (_sceneDepthBuffer != 0)
+                _gl.DeleteRenderbuffer(_sceneDepthBuffer);
+        }
+
+        _sceneFramebuffer = 0;
+        _sceneColorBuffer = 0;
+        _sceneDepthBuffer = 0;
+        _sceneWidth = 0;
+        _sceneHeight = 0;
+    }
+
+    private unsafe void RenderScene(int framebuffer)
     {
         if (!_rendererInitialized || _gl is null)
             return;
@@ -3896,6 +4038,11 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             )
             {
                 var candidatePoint = rayOrigin + rayDirection * t;
+
+                // A wall spanning many layers is only partially visible when clipped, ignore the hidden part
+                if (filterByClip && (candidatePoint.Z < clipMinZ - 1e-3f || candidatePoint.Z > clipMaxZ + 1e-3f))
+                    continue;
+
                 if (CutawayAxis == VoxelPreviewCutawayAxis.X)
                 {
                     if (
@@ -3963,13 +4110,58 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         return false;
     }
 
+    /// <summary>
+    /// Gets near and far planes that hug what is drawn. The depth buffer precision depends on the far/near ratio, and
+    /// the model is made of many faces a layer apart, a near plane that is too close makes them fight and the model
+    /// shows cuts and stripes.
+    /// </summary>
+    private void GetDepthRange(Vector3 cameraPosition, Vector3 forward, out float nearPlane, out float farPlane)
+    {
+        var minDepth = _cameraDistance; // The orbit target is always drawn around
+        var maxDepth = _cameraDistance;
+
+        if (_mesh is { VertexCount: > 0 } mesh)
+        {
+            var min = mesh.MinimumBounds;
+            var max = mesh.MaximumBounds;
+            for (var corner = 0; corner < 8; corner++)
+            {
+                var point = new Vector3(
+                    (corner & 1) == 0 ? min.X : max.X,
+                    (corner & 2) == 0 ? min.Y : max.Y,
+                    (corner & 4) == 0 ? min.Z : max.Z);
+                var depth = Vector3.Dot(point - cameraPosition, forward);
+                minDepth = MathF.Min(minDepth, depth);
+                maxDepth = MathF.Max(maxDepth, depth);
+            }
+        }
+
+        var margin = MathF.Max(_modelRadius * 0.05f, 0.5f);
+        nearPlane = MathF.Max(MathF.Max(0.01f, _cameraDistance * 0.01f), minDepth - margin);
+
+        // The build plate may be much bigger than the model, but it only matters behind it
+        if (PlateWidth > 0 && PlateHeight > 0)
+        {
+            var topZ = MathF.Max(PrintHeight, _mesh?.MaximumBounds.Z ?? 0f);
+            for (var corner = 0; corner < 8; corner++)
+            {
+                var point = new Vector3(
+                    (corner & 1) == 0 ? 0f : PlateWidth,
+                    (corner & 2) == 0 ? 0f : PlateHeight,
+                    (corner & 4) == 0 ? 0f : topZ);
+                maxDepth = MathF.Max(maxDepth, Vector3.Dot(point - cameraPosition, forward));
+            }
+        }
+
+        farPlane = MathF.Max(nearPlane + 1f, maxDepth + margin);
+    }
+
     private Matrix4x4 GetViewProjection(float aspectRatio)
     {
         GetCameraBasis(out var direction, out _, out var up);
         var cameraOffset = direction * _cameraDistance;
         var cameraPosition = _cameraTarget + cameraOffset;
-        var nearPlane = Math.Max(0.001f, _cameraDistance - _modelRadius * 1.5f);
-        var farPlane = Math.Max(nearPlane + 1, _cameraDistance + _modelRadius * 4);
+        GetDepthRange(cameraPosition, -direction, out var nearPlane, out var farPlane);
         var view = Matrix4x4.CreateLookAt(cameraPosition, _cameraTarget, up);
         var safeAspectRatio = Math.Max(aspectRatio, 0.01f);
         var projection = IsOrthographic
@@ -4144,6 +4336,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     {
         if (_gl is null)
             return;
+        DeleteSceneFramebuffer();
         if (_pendingCapData is not null)
         {
             ArrayPool<byte>.Shared.Return(_pendingCapData);

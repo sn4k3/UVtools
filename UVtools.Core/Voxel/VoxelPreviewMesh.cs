@@ -182,6 +182,19 @@ public sealed class VoxelPreviewMesh : IDisposable
     public long SourceRevision { get; }
     public VoxelPreviewQuality Quality { get; }
     public TimeSpan BuildDuration { get; internal set; }
+
+    /// <summary>
+    /// Gets the volume of the sliced model in cubic millimeters, measured from the layer pixels. The volume of the
+    /// mesh itself is not representative when it was sampled at a stride greater than 1, as every coarse cell with
+    /// any lit pixel is taken as solid.
+    /// </summary>
+    public float VolumeCubicMillimeters { get; internal set; }
+
+    /// <summary>
+    /// Gets the area in square millimeters of the first layer when the model sits on the build plate, otherwise 0.
+    /// Measured from the layer pixels, the sampled mesh would overestimate it.
+    /// </summary>
+    public float BaseContactAreaSquareMillimeters { get; internal set; }
     public Rectangle ModelBounds { get; }
     public float PixelWidth { get; }
     public float PixelHeight { get; }
@@ -195,8 +208,9 @@ public sealed class VoxelPreviewMesh : IDisposable
     public float BoundsMaxX => ModelBounds.Right * PixelWidth;
     public float BoundsMaxY => ModelBounds.Bottom * PixelHeight;
 
-    public ReadOnlySpan<VoxelPreviewVertex> Vertices => _vertices.AsSpan(0, VertexCount);
-    public ReadOnlySpan<uint> Indices => _indices.AsSpan(0, IndexCount);
+    /* A disposed mesh is empty instead of throwing, a consumer on another thread may still hold the reference. */
+    public ReadOnlySpan<VoxelPreviewVertex> Vertices => _vertices is { } vertices ? vertices.AsSpan(0, VertexCount) : [];
+    public ReadOnlySpan<uint> Indices => _indices is { } indices ? indices.AsSpan(0, IndexCount) : [];
 
     public void Dispose()
     {

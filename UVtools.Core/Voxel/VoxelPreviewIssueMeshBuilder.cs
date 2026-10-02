@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -119,17 +120,41 @@ public static class VoxelPreviewIssueMeshBuilder
                 }
             }
 
-            foreach (var (z, issues) in issuesByZ)
+            if (gridLength > 0)
             {
-                if (gridLength == 0) continue;
-                var mask = BuildMask(type, issues, bounds, gridWidth, gridHeight, gridLength, flip);
-                try
+                /* Rasterizing and sampling the issues of a layer is the costly part and is independent between
+                 * layers, so the masks of a batch are produced in parallel while the meshing keeps the layer order. */
+                var groups = issuesByZ.ToArray();
+                var batchSize = Math.Max(1, Environment.ProcessorCount * 2);
+                var masks = new byte[]?[batchSize];
+                for (var batchStart = 0; batchStart < groups.Length; batchStart += batchSize)
                 {
-                    EmitGreedyPlane(context, mask, gridWidth, gridHeight, z);
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(mask);
+                    progress?.PauseOrCancelIfRequested();
+                    var batchLength = Math.Min(batchSize, groups.Length - batchStart);
+                    try
+                    {
+                        Parallel.For(0, batchLength, CoreSettings.GetParallelOptions(progress?.Token ?? default),
+                            offset =>
+                            {
+                                masks[offset] = BuildMask(type, groups[batchStart + offset].Value, bounds, gridWidth,
+                                    gridHeight, gridLength, flip);
+                            });
+
+                        for (var offset = 0; offset < batchLength; offset++)
+                        {
+                            EmitGreedyPlane(context, masks[offset]!, gridWidth, gridHeight,
+                                groups[batchStart + offset].Key);
+                        }
+                    }
+                    finally
+                    {
+                        for (var offset = 0; offset < batchSize; offset++)
+                        {
+                            if (masks[offset] is null) continue;
+                            ArrayPool<byte>.Shared.Return(masks[offset]!);
+                            masks[offset] = null;
+                        }
+                    }
                 }
             }
 
@@ -218,13 +243,18 @@ public static class VoxelPreviewIssueMeshBuilder
             }
 
             if (flip != FlipDirection.None) CvInvoke.Flip(source, source, (FlipType)flip);
+
+            /* The area resize can only produce partial values on a coarser grid, anything lit is an issue. */
+            if (source.Width == gridWidth && source.Height == gridHeight)
+            {
+                source.GetReadOnlySpanOfBytes()[..gridLength].CopyTo(result);
+                return result;
+            }
+
             using var sampled = new Mat();
             CvInvoke.Resize(source, sampled, new Size(gridWidth, gridHeight), 0, 0, Inter.Area);
-            var sampledSpan = sampled.GetReadOnlySpanOfBytes();
-            for (var index = 0; index < gridLength; index++)
-            {
-                result[index] = sampledSpan[index] == 0 ? (byte)0 : byte.MaxValue;
-            }
+            CvInvoke.Threshold(sampled, sampled, 0, byte.MaxValue, ThresholdType.Binary);
+            sampled.GetReadOnlySpanOfBytes()[..gridLength].CopyTo(result);
 
             return result;
         }
@@ -238,34 +268,33 @@ public static class VoxelPreviewIssueMeshBuilder
     private static void EmitGreedyPlane(IssueBuildContext context, byte[] mask, int width, int height, float z)
     {
         for (var y = 0; y < height; y++)
-        for (var x = 0; x < width; x++)
         {
-            var index = y * width + x;
-            if (mask[index] == 0) continue;
-
-            var rectangleWidth = 1;
-            while (x + rectangleWidth < width && mask[index + rectangleWidth] != 0) rectangleWidth++;
-
-            var rectangleHeight = 1;
-            while (y + rectangleHeight < height)
+            var rowStart = y * width;
+            var x = 0;
+            while (x < width)
             {
-                var row = (y + rectangleHeight) * width + x;
-                var fullRow = true;
-                for (var offset = 0; offset < rectangleWidth; offset++)
+                // Jump to the next cell of the plane, the empty ones are skipped a vector at a time
+                var skip = mask.AsSpan(rowStart + x, width - x).IndexOfAnyExcept((byte)0);
+                if (skip < 0) break;
+                x += skip;
+
+                var index = rowStart + x;
+                var rectangleWidth = mask.AsSpan(index, width - x).IndexOf((byte)0);
+                if (rectangleWidth < 0) rectangleWidth = width - x;
+
+                var rectangleHeight = 1;
+                while (y + rectangleHeight < height &&
+                       !mask.AsSpan((y + rectangleHeight) * width + x, rectangleWidth).Contains((byte)0))
                 {
-                    if (mask[row + offset] != 0) continue;
-                    fullRow = false;
-                    break;
+                    rectangleHeight++;
                 }
 
-                if (!fullRow) break;
-                rectangleHeight++;
+                for (var clearY = 0; clearY < rectangleHeight; clearY++)
+                    mask.AsSpan((y + clearY) * width + x, rectangleWidth).Clear();
+
+                context.Emit(x, y, x + rectangleWidth, y + rectangleHeight, z);
+                x += rectangleWidth;
             }
-
-            for (var clearY = 0; clearY < rectangleHeight; clearY++)
-                mask.AsSpan((y + clearY) * width + x, rectangleWidth).Clear();
-
-            context.Emit(x, y, x + rectangleWidth, y + rectangleHeight, z);
         }
     }
 

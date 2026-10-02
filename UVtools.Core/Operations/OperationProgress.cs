@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -233,6 +233,14 @@ public sealed partial class OperationProgress : ObservableObject, IDisposable
         OnPropertyChanged(nameof(CanCancel));
     }
 
+    /// <summary>
+    /// The minimum time between the property changed notifications of <see cref="LockAndIncrement"/>.
+    /// Layers can be processed hundreds of times per second by many threads, and each notification wakes up the UI.
+    /// </summary>
+    private static readonly TimeSpan MinimumIncrementNotifyInterval = TimeSpan.FromMilliseconds(40);
+
+    private long _lastIncrementNotifyTimestamp;
+
     public void LockAndIncrement()
     {
         /*lock (Mutex)
@@ -240,8 +248,22 @@ public sealed partial class OperationProgress : ObservableObject, IDisposable
             ProcessedItems++;
         }*/
 #pragma warning disable MVVMTK0034 // Atomic updates require direct access to the generated property's backing field.
-        Interlocked.Increment(ref _processedItems);
+        var processed = Interlocked.Increment(ref _processedItems);
 #pragma warning restore MVVMTK0034
+
+        // The value is always up to date, only the notifications are throttled, except for the last item
+        var now = Stopwatch.GetTimestamp();
+        var last = Interlocked.Read(ref _lastIncrementNotifyTimestamp);
+        var isLastItem = ItemCount > 0 && processed >= ItemCount;
+        if (!isLastItem &&
+            (Stopwatch.GetElapsedTime(last, now) < MinimumIncrementNotifyInterval ||
+             Interlocked.CompareExchange(ref _lastIncrementNotifyTimestamp, now, last) != last))
+        {
+            return;
+        }
+
+        if (isLastItem) Interlocked.Exchange(ref _lastIncrementNotifyTimestamp, now);
+
         OnPropertyChanged(nameof(ProcessedItems));
         OnPropertyChanged(nameof(RemainingItems));
         OnPropertyChanged(nameof(ProgressStep));

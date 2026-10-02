@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -87,9 +87,16 @@ public sealed partial class OperationSolidify : Operation
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
-            using var mat = SlicerFile[layerIndex].LayerMat;
-            Execute(mat);
-            SlicerFile[layerIndex].LayerMat = mat;
+            var layer = SlicerFile[layerIndex];
+            if (!layer.IsEmpty) // An empty layer have no holes
+            {
+                using var mat = layer.LayerMat;
+                if (Solidify(mat)) // Only compress the layer again if a hole was filled
+                {
+                    layer.LayerMat = mat;
+                }
+            }
+
             progress.LockAndIncrement();
         });
 
@@ -98,36 +105,56 @@ public sealed partial class OperationSolidify : Operation
 
     public override bool Execute(Mat mat, params object[]? arguments)
     {
-        using Mat filteredMat = new();
-        using var original = mat.Clone();
+        Solidify(mat);
+        return true;
+    }
+
+    /// <summary>
+    /// Fills the interior holes of <paramref name="mat"/>.
+    /// </summary>
+    /// <param name="mat">The layer, which will be modified.</param>
+    /// <returns>True if any hole was filled, otherwise false and the layer is untouched.</returns>
+    private bool Solidify(Mat mat)
+    {
+        using var original = CloneIfMasked(mat);
         using var target = GetRoiOrDefault(mat);
 
-        CvInvoke.Threshold(target, filteredMat, 127, 255, ThresholdType.Binary); // Clean AA
+        // Holes are always inside of the content, so only the content area needs to be processed
+        var bounds = CvInvoke.BoundingRectangle(target);
+        if (bounds.IsEmpty) return false;
+        using var area = new Mat(target, bounds);
+
+        using Mat filteredMat = new();
+        CvInvoke.Threshold(area, filteredMat, 127, 255, ThresholdType.Binary); // Clean AA
         using var contours = filteredMat.FindContours(out var hierarchy, RetrType.Ccomp);
+        var changed = false;
         for (int i = 0; i < contours.Size; i++)
         {
             if (hierarchy[i, EmguContour.HierarchyFirstChild] != -1 || hierarchy[i, EmguContour.HierarchyParent] == -1) continue;
             if (MinimumArea >= 1)
             {
-                var area = CvInvoke.ContourArea(contours[i]);
+                var contourArea = CvInvoke.ContourArea(contours[i]);
                 if (AreaCheckType == AreaCheckTypes.More)
                 {
-                    if (area < MinimumArea) continue;
+                    if (contourArea < MinimumArea) continue;
                 }
                 else
                 {
-                    if (area > MinimumArea) continue;
+                    if (contourArea > MinimumArea) continue;
                 }
 
             }
 
-            CvInvoke.DrawContours(target, contours, i, EmguCvExtensions.WhiteColor, -1);
+            CvInvoke.DrawContours(area, contours, i, EmguCvExtensions.WhiteColor, -1);
+            changed = true;
         }
 
-        ApplyMask(original, target);
+        if (changed)
+        {
+            ApplyMask(original, target);
+        }
 
-        return true;
+        return changed;
     }
-
     #endregion
 }

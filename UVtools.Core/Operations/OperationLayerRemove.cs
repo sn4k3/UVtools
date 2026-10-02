@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Layers;
 
 namespace UVtools.Core.Operations;
 
@@ -186,11 +187,17 @@ public sealed partial class OperationLayerRemove : Operation
                     slicerFile[layerIndex].PositionZ -= removedHeight;
             }
 
-            foreach (var layerIndex in layerIndexes)
+            // Removing one by one from the list would shift all the layers after it every time
+            var removeSet = layerIndexes.ToHashSet();
+            var remainingLayers = new List<Layer>(layers.Count - layerIndexes.Length);
+            for (var layerIndex = 0; layerIndex < layers.Count; layerIndex++)
             {
-                layers.RemoveAt((int)layerIndex);
-                progress++;
+                if (removeSet.Contains((uint)layerIndex)) continue;
+                remainingLayers.Add(layers[layerIndex]);
             }
+
+            layers = remainingLayers;
+            progress.ProcessedItems = (uint)layerIndexes.Length;
 
             // Should never happen, still use this safe-check
             if (slicerFile.LayerCount != layers.Count)

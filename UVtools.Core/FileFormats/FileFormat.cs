@@ -382,15 +382,17 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
             .GroupBy(tuple => tuple.LayerIndex)
             .ToArray();
 
+        // Reversed first so the stable descending sort leaves each layer's operations in reverse insertion order
         var group2 = drawings
             .Where(operation => operation.OperationType
                 is PixelOperation.PixelOperationType.Supports
                 or PixelOperation.PixelOperationType.DrainHole)
-            .GroupBy(operation => operation.LayerIndex)
-            .OrderByDescending(group => group.Key)
+            .Reverse()
+            .OrderByDescending(operation => operation.LayerIndex)
+            .Select(operation => new DrillOperationState(operation))
             .ToArray();
 
-        progress.Reset("Drawings", (uint)(group1.Length + group2.Sum(group => group.Count())));
+        progress.Reset("Drawings", (uint)(group1.Length + group2.Length));
 
         Parallel.ForEach(group1, CoreSettings.GetParallelOptions(progress), layerOperationGroup =>
         {
@@ -499,34 +501,108 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
 
         if (group2.Length > 0)
         {
-            using var matCache = new MatCacheManager(this, 0, group2.First().Key)
-            {
-                AutoDispose = true,
-                Direction = false
-            };
-            foreach (var layerOperationGroup in group2)
-            {
-                var toProcess = layerOperationGroup.ToList();
-                var drawnSupportLayers = 0;
-                var drawnDrainHoleLayers = 0;
-                for (var operationLayer = (int)layerOperationGroup.Key - 1;
-                     operationLayer >= 0 && toProcess.Count > 0;
-                     operationLayer--)
-                {
-                    var layer = this[operationLayer];
-                    var mat = matCache.Get1((uint)operationLayer);
-                    var isMatModified = false;
+            DrawDrillOperations(group2, progress);
+        }
+    }
 
-                    for (var i = toProcess.Count - 1; i >= 0; i--)
+    /// <summary>
+    /// Mutable per-operation state of a downward supports/drain hole sweep.
+    /// </summary>
+    private sealed class DrillOperationState(PixelOperation operation)
+    {
+        public PixelOperation Operation { get; } = operation;
+
+        /// <summary>
+        /// Gets the first layer to process, which is the one right below the operation layer.
+        /// </summary>
+        public long StartLayerIndex { get; } = (long)operation.LayerIndex - 1;
+
+        /// <summary>
+        /// Gets or sets how many layers this operation has already drawn on.
+        /// </summary>
+        public int DrawnLayers { get; set; }
+    }
+
+    /// <summary>
+    /// Applies supports and drain holes in a single downward sweep over the layers.
+    /// Every layer is decoded and encoded at most once no matter how many operations touch it. Decoding and encoding
+    /// run in parallel over a window of layers, while the cheap per-operation decisions run sequentially in a fixed
+    /// order so the result stays deterministic.
+    /// </summary>
+    /// <param name="operations">The operations ordered by descending layer, then in the order they must be processed.</param>
+    /// <param name="progress">The progress, incremented once per finished operation.</param>
+    private void DrawDrillOperations(DrillOperationState[] operations, OperationProgress progress)
+    {
+        var lastLayerIndex = (int)LastLayerIndex;
+        var pending = new List<DrillOperationState>(operations.Length);
+        var startLayers = new List<int>(operations.Length);
+        foreach (var state in operations)
+        {
+            if (state.StartLayerIndex < 0)
+            {
+                progress.LockAndIncrement(); // Nothing below to process
+                continue;
+            }
+
+            pending.Add(state);
+            startLayers.Add((int)Math.Min(state.StartLayerIndex, lastLayerIndex));
+        }
+
+        var parallelOptions = CoreSettings.GetParallelOptions(progress);
+        var windowSize = Math.Max(2, Environment.ProcessorCount);
+        var mats = new Mat?[windowSize];
+        var modified = new bool[windowSize];
+        var active = new List<DrillOperationState>();
+        var nextPending = 0;
+        var layerIndex = lastLayerIndex;
+
+        while (layerIndex >= 0 && (nextPending < pending.Count || active.Count > 0))
+        {
+            // Skip the layers where nothing is going on
+            if (active.Count == 0) layerIndex = Math.Min(layerIndex, startLayers[nextPending]);
+
+            var windowTop = layerIndex;
+            var windowCount = Math.Min(windowSize, windowTop + 1);
+
+            try
+            {
+                Parallel.For(0, windowCount, parallelOptions, i =>
+                {
+                    modified[i] = false;
+                    mats[i] = this[windowTop - i].LayerMat;
+                });
+
+                for (var i = 0; i < windowCount; i++)
+                {
+                    var operationLayer = windowTop - i;
+
+                    while (nextPending < pending.Count && startLayers[nextPending] >= operationLayer)
                     {
-                        progress.PauseOrCancelIfRequested();
-                        var operation = toProcess[i];
+                        active.Add(pending[nextPending++]);
+                    }
+
+                    if (active.Count == 0)
+                    {
+                        if (nextPending >= pending.Count) break;
+                        continue;
+                    }
+
+                    progress.PauseOrCancelIfRequested();
+                    var mat = mats[i]!;
+                    var keep = 0;
+
+                    for (var n = 0; n < active.Count; n++)
+                    {
+                        var state = active[n];
+                        var operation = state.Operation;
+                        var finished = false;
+
                         if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
                         {
                             var operationSupport = (PixelSupport)operation;
 
                             var radius = (operationLayer > 10
-                                ? Math.Min(operationSupport.TipDiameter + drawnSupportLayers,
+                                ? Math.Min(operationSupport.TipDiameter + state.DrawnLayers,
                                     operationSupport.PillarDiameter)
                                 : operationSupport.BaseDiameter) / 2;
                             uint whitePixels;
@@ -536,7 +612,6 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
 
                             var tipDiameter = PixelsToNormalizedPitch(operationSupport.TipDiameter);
                             var tipRadius = PixelsToNormalizedPitch(operationSupport.TipDiameter / 2);
-                            var pillarDiameter = PixelsToNormalizedPitch(operationSupport.PillarDiameter);
 
                             using (var matCircleRoi = new Mat(mat,
                                        new Rectangle(xStart, yStart, tipDiameter.Width, tipDiameter.Height)))
@@ -550,16 +625,16 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
 
                             if (whitePixels >= Math.Pow(operationSupport.TipDiameter, 2) / 3)
                             {
-                                //CvInvoke.Circle(mat, operation.Location, radius, new MCvScalar(255), -1);
-                                if (drawnSupportLayers == 0) continue; // Supports nonexistent, keep digging
-                                toProcess.RemoveAt(i);
-                                continue; // White area end supporting
+                                // Supports nonexistent keep digging, otherwise white area end supporting
+                                finished = state.DrawnLayers > 0;
                             }
-
-                            mat.DrawCircle(operation.Location, PixelsToNormalizedPitch(radius),
-                                new MCvScalar(operation.PixelBrightness), -1, operationSupport.LineType);
-                            isMatModified = true;
-                            drawnSupportLayers++;
+                            else
+                            {
+                                mat.DrawCircle(operation.Location, PixelsToNormalizedPitch(radius),
+                                    new MCvScalar(operation.PixelBrightness), -1, operationSupport.LineType);
+                                modified[i] = true;
+                                state.DrawnLayers++;
+                            }
                         }
                         else if (operation.OperationType == PixelOperation.PixelOperationType.DrainHole)
                         {
@@ -585,26 +660,52 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
 
                             if (blackPixels >= Math.Pow(operationDrainHole.Diameter, 2) / 3) // Enough area to drain?
                             {
-                                if (drawnDrainHoleLayers == 0) continue; // Drill not found a target yet, keep digging
-                                toProcess.RemoveAt(i);
-                                continue; // Stop drill drain found!
+                                // Drill not found a target yet keep digging, otherwise stop as drain found
+                                finished = state.DrawnLayers > 0;
                             }
+                            else
+                            {
+                                mat.DrawCircle(operation.Location, radius, EmguCvExtensions.BlackColor, -1,
+                                    operationDrainHole.LineType);
+                                modified[i] = true;
+                                state.DrawnLayers++;
+                            }
+                        }
 
-                            mat.DrawCircle(operation.Location, radius, EmguCvExtensions.BlackColor, -1,
-                                operationDrainHole.LineType);
-                            isMatModified = true;
-                            drawnDrainHoleLayers++;
+                        if (finished)
+                        {
+                            progress.LockAndIncrement();
+                        }
+                        else
+                        {
+                            active[keep++] = state;
                         }
                     }
 
-                    if (isMatModified)
-                    {
-                        layer.LayerMat = mat;
-                    }
+                    active.RemoveRange(keep, active.Count - keep);
                 }
 
-                progress += (uint)layerOperationGroup.Count();
+                Parallel.For(0, windowCount, parallelOptions, i =>
+                {
+                    if (modified[i]) this[windowTop - i].LayerMat = mats[i]!;
+                });
             }
+            finally
+            {
+                for (var i = 0; i < mats.Length; i++)
+                {
+                    mats[i]?.Dispose();
+                    mats[i] = null;
+                }
+            }
+
+            layerIndex = windowTop - windowCount;
+        }
+
+        // Operations that reached the first layer
+        for (var i = 0; i < active.Count; i++)
+        {
+            progress.LockAndIncrement();
         }
     }
 

@@ -1100,6 +1100,54 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     }
 
     /// <summary>
+    /// Gets a new <see cref="Mat"/> with the size of <paramref name="roi"/> holding the pixels of that layer area.
+    /// Only the compressed bounding rectangle of the layer is decoded, instead of allocating and filling the whole layer.
+    /// </summary>
+    /// <param name="roi">The layer area to get, must be inside the layer resolution.</param>
+    /// <returns>A new mat the caller must dispose.</returns>
+    public Mat GetRoiMat(Rectangle roi)
+    {
+        var compressedMat = _compressedMat;
+        var stored = compressedMat.Roi;
+
+        if (!IsEmpty && stored.Width > 0 && stored.Height > 0 && stored == roi)
+        {
+            return compressedMat.RawDecompress(); // Exactly what we need
+        }
+
+        var destination = EmguCvExtensions.InitMat(roi.Size);
+        try
+        {
+            if (IsEmpty) return destination;
+
+            if (stored.Width <= 0 || stored.Height <= 0)
+            {
+                // Compressed without a bounding rectangle, so it is the full layer
+                using var fullMat = LayerMat;
+                using var fullRoi = new Mat(fullMat, roi);
+                fullRoi.CopyTo(destination);
+                return destination;
+            }
+
+            var overlap = Rectangle.Intersect(stored, roi);
+            if (overlap.IsEmpty) return destination;
+
+            using var rawMat = compressedMat.RawDecompress();
+            using var source = new Mat(rawMat,
+                new Rectangle(overlap.X - stored.X, overlap.Y - stored.Y, overlap.Width, overlap.Height));
+            using var target = new Mat(destination,
+                new Rectangle(overlap.X - roi.X, overlap.Y - roi.Y, overlap.Width, overlap.Height));
+            source.CopyTo(target);
+            return destination;
+        }
+        catch
+        {
+            destination.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Gets the layer mat with bounding rectangle mat
     /// </summary>
     /// <param name="margin">Margin from bounding rectangle</param>

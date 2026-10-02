@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -310,6 +310,7 @@ public sealed partial class OperationLayerReHeight : Operation
                         matSum.ConvertTo(aaAverageSum, DepthType.Cv16U);
                     }
 
+                    Mat? previousDifferenceMat = null;
                     for (byte i = 1; i < SelectedItem.Modifier; i++)
                     {
                         using var nextMat = SlicerFile[layerIndex + i].LayerMat;
@@ -321,11 +322,14 @@ public sealed partial class OperationLayerReHeight : Operation
                                 break;
                             case OperationLayerReHeightAntiAliasingType.Difference:
                             {
-                                using var previousMat = SlicerFile[layerIndex + i - 1].LayerMat;
+                                // The previous layer is the first one on the first iteration, which is still untouched in this mode
+                                var previousMat = previousDifferenceMat ?? matSum;
                                 using var matXor = new Mat();
                                 //CvInvoke.Threshold(previousMat, previousMat, 127, 255, ThresholdType.Binary);
                                 //CvInvoke.Threshold(nextMat, nextMat, 127, 255, ThresholdType.Binary);
                                 CvInvoke.BitwiseXor(previousMat, nextMat, matXor);
+                                previousDifferenceMat?.Dispose();
+                                previousDifferenceMat = nextMat.Clone();
                                 matXor.SetTo(new MCvScalar((byte) (byte.MaxValue / SelectedItem.Modifier)),
                                     matXor);
                                 if (matXorSum is null)
@@ -347,6 +351,8 @@ public sealed partial class OperationLayerReHeight : Operation
                                 throw new ArgumentOutOfRangeException();
                         }
                     }
+
+                    previousDifferenceMat?.Dispose();
 
                     switch (AntiAliasingType)
                     {

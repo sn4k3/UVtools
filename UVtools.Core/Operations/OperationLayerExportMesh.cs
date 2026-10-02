@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -364,14 +364,21 @@ public sealed partial class OperationLayerExportMesh : Operation
             {
                 progress.PauseIfRequested();
                 /* Collects all the faces found for this thread, will be combined into the main dictionary later */
-                var threadDict = new Dictionary<Voxelizer.FaceOrientation, List<Point>>();
-                var pixelPos = voxelLayer.GetPixelPos(0, y);
-                for (var x = 0; x < curLayer.Width; x++)
+                Dictionary<Voxelizer.FaceOrientation, List<Point>>? threadDict = null;
+                var width = curLayer.Width;
+                var row = new ReadOnlySpan<byte>(voxelSpan + voxelLayer.GetPixelPos(0, y), width);
+                var searchFrom = 0;
+                while (searchFrom < width)
                 {
-                    if (voxelSpan[pixelPos++] == 0) continue;
+                    /* Jump over the empty pixels, most of the layer is empty */
+                    var next = row[searchFrom..].IndexOfAnyExcept((byte)0);
+                    if (next < 0) break;
+                    var x = searchFrom + next;
+                    searchFrom = x + 1;
 
                     var faces = Voxelizer.GetOpenFaces(curLayer, x, y, belowLayer, aboveLayer);
                     if (faces == Voxelizer.FaceOrientation.None) continue;
+                    threadDict ??= new Dictionary<Voxelizer.FaceOrientation, List<Point>>();
                     foreach (var face in facesToCheck)
                     {
                         if (!faces.HasFlag(face)) continue;
@@ -379,6 +386,8 @@ public sealed partial class OperationLayerExportMesh : Operation
                         threadDict[face].Add(new Point(x, y));
                     }
                 }
+
+                if (threadDict is null) return; // Nothing found on this row
 
                 /* merge all found faces to main foundFaces dictionary */
                 lock (foundFaces)

@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -31,10 +32,24 @@ public static class VoxelPreviewMeshBuilder
     /// </summary>
     private const float KeepDetailAfterProgress = 0.75f;
 
+    /// <summary>
+    /// Builds the voxel mesh of the model.
+    /// </summary>
+    /// <param name="slicerFile">The fully decoded file.</param>
+    /// <param name="options">Detail and budget of the mesh.</param>
+    /// <param name="progress">Optional progress, also used to cancel.</param>
+    /// <param name="minimumPositionZ">When set, only the layers at or above this height are meshed.</param>
+    /// <param name="maximumPositionZ">When set, only the layers at or below this height are meshed.</param>
+    /// <remarks>
+    /// With a height range the mesh is closed on the cut, which is what a clipped export needs, but
+    /// <see cref="VoxelPreviewMesh.ModelBounds"/> and the sampling stay the ones of the whole model.
+    /// </remarks>
     public static VoxelPreviewMesh Build(
         FileFormat slicerFile,
         VoxelPreviewMeshOptions options,
-        OperationProgress? progress = null)
+        OperationProgress? progress = null,
+        float? minimumPositionZ = null,
+        float? maximumPositionZ = null)
     {
         ArgumentNullException.ThrowIfNull(slicerFile);
         if (!slicerFile.HaveLayers) throw new InvalidOperationException("The file has no layers to preview.");
@@ -57,7 +72,8 @@ public static class VoxelPreviewMeshBuilder
             progress?.PauseOrCancelIfRequested();
             try
             {
-                var mesh = BuildAtStride(slicerFile, options, bounds, stride, source, progress);
+                var mesh = BuildAtStride(slicerFile, options, bounds, stride, source, progress, minimumPositionZ,
+                    maximumPositionZ);
                 if (!mesh.IsCurrentFor(slicerFile))
                 {
                     mesh.Dispose();
@@ -66,6 +82,11 @@ public static class VoxelPreviewMeshBuilder
 
                 stopwatch.Stop();
                 mesh.BuildDuration = stopwatch.Elapsed;
+                mesh.VolumeCubicMillimeters = slicerFile.Volume;
+                mesh.BaseContactAreaSquareMillimeters =
+                    mesh.VertexCount > 0 && mesh.MinimumBounds.Z < 0.01f && slicerFile.FirstLayer is { } firstLayer
+                        ? firstLayer.GetArea()
+                        : 0f;
                 return mesh;
             }
             catch (MeshBudgetExceededException)
@@ -106,9 +127,14 @@ public static class VoxelPreviewMeshBuilder
         Rectangle bounds,
         int stride,
         VoxelPreviewSourceSnapshot source,
-        OperationProgress? progress)
+        OperationProgress? progress,
+        float? minimumPositionZ,
+        float? maximumPositionZ)
     {
-        var layers = slicerFile.GetDistinctLayersByPositionZ().ToArray();
+        var layers = slicerFile.GetDistinctLayersByPositionZ()
+            .Where(layer => (minimumPositionZ is not { } minimum || layer.PositionZ >= minimum) &&
+                            (maximumPositionZ is not { } maximum || layer.PositionZ <= maximum))
+            .ToArray();
         if (layers.Length == 0)
             throw new InvalidOperationException("The file has no distinct layer positions to preview.");
 
@@ -286,8 +312,8 @@ public static class VoxelPreviewMeshBuilder
 
         try
         {
-            using var mat = layer.LayerMat;
-            using var roi = mat.Roi(bounds);
+            /* Only the bounding rectangle of the layer is decoded, the rest of the model area is zeros. */
+            using var roi = layer.GetRoiMat(bounds);
             CvInvoke.Threshold(roi, roi, 127, byte.MaxValue, ThresholdType.Binary);
 
             /* Layers sharing this Z position follow at consecutive indexes, merge them into this one. */
@@ -295,8 +321,8 @@ public static class VoxelPreviewMeshBuilder
                  layerIndex < slicerFile.LayerCount && slicerFile[layerIndex].PositionZ == layer.PositionZ;
                  layerIndex++)
             {
-                using var siblingMat = slicerFile[layerIndex].LayerMat;
-                using var siblingRoi = siblingMat.Roi(bounds);
+                if (slicerFile[layerIndex].IsEmpty) continue;
+                using var siblingRoi = slicerFile[layerIndex].GetRoiMat(bounds);
                 CvInvoke.Threshold(siblingRoi, siblingRoi, 127, byte.MaxValue, ThresholdType.Binary);
                 CvInvoke.Max(roi, siblingRoi, roi);
             }
@@ -306,14 +332,17 @@ public static class VoxelPreviewMeshBuilder
                 CvInvoke.Flip(roi, roi, (FlipType)flip);
             }
 
+            /* The area resize can only produce partial values on a coarser grid, anything lit is occupied. */
+            if (roi.Width == gridWidth && roi.Height == gridHeight)
+            {
+                roi.GetReadOnlySpanOfBytes()[..gridLength].CopyTo(occupancy);
+                return occupancy;
+            }
+
             using var sampled = new Mat();
             CvInvoke.Resize(roi, sampled, new Size(gridWidth, gridHeight), 0, 0, Inter.Area);
-
-            var source = sampled.GetReadOnlySpanOfBytes();
-            for (var index = 0; index < gridLength; index++)
-            {
-                occupancy[index] = source[index] == 0 ? (byte)0 : byte.MaxValue;
-            }
+            CvInvoke.Threshold(sampled, sampled, 0, byte.MaxValue, ThresholdType.Binary);
+            sampled.GetReadOnlySpanOfBytes()[..gridLength].CopyTo(occupancy);
 
             return occupancy;
         }
@@ -324,6 +353,10 @@ public static class VoxelPreviewMeshBuilder
         }
     }
 
+    /// <remarks>
+    /// The occupancy grids only hold 0 or 255, which lets the masks be computed with bitwise operations over whole
+    /// vectors of cells instead of cell by cell.
+    /// </remarks>
     private static void EmitHorizontalFaces(
         BuildContext context,
         byte[]? previous,
@@ -338,22 +371,17 @@ public static class VoxelPreviewMeshBuilder
         var mask = ArrayPool<byte>.Shared.Rent(length);
         try
         {
-            for (var index = 0; index < length; index++)
-            {
-                mask[index] = current[index] != 0 && (previous is null || previous[index] == 0)
-                    ? byte.MaxValue
-                    : (byte)0;
-            }
+            var maskSpan = mask.AsSpan(0, length);
+            var currentSpan = current.AsSpan(0, length);
 
+            // Cells not covered by the layer below
+            if (previous is null) currentSpan.CopyTo(maskSpan);
+            else ByteMasks.AndNot(currentSpan, previous.AsSpan(0, length), maskSpan);
             EmitGreedyPlane(context, mask, width, height, minimumZ, false);
 
-            for (var index = 0; index < length; index++)
-            {
-                mask[index] = current[index] != 0 && (next is null || next[index] == 0)
-                    ? byte.MaxValue
-                    : (byte)0;
-            }
-
+            // Cells not covered by the layer above
+            if (next is null) currentSpan.CopyTo(maskSpan);
+            else ByteMasks.AndNot(currentSpan, next.AsSpan(0, length), maskSpan);
             EmitGreedyPlane(context, mask, width, height, maximumZ, true);
         }
         finally
@@ -372,27 +400,23 @@ public static class VoxelPreviewMeshBuilder
     {
         for (var y = 0; y < height; y++)
         {
-            for (var x = 0; x < width; x++)
+            var rowStart = y * width;
+            var x = 0;
+            while (x < width)
             {
-                var index = y * width + x;
-                if (mask[index] == 0) continue;
+                // Jump to the next cell of the plane, the empty ones are skipped a vector at a time
+                var skip = mask.AsSpan(rowStart + x, width - x).IndexOfAnyExcept((byte)0);
+                if (skip < 0) break;
+                x += skip;
 
-                var rectangleWidth = 1;
-                while (x + rectangleWidth < width && mask[index + rectangleWidth] != 0) rectangleWidth++;
+                var index = rowStart + x;
+                var rectangleWidth = mask.AsSpan(index, width - x).IndexOf((byte)0);
+                if (rectangleWidth < 0) rectangleWidth = width - x;
 
                 var rectangleHeight = 1;
-                while (y + rectangleHeight < height)
+                while (y + rectangleHeight < height &&
+                       !mask.AsSpan((y + rectangleHeight) * width + x, rectangleWidth).Contains((byte)0))
                 {
-                    var row = (y + rectangleHeight) * width + x;
-                    var fullRow = true;
-                    for (var offset = 0; offset < rectangleWidth; offset++)
-                    {
-                        if (mask[row + offset] != 0) continue;
-                        fullRow = false;
-                        break;
-                    }
-
-                    if (!fullRow) break;
                     rectangleHeight++;
                 }
 
@@ -402,10 +426,18 @@ public static class VoxelPreviewMeshBuilder
                 }
 
                 context.EmitHorizontal(x, y, x + rectangleWidth, y + rectangleHeight, z, positive);
+                x += rectangleWidth;
             }
         }
     }
 
+    /// <summary>
+    /// Finds the runs of exposed side cells of a layer and extends the ones that continue from the layer below.
+    /// </summary>
+    /// <remarks>
+    /// Works row by row, so the memory is read sequentially, and finds the runs from the cells where the exposure
+    /// changes instead of testing every cell.
+    /// </remarks>
     private static void MergeSideFaces(
         BuildContext context,
         byte[] occupancy,
@@ -431,16 +463,88 @@ public static class VoxelPreviewMeshBuilder
             currentSides.Add(key, new ActiveSide(key, minimumZ, maximumZ));
         }
 
-        for (var x = 0; x < width; x++)
+        var scratch = ArrayPool<byte>.Shared.Rent(width * 3);
+        var starts = ArrayPool<int>.Shared.Rent(width);
+        try
         {
-            AddVerticalRuns(SideDirection.NegativeX, x, x, false);
-            AddVerticalRuns(SideDirection.PositiveX, x + 1, x, true);
-        }
+            /* Faces looking towards -X and +X: a run is a column of exposed cells, it starts and ends on the rows
+             * where the exposure of that column changes. */
+            for (var side = 0; side < 2; side++)
+            {
+                var positive = side == 1;
+                var direction = positive ? SideDirection.PositiveX : SideDirection.NegativeX;
+                var exposed = scratch.AsSpan(0, width);
+                var previousExposed = scratch.AsSpan(width, width);
+                var changes = scratch.AsSpan(width * 2, width);
+                previousExposed.Clear();
 
-        for (var y = 0; y < height; y++)
+                for (var y = 0; y <= height; y++)
+                {
+                    if (y < height)
+                    {
+                        var row = occupancy.AsSpan(y * width, width);
+                        if (positive)
+                        {
+                            exposed[^1] = row[^1];
+                            if (width > 1) ByteMasks.AndNot(row[..^1], row[1..], exposed[..^1]);
+                        }
+                        else
+                        {
+                            exposed[0] = row[0];
+                            if (width > 1) ByteMasks.AndNot(row[1..], row[..^1], exposed[1..]);
+                        }
+                    }
+                    else
+                    {
+                        exposed.Clear(); // Closes the runs reaching the last row
+                    }
+
+                    ByteMasks.Xor(exposed, previousExposed, changes);
+                    var x = 0;
+                    while (x < width)
+                    {
+                        var skip = changes[x..].IndexOfAnyExcept((byte)0);
+                        if (skip < 0) break;
+                        x += skip;
+
+                        if (exposed[x] != 0)
+                        {
+                            starts[x] = y;
+                        }
+                        else
+                        {
+                            AddRun(new SideRunKey(direction, positive ? x + 1 : x, starts[x], y - starts[x]));
+                        }
+
+                        x++;
+                    }
+
+                    var swap = exposed;
+                    exposed = previousExposed;
+                    previousExposed = swap;
+                }
+            }
+
+            /* Faces looking towards -Y and +Y: a run is a sequence of exposed cells inside a row. */
+            var rowExposed = scratch.AsSpan(0, width);
+            for (var y = 0; y < height; y++)
+            {
+                var row = occupancy.AsSpan(y * width, width);
+                if (row.IndexOfAnyExcept((byte)0) < 0) continue;
+
+                if (y == 0) row.CopyTo(rowExposed);
+                else ByteMasks.AndNot(row, occupancy.AsSpan((y - 1) * width, width), rowExposed);
+                AddRowRuns(SideDirection.NegativeY, y, rowExposed);
+
+                if (y == height - 1) row.CopyTo(rowExposed);
+                else ByteMasks.AndNot(row, occupancy.AsSpan((y + 1) * width, width), rowExposed);
+                AddRowRuns(SideDirection.PositiveY, y + 1, rowExposed);
+            }
+        }
+        finally
         {
-            AddHorizontalRuns(SideDirection.NegativeY, y, y, false);
-            AddHorizontalRuns(SideDirection.PositiveY, y + 1, y, true);
+            ArrayPool<byte>.Shared.Return(scratch);
+            ArrayPool<int>.Shared.Return(starts);
         }
 
         foreach (var activeSide in previousSides.Values)
@@ -450,66 +554,82 @@ public static class VoxelPreviewMeshBuilder
 
         previousSides.Clear();
 
-        void AddVerticalRuns(SideDirection direction, int fixedCoordinate, int x, bool positive)
-        {
-            var y = 0;
-            while (y < height)
-            {
-                var solid = occupancy[y * width + x] != 0;
-                var neighborX = positive ? x + 1 : x - 1;
-                var exposed = solid && (neighborX < 0 || neighborX >= width || occupancy[y * width + neighborX] == 0);
-                if (!exposed)
-                {
-                    y++;
-                    continue;
-                }
-
-                var start = y++;
-                while (y < height)
-                {
-                    solid = occupancy[y * width + x] != 0;
-                    exposed = solid && (neighborX < 0 || neighborX >= width || occupancy[y * width + neighborX] == 0);
-                    if (!exposed) break;
-                    y++;
-                }
-
-                AddRun(new SideRunKey(direction, fixedCoordinate, start, y - start));
-            }
-        }
-
-        void AddHorizontalRuns(SideDirection direction, int fixedCoordinate, int y, bool positive)
+        void AddRowRuns(SideDirection direction, int fixedCoordinate, ReadOnlySpan<byte> exposed)
         {
             var x = 0;
-            while (x < width)
+            while (x < exposed.Length)
             {
-                var solid = occupancy[y * width + x] != 0;
-                var neighborY = positive ? y + 1 : y - 1;
-                var exposed = solid && (neighborY < 0 || neighborY >= height || occupancy[neighborY * width + x] == 0);
-                if (!exposed)
-                {
-                    x++;
-                    continue;
-                }
+                var skip = exposed[x..].IndexOfAnyExcept((byte)0);
+                if (skip < 0) return;
+                var start = x + skip;
 
-                var start = x++;
-                while (x < width)
-                {
-                    solid = occupancy[y * width + x] != 0;
-                    exposed = solid && (neighborY < 0 || neighborY >= height || occupancy[neighborY * width + x] == 0);
-                    if (!exposed) break;
-                    x++;
-                }
+                var runLength = exposed[start..].IndexOf((byte)0);
+                if (runLength < 0) runLength = exposed.Length - start;
 
-                AddRun(new SideRunKey(direction, fixedCoordinate, start, x - start));
+                AddRun(new SideRunKey(direction, fixedCoordinate, start, runLength));
+                x = start + runLength;
             }
         }
     }
-
     private static int DivideRoundUp(int value, int divisor)
     {
         return checked((value + divisor - 1) / divisor);
     }
 
+    private static class ByteMasks
+    {
+        /// <summary>Sets <paramref name="destination"/> to <c>source &amp; ~exclude</c> for every byte.</summary>
+        public static void AndNot(ReadOnlySpan<byte> source, ReadOnlySpan<byte> exclude, Span<byte> destination)
+        {
+            var length = source.Length;
+            if (exclude.Length < length || destination.Length < length) throw new ArgumentException("Spans are too short.");
+
+            var index = 0;
+            if (Vector.IsHardwareAccelerated && length >= Vector<byte>.Count)
+            {
+                ref var sourceRef = ref MemoryMarshal.GetReference(source);
+                ref var excludeRef = ref MemoryMarshal.GetReference(exclude);
+                ref var destinationRef = ref MemoryMarshal.GetReference(destination);
+                var last = length - Vector<byte>.Count;
+                for (; index <= last; index += Vector<byte>.Count)
+                {
+                    Vector.AndNot(Vector.LoadUnsafe(ref sourceRef, (nuint)index), Vector.LoadUnsafe(ref excludeRef, (nuint)index))
+                        .StoreUnsafe(ref destinationRef, (nuint)index);
+                }
+            }
+
+            for (; index < length; index++)
+            {
+                destination[index] = (byte)(source[index] & ~exclude[index]);
+            }
+        }
+
+        /// <summary>Sets <paramref name="destination"/> to <c>left ^ right</c> for every byte.</summary>
+        public static void Xor(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right, Span<byte> destination)
+        {
+            var length = left.Length;
+            if (right.Length < length || destination.Length < length) throw new ArgumentException("Spans are too short.");
+
+            var index = 0;
+            if (Vector.IsHardwareAccelerated && length >= Vector<byte>.Count)
+            {
+                ref var leftRef = ref MemoryMarshal.GetReference(left);
+                ref var rightRef = ref MemoryMarshal.GetReference(right);
+                ref var destinationRef = ref MemoryMarshal.GetReference(destination);
+                var last = length - Vector<byte>.Count;
+                for (; index <= last; index += Vector<byte>.Count)
+                {
+                    (Vector.LoadUnsafe(ref leftRef, (nuint)index) ^ Vector.LoadUnsafe(ref rightRef, (nuint)index))
+                        .StoreUnsafe(ref destinationRef, (nuint)index);
+                }
+            }
+
+            for (; index < length; index++)
+            {
+                destination[index] = (byte)(left[index] ^ right[index]);
+            }
+        }
+    }
     private enum SideDirection : byte
     {
         NegativeX,

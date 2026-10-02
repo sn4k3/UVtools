@@ -2175,6 +2175,36 @@
             Gets if the value has changed
             </summary>
         </member>
+        <member name="T:UVtools.Core.FileFormats.FileFormat.DrillOperationState">
+            <summary>
+            Mutable per-operation state of a downward supports/drain hole sweep.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.DrillOperationState.#ctor(UVtools.Core.PixelEditor.PixelOperation)">
+            <summary>
+            Mutable per-operation state of a downward supports/drain hole sweep.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.DrillOperationState.StartLayerIndex">
+            <summary>
+            Gets the first layer to process, which is the one right below the operation layer.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.DrillOperationState.DrawnLayers">
+            <summary>
+            Gets or sets how many layers this operation has already drawn on.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.DrawDrillOperations(UVtools.Core.FileFormats.FileFormat.DrillOperationState[],UVtools.Core.Operations.OperationProgress)">
+            <summary>
+            Applies supports and drain holes in a single downward sweep over the layers.
+            Every layer is decoded and encoded at most once no matter how many operations touch it. Decoding and encoding
+            run in parallel over a window of layers, while the cheap per-operation decisions run sequentially in a fixed
+            order so the result stays deterministic.
+            </summary>
+            <param name="operations">The operations ordered by descending layer, then in the order they must be processed.</param>
+            <param name="progress">The progress, incremented once per finished operation.</param>
+        </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.ExpandLayerRange(UVtools.Core.PixelEditor.PixelOperation)">
             <summary>
             Expands a stroke operation into one tuple per layer in its propagation range
@@ -5803,6 +5833,14 @@
             <param name="roi">Region of interest</param>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.Layers.Layer.GetRoiMat(System.Drawing.Rectangle)">
+            <summary>
+            Gets a new <see cref="T:Emgu.CV.Mat"/> with the size of <paramref name="roi"/> holding the pixels of that layer area.
+            Only the compressed bounding rectangle of the layer is decoded, instead of allocating and filling the whole layer.
+            </summary>
+            <param name="roi">The layer area to get, must be inside the layer resolution.</param>
+            <returns>A new mat the caller must dispose.</returns>
+        </member>
         <member name="M:UVtools.Core.Layers.Layer.GetLayerMatBoundingRectangle(System.Int32)">
             <summary>
             Gets the layer mat with bounding rectangle mat
@@ -6294,6 +6332,64 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.Managers.IssueManager.DetectTouchingBounds(UVtools.Core.Layers.Layer,UVtools.Core.Layers.TouchingBoundDetectionConfiguration,System.Func{UVtools.Core.Layers.MainIssue,System.Boolean})">
+            <summary>
+            Detects the pixels of a layer that touch the bounds of the image.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.IssueManager.HasUnsupportedPixels(Emgu.CV.Mat,Emgu.CV.Mat,System.Byte,System.Byte)">
+            <summary>
+            Checks if any pixel of <paramref name="current"/> bright enough to be considered is not supported by
+            <paramref name="previous"/> (brightness below <paramref name="supportBrightness"/>).
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.IssueManager.CountPixels(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Int32,System.Int32,System.Byte,System.Byte,System.Int32@,System.Int32@)">
+            <summary>
+            Counts the pixels of a run that are bright enough to be considered, and from those how many are supported by
+            the previous layer.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.IssueManager.CountNonZero(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Counts the non-zero bytes.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.IssueManager.ForRows(System.Int32,System.Action{System.Int32,System.Int32})">
+            <summary>
+            Runs <paramref name="body"/> over chunks of rows in parallel.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.IssueManager.BitwiseNot(Emgu.CV.Mat,Emgu.CV.Mat)">
+            <summary>
+            Inverts all the bits of the 8-bit single channel <paramref name="source"/> into <paramref name="destination"/>.
+            Same result as <see cref="M:Emgu.CV.CvInvoke.BitwiseNot(Emgu.CV.IInputArray,Emgu.CV.IOutputArray,Emgu.CV.IInputArray)"/> but multi-threaded and SIMD.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.IssueManager.SubtractAndOr(Emgu.CV.Mat,Emgu.CV.Mat,Emgu.CV.Mat)">
+            <summary>
+            Updates the air map: <c>airMap = saturate(airMap - solid) | layerAirMap</c> for 8-bit single channel mats.
+            Same result as a <see cref="M:Emgu.CV.CvInvoke.Subtract(Emgu.CV.IInputArray,Emgu.CV.IInputArray,Emgu.CV.IOutputArray,Emgu.CV.IInputArray,Emgu.CV.CvEnum.DepthType)"/>
+            followed by a <see cref="M:Emgu.CV.CvInvoke.BitwiseOr(Emgu.CV.IInputArray,Emgu.CV.IInputArray,Emgu.CV.IOutputArray,Emgu.CV.IInputArray)"/>,
+            but in a single multi-threaded and SIMD pass.
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.Managers.IssueManager.LayerMatPrefetcher">
+            <summary>
+            Decodes layers ahead, in parallel and in sequence order, while they are being consumed.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.IssueManager.LayerMatPrefetcher.#ctor(System.Int32,System.Int32,System.Boolean,System.Func{System.Int32,Emgu.CV.Mat},System.Int32)">
+            <param name="first">The first layer index to decode.</param>
+            <param name="last">The last layer index to decode, inclusive.</param>
+            <param name="ascending">True to go from <paramref name="first"/> up to <paramref name="last"/>, otherwise down.</param>
+            <param name="decode">The layer decoder.</param>
+            <param name="lookahead">How many layers to keep decoded ahead.</param>
+        </member>
+        <member name="M:UVtools.Core.Managers.IssueManager.LayerMatPrefetcher.Next">
+            <summary>
+            Gets the next decoded layer, the caller must dispose it.
+            </summary>
+        </member>
         <member name="M:UVtools.Core.Managers.KernelCacheManager.Clear">
             <summary>
             Clears and dispose all the cache
@@ -6489,6 +6585,91 @@
             <summary>
             <para>Gets the standard message box for this session which will trigger a message with pre-defined buttons.</para>
             <para>If using console it will prompt there as text, otherwise if in UI will use dialogs.</para>
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.Managers.RunComponentLabeler">
+            <summary>
+            Labels the connected components of a binary image using horizontal runs of foreground pixels, which makes the cost
+            proportional to the number of runs instead of the number of pixels. Layers are mostly made of large solid areas, so
+            this is a lot faster than a per pixel labeling for them.
+            A pixel is foreground when it is greater than the threshold.
+            </summary>
+            <remarks>
+            Components are numbered in raster order of their first pixel, same as the OpenCV labeling.
+            Instances keep their buffers to be reused, and are not thread safe, use <see cref="P:UVtools.Core.Managers.RunComponentLabeler.ForCurrentThread"/>.
+            </remarks>
+        </member>
+        <member name="F:UVtools.Core.Managers.RunComponentLabeler.MaximumRetainedRuns">
+            <summary>
+            Above this many runs the buffers are not kept after the labeling, to not hold on memory after a pathological image.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.RunComponentLabeler.ForCurrentThread">
+            <summary>
+            Gets the labeler of the current thread.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.RunComponentLabeler.RunCount">
+            <summary>
+            Gets the number of runs found.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.RunComponentLabeler.ComponentCount">
+            <summary>
+            Gets the number of components found.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.RunComponentLabeler.GetRunY(System.Int32)">
+            <summary>
+            Gets the row of a run.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.RunComponentLabeler.GetRunStart(System.Int32)">
+            <summary>
+            Gets the first column of a run.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.RunComponentLabeler.GetRunEnd(System.Int32)">
+            <summary>
+            Gets the last column of a run, inclusive.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.RunComponentLabeler.GetArea(System.Int32)">
+            <summary>
+            Gets the number of foreground pixels of a component.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.RunComponentLabeler.GetBounds(System.Int32)">
+            <summary>
+            Gets the bounding rectangle of a component.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.RunComponentLabeler.GetRuns(System.Int32)">
+            <summary>
+            Gets the runs of a component, in raster order.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.RunComponentLabeler.Label(Emgu.CV.Mat,System.Byte,System.Boolean)">
+            <summary>
+            Labels the components of an 8-bit single channel image.
+            </summary>
+            <param name="image">The image.</param>
+            <param name="threshold">A pixel is foreground when greater than this value.</param>
+            <param name="eightConnected">True to also connect diagonal neighbors, otherwise only left, right, top and bottom.</param>
+        </member>
+        <member name="M:UVtools.Core.Managers.RunComponentLabeler.AddRowRuns(System.ReadOnlySpan{System.Byte},System.Int32,System.Byte)">
+            <summary>
+            Finds the runs of foreground pixels of a row, 64 pixels at a time.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.RunComponentLabeler.LinkRows(System.Int32,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Connects the runs of a row with the touching runs of the row above.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.RunComponentLabeler.TrimExcess">
+            <summary>
+            Releases the buffers if a pathological image made them grow too much, call when done with the results.
             </summary>
         </member>
         <member name="P:UVtools.Core.Managers.SuggestionManager.FilePath">
@@ -6882,6 +7063,31 @@
             A string that always end with 0x00 if not null
             It contains the string length as uint
             </summary>
+        </member>
+        <member name="T:UVtools.Core.Objects.StripedAccumulator">
+            <summary>
+            Adds many mats into a single target mat from multiple threads.
+            The target is split in horizontal stripes with a lock each, so the threads add to different stripes at the same time
+            instead of waiting for each other to add the whole mat.
+            </summary>
+            <remarks>
+            The result is the same as adding the mats one by one, as long as the addition is commutative and associative,
+            which is true for integer types, including the saturated 8-bit addition.
+            </remarks>
+        </member>
+        <member name="M:UVtools.Core.Objects.StripedAccumulator.#ctor(Emgu.CV.Mat,Emgu.CV.Mat,System.Int32)">
+            <summary>
+            Creates a new accumulator.
+            </summary>
+            <param name="target">The mat to accumulate into, it must be initialized with the starting values.</param>
+            <param name="mask">An optional mask, only the pixels that are not zero in the mask are added.</param>
+            <param name="stripeCount">The number of stripes, more than the threads is recommended.</param>
+        </member>
+        <member name="M:UVtools.Core.Objects.StripedAccumulator.Add(Emgu.CV.Mat)">
+            <summary>
+            Adds <paramref name="source"/> to the target, it must have the same size and type as the target.
+            </summary>
+            <param name="source">The mat to add.</param>
         </member>
         <member name="T:UVtools.Core.Objects.UInt24BigEndian">
             <summary>
@@ -7280,19 +7486,49 @@
             <param name="offset"></param>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.Operations.Operation.CloneIfMasked(Emgu.CV.Mat)">
+            <summary>
+            Clones <paramref name="mat"/> to be used as the untouched source of <see cref="M:UVtools.Core.Operations.Operation.ApplyMask(Emgu.CV.Mat,Emgu.CV.Mat)"/>, but only
+            if there is a mask to apply, otherwise returns null and spare copying the whole layer.
+            </summary>
+            <param name="mat">The mat to clone.</param>
+            <returns>A new mat to dispose, or null if there is no mask.</returns>
+        </member>
+        <member name="M:UVtools.Core.Operations.Operation.GetContentArea(Emgu.CV.Mat,System.Int32)">
+            <summary>
+            Gets the area of <paramref name="target"/> that holds its content plus a <paramref name="padding"/>.
+            Use it to run operations that only reach a limited distance around the pixels, as the rest of the layer is blank
+            and the operation would only waste time over it.
+            </summary>
+            <param name="target">The mat to get the content area from.</param>
+            <param name="padding">How far from the content the operation can change pixels, in pixels.</param>
+            <returns>The area, or <see cref="F:System.Drawing.Rectangle.Empty"/> if <paramref name="target"/> is blank.</returns>
+        </member>
+        <member name="M:UVtools.Core.Operations.Operation.CropToContent(Emgu.CV.Mat,System.Int32)">
+            <summary>
+            Gets a shared view of <paramref name="target"/> cropped to its content area, see <see cref="M:UVtools.Core.Operations.Operation.GetContentArea(Emgu.CV.Mat,System.Int32)"/>.
+            </summary>
+            <param name="target">The mat to crop.</param>
+            <param name="padding">How far from the content the operation can change pixels, in pixels.</param>
+            <returns>A mat view to dispose, or null if <paramref name="target"/> is blank.</returns>
+        </member>
         <member name="M:UVtools.Core.Operations.Operation.ApplyMask(Emgu.CV.Mat,Emgu.CV.Mat,Emgu.CV.Mat)">
             <summary>
             Apply a mask to a mat <paramref name="result"/>
             </summary>
-            <param name="original">Original untouched mat</param>
+            <param name="original">Original untouched mat, do nothing if null</param>
             <param name="result">Mat to modify and apply the mask</param>
             <param name="mask">Mask</param>
+            <remarks>
+            The mats and mask can be either the full size or the <see cref="P:UVtools.Core.Operations.Operation.ROI"/> size, the ones with the full size are
+            cropped by the <see cref="P:UVtools.Core.Operations.Operation.ROI"/> to match the others.
+            </remarks>
         </member>
         <member name="M:UVtools.Core.Operations.Operation.ApplyMask(Emgu.CV.Mat,Emgu.CV.Mat)">
             <summary>
             Gets a mask and apply it
             </summary>
-            <param name="original">Original unmodified image</param>
+            <param name="original">Original unmodified image, do nothing if null</param>
             <param name="result">Result image which will also be modified</param>
         </member>
         <member name="M:UVtools.Core.Operations.Operation.ExecuteInternally(UVtools.Core.Operations.OperationProgress)">
@@ -7394,6 +7630,11 @@
         </member>
         <member name="P:UVtools.Core.Operations.OperationBlur.Size">
             <inheritdoc/>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationBlur.GetBlurReach">
+            <summary>
+            Gets how far from a pixel the blur can reach, or -1 if the blur is not limited to a distance.
+            </summary>
         </member>
         <member name="T:UVtools.Core.Operations.OperationCalculator">
             <inheritdoc/>
@@ -7823,6 +8064,11 @@
         </member>
         <member name="P:UVtools.Core.Operations.OperationCalibrateGrayscale.BrightnessSteps">
             <inheritdoc/>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationCalibrateGrayscale.SafeBrightnessSteps">
+            <summary>
+            Gets the brightness step, never lower than 1 to not loop forever or divide by zero
+            </summary>
         </member>
         <member name="P:UVtools.Core.Operations.OperationCalibrateGrayscale.EnableCenterHoleRelief">
             <inheritdoc/>
@@ -9032,6 +9278,12 @@
             Gets the progress from 0 to 100%
             </summary>
         </member>
+        <member name="F:UVtools.Core.Operations.OperationProgress.MinimumIncrementNotifyInterval">
+            <summary>
+            The minimum time between the property changed notifications of <see cref="M:UVtools.Core.Operations.OperationProgress.LockAndIncrement"/>.
+            Layers can be processed hundreds of times per second by many threads, and each notification wakes up the UI.
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Operations.OperationProgress.ProcessedItems">
             <inheritdoc cref="F:UVtools.Core.Operations.OperationProgress._processedItems"/>
         </member>
@@ -9191,6 +9443,13 @@
         <member name="P:UVtools.Core.Operations.OperationSolidify.AreaCheckType">
             <inheritdoc/>
         </member>
+        <member name="M:UVtools.Core.Operations.OperationSolidify.Solidify(Emgu.CV.Mat)">
+            <summary>
+            Fills the interior holes of <paramref name="mat"/>.
+            </summary>
+            <param name="mat">The layer, which will be modified.</param>
+            <returns>True if any hole was filled, otherwise false and the layer is untouched.</returns>
+        </member>
         <member name="T:UVtools.Core.Operations.OperationStirResin">
             <inheritdoc/>
         </member>
@@ -9254,6 +9513,11 @@
         </member>
         <member name="P:UVtools.Core.Operations.OperationThreshold.Type">
             <inheritdoc/>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationThreshold.IsBackgroundPreserved">
+            <summary>
+            Gets if the black pixels stay black after the threshold, so an empty layer stays empty.
+            </summary>
         </member>
         <member name="T:UVtools.Core.Operations.OperationTimelapse">
             <inheritdoc/>
@@ -9986,6 +10250,19 @@
             </summary>
             <param name="driveLetter">This should be the drive letter. Format: F:/, C:/..</param>
         </member>
+        <member name="P:UVtools.Core.Voxel.VoxelPreviewMesh.VolumeCubicMillimeters">
+            <summary>
+            Gets the volume of the sliced model in cubic millimeters, measured from the layer pixels. The volume of the
+            mesh itself is not representative when it was sampled at a stride greater than 1, as every coarse cell with
+            any lit pixel is taken as solid.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Voxel.VoxelPreviewMesh.BaseContactAreaSquareMillimeters">
+            <summary>
+            Gets the area in square millimeters of the first layer when the model sits on the build plate, otherwise 0.
+            Measured from the layer pixels, the sampled mesh would overestimate it.
+            </summary>
+        </member>
         <member name="F:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.KeepDetailAfterProgress">
             <summary>
             Once the sequential meshing pass has covered at least this fraction of the layers, exceeding the
@@ -9993,6 +10270,20 @@
             part of a build, so throwing away a near-finished, full-detail pass to retry at half the detail would
             cost more than it saves. The mesh is instead allowed to finish over budget at the current detail.
             </summary>
+        </member>
+        <member name="M:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.Build(UVtools.Core.FileFormats.FileFormat,UVtools.Core.Voxel.VoxelPreviewMeshOptions,UVtools.Core.Operations.OperationProgress,System.Nullable{System.Single},System.Nullable{System.Single})">
+            <summary>
+            Builds the voxel mesh of the model.
+            </summary>
+            <param name="slicerFile">The fully decoded file.</param>
+            <param name="options">Detail and budget of the mesh.</param>
+            <param name="progress">Optional progress, also used to cancel.</param>
+            <param name="minimumPositionZ">When set, only the layers at or above this height are meshed.</param>
+            <param name="maximumPositionZ">When set, only the layers at or below this height are meshed.</param>
+            <remarks>
+            With a height range the mesh is closed on the cut, which is what a clipped export needs, but
+            <see cref="P:UVtools.Core.Voxel.VoxelPreviewMesh.ModelBounds"/> and the sampling stay the ones of the whole model.
+            </remarks>
         </member>
         <member name="M:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.BuildLayerOccupancy(UVtools.Core.FileFormats.FileFormat,UVtools.Core.Layers.Layer,UVtools.Core.Voxel.VoxelPreviewMesh)">
             <summary>
@@ -10007,8 +10298,45 @@
             both to the memory that is actually free so that large files do not trade a slow build for swapping.
             </summary>
         </member>
+        <member name="M:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.EmitHorizontalFaces(UVtools.Core.Voxel.VoxelPreviewMeshBuilder.BuildContext,System.Byte[],System.Byte[],System.Byte[],System.Int32,System.Int32,System.Single,System.Single)">
+            <remarks>
+            The occupancy grids only hold 0 or 255, which lets the masks be computed with bitwise operations over whole
+            vectors of cells instead of cell by cell.
+            </remarks>
+        </member>
+        <member name="M:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.MergeSideFaces(UVtools.Core.Voxel.VoxelPreviewMeshBuilder.BuildContext,System.Byte[],System.Int32,System.Int32,System.Single,System.Single,System.Collections.Generic.Dictionary{UVtools.Core.Voxel.VoxelPreviewMeshBuilder.SideRunKey,UVtools.Core.Voxel.VoxelPreviewMeshBuilder.ActiveSide},System.Collections.Generic.Dictionary{UVtools.Core.Voxel.VoxelPreviewMeshBuilder.SideRunKey,UVtools.Core.Voxel.VoxelPreviewMeshBuilder.ActiveSide})">
+            <summary>
+            Finds the runs of exposed side cells of a layer and extends the ones that continue from the layer below.
+            </summary>
+            <remarks>
+            Works row by row, so the memory is read sequentially, and finds the runs from the cells where the exposure
+            changes instead of testing every cell.
+            </remarks>
+        </member>
+        <member name="M:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.ByteMasks.AndNot(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte})">
+            <summary>Sets <paramref name="destination"/> to <c>source &amp; ~exclude</c> for every byte.</summary>
+        </member>
+        <member name="M:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.ByteMasks.Xor(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte})">
+            <summary>Sets <paramref name="destination"/> to <c>left ^ right</c> for every byte.</summary>
+        </member>
         <member name="P:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.BuildContext.LayerProgress">
             <summary>Fraction, 0 to 1, of the layers meshed so far. Set by the caller as it walks the layers.</summary>
+        </member>
+        <member name="T:UVtools.Core.Voxel.VoxelPreviewMeshClipper">
+            <summary>
+            Cuts the quads of a <see cref="T:UVtools.Core.Voxel.VoxelPreviewMesh"/> the same way the 3D preview cutaway hides them.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Voxel.VoxelPreviewMeshClipper.ApplyCutaway(System.ReadOnlySpan{UVtools.Core.Voxel.VoxelPreviewVertex},System.ReadOnlySpan{System.UInt32},UVtools.Core.Voxel.VoxelPreviewCutawayAxis,System.Single,System.Boolean)">
+            <summary>
+            Removes the part of the mesh on the cut side of the cutaway plane, a face crossing the plane is shortened to it
+            instead of being dropped, so no wall goes missing. The cut is left open.
+            </summary>
+            <param name="vertices">The vertices of the mesh, made of independent axis aligned quads.</param>
+            <param name="indices">The indices of the mesh, two triangles per quad.</param>
+            <param name="axis">The axis of the plane, <see cref="F:UVtools.Core.Voxel.VoxelPreviewCutawayAxis.Off"/> returns the mesh as is.</param>
+            <param name="position">The position of the plane in millimeters.</param>
+            <param name="invert">False keeps what is below the position, true keeps what is above.</param>
         </member>
         <member name="T:System.Collections.ObjectModel.RangeObservableCollection`1">
             <summary>

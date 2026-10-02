@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -249,7 +249,8 @@ public partial class OperationDoubleExposure : Operation
             byte firstErodeIterations = isBottomLayer ? FirstBottomErodeIterations : FirstNormalErodeIterations;
             byte secondErodeIterations = isBottomLayer ? SecondBottomErodeIterations : SecondNormalErodeIterations;
 
-            using (var mat = firstLayer.LayerMat)
+            using (var mat = firstLayer.IsEmpty ? null : firstLayer.LayerMat) // Nothing to erode on an empty layer
+            if (mat is not null)
             {
                 //using Mat matOriginal = _secondExposureLayerDifference ? mat.Clone() : null;
                 if (firstErodeIterations > 0 && firstErodeIterations == secondErodeIterations)

@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using Emgu.CV;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
@@ -162,9 +163,14 @@ public sealed partial class OperationMorph : Operation
             progress.PauseIfRequested();
             int iterations = FileFormat.MutateGetIterationVar(isFade, (int)IterationsStart, (int)IterationsEnd, iterationSteps, maxIteration, LayerIndexStart, (uint)layerIndex);
 
-            using var mat = SlicerFile[layerIndex].LayerMat;
-            Execute(mat, iterations);
-            SlicerFile[layerIndex].LayerMat = mat;
+            var layer = SlicerFile[layerIndex];
+            // Every morph operation keeps a blank layer blank, except hit or miss that can match the background
+            if (!layer.IsEmpty || MorphOperation == MorphOperations.HitMiss)
+            {
+                using var mat = layer.LayerMat;
+                Execute(mat, iterations);
+                layer.LayerMat = mat;
+            }
 
             progress.LockAndIncrement();
         });
@@ -180,7 +186,7 @@ public sealed partial class OperationMorph : Operation
             iterations = (int) arguments[0];
         }
 
-        using var original = mat.Clone();
+        using var original = MorphOperation == MorphOperations.OffsetCrop ? mat.Clone() : CloneIfMasked(mat);
         using var target = GetRoiOrDefault(mat);
 
         /*if (CoreSettings.CanUseCuda)
@@ -194,11 +200,31 @@ public sealed partial class OperationMorph : Operation
         {*/
 
         var kernel = Kernel.GetKernel(ref iterations);
-        CvInvoke.MorphologyEx(target, target, MorphOperationOpenCV, kernel, Kernel.Anchor, iterations, BorderType.Reflect101, default);
+
+        // The morphology does not change pixels away from the content, so the blank area is not processed
+        // Hit or miss and offset crop use the background or the original pixels, they work over the whole area
+        Mat? croppedTarget = null;
+        // A ROI view reads the pixels around it, which can reach inside of it, so the crop is only safe without a ROI
+        if (!HaveROI && MorphOperation is not (MorphOperations.HitMiss or MorphOperations.OffsetCrop))
+        {
+            var reach = (long)Math.Max(1, iterations) * Math.Max(kernel?.Rows ?? 3, kernel?.Cols ?? 3) + 1;
+            croppedTarget = CropToContent(target, (int)Math.Min(reach, int.MaxValue / 4));
+            if (croppedTarget is null) return true; // Blank
+        }
+
+        try
+        {
+            var work = croppedTarget ?? target;
+            CvInvoke.MorphologyEx(work, work, MorphOperationOpenCV, kernel, Kernel.Anchor, iterations, BorderType.Reflect101, default);
+        }
+        finally
+        {
+            croppedTarget?.Dispose();
+        }
 
         if (MorphOperation == MorphOperations.OffsetCrop)
         {
-            using var originalRoi = GetRoiOrDefault(original);
+            using var originalRoi = GetRoiOrDefault(original!);
             originalRoi.CopyTo(target, target);
         }
         /*else if (MorphOperation == MorphOperations.IsolateFeatures)
@@ -207,7 +233,6 @@ public sealed partial class OperationMorph : Operation
             CvInvoke.Subtract(originalRoi, target, target);
         }*/
         //}
-
 
         ApplyMask(original, target);
         return true;

@@ -1,4 +1,4 @@
-﻿/*
+/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +30,7 @@ public static class AnnouncementManager
     public const string RemoteAnnouncementsUrl =
         "https://raw.githubusercontent.com/sn4k3/UVtools/master/announcements.json";
 
-    public static readonly TimeSpan CheckInterval = TimeSpan.FromMinutes(30);
+    public static readonly TimeSpan CheckInterval = TimeSpan.FromHours(2);
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -45,14 +46,17 @@ public static class AnnouncementManager
 
         var candidates = new List<AnnouncementItem>();
 
-        // Check if 30 minutes have elapsed since the last remote check
-        var shouldFetchRemote = DateTime.UtcNow - general.LastAnnouncementCheckTime >= CheckInterval;
+        // Check every two hours, or immediately when the application version changes.
+        var currentVersionString = About.VersionString;
+        var shouldFetchRemote = general.LastAnnouncementCheckVersion != currentVersionString ||
+                                DateTime.UtcNow - general.LastAnnouncementCheckTime >= CheckInterval;
 
         if (shouldFetchRemote)
         {
             try
             {
                 general.LastAnnouncementCheckTime = DateTime.UtcNow;
+                general.LastAnnouncementCheckVersion = currentVersionString;
                 UserSettings.Save();
 
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -87,6 +91,7 @@ public static class AnnouncementManager
         var announcement = candidates.FirstOrDefault(a =>
             !string.IsNullOrWhiteSpace(a.Id) &&
             !general.DismissedAnnouncementIds.Contains(a.Id) &&
+            IsPlatformCompatible(a.Platform) &&
             IsVersionCompatible(currentVersion, a.MinVersion, a.MaxVersion) &&
             (a.ExpiresAt is null || DateTime.UtcNow <= a.ExpiresAt.Value));
 
@@ -137,8 +142,9 @@ public static class AnnouncementManager
 
         var currentVersion = About.Version;
         var announcement =
-            candidates.FirstOrDefault(a => IsVersionCompatible(currentVersion, a.MinVersion, a.MaxVersion))
-            ?? candidates.FirstOrDefault();
+            candidates.FirstOrDefault(a => IsPlatformCompatible(a.Platform) &&
+                                           IsVersionCompatible(currentVersion, a.MinVersion, a.MaxVersion))
+            ?? candidates.FirstOrDefault(a => IsPlatformCompatible(a.Platform));
 
         if (announcement is not null)
         {
@@ -151,6 +157,8 @@ public static class AnnouncementManager
     /// </summary>
     public static async Task ShowAnnouncementDialogAsync(Window owner, AnnouncementItem announcement)
     {
+        if (!IsPlatformCompatible(announcement.Platform)) return;
+
         await Dispatcher.UIThread.InvokeAsync(async () =>
         {
             Button[] buttons;
@@ -190,6 +198,11 @@ public static class AnnouncementManager
                 HostSystem.OpenUrl(announcement.Url);
             }
         });
+    }
+
+    private static bool IsPlatformCompatible(OSPlatform? platform)
+    {
+        return platform is null || RuntimeInformation.IsOSPlatform(platform.Value);
     }
 
     private static bool IsVersionCompatible(Version current, string? minVersionStr, string? maxVersionStr)

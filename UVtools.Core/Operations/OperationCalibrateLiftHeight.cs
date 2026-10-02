@@ -123,7 +123,7 @@ public sealed partial class OperationCalibrateLiftHeight : Operation
         get
         {
             uint layerCount = (uint)(BottomLayers + NormalLayers);
-            if (DecreaseImage)
+            if (DecreaseImage && DecreaseImageFactor > 0 && MinimumImageFactor < 100)
             {
                 layerCount += (100u - MinimumImageFactor) / DecreaseImageFactor;
                 //layerCount += (uint)Math.Ceiling((100.0 - MinimumImageFactor - DecreaseImageFactor) / DecreaseImageFactor);

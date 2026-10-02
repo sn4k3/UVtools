@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -252,15 +252,17 @@ public sealed partial class OperationChangeResolution : Operation
         Parallel.For(0, SlicerFile.LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
-            using var mat = SlicerFile[layerIndex].LayerMat;
+            var layer = SlicerFile[layerIndex];
 
-            if (mat.Size != newSize)
+            if (layer.Resolution != newSize)
             {
                 using var matDst = EmguCvExtensions.InitMat(newSize);
 
-                if (SlicerFile[layerIndex].NonZeroPixelCount > 0)
+                if (layer.NonZeroPixelCount > 0)
                 {
-                    mat.CopyRegionToCenter(OriginalBoundingRectangle, matDst);
+                    // Only the model area is needed, instead of decoding the whole layer
+                    using var region = layer.GetRoiMat(OriginalBoundingRectangle);
+                    region.CopyToCenter(matDst);
 
                     if (FixRatio && (newFixedRatioX != 1.0 || newFixedRatioY != 1.0))
                     {
@@ -268,7 +270,7 @@ public sealed partial class OperationChangeResolution : Operation
                     }
                 }
 
-                SlicerFile[layerIndex].LayerMat = matDst;
+                layer.LayerMat = matDst;
             }
 
             progress.LockAndIncrement();

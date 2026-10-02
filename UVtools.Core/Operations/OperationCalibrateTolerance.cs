@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -544,15 +544,29 @@ public sealed partial class OperationCalibrateTolerance : Operation
             if (!addPart(step)) break;
         }
 
-        Parallel.For(0, layers.Length, CoreSettings.ParallelOptions, layerIndex =>
-            //for (var i = 0; i < layers.Length; i++)
+        // Most layers are identical, they share the same mat and only the ones that are changed below get their own.
+        // The callers only read the mats and dispose them, so a mat shared by many layers is safe and spare a lot of memory.
+        for (var i = 0; i < layers.Length; i++)
         {
-            layers[layerIndex] = layer.Clone();
-        });
+            layers[i] = layer;
+        }
+
+        void MakeUnique(int layerIndex)
+        {
+            if (ReferenceEquals(layers[layerIndex], layer))
+            {
+                layers[layerIndex] = layer.Clone();
+            }
+        }
 
         if (ErodeBottomIterations > 0)
         {
-            Parallel.For(0, BottomLayers, CoreSettings.ParallelOptions, layerIndex =>
+            for (var layerIndex = 0; layerIndex < BottomLayers && layerIndex < layers.Length; layerIndex++)
+            {
+                MakeUnique(layerIndex);
+            }
+
+            Parallel.For(0, Math.Min((int)BottomLayers, layers.Length), CoreSettings.ParallelOptions, layerIndex =>
             {
                 CvInvoke.Erode(layers[layerIndex], layers[layerIndex], kernel, EmguCvExtensions.AnchorCenter, ErodeBottomIterations, BorderType.Reflect101, default);
             });
@@ -560,7 +574,13 @@ public sealed partial class OperationCalibrateTolerance : Operation
 
         if (ChamferLayers > 0)
         {
-            Parallel.For(0, ChamferLayers, CoreSettings.ParallelOptions, layerIndexOffset =>
+            for (var layerIndexOffset = 0; layerIndexOffset < ChamferLayers && layerIndexOffset < layers.Length; layerIndexOffset++)
+            {
+                MakeUnique(layerIndexOffset);
+                MakeUnique(layers.Length - 1 - layerIndexOffset);
+            }
+
+            Parallel.For(0, Math.Min((int)ChamferLayers, layers.Length), CoreSettings.ParallelOptions, layerIndexOffset =>
             {
                 var iteration = ChamferLayers - layerIndexOffset;
                 CvInvoke.Erode(layers[layerIndexOffset], layers[layerIndexOffset], kernel, EmguCvExtensions.AnchorCenter, iteration, BorderType.Reflect101, default);
@@ -568,21 +588,15 @@ public sealed partial class OperationCalibrateTolerance : Operation
                 var layerIndex = layers.Length - 1 - layerIndexOffset;
                 CvInvoke.Erode(layers[layerIndex], layers[layerIndex], kernel, EmguCvExtensions.AnchorCenter, iteration, BorderType.Reflect101, default);
             });
-            /*byte iterations = ChamferLayers;
-            var layerIndex = 0;
-            for (; layerIndex < LayerCount && iterations > 0; layerIndex++)
-            {
-                CvInvoke.Erode(layers[layerIndex], layers[layerIndex], kernel, anchor, iterations--, BorderType.Reflect101, default);
-            }
-
-            iterations = ChamferLayers;
-            for (int i = (int) (LayerCount - 1); i >= 0 && i > layerIndex && iterations > 0; i--)
-            {
-                CvInvoke.Erode(layers[i], layers[i], kernel, anchor, iterations--, BorderType.Reflect101, default);
-            }*/
         }
 
-        Parallel.For(Math.Max(0u, LayerCount - 15), LayerCount, CoreSettings.ParallelOptions, layerIndex =>
+        var firstTextLayer = (int)Math.Max(0u, LayerCount - 15);
+        for (var layerIndex = firstTextLayer; layerIndex < layers.Length; layerIndex++)
+        {
+            MakeUnique(layerIndex);
+        }
+
+        Parallel.For(firstTextLayer, layers.Length, CoreSettings.ParallelOptions, layerIndex =>
         {
             foreach (var keyValuePair in pointTextList)
             {
@@ -594,9 +608,17 @@ public sealed partial class OperationCalibrateTolerance : Operation
         {
             var flip = SlicerFile.DisplayMirror;
             if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
-            Parallel.ForEach(layers, CoreSettings.ParallelOptions, mat => CvInvoke.Flip(mat, mat, (FlipType)flip));
-        }
 
+            // Flip each mat once, even when shared
+            var flipped = new HashSet<Mat>(ReferenceEqualityComparer.Instance as IEqualityComparer<Mat>);
+            var uniqueMats = new List<Mat>();
+            foreach (var mat in layers)
+            {
+                if (flipped.Add(mat)) uniqueMats.Add(mat);
+            }
+
+            Parallel.ForEach(uniqueMats, CoreSettings.ParallelOptions, mat => CvInvoke.Flip(mat, mat, (FlipType)flip));
+        }
         return layers;
     }
 

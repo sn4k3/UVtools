@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -250,18 +250,21 @@ public partial class OperationPattern : Operation
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
-            using var mat = SlicerFile[layerIndex].LayerMat;
-            using var layerRoi = new Mat(mat, ROI);
-            using var dstLayer = mat.NewZeros();
-            for (ushort col = 0; col < Cols; col++)
-            for (ushort row = 0; row < Rows; row++)
+            var layer = SlicerFile[layerIndex];
+            if (!layer.IsEmpty) // The pattern of nothing is nothing
             {
-                var roi = GetRoi(col, row);
-                using var dstRoi = new Mat(dstLayer, roi);
-                layerRoi.CopyTo(dstRoi);
+                using var layerRoi = layer.GetRoiMat(ROI); // Only the area to repeat is decoded
+                using var dstLayer = EmguCvExtensions.InitMat(layer.Resolution);
+                for (ushort col = 0; col < Cols; col++)
+                for (ushort row = 0; row < Rows; row++)
+                {
+                    var roi = GetRoi(col, row);
+                    using var dstRoi = new Mat(dstLayer, roi);
+                    layerRoi.CopyTo(dstRoi);
+                }
+                //Execute(mat);
+                layer.LayerMat = dstLayer;
             }
-            //Execute(mat);
-            SlicerFile[layerIndex].LayerMat = dstLayer;
 
             progress.LockAndIncrement();
         });

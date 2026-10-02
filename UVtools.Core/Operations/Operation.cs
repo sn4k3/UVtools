@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -706,57 +706,101 @@ public abstract partial class Operation : ObservableObject, IDisposable
     }
 
     /// <summary>
+    /// Clones <paramref name="mat"/> to be used as the untouched source of <see cref="ApplyMask(Mat?, Mat)"/>, but only
+    /// if there is a mask to apply, otherwise returns null and spare copying the whole layer.
+    /// </summary>
+    /// <param name="mat">The mat to clone.</param>
+    /// <returns>A new mat to dispose, or null if there is no mask.</returns>
+    protected Mat? CloneIfMasked(Mat mat)
+    {
+        return HaveMask ? mat.Clone() : null;
+    }
+
+    /// <summary>
+    /// Gets the area of <paramref name="target"/> that holds its content plus a <paramref name="padding"/>.
+    /// Use it to run operations that only reach a limited distance around the pixels, as the rest of the layer is blank
+    /// and the operation would only waste time over it.
+    /// </summary>
+    /// <param name="target">The mat to get the content area from.</param>
+    /// <param name="padding">How far from the content the operation can change pixels, in pixels.</param>
+    /// <returns>The area, or <see cref="Rectangle.Empty"/> if <paramref name="target"/> is blank.</returns>
+    protected static Rectangle GetContentArea(Mat target, int padding)
+    {
+        var bounds = CvInvoke.BoundingRectangle(target);
+        if (bounds.IsEmpty) return Rectangle.Empty;
+        bounds.Inflate(padding, padding);
+        bounds.Intersect(new Rectangle(Point.Empty, target.Size));
+        return bounds;
+    }
+
+    /// <summary>
+    /// Gets a shared view of <paramref name="target"/> cropped to its content area, see <see cref="GetContentArea"/>.
+    /// </summary>
+    /// <param name="target">The mat to crop.</param>
+    /// <param name="padding">How far from the content the operation can change pixels, in pixels.</param>
+    /// <returns>A mat view to dispose, or null if <paramref name="target"/> is blank.</returns>
+    protected static Mat? CropToContent(Mat target, int padding)
+    {
+        var area = GetContentArea(target, padding);
+        return area.IsEmpty ? null : new Mat(target, area);
+    }
+    /// <summary>
     /// Apply a mask to a mat <paramref name="result"/>
     /// </summary>
-    /// <param name="original">Original untouched mat</param>
+    /// <param name="original">Original untouched mat, do nothing if null</param>
     /// <param name="result">Mat to modify and apply the mask</param>
     /// <param name="mask">Mask</param>
-    public void ApplyMask(Mat original, Mat result, Mat? mask)
+    /// <remarks>
+    /// The mats and mask can be either the full size or the <see cref="ROI"/> size, the ones with the full size are
+    /// cropped by the <see cref="ROI"/> to match the others.
+    /// </remarks>
+    public void ApplyMask(Mat? original, Mat result, Mat? mask)
     {
-        if (mask is null) return;
-        var originalRoi = original;
-        var needDisposeOriginalRoi = false;
-        if (originalRoi.Size != result.Size) // Accept a ROI mat
+        if (original is null || mask is null) return;
+
+        Mat? originalRoi = null;
+        Mat? resultRoi = null;
+        Mat? maskRoi = null;
+        try
         {
-            originalRoi = GetRoiOrDefault(original);
-            needDisposeOriginalRoi = true;
-        }
+            // Bring everything to the same size
+            var roiSize = HaveROI ? ROI.Size : result.Size;
+            if (original.Size != roiSize) originalRoi = GetRoiOrDefault(original);
+            if (result.Size != roiSize) resultRoi = GetRoiOrDefault(result);
+            if (mask.Size != roiSize) maskRoi = GetRoiOrDefault(mask);
 
-        var resultRoi = result;
-        var needDisposeResultRoi = false;
-        if (originalRoi.Size != result.Size) // Accept a ROI mat
+            var originalMat = originalRoi ?? original;
+            var resultMat = resultRoi ?? result;
+            var maskMat = maskRoi ?? mask;
+            if (originalMat.Size != resultMat.Size || maskMat.Size != resultMat.Size)
+            {
+                throw new InvalidOperationException(
+                    $"Unable to apply the mask, the sizes mismatch: original {originalMat.Size}, result {resultMat.Size}, mask {maskMat.Size}.");
+            }
+
+            using var tempMat = originalMat.Clone();
+            resultMat.CopyTo(tempMat, maskMat);
+            tempMat.CopyTo(resultMat);
+        }
+        finally
         {
-            resultRoi = GetRoiOrDefault(result);
-            needDisposeResultRoi = true;
+            originalRoi?.Dispose();
+            resultRoi?.Dispose();
+            maskRoi?.Dispose();
         }
-
-        var needDisposeMask = false;
-        if (mask.Size != resultRoi.Size) // Accept a full size mask
-        {
-            mask = GetRoiOrDefault(mask);
-            needDisposeMask = true;
-        }
-
-        using var tempMat = originalRoi.Clone();
-        resultRoi.CopyTo(tempMat, mask);
-        tempMat.CopyTo(resultRoi);
-
-        if (needDisposeOriginalRoi) originalRoi.Dispose();
-        if (needDisposeResultRoi) resultRoi.Dispose();
-        if (needDisposeMask) mask.Dispose();
     }
 
     /// <summary>
     /// Gets a mask and apply it
     /// </summary>
-    /// <param name="original">Original unmodified image</param>
+    /// <param name="original">Original unmodified image, do nothing if null</param>
     /// <param name="result">Result image which will also be modified</param>
-    public void ApplyMask(Mat original, Mat result)
+    public void ApplyMask(Mat? original, Mat result)
     {
+        if (original is null || !HaveMask) return;
         using var mask = GetMask(original);
         ApplyMask(original, result, mask);
     }
-
     /// <summary>
     /// Execute the operation internally, to be override by class
     /// </summary>

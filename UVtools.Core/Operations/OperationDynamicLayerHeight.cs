@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -614,32 +614,21 @@ public sealed partial class OperationDynamicLayerHeight : Operation
                     //Debug.WriteLine($"\n\n{layerIndex} - 0");
                     //CvInvoke.Imshow("Render", erodeMatXor.Roi(SlicerFile.BoundingRectangle));
                     //CvInvoke.WaitKey();
-                    while (erodeCount < MaximumErodes)
+                    // Every erode iteration starts from the same image, so all of them give the same result:
+                    // either it is blank right away or it never will be, no need to repeat it until the maximum
+                    if (erodeCount < MaximumErodes)
                     {
-                        //innerErodeCount++;
-                        erodeCount++;
-                        //maxErodeCount = Math.Max(maxErodeCount, erodeCount);
-
-                        /*var slope = Math.Atan(currentLayerHeightUm / (double) (xyResolutionUm * erodeCount)) * (180 / Math.PI);
-                        var stepover = Math.Round(currentLayerHeightUm / Math.Tan(slope * (Math.PI / 180)));
-                        Debug.Write($" [Slope: {slope:F2} Stepover: {stepover} <= {xyResolutionUm} = {stepover <= xyResolutionUm}]");
-
-                        if (stepover > xyResolutionUm)
-                        {
-                            break;
-                        }*/
-                        //Debug.WriteLine($"{layerIndex} - {erodeCount}");
                         CvInvoke.Erode(matXorSum, matXor, kernel, EmguCvExtensions.AnchorCenter, 1, BorderType.Reflect101, default);
-                        //CvInvoke.Imshow("Render", erodeMatXor.Roi(SlicerFile.BoundingRectangle));
-                        //CvInvoke.WaitKey();
                         if (!CvInvoke.HasNonZero(matXor))
-                            //if (erodeMatXor.IsZeroed(0, startPos, endPos+1)) // Image pixels exhausted and got empty image, can pack and go next
                         {
+                            erodeCount++;
                             meetRequirement = true;
-                            break;
+                        }
+                        else
+                        {
+                            erodeCount = MaximumErodes;
                         }
                     }
-
                     //if ((!meetRequirement || erodeCount >= MaximumErodes) && _minimumLayerHeight < (decimal) currentLayerHeight
                     // To many pixels, image still not blank, pack the previous group and start again from current height
                     if (!meetRequirement && _minimumLayerHeight < (decimal) currentLayerHeight)

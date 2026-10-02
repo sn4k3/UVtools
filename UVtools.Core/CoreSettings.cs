@@ -6,13 +6,13 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Emgu.CV.Cuda;
 using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Emgu.CV.Cuda;
 using EmguExtensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -22,11 +22,6 @@ namespace UVtools.Core;
 
 public static class CoreSettings
 {
-    #region Members
-    private static int _maxDegreeOfParallelism = OptimalMaxDegreeOfParallelism;
-
-    #endregion
-
     #region Properties
 
     public static CultureInfo OptimalCultureInfo
@@ -34,12 +29,30 @@ public static class CoreSettings
         get
         {
             var cultureInfo = (CultureInfo)CultureInfo.CurrentCulture.Clone();
-            cultureInfo.NumberFormat.CurrencyDecimalSeparator = CultureInfo.InvariantCulture.NumberFormat.CurrencyDecimalSeparator;
-            cultureInfo.NumberFormat.CurrencyGroupSeparator = CultureInfo.InvariantCulture.NumberFormat.CurrencyGroupSeparator;
-            cultureInfo.NumberFormat.NumberDecimalSeparator = CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator;
-            cultureInfo.NumberFormat.NumberGroupSeparator = CultureInfo.InvariantCulture.NumberFormat.NumberGroupSeparator;
-            cultureInfo.NumberFormat.PercentDecimalSeparator = CultureInfo.InvariantCulture.NumberFormat.PercentDecimalSeparator;
-            cultureInfo.NumberFormat.PercentGroupSeparator = CultureInfo.InvariantCulture.NumberFormat.PercentGroupSeparator;
+            cultureInfo.NumberFormat.CurrencyDecimalSeparator = CultureInfo
+                .InvariantCulture
+                .NumberFormat
+                .CurrencyDecimalSeparator;
+            cultureInfo.NumberFormat.CurrencyGroupSeparator = CultureInfo
+                .InvariantCulture
+                .NumberFormat
+                .CurrencyGroupSeparator;
+            cultureInfo.NumberFormat.NumberDecimalSeparator = CultureInfo
+                .InvariantCulture
+                .NumberFormat
+                .NumberDecimalSeparator;
+            cultureInfo.NumberFormat.NumberGroupSeparator = CultureInfo
+                .InvariantCulture
+                .NumberFormat
+                .NumberGroupSeparator;
+            cultureInfo.NumberFormat.PercentDecimalSeparator = CultureInfo
+                .InvariantCulture
+                .NumberFormat
+                .PercentDecimalSeparator;
+            cultureInfo.NumberFormat.PercentGroupSeparator = CultureInfo
+                .InvariantCulture
+                .NumberFormat
+                .PercentGroupSeparator;
             return cultureInfo;
         }
     }
@@ -60,7 +73,7 @@ public static class CoreSettings
                 >= 12 => processorCount - 3,
                 >= 8 => processorCount - 2,
                 >= 4 => processorCount - 1,
-                _ => processorCount
+                _ => processorCount,
             };
         }
     }
@@ -76,23 +89,22 @@ public static class CoreSettings
     /// </summary>
     public static int MaxDegreeOfParallelism
     {
-        get => _maxDegreeOfParallelism;
-        set
-        {
-            _maxDegreeOfParallelism = value switch
+        get;
+        set =>
+            field = value switch
             {
                 <= -2 => OptimalMaxDegreeOfParallelism, // Auto-optimal number
                 -1 => -1, // .NET scheduler
                 0 => Environment.ProcessorCount, // Max threads
-                _ => Math.Clamp(value, 1, Environment.ProcessorCount) // Custom number
+                _ => Math.Clamp(value, 1, Environment.ProcessorCount), // Custom number
             };
-        }
-    }
+    } = OptimalMaxDegreeOfParallelism;
 
     /// <summary>
     /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> set
     /// </summary>
-    public static ParallelOptions ParallelOptions => new() {MaxDegreeOfParallelism = _maxDegreeOfParallelism};
+    public static ParallelOptions ParallelOptions =>
+        new() { MaxDegreeOfParallelism = MaxDegreeOfParallelism };
 
     /// <summary>
     /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> set to 1 for debug purposes
@@ -112,8 +124,10 @@ public static class CoreSettings
     /// <summary>
     /// Gets the ParallelDebugOptions with the <see cref="CancellationToken"/> set
     /// </summary>
-    public static ParallelOptions GetParallelDebugOptions(OperationProgress progress) => GetParallelDebugOptions(progress.Token);
-
+    public static ParallelOptions GetParallelDebugOptions(OperationProgress progress)
+    {
+        return GetParallelDebugOptions(progress.Token);
+    }
 
     /// <summary>
     /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> and the <see cref="CancellationToken"/> set
@@ -128,8 +142,10 @@ public static class CoreSettings
     /// <summary>
     /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> and the <see cref="CancellationToken"/> set
     /// </summary>
-    public static ParallelOptions GetParallelOptions(OperationProgress progress) => GetParallelOptions(progress.Token);
-
+    public static ParallelOptions GetParallelOptions(OperationProgress progress)
+    {
+        return GetParallelOptions(progress.Token);
+    }
 
     /// <summary>
     /// Gets or sets if operations run via CUDA when possible
@@ -166,9 +182,10 @@ public static class CoreSettings
         set
         {
             field = value;
-            MatCompressor.DefaultCompressionLevel = Layer.LayerCompressionLevelToMatCompressionLevel(value);
+            MatCompressor.DefaultCompressionLevel =
+                Layer.LayerCompressionLevelToMatCompressionLevel(value);
         }
-    } = Layers.LayerCompressionLevel.Optimal;
+    } = LayerCompressionLevel.Optimal;
 
     /// <summary>
     /// <para>The average resin 1000ml bottle cost, to use when bottle cost is not available.</para>
@@ -179,18 +196,14 @@ public static class CoreSettings
     /// <summary>
     /// Gets or sets the per-layer settings mode.
     /// </summary>
-    public static PerLayerSettingsModes PerLayerSettingsMode = PerLayerSettingsModes.EnabledButExcludeProblematicFileFormats;
+    public static PerLayerSettingsModes PerLayerSettingsMode =
+        PerLayerSettingsModes.EnabledButExcludeProblematicFileFormats;
 
     /// <summary>
     /// Gets the most likely problematic file formats where per-layer settings can cause unexpected printing issues.
     /// </summary>
     public static Type[] PerLayerSettingsProblematicFileFormats { get; } =
-    [
-        typeof(AnycubicFile),
-        typeof(AnycubicZipFile),
-        typeof(GooFile),
-        typeof(PHZFile),
-    ];
+    [typeof(AnycubicFile), typeof(AnycubicZipFile), typeof(GooFile), typeof(PHZFile)];
 
     /// <summary>
     /// Gets the default folder to save the settings
@@ -201,13 +214,21 @@ public static class CoreSettings
         {
             if (OperatingSystem.IsMacOS())
             {
-                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Application Support", About.Software);
+                return Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    "Library",
+                    "Application Support",
+                    About.Software
+                );
             }
 
             var folder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            if (string.IsNullOrWhiteSpace(folder)) folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            if (string.IsNullOrWhiteSpace(folder)) folder = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-            if (string.IsNullOrWhiteSpace(folder)) folder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (string.IsNullOrWhiteSpace(folder))
+                folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            if (string.IsNullOrWhiteSpace(folder))
+                folder = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+            if (string.IsNullOrWhiteSpace(folder))
+                folder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             var path = Path.Combine(folder, About.Software);
             return path;
         }
@@ -230,6 +251,7 @@ public static class CoreSettings
             {
                 Debug.WriteLine(e);
             }
+
             return path;
         }
     }

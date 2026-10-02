@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -182,126 +182,140 @@ public partial class OperationRedrawModel : Operation
         {
             return false;
         }
-        otherFile.Decode(FilePath, progress);
 
-        progress.Reset(ProgressAction, otherFile.LayerCount);
-
-        int startLayerIndex = (int)(SlicerFile.LayerCount - otherFile.LayerCount);
-        if (startLayerIndex < 0) return false;
-        Parallel.For(0, otherFile.LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
+        try
         {
-            if (SlicerFile[layerIndex].IsEmpty)
-            {
-                progress.LockAndIncrement();
-                return;
-            }
-            progress.PauseIfRequested();
-            var fullMatLayerIndex = startLayerIndex + layerIndex;
-            using var fullMat = SlicerFile[fullMatLayerIndex].LayerMat;
-            using var original = fullMat.Clone();
-            using var bodyMat = otherFile[layerIndex].LayerMat;
-            using var fullMatRoi = GetRoiOrDefault(fullMat);
-            using var bodyMatRoi = GetRoiOrDefault(bodyMat);
-            using var supportsMat = new Mat();
+            otherFile.Decode(FilePath, progress);
 
-            bool modified = false;
-            if (RedrawType == RedrawTypes.Supports && ContactPointsOnly)
+            progress.Reset(ProgressAction, otherFile.LayerCount);
+
+            int startLayerIndex = (int)(SlicerFile.LayerCount - otherFile.LayerCount);
+            if (startLayerIndex < 0) return false;
+            Parallel.For(0, otherFile.LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
-                if (layerIndex + 1 >= otherFile.LayerCount) return;
-                CvInvoke.Subtract(fullMatRoi, bodyMatRoi, supportsMat); // Supports
-                using var contours = supportsMat.FindContours(RetrType.List);
-                if (contours.Size <= 0) return;
-                using var nextLayerMat = otherFile[layerIndex + 1].LayerMat;
-                using var nextLayerMatRoi = GetRoiOrDefault(nextLayerMat);
-                var fullSpan = fullMatRoi.GetSpanOfBytes();
-                var supportsSpan = supportsMat.GetReadOnlySpanOfBytes();
-                var nextSpan = nextLayerMatRoi.GetReadOnlySpanOfBytes();
-                for (int i = 0; i < contours.Size; i++)
+                progress.PauseIfRequested();
+                try
                 {
-                    var foundContour = false;
-                    var rectangle = CvInvoke.BoundingRectangle(contours[i]);
-                    for (int y = rectangle.Y; y < rectangle.Bottom && !foundContour; y++)
-                    for (int x = rectangle.X; x < rectangle.Right; x++)
-                    {
-                        var pos = supportsMat.GetPixelPos(x, y);
-                        if (IgnoreContactLessPixels)
-                        {
-                            if (supportsSpan[pos] <= 10) continue;
-                            if (nextSpan[pos] <= 0) continue;
-                            modified = true;
-                            fullSpan[pos] = Brightness;
-                        }
-                        else
-                        {
-                            if (supportsSpan[pos] <= 100) continue;
-                            if (nextSpan[pos] <= 150) continue;
-                            CvInvoke.DrawContours(fullMatRoi, contours, i, new MCvScalar(Brightness), -1, LineType.AntiAlias);
-                            modified = true;
-                            foundContour = true;
-                            break;
-                        }
+                    RedrawLayer(layerIndex);
+                }
+                finally
+                {
+                    progress.LockAndIncrement(); // Also when the layer is skipped
+                }
+            });
 
+            return !progress.Token.IsCancellationRequested;
+
+            void RedrawLayer(long layerIndex)
+            {
+                var fullMatLayerIndex = startLayerIndex + layerIndex;
+                if (SlicerFile[fullMatLayerIndex].IsEmpty) return; // The layer that is changed
+                using var fullMat = SlicerFile[fullMatLayerIndex].LayerMat;
+                using var original = CloneIfMasked(fullMat);
+                using var bodyMat = otherFile[layerIndex].LayerMat;
+                using var fullMatRoi = GetRoiOrDefault(fullMat);
+                using var bodyMatRoi = GetRoiOrDefault(bodyMat);
+                using var supportsMat = new Mat();
+
+                bool modified = false;
+                if (RedrawType == RedrawTypes.Supports && ContactPointsOnly)
+                {
+                    if (layerIndex + 1 >= otherFile.LayerCount) return;
+                    CvInvoke.Subtract(fullMatRoi, bodyMatRoi, supportsMat); // Supports
+                    using var contours = supportsMat.FindContours(RetrType.List);
+                    if (contours.Size <= 0) return;
+                    using var nextLayerMat = otherFile[layerIndex + 1].LayerMat;
+                    using var nextLayerMatRoi = GetRoiOrDefault(nextLayerMat);
+                    var fullSpan = fullMatRoi.GetSpanOfBytes();
+                    var supportsSpan = supportsMat.GetReadOnlySpanOfBytes();
+                    var nextSpan = nextLayerMatRoi.GetReadOnlySpanOfBytes();
+                    for (int i = 0; i < contours.Size; i++)
+                    {
+                        var foundContour = false;
+                        var rectangle = CvInvoke.BoundingRectangle(contours[i]);
+                        for (int y = rectangle.Y; y < rectangle.Bottom && !foundContour; y++)
+                        for (int x = rectangle.X; x < rectangle.Right; x++)
+                        {
+                            var pos = supportsMat.GetPixelPos(x, y);
+                            if (IgnoreContactLessPixels)
+                            {
+                                if (supportsSpan[pos] <= 10) continue;
+                                if (nextSpan[pos] <= 0) continue;
+                                modified = true;
+                                fullSpan[pos] = Brightness;
+                            }
+                            else
+                            {
+                                if (supportsSpan[pos] <= 100) continue;
+                                if (nextSpan[pos] <= 150) continue;
+                                CvInvoke.DrawContours(fullMatRoi, contours, i, new MCvScalar(Brightness), -1, LineType.AntiAlias);
+                                modified = true;
+                                foundContour = true;
+                                break;
+                            }
+
+                        }
                     }
                 }
-            }
-            else
-            {
-                switch (RedrawType)
+                else
                 {
-                    case RedrawTypes.Supports:
-                        CvInvoke.Subtract(fullMatRoi, bodyMatRoi, supportsMat); // Supports
-                        break;
-                    case RedrawTypes.Model:
-                        CvInvoke.BitwiseAnd(fullMatRoi, bodyMatRoi, supportsMat); // Model
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(RedrawType), RedrawType, null);
+                    switch (RedrawType)
+                    {
+                        case RedrawTypes.Supports:
+                            CvInvoke.Subtract(fullMatRoi, bodyMatRoi, supportsMat); // Supports
+                            break;
+                        case RedrawTypes.Model:
+                            CvInvoke.BitwiseAnd(fullMatRoi, bodyMatRoi, supportsMat); // Model
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(RedrawType), RedrawType, null);
+                    }
+
+                    using var patternMat = fullMatRoi.NewSetTo(new MCvScalar(Brightness), supportsMat);
+
+                    switch (Operator)
+                    {
+                        case RedrawModelOperators.Set:
+                            patternMat.CopyTo(fullMatRoi, fullMatRoi);
+                            break;
+                        case RedrawModelOperators.Add:
+                            CvInvoke.Add(fullMatRoi, patternMat, fullMatRoi, supportsMat);
+                            break;
+                        case RedrawModelOperators.Subtract:
+                            CvInvoke.Subtract(fullMatRoi, patternMat, fullMatRoi, supportsMat);
+                            break;
+                        case RedrawModelOperators.Multiply:
+                            CvInvoke.Multiply(fullMatRoi, patternMat, fullMatRoi, EmguCvExtensions.NormalizedByteScale);
+                            break;
+                        case RedrawModelOperators.Divide:
+                            CvInvoke.Divide(fullMatRoi, patternMat, fullMatRoi);
+                            break;
+                        case RedrawModelOperators.Minimum:
+                            CvInvoke.Min(fullMatRoi, patternMat, fullMatRoi);
+                            break;
+                        case RedrawModelOperators.Maximum:
+                            CvInvoke.Max(fullMatRoi, patternMat, fullMatRoi);
+                            break;
+                        case RedrawModelOperators.AbsDiff:
+                            CvInvoke.AbsDiff(fullMatRoi, patternMat, fullMatRoi);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(Operator), Operator, null);
+                    }
+                    modified = true;
                 }
 
-                using var patternMat = fullMatRoi.NewSetTo(new MCvScalar(Brightness), supportsMat);
-
-                switch (Operator)
+                if (modified)
                 {
-                    case RedrawModelOperators.Set:
-                        patternMat.CopyTo(fullMatRoi, fullMatRoi);
-                        break;
-                    case RedrawModelOperators.Add:
-                        CvInvoke.Add(fullMatRoi, patternMat, fullMatRoi, supportsMat);
-                        break;
-                    case RedrawModelOperators.Subtract:
-                        CvInvoke.Subtract(fullMatRoi, patternMat, fullMatRoi, supportsMat);
-                        break;
-                    case RedrawModelOperators.Multiply:
-                        CvInvoke.Multiply(fullMatRoi, patternMat, fullMatRoi, EmguCvExtensions.NormalizedByteScale);
-                        break;
-                    case RedrawModelOperators.Divide:
-                        CvInvoke.Divide(fullMatRoi, patternMat, fullMatRoi);
-                        break;
-                    case RedrawModelOperators.Minimum:
-                        CvInvoke.Min(fullMatRoi, patternMat, fullMatRoi);
-                        break;
-                    case RedrawModelOperators.Maximum:
-                        CvInvoke.Max(fullMatRoi, patternMat, fullMatRoi);
-                        break;
-                    case RedrawModelOperators.AbsDiff:
-                        CvInvoke.AbsDiff(fullMatRoi, patternMat, fullMatRoi);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(Operator), Operator, null);
+                    ApplyMask(original, fullMatRoi);
+                    SlicerFile[fullMatLayerIndex].LayerMat = fullMat;
                 }
-                modified = true;
             }
-
-            if (modified)
-            {
-                ApplyMask(original, fullMatRoi);
-                SlicerFile[fullMatLayerIndex].LayerMat = fullMat;
-            }
-
-            progress.LockAndIncrement();
-        });
-
-        return !progress.Token.IsCancellationRequested;
+        }
+        finally
+        {
+            otherFile.Dispose();
+        }
     }
 
     #endregion

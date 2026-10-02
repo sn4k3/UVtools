@@ -49,8 +49,8 @@ public sealed class VoxelPreviewIssueMesh : IDisposable
     public long SourceRevision { get; }
     public long IssueRevision { get; }
     public IReadOnlyList<VoxelPreviewIssueDrawRange> DrawRanges { get; }
-    public ReadOnlySpan<VoxelPreviewVertex> Vertices => _vertices.AsSpan(0, VertexCount);
-    public ReadOnlySpan<uint> Indices => _indices.AsSpan(0, IndexCount);
+    public ReadOnlySpan<VoxelPreviewVertex> Vertices => _vertices is { } vertices ? vertices.AsSpan(0, VertexCount) : [];
+    public ReadOnlySpan<uint> Indices => _indices is { } indices ? indices.AsSpan(0, IndexCount) : [];
 
     public bool IsCurrentFor(FileFormat sourceFile)
     {

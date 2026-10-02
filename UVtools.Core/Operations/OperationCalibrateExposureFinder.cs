@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -185,6 +185,11 @@ public sealed partial class OperationCalibrateExposureFinder : Operation
         if (_displayHeight <= 0)
         {
             sb.AppendLine("Display height must be a positive value.");
+        }
+
+        if (MultipleLayerHeight && MultipleLayerHeightStep <= 0)
+        {
+            sb.AppendLine("The layer height step must be a positive value.");
         }
 
         if (ChamferLayers * _layerHeight > _baseHeight)
@@ -1839,26 +1844,46 @@ public sealed partial class OperationCalibrateExposureFinder : Operation
 
             Layer currentLayer = layers[0];
             if (currentLayer.IsBottomLayerByHeight) bottomLayerCount++;
-            for (var layerIndex = 1; layerIndex < layers.Count; layerIndex++)
+
+            // The layers of a group are summed in memory and the group is encoded once, instead of at every sum
+            Mat? matCurrent = null;
+            void FlushCurrentLayer()
             {
-                progress.PauseOrCancelIfRequested();
-                progress++;
-                var layer = layers[layerIndex];
-                if (currentLayer.PositionZ != layer.PositionZ ||
-                    currentLayer.ExposureTime != layer.ExposureTime) // Different layers, cache and continue
+                if (matCurrent is null) return;
+                currentLayer.LayerMat = matCurrent;
+                matCurrent.Dispose();
+                matCurrent = null;
+            }
+
+            try
+            {
+                for (var layerIndex = 1; layerIndex < layers.Count; layerIndex++)
                 {
-                    currentLayer = layer;
-                    if (currentLayer.IsBottomLayerByHeight) bottomLayerCount++;
-                    continue;
+                    progress.PauseOrCancelIfRequested();
+                    progress++;
+                    var layer = layers[layerIndex];
+                    if (currentLayer.PositionZ != layer.PositionZ ||
+                        currentLayer.ExposureTime != layer.ExposureTime) // Different layers, cache and continue
+                    {
+                        FlushCurrentLayer();
+                        currentLayer = layer;
+                        if (currentLayer.IsBottomLayerByHeight) bottomLayerCount++;
+                        continue;
+                    }
+
+                    matCurrent ??= currentLayer.LayerMat;
+                    using var mat = layer.LayerMat;
+
+                    CvInvoke.Add(matCurrent, mat, matCurrent); // Sum layers
+
+                    layers[layerIndex] = null!; // Discard
                 }
 
-                using var matCurrent = currentLayer.LayerMat;
-                using var mat = layer.LayerMat;
-
-                CvInvoke.Add(matCurrent, mat, matCurrent); // Sum layers
-                currentLayer.LayerMat = matCurrent;
-
-                layers[layerIndex] = null!; // Discard
+                FlushCurrentLayer();
+            }
+            finally
+            {
+                matCurrent?.Dispose();
             }
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse

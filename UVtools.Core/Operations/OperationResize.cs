@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -159,9 +159,12 @@ public partial class OperationResize : Operation
 
             if (newX == 100 && newY == 100) return;
 
-            using var mat = SlicerFile[layerIndex].LayerMat;
+            var layer = SlicerFile[layerIndex];
+            if (layer.IsEmpty) return; // Nothing to resize
+
+            using var mat = layer.LayerMat;
             Execute(mat, newX  / 100, newY / 100);
-            SlicerFile[layerIndex].LayerMat = mat;
+            layer.LayerMat = mat;
         });
 
         return !progress.Token.IsCancellationRequested;
@@ -177,7 +180,7 @@ public partial class OperationResize : Operation
             yScale = (decimal) arguments[1];
         }
 
-        using var original = mat.Clone();
+        using var original = CloneIfMasked(mat);
         using var target = GetRoiOrDefault(mat);
         target.TransformFromCenter((double) xScale, (double) yScale);
         ApplyMask(original, target);

@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -14,6 +14,7 @@ using Emgu.CV.CvEnum;
 using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations;
 
@@ -88,17 +89,22 @@ public sealed partial class OperationLayerExportSkeleton : Operation
         using var mask = GetMask(skeletonSum);
 
 
+        // Each thread adds to a different part of the result at the same time
+        var accumulator = new StripedAccumulator(skeletonSumRoi, mask);
+
         Parallel.For(LayerIndexStart, LayerIndexEnd+1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
-            using var mat = SlicerFile[layerIndex].LayerMat;
-            using var matRoi = GetRoiOrDefault(mat);
-            using var skeletonRoi = matRoi.Skeletonize();
-            lock (progress.Mutex)
+            var layer = SlicerFile[layerIndex];
+            if (!layer.IsEmpty) // The skeleton of nothing is nothing
             {
-                CvInvoke.Add(skeletonSumRoi, skeletonRoi, skeletonSumRoi, mask);
-                progress++;
+                using var mat = layer.LayerMat;
+                using var matRoi = GetRoiOrDefault(mat);
+                using var skeletonRoi = matRoi.Skeletonize();
+                accumulator.Add(skeletonRoi);
             }
+
+            progress.LockAndIncrement();
         });
 
         if (CropByROI && HaveROI)

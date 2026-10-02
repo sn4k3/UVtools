@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -125,15 +125,34 @@ public sealed partial class OperationBlur : Operation
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
-            using (var mat = SlicerFile[layerIndex].LayerMat)
+            var layer = SlicerFile[layerIndex];
+            if (!layer.IsEmpty) // Blurring nothing is nothing
             {
+                using var mat = layer.LayerMat;
                 Execute(mat);
-                SlicerFile[layerIndex].LayerMat = mat;
+                layer.LayerMat = mat;
             }
+
             progress.LockAndIncrement();
         });
 
         return !progress.Token.IsCancellationRequested;
+    }
+
+    private static readonly System.Threading.Lock StackBlurLock = new();
+
+    /// <summary>
+    /// Gets how far from a pixel the blur can reach, or -1 if the blur is not limited to a distance.
+    /// </summary>
+    private int GetBlurReach()
+    {
+        return BlurOperation switch
+        {
+            BlurAlgorithm.BoxBlur or BlurAlgorithm.MedianBlur => (int)Math.Min(Size, int.MaxValue / 4u) + 1,
+            // The other blurs can give slightly different values when applied over a smaller area,
+            // pyramid also depends on the position of the pixels
+            _ => -1
+        };
     }
 
     public override bool Execute(Mat mat, params object[]? arguments)
@@ -144,37 +163,61 @@ public sealed partial class OperationBlur : Operation
         //if (size.IsEmpty) size = new Size(3, 3);
         //if (anchor.IsEmpty) anchor = EmguCvExtensions.AnchorCenter;
         using var target = GetRoiOrDefault(mat);
-        using var original = mat.Clone();
+        using var original = CloneIfMasked(mat);
+
+        // The blur does not change pixels away from the content, so the blank area is not processed
+        // A ROI view reads the pixels around it, which can reach inside of it, so the crop is only safe without a ROI
+        var reach = HaveROI ? -1 : GetBlurReach();
+        using var croppedTarget = reach >= 0 ? CropToContent(target, reach) : null;
+        if (reach >= 0 && croppedTarget is null) return true; // Blank
+        var area = croppedTarget ?? target;
+
+        // The stack blur does not handle the border of a ROI view properly, work over a contiguous copy
+        using var contiguous = BlurOperation == BlurAlgorithm.StackBlur && !area.IsContinuous ? area.Clone() : null;
+        var work = contiguous ?? area;
+
         switch (BlurOperation)
         {
             case BlurAlgorithm.StackBlur:
-                CvInvoke.StackBlur(target, target, size);
+                // The OpenCV stack blur is not thread safe, running it from many threads gives wrong pixels at random
+                lock (StackBlurLock)
+                {
+                    CvInvoke.StackBlur(work, work, size);
+                }
+
                 break;
             case BlurAlgorithm.BoxBlur:
-                CvInvoke.Blur(target, target, size, Kernel.Anchor);
+                CvInvoke.Blur(work, work, size, Kernel.Anchor);
                 break;
             case BlurAlgorithm.Pyramid:
-                CvInvoke.PyrDown(target, target);
-                CvInvoke.PyrUp(target, target);
+            {
+                // The result has another size than the layer, so it can not be written in place
+                using var down = new Mat();
+                using var up = new Mat();
+                CvInvoke.PyrDown(work, down);
+                CvInvoke.PyrUp(down, up);
+                using var upCropped = up.Size == work.Size ? null : new Mat(up, new Rectangle(Point.Empty, work.Size));
+                (upCropped ?? up).CopyTo(work);
                 break;
+            }
             case BlurAlgorithm.MedianBlur:
-                CvInvoke.MedianBlur(target, target, (int)Size);
+                CvInvoke.MedianBlur(work, work, (int)Size);
                 break;
             case BlurAlgorithm.GaussianBlur:
-                CvInvoke.GaussianBlur(target, target, size, 0);
+                CvInvoke.GaussianBlur(work, work, size, 0);
                 break;
             case BlurAlgorithm.Filter2D:
-                CvInvoke.Filter2D(target, target, Kernel.GetKernel(), anchor);
+                CvInvoke.Filter2D(work, work, Kernel.GetKernel(), anchor);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
 
+        contiguous?.CopyTo(area);
         ApplyMask(original, target);
 
         return true;
     }
-
 
     #endregion
 

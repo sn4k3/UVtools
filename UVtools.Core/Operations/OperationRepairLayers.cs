@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -61,9 +62,9 @@ public partial class OperationRepairLayers : Operation
                 config.IslandConfig.WhiteListLayers = selectedLayers;
             }
 
-            issues = SlicerFile.IssueManager.DetectIssues(config, progress).ToList();
+            // Ignored issues are not detected
+            issues = SlicerFile.IssueManager.DetectIssues(config, progress);
             progress.ThrowIfCancellationRequested();
-            issues.RemoveAll(mainIssue => SlicerFile.IssueManager.IgnoredIssues.Contains(mainIssue));
         }
         else if (repairIssues)
         {
@@ -289,12 +290,17 @@ public partial class OperationRepairLayers : Operation
 
         if (islandsByLayer.Count > 0 || resinTrapsByLayer.Count > 0 || applyMorphology)
         {
+            // The morphology reaches this many pixels away from the content, the rest of the layer is untouched
+            var morphologyPadding = (int)Math.Min((long)GapClosingIterations + NoiseRemovalIterations + 2,
+                int.MaxValue / 2);
+
             progress.Reset(ProgressAction, LayerRangeCount);
             Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
                 progress.PauseIfRequested();
                 var layer = SlicerFile[layerIndex];
                 Mat? image = null;
+                var modified = false;
 
                 void InitImage()
                 {
@@ -303,23 +309,35 @@ public partial class OperationRepairLayers : Operation
 
                 try
                 {
-                    if (islandsByLayer.TryGetValue((uint)layerIndex, out var layerIslands))
+                    var hasIslands = islandsByLayer.TryGetValue((uint)layerIndex, out var layerIslands);
+                    var hasResinTraps = resinTrapsByLayer.TryGetValue((uint)layerIndex, out var layerResinTraps);
+
+                    // Nothing to repair on an empty layer, the morphology of nothing is nothing
+                    if (!hasIslands && !hasResinTraps && layer.IsEmpty)
+                    {
+                        progress.LockAndIncrement();
+                        return;
+                    }
+
+                    if (hasIslands)
                     {
                         InitImage();
                         var bytes = image!.GetSpanOfBytes();
-                        foreach (var issue in layerIslands)
+                        foreach (var issue in layerIslands!)
                         {
                             foreach (var issuePixel in issue.Points)
                             {
                                 bytes[image!.GetPixelPos(issuePixel)] = 0;
                             }
                         }
+
+                        modified = true;
                     }
 
-                    if (resinTrapsByLayer.TryGetValue((uint)layerIndex, out var layerResinTraps))
+                    if (hasResinTraps)
                     {
                         InitImage();
-                        foreach (var issue in layerResinTraps)
+                        foreach (var issue in layerResinTraps!)
                         {
                             using var vec = new VectorOfVectorOfPoint(issue.Contours);
                             CvInvoke.DrawContours(image, vec, -1, EmguCvExtensions.WhiteColor, -1);
@@ -329,30 +347,59 @@ public partial class OperationRepairLayers : Operation
                                     ResinTrapsOverlapBy * 2 + 1);
                             }
                         }
+
+                        modified = true;
                     }
 
                     if (applyMorphology)
                     {
                         InitImage();
 
-                        if (GapClosingIterations > 0)
+                        // Only the area around the content can change, no need to process the whole layer
+                        // The layer bounding rectangle is only outdated if the layer was changed above
+                        var area = modified ? CvInvoke.BoundingRectangle(image) : layer.BoundingRectangle;
+                        if (!area.IsEmpty)
                         {
-                            CvInvoke.MorphologyEx(image, image, MorphOp.Close,
-                                EmguCvExtensions.Kernel3X3Rectangle, EmguCvExtensions.AnchorCenter,
-                                (int)GapClosingIterations, BorderType.Default, default);
-                        }
+                            area.Inflate(morphologyPadding, morphologyPadding);
+                            area.Intersect(new Rectangle(Point.Empty, image!.Size));
 
-                        if (NoiseRemovalIterations > 0)
-                        {
-                            CvInvoke.MorphologyEx(image, image, MorphOp.Open,
-                                EmguCvExtensions.Kernel3X3Rectangle, EmguCvExtensions.AnchorCenter,
-                                (int)NoiseRemovalIterations, BorderType.Default, default);
+                            using var areaMat = new Mat(image, area);
+                            using var repaired = new Mat();
+
+                            // Written to another mat to know if anything changed
+                            var current = areaMat;
+                            if (GapClosingIterations > 0)
+                            {
+                                CvInvoke.MorphologyEx(current, repaired, MorphOp.Close,
+                                    EmguCvExtensions.Kernel3X3Rectangle, EmguCvExtensions.AnchorCenter,
+                                    (int)GapClosingIterations, BorderType.Default, default);
+                                current = repaired;
+                            }
+
+                            if (NoiseRemovalIterations > 0)
+                            {
+                                CvInvoke.MorphologyEx(current, repaired, MorphOp.Open,
+                                    EmguCvExtensions.Kernel3X3Rectangle, EmguCvExtensions.AnchorCenter,
+                                    (int)NoiseRemovalIterations, BorderType.Default, default);
+                            }
+
+                            // Spare compressing a layer that did not change
+                            if (!modified)
+                            {
+                                using var difference = new Mat();
+                                CvInvoke.Compare(areaMat, repaired, difference, CmpType.NotEqual);
+                                modified = CvInvoke.HasNonZero(difference);
+                            }
+
+                            if (modified)
+                            {
+                                repaired.CopyTo(areaMat);
+                            }
                         }
                     }
-
-                    if (image is not null)
+                    if (modified)
                     {
-                        layer.LayerMat = image;
+                        layer.LayerMat = image!;
                     }
                 }
                 finally

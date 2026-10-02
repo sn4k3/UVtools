@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -225,8 +225,14 @@ public partial class OperationLightBleedCompensation : Operation
             {
                 progress.PauseIfRequested();
                 var layer = SlicerFile[layerIndex];
+                if (layer.IsEmpty) // There is nothing to compensate on an empty layer
+                {
+                    progress.LockAndIncrement();
+                    return;
+                }
+
                 using var mat = layer.LayerMat;
-                using var original = mat.Clone();
+                using var original = CloneIfMasked(mat);
                 using var target = GetRoiOrDefault(mat);
 
                 for (var i = 0; i < dimMats.Length; i++)

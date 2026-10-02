@@ -249,12 +249,12 @@ public sealed partial class OperationCalibrateElephantFoot : Operation
 
     public KernelConfiguration DimmingKernel { get; set; } = new();
 
-    public uint ErodeObjects => IsErodeEnabled ?
-        (uint)((ErodeEndIteration - ErodeStartIteration) / (decimal)ErodeIterationSteps) + 1
+    public uint ErodeObjects => IsErodeEnabled && ErodeEndIteration >= ErodeStartIteration ?
+        (uint)((ErodeEndIteration - ErodeStartIteration) / Math.Max(1, (int)ErodeIterationSteps)) + 1
         : 0;
 
-    public uint DimmingObjects => IsDimmingEnabled ?
-        (uint)((DimmingEndBrightness - DimmingStartBrightness) / (decimal) DimmingBrightnessSteps) + 1
+    public uint DimmingObjects => IsDimmingEnabled && DimmingEndBrightness >= DimmingStartBrightness ?
+        (uint)((DimmingEndBrightness - DimmingStartBrightness) / Math.Max(1, (int)DimmingBrightnessSteps)) + 1
         : 0;
 
     public uint ObjectCount => (OutputOriginalPart ? 1u : 0) + ErodeObjects + DimmingObjects;
@@ -437,7 +437,7 @@ public sealed partial class OperationCalibrateElephantFoot : Operation
         {
             for (int iteration = ErodeStartIteration;
                  iteration <= ErodeEndIteration;
-                 iteration += ErodeIterationSteps)
+                 iteration += Math.Max(1, (int)ErodeIterationSteps))
             {
                 currentX += shape.Width + Margin;
                 maxX = Math.Max(maxX, currentX);
@@ -485,7 +485,7 @@ public sealed partial class OperationCalibrateElephantFoot : Operation
         {
             for (int brightness = DimmingStartBrightness;
                  brightness <= DimmingEndBrightness;
-                 brightness += DimmingBrightnessSteps)
+                 brightness += Math.Max(1, (int)DimmingBrightnessSteps))
             {
                 currentX += shape.Width + Margin;
 

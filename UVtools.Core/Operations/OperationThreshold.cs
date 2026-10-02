@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -69,15 +69,23 @@ public partial class OperationThreshold : Operation
 
     #region Methods
 
+    /// <summary>
+    /// Gets if the black pixels stay black after the threshold, so an empty layer stays empty.
+    /// </summary>
+    private bool IsBackgroundPreserved =>
+        Type is ThresholdType.Binary or ThresholdType.Trunc or ThresholdType.ToZero or ThresholdType.ToZeroInv;
+
     protected override bool ExecuteInternally(OperationProgress progress)
     {
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
-            using (var mat = SlicerFile[layerIndex].LayerMat)
+            var layer = SlicerFile[layerIndex];
+            if (!layer.IsEmpty || !IsBackgroundPreserved) // Thresholding black pixels can create content
             {
+                using var mat = layer.LayerMat;
                 Execute(mat);
-                SlicerFile[layerIndex].LayerMat = mat;
+                layer.LayerMat = mat;
             }
 
             progress.LockAndIncrement();
@@ -88,7 +96,7 @@ public partial class OperationThreshold : Operation
 
     public override bool Execute(Mat mat, params object[]? arguments)
     {
-        using var original = mat.Clone();
+        using var original = CloneIfMasked(mat);
         using var target = GetRoiOrDefault(mat);
         CvInvoke.Threshold(target, target, Threshold, Maximum, Type);
         ApplyMask(original, target);

@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -586,7 +586,7 @@ public sealed partial class OperationCalibrateXYZAccuracy : Operation
                     if (i == 2 && DrainHoleArea > 0)
                     {
                         Size rectSize = new((int)xPixels, (int)(Yppmm * DrainHoleArea));
-                        Point rectLocation = new(currentX, (int)(currentY + xPixels / 2 - rectSize.Height / 2));
+                        Point rectLocation = new(currentX, (int)(currentY + yPixels / 2 - rectSize.Height / 2)); // Centered in the object height
                         CvInvoke.Rectangle(layers[i], new Rectangle(rectLocation, rectSize),
                             EmguCvExtensions.BlackColor, -1);
                     }

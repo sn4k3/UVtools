@@ -842,7 +842,7 @@ public static class EmguExtensionsUV
         using var contours = src.FindContours(out var hierarchy, RetrType.Tree);
         var contourGroups = EmguContours.GetContoursInGroups(contours, hierarchy);
 
-        var mask = src.NewZeros();
+        using var mask = src.NewZeros();
         uint drawContours = 0;
         foreach (var contourGroup in contourGroups)
         {
@@ -868,7 +868,7 @@ public static class EmguExtensionsUV
         using var contours = src.FindContours(out var hierarchy, RetrType.Tree);
         var contourGroups = EmguContours.GetContoursInGroups(contours, hierarchy);
 
-        var mask = src.NewZeros();
+        using var mask = src.NewZeros();
         uint drawContours = 0;
         foreach (var contourGroup in contourGroups)
         {

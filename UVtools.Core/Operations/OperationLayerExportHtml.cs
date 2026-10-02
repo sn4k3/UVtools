@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -561,45 +561,56 @@ public sealed partial class OperationLayerExportHtml : Operation
             Parallel.For(0, SlicerFile.LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
                 progress.PauseIfRequested();
-                using var mat = SlicerFile[layerIndex].LayerMat;
-                CvInvoke.Threshold(mat, mat, 127, byte.MaxValue, ThresholdType.Binary); // Remove AA
-
-                using var contours = mat.FindContours(out var hierarchy, RetrType.Tree);
-                bool firstTime = true;
+                var layer = SlicerFile[layerIndex];
 
                 var sb = new StringBuilder();
+                sb.Append(' ').Append(layerIndex).Append(": '");
 
-                sb.AppendFormat($" {layerIndex}: '");
-                for (int i = 0; i < contours.Size; i++)
+                if (!layer.IsEmpty)
                 {
-                    if (hierarchy[i, EmguContour.HierarchyParent] == -1) // Top hierarchy
+                    // Only the layer area is decoded and traced, the contours are offset back to the layer coordinates
+                    var bounds = layer.BoundingRectangle;
+                    using var mat = layer.GetRoiMat(bounds);
+                    CvInvoke.Threshold(mat, mat, 127, byte.MaxValue, ThresholdType.Binary); // Remove AA
+
+                    using var contours = mat.FindContours(out var hierarchy, RetrType.Tree,
+                        ChainApproxMethod.ChainApproxSimple, bounds.Location);
+                    var contourPoints = contours.ToArrayOfArray();
+                    bool firstTime = true;
+
+                    for (int i = 0; i < contourPoints.Length; i++)
                     {
-                        if (firstTime)
+                        if (hierarchy[i, EmguContour.HierarchyParent] == -1) // Top hierarchy
                         {
-                            firstTime = false;
+                            if (firstTime)
+                            {
+                                firstTime = false;
+                            }
+                            else
+                            {
+                                sb.Append("\"/>");
+                            }
+
+                            sb.Append("<path d=\"");
                         }
                         else
                         {
-                            sb.AppendFormat("\"/>");
+                            sb.Append(' ');
                         }
 
-                        sb.AppendFormat("<path d=\"");
-                    }
-                    else
-                    {
-                        sb.AppendFormat(" ");
+                        var points = contourPoints[i];
+                        sb.Append("M ").Append(points[0].X).Append(' ').Append(points[0].Y).Append(" L");
+                        for (int x = 1; x < points.Length; x++)
+                        {
+                            sb.Append(' ').Append(points[x].X).Append(' ').Append(points[x].Y);
+                        }
+                        sb.Append(" Z");
                     }
 
-                    sb.AppendFormat($"M {contours[i][0].X} {contours[i][0].Y} L");
-                    for (int x = 1; x < contours[i].Size; x++)
-                    {
-                        sb.AppendFormat($" {contours[i][x].X} {contours[i][x].Y}");
-                    }
-                    sb.AppendFormat(" Z");
+                    if (!firstTime) sb.Append("\"/>");
                 }
 
-                if (!firstTime) sb.AppendFormat("\"/>");
-                sb.AppendFormat("'");
+                sb.Append('\'');
                 layerSvgPath[layerIndex] = sb.ToString();
                 progress.LockAndIncrement();
             });

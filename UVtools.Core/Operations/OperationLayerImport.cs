@@ -250,6 +250,7 @@ public sealed partial class OperationLayerImport : Operation
                 {
                     progress.PauseIfRequested();
                     using var mat = CvInvoke.Imread(pair.Value, ImreadModes.Grayscale);
+                    if (mat.IsEmpty) throw new InvalidOperationException($"Unable to read the image: {pair.Value}");
                     format[pair.Key] = new Layer(pair.Key, mat, format);
 
                     lock (format.Mutex)
@@ -380,11 +381,16 @@ public sealed partial class OperationLayerImport : Operation
                         progress.PauseIfRequested();
                         uint layerIndex = (uint)(StartLayerIndex + i);
 
+                        if (layerIndex >= SlicerFile.LayerCount)
+                        {
+                            progress.LockAndIncrement();
+                            return;
+                        }
+
                         switch (ImportType)
                         {
                             case ImportTypes.Insert:
                                 {
-                                    if (layerIndex >= SlicerFile.LayerCount) return;
                                     if (SlicerFile.Resolution == fileFormat.Resolution)
                                     {
                                         fileFormat[i].CopyImageTo(SlicerFile[layerIndex]);
@@ -399,7 +405,6 @@ public sealed partial class OperationLayerImport : Operation
                                 }
                             case ImportTypes.Replace:
                                 {
-                                    if (layerIndex >= SlicerFile.LayerCount) return;
                                     if (SlicerFile.Resolution == fileFormat.Resolution)
                                     {
                                         fileFormat[i].CopyImageTo(SlicerFile[layerIndex]);
@@ -413,7 +418,6 @@ public sealed partial class OperationLayerImport : Operation
                                 }
                             case ImportTypes.Stack:
                                 {
-                                    if (layerIndex >= SlicerFile.LayerCount) return;
                                     using var mat = SlicerFile[layerIndex].LayerMat;
                                     using var importMat = fileFormat[i].LayerMat;
                                     using var matRoi = new Mat(mat, roiRectangle);
@@ -425,7 +429,7 @@ public sealed partial class OperationLayerImport : Operation
                                 }
                             case ImportTypes.MergeSum:
                                 {
-                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    if (fileFormat[i].IsEmpty) break; // Nothing to merge, the layer stays the same
                                     using var originalMat = SlicerFile[layerIndex].LayerMat;
                                     using var newMat = fileFormat[i].LayerMat;
                                     CvInvoke.Add(originalMat, newMat, newMat);
@@ -434,7 +438,7 @@ public sealed partial class OperationLayerImport : Operation
                                 }
                             case ImportTypes.MergeMax:
                                 {
-                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    if (fileFormat[i].IsEmpty) break; // Nothing to merge, the layer stays the same
                                     using var originalMat = SlicerFile[layerIndex].LayerMat;
                                     using var newMat = fileFormat[i].LayerMat;
                                     CvInvoke.Max(originalMat, newMat, newMat);
@@ -443,7 +447,7 @@ public sealed partial class OperationLayerImport : Operation
                                 }
                             case ImportTypes.Subtract:
                                 {
-                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    if (fileFormat[i].IsEmpty) break; // Nothing to merge, the layer stays the same
                                     using var originalMat = SlicerFile[layerIndex].LayerMat;
                                     using var newMat = fileFormat[i].LayerMat;
                                     CvInvoke.Subtract(originalMat, newMat, newMat);
@@ -452,7 +456,7 @@ public sealed partial class OperationLayerImport : Operation
                                 }
                             case ImportTypes.AbsDiff:
                                 {
-                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    if (fileFormat[i].IsEmpty) break; // Nothing to merge, the layer stays the same
                                     using var originalMat = SlicerFile[layerIndex].LayerMat;
                                     using var newMat = fileFormat[i].LayerMat;
                                     CvInvoke.AbsDiff(originalMat, newMat, newMat);
@@ -461,7 +465,6 @@ public sealed partial class OperationLayerImport : Operation
                                 }
                             case ImportTypes.BitwiseAnd:
                                 {
-                                    if (layerIndex >= SlicerFile.LayerCount) return;
                                     using var originalMat = SlicerFile[layerIndex].LayerMat;
                                     using var newMat = fileFormat[i].LayerMat;
                                     CvInvoke.BitwiseAnd(originalMat, newMat, newMat);
@@ -470,7 +473,7 @@ public sealed partial class OperationLayerImport : Operation
                                 }
                             case ImportTypes.BitwiseOr:
                                 {
-                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    if (fileFormat[i].IsEmpty) break; // Nothing to merge, the layer stays the same
                                     using var originalMat = SlicerFile[layerIndex].LayerMat;
                                     using var newMat = fileFormat[i].LayerMat;
                                     CvInvoke.BitwiseOr(originalMat, newMat, newMat);
@@ -479,7 +482,7 @@ public sealed partial class OperationLayerImport : Operation
                                 }
                             case ImportTypes.BitwiseXOr:
                                 {
-                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    if (fileFormat[i].IsEmpty) break; // Nothing to merge, the layer stays the same
                                     using var originalMat = SlicerFile[layerIndex].LayerMat;
                                     using var newMat = fileFormat[i].LayerMat;
                                     CvInvoke.BitwiseXor(originalMat, newMat, newMat);

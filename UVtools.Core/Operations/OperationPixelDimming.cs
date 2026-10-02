@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -594,9 +594,13 @@ public partial class OperationPixelDimming : Operation
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
-            using var mat = SlicerFile[layerIndex].LayerMat;
-            Execute(mat, layerIndex, patternMask, alternatePatternMask);
-            SlicerFile[layerIndex].LayerMat = mat;
+            var layer = SlicerFile[layerIndex];
+            if (!layer.IsEmpty) // Nothing to dim on an empty layer
+            {
+                using var mat = layer.LayerMat;
+                Execute(mat, layerIndex, patternMask, alternatePatternMask);
+                layer.LayerMat = mat;
+            }
 
             progress.LockAndIncrement();
         });
@@ -624,32 +628,38 @@ public partial class OperationPixelDimming : Operation
         );
 
 
-        using Mat erode = new();
-        //using Mat diff = new();
-        using var original = mat.Clone();
-        using var originalRoi = GetRoiOrDefault(original);
+        using var original = CloneIfMasked(mat);
+        using var originalRoi = original is null ? null : GetRoiOrDefault(original);
         using var target = GetRoiOrDefault(mat);
         using var mask = GetMask(mat);
 
+        // Everything happens over the model, the blank area of the layer is not processed.
+        // The padding keeps the erode border inside of the blank area.
+        var areaRect = GetContentArea(target, wallThickness + 1);
+        if (areaRect.IsEmpty) return true; // Blank
 
-        CvInvoke.Erode(target, erode, kernel, EmguCvExtensions.AnchorCenter, wallThickness, BorderType.Reflect101, default);
+        using var area = new Mat(target, areaRect);
+        using var areaPattern = new Mat(IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, areaRect);
+        using var areaOriginal = WallsOnly ? area.Clone() : null;
+        using Mat erode = new();
+
+        CvInvoke.Erode(area, erode, kernel, EmguCvExtensions.AnchorCenter, wallThickness, BorderType.Reflect101, default);
 
         if (LighteningPixels)
         {
-            CvInvoke.Add(target, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, WallsOnly ? target : erode);
+            CvInvoke.Add(area, areaPattern, area, WallsOnly ? area : erode);
         }
         else
         {
-            CvInvoke.Subtract(target, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, WallsOnly ? target : erode);
+            CvInvoke.Subtract(area, areaPattern, area, WallsOnly ? area : erode);
         }
 
         if (WallsOnly)
         {
-            originalRoi.CopyTo(target, erode);
+            areaOriginal!.CopyTo(area, erode);
         }
 
         ApplyMask(originalRoi, target, mask);
-
         return true;
     }
 

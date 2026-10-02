@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -253,7 +253,7 @@ public partial class OperationLayerArithmetic : Operation
             progress.PauseOrCancelIfRequested();
             using var result = SlicerFile[operation.Operations[0].LayerIndex].LayerMat;
             using var resultRoi = GetRoiOrDefault(result);
-            using var imageMask = GetMask(resultRoi);
+            using var imageMask = GetMask(result); // Built from the full layer, it is cropped by the ROI if any
 
             progress.ItemCount = (uint)operation.Operations.Count;
             for (int i = 1; i < operation.Operations.Count; i++)

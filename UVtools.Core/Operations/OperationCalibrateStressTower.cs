@@ -68,6 +68,16 @@ public sealed partial class OperationCalibrateStressTower : Operation
             sb.AppendLine("Display height must be a positive value.");
         }
 
+        if (_layerHeight <= 0)
+        {
+            sb.AppendLine("Layer height must be a positive value.");
+        }
+
+        if (Spirals == 0)
+        {
+            sb.AppendLine("The number of spirals must be at least 1.");
+        }
+
         return sb.ToString();
     }
 
@@ -162,7 +172,7 @@ public sealed partial class OperationCalibrateStressTower : Operation
         set => SetProperty(ref _normalExposure, Math.Round(value, 2));
     }
 
-    public uint LayerCount => (uint)((BaseHeight + BodyHeight + CeilHeight) / LayerHeight);
+    public uint LayerCount => LayerHeight > 0 ? (uint)((BaseHeight + BodyHeight + CeilHeight) / LayerHeight) : 0;
 
     public decimal TotalHeight => BaseHeight + BodyHeight + CeilHeight;
 

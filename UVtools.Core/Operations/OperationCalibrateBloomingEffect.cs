@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -354,7 +354,7 @@ public sealed partial class OperationCalibrateBloomingEffect : Operation
                 {
                     currentX = LeftRightMargin;
                     currentY += (uint)(_objectDiameter + ObjectMargin);
-                    if (currentY > maxHeight) break;
+                    if (currentY + _objectDiameter > maxHeight) break; // Same as the objects
                 }
 
                 waitTime = Math.Round(waitTime, 2);

@@ -101,9 +101,14 @@ public class OperationMask : Operation
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
-            using var mat = SlicerFile[layerIndex].LayerMat;
-            Execute(mat);
-            SlicerFile[layerIndex].LayerMat = mat;
+            var layer = SlicerFile[layerIndex];
+            if (!layer.IsEmpty) // Multiplying nothing is nothing
+            {
+                using var mat = layer.LayerMat;
+                Execute(mat);
+                layer.LayerMat = mat;
+            }
+
             progress.LockAndIncrement();
         });
 
@@ -112,7 +117,7 @@ public class OperationMask : Operation
 
     public override bool Execute(Mat mat, params object[]? arguments)
     {
-        using var original = mat.Clone();
+        using var original = CloneIfMasked(mat);
         using var target = GetRoiOrDefault(mat);
         using var croppedInputMask = HaveROI && Mask!.Size == mat.Size ? GetRoiOrDefault(Mask) : null;
         var inputMask = croppedInputMask ?? Mask;

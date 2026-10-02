@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -220,10 +220,12 @@ public partial class OperationMove : Operation
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
-            using (var mat = SlicerFile[layerIndex].LayerMat)
+            var layer = SlicerFile[layerIndex];
+            if (!layer.IsEmpty) // There is nothing to move on an empty layer
             {
+                using var mat = layer.LayerMat;
                 Execute(mat);
-                SlicerFile[layerIndex].LayerMat = mat;
+                layer.LayerMat = mat;
             }
 
             progress.LockAndIncrement();

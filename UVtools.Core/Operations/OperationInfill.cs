@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -179,16 +179,29 @@ public sealed partial class OperationInfill : Operation, IEquatable<OperationInf
         }*/
 #endif
 
-        var clonedLayers = SlicerFile.CloneLayers();
+        // The neighbor layers are only read to find the floor and ceil, which is not needed if they are thinner than a layer
+        var needNeighbors = false;
+        for (var layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
+        {
+            if (FloorCeilThickness <= (decimal)SlicerFile[layerIndex].LayerHeight) continue;
+            needNeighbors = true;
+            break;
+        }
+
+        var clonedLayers = needNeighbors ? SlicerFile.CloneLayers() : [];
 
         try
         {
             Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
                 progress.PauseIfRequested();
-                using var mat = SlicerFile[layerIndex].LayerMat;
-                Execute(mat, layerIndex, mask!, clonedLayers);
-                SlicerFile[layerIndex].LayerMat = mat;
+                var layer = SlicerFile[layerIndex];
+                if (!layer.IsEmpty) // Nothing to infill on an empty layer
+                {
+                    using var mat = layer.LayerMat;
+                    Execute(mat, layerIndex, mask!, clonedLayers);
+                    layer.LayerMat = mat;
+                }
 
                 progress.LockAndIncrement();
             });
@@ -213,8 +226,13 @@ public sealed partial class OperationInfill : Operation, IEquatable<OperationInf
         Mat? patternMask = null;
         using var erode = new Mat();
         using var diff = new Mat();
+        var targetRect = HaveROI ? ROI : OriginalBoundingRectangle.IsEmpty ? new Rectangle(Point.Empty, mat.Size) : OriginalBoundingRectangle;
         using var target = GetRoiOrVolumeBounds(mat);
-        using var mask = GetMask(mat);
+        using var maskFull = GetMask(mat);
+
+        // The mask is as big as the layer when there is no ROI, but the target is the model area
+        using var maskArea = maskFull is not null && maskFull.Size != target.Size ? new Mat(maskFull, targetRect) : null;
+        var mask = maskArea ?? maskFull;
         bool disposeTargetMask = true;
 
         if (InfillType is InfillAlgorithm.Pillars
@@ -223,7 +241,7 @@ public sealed partial class OperationInfill : Operation, IEquatable<OperationInf
             or InfillAlgorithm.CubicStar)
         {
             using var infillPattern = EmguCvExtensions.InitMat(new Size(InfillSpacing, InfillSpacing));
-            using var matPattern = mat.NewZeros();
+            using var matPattern = new Mat();
             bool firstPattern = true;
             uint accumulator = 0;
             bool dynamicCenter = false;
@@ -467,17 +485,30 @@ public sealed partial class OperationInfill : Operation, IEquatable<OperationInf
                 zz += SlicerFile[i].RelativePositionZ;
             }
 
+            // The equation terms depend on only one coordinate, compute them once instead of per pixel
+            var sinX = new double[patternMask.Width];
+            var cosX = new double[patternMask.Width];
+            for (int x = 0; x < sinX.Length; x++)
+            {
+                var xx = x * scaleX; // x position of pixel
+                sinX[x] = Math.Sin(xx);
+                cosX[x] = Math.Cos(xx);
+            }
+
+            var sinZ = Math.Sin(zz);
+            var cosZ = Math.Cos(zz);
+
             for (int y = 0; y < patternMask.Height; y++)
             {
                 var span = patternMask.GetRowSpanOfBytes(y);
                 var yy = y * scaleY; // y position of pixel
+                var sinY = Math.Sin(yy);
+                var cosY = Math.Cos(yy);
                 for (int x = 0; x < patternMask.Width; x++)
                 {
-                    var xx = x * scaleX; // x position of pixel
-
-                    var d = Math.Sin(xx) * Math.Cos(yy) // compute gyroid equation
-                            + Math.Sin(yy) * Math.Cos(zz)
-                            + Math.Sin(zz) * Math.Cos(xx);
+                    var d = sinX[x] * cosY // compute gyroid equation
+                            + sinY * cosZ
+                            + sinZ * cosX[x];
                     //if (d > 1e-6) continue; // Far from surface
                     if (Math.Abs(d) - 0.006*InfillThickness > 0) continue;
                     //if (d - 0.05 > 1e-6) continue;
@@ -502,10 +533,10 @@ public sealed partial class OperationInfill : Operation, IEquatable<OperationInf
             {
                 for (int floorLayerIndex = (int)(index - 1); heightAccumulator <= FloorCeilThickness && floorLayerIndex >= 0; floorLayerIndex--)
                 {
-                    using var floorMat = clonedLayers[floorLayerIndex].LayerMat;
-                    using var floorMatRoi = GetRoiOrVolumeBounds(floorMat);
+                    using var floorMatRoi = clonedLayers[floorLayerIndex].GetRoiMat(targetRect);
 
                     CvInvoke.BitwiseAnd(surfaceMat, floorMatRoi, surfaceMat);
+                    if (!CvInvoke.HasNonZero(surfaceMat)) return true; // Nothing left to infill
 
                     heightAccumulator += (decimal)SlicerFile[floorLayerIndex + 1].PositionZ - (decimal)SlicerFile[floorLayerIndex].PositionZ;
                 }
@@ -515,10 +546,10 @@ public sealed partial class OperationInfill : Operation, IEquatable<OperationInf
                 heightAccumulator = (decimal)SlicerFile[index].LayerHeight;
                 for (var ceilLayerIndex = index + 1; heightAccumulator <= FloorCeilThickness && ceilLayerIndex <= SlicerFile.LastLayerIndex; ceilLayerIndex++)
                 {
-                    using var ceilMat = clonedLayers[ceilLayerIndex].LayerMat;
-                    using var ceilMatRoi = GetRoiOrVolumeBounds(ceilMat);
+                    using var ceilMatRoi = clonedLayers[ceilLayerIndex].GetRoiMat(targetRect);
 
                     CvInvoke.BitwiseAnd(surfaceMat, ceilMatRoi, surfaceMat);
+                    if (!CvInvoke.HasNonZero(surfaceMat)) return true; // Nothing left to infill
 
                     heightAccumulator += (decimal)SlicerFile[ceilLayerIndex].PositionZ - (decimal)SlicerFile[ceilLayerIndex - 1].PositionZ;
                 }
@@ -530,7 +561,8 @@ public sealed partial class OperationInfill : Operation, IEquatable<OperationInf
             //patternMask.Save("D:\\pattern.png");
             CvInvoke.Erode(target, erode, kernel, EmguCvExtensions.AnchorCenter, WallThickness, BorderType.Reflect101, default);
 
-            CvInvoke.BitwiseAnd(erode, surfaceMat, erode, mask);
+            CvInvoke.BitwiseAnd(erode, surfaceMat, erode);
+            if (mask is not null) CvInvoke.BitwiseAnd(erode, mask, erode); // Infill only inside of the mask
             patternMask!.CopyTo(target, erode);
         //target.SetTo(EmguCvExtensions.BlackColor, erode);
         //erode.CopyTo(target);

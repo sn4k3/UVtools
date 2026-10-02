@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -93,9 +93,14 @@ public partial class OperationRotate : Operation
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
-            using var mat = SlicerFile[layerIndex].LayerMat;
-            Execute(mat);
-            SlicerFile[layerIndex].LayerMat = mat;
+            var layer = SlicerFile[layerIndex];
+            if (!layer.IsEmpty) // Nothing to rotate on an empty layer
+            {
+                using var mat = layer.LayerMat;
+                Execute(mat);
+                layer.LayerMat = mat;
+            }
+
             progress.LockAndIncrement();
         });
 
@@ -104,7 +109,7 @@ public partial class OperationRotate : Operation
 
     public override bool Execute(Mat mat, params object[]? arguments)
     {
-        using var original = mat.Clone();
+        using var original = CloneIfMasked(mat);
         using var target = GetRoiOrDefault(mat);
         target.RotateFromCenter((double)AngleDegrees);
         ApplyMask(original, target);

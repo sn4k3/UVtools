@@ -192,7 +192,12 @@ public sealed partial class OperationCalibrateGrayscale : Operation
     [NotifyPropertyChangedFor(nameof(AngleStep))]
     public partial byte BrightnessSteps { get; set; } = 10;
 
-    public int Divisions => (int)((EndBrightness - StartBrightness) / (decimal)BrightnessSteps) + 1;
+    /// <summary>
+    /// Gets the brightness step, never lower than 1 to not loop forever or divide by zero
+    /// </summary>
+    private byte SafeBrightnessSteps => Math.Max((byte)1, BrightnessSteps);
+
+    public int Divisions => (int)((EndBrightness - StartBrightness) / (decimal)SafeBrightnessSteps) + 1;
     public float AngleStep => 360f / Divisions;
 
     [ObservableProperty]
@@ -264,7 +269,7 @@ public sealed partial class OperationCalibrateGrayscale : Operation
 
 
         int i = 0;
-        for (ushort brightness = StartBrightness; brightness <= EndBrightness; brightness += BrightnessSteps)
+        for (ushort brightness = StartBrightness; brightness <= EndBrightness; brightness += SafeBrightnessSteps)
         {
             var radians = new float[2];
             var degrees = new SizeF[2];
@@ -306,7 +311,7 @@ public sealed partial class OperationCalibrateGrayscale : Operation
 
 
             layers[2].RotateFromCenter(halfAngleStep);
-            for (ushort brightness = StartBrightness; brightness <= EndBrightness; brightness += BrightnessSteps)
+            for (ushort brightness = StartBrightness; brightness <= EndBrightness; brightness += SafeBrightnessSteps)
             {
                 var text = brightness.ToString();
                 if (ConvertBrightnessToExposureTime)

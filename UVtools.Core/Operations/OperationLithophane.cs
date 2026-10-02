@@ -328,14 +328,18 @@ public partial class OperationLithophane : Operation
         if (SeparateGrayscalePixels)
         {
             var layersBag = new ConcurrentDictionary<byte, Layer>();
-            progress.Reset("Threshold levels", byte.MaxValue);
+            progress.Reset("Threshold levels", (uint)Math.Max(0, _endThresholdRange - _startThresholdRange));
             Parallel.For(_startThresholdRange, _endThresholdRange, CoreSettings.GetParallelOptions(progress),
                 threshold =>
                 {
                     progress.PauseIfRequested();
                     using var thresholdMat = new Mat();
                     CvInvoke.Threshold(mat, thresholdMat, threshold, byte.MaxValue, ThresholdType.Binary);
-                    if (!CvInvoke.HasNonZero(thresholdMat)) return;
+                    if (!CvInvoke.HasNonZero(thresholdMat))
+                    {
+                        progress.LockAndIncrement();
+                        return;
+                    }
 
                     if (EnableAntiAliasing)
                     {

@@ -81,23 +81,26 @@ public partial class UserSettings : ObservableObject
     {
         public const byte LockedFilesMaxOpenCounter = 10;
 
-        public GeneralUserSettings()
-        {
-        }
+        public GeneralUserSettings() { }
 
         [ObservableProperty]
         public partial App.ApplicationTheme Theme { get; set; } = App.ApplicationTheme.FluentSystem;
 
-        [ObservableProperty] public partial DensityStyle ThemeDensity { get; set; } = DensityStyle.Normal;
-
-        [ObservableProperty] public partial string ThemeColor { get; set; } = "UVtools";
-
-        [ObservableProperty] public partial bool BackgroundAnimations { get; set; }
-
-        [ObservableProperty] public partial bool BackgroundTransitions { get; set; } = true;
+        [ObservableProperty]
+        public partial DensityStyle ThemeDensity { get; set; } = DensityStyle.Normal;
 
         [ObservableProperty]
-        public partial SukiBackgroundStyle BackgroundStyle { get; set; } = SukiBackgroundStyle.GradientSoft;
+        public partial string ThemeColor { get; set; } = "UVtools";
+
+        [ObservableProperty]
+        public partial bool BackgroundAnimations { get; set; }
+
+        [ObservableProperty]
+        public partial bool BackgroundTransitions { get; set; } = true;
+
+        [ObservableProperty]
+        public partial SukiBackgroundStyle BackgroundStyle { get; set; } =
+            SukiBackgroundStyle.GradientSoft;
 
         public float UiScaling
         {
@@ -105,25 +108,38 @@ public partial class UserSettings : ObservableObject
             set => SetProperty(ref field, Math.Clamp(MathF.Round(value, 2), 0.3f, 3f));
         } = 1;
 
-        [ObservableProperty] public partial Rectangle LastWindowBounds { get; set; } = new(40, 40, 1024, 600);
+        [ObservableProperty]
+        public partial Rectangle LastWindowBounds { get; set; } = new(40, 40, 1024, 600);
 
-        [ObservableProperty] public partial bool StartMaximized { get; set; } = true;
+        [ObservableProperty]
+        public partial bool StartMaximized { get; set; } = true;
 
-        [ObservableProperty] public partial bool RestoreWindowLastPosition { get; set; }
+        [ObservableProperty]
+        public partial bool RestoreWindowLastPosition { get; set; }
 
-        [ObservableProperty] public partial bool RestoreWindowLastSize { get; set; }
+        [ObservableProperty]
+        public partial bool RestoreWindowLastSize { get; set; }
 
-        [ObservableProperty] public partial bool CheckForUpdatesOnStartup { get; set; } = true;
+        [ObservableProperty]
+        public partial bool CheckForUpdatesOnStartup { get; set; } = true;
 
-        [ObservableProperty] public partial bool CheckAnnouncementsOnStartup { get; set; } = true;
+        [ObservableProperty]
+        public partial bool CheckAnnouncementsOnStartup { get; set; } = true;
 
-        [ObservableProperty] public partial DateTime LastAnnouncementCheckTime { get; set; } = DateTime.MinValue;
+        [ObservableProperty]
+        public partial DateTime LastAnnouncementCheckTime { get; set; } = DateTime.MinValue;
 
-        [ObservableProperty] public partial HashSet<string> DismissedAnnouncementIds { get; set; } = [];
+        [ObservableProperty]
+        public partial string LastAnnouncementCheckVersion { get; set; } = string.Empty;
 
-        [ObservableProperty] public partial bool LoadDemoFileOnStartup { get; set; } = true;
+        [ObservableProperty]
+        public partial HashSet<string> DismissedAnnouncementIds { get; set; } = [];
 
-        [ObservableProperty] public partial bool LoadLastRecentFileOnStartup { get; set; }
+        [ObservableProperty]
+        public partial bool LoadDemoFileOnStartup { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool LoadLastRecentFileOnStartup { get; set; }
 
         /// <summary>
         /// Gets or sets the minimum amount of available RAM in GB to be able to run, otherwise will pause/cancel or exit.
@@ -134,9 +150,11 @@ public partial class UserSettings : ObservableObject
             set => SetProperty(ref field, Math.Max(0, value));
         }
 
-        [ObservableProperty] public partial RamLimitAction AvailableRamOnHitLimitAction { get; set; }
+        [ObservableProperty]
+        public partial RamLimitAction AvailableRamOnHitLimitAction { get; set; }
 
-        [ObservableProperty] public partial bool AvailableRamOnHitLimitKillIfUnableToAction { get; set; }
+        [ObservableProperty]
+        public partial bool AvailableRamOnHitLimitKillIfUnableToAction { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum number of concurrent tasks enabled by a ParallelOptions instance.
@@ -156,31 +174,44 @@ public partial class UserSettings : ObservableObject
             CoreSettings.DefaultLayerCompressionLevel;
 
         [ObservableProperty]
-        public partial float AverageResin1000MlBottleCost { get; set; } = CoreSettings.AverageResin1000MlBottleCost;
+        public partial float AverageResin1000MlBottleCost { get; set; } =
+            CoreSettings.AverageResin1000MlBottleCost;
 
-        [ObservableProperty] public partial bool WindowsCanResize { get; set; }
+        [ObservableProperty]
+        public partial bool WindowsCanResize { get; set; }
 
-        [ObservableProperty] public partial bool WindowsTakeIntoAccountScreenScaling { get; set; } = true;
+        [ObservableProperty]
+        public partial bool WindowsTakeIntoAccountScreenScaling { get; set; } = true;
 
-        [ObservableProperty] public partial float WindowsMaxWidthScreenRatio { get; set; } = 0.9f;
+        [ObservableProperty]
+        public partial float WindowsMaxWidthScreenRatio { get; set; } = 0.9f;
 
-        [ObservableProperty] public partial float WindowsMaxHeightScreenRatio { get; set; } = 0.9f;
+        [ObservableProperty]
+        public partial float WindowsMaxHeightScreenRatio { get; set; } = 0.9f;
 
-        [ObservableProperty] public partial byte DefaultOpenFileExtensionIndex { get; set; }
+        [ObservableProperty]
+        public partial byte DefaultOpenFileExtensionIndex { get; set; }
 
-        [ObservableProperty] public partial string? DefaultDirectoryOpenFile { get; set; }
+        [ObservableProperty]
+        public partial string? DefaultDirectoryOpenFile { get; set; }
 
-        [ObservableProperty] public partial string? DefaultDirectorySaveFile { get; set; }
+        [ObservableProperty]
+        public partial string? DefaultDirectorySaveFile { get; set; }
 
-        [ObservableProperty] public partial string? DefaultDirectoryExtractFile { get; set; }
+        [ObservableProperty]
+        public partial string? DefaultDirectoryExtractFile { get; set; }
 
-        [ObservableProperty] public partial string? DefaultDirectoryConvertFile { get; set; }
+        [ObservableProperty]
+        public partial string? DefaultDirectoryConvertFile { get; set; }
 
-        [ObservableProperty] public partial string? DefaultDirectoryScripts { get; set; }
+        [ObservableProperty]
+        public partial string? DefaultDirectoryScripts { get; set; }
 
-        [ObservableProperty] public partial bool FileSavePromptOverwrite { get; set; } = true;
+        [ObservableProperty]
+        public partial bool FileSavePromptOverwrite { get; set; } = true;
 
-        [ObservableProperty] public partial bool FileSaveUpdateNameWithNewInformation { get; set; } = true;
+        [ObservableProperty]
+        public partial bool FileSaveUpdateNameWithNewInformation { get; set; } = true;
 
         [ObservableProperty]
         public partial string? FileSaveAsDefaultName { get; set; } =
@@ -190,28 +221,39 @@ public partial class UserSettings : ObservableObject
         public partial string? FileSaveAsDefaultNameCleanUpRegex { get; set; } =
             @"_?[0-9]+h[0-9]+m([0-9]+s)?|_?(([0-9]*[.])?[0-9]+)ml|_copy([0-9]*)?";
 
-        [ObservableProperty] public partial bool NotificationBeep { get; set; } = true;
-
-        [ObservableProperty] public partial byte NotificationBeepCount { get; set; } = 1;
-
-        [ObservableProperty] public partial ushort NotificationBeepActivateAboveTime { get; set; } = 20;
-
-        [ObservableProperty] public partial ushort NotificationBeepFrequency { get; set; } = 600;
-
-        [ObservableProperty] public partial ushort NotificationBeepDuration { get; set; } = 300;
-
-        [ObservableProperty] public partial int NotificationBeepRepeatFrequencyOffset { get; set; } = 50;
-
-        [ObservableProperty] public partial ushort NotificationBeepRepeatDelay { get; set; }
-
-        [ObservableProperty] public partial bool SendToPromptForRemovableDeviceEject { get; set; } = true;
+        [ObservableProperty]
+        public partial bool NotificationBeep { get; set; } = true;
 
         [ObservableProperty]
-        public partial RangeObservableCollection<MappedDevice> SendToCustomLocations { get; set; } = [];
+        public partial byte NotificationBeepCount { get; set; } = 1;
 
-        [ObservableProperty] public partial RangeObservableCollection<MappedProcess> SendToProcess { get; set; } = [];
+        [ObservableProperty]
+        public partial ushort NotificationBeepActivateAboveTime { get; set; } = 20;
 
-        [ObservableProperty] public partial ushort LockedFilesOpenCounter { get; set; }
+        [ObservableProperty]
+        public partial ushort NotificationBeepFrequency { get; set; } = 600;
+
+        [ObservableProperty]
+        public partial ushort NotificationBeepDuration { get; set; } = 300;
+
+        [ObservableProperty]
+        public partial int NotificationBeepRepeatFrequencyOffset { get; set; } = 50;
+
+        [ObservableProperty]
+        public partial ushort NotificationBeepRepeatDelay { get; set; }
+
+        [ObservableProperty]
+        public partial bool SendToPromptForRemovableDeviceEject { get; set; } = true;
+
+        [ObservableProperty]
+        public partial RangeObservableCollection<MappedDevice> SendToCustomLocations { get; set; } =
+        [];
+
+        [ObservableProperty]
+        public partial RangeObservableCollection<MappedProcess> SendToProcess { get; set; } = [];
+
+        [ObservableProperty]
+        public partial ushort LockedFilesOpenCounter { get; set; }
 
         protected override void OnPropertyChanged(PropertyChangedEventArgs e)
         {
@@ -251,7 +293,7 @@ public partial class UserSettings : ObservableObject
         {
             Difference = 0,
             Similarity = 1,
-            OnionSkin = 2
+            OnionSkin = 2,
         }
 
         [ObservableProperty]
@@ -265,7 +307,8 @@ public partial class UserSettings : ObservableObject
             set => TooltipOverlayBackgroundColor = new Color(value);
         }
 
-        [ObservableProperty] public partial bool TooltipOverlay { get; set; } = true;
+        [ObservableProperty]
+        public partial bool TooltipOverlay { get; set; } = true;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(VolumeBoundsOutlineBrush))]
@@ -278,9 +321,11 @@ public partial class UserSettings : ObservableObject
             set => VolumeBoundsOutlineColor = new Color(value);
         }
 
-        [ObservableProperty] public partial byte VolumeBoundsOutlineThickness { get; set; } = 3;
+        [ObservableProperty]
+        public partial byte VolumeBoundsOutlineThickness { get; set; } = 3;
 
-        [ObservableProperty] public partial bool VolumeBoundsOutline { get; set; } = true;
+        [ObservableProperty]
+        public partial bool VolumeBoundsOutline { get; set; } = true;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(LayerBoundsOutlineBrush))]
@@ -293,9 +338,11 @@ public partial class UserSettings : ObservableObject
             set => LayerBoundsOutlineColor = new Color(value);
         }
 
-        [ObservableProperty] public partial byte LayerBoundsOutlineThickness { get; set; } = 3;
+        [ObservableProperty]
+        public partial byte LayerBoundsOutlineThickness { get; set; } = 3;
 
-        [ObservableProperty] public partial bool LayerBoundsOutline { get; set; }
+        [ObservableProperty]
+        public partial bool LayerBoundsOutline { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ContourBoundsOutlineBrush))]
@@ -308,9 +355,11 @@ public partial class UserSettings : ObservableObject
             set => ContourBoundsOutlineColor = new Color(value);
         }
 
-        [ObservableProperty] public partial byte ContourBoundsOutlineThickness { get; set; } = 2;
+        [ObservableProperty]
+        public partial byte ContourBoundsOutlineThickness { get; set; } = 2;
 
-        [ObservableProperty] public partial bool ContourBoundsOutline { get; set; }
+        [ObservableProperty]
+        public partial bool ContourBoundsOutline { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(EnclosingCirclesOutlineBrush))]
@@ -323,9 +372,11 @@ public partial class UserSettings : ObservableObject
             set => EnclosingCirclesOutlineColor = new Color(value);
         }
 
-        [ObservableProperty] public partial byte EnclosingCirclesOutlineThickness { get; set; } = 2;
+        [ObservableProperty]
+        public partial byte EnclosingCirclesOutlineThickness { get; set; } = 2;
 
-        [ObservableProperty] public partial bool EnclosingCirclesOutline { get; set; }
+        [ObservableProperty]
+        public partial bool EnclosingCirclesOutline { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HollowOutlineBrush))]
@@ -338,9 +389,11 @@ public partial class UserSettings : ObservableObject
             set => HollowOutlineColor = new Color(value);
         }
 
-        [ObservableProperty] public partial sbyte HollowOutlineLineThickness { get; set; } = 5;
+        [ObservableProperty]
+        public partial sbyte HollowOutlineLineThickness { get; set; } = 5;
 
-        [ObservableProperty] public partial bool HollowOutline { get; set; }
+        [ObservableProperty]
+        public partial bool HollowOutline { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(CentroidOutlineBrush))]
@@ -353,11 +406,14 @@ public partial class UserSettings : ObservableObject
             set => CentroidOutlineColor = new Color(value);
         }
 
-        [ObservableProperty] public partial byte CentroidOutlineDiameter { get; set; } = 8;
+        [ObservableProperty]
+        public partial byte CentroidOutlineDiameter { get; set; } = 8;
 
-        [ObservableProperty] public partial bool CentroidOutlineHollow { get; set; }
+        [ObservableProperty]
+        public partial bool CentroidOutlineHollow { get; set; }
 
-        [ObservableProperty] public partial bool CentroidOutline { get; set; }
+        [ObservableProperty]
+        public partial bool CentroidOutline { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(TriangulateOutlineBrush))]
@@ -370,9 +426,11 @@ public partial class UserSettings : ObservableObject
             set => TriangulateOutlineColor = new Color(value);
         }
 
-        [ObservableProperty] public partial byte TriangulateOutlineLineThickness { get; set; } = 2;
+        [ObservableProperty]
+        public partial byte TriangulateOutlineLineThickness { get; set; } = 2;
 
-        [ObservableProperty] public partial bool TriangulateOutlineShowCount { get; set; } = true;
+        [ObservableProperty]
+        public partial bool TriangulateOutlineShowCount { get; set; } = true;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(MaskOutlineBrush))]
@@ -385,9 +443,11 @@ public partial class UserSettings : ObservableObject
             set => MaskOutlineColor = new Color(value);
         }
 
-        [ObservableProperty] public partial sbyte MaskOutlineLineThickness { get; set; } = 10;
+        [ObservableProperty]
+        public partial sbyte MaskOutlineLineThickness { get; set; } = 10;
 
-        [ObservableProperty] public partial bool MaskClearROIAfterSet { get; set; } = true;
+        [ObservableProperty]
+        public partial bool MaskClearROIAfterSet { get; set; } = true;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(PreviousLayerDifferenceBrush))]
@@ -422,20 +482,27 @@ public partial class UserSettings : ObservableObject
             set => BothLayerDifferenceColor = new Color(value);
         }
 
-        [ObservableProperty] public partial bool ShowLayerDifference { get; set; }
+        [ObservableProperty]
+        public partial bool ShowLayerDifference { get; set; }
 
         [ObservableProperty]
-        public partial LayerDifferenceMode DifferenceMode { get; set; } = LayerDifferenceMode.Difference;
+        public partial LayerDifferenceMode DifferenceMode { get; set; } =
+            LayerDifferenceMode.Difference;
 
-        [ObservableProperty] public partial int OnionSkinLayers { get; set; } = 3;
+        [ObservableProperty]
+        public partial int OnionSkinLayers { get; set; } = 3;
 
-        [ObservableProperty] public partial bool LayerDifferenceHighlightSimilarityInstead { get; set; }
+        [ObservableProperty]
+        public partial bool LayerDifferenceHighlightSimilarityInstead { get; set; }
 
-        [ObservableProperty] public partial bool ShowPeelCurve { get; set; } = false;
+        [ObservableProperty]
+        public partial bool ShowPeelCurve { get; set; } = false;
 
-        [ObservableProperty] public partial bool ShowMeasure { get; set; } = false;
+        [ObservableProperty]
+        public partial bool ShowMeasure { get; set; } = false;
 
-        [ObservableProperty] public partial bool UseIssueColorOnTracker { get; set; } = true;
+        [ObservableProperty]
+        public partial bool UseIssueColorOnTracker { get; set; } = true;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IslandBrush))]
@@ -547,35 +614,50 @@ public partial class UserSettings : ObservableObject
             set => CrosshairColor = new Color(value);
         }
 
-        [ObservableProperty] public partial bool ZoomPreferNative { get; set; }
+        [ObservableProperty]
+        public partial bool ZoomPreferNative { get; set; }
 
-        [ObservableProperty] public partial ushort ZoomDebounceMilliseconds { get; set; } = 20;
+        [ObservableProperty]
+        public partial ushort ZoomDebounceMilliseconds { get; set; } = 20;
 
-        [ObservableProperty] public partial bool ZoomToFitPrintVolumeBounds { get; set; } = true;
+        [ObservableProperty]
+        public partial bool ZoomToFitPrintVolumeBounds { get; set; } = true;
 
-        [ObservableProperty] public partial byte ZoomLockLevelIndex { get; set; } = 7;
+        [ObservableProperty]
+        public partial byte ZoomLockLevelIndex { get; set; } = 7;
 
-        [ObservableProperty] public partial bool ZoomIssues { get; set; } = true;
+        [ObservableProperty]
+        public partial bool ZoomIssues { get; set; } = true;
 
-        [ObservableProperty] public partial bool CrosshairShowOnlyOnSelectedIssues { get; set; }
+        [ObservableProperty]
+        public partial bool CrosshairShowOnlyOnSelectedIssues { get; set; }
 
-        [ObservableProperty] public partial byte CrosshairFadeLevelIndex { get; set; } = 5;
+        [ObservableProperty]
+        public partial byte CrosshairFadeLevelIndex { get; set; } = 5;
 
-        [ObservableProperty] public partial uint CrosshairLength { get; set; } = 20;
+        [ObservableProperty]
+        public partial uint CrosshairLength { get; set; } = 20;
 
-        [ObservableProperty] public partial byte CrosshairMargin { get; set; } = 5;
+        [ObservableProperty]
+        public partial byte CrosshairMargin { get; set; } = 5;
 
-        [ObservableProperty] public partial bool AutoRotateLayerBestView { get; set; } = true;
+        [ObservableProperty]
+        public partial bool AutoRotateLayerBestView { get; set; } = true;
 
-        [ObservableProperty] public partial bool AutoFlipLayerIfMirrored { get; set; } = true;
+        [ObservableProperty]
+        public partial bool AutoFlipLayerIfMirrored { get; set; } = true;
 
-        [ObservableProperty] public partial bool LayerZoomToFitOnLoad { get; set; } = true;
+        [ObservableProperty]
+        public partial bool LayerZoomToFitOnLoad { get; set; } = true;
 
-        [ObservableProperty] public partial bool ShowBackgroundGrid { get; set; }
+        [ObservableProperty]
+        public partial bool ShowBackgroundGrid { get; set; }
 
-        [ObservableProperty] public partial ushort LayerSliderDebounce { get; set; }
+        [ObservableProperty]
+        public partial ushort LayerSliderDebounce { get; set; }
 
-        [ObservableProperty] public partial bool StartLayerNumberAt1 { get; set; }
+        [ObservableProperty]
+        public partial bool StartLayerNumberAt1 { get; set; }
 
         public LayerPreviewUserSettings Clone()
         {
@@ -591,22 +673,30 @@ public partial class UserSettings : ObservableObject
     {
         public enum WindowsRendererPreference : byte
         {
-            [Description("Automatic (ANGLE, then WGL)")] Automatic,
-            [Description("Native OpenGL (WGL first)")] NativeOpenGl
+            [Description("Automatic (ANGLE, then WGL)")]
+            Automatic,
+
+            [Description("Native OpenGL (WGL first)")]
+            NativeOpenGl,
         }
 
-        [ObservableProperty] public partial WindowsRendererPreference WindowsRenderer { get; set; } =
+        [ObservableProperty]
+        public partial WindowsRendererPreference WindowsRenderer { get; set; } =
             WindowsRendererPreference.Automatic;
 
-        [ObservableProperty] public partial bool Build3DAfterFileOpen { get; set; } = false;
-
-        [ObservableProperty] public partial VoxelPreviewQuality Quality { get; set; } = VoxelPreviewQuality.Balanced;
+        [ObservableProperty]
+        public partial bool Build3DAfterFileOpen { get; set; } = false;
 
         [ObservableProperty]
-        public partial VoxelPreviewRenderMode RenderMode { get; set; } = VoxelPreviewRenderMode.Solid;
+        public partial VoxelPreviewQuality Quality { get; set; } = VoxelPreviewQuality.Balanced;
 
         [ObservableProperty]
-        public partial VoxelPreviewLightingMode LightingMode { get; set; } = VoxelPreviewLightingMode.Camera;
+        public partial VoxelPreviewRenderMode RenderMode { get; set; } =
+            VoxelPreviewRenderMode.Solid;
+
+        [ObservableProperty]
+        public partial VoxelPreviewLightingMode LightingMode { get; set; } =
+            VoxelPreviewLightingMode.Camera;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(BackgroundBrush))]
@@ -630,38 +720,54 @@ public partial class UserSettings : ObservableObject
             set => VoxelColor = new Color(value);
         }
 
-        [ObservableProperty] public partial bool UseOthographicProjection { get; set; }
-
-        [ObservableProperty] public partial VoxelPreviewColorMode ColorMode { get; set; } = VoxelPreviewColorMode.Solid;
-
-        [ObservableProperty] public partial bool ClipToCurrentLayer { get; set; } = true;
-
-        [ObservableProperty] public partial VoxelPreviewClipMode ClipMode { get; set; } = VoxelPreviewClipMode.Below;
-
-        [ObservableProperty] public partial bool ShowBuildPlateGrid { get; set; } = true;
-
-        [ObservableProperty] public partial bool ShowLayerIssues { get; set; } = true;
-
-        [ObservableProperty] public partial bool GhostClippedModel { get; set; } = true;
-
-        [ObservableProperty] public partial float SlabThicknessMm { get; set; } = 5f;
-
-        [ObservableProperty] public partial bool ShowBoundingBox { get; set; } = false;
-
-        [ObservableProperty] public partial bool ShowModelStats { get; set; } = true;
-
-        [ObservableProperty] public partial bool ShowCenterOfMass { get; set; } = true;
-
-        [ObservableProperty] public partial bool ShowPeelCurve { get; set; } = true;
-
-        [ObservableProperty] public partial bool ShowMeasure { get; set; } = false;
+        [ObservableProperty]
+        public partial bool UseOthographicProjection { get; set; }
 
         [ObservableProperty]
-        public partial VoxelPreviewCutawayAxis CutawayAxis { get; set; } = VoxelPreviewCutawayAxis.Off;
+        public partial VoxelPreviewColorMode ColorMode { get; set; } = VoxelPreviewColorMode.Solid;
 
-        [ObservableProperty] public partial float CutawayPosition { get; set; } = 0f;
+        [ObservableProperty]
+        public partial bool ClipToCurrentLayer { get; set; } = true;
 
-        [ObservableProperty] public partial bool CutawayInvert { get; set; } = false;
+        [ObservableProperty]
+        public partial VoxelPreviewClipMode ClipMode { get; set; } = VoxelPreviewClipMode.Below;
+
+        [ObservableProperty]
+        public partial bool ShowBuildPlateGrid { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool ShowLayerIssues { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool GhostClippedModel { get; set; } = true;
+
+        [ObservableProperty]
+        public partial float SlabThicknessMm { get; set; } = 5f;
+
+        [ObservableProperty]
+        public partial bool ShowBoundingBox { get; set; } = false;
+
+        [ObservableProperty]
+        public partial bool ShowModelStats { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool ShowCenterOfMass { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool ShowPeelCurve { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool ShowMeasure { get; set; } = false;
+
+        [ObservableProperty]
+        public partial VoxelPreviewCutawayAxis CutawayAxis { get; set; } =
+            VoxelPreviewCutawayAxis.Off;
+
+        [ObservableProperty]
+        public partial float CutawayPosition { get; set; } = 0f;
+
+        [ObservableProperty]
+        public partial bool CutawayInvert { get; set; } = false;
 
         public Layer3DPreviewUserSettings Clone()
         {
@@ -677,84 +783,115 @@ public partial class UserSettings : ObservableObject
     {
         public enum ComputeIssuesOnFileLoadType : byte
         {
-            [Description("Do not compute issues")] None,
+            [Description("Do not compute issues")]
+            None,
 
             [Description("Compute time inexpensive issues (Empty layers and print height)")]
             TimeInexpensiveIssues,
 
             [Description("Compute the enabled issues")]
-            EnabledIssues
+            EnabledIssues,
         }
 
         [ObservableProperty]
         public partial ComputeIssuesOnFileLoadType ComputeIssuesOnFileLoad { get; set; } =
             ComputeIssuesOnFileLoadType.TimeInexpensiveIssues;
 
-        [ObservableProperty] public partial bool AutoRepairIssuesOnLoad { get; set; }
-
-        [ObservableProperty] public partial bool ComputeIssuesOnClickTab { get; set; } = true;
-
-        [ObservableProperty] public partial bool ComputeIslands { get; set; } = true;
-
-        [ObservableProperty] public partial bool ComputeOverhangs { get; set; } = true;
-
-        [ObservableProperty] public partial bool ComputeResinTraps { get; set; } = true;
-
-        [ObservableProperty] public partial bool ComputeSuctionCups { get; set; } = true;
-
-        [ObservableProperty] public partial bool ComputeTouchingBounds { get; set; } = true;
-
-        [ObservableProperty] public partial bool ComputePrintHeight { get; set; } = true;
-
-        [ObservableProperty] public partial bool ComputeEmptyLayers { get; set; } = true;
+        [ObservableProperty]
+        public partial bool AutoRepairIssuesOnLoad { get; set; }
 
         [ObservableProperty]
-        public partial IssuesOrderBy DataGridOrderBy { get; set; } = IssuesOrderBy.TypeAscLayerAscAreaDesc;
+        public partial bool ComputeIssuesOnClickTab { get; set; } = true;
 
-        [ObservableProperty] public partial bool DataGridGroupByType { get; set; } = true;
+        [ObservableProperty]
+        public partial bool ComputeIslands { get; set; } = true;
 
-        [ObservableProperty] public partial bool DataGridGroupByLayerIndex { get; set; }
+        [ObservableProperty]
+        public partial bool ComputeOverhangs { get; set; } = true;
 
-        [ObservableProperty] public partial bool IslandEnhancedDetection { get; set; } = true;
+        [ObservableProperty]
+        public partial bool ComputeResinTraps { get; set; } = true;
 
-        [ObservableProperty] public partial bool IslandAllowDiagonalBonds { get; set; }
+        [ObservableProperty]
+        public partial bool ComputeSuctionCups { get; set; } = true;
 
-        [ObservableProperty] public partial byte IslandBinaryThreshold { get; set; }
+        [ObservableProperty]
+        public partial bool ComputeTouchingBounds { get; set; } = true;
 
-        [ObservableProperty] public partial byte IslandRequiredAreaToProcessCheck { get; set; } = 1;
+        [ObservableProperty]
+        public partial bool ComputePrintHeight { get; set; } = true;
 
-        [ObservableProperty] public partial decimal IslandRequiredPixelsToSupportMultiplier { get; set; } = 0.25m;
+        [ObservableProperty]
+        public partial bool ComputeEmptyLayers { get; set; } = true;
 
-        [ObservableProperty] public partial byte IslandRequiredPixelsToSupport { get; set; } = 10;
+        [ObservableProperty]
+        public partial IssuesOrderBy DataGridOrderBy { get; set; } =
+            IssuesOrderBy.TypeAscLayerAscAreaDesc;
 
-        [ObservableProperty] public partial byte IslandRequiredPixelBrightnessToProcessCheck { get; set; } = 1;
+        [ObservableProperty]
+        public partial bool DataGridGroupByType { get; set; } = true;
 
-        [ObservableProperty] public partial byte IslandRequiredPixelBrightnessToSupport { get; set; } = 150;
+        [ObservableProperty]
+        public partial bool DataGridGroupByLayerIndex { get; set; }
 
-        [ObservableProperty] public partial bool OverhangIndependentFromIslands { get; set; } = true;
+        [ObservableProperty]
+        public partial bool IslandEnhancedDetection { get; set; } = true;
 
-        [ObservableProperty] public partial byte OverhangErodeIterations { get; set; } = 49;
+        [ObservableProperty]
+        public partial bool IslandAllowDiagonalBonds { get; set; }
 
-        [ObservableProperty] public partial byte ResinTrapBinaryThreshold { get; set; } = 127;
+        [ObservableProperty]
+        public partial byte IslandBinaryThreshold { get; set; }
 
-        [ObservableProperty] public partial byte ResinTrapRequiredAreaToProcessCheck { get; set; } = 17;
+        [ObservableProperty]
+        public partial byte IslandRequiredAreaToProcessCheck { get; set; } = 1;
 
-        [ObservableProperty] public partial byte ResinTrapRequiredBlackPixelsToDrain { get; set; } = 10;
+        [ObservableProperty]
+        public partial decimal IslandRequiredPixelsToSupportMultiplier { get; set; } = 0.25m;
 
-        [ObservableProperty] public partial byte ResinTrapMaximumPixelBrightnessToDrain { get; set; } = 30;
+        [ObservableProperty]
+        public partial byte IslandRequiredPixelsToSupport { get; set; } = 10;
 
-        [ObservableProperty] public partial uint SuctionCupRequiredAreaToConsider { get; set; } = 10000;
+        [ObservableProperty]
+        public partial byte IslandRequiredPixelBrightnessToProcessCheck { get; set; } = 1;
 
-        [ObservableProperty] public partial decimal SuctionCupRequiredHeightToConsider { get; set; } = 0.5m;
+        [ObservableProperty]
+        public partial byte IslandRequiredPixelBrightnessToSupport { get; set; } = 150;
 
-        [ObservableProperty] public partial byte TouchingBoundMinimumPixelBrightness { get; set; } = 127;
+        [ObservableProperty]
+        public partial bool OverhangIndependentFromIslands { get; set; } = true;
+
+        [ObservableProperty]
+        public partial byte OverhangErodeIterations { get; set; } = 49;
+
+        [ObservableProperty]
+        public partial byte ResinTrapBinaryThreshold { get; set; } = 127;
+
+        [ObservableProperty]
+        public partial byte ResinTrapRequiredAreaToProcessCheck { get; set; } = 17;
+
+        [ObservableProperty]
+        public partial byte ResinTrapRequiredBlackPixelsToDrain { get; set; } = 10;
+
+        [ObservableProperty]
+        public partial byte ResinTrapMaximumPixelBrightnessToDrain { get; set; } = 30;
+
+        [ObservableProperty]
+        public partial uint SuctionCupRequiredAreaToConsider { get; set; } = 10000;
+
+        [ObservableProperty]
+        public partial decimal SuctionCupRequiredHeightToConsider { get; set; } = 0.5m;
+
+        [ObservableProperty]
+        public partial byte TouchingBoundMinimumPixelBrightness { get; set; } = 127;
 
         public byte TouchingBoundMarginLeft
         {
             get;
             set
             {
-                if (!SetProperty(ref field, value)) return;
+                if (!SetProperty(ref field, value))
+                    return;
                 if (TouchingBoundSyncMargins)
                 {
                     TouchingBoundMarginRight = value;
@@ -767,7 +904,8 @@ public partial class UserSettings : ObservableObject
             get;
             set
             {
-                if (!SetProperty(ref field, value)) return;
+                if (!SetProperty(ref field, value))
+                    return;
                 if (TouchingBoundSyncMargins)
                 {
                     TouchingBoundMarginBottom = value;
@@ -780,7 +918,8 @@ public partial class UserSettings : ObservableObject
             get;
             set
             {
-                if (!SetProperty(ref field, value)) return;
+                if (!SetProperty(ref field, value))
+                    return;
                 if (TouchingBoundSyncMargins)
                 {
                     TouchingBoundMarginLeft = value;
@@ -793,7 +932,8 @@ public partial class UserSettings : ObservableObject
             get;
             set
             {
-                if (!SetProperty(ref field, value)) return;
+                if (!SetProperty(ref field, value))
+                    return;
                 if (TouchingBoundSyncMargins)
                 {
                     TouchingBoundMarginTop = value;
@@ -801,9 +941,11 @@ public partial class UserSettings : ObservableObject
             }
         } = 5;
 
-        [ObservableProperty] public partial bool TouchingBoundSyncMargins { get; set; } = true;
+        [ObservableProperty]
+        public partial bool TouchingBoundSyncMargins { get; set; } = true;
 
-        [ObservableProperty] public partial decimal PrintHeightOffset { get; set; }
+        [ObservableProperty]
+        public partial decimal PrintHeightOffset { get; set; }
 
         public IssuesUserSettings Clone()
         {
@@ -916,9 +1058,11 @@ public partial class UserSettings : ObservableObject
             set => CursorColor = new Color(value);
         }
 
-        [ObservableProperty] public partial bool PartialUpdateIslandsOnEditing { get; set; } = true;
+        [ObservableProperty]
+        public partial bool PartialUpdateIslandsOnEditing { get; set; } = true;
 
-        [ObservableProperty] public partial bool CloseEditorOnApply { get; set; }
+        [ObservableProperty]
+        public partial bool CloseEditorOnApply { get; set; }
 
         public PixelEditorUserSettings Clone()
         {
@@ -932,27 +1076,38 @@ public partial class UserSettings : ObservableObject
 
     public sealed partial class LayerRepairUserSettings : ObservableObject
     {
-        [ObservableProperty] public partial bool RepairIslands { get; set; } = true;
+        [ObservableProperty]
+        public partial bool RepairIslands { get; set; } = true;
 
-        [ObservableProperty] public partial bool RepairResinTraps { get; set; } = true;
+        [ObservableProperty]
+        public partial bool RepairResinTraps { get; set; } = true;
 
-        [ObservableProperty] public partial bool RepairSuctionCups { get; set; }
+        [ObservableProperty]
+        public partial bool RepairSuctionCups { get; set; }
 
-        [ObservableProperty] public partial bool RemoveEmptyLayers { get; set; } = true;
+        [ObservableProperty]
+        public partial bool RemoveEmptyLayers { get; set; } = true;
 
-        [ObservableProperty] public partial ushort RemoveIslandsBelowEqualPixels { get; set; } = 5;
+        [ObservableProperty]
+        public partial ushort RemoveIslandsBelowEqualPixels { get; set; } = 5;
 
-        [ObservableProperty] public partial ushort RemoveIslandsRecursiveIterations { get; set; } = 4;
+        [ObservableProperty]
+        public partial ushort RemoveIslandsRecursiveIterations { get; set; } = 4;
 
-        [ObservableProperty] public partial ushort AttachIslandsBelowLayers { get; set; } = 2;
+        [ObservableProperty]
+        public partial ushort AttachIslandsBelowLayers { get; set; } = 2;
 
-        [ObservableProperty] public partial byte ResinTrapsOverlapBy { get; set; }
+        [ObservableProperty]
+        public partial byte ResinTrapsOverlapBy { get; set; }
 
-        [ObservableProperty] public partial byte SuctionCupsVentHole { get; set; } = 16;
+        [ObservableProperty]
+        public partial byte SuctionCupsVentHole { get; set; } = 16;
 
-        [ObservableProperty] public partial byte ClosingIterations { get; set; } = 2;
+        [ObservableProperty]
+        public partial byte ClosingIterations { get; set; } = 2;
 
-        [ObservableProperty] public partial byte OpeningIterations { get; set; }
+        [ObservableProperty]
+        public partial byte OpeningIterations { get; set; }
 
         public LayerRepairUserSettings Clone()
         {
@@ -966,15 +1121,20 @@ public partial class UserSettings : ObservableObject
 
     public sealed partial class ToolsUserSettings : ObservableObject
     {
-        [ObservableProperty] public partial bool ExpandDescriptions { get; set; } = true;
+        [ObservableProperty]
+        public partial bool ExpandDescriptions { get; set; } = true;
 
-        [ObservableProperty] public partial bool PromptForConfirmation { get; set; } = true;
+        [ObservableProperty]
+        public partial bool PromptForConfirmation { get; set; } = true;
 
-        [ObservableProperty] public partial bool RestoreLastUsedSettings { get; set; }
+        [ObservableProperty]
+        public partial bool RestoreLastUsedSettings { get; set; }
 
-        [ObservableProperty] public partial bool LastUsedSettingsKeepOnCloseFile { get; set; } = true;
+        [ObservableProperty]
+        public partial bool LastUsedSettingsKeepOnCloseFile { get; set; } = true;
 
-        [ObservableProperty] public partial bool LastUsedSettingsPriorityOverDefaultProfile { get; set; } = true;
+        [ObservableProperty]
+        public partial bool LastUsedSettingsPriorityOverDefaultProfile { get; set; } = true;
     }
 
     #endregion
@@ -984,7 +1144,8 @@ public partial class UserSettings : ObservableObject
     public sealed partial class FileFormatsUserSettings : ObservableObject
     {
         [ObservableProperty]
-        public partial PerLayerSettingsModes PerLayerSettingsMode { get; set; } = CoreSettings.PerLayerSettingsMode;
+        public partial PerLayerSettingsModes PerLayerSettingsMode { get; set; } =
+            CoreSettings.PerLayerSettingsMode;
 
         public FileFormatsUserSettings Clone()
         {
@@ -998,11 +1159,14 @@ public partial class UserSettings : ObservableObject
 
     public sealed partial class AutomationsUserSettings : ObservableObject
     {
-        [ObservableProperty] public partial bool SaveFileAfterModifications { get; set; } = true;
+        [ObservableProperty]
+        public partial bool SaveFileAfterModifications { get; set; } = true;
 
-        [ObservableProperty] public partial bool FileNameOnlyAsciiCharacters { get; set; }
+        [ObservableProperty]
+        public partial bool FileNameOnlyAsciiCharacters { get; set; }
 
-        [ObservableProperty] public partial bool AutoConvertFiles { get; set; } = true;
+        [ObservableProperty]
+        public partial bool AutoConvertFiles { get; set; } = true;
 
         [ObservableProperty]
         public partial RemoveSourceFileAction RemoveSourceFileAfterAutoConversion { get; set; } =
@@ -1012,11 +1176,14 @@ public partial class UserSettings : ObservableObject
         public partial RemoveSourceFileAction RemoveSourceFileAfterManualConversion { get; set; } =
             RemoveSourceFileAction.No;
 
-        [ObservableProperty] public partial string? EventAfterFileLoadScriptFile { get; set; }
+        [ObservableProperty]
+        public partial string? EventAfterFileLoadScriptFile { get; set; }
 
-        [ObservableProperty] public partial string? EventBeforeFileSaveScriptFile { get; set; }
+        [ObservableProperty]
+        public partial string? EventBeforeFileSaveScriptFile { get; set; }
 
-        [ObservableProperty] public partial string? EventAfterFileSaveScriptFile { get; set; }
+        [ObservableProperty]
+        public partial string? EventAfterFileSaveScriptFile { get; set; }
 
         public AutomationsUserSettings Clone()
         {
@@ -1030,7 +1197,8 @@ public partial class UserSettings : ObservableObject
 
     public sealed partial class NetworkUserSettings : ObservableObject
     {
-        [ObservableProperty] public partial RangeObservableCollection<RemotePrinter> RemotePrinters { get; set; } = [];
+        [ObservableProperty]
+        public partial RangeObservableCollection<RemotePrinter> RemotePrinters { get; set; } = [];
 
         public NetworkUserSettings Clone()
         {
@@ -1050,7 +1218,6 @@ public partial class UserSettings : ObservableObject
     /// Default filepath for store <see cref="UserSettings"/>
     /// </summary>
     private static string FilePath => Path.Combine(SettingsFolder, "usersettings.xml");
-
 
     private static UserSettings? _instance;
 
@@ -1080,7 +1247,6 @@ public partial class UserSettings : ObservableObject
 
     private string? _appVersion;
 
-
     public GeneralUserSettings General
     {
         get => _general ??= new GeneralUserSettings();
@@ -1099,20 +1265,17 @@ public partial class UserSettings : ObservableObject
         set => _layer3DPreview = value;
     }
 
-
     public IssuesUserSettings Issues
     {
         get => _issues ??= new IssuesUserSettings();
         set => _issues = value;
     }
 
-
     public PixelEditorUserSettings PixelEditor
     {
         get => _pixelEditor ??= new PixelEditorUserSettings();
         set => _pixelEditor = value;
     }
-
 
     public LayerRepairUserSettings LayerRepair
     {
@@ -1151,7 +1314,8 @@ public partial class UserSettings : ObservableObject
     public uint ResetCount { get; set; }
     */
 
-    [ObservableProperty] public partial ushort SettingsVersion { get; set; } = SETTINGS_VERSION;
+    [ObservableProperty]
+    public partial ushort SettingsVersion { get; set; } = SETTINGS_VERSION;
 
     /// <summary>
     /// Gets or sets the last running version of UVtools with these settings
@@ -1162,7 +1326,8 @@ public partial class UserSettings : ObservableObject
         set => SetProperty(ref _appVersion, value);
     }
 
-    [ObservableProperty] public partial int LastBirthdayYearsOld { get; set; }
+    [ObservableProperty]
+    public partial int LastBirthdayYearsOld { get; set; }
 
     /// <summary>
     /// Gets or sets the number of times this file has been saved
@@ -1188,23 +1353,32 @@ public partial class UserSettings : ObservableObject
         const Layer3DPreviewUserSettings.WindowsRendererPreference defaultPreference =
             Layer3DPreviewUserSettings.WindowsRendererPreference.Automatic;
 
-        if (!OperatingSystem.IsWindows() || !File.Exists(FilePath)) return defaultPreference;
+        if (!OperatingSystem.IsWindows() || !File.Exists(FilePath))
+            return defaultPreference;
 
         try
         {
-            using var reader = XmlReader.Create(FilePath, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit });
-            if (!reader.ReadToFollowing(nameof(Layer3DPreview))) return defaultPreference;
+            using var reader = XmlReader.Create(
+                FilePath,
+                new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit }
+            );
+            if (!reader.ReadToFollowing(nameof(Layer3DPreview)))
+                return defaultPreference;
 
             using var previewReader = reader.ReadSubtree();
             if (!previewReader.ReadToFollowing(nameof(Layer3DPreviewUserSettings.WindowsRenderer)))
                 return defaultPreference;
 
-            return Enum.TryParse<Layer3DPreviewUserSettings.WindowsRendererPreference>(
-                       previewReader.ReadElementContentAsString(), out var preference) && Enum.IsDefined(preference)
+            return
+                Enum.TryParse<Layer3DPreviewUserSettings.WindowsRendererPreference>(
+                    previewReader.ReadElementContentAsString(),
+                    out var preference
+                ) && Enum.IsDefined(preference)
                 ? preference
                 : defaultPreference;
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or XmlException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or XmlException)
         {
             return defaultPreference;
         }
@@ -1229,7 +1403,8 @@ public partial class UserSettings : ObservableObject
             _instance.CopyValuesFrom(new UserSettings());
         }
 
-        if (save) Save();
+        if (save)
+            Save();
     }
 
     /// <summary>
@@ -1255,34 +1430,62 @@ public partial class UserSettings : ObservableObject
             CoreSettings.MaxDegreeOfParallelism = _instance.General.MaxDegreeOfParallelism;
             CoreSettings.DefaultLayerCompressionCodec = _instance.General.LayerCompressionCodec;
             CoreSettings.DefaultLayerCompressionLevel = _instance.General.LayerCompressionLevel;
-            CoreSettings.AverageResin1000MlBottleCost = _instance.General.AverageResin1000MlBottleCost;
+            CoreSettings.AverageResin1000MlBottleCost = _instance
+                .General
+                .AverageResin1000MlBottleCost;
             CoreSettings.PerLayerSettingsMode = _instance.FileFormats.PerLayerSettingsMode;
 
             if (_instance.Network.RemotePrinters.Count == 0)
             {
-                _instance.Network.RemotePrinters.AddRange(
-                [
+                _instance.Network.RemotePrinters.AddRange([
                     new RemotePrinter("0.0.0.0", 8081, "Nova3D")
                     {
                         CompatibleExtensions = "cws",
-                        RequestUploadFile = new RemotePrinterRequest(RemotePrinterRequest.RequestType.UploadFile,
-                            RemotePrinterRequest.RequestMethod.POST, "file/upload/{0}"),
-                        RequestPrintFile = new RemotePrinterRequest(RemotePrinterRequest.RequestType.PrintFile,
-                            RemotePrinterRequest.RequestMethod.GET, "file/print/{0}"),
-                        RequestDeleteFile = new RemotePrinterRequest(RemotePrinterRequest.RequestType.DeleteFile,
-                            RemotePrinterRequest.RequestMethod.GET, "file/delete/{0}"),
-                        RequestPausePrint = new RemotePrinterRequest(RemotePrinterRequest.RequestType.PausePrint,
-                            RemotePrinterRequest.RequestMethod.GET, "job/toggle/{0}"),
-                        RequestResumePrint = new RemotePrinterRequest(RemotePrinterRequest.RequestType.ResumePrint,
-                            RemotePrinterRequest.RequestMethod.GET, "job/toggle/{0}"),
-                        RequestStopPrint = new RemotePrinterRequest(RemotePrinterRequest.RequestType.StopPrint,
-                            RemotePrinterRequest.RequestMethod.GET, "job/stop/{0}"),
-                        RequestGetFiles = new RemotePrinterRequest(RemotePrinterRequest.RequestType.GetFiles,
-                            RemotePrinterRequest.RequestMethod.GET, "file/list"),
-                        RequestPrintStatus = new RemotePrinterRequest(RemotePrinterRequest.RequestType.PrintStatus,
-                            RemotePrinterRequest.RequestMethod.GET, "job/list"),
-                        RequestPrinterInfo = new RemotePrinterRequest(RemotePrinterRequest.RequestType.PrinterInfo,
-                            RemotePrinterRequest.RequestMethod.GET, "setting/printerInfo")
+                        RequestUploadFile = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.UploadFile,
+                            RemotePrinterRequest.RequestMethod.POST,
+                            "file/upload/{0}"
+                        ),
+                        RequestPrintFile = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.PrintFile,
+                            RemotePrinterRequest.RequestMethod.GET,
+                            "file/print/{0}"
+                        ),
+                        RequestDeleteFile = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.DeleteFile,
+                            RemotePrinterRequest.RequestMethod.GET,
+                            "file/delete/{0}"
+                        ),
+                        RequestPausePrint = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.PausePrint,
+                            RemotePrinterRequest.RequestMethod.GET,
+                            "job/toggle/{0}"
+                        ),
+                        RequestResumePrint = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.ResumePrint,
+                            RemotePrinterRequest.RequestMethod.GET,
+                            "job/toggle/{0}"
+                        ),
+                        RequestStopPrint = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.StopPrint,
+                            RemotePrinterRequest.RequestMethod.GET,
+                            "job/stop/{0}"
+                        ),
+                        RequestGetFiles = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.GetFiles,
+                            RemotePrinterRequest.RequestMethod.GET,
+                            "file/list"
+                        ),
+                        RequestPrintStatus = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.PrintStatus,
+                            RemotePrinterRequest.RequestMethod.GET,
+                            "job/list"
+                        ),
+                        RequestPrinterInfo = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.PrinterInfo,
+                            RemotePrinterRequest.RequestMethod.GET,
+                            "setting/printerInfo"
+                        ),
                     },
                     new RemotePrinter("0.0.0.0", 6000, "Anycubic")
                     {
@@ -1291,33 +1494,57 @@ public partial class UserSettings : ObservableObject
                         // https://github.com/adamoutler/Pi-Zero-W-Smart-USB-Flash-Drive/tree/main/src/home/pi/usb_share/scripts
                         CompatibleExtensions =
                             "pws;pw0;pwx;dlp;dl2p;pwmo;pwma;pwms;pwmx;pmx2;pwmb;pwsq;pm3;pm3m;pm3r;pwc",
-                        RequestUploadFile = new RemotePrinterRequest(RemotePrinterRequest.RequestType.UploadFile,
-                            RemotePrinterRequest.RequestMethod.TCP),
-                        RequestPrintFile = new RemotePrinterRequest(RemotePrinterRequest.RequestType.PrintFile,
+                        RequestUploadFile = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.UploadFile,
+                            RemotePrinterRequest.RequestMethod.TCP
+                        ),
+                        RequestPrintFile = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.PrintFile,
                             RemotePrinterRequest.RequestMethod.TCP,
-                            @"<$getfile>{0}\/([0-9]+[.][0-9a-zA-Z]+),>goprint,{#1}$>"),
-                        RequestDeleteFile = new RemotePrinterRequest(RemotePrinterRequest.RequestType.DeleteFile,
+                            @"<$getfile>{0}\/([0-9]+[.][0-9a-zA-Z]+),>goprint,{#1}$>"
+                        ),
+                        RequestDeleteFile = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.DeleteFile,
                             RemotePrinterRequest.RequestMethod.TCP,
-                            @"<$getfile>{0}\/([0-9]+[.][0-9a-zA-Z]+),>delfile,{#1}$>"),
-                        RequestPausePrint = new RemotePrinterRequest(RemotePrinterRequest.RequestType.PausePrint,
-                            RemotePrinterRequest.RequestMethod.TCP, "gopause"),
-                        RequestResumePrint = new RemotePrinterRequest(RemotePrinterRequest.RequestType.ResumePrint,
-                            RemotePrinterRequest.RequestMethod.TCP, "goresume"),
-                        RequestStopPrint = new RemotePrinterRequest(RemotePrinterRequest.RequestType.StopPrint,
-                            RemotePrinterRequest.RequestMethod.TCP, "gostop"),
-                        RequestGetFiles = new RemotePrinterRequest(RemotePrinterRequest.RequestType.GetFiles,
-                            RemotePrinterRequest.RequestMethod.TCP, "getfile"),
-                        RequestPrintStatus = new RemotePrinterRequest(RemotePrinterRequest.RequestType.PrintStatus,
-                            RemotePrinterRequest.RequestMethod.TCP, "getstatus"),
-                        RequestPrinterInfo = new RemotePrinterRequest(RemotePrinterRequest.RequestType.PrinterInfo,
-                            RemotePrinterRequest.RequestMethod.TCP, "sysinfo")
+                            @"<$getfile>{0}\/([0-9]+[.][0-9a-zA-Z]+),>delfile,{#1}$>"
+                        ),
+                        RequestPausePrint = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.PausePrint,
+                            RemotePrinterRequest.RequestMethod.TCP,
+                            "gopause"
+                        ),
+                        RequestResumePrint = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.ResumePrint,
+                            RemotePrinterRequest.RequestMethod.TCP,
+                            "goresume"
+                        ),
+                        RequestStopPrint = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.StopPrint,
+                            RemotePrinterRequest.RequestMethod.TCP,
+                            "gostop"
+                        ),
+                        RequestGetFiles = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.GetFiles,
+                            RemotePrinterRequest.RequestMethod.TCP,
+                            "getfile"
+                        ),
+                        RequestPrintStatus = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.PrintStatus,
+                            RemotePrinterRequest.RequestMethod.TCP,
+                            "getstatus"
+                        ),
+                        RequestPrinterInfo = new RemotePrinterRequest(
+                            RemotePrinterRequest.RequestType.PrinterInfo,
+                            RemotePrinterRequest.RequestMethod.TCP,
+                            "sysinfo"
+                        ),
                         // getmode
                         // getwifi - displays the current wifi network name.
                         // gethistory - gets the history and print settings of previous prints.
                         // delhistory - deletes printing history.
                         // getPreview1 - returns a list of dimensions used for the print.
                         // getPreview2 - returns a binary preview image of the print.
-                    }
+                    },
                     /*new RemotePrinter("0.0.0.0", 40454, "Creality Halot")
                         {
                             CompatibleExtensions = "cxdlp",
@@ -1340,17 +1567,20 @@ public partial class UserSettings : ObservableObject
                 {
                     var findDirectories = new List<string>
                     {
-                        Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)
+                        Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
                     };
                     if (Environment.Is64BitOperatingSystem)
                     {
-                        findDirectories.Add(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86));
+                        findDirectories.Add(
+                            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
+                        );
                     }
 
                     foreach (var path in findDirectories)
                     {
-                        var directories =
-                            Directory.GetDirectories(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
+                        var directories = Directory.GetDirectories(
+                            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)
+                        );
                         foreach (var directory in directories)
                         {
                             /*if (directory.StartsWith($"{path}\\Prusa3D", StringComparison.InvariantCultureIgnoreCase))
@@ -1371,7 +1601,12 @@ public partial class UserSettings : ObservableObject
                                 continue;
                             }*/
 
-                            if (directory.StartsWith($"{path}\\Chitubox", StringComparison.OrdinalIgnoreCase))
+                            if (
+                                directory.StartsWith(
+                                    $"{path}\\Chitubox",
+                                    StringComparison.OrdinalIgnoreCase
+                                )
+                            )
                             {
                                 var executable = $"{directory}\\CHITUBOX.exe";
                                 //var executablePro = $"{directory}\\CHITUBOXPro.exe";
@@ -1380,8 +1615,10 @@ public partial class UserSettings : ObservableObject
                                     _instance.General.SendToProcess.Add(
                                         new MappedProcess(executable, "Slicer: Chitubox")
                                         {
-                                            CompatibleExtensions = "cbddlp;ctb;phz;photon;photons;fdg"
-                                        });
+                                            CompatibleExtensions =
+                                                "cbddlp;ctb;phz;photon;photons;fdg",
+                                        }
+                                    );
                                 }
 
                                 /*else if (File.Exists(executablePro))
@@ -1394,24 +1631,31 @@ public partial class UserSettings : ObservableObject
                                 continue;
                             }
 
-                            if (directory.StartsWith($"{path}\\Photon_WorkShop", StringComparison.OrdinalIgnoreCase))
+                            if (
+                                directory.StartsWith(
+                                    $"{path}\\Photon_WorkShop",
+                                    StringComparison.OrdinalIgnoreCase
+                                )
+                            )
                             {
                                 var directoryName = Path.GetFileName(directory);
                                 var executable = $"{directory}\\{directoryName}.exe";
                                 if (File.Exists(executable))
                                 {
-                                    var application = new MappedProcess(executable,
-                                        $"Slicer: {directoryName.Replace('_', ' ')}")
+                                    var application = new MappedProcess(
+                                        executable,
+                                        $"Slicer: {directoryName.Replace('_', ' ')}"
+                                    )
                                     {
-                                        CompatibleExtensions = "photon;photons;"
+                                        CompatibleExtensions = "photon;photons;",
                                     };
                                     foreach (var slicerFile in FileFormat.AvailableFormats)
                                     {
-                                        if (slicerFile is not AnycubicFile) continue;
+                                        if (slicerFile is not AnycubicFile)
+                                            continue;
                                         application.CompatibleExtensions +=
                                             slicerFile.GetFileExtensions(string.Empty, ";", true);
                                     }
-
 
                                     _instance.General.SendToProcess.Add(application);
                                 }
@@ -1419,7 +1663,12 @@ public partial class UserSettings : ObservableObject
                                 continue;
                             }
 
-                            if (directory.StartsWith($"{path}\\UNIZ", StringComparison.OrdinalIgnoreCase))
+                            if (
+                                directory.StartsWith(
+                                    $"{path}\\UNIZ",
+                                    StringComparison.OrdinalIgnoreCase
+                                )
+                            )
                             {
                                 var executable = $"{directory}\\UnizMaker\\UnizMaker.exe";
                                 if (File.Exists(executable))
@@ -1427,39 +1676,58 @@ public partial class UserSettings : ObservableObject
                                     _instance.General.SendToProcess.Add(
                                         new MappedProcess(executable, "Slicer: UnizMaker")
                                         {
-                                            CompatibleExtensions = "zcode"
-                                        });
+                                            CompatibleExtensions = "zcode",
+                                        }
+                                    );
                                 }
 
                                 continue;
                             }
 
-                            if (directory.StartsWith($"{path}\\Zortrax", StringComparison.OrdinalIgnoreCase))
+                            if (
+                                directory.StartsWith(
+                                    $"{path}\\Zortrax",
+                                    StringComparison.OrdinalIgnoreCase
+                                )
+                            )
                             {
                                 var executable = $"{directory}\\Z-Suite\\Z-SUITE.exe";
                                 if (File.Exists(executable))
                                 {
-                                    _instance.General.SendToProcess.Add(new MappedProcess(executable, "Slicer: Z-SUITE")
-                                    {
-                                        CompatibleExtensions = "zcodex"
-                                    });
+                                    _instance.General.SendToProcess.Add(
+                                        new MappedProcess(executable, "Slicer: Z-SUITE")
+                                        {
+                                            CompatibleExtensions = "zcodex",
+                                        }
+                                    );
                                 }
 
                                 continue;
                             }
 
-                            if (directory.StartsWith($"{path}\\WinRAR", StringComparison.OrdinalIgnoreCase))
+                            if (
+                                directory.StartsWith(
+                                    $"{path}\\WinRAR",
+                                    StringComparison.OrdinalIgnoreCase
+                                )
+                            )
                             {
                                 var executable = $"{directory}\\WinRAR.exe";
                                 if (File.Exists(executable))
                                 {
-                                    var application = new MappedProcess(executable, "Open archive: WinRAR");
+                                    var application = new MappedProcess(
+                                        executable,
+                                        "Open archive: WinRAR"
+                                    );
                                     var extensions = new List<string>();
                                     foreach (var slicerFile in FileFormat.AvailableFormats)
                                     {
-                                        if (slicerFile.FileType != FileFormat.FileFormatType.Archive) continue;
-                                        using var pooledArray = slicerFile.FileExtensions
-                                            .AsValueEnumerable()
+                                        if (
+                                            slicerFile.FileType != FileFormat.FileFormatType.Archive
+                                        )
+                                            continue;
+                                        using var pooledArray = slicerFile
+                                            .FileExtensions.AsValueEnumerable()
                                             .Where(extension => !extension.IsVirtual)
                                             .Select(extension => extension.Extension)
                                             .ToArrayPool();
@@ -1476,18 +1744,29 @@ public partial class UserSettings : ObservableObject
                                 continue;
                             }
 
-                            if (directory.StartsWith($"{path}\\7-Zip", StringComparison.OrdinalIgnoreCase))
+                            if (
+                                directory.StartsWith(
+                                    $"{path}\\7-Zip",
+                                    StringComparison.OrdinalIgnoreCase
+                                )
+                            )
                             {
                                 var executable = $"{directory}\\7zFM.exe";
                                 if (File.Exists(executable))
                                 {
-                                    var application = new MappedProcess(executable, "Open archive: 7-Zip");
+                                    var application = new MappedProcess(
+                                        executable,
+                                        "Open archive: 7-Zip"
+                                    );
                                     var extensions = new List<string>();
                                     foreach (var slicerFile in FileFormat.AvailableFormats)
                                     {
-                                        if (slicerFile.FileType != FileFormat.FileFormatType.Archive) continue;
-                                        using var pooledArray = slicerFile.FileExtensions
-                                            .AsValueEnumerable()
+                                        if (
+                                            slicerFile.FileType != FileFormat.FileFormatType.Archive
+                                        )
+                                            continue;
+                                        using var pooledArray = slicerFile
+                                            .FileExtensions.AsValueEnumerable()
                                             .Where(extension => !extension.IsVirtual)
                                             .Select(extension => extension.Extension)
                                             .ToArrayPool();
@@ -1504,40 +1783,64 @@ public partial class UserSettings : ObservableObject
                                 continue;
                             }
 
-
-                            if (directory.StartsWith($"{path}\\010 Editor", StringComparison.OrdinalIgnoreCase))
+                            if (
+                                directory.StartsWith(
+                                    $"{path}\\010 Editor",
+                                    StringComparison.OrdinalIgnoreCase
+                                )
+                            )
                             {
                                 var executable = $"{directory}\\010Editor.exe";
                                 if (File.Exists(executable))
                                 {
-                                    var application = new MappedProcess(true, executable, "Hex editor: 010");
+                                    var application = new MappedProcess(
+                                        true,
+                                        executable,
+                                        "Hex editor: 010"
+                                    );
                                     _instance.General.SendToProcess.Add(application);
                                 }
 
                                 continue;
                             }
 
-                            if (directory.StartsWith($"{path}\\HxD", StringComparison.OrdinalIgnoreCase))
+                            if (
+                                directory.StartsWith(
+                                    $"{path}\\HxD",
+                                    StringComparison.OrdinalIgnoreCase
+                                )
+                            )
                             {
                                 var executable = $"{directory}\\HxD.exe";
                                 if (File.Exists(executable))
                                 {
-                                    var application = new MappedProcess(false, executable, "Hex editor: HxD");
+                                    var application = new MappedProcess(
+                                        false,
+                                        executable,
+                                        "Hex editor: HxD"
+                                    );
                                     _instance.General.SendToProcess.Add(application);
                                 }
 
                                 continue;
                             }
 
-                            if (directory.StartsWith($"{path}\\Notepad++", StringComparison.OrdinalIgnoreCase))
+                            if (
+                                directory.StartsWith(
+                                    $"{path}\\Notepad++",
+                                    StringComparison.OrdinalIgnoreCase
+                                )
+                            )
                             {
                                 var executable = $"{directory}\\notepad++.exe";
                                 if (File.Exists(executable))
                                 {
-                                    _instance.General.SendToProcess.Add(new MappedProcess(executable, "Notepad++")
-                                    {
-                                        CompatibleExtensions = "qdt"
-                                    });
+                                    _instance.General.SendToProcess.Add(
+                                        new MappedProcess(executable, "Notepad++")
+                                        {
+                                            CompatibleExtensions = "qdt",
+                                        }
+                                    );
                                 }
 
                                 continue;
@@ -1545,15 +1848,20 @@ public partial class UserSettings : ObservableObject
                         }
                     }
 
-                    _instance.General.SendToProcess.Add(new MappedProcess("notepad.exe", "Notepad")
-                    {
-                        CompatibleExtensions = "qdt"
-                    });
+                    _instance.General.SendToProcess.Add(
+                        new MappedProcess("notepad.exe", "Notepad") { CompatibleExtensions = "qdt" }
+                    );
 
                     if (_instance.General.SendToProcess.Count > 0)
                     {
-                        _instance.General.SendToProcess.Sort((process, mappedProcess) =>
-                            string.Compare(process.Name, mappedProcess.Name, StringComparison.Ordinal));
+                        _instance.General.SendToProcess.Sort(
+                            (process, mappedProcess) =>
+                                string.Compare(
+                                    process.Name,
+                                    mappedProcess.Name,
+                                    StringComparison.Ordinal
+                                )
+                        );
                     }
                 }
             }
@@ -1566,7 +1874,6 @@ public partial class UserSettings : ObservableObject
             Reset();
         }
     }
-
 
     /// <summary>
     /// Save settings to file
@@ -1596,17 +1903,17 @@ public partial class UserSettings : ObservableObject
     }
 
     public static object[] PackObjects =>
-    [
-        Instance.General,
-        Instance.LayerPreview,
-        Instance.Layer3DPreview,
-        Instance.Issues,
-        Instance.PixelEditor,
-        Instance.LayerRepair,
-        Instance.FileFormats,
-        Instance.Automations,
-        Instance.Network
-    ];
+        [
+            Instance.General,
+            Instance.LayerPreview,
+            Instance.Layer3DPreview,
+            Instance.Issues,
+            Instance.PixelEditor,
+            Instance.LayerRepair,
+            Instance.FileFormats,
+            Instance.Automations,
+            Instance.Network,
+        ];
 
     #endregion
 }

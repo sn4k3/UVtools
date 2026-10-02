@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -578,11 +578,30 @@ public partial class OperationPixelArithmetic : Operation
                 progress.PauseIfRequested();
 
                 var layer = SlicerFile[layerIndex];
+
+                // These operators leave an empty layer untouched, no need to decode it and compute the masks
+                if (layer.IsEmpty && Operator is PixelArithmeticOperators.Subtract
+                        or PixelArithmeticOperators.Multiply
+                        or PixelArithmeticOperators.Divide
+                        or PixelArithmeticOperators.Minimum
+                        or PixelArithmeticOperators.BitwiseAnd
+                        or PixelArithmeticOperators.AbsDiff
+                        or PixelArithmeticOperators.Corrode
+                        or PixelArithmeticOperators.KeepRegion
+                        or PixelArithmeticOperators.DiscardRegion)
+                {
+                    progress.LockAndIncrement();
+                    return;
+                }
+
                 var nextLayerSnapshot = nextLayerSnapshots?[(int)(layerIndex - batchStart)];
                 using (var mat = layer.LayerMat)
                 {
-                    using var original = mat.Clone();
-                    using var originalRoi = GetMatRoiCropped(original);
+                    // The untouched layer is only needed to restore what is not applied
+                    var needOriginal = HaveMask || ApplyMethod != PixelArithmeticApplyMethod.All ||
+                                       IgnoreAreaThreshold > 0 || Operator == PixelArithmeticOperators.KeepRegion;
+                    using var original = needOriginal ? mat.Clone() : null;
+                    using var originalRoi = original is null ? null : GetMatRoiCropped(original);
                     using var target = GetMatRoiCropped(mat);
                     using var steppedValueMat =
                         _valueStep == 0
@@ -1033,7 +1052,7 @@ public partial class OperationPixelArithmetic : Operation
                                 }
 
                                 using var targetClone = target.Clone();
-                                original.SetTo(EmguCvExtensions.BlackColor);
+                                original!.SetTo(EmguCvExtensions.BlackColor); // Always cloned for this operator
                                 mat.SetTo(EmguCvExtensions.BlackColor);
                                 targetClone.CopyTo(target);
                                 break;
@@ -1054,10 +1073,10 @@ public partial class OperationPixelArithmetic : Operation
                         switch (IgnoreAreaOperator)
                         {
                             case PixelArithmeticIgnoreAreaOperator.SmallerThan:
-                                originalRoi.CopyAreasSmallerThan(IgnoreAreaThreshold, target);
+                                if (IgnoreAreaThreshold > 1) originalRoi!.CopyAreasSmallerThan(IgnoreAreaThreshold, target);
                                 break;
                             case PixelArithmeticIgnoreAreaOperator.LargerThan:
-                                originalRoi.CopyAreasLargerThan(IgnoreAreaThreshold, target);
+                                if (IgnoreAreaThreshold > 0) originalRoi!.CopyAreasLargerThan(IgnoreAreaThreshold, target);
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException(nameof(IgnoreAreaOperator));

@@ -5,6 +5,7 @@
         <Platform Name="x64" />
     </Configurations>
     <Folder Name="/root/">
+        <File Path=".editorconfig" />
         <File Path=".gitignore" />
         <File Path="AGENTS.md" />
         <File Path="announcements.json" />

@@ -1,4 +1,4 @@
-/*
+﻿/*
  *                     GNU AFFERO GENERAL PUBLIC LICENSE
  *                       Version 3, 19 November 2007
  *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations;
 
@@ -110,7 +111,7 @@ public sealed partial class OperationLayerExportHeatMap : Operation
     {
         using var resultMat = EmguCvExtensions.InitMat(SlicerFile.Resolution, 1, DepthType.Cv32S);
         using var resultMatRoi = GetRoiOrDefault(resultMat);
-        using var mask = GetMask(resultMat, HaveROI ? ROI.Location.Invert() : default);
+        using var mask = GetMask(resultMat); // Already cropped by the ROI if any
 
         var layerRange = MergeSamePositionedLayers
             ? SlicerFile.GetDistinctLayersByPositionZ(LayerIndexStart, LayerIndexEnd).ToArray()
@@ -118,10 +119,20 @@ public sealed partial class OperationLayerExportHeatMap : Operation
 
         progress.ItemCount = (uint)layerRange.Length;
 
+        // Each thread adds to a different part of the result at the same time
+        var accumulator = new StripedAccumulator(resultMatRoi, mask);
 
-       Parallel.ForEach(layerRange, CoreSettings.GetParallelOptions(progress), layer =>
+        Parallel.ForEach(layerRange, CoreSettings.GetParallelOptions(progress), layer =>
         {
             progress.PauseIfRequested();
+
+            // An empty layer adds nothing, only counts to the average
+            if (!MergeSamePositionedLayers && layer.IsEmpty)
+            {
+                progress.LockAndIncrement();
+                return;
+            }
+
             using var mat = MergeSamePositionedLayers
                 ? SlicerFile.GetMergedMatForSequentialPositionedLayers(layer.Index)
                 : layer.LayerMat;
@@ -129,11 +140,8 @@ public sealed partial class OperationLayerExportHeatMap : Operation
 
             matRoi.ConvertTo(matRoi, DepthType.Cv32S);
 
-            lock (progress.Mutex)
-            {
-                CvInvoke.Add(resultMatRoi, matRoi, resultMatRoi, mask);
-                progress++;
-            }
+            accumulator.Add(matRoi);
+            progress.LockAndIncrement();
         });
 
 

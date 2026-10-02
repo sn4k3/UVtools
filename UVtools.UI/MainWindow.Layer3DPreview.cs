@@ -764,7 +764,7 @@ public partial class MainWindow
 
         try
         {
-            var bitmap = await LayerModel3DView.CaptureSnapshotAsync();
+            using var bitmap = await LayerModel3DView.CaptureSnapshotAsync();
             if (bitmap is null) return;
 
             var clipboard = GetTopLevel(this)?.Clipboard;
@@ -787,7 +787,7 @@ public partial class MainWindow
 
         try
         {
-            var bitmap = await LayerModel3DView.CaptureSnapshotAsync();
+            using var bitmap = await LayerModel3DView.CaptureSnapshotAsync();
             if (bitmap is null) return;
 
             var defaultName = SlicerFile is not null
@@ -1628,6 +1628,89 @@ public partial class MainWindow
         }
     }
 
+    /// <summary>
+    /// Gets the geometry to export, a copy of the preview mesh or, when <paramref name="clipped"/>, what the preview
+    /// is showing under the current clip and cutaway settings.
+    /// </summary>
+    private async Task<(VoxelPreviewVertex[] Vertices, uint[] Indices)?> GetLayer3DExportGeometryAsync(
+        VoxelPreviewMesh mesh, bool clipped)
+    {
+        /* Vertices/Indices are spans and can't cross the Task.Run boundaries, copy them once here. */
+        var vertices = mesh.Vertices.ToArray();
+        var indices = mesh.Indices.ToArray();
+        if (!clipped) return (vertices, indices);
+
+        var slicerFile = SlicerFile;
+        if (Layer3DClipToCurrentLayer && slicerFile is not null)
+        {
+            if (!mesh.IsCurrentFor(slicerFile))
+            {
+                await this.MessageBoxError(
+                    "The 3D preview is stale, rebuild it before exporting a clipped mesh.",
+                    "Unable to export the clipped 3D mesh");
+                return null;
+            }
+
+            /* The faces crossing the clip are not enough to export, the cut has to be closed. Meshing only the
+             * layers that are shown does that, the same way the preview was built. */
+            var clipZ = LayerModel3DView.ClipZ;
+            var slabThickness = Settings.Layer3DPreview.SlabThicknessMm;
+            const float tolerance = 0.001f;
+            float? minimumPositionZ = null;
+            float? maximumPositionZ = null;
+            switch (Settings.Layer3DPreview.ClipMode)
+            {
+                case VoxelPreviewClipMode.Below:
+                    maximumPositionZ = clipZ + tolerance;
+                    break;
+                case VoxelPreviewClipMode.Above:
+                    minimumPositionZ = clipZ - tolerance;
+                    break;
+                case VoxelPreviewClipMode.Slab:
+                    minimumPositionZ = clipZ - slabThickness + tolerance;
+                    maximumPositionZ = clipZ + tolerance;
+                    break;
+            }
+
+            var options = VoxelPreviewMeshOptions.FromQuality(mesh.Quality);
+            VoxelPreviewMesh? ranged = null;
+            IsGUIEnabled = false;
+            ShowProgressWindow("Generating the clipped 3D mesh");
+            try
+            {
+                ranged = await Task.Run(() => VoxelPreviewMeshBuilder.Build(slicerFile, options, Progress,
+                    minimumPositionZ, maximumPositionZ), Progress.Token);
+                vertices = ranged.Vertices.ToArray();
+                indices = ranged.Indices.ToArray();
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+            catch (Exception exception)
+            {
+                await HandleException(exception, "Unable to generate the clipped 3D mesh");
+                return null;
+            }
+            finally
+            {
+                ranged?.Dispose();
+                IsGUIEnabled = true;
+            }
+        }
+
+        var cutAxis = Settings.Layer3DPreview.CutawayAxis;
+        if (cutAxis != VoxelPreviewCutawayAxis.Off)
+        {
+            var cutPosition = Settings.Layer3DPreview.CutawayPosition;
+            var cutInvert = Settings.Layer3DPreview.CutawayInvert;
+            return await Task.Run(() =>
+                VoxelPreviewMeshClipper.ApplyCutaway(vertices, indices, cutAxis, cutPosition, cutInvert));
+        }
+
+        return (vertices, indices);
+    }
+
     [RelayCommand]
     public async Task ExportMeshToStl(bool clipped = false)
     {
@@ -1652,99 +1735,64 @@ public partial class MainWindow
 
         try
         {
+            if (await GetLayer3DExportGeometryAsync(mesh, clipped) is not var (vertices, indices)) return;
+
             await using var stream = await file.OpenWriteAsync();
-            using var writer = new BinaryWriter(stream);
+            if (stream.CanSeek) stream.SetLength(0); // The picked file may already exist
+            await Task.Run(() => WriteBinaryStl(stream, vertices, indices));
 
-            var vertices = mesh.Vertices;
-            var indices = mesh.Indices;
-            var clipZ = LayerModel3DView.ClipZ;
-            var doClipZ = clipped && Layer3DClipToCurrentLayer;
-            var clipMode = Settings.Layer3DPreview.ClipMode;
-            var slabThick = Settings.Layer3DPreview.SlabThicknessMm;
-
-            var cutAxis = Settings.Layer3DPreview.CutawayAxis;
-            var cutPos = Settings.Layer3DPreview.CutawayPosition;
-            var cutInvert = Settings.Layer3DPreview.CutawayInvert;
-            var doCut = clipped && cutAxis != VoxelPreviewCutawayAxis.Off;
-
-            var trianglesToExport = new List<int>(indices.Length / 3);
-            for (var i = 0; i < indices.Length; i += 3)
-            {
-                var p0 = vertices[(int)indices[i]].Position;
-                var p1 = vertices[(int)indices[i + 1]].Position;
-                var p2 = vertices[(int)indices[i + 2]].Position;
-
-                if (doClipZ)
-                {
-                    if (clipMode == VoxelPreviewClipMode.Below && (p0.Z > clipZ || p1.Z > clipZ || p2.Z > clipZ))
-                        continue;
-                    if (clipMode == VoxelPreviewClipMode.Above && (p0.Z < clipZ || p1.Z < clipZ || p2.Z < clipZ))
-                        continue;
-                    if (clipMode == VoxelPreviewClipMode.Slab &&
-                        (p0.Z > clipZ || p0.Z < clipZ - slabThick ||
-                         p1.Z > clipZ || p1.Z < clipZ - slabThick ||
-                         p2.Z > clipZ || p2.Z < clipZ - slabThick))
-                        continue;
-                }
-
-                if (doCut)
-                {
-                    if (cutAxis == VoxelPreviewCutawayAxis.X)
-                    {
-                        var d0 = cutInvert ? p0.X < cutPos : p0.X > cutPos;
-                        var d1 = cutInvert ? p1.X < cutPos : p1.X > cutPos;
-                        var d2 = cutInvert ? p2.X < cutPos : p2.X > cutPos;
-                        if (d0 || d1 || d2) continue;
-                    }
-                    else if (cutAxis == VoxelPreviewCutawayAxis.Y)
-                    {
-                        var d0 = cutInvert ? p0.Y < cutPos : p0.Y > cutPos;
-                        var d1 = cutInvert ? p1.Y < cutPos : p1.Y > cutPos;
-                        var d2 = cutInvert ? p2.Y < cutPos : p2.Y > cutPos;
-                        if (d0 || d1 || d2) continue;
-                    }
-                }
-
-                trianglesToExport.Add(i);
-            }
-
-            var header = new byte[80];
-            Encoding.ASCII.GetBytes("Exported by UVtools 3D Voxel Preview", 0, 36, header, 0);
-            writer.Write(header);
-            writer.Write((uint)trianglesToExport.Count);
-
-            foreach (var idx in trianglesToExport)
-            {
-                var v0 = vertices[(int)indices[idx]];
-                var v1 = vertices[(int)indices[idx + 1]];
-                var v2 = vertices[(int)indices[idx + 2]];
-
-                var edge1 = v1.Position - v0.Position;
-                var edge2 = v2.Position - v0.Position;
-                var normal = Vector3.Normalize(Vector3.Cross(edge1, edge2));
-                if (float.IsNaN(normal.X)) normal = v0.Normal;
-
-                writer.Write(normal.X);
-                writer.Write(normal.Y);
-                writer.Write(normal.Z);
-                writer.Write(v0.Position.X);
-                writer.Write(v0.Position.Y);
-                writer.Write(v0.Position.Z);
-                writer.Write(v1.Position.X);
-                writer.Write(v1.Position.Y);
-                writer.Write(v1.Position.Z);
-                writer.Write(v2.Position.X);
-                writer.Write(v2.Position.Y);
-                writer.Write(v2.Position.Z);
-                writer.Write((ushort)0);
-            }
-
-            await this.MessageBoxInfo($"Saved {trianglesToExport.Count:N0} triangles to {file.Name}.",
+            await this.MessageBoxInfo($"Saved {indices.Length / 3:N0} triangles to {file.Name}.",
                 "3D Model Exported");
         }
         catch (Exception ex)
         {
             await this.MessageBoxError(ex.Message, "Export Failed");
+        }
+    }
+
+    private static void WriteBinaryStl(Stream stream, VoxelPreviewVertex[] vertices, uint[] indices)
+    {
+        const int triangleSize = 50; // Normal, three vertices and the attribute bytes
+        var triangleCount = indices.Length / 3;
+
+        var header = new byte[84];
+        Encoding.ASCII.GetBytes("Exported by UVtools 3D Voxel Preview", 0, 36, header, 0);
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(header.AsSpan(80), (uint)triangleCount);
+        stream.Write(header);
+
+        const int trianglesPerBlock = 4096;
+        var block = new byte[trianglesPerBlock * triangleSize];
+        for (var firstTriangle = 0; firstTriangle < triangleCount; firstTriangle += trianglesPerBlock)
+        {
+            var count = Math.Min(trianglesPerBlock, triangleCount - firstTriangle);
+            var span = block.AsSpan(0, count * triangleSize);
+            span.Clear(); // The attribute bytes stay zero
+
+            for (var triangle = 0; triangle < count; triangle++)
+            {
+                var index = (firstTriangle + triangle) * 3;
+                var v0 = vertices[(int)indices[index]];
+                var v1 = vertices[(int)indices[index + 1]];
+                var v2 = vertices[(int)indices[index + 2]];
+
+                var normal = Vector3.Normalize(Vector3.Cross(v1.Position - v0.Position, v2.Position - v0.Position));
+                if (float.IsNaN(normal.X)) normal = v0.Normal;
+
+                var target = span.Slice(triangle * triangleSize, triangleSize);
+                WriteVector(target, 0, normal);
+                WriteVector(target, 12, v0.Position);
+                WriteVector(target, 24, v1.Position);
+                WriteVector(target, 36, v2.Position);
+            }
+
+            stream.Write(span);
+        }
+
+        static void WriteVector(Span<byte> target, int offset, Vector3 vector)
+        {
+            System.Buffers.Binary.BinaryPrimitives.WriteSingleLittleEndian(target[offset..], vector.X);
+            System.Buffers.Binary.BinaryPrimitives.WriteSingleLittleEndian(target[(offset + 4)..], vector.Y);
+            System.Buffers.Binary.BinaryPrimitives.WriteSingleLittleEndian(target[(offset + 8)..], vector.Z);
         }
     }
 
@@ -1772,41 +1820,44 @@ public partial class MainWindow
 
         try
         {
+            if (await GetLayer3DExportGeometryAsync(mesh, clipped) is not var (vertices, indices)) return;
+
             await using var stream = await file.OpenWriteAsync();
-            using var writer = new StreamWriter(stream, Encoding.UTF8);
-
-            writer.WriteLine("# UVtools 3D Voxel Preview Export");
-            var vertices = mesh.Vertices;
-            var indices = mesh.Indices;
-
-            for (var i = 0; i < vertices.Length; i++)
+            if (stream.CanSeek) stream.SetLength(0); // The picked file may already exist
+            await Task.Run(() =>
             {
-                var p = vertices[i].Position;
-                writer.WriteLine(FormattableString.Invariant($"v {p.X:F4} {p.Y:F4} {p.Z:F4}"));
-            }
+                using var writer = new StreamWriter(stream, new UTF8Encoding(false), 1 << 16, true);
+                writer.NewLine = "\n";
+                writer.WriteLine("# UVtools 3D Voxel Preview Export");
 
-            for (var i = 0; i < vertices.Length; i++)
-            {
-                var n = vertices[i].Normal;
-                writer.WriteLine(FormattableString.Invariant($"vn {n.X:F4} {n.Y:F4} {n.Z:F4}"));
-            }
+                foreach (var vertex in vertices)
+                {
+                    var p = vertex.Position;
+                    writer.WriteLine(FormattableString.Invariant($"v {p.X:F4} {p.Y:F4} {p.Z:F4}"));
+                }
 
-            for (var i = 0; i < indices.Length; i += 3)
-            {
-                var i0 = (int)indices[i] + 1;
-                var i1 = (int)indices[i + 1] + 1;
-                var i2 = (int)indices[i + 2] + 1;
-                writer.WriteLine($"f {i0}//{i0} {i1}//{i1} {i2}//{i2}");
-            }
+                foreach (var vertex in vertices)
+                {
+                    var n = vertex.Normal;
+                    writer.WriteLine(FormattableString.Invariant($"vn {n.X:F4} {n.Y:F4} {n.Z:F4}"));
+                }
 
-            await this.MessageBoxInfo($"Saved {mesh.TriangleCount:N0} triangles to {file.Name}.", "3D Model Exported");
+                for (var i = 0; i < indices.Length; i += 3)
+                {
+                    var i0 = (int)indices[i] + 1;
+                    var i1 = (int)indices[i + 1] + 1;
+                    var i2 = (int)indices[i + 2] + 1;
+                    writer.WriteLine($"f {i0}//{i0} {i1}//{i1} {i2}//{i2}");
+                }
+            });
+
+            await this.MessageBoxInfo($"Saved {indices.Length / 3:N0} triangles to {file.Name}.", "3D Model Exported");
         }
         catch (Exception ex)
         {
             await this.MessageBoxError(ex.Message, "Export Failed");
         }
     }
-
     [RelayCommand]
     public async Task ExportTurntableAnimation()
     {
@@ -1848,7 +1899,7 @@ public partial class MainWindow
                     LayerModel3DView.SetCameraAngles(yaw, originalPitch);
                     await Task.Delay(35);
 
-                    var bmp = await LayerModel3DView.CaptureSnapshotAsync();
+                    using var bmp = await LayerModel3DView.CaptureSnapshotAsync();
                     if (bmp is null) continue;
 
                     using var fb = bmp.Lock();

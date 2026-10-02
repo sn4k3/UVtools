@@ -1,33 +1,42 @@
 # Credits
 
-### Tiago ConceiÁ„o ([sn4k3](https://github.com/sn4k3))
+### Tiago Concei√ß√£o ([sn4k3](https://github.com/sn4k3))
+
 - Main developer
 
 ### Photonsters ([Photon Owners Group](https://github.com/Photonsters))
+
 - For information about cbddlp file format
 
 ### Cliff L. Biffle ([cbiffle](https://github.com/cbiffle))
+
 - [Catibo](https://github.com/cbiffle/catibo): read/write/analyze CTB, CBDDLP, and PHZ files
 - For information about cbddlp and cbt file format
 
 ### Jason S. McMullan ([ezrec](https://github.com/ezrec))
+
 - For ideas, file formats and permission to use his project ([uv3dp](https://github.com/ezrec/uv3dp))
 
 ### Bryce Yancey ([byancey](https://github.com/byancey))
+
 - [First code contributor](https://github.com/sn4k3/UVtools/pulls?q=is%3Apr+author%3Abyancey)
 
 ### Timothy Slater ([tslater2006](https://github.com/tslater2006))
+
 - [Code contributor](https://github.com/sn4k3/UVtools/pulls?q=is%3Apr+author%3Atslater2006)
 
 ### Alexey Kirillov ([aspadm](https://github.com/aspadm))
+
 - [Code contributor](https://github.com/sn4k3/UVtools/pulls?q=is%3Apr+author%3Aaspadm)
 
 ### Khalil Nurullah
+
 - For beta testing new features
 
 ### [Other contributors](https://github.com/sn4k3/UVtools/graphs/contributors)
 
 # Supporters / Contributors
+
 - https://github.com/sponsors/sn4k3
 - Ingo Strohmenger
 - Sven Vogt
@@ -80,7 +89,7 @@
 - Nick Spirov
 - Sylvain Chartrand
 - Michael Pullen
-- Albeck K·roly
+- Albeck K√°roly
 - Mark Johnston
 - Ivan Ivanov
 - Simon Christ
@@ -109,7 +118,7 @@
 - Brian Dainty
 - Jason Simpson
 - Christopher Staples
-- Meri ävragulja
+- Meri ≈†vragulja
 - James Ibbetson
 - Grzegorz Gajak
 - Carmine DiChiara
@@ -119,7 +128,8 @@
 - Filippo Lenzi
 - Waggery LLC
 - David Ayerst
-- JaromÌr Jaruöek
+- Jarom√≠r Jaru≈°ek
 - Wm Steele
 - Kevin Aulinger
 - Lars v.
+- Pawel Jurkiewicz

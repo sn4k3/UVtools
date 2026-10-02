@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Xml.Serialization;
@@ -169,6 +170,7 @@ public partial class OperationEditParameters : Operation
                 {
                     setLayers = 0;
                     layerIndex += SkipNumberOfLayer;
+                    progress.ProcessedItems = Math.Min(progress.ProcessedItems + SkipNumberOfLayer, progress.ItemCount); // Skipped layers also count as processed
                 }
             }
 
