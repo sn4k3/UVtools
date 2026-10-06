@@ -119,13 +119,13 @@ public partial class SettingsWindow : GenericWindow
             return;
         }
 
-        if (int.TryParse(to, out var i))
+        if (int.TryParse(to, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i))
         {
             Settings.General.MaxDegreeOfParallelism = i;
             return;
         }
 
-        if (decimal.TryParse(to, out var d))
+        if (decimal.TryParse(to, NumberStyles.Number, CultureInfo.InvariantCulture, out var d))
         {
             Settings.General.MaxDegreeOfParallelism = (int)(Environment.ProcessorCount * d);
             return;

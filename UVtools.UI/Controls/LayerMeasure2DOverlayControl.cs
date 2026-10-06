@@ -80,6 +80,19 @@ public class LayerMeasure2DOverlayControl : Control
         set => SetValue(PixelPitchYProperty, value);
     }
 
+    // Shared instead of allocated on every render
+    private static readonly Pen ShadowPen = new(new SolidColorBrush(Color.FromArgb(160, 0, 0, 0)), 3.5);
+    private static readonly Pen LinePen = new(new SolidColorBrush(Color.FromRgb(0, 210, 255)), 2.0);
+    private static readonly Pen PreviewLinePen = new(new SolidColorBrush(Color.FromArgb(200, 0, 210, 255)), 1.8, DashStyle.Dash);
+    private static readonly Pen TickPen = new(new SolidColorBrush(Color.FromRgb(255, 215, 0)), 2.0);
+    private static readonly Pen DeltaPen = new(new SolidColorBrush(Color.FromArgb(120, 200, 200, 200)), 1.0, DashStyle.Dash);
+    private static readonly IBrush Point1Brush = new SolidColorBrush(Color.FromRgb(0, 255, 128));
+    private static readonly IBrush Point2Brush = new SolidColorBrush(Color.FromRgb(255, 215, 0));
+    private static readonly Pen MarkerBorderPen = new(Brushes.White, 1.2);
+    private static readonly IBrush BadgeBackgroundBrush = new SolidColorBrush(Color.FromArgb(220, 16, 22, 34));
+    private static readonly Pen BadgePen = new(new SolidColorBrush(Color.FromArgb(180, 0, 210, 255)), 1.2);
+    private static readonly Typeface BadgeTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.Bold);
+
     private IDisposable? _zoomSub;
 
     static LayerMeasure2DOverlayControl()
@@ -115,7 +128,10 @@ public class LayerMeasure2DOverlayControl : Control
 
         if (newBox != null)
         {
-            _zoomSub = newBox.GetObservable(AdvancedImageBox.ZoomProperty).Subscribe(new AnonymousObserver<int>(_ => InvalidateVisual()));
+            _zoomSub = newBox.GetObservable(AdvancedImageBox.ZoomProperty).Subscribe(new AnonymousObserver<int>(_ =>
+            {
+                if (IsActive && StartPoint.HasValue) InvalidateVisual();
+            }));
             newBox.LayoutUpdated += OnImageBoxOnLayoutUpdated;
             newBox.PropertyChanged += OnImageBoxPropertyChanged;
         }
@@ -123,6 +139,7 @@ public class LayerMeasure2DOverlayControl : Control
 
     private void OnImageBoxPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (!IsActive || !StartPoint.HasValue) return;
         if (e.PropertyName is nameof(AdvancedImageBox.Offset) or nameof(AdvancedImageBox.Zoom) or nameof(AdvancedImageBox.PointerPosition))
         {
             InvalidateVisual();
@@ -131,7 +148,8 @@ public class LayerMeasure2DOverlayControl : Control
 
     private void OnImageBoxOnLayoutUpdated(object? sender, EventArgs e)
     {
-        InvalidateVisual();
+        // LayoutUpdated is raised after every layout pass, only redraw when something is being measured
+        if (IsActive && StartPoint.HasValue) InvalidateVisual();
     }
 
     public override void Render(DrawingContext context)
@@ -152,14 +170,14 @@ public class LayerMeasure2DOverlayControl : Control
         Point p1 = box.TranslatePoint(rawP1, this) ?? rawP1;
 
         // Styling brushes & pens
-        var shadowPen = new Pen(new SolidColorBrush(Color.FromArgb(160, 0, 0, 0)), 3.5);
-        var linePen = new Pen(new SolidColorBrush(Color.FromRgb(0, 210, 255)), 2.0);
-        var previewLinePen = new Pen(new SolidColorBrush(Color.FromArgb(200, 0, 210, 255)), 1.8, DashStyle.Dash);
-        var tickPen = new Pen(new SolidColorBrush(Color.FromRgb(255, 215, 0)), 2.0);
-        var deltaPen = new Pen(new SolidColorBrush(Color.FromArgb(120, 200, 200, 200)), 1.0, DashStyle.Dash);
-        var pt1Brush = new SolidColorBrush(Color.FromRgb(0, 255, 128));
-        var pt2Brush = new SolidColorBrush(Color.FromRgb(255, 215, 0));
-        var markerBorderPen = new Pen(Brushes.White, 1.2);
+        var shadowPen = ShadowPen;
+        var linePen = LinePen;
+        var previewLinePen = PreviewLinePen;
+        var tickPen = TickPen;
+        var deltaPen = DeltaPen;
+        var pt1Brush = Point1Brush;
+        var pt2Brush = Point2Brush;
+        var markerBorderPen = MarkerBorderPen;
 
         if (endImgPt.HasValue)
         {
@@ -210,7 +228,7 @@ public class LayerMeasure2DOverlayControl : Control
                 badgeText,
                 CultureInfo.InvariantCulture,
                 FlowDirection.LeftToRight,
-                new Typeface(FontFamily.Default, FontStyle.Normal, FontWeight.Bold),
+                BadgeTypeface,
                 11.5,
                 Brushes.White);
 
@@ -221,9 +239,7 @@ public class LayerMeasure2DOverlayControl : Control
             double badgeH = formatted.Height + badgePadY * 2.0;
             Rect badgeRect = new Rect(mid.X - badgeW * 0.5, mid.Y - badgeH - 8.0, badgeW, badgeH);
 
-            var badgeBg = new SolidColorBrush(Color.FromArgb(220, 16, 22, 34));
-            var badgePen = new Pen(new SolidColorBrush(Color.FromArgb(180, 0, 210, 255)), 1.2);
-            context.DrawRectangle(badgeBg, badgePen, badgeRect, 4, 4);
+            context.DrawRectangle(BadgeBackgroundBrush, BadgePen, badgeRect, 4, 4);
             context.DrawText(formatted, new Point(badgeRect.X + badgePadX, badgeRect.Y + badgePadY));
         }
 

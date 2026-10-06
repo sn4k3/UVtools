@@ -323,6 +323,7 @@ public partial class ToolEditParametersControl : ToolControl
 
     protected override void OnInitialized()
     {
+        base.OnInitialized();
         ParentWindow!.CloseWindowAfterProcess = false;
     }
 

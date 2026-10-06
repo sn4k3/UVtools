@@ -224,7 +224,7 @@ public partial class MessageWindow : GenericWindow
     public static Button CreateButtonFunc(string? text, MaterialIconKind? icon, Func<bool> customAction,
         int padding = 10, object? tag = null)
     {
-        var button = CreateButton(text, icon, padding);
+        var button = CreateButton(text, icon, padding, tag);
         button.Click += (sender, e) => e.Handled = customAction.Invoke();
         return button;
     }
@@ -232,19 +232,19 @@ public partial class MessageWindow : GenericWindow
     public static Button CreateButtonAction(string? text, MaterialIconKind? icon, Action customAction, int padding = 10,
         object? tag = null)
     {
-        var button = CreateButton(text, icon, padding);
+        var button = CreateButton(text, icon, padding, tag);
         button.Click += (sender, e) => customAction.Invoke();
         return button;
     }
 
     public static Button CreateButtonFunc(string? text, Func<bool> customAction, int padding = 10, object? tag = null)
     {
-        return CreateButtonFunc(text, null, customAction, padding);
+        return CreateButtonFunc(text, null, customAction, padding, tag);
     }
 
     public static Button CreateButtonAction(string? text, Action customAction, int padding = 10, object? tag = null)
     {
-        return CreateButtonAction(text, null, customAction, padding);
+        return CreateButtonAction(text, null, customAction, padding, tag);
     }
 
     public static Button CreateButton(string? text, MaterialIconKind? icon, int padding = 10, object? tag = null)

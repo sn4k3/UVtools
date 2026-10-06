@@ -439,7 +439,7 @@
             <Button Grid.Column="6" VerticalAlignment="Center"
                     IsEnabled="{Binding IsProfileAddEnabled}"
                     Command="{Binding AddProfile}"
-                    Content="{icon:MaterialIconExt Kind=Plus}"/>
+                    Content="{icon:MaterialIconExt Kind=Plus}" ToolTip.Tip="Add"/>
         </Grid>
       </Expander>
 

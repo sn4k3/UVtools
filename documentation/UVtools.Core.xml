@@ -1118,6 +1118,11 @@
             Gets the layer image length in bytes.
             </summary>
         </member>
+        <member name="M:UVtools.Core.FileFormats.AnycubicPhotonSFile.LayerDef.ReverseBits(System.Byte)">
+            <summary>
+            Mirrors the bits of a byte, the run length is stored from the high bit down to bit 1 and the color on bit 0.
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.AnycubicZipFile.SceneManifest.BinaryType">
             <summary>
             1: Pure Binary<br/>
@@ -1136,6 +1141,51 @@
             <summary>
             Some status flags of the scene model
             </summary>
+        </member>
+        <member name="T:UVtools.Core.FileFormats.BitPlaneRle">
+            <summary>
+            Helpers for the 1 bit per pixel run length planes used to store anti-aliased layers, one plane per gray threshold.
+            Every byte holds a run of up to 125 pixels in the lower 7 bits and the pixel state (on/off) in the high bit.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.BitPlaneRle.GetRunLength(System.ReadOnlySpan{System.Byte},System.Int32,System.Byte)">
+            <summary>
+            Gets the length of the run starting at <paramref name="index"/> of pixels that are all at or above
+            <paramref name="threshold"/> or all below it, depending on the state of the first pixel.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.BitPlaneRle.EncodePlane(DotNext.Buffers.BufferWriterSlim{System.Byte}@,System.ReadOnlySpan{System.Byte},System.Byte,System.Int32)">
+            <summary>
+            Encodes a plane of the image, pixels at or above <paramref name="threshold"/> are on.
+            </summary>
+            <param name="output">The writer to append the plane runs</param>
+            <param name="pixels">The 8 bit image pixels</param>
+            <param name="threshold">The gray value from which the pixel is on</param>
+            <param name="maxRunLength">The maximum pixels a single byte can hold</param>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.BitPlaneRle.EncodePlane(System.ReadOnlySpan{System.Byte},System.Byte,System.Int32)">
+            <summary>
+            Encodes a plane of the image into a new array, pixels at or above <paramref name="threshold"/> are on.
+            </summary>
+            <param name="pixels">The 8 bit image pixels</param>
+            <param name="threshold">The gray value from which the pixel is on</param>
+            <param name="maxRunLength">The maximum pixels a single byte can hold</param>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.BitPlaneRle.DecodePlane(System.ReadOnlySpan{System.Byte},System.Span{System.Byte})">
+            <summary>
+            Decodes a plane, adding one to every pixel that is on.
+            </summary>
+            <param name="rle">The encoded plane, it may contain more data than the plane</param>
+            <param name="counts">The image pixels, holding the number of planes in which each pixel is on</param>
+            <returns>The number of bytes consumed from <paramref name="rle"/></returns>
+            <exception cref="T:System.IO.FileLoadException">When the plane does not fit the image</exception>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.BitPlaneRle.CountsToGray(System.Span{System.Byte},System.Byte)">
+            <summary>
+            Converts the number of planes in which each pixel is on to an 8 bit gray.
+            </summary>
+            <param name="counts">The image pixels with the plane counts, converted in place</param>
+            <param name="antiAliasing">The number of planes</param>
         </member>
         <member name="P:UVtools.Core.FileFormats.ChituboxFile.Header.Magic">
             <summary>
@@ -1438,6 +1488,68 @@
         <member name="P:UVtools.Core.FileFormats.ChituboxFile.LayerDefEx.TotalSize">
             <summary>
             Gets the total size of ctbImageInfo and Image data
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.FileFormats.ColumnLines">
+            <summary>
+            Helpers for the formats that store layers as vertical lines (one line per run of pixels on a column), as the
+            Creality CXDLP, Makerbase MDLP and GR1 Workshop do.
+            </summary>
+            <remarks>
+            The images are row major, so walking a column pixel by pixel jumps a whole image row per step. These helpers
+            work on a transposed copy, where every column is a contiguous span that can be scanned with vectorized searches.
+            </remarks>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.ColumnLines.TransposeRoi(Emgu.CV.Mat,System.Drawing.Rectangle)">
+            <summary>
+            Creates a transposed copy of a region of an image. Each row of the result is a column of the region, so
+            the result has <see cref="P:System.Drawing.Rectangle.Width"/> rows of <see cref="P:System.Drawing.Rectangle.Height"/> pixels.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.ColumnLines.TryGetNextColorRun(System.ReadOnlySpan{System.Byte},System.Int32@,System.Int32@,System.Int32@,System.Byte@)">
+            <summary>
+            Gets the next run of equal non-zero pixels of a column, black pixels are skipped.
+            </summary>
+            <param name="column">The column pixels</param>
+            <param name="index">The position to continue from, it is advanced past the run</param>
+            <param name="start">The position of the first pixel of the run</param>
+            <param name="length">The number of pixels on the run</param>
+            <param name="color">The color of the run</param>
+            <returns>True if a run was found, otherwise false</returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.ColumnLines.TryGetNextWhiteRun(System.ReadOnlySpan{System.Byte},System.Byte,System.Int32@,System.Int32@,System.Int32@)">
+            <summary>
+            Gets the next run of white pixels (<paramref name="threshold"/> or above) of a column.
+            </summary>
+            <param name="column">The column pixels</param>
+            <param name="threshold">The gray value from which a pixel is white</param>
+            <param name="index">The position to continue from, it is advanced past the run</param>
+            <param name="start">The position of the first pixel of the run</param>
+            <param name="length">The number of pixels on the run</param>
+            <returns>True if a run was found, otherwise false</returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.ColumnLines.CreateColumns(System.Drawing.Size)">
+            <summary>
+            Creates a zeroed image to draw vertical lines on, to be converted into the final image with <see cref="M:UVtools.Core.FileFormats.ColumnLines.ToImage(Emgu.CV.Mat)"/>.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.ColumnLines.ToImage(Emgu.CV.Mat)">
+            <summary>
+            Converts an image of columns created with <see cref="M:UVtools.Core.FileFormats.ColumnLines.CreateColumns(System.Drawing.Size)"/> into the final image.
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.FileFormats.ColumnLines.Canvas">
+            <summary>
+            Draws vertical lines on an image of columns, lines are clipped to the image like OpenCV does.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.ColumnLines.Canvas.#ctor(Emgu.CV.Mat,System.Drawing.Size)">
+            <param name="columns">An image created with <see cref="M:UVtools.Core.FileFormats.ColumnLines.CreateColumns(System.Drawing.Size)"/></param>
+            <param name="resolution">The resolution of the final image</param>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.ColumnLines.Canvas.Line(System.Int32,System.Int32,System.Int32,System.Byte)">
+            <summary>
+            Draws a vertical line from <paramref name="startY"/> to <paramref name="endY"/>, both inclusive.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.CrealityCXDLPFile.Header.MagicSize">
@@ -1805,6 +1917,30 @@
             <summary>
             Gets the image length in bytes.
             </summary>
+        </member>
+        <member name="T:UVtools.Core.FileFormats.CtbRleCodec">
+            <summary>
+            The 7 bit grayscale run length codec shared by the Chitubox CTB, Creality CXDLP v4 and encrypted CTB formats.
+            </summary>
+            <remarks>
+            Each entry is a byte with the 7 bit gray value, when the high bit is set it is followed by a variable length
+            (1 to 4 bytes) run length, otherwise the entry is a single pixel.
+            </remarks>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.CtbRleCodec.Decode(System.ReadOnlySpan{System.Byte},System.Span{System.Byte})">
+            <summary>
+            Decodes <paramref name="rle"/> into <paramref name="pixels"/>.
+            </summary>
+            <param name="rle">The (already decrypted) encoded data</param>
+            <param name="pixels">A zero initialized 8 bit image buffer</param>
+            <exception cref="T:System.IO.FileLoadException">When the data is truncated, malformed or its non-black runs do not fit the image</exception>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.CtbRleCodec.Encode(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Encodes an 8 bit image into the 7 bit run length format.
+            </summary>
+            <param name="pixels">The 8 bit image pixels</param>
+            <returns>The encoded (not encrypted) data</returns>
         </member>
         <member name="P:UVtools.Core.FileFormats.FDGFile.Header.Magic">
             <summary>
@@ -2329,6 +2465,24 @@
             <param name="createNewInstance">True to create a new instance of found file format, otherwise will return a pre created one which should be used for read-only purpose</param>
             <returns><see cref="T:UVtools.Core.FileFormats.FileFormat"/> object or null if not found</returns>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.XorKeystream(System.Span{System.Byte},System.UInt32,System.UInt32)">
+            <summary>
+            XORs <paramref name="data"/> in place with a 32 bit keystream: each group of 4 bytes is XORed with the
+            little-endian bytes of <paramref name="key"/>, which is then advanced by <paramref name="step"/> (wrapping).
+            Applying it twice restores the original data.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetRunLength(System.ReadOnlySpan{System.Byte},System.Int32)">
+            <summary>
+            Gets how many consecutive bytes, starting at <paramref name="index"/>, are equal to the byte at <paramref name="index"/>.
+            Short runs, the common case on edges, are resolved without calling the vectorized search.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetHighNibbleRunLength(System.ReadOnlySpan{System.Byte},System.Int32)">
+            <summary>
+            Gets how many consecutive bytes, starting at <paramref name="index"/>, share the same 4 high bits as the byte at <paramref name="index"/>.
+            </summary>
+        </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.CopyParameters(UVtools.Core.FileFormats.FileFormat,UVtools.Core.FileFormats.FileFormat)">
             <summary>
             Copy parameters from one file to another
@@ -2336,6 +2490,11 @@
             <param name="from">From source file</param>
             <param name="to">To target file</param>
             <returns>Number of affected parameters</returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetPixelPacking(System.String)">
+            <summary>
+            Resolves a raw pixel data type once, so per pixel loops do not compare strings.
+            </summary>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.Compare(UVtools.Core.FileFormats.FileFormat,UVtools.Core.FileFormats.FileFormat,System.Boolean,System.String[])">
             <summary>
@@ -4331,6 +4490,11 @@
             Gets the Y dimension of the preview image, in pixels.
             </summary>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FlashForgeSVGXFile.TryGetSvgToken(System.ReadOnlySpan{System.Char},System.Int32@,System.ReadOnlySpan{System.Char}@)">
+            <summary>
+            Gets the next space separated token of an SVG path, tokens are trimmed and empty ones are ignored.
+            </summary>
+        </member>
         <member name="F:UVtools.Core.FileFormats.GooFile.DelayModes.LightOff">
             <summary>
             Time with motor movement
@@ -4380,6 +4544,11 @@
             V5 uses index tables (LDT/IEDT/RDT), partitioned images, VUF RLE codec,
             and an MD5 checksum. The header is binary-compatible with V3 through
             field 61, then adds 6 extension fields.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.GooV5File.VufCodec.EncodeFramed(System.ReadOnlySpan{System.Byte},System.Byte)">
+            <summary>
+            Encodes the pixels as a layer partition block: layer magic, VUF data and the checksum byte.
             </summary>
         </member>
         <member name="T:UVtools.Core.FileFormats.GooV5File.ResinDef">
@@ -4801,6 +4970,12 @@
             <summary>
             End of the file completed
             </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.QDTFile.Tokenize(System.ReadOnlySpan{System.Char},System.ReadOnlySpan{System.Char}@,System.ReadOnlySpan{System.Char}@,System.ReadOnlySpan{System.Char}@)">
+            <summary>
+            Splits a line by comma, trimming the tokens and ignoring the empty ones. Only the first three tokens are returned.
+            </summary>
+            <returns>The number of non-empty tokens on the line</returns>
         </member>
         <member name="T:UVtools.Core.GCode.GCodeBuilder">
             <inheritdoc/>

@@ -1,7 +1,10 @@
-<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="using:UVtools.UI.Controls.Fragments"
-        xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+<Styles
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:controls="using:UVtools.UI.Controls.Fragments"
+  xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  x:DataType="controls:PixelEditorProfilesFragment"
+>
   <Design.PreviewWith>
     <controls:PixelEditorProfilesFragment />
   </Design.PreviewWith>
@@ -10,44 +13,47 @@
     <!-- Set Defaults -->
     <Setter Property="Template">
       <ControlTemplate>
-          <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,10,*,5,Auto,1,Auto,1,Auto">
-              <TextBlock Name="PART_Label"
-                         Grid.Column="0"
-                         VerticalAlignment="Center"
-                         Text="Profile:"/>
+        <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,10,*,5,Auto,1,Auto,1,Auto">
+          <TextBlock Name="PART_Label" Grid.Column="0" VerticalAlignment="Center" Text="Profile:" />
 
-              <ComboBox Name="PART_ProfileList"
-                        Grid.Column="2"
-                        HorizontalAlignment="Stretch"
-                        ItemsSource="{TemplateBinding Profiles}"
-                        SelectedIndex="{TemplateBinding SelectedProfileIndex, Mode=TwoWay}"
-                        IsEnabled="{Binding $self.ItemCount}"/>
+          <ComboBox
+            Name="PART_ProfileList"
+            Grid.Column="2"
+            HorizontalAlignment="Stretch"
+            ItemsSource="{TemplateBinding Profiles}"
+            SelectedIndex="{TemplateBinding SelectedProfileIndex, Mode=TwoWay}"
+            IsEnabled="{Binding $self.ItemCount}"
+          />
 
-              <Button Name="PART_AddButton"
-                                 Grid.Column="4"
-                                 Content="{icon:MaterialIconExt Kind=Plus}"
-                                 VerticalAlignment="Stretch"
-                                 ToolTip.Tip="Add a new profile with the current set values"
-                                 Command="{Binding $parent[controls:PixelEditorProfilesFragment].AddNewProfile}"/>
+          <Button
+            Name="PART_AddButton"
+            Grid.Column="4"
+            Content="{icon:MaterialIconExt Kind=Plus}"
+            VerticalAlignment="Stretch"
+            ToolTip.Tip="Add a new profile with the current set values"
+            Command="{Binding $parent[controls:PixelEditorProfilesFragment].AddNewProfile}"
+          />
 
-              <Button Name="PART_DeselectButton"
-                                 Grid.Column="6"
-                                 Content="{icon:MaterialIconExt Kind=SelectRemove}"
-                                 VerticalAlignment="Stretch"
-                                 ToolTip.Tip="Set the selected profile as default to load with the program"
-                                 IsEnabled="{Binding #PART_ProfileList.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                 Command="{Binding $parent[controls:PixelEditorProfilesFragment].DefaultSelectedProfile}">
-              </Button>
+          <Button
+            Name="PART_DeselectButton"
+            Grid.Column="6"
+            Content="{icon:MaterialIconExt Kind=SelectRemove}"
+            VerticalAlignment="Stretch"
+            ToolTip.Tip="Set the selected profile as default to load with the program"
+            IsEnabled="{Binding #PART_ProfileList.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+            Command="{Binding $parent[controls:PixelEditorProfilesFragment].DefaultSelectedProfile}"
+          ></Button>
 
-              <Button Name="PART_RemoveButton"
-                                 Grid.Column="8"
-                                 Content="{icon:MaterialIconExt Kind=TrashCan}"
-                                 VerticalAlignment="Stretch"
-                                 ToolTip.Tip="Remove the selected profile"
-                                 IsEnabled="{Binding #PART_ProfileList.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                 Command="{Binding $parent[controls:PixelEditorProfilesFragment].RemoveSelectedProfile}"/>
-
-          </Grid>
+          <Button
+            Name="PART_RemoveButton"
+            Grid.Column="8"
+            Content="{icon:MaterialIconExt Kind=TrashCan}"
+            VerticalAlignment="Stretch"
+            ToolTip.Tip="Remove the selected profile"
+            IsEnabled="{Binding #PART_ProfileList.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+            Command="{Binding $parent[controls:PixelEditorProfilesFragment].RemoveSelectedProfile}"
+          />
+        </Grid>
       </ControlTemplate>
     </Setter>
   </Style>

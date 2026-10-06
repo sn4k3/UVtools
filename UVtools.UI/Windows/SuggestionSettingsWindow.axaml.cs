@@ -78,7 +78,14 @@ public partial class SuggestionSettingsWindow : GenericWindow
         get => _activeSuggestion;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _activeSuggestion, value) || value is null) return;
+            if(!RaiseAndSetIfChanged(ref _activeSuggestion, value)) return;
+            if (value is null)
+            {
+                PendingChanges = false;
+                ActiveSuggestionContentPanel.Content = null;
+                return;
+            }
+
             PendingChanges = false;
             _activeSuggestion!.PropertyChanged += (sender, e) => PendingChanges = true;
 

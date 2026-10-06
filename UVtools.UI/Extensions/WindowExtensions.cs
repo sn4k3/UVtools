@@ -112,7 +112,7 @@ public static class WindowExtensions
         public Task<SukiMessageBoxResult> MessageBoxWaring(string message, string? title = null,
             SukiMessageBoxButtons buttons = SukiMessageBoxButtons.OK, bool markdown = false, bool topMost = false)
         {
-            return window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", null, buttons,
+            return window.MessageBoxGeneric(message, title ?? $"{window.Title} - Warning", null, buttons,
                 MessageWindow.IconHeaderWarning, markdown, topMost, WindowStartupLocation.CenterOwner);
         }
 

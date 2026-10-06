@@ -105,10 +105,9 @@ public partial class AboutWindow : GenericWindow
         get
         {
             var result = new StringBuilder();
+            var onScreen = Screens.ScreenFromVisual(App.MainWindow is not null ? App.MainWindow : this);
             for (var i = 0; i < Screens.All.Count; i++)
             {
-                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                var onScreen = Screens.ScreenFromVisual(App.MainWindow is not null ? App.MainWindow : this);
                 var screen = Screens.All[i];
                 result.AppendLine($"{i+1}: {screen.Bounds.Width} x {screen.Bounds.Height} @ {Math.Round(screen.Scaling * 100, 2)}%" +
                                   (screen.IsPrimary ? " (Primary)" : null) +
@@ -201,7 +200,7 @@ public partial class AboutWindow : GenericWindow
     [RelayCommand]
     public void CopyOpenCVInformationToClipboard()
     {
-        Clipboard?.SetTextAsync(CvInvoke.BuildInformation);
+        Clipboard?.SetTextAsync(OpenCVBuildInformation);
     }
 
     [RelayCommand]
@@ -213,13 +212,15 @@ public partial class AboutWindow : GenericWindow
     [RelayCommand]
     public async Task CopyInformationToClipboard()
     {
+        if (Clipboard is null) return;
+
         var message = new StringBuilder();
         message.Append(GetEssentialInformation());
-        message.AppendLine(CvInvoke.BuildInformation);
+        message.AppendLine(OpenCVBuildInformation);
         message.AppendLine("Loaded Assemblies:");
         message.AppendLine(LoadedAssemblies);
         message.AppendLine("Diagnostics Information:");
         message.AppendLine(DiagnosticsInformation);
-        await Clipboard?.SetTextAsync(message.ToString())!;
+        await Clipboard.SetTextAsync(message.ToString());
     }
 }

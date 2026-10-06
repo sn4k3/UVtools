@@ -1418,6 +1418,83 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         return tcs.Task;
     }
 
+    private VoxelPreviewMesh? _metricsMesh;
+    private double _metricsTotalVolume;
+    private double _metricsSumVx;
+    private double _metricsSumVy;
+    private double _metricsSumVz;
+    private double _metricsContactArea;
+    private float _metricsContactMinX;
+    private float _metricsContactMaxX;
+    private float _metricsContactMinY;
+    private float _metricsContactMaxY;
+
+    /// <summary>
+    /// Divergence theorem for exact mesh volume and center of mass (tetrahedral decomposition), and the base contact.
+    /// </summary>
+    private void ComputeMeshMetrics(VoxelPreviewMesh mesh)
+    {
+        var totalVolume = 0.0;
+        double sumVx = 0.0,
+            sumVy = 0.0,
+            sumVz = 0.0;
+        var vertices = mesh.Vertices;
+        var indices = mesh.Indices;
+        var minZ = mesh.MinimumBounds.Z;
+        var contactZThreshold = minZ + 0.06f;
+        var isOnBed = minZ < 0.01f;
+        var contactArea = 0.0;
+        float contactMinX = float.MaxValue,
+            contactMaxX = float.MinValue;
+        float contactMinY = float.MaxValue,
+            contactMaxY = float.MinValue;
+
+        for (var i = 0; i < indices.Length; i += 3)
+        {
+            var p0 = vertices[(int)indices[i]].Position;
+            var p1 = vertices[(int)indices[i + 1]].Position;
+            var p2 = vertices[(int)indices[i + 2]].Position;
+
+            double vDet =
+                p0.X * (p1.Y * p2.Z - p1.Z * p2.Y)
+                - p0.Y * (p1.X * p2.Z - p1.Z * p2.X)
+                + p0.Z * (p1.X * p2.Y - p1.Y * p2.X);
+            var vol = vDet / 6.0;
+            totalVolume += vol;
+
+            var cx = (p0.X + p1.X + p2.X) * 0.25;
+            var cy = (p0.Y + p1.Y + p2.Y) * 0.25;
+            var cz = (p0.Z + p1.Z + p2.Z) * 0.25;
+
+            sumVx += vol * cx;
+            sumVy += vol * cy;
+            sumVz += vol * cz;
+
+            if (isOnBed && p0.Z <= contactZThreshold && p1.Z <= contactZThreshold && p2.Z <= contactZThreshold)
+            {
+                var crossX = (p1.Y - p0.Y) * (p2.Z - p0.Z) - (p1.Z - p0.Z) * (p2.Y - p0.Y);
+                var crossY = (p1.Z - p0.Z) * (p2.X - p0.X) - (p1.X - p0.X) * (p2.Z - p0.Z);
+                var crossZ = (p1.X - p0.X) * (p2.Y - p0.Y) - (p1.Y - p0.Y) * (p2.X - p0.X);
+                var triArea = 0.5 * Math.Sqrt(crossX * crossX + crossY * crossY + crossZ * crossZ);
+                contactArea += triArea;
+
+                contactMinX = Math.Min(contactMinX, Math.Min(p0.X, Math.Min(p1.X, p2.X)));
+                contactMaxX = Math.Max(contactMaxX, Math.Max(p0.X, Math.Max(p1.X, p2.X)));
+                contactMinY = Math.Min(contactMinY, Math.Min(p0.Y, Math.Min(p1.Y, p2.Y)));
+                contactMaxY = Math.Max(contactMaxY, Math.Max(p0.Y, Math.Max(p1.Y, p2.Y)));
+            }
+        }
+
+        _metricsTotalVolume = totalVolume;
+        _metricsSumVx = sumVx;
+        _metricsSumVy = sumVy;
+        _metricsSumVz = sumVz;
+        _metricsContactArea = contactArea;
+        _metricsContactMinX = contactMinX;
+        _metricsContactMaxX = contactMaxX;
+        _metricsContactMinY = contactMinY;
+        _metricsContactMaxY = contactMaxY;
+    }
     private void UpdateModelMetrics()
     {
         if (_mesh is not { } mesh || mesh.VertexCount == 0)
@@ -1474,58 +1551,23 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             OutOfBoundsWarningText = null;
         }
 
-        // Divergence theorem for exact mesh volume & center of mass (tetrahedral decomposition)
-        var totalVolume = 0.0;
-        double sumVx = 0.0,
-            sumVy = 0.0,
-            sumVz = 0.0;
-        var vertices = mesh.Vertices;
-        var indices = mesh.Indices;
-        var minZ = mesh.MinimumBounds.Z;
-        var contactZThreshold = minZ + 0.06f;
-        var isOnBed = minZ < 0.01f; // A model starting higher floats, nothing touches the build plate
-        var contactArea = 0.0;
-        float contactMinX = float.MaxValue,
-            contactMaxX = float.MinValue;
-        float contactMinY = float.MaxValue,
-            contactMaxY = float.MinValue;
-
-        for (var i = 0; i < indices.Length; i += 3)
+        // The mesh metrics do not depend on the plate, only recompute them when the mesh changed
+        if (!ReferenceEquals(_metricsMesh, mesh))
         {
-            var p0 = vertices[(int)indices[i]].Position;
-            var p1 = vertices[(int)indices[i + 1]].Position;
-            var p2 = vertices[(int)indices[i + 2]].Position;
-
-            double vDet =
-                p0.X * (p1.Y * p2.Z - p1.Z * p2.Y)
-                - p0.Y * (p1.X * p2.Z - p1.Z * p2.X)
-                + p0.Z * (p1.X * p2.Y - p1.Y * p2.X);
-            var vol = vDet / 6.0;
-            totalVolume += vol;
-
-            var cx = (p0.X + p1.X + p2.X) * 0.25;
-            var cy = (p0.Y + p1.Y + p2.Y) * 0.25;
-            var cz = (p0.Z + p1.Z + p2.Z) * 0.25;
-
-            sumVx += vol * cx;
-            sumVy += vol * cy;
-            sumVz += vol * cz;
-
-            if (isOnBed && p0.Z <= contactZThreshold && p1.Z <= contactZThreshold && p2.Z <= contactZThreshold)
-            {
-                var crossX = (p1.Y - p0.Y) * (p2.Z - p0.Z) - (p1.Z - p0.Z) * (p2.Y - p0.Y);
-                var crossY = (p1.Z - p0.Z) * (p2.X - p0.X) - (p1.X - p0.X) * (p2.Z - p0.Z);
-                var crossZ = (p1.X - p0.X) * (p2.Y - p0.Y) - (p1.Y - p0.Y) * (p2.X - p0.X);
-                var triArea = 0.5 * Math.Sqrt(crossX * crossX + crossY * crossY + crossZ * crossZ);
-                contactArea += triArea;
-
-                contactMinX = Math.Min(contactMinX, Math.Min(p0.X, Math.Min(p1.X, p2.X)));
-                contactMaxX = Math.Max(contactMaxX, Math.Max(p0.X, Math.Max(p1.X, p2.X)));
-                contactMinY = Math.Min(contactMinY, Math.Min(p0.Y, Math.Min(p1.Y, p2.Y)));
-                contactMaxY = Math.Max(contactMaxY, Math.Max(p0.Y, Math.Max(p1.Y, p2.Y)));
-            }
+            ComputeMeshMetrics(mesh);
+            _metricsMesh = mesh;
         }
 
+        var totalVolume = _metricsTotalVolume;
+        var sumVx = _metricsSumVx;
+        var sumVy = _metricsSumVy;
+        var sumVz = _metricsSumVz;
+        var contactArea = _metricsContactArea;
+        var contactMinX = _metricsContactMinX;
+        var contactMaxX = _metricsContactMaxX;
+        var contactMinY = _metricsContactMinY;
+        var contactMaxY = _metricsContactMaxY;
+        var isOnBed = mesh.MinimumBounds.Z < 0.01f; // A model starting higher floats, nothing touches the build plate
         var absVolume = Math.Abs(totalVolume);
         // The mesh is sampled, prefer the volume measured from the layer pixels when it is known
         var volumeMl = mesh.VolumeCubicMillimeters > 0f
@@ -2483,7 +2525,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         {
             _gl.BufferData(
                 BufferTargetARB.ArrayBuffer,
-                (nuint)(vertices.Length * Marshal.SizeOf<VoxelPreviewVertex>()),
+                (nuint)vertices.Length * (nuint)Marshal.SizeOf<VoxelPreviewVertex>(),
                 vertexPointer,
                 BufferUsageARB.StaticDraw
             );
@@ -2494,7 +2536,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         {
             _gl.BufferData(
                 BufferTargetARB.ElementArrayBuffer,
-                (nuint)(indices.Length * sizeof(uint)),
+                (nuint)indices.Length * sizeof(uint),
                 indexPointer,
                 BufferUsageARB.StaticDraw
             );
@@ -2555,7 +2597,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             {
                 _gl.BufferData(
                     BufferTargetARB.ElementArrayBuffer,
-                    (nuint)(indexCount * sizeof(uint)),
+                    (nuint)indexCount * sizeof(uint),
                     indexPointer,
                     BufferUsageARB.StaticDraw
                 );
@@ -2961,7 +3003,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         var pXp = new Vector3(c.X + d, c.Y, c.Z);
         var pXm = new Vector3(c.X - d, c.Y, c.Z);
         var pYp = new Vector3(c.X, c.Y + d, c.Z);
-        var pYm = new Vector3(c.X - d, c.Y, c.Z);
+        var pYm = new Vector3(c.X, c.Y - d, c.Z);
 
         lines.Add(new VoxelPreviewVertex(top, Vector3.UnitZ));
         lines.Add(new VoxelPreviewVertex(pXp, Vector3.UnitZ));
@@ -3265,7 +3307,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
         if (_peelAreas is { Length: > 0 } areas && _peelMaxArea > 0.001f)
         {
-            var spikes = _peelSpikes;
+            var spikes = _peelSpikes is { Count: > 0 } ? new HashSet<int>(_peelSpikes) : null;
             for (var x = 0; x < width; x++)
             {
                 var layerIdx = Math.Clamp(
@@ -3275,7 +3317,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                 );
                 var a = areas[layerIdx];
                 var normA = Math.Clamp(a / _peelMaxArea, 0f, 1f);
-                var isSpike = spikes is not null && spikes.Contains(layerIdx);
+                var isSpike = spikes?.Contains(layerIdx) == true;
 
                 byte r,
                     g,
@@ -3845,7 +3887,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         {
             _gl.BufferData(
                 BufferTargetARB.ArrayBuffer,
-                (nuint)(vertices.Length * Marshal.SizeOf<VoxelPreviewVertex>()),
+                (nuint)vertices.Length * (nuint)Marshal.SizeOf<VoxelPreviewVertex>(),
                 vertexPointer,
                 BufferUsageARB.StaticDraw
             );
@@ -3856,7 +3898,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         {
             _gl.BufferData(
                 BufferTargetARB.ElementArrayBuffer,
-                (nuint)(indices.Length * sizeof(uint)),
+                (nuint)indices.Length * sizeof(uint),
                 indexPointer,
                 BufferUsageARB.StaticDraw
             );
@@ -3967,6 +4009,9 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         var closestT = float.MaxValue;
         var hasHit = false;
 
+        // A ray that misses the bounding box can not hit any triangle, skip the whole mesh scan
+        var meshMissed = !RayIntersectsBox(rayOrigin, rayDirection, _mesh.MinimumBounds, _mesh.MaximumBounds);
+
         var clipMinZ = -1e9f;
         var clipMaxZ = 1e9f;
         if (ClipToLayer)
@@ -4018,7 +4063,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
         var filterByClip = ClipToLayer && !GhostClippedModel;
 
-        for (var i = 0; i < indices.Length; i += 3)
+        for (var i = 0; !meshMissed && i < indices.Length; i += 3)
         {
             var p0 = vertices[(int)indices[i]].Position;
             var p1 = vertices[(int)indices[i + 1]].Position;
@@ -4069,6 +4114,34 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         }
 
         return hasHit;
+    }
+
+    private static bool RayIntersectsBox(Vector3 origin, Vector3 direction, Vector3 min, Vector3 max)
+    {
+        var tMin = float.NegativeInfinity;
+        var tMax = float.PositiveInfinity;
+        for (var axis = 0; axis < 3; axis++)
+        {
+            var o = axis == 0 ? origin.X : axis == 1 ? origin.Y : origin.Z;
+            var d = axis == 0 ? direction.X : axis == 1 ? direction.Y : direction.Z;
+            var lo = (axis == 0 ? min.X : axis == 1 ? min.Y : min.Z) - 1e-3f;
+            var hi = (axis == 0 ? max.X : axis == 1 ? max.Y : max.Z) + 1e-3f;
+
+            if (MathF.Abs(d) < 1e-9f)
+            {
+                if (o < lo || o > hi) return false;
+                continue;
+            }
+
+            var t1 = (lo - o) / d;
+            var t2 = (hi - o) / d;
+            if (t1 > t2) (t1, t2) = (t2, t1);
+            tMin = MathF.Max(tMin, t1);
+            tMax = MathF.Min(tMax, t2);
+            if (tMin > tMax) return false;
+        }
+
+        return tMax >= 0;
     }
 
     private static bool RayIntersectsTriangle(

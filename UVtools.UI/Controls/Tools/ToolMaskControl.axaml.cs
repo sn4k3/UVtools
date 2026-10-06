@@ -62,7 +62,9 @@ public partial class ToolMaskControl : ToolControl
         get => _maskImage;
         set
         {
+            var previous = _maskImage;
             if(!RaiseAndSetIfChanged(ref _maskImage, value)) return;
+            previous.DisposeDeferred();
             RaisePropertyChanged(nameof(InfoMaskResolutionString));
             ParentWindow!.ButtonOkEnabled = Operation.HaveInputMask;
         }

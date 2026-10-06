@@ -178,7 +178,7 @@ public partial class ToolWindow : GenericWindow
         {
             uint layerCount = (uint) Math.Max(0, (int)LayerIndexEnd - LayerIndexStart + 1);
             return SlicerFile is null
-                ? $"({layerCount} layers"
+                ? $"({layerCount} layers)"
                 : $"({layerCount} layers / {Layer.ShowHeight(SlicerFile.LayerHeight * layerCount)}mm)";
         }
 

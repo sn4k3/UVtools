@@ -59,11 +59,26 @@ public partial class ToolLithophaneControl : ToolControl
         }
     }
 
-    public void UpdatePreview()
+    private int _previewVersion;
+
+    public void UpdatePreview() => _ = UpdatePreviewAsync();
+
+    /// <summary>
+    /// Renders the preview off the UI thread, an outdated render (the settings changed meanwhile) is discarded.
+    /// </summary>
+    private async Task UpdatePreviewAsync()
     {
-        using var mat = Operation.GetTargetMat();
-        _previewImage?.Dispose();
-        PreviewImage = mat?.ToBitmap();
+        var version = ++_previewVersion;
+        try
+        {
+            using var mat = await Task.Run(() => Operation.GetTargetMat());
+            if (version != _previewVersion) return; // A newer preview was requested
+            PreviewImage = mat?.ToBitmap();
+        }
+        catch (System.Exception e)
+        {
+            System.Diagnostics.Debug.WriteLine(e);
+        }
     }
 
     public async Task SelectFile()

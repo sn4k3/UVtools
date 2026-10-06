@@ -156,8 +156,16 @@ public partial class ToolPCBExposureControl : ToolControl
         }
     }
 
-    public void UpdatePreview()
+    private int _previewVersion;
+
+    public void UpdatePreview() => _ = UpdatePreviewAsync();
+
+    /// <summary>
+    /// Renders the selected file off the UI thread, an outdated render (the settings changed meanwhile) is discarded.
+    /// </summary>
+    private async Task UpdatePreviewAsync()
     {
+        var version = ++_previewVersion;
         try
         {
             PreviewImage = null;
@@ -171,22 +179,24 @@ public partial class ToolPCBExposureControl : ToolControl
             var file = (OperationPCBExposure.PCBExposureFile)_selectedFile.Clone();
             file.InvertPolarity = ExcellonDrillFormat.Extensions.AsValueEnumerable()
                 .Any(extension => file.IsExtension(extension));
-            using var mat = Operation.GetMat(file, out var contentBounds);
+            var cropPreview = _cropPreview;
 
-            if (_cropPreview)
+            using var mat = await Task.Run(() =>
             {
+                using var rendered = Operation.GetMat(file, out var contentBounds);
+                if (!cropPreview) return rendered.Clone();
+
                 // Cropped to the artwork rather than to the lit pixels: with the colors inverted those are
                 // the background, so measuring them would crop to the inverted area instead of the board
                 var cropBounds = Rectangle.Inflate(contentBounds, 20, 20);
-                cropBounds.Intersect(new Rectangle(0, 0, mat.Width, mat.Height));
+                cropBounds.Intersect(new Rectangle(0, 0, rendered.Width, rendered.Height));
 
-                using var matCropped = mat.Roi(cropBounds);
-                PreviewImage = matCropped.ToBitmap();
-            }
-            else
-            {
-                PreviewImage = mat.ToBitmap();
-            }
+                using var matCropped = rendered.Roi(cropBounds);
+                return matCropped.Clone();
+            });
+
+            if (version != _previewVersion) return; // A newer preview was requested
+            PreviewImage = mat.ToBitmap();
         }
         catch (Exception e)
         {
@@ -222,8 +232,7 @@ public partial class ToolPCBExposureControl : ToolControl
     {
         if (FilesDataGrid.SelectedIndex <= 0) return;
         var selectedFile = SelectedFile;
-        Operation.Files.RemoveAt(FilesDataGrid.SelectedIndex);
-        Operation.Files.Insert(0, selectedFile!);
+        Operation.Files.Move(FilesDataGrid.SelectedIndex, 0);
         FilesDataGrid.SelectedIndex = 0;
         FilesDataGrid.ScrollIntoView(selectedFile, FilesDataGrid.Columns[0]);
     }
@@ -233,8 +242,7 @@ public partial class ToolPCBExposureControl : ToolControl
         if (FilesDataGrid.SelectedIndex <= 0) return;
         var selectedFile = SelectedFile;
         var newIndex = FilesDataGrid.SelectedIndex - 1;
-        Operation.Files.RemoveAt(FilesDataGrid.SelectedIndex);
-        Operation.Files.Insert(newIndex, selectedFile!);
+        Operation.Files.Move(FilesDataGrid.SelectedIndex, newIndex);
         FilesDataGrid.SelectedIndex = newIndex;
         FilesDataGrid.ScrollIntoView(selectedFile, FilesDataGrid.Columns[0]);
     }
@@ -244,8 +252,7 @@ public partial class ToolPCBExposureControl : ToolControl
         if (FilesDataGrid.SelectedIndex == -1 || FilesDataGrid.SelectedIndex == Operation.FileCount - 1) return;
         var selectedFile = SelectedFile;
         var newIndex = FilesDataGrid.SelectedIndex + 1;
-        Operation.Files.RemoveAt(FilesDataGrid.SelectedIndex);
-        Operation.Files.Insert(newIndex, selectedFile!);
+        Operation.Files.Move(FilesDataGrid.SelectedIndex, newIndex);
         FilesDataGrid.SelectedIndex = newIndex;
         FilesDataGrid.ScrollIntoView(selectedFile, FilesDataGrid.Columns[0]);
     }
@@ -255,8 +262,7 @@ public partial class ToolPCBExposureControl : ToolControl
         var lastIndex = Operation.Files.Count - 1;
         if (FilesDataGrid.SelectedIndex == -1 || FilesDataGrid.SelectedIndex == lastIndex) return;
         var selectedFile = SelectedFile;
-        Operation.Files.RemoveAt(FilesDataGrid.SelectedIndex);
-        Operation.Files.Insert(lastIndex, selectedFile!);
+        Operation.Files.Move(FilesDataGrid.SelectedIndex, lastIndex);
         FilesDataGrid.SelectedIndex = lastIndex;
         FilesDataGrid.ScrollIntoView(selectedFile, FilesDataGrid.Columns[0]);
     }

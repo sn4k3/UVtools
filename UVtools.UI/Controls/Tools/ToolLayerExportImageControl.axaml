@@ -20,7 +20,7 @@
             <Button Grid.Row="0" Grid.Column="4"
                     VerticalAlignment="Stretch"
                     Command="{Binding ChooseFolder}"
-                    Content="{icon:MaterialIconExt Kind=Folder}"/>
+                    Content="{icon:MaterialIconExt Kind=Folder}" ToolTip.Tip="Browse..."/>
 
             <TextBlock Grid.Row="2" Grid.Column="0"
                        VerticalAlignment="Center"

@@ -33,7 +33,7 @@ namespace UVtools.UI.Controls.Fragments
                 o => o.SelectedProfileIndex,
                 (o, v) => o.SelectedProfileIndex = v, -1, BindingMode.TwoWay);
 
-        private int _selectedProfileIndex;
+        private int _selectedProfileIndex = -1;
 
         public int SelectedProfileIndex
         {
@@ -69,7 +69,7 @@ namespace UVtools.UI.Controls.Fragments
 
         public async Task DefaultSelectedProfile()
         {
-            if (_selectedProfileIndex <= -1 || _profiles is null) return;
+            if (_profiles is null || (uint)_selectedProfileIndex >= (uint)_profiles.Count) return;
 
             if (await App.MainWindow.MessageBoxQuestion($"Are you sure you want to mark the selected profile as default?\n{_profiles[_selectedProfileIndex]}", "Mark the selected profile as default?") != SukiMessageBoxResult.Yes) return;
 
@@ -84,7 +84,7 @@ namespace UVtools.UI.Controls.Fragments
 
         public async Task RemoveSelectedProfile()
         {
-            if (_selectedProfileIndex <= -1 || _profiles is null) return;
+            if (_profiles is null || (uint)_selectedProfileIndex >= (uint)_profiles.Count) return;
 
             if (await App.MainWindow.MessageBoxQuestion($"Are you sure you want to remove the selected profile?\n{_profiles[_selectedProfileIndex]}", "Remove the selected profile?") != SukiMessageBoxResult.Yes) return;
 
@@ -97,7 +97,7 @@ namespace UVtools.UI.Controls.Fragments
         {
             if (change.Property == SelectedProfileIndexProperty)
             {
-                if (_source is not null && _profiles is not null && _selectedProfileIndex >= 0)
+                if (_source is not null && _profiles is not null && (uint)_selectedProfileIndex < (uint)_profiles.Count)
                 {
                     _profiles[_selectedProfileIndex].CopyTo(_source);
                 }

@@ -80,7 +80,6 @@ public partial class CalibrateToleranceControl : ToolControl
     public void UpdatePreview()
     {
         var layers = Operation.GetLayers();
-        _previewImage?.Dispose();
         PreviewImage = layers[^1].ToBitmap();
         foreach (var layer in layers)
         {

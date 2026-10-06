@@ -1,4 +1,5 @@
-﻿using Avalonia.Input;
+﻿using System;
+using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using System.Collections.Generic;
@@ -68,7 +69,18 @@ public partial class ToolLayerImportControl : ToolControl
                 return;
             }
             if (!OperationLayerImport.ValidImageExtensions.AsValueEnumerable().Any(extension => _selectedFile.IsExtension(extension))) return;
-            PreviewImage = new Bitmap(_selectedFile.FilePath);
+            try
+            {
+                // The preview does not need the full resolution of the image, decoding it smaller is faster and uses less memory
+                using var stream = System.IO.File.OpenRead(_selectedFile.FilePath);
+                PreviewImage = Bitmap.DecodeToWidth(stream, 1024);
+            }
+            catch (Exception e)
+            {
+                // A corrupted or unsupported image must not crash the selection
+                System.Diagnostics.Debug.WriteLine(e);
+                PreviewImage = null;
+            }
         }
     }
 
@@ -166,10 +178,11 @@ public partial class ToolLayerImportControl : ToolControl
     public async Task AddFiles()
     {
         var filters = AvaloniaStatic.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
-        var orderedFilters = new List<FilePickerFileType> { filters[UserSettings.Instance.General.DefaultOpenFileExtensionIndex] };
+        var defaultFilterIndex = Math.Clamp(UserSettings.Instance.General.DefaultOpenFileExtensionIndex, 0, filters.Count - 1);
+        var orderedFilters = new List<FilePickerFileType> { filters[defaultFilterIndex] };
         for (int i = 0; i < filters.Count; i++)
         {
-            if (i == UserSettings.Instance.General.DefaultOpenFileExtensionIndex) continue;
+            if (i == defaultFilterIndex) continue;
             orderedFilters.Add(filters[i]);
         }
 

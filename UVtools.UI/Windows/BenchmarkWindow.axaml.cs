@@ -419,7 +419,8 @@ public partial class BenchmarkWindow : GenericWindow
 
     private void UpdateResults(bool isSingleThread, long milliseconds)
     {
-        var seconds = Math.Round(milliseconds / 1000m, 2);
+        // Avoid dividing by zero when a very fast test finishes under 5ms
+        var seconds = Math.Max(0.01m, Math.Round(milliseconds / 1000m, 2));
 
         if (isSingleThread)
         {

@@ -10,6 +10,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 
 namespace UVtools.UI.Controls;
 
@@ -59,8 +60,47 @@ public class LayerAreaPeelCurveControl : Control
         set => SetValue(LayerSelectedCommandProperty, value);
     }
 
+    // Brushes, pens and typefaces are immutable, share them instead of allocating them on every render
+    private static readonly IBrush CardBrush = new ImmutableSolidColorBrush(Color.FromArgb(225, 14, 18, 26));
+    private static readonly Pen CardBorderPen = new Pen(new ImmutableSolidColorBrush(Color.FromArgb(140, 40, 55, 75)), 1.0);
+    private static readonly IBrush NoDataBrush = new ImmutableSolidColorBrush(Color.FromRgb(160, 168, 184));
+    private static readonly IBrush HoverTextBrush = new ImmutableSolidColorBrush(Color.FromRgb(100, 220, 255));
+    private static readonly IBrush PeakTextBrush = new ImmutableSolidColorBrush(Color.FromRgb(145, 160, 180));
+    private static readonly IBrush HazardTextBrush = new ImmutableSolidColorBrush(Color.FromRgb(255, 110, 110));
+    private static readonly IBrush HazardBackgroundBrush = new ImmutableSolidColorBrush(Color.FromArgb(60, 248, 81, 73));
+    private static readonly Pen HazardPen = new Pen(new ImmutableSolidColorBrush(Color.FromArgb(180, 248, 81, 73)), 1.0);
+    private static readonly IBrush TsmcTextBrush = new ImmutableSolidColorBrush(Color.FromRgb(120, 195, 255));
+    private static readonly Pen GridPen = new Pen(new ImmutableSolidColorBrush(Color.FromArgb(40, 255, 255, 255)), 0.8, DashStyle.Dash);
+    private static readonly IBrush FillBrush = new LinearGradientBrush
+    {
+        StartPoint = new RelativePoint(0.5, 0.0, RelativeUnit.Relative),
+        EndPoint = new RelativePoint(0.5, 1.0, RelativeUnit.Relative),
+        GradientStops =
+        {
+            new GradientStop(Color.FromArgb(140, 0, 210, 255), 0.0),
+            new GradientStop(Color.FromArgb(20, 0, 150, 220), 1.0)
+        }
+    }.ToImmutable();    private static readonly Pen CurvePen = new Pen(new ImmutableSolidColorBrush(Color.FromRgb(0, 225, 255)), 1.5);
+    private static readonly IBrush TsmcBandBrush = new ImmutableSolidColorBrush(Color.FromArgb(50, 255, 60, 40));
+    private static readonly Pen SpikePen = new Pen(new ImmutableSolidColorBrush(Color.FromArgb(160, 255, 40, 60)), 1.0, DashStyle.Dash);
+    private static readonly IBrush SpikeDotBrush = new ImmutableSolidColorBrush(Color.FromRgb(255, 50, 70));
+    private static readonly IBrush NeedleBrush = new ImmutableSolidColorBrush(Color.FromRgb(255, 215, 0));
+    private static readonly Pen NeedlePen = new Pen(NeedleBrush, 1.5);
+    private static readonly Pen NeedleMarkerPen = new Pen(Brushes.White, 1.0);
+    private static readonly Pen HoverPen = new Pen(new ImmutableSolidColorBrush(Color.FromArgb(180, 255, 255, 255)), 1.0, DashStyle.Dash);
+    private static readonly Typeface SemiBoldTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.SemiBold);
+    private static readonly Typeface BoldTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.Bold);
+    private static readonly Typeface NormalTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.Normal);
+
     private int? _hoveredLayer;
     private bool _isDragging;
+
+    // The curve only changes with the data or the size of the control, not when the hover or current layer move
+    private StreamGeometry? _fillGeometry;
+    private StreamGeometry? _lineGeometry;
+    private IReadOnlyList<float>? _geometryAreas;
+    private float _geometryMaxArea;
+    private Size _geometrySize;
 
     public IReadOnlyList<float>? LayerAreas
     {
@@ -158,9 +198,11 @@ public class LayerAreaPeelCurveControl : Control
     {
         base.OnPointerMoved(e);
         var pt = e.GetPosition(this);
+        var previousLayer = _hoveredLayer;
         UpdateHoverFromPoint(pt);
 
-        if (_isDragging && _hoveredLayer.HasValue)
+        // Only navigate when the layer under the pointer changed
+        if (_isDragging && _hoveredLayer.HasValue && _hoveredLayer != previousLayer)
         {
             LayerSelected?.Invoke(_hoveredLayer.Value);
             if (LayerSelectedCommand?.CanExecute(_hoveredLayer.Value) == true)
@@ -236,9 +278,7 @@ public class LayerAreaPeelCurveControl : Control
         if (bounds.Width < 20 || bounds.Height < 20) return;
 
         // Background canvas card for the chart
-        var cardBrush = new SolidColorBrush(Color.FromArgb(225, 14, 18, 26));
-        var borderPen = new Pen(new SolidColorBrush(Color.FromArgb(140, 40, 55, 75)), 1.0);
-        context.DrawRectangle(cardBrush, borderPen, new Rect(0, 0, bounds.Width, bounds.Height), 6, 6);
+        context.DrawRectangle(CardBrush, CardBorderPen, new Rect(0, 0, bounds.Width, bounds.Height), 6, 6);
 
         var areas = LayerAreas;
         if (areas is null || areas.Count < 2)
@@ -247,9 +287,9 @@ public class LayerAreaPeelCurveControl : Control
                 "No slice area data available",
                 System.Globalization.CultureInfo.InvariantCulture,
                 FlowDirection.LeftToRight,
-                new Typeface(FontFamily.Default, FontStyle.Normal, FontWeight.SemiBold),
+                SemiBoldTypeface,
                 13.0,
-                new SolidColorBrush(Color.FromRgb(160, 168, 184)));
+                NoDataBrush);
             context.DrawText(noDataText, new Point(14, bounds.Height / 2.0 - 9));
             return;
         }
@@ -304,9 +344,9 @@ public class LayerAreaPeelCurveControl : Control
             line1LeftStr,
             System.Globalization.CultureInfo.InvariantCulture,
             FlowDirection.LeftToRight,
-            new Typeface(FontFamily.Default, FontStyle.Normal, FontWeight.Bold),
+            BoldTypeface,
             12.5,
-            isHovered ? new SolidColorBrush(Color.FromRgb(100, 220, 255)) : Brushes.White);
+            isHovered ? HoverTextBrush : Brushes.White);
         context.DrawText(line1LeftText, new Point(padL, 6));
 
         string peakStr = PeakLayer >= 0 ? $"Peak: {maxArea:N1} mm² (L{PeakLayer + 1})" : $"Peak: {maxArea:N1} mm²";
@@ -314,9 +354,9 @@ public class LayerAreaPeelCurveControl : Control
             peakStr,
             System.Globalization.CultureInfo.InvariantCulture,
             FlowDirection.LeftToRight,
-            new Typeface(FontFamily.Default, FontStyle.Normal, FontWeight.SemiBold),
+            SemiBoldTypeface,
             11.5,
-            new SolidColorBrush(Color.FromRgb(145, 160, 180)));
+            PeakTextBrush);
         context.DrawText(peakText, new Point(padR - peakText.Width, 7));
 
         // =========================================================================
@@ -335,9 +375,9 @@ public class LayerAreaPeelCurveControl : Control
                 hazardLabel,
                 System.Globalization.CultureInfo.InvariantCulture,
                 FlowDirection.LeftToRight,
-                new Typeface(FontFamily.Default, FontStyle.Normal, FontWeight.Bold),
+                BoldTypeface,
                 10.5,
-                new SolidColorBrush(Color.FromRgb(255, 110, 110)));
+                HazardTextBrush);
 
             double badgePadX = 6.0;
             double badgePadY = 2.0;
@@ -346,9 +386,7 @@ public class LayerAreaPeelCurveControl : Control
             double badgeX = padR - badgeW;
             double badgeY = 25.0;
 
-            var hazardBg = new SolidColorBrush(Color.FromArgb(60, 248, 81, 73));
-            var hazardPen = new Pen(new SolidColorBrush(Color.FromArgb(180, 248, 81, 73)), 1.0);
-            context.DrawRectangle(hazardBg, hazardPen, new Rect(badgeX, badgeY, badgeW, badgeH), 4, 4);
+            context.DrawRectangle(HazardBackgroundBrush, HazardPen, new Rect(badgeX, badgeY, badgeW, badgeH), 4, 4);
             context.DrawText(hazardText, new Point(badgeX + badgePadX, badgeY + badgePadY));
 
             rightBadgeWidth = badgeW + 8.0;
@@ -373,9 +411,9 @@ public class LayerAreaPeelCurveControl : Control
             tsmcDesc,
             System.Globalization.CultureInfo.InvariantCulture,
             FlowDirection.LeftToRight,
-            new Typeface(FontFamily.Default, FontStyle.Normal, FontWeight.Normal),
+            NormalTypeface,
             11.0,
-            new SolidColorBrush(Color.FromRgb(120, 195, 255)));
+            TsmcTextBrush);
 
         if (tsmcText.Width > availableLine2Width && hasTsmc)
         {
@@ -384,9 +422,9 @@ public class LayerAreaPeelCurveControl : Control
                 tsmcDesc,
                 System.Globalization.CultureInfo.InvariantCulture,
                 FlowDirection.LeftToRight,
-                new Typeface(FontFamily.Default, FontStyle.Normal, FontWeight.Normal),
+                NormalTypeface,
                 11.0,
-                new SolidColorBrush(Color.FromRgb(120, 195, 255)));
+                TsmcTextBrush);
         }
 
         context.DrawText(tsmcText, new Point(padL, 27));
@@ -400,68 +438,66 @@ public class LayerAreaPeelCurveControl : Control
         double plotH = Math.Max(1.0, padBtm - padTop);
 
         // Grid lines (3 horizontal dashed lines: Top, Mid, Btm)
-        var gridPen = new Pen(new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)), 0.8, DashStyle.Dash);
+        var gridPen = GridPen;
         context.DrawLine(gridPen, new Point(padL, padTop), new Point(padR, padTop));
         context.DrawLine(gridPen, new Point(padL, padTop + plotH * 0.5), new Point(padR, padTop + plotH * 0.5));
         context.DrawLine(gridPen, new Point(padL, padBtm), new Point(padR, padBtm));
 
-        // Build StreamGeometry for curve and filled area
-        var fillGeo = new StreamGeometry();
-        var lineGeo = new StreamGeometry();
-
-        using (var fillCtx = fillGeo.Open())
-        using (var lineCtx = lineGeo.Open())
+        // Build StreamGeometry for curve and filled area, rebuilt only when the data or the size changed
+        if (_fillGeometry is null || _lineGeometry is null || !ReferenceEquals(_geometryAreas, areas)
+            || _geometryMaxArea != maxArea || _geometrySize != bounds.Size)
         {
-            Point startPt = new Point(padL, padBtm - (areas[0] / maxArea) * plotH);
-            fillCtx.BeginFigure(new Point(padL, padBtm), true);
-            fillCtx.LineTo(startPt);
+            var fillGeo = new StreamGeometry();
+            var lineGeo = new StreamGeometry();
 
-            lineCtx.BeginFigure(startPt, false);
-
-            int stride = Math.Max(1, count / 250);
-            for (int i = stride; i < count; i += stride)
+            using (var fillCtx = fillGeo.Open())
+            using (var lineCtx = lineGeo.Open())
             {
-                double x = padL + (double)i / (count - 1) * plotW;
-                double y = padBtm - (areas[i] / maxArea) * plotH;
-                var pt = new Point(x, y);
-                fillCtx.LineTo(pt);
-                lineCtx.LineTo(pt);
+                Point startPt = new Point(padL, padBtm - (areas[0] / maxArea) * plotH);
+                fillCtx.BeginFigure(new Point(padL, padBtm), true);
+                fillCtx.LineTo(startPt);
+
+                lineCtx.BeginFigure(startPt, false);
+
+                int stride = Math.Max(1, count / 250);
+                for (int i = stride; i < count; i += stride)
+                {
+                    double x = padL + (double)i / (count - 1) * plotW;
+                    double y = padBtm - (areas[i] / maxArea) * plotH;
+                    var pt = new Point(x, y);
+                    fillCtx.LineTo(pt);
+                    lineCtx.LineTo(pt);
+                }
+
+                // Ensure last point is included
+                double lastX = padR;
+                double lastY = padBtm - (areas[count - 1] / maxArea) * plotH;
+                var finalPt = new Point(lastX, lastY);
+                fillCtx.LineTo(finalPt);
+                lineCtx.LineTo(finalPt);
+
+                fillCtx.LineTo(new Point(padR, padBtm));
+                fillCtx.EndFigure(true);
+                lineCtx.EndFigure(false);
             }
 
-            // Ensure last point is included
-            double lastX = padR;
-            double lastY = padBtm - (areas[count - 1] / maxArea) * plotH;
-            var finalPt = new Point(lastX, lastY);
-            fillCtx.LineTo(finalPt);
-            lineCtx.LineTo(finalPt);
-
-            fillCtx.LineTo(new Point(padR, padBtm));
-            fillCtx.EndFigure(true);
-            lineCtx.EndFigure(false);
+            _fillGeometry = fillGeo;
+            _lineGeometry = lineGeo;
+            _geometryAreas = areas;
+            _geometryMaxArea = maxArea;
+            _geometrySize = bounds.Size;
         }
-
         // Fill area below curve
-        var fillBrush = new LinearGradientBrush
-        {
-            StartPoint = new RelativePoint(0.5, 0.0, RelativeUnit.Relative),
-            EndPoint = new RelativePoint(0.5, 1.0, RelativeUnit.Relative),
-            GradientStops =
-            {
-                new GradientStop(Color.FromArgb(140, 0, 210, 255), 0.0),
-                new GradientStop(Color.FromArgb(20, 0, 150, 220), 1.0)
-            }
-        };
-        context.DrawGeometry(fillBrush, null, fillGeo);
+        context.DrawGeometry(FillBrush, null, _fillGeometry);
 
         // Stroke curve
-        var curvePen = new Pen(new SolidColorBrush(Color.FromRgb(0, 225, 255)), 1.5);
-        context.DrawGeometry(null, curvePen, lineGeo);
+        context.DrawGeometry(null, CurvePen, _lineGeometry);
 
         // Draw TSMC hazard bands (layers with high peel suction & high lift speed)
         var speeds = LayerLiftSpeeds;
         if (ShowTsmc && speeds is not null && speeds.Count >= count)
         {
-            var hazardBrush = new SolidColorBrush(Color.FromArgb(50, 255, 60, 40));
+            var hazardBrush = TsmcBandBrush;
             for (int i = 0; i < count; i += Math.Max(1, count / 100))
             {
                 if (areas[i] > 0.40f * maxArea && speeds[i] > 90f)
@@ -477,8 +513,8 @@ public class LayerAreaPeelCurveControl : Control
         var spikes = PeelSpikes;
         if (spikes is not null && spikes.Count > 0)
         {
-            var spikePen = new Pen(new SolidColorBrush(Color.FromArgb(160, 255, 40, 60)), 1.0, DashStyle.Dash);
-            var spikeDotBrush = new SolidColorBrush(Color.FromRgb(255, 50, 70));
+            var spikePen = SpikePen;
+            var spikeDotBrush = SpikeDotBrush;
             foreach (var spk in spikes)
             {
                 if (spk < 0 || spk >= count) continue;
@@ -492,9 +528,8 @@ public class LayerAreaPeelCurveControl : Control
         // Current layer needle line & glowing indicator
         double curX = padL + (double)curLayer / (count - 1) * plotW;
         double curY = padBtm - (curArea / maxArea) * plotH;
-        var needlePen = new Pen(new SolidColorBrush(Color.FromRgb(255, 215, 0)), 1.5);
-        context.DrawLine(needlePen, new Point(curX, padTop - 2), new Point(curX, padBtm + 2));
-        context.DrawEllipse(new SolidColorBrush(Color.FromRgb(255, 215, 0)), new Pen(Brushes.White, 1.0), new Point(curX, curY), 3.5, 3.5);
+        context.DrawLine(NeedlePen, new Point(curX, padTop - 2), new Point(curX, padBtm + 2));
+        context.DrawEllipse(NeedleBrush, NeedleMarkerPen, new Point(curX, curY), 3.5, 3.5);
 
         // Hover guide line
         if (_hoveredLayer.HasValue && _hoveredLayer.Value != curLayer)
@@ -502,8 +537,7 @@ public class LayerAreaPeelCurveControl : Control
             int hLayer = _hoveredLayer.Value;
             double hx = padL + (double)hLayer / (count - 1) * plotW;
             double hy = padBtm - (areas[hLayer] / maxArea) * plotH;
-            var hoverPen = new Pen(new SolidColorBrush(Color.FromArgb(180, 255, 255, 255)), 1.0, DashStyle.Dash);
-            context.DrawLine(hoverPen, new Point(hx, padTop), new Point(hx, padBtm));
+            context.DrawLine(HoverPen, new Point(hx, padTop), new Point(hx, padBtm));
             context.DrawEllipse(Brushes.White, null, new Point(hx, hy), 2.5, 2.5);
         }
     }

@@ -48,10 +48,7 @@ namespace UVtools.UI.Controls.Tools
             if (PhasedExposuresGrid.SelectedIndex <= 0) return;
             var selectedFile = (OperationPhasedExposure.PhasedExposure)PhasedExposuresGrid.SelectedItem;
 
-            var list = Operation.PhasedExposures.ToList();
-            list.RemoveAt(PhasedExposuresGrid.SelectedIndex);
-            list.Insert(0, selectedFile);
-            Operation.PhasedExposures.ReplaceCollection(list);
+            Operation.PhasedExposures.Move(PhasedExposuresGrid.SelectedIndex, 0);
 
             PhasedExposuresGrid.SelectedIndex = 0;
             PhasedExposuresGrid.ScrollIntoView(selectedFile, PhasedExposuresGrid.Columns[0]);
@@ -63,11 +60,7 @@ namespace UVtools.UI.Controls.Tools
             var selectedFile = (OperationPhasedExposure.PhasedExposure)PhasedExposuresGrid.SelectedItem;
             var newIndex = PhasedExposuresGrid.SelectedIndex - 1;
 
-
-            var list = Operation.PhasedExposures.ToList();
-            list.RemoveAt(PhasedExposuresGrid.SelectedIndex);
-            list.Insert(newIndex, selectedFile);
-            Operation.PhasedExposures.ReplaceCollection(list);
+            Operation.PhasedExposures.Move(PhasedExposuresGrid.SelectedIndex, newIndex);
 
             PhasedExposuresGrid.SelectedIndex = newIndex;
             PhasedExposuresGrid.ScrollIntoView(selectedFile, PhasedExposuresGrid.Columns[0]);
@@ -78,11 +71,7 @@ namespace UVtools.UI.Controls.Tools
             if (PhasedExposuresGrid.SelectedIndex == -1 || PhasedExposuresGrid.SelectedIndex == Operation.Count - 1) return;
             var selectedFile = (OperationPhasedExposure.PhasedExposure)PhasedExposuresGrid.SelectedItem;
             var newIndex = PhasedExposuresGrid.SelectedIndex + 1;
-
-            var list = Operation.PhasedExposures.ToList();
-            list.RemoveAt(PhasedExposuresGrid.SelectedIndex);
-            list.Insert(newIndex, selectedFile);
-            Operation.PhasedExposures.ReplaceCollection(list);
+            Operation.PhasedExposures.Move(PhasedExposuresGrid.SelectedIndex, newIndex);
 
             PhasedExposuresGrid.SelectedIndex = newIndex;
             PhasedExposuresGrid.ScrollIntoView(selectedFile, PhasedExposuresGrid.Columns[0]);
@@ -94,10 +83,7 @@ namespace UVtools.UI.Controls.Tools
             if (PhasedExposuresGrid.SelectedIndex == -1 || PhasedExposuresGrid.SelectedIndex == lastIndex) return;
             var selectedFile = (OperationPhasedExposure.PhasedExposure)PhasedExposuresGrid.SelectedItem;
 
-            var list = Operation.PhasedExposures.ToList();
-            list.RemoveAt(PhasedExposuresGrid.SelectedIndex);
-            list.Add(selectedFile);
-            Operation.PhasedExposures.ReplaceCollection(list);
+            Operation.PhasedExposures.Move(PhasedExposuresGrid.SelectedIndex, lastIndex);
 
             PhasedExposuresGrid.SelectedIndex = lastIndex;
             PhasedExposuresGrid.ScrollIntoView(selectedFile, PhasedExposuresGrid.Columns[0]);

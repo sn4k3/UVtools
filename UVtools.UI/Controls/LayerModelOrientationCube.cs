@@ -234,44 +234,78 @@ public sealed class LayerModelOrientationCube : Control
         DrawViewCubeControls(context, center, scale);
     }
 
+    // The control geometries only depend on the size of the control, build them once per size instead of per frame
+    private Point _controlGeometryCenter;
+    private double _controlGeometryScale = double.NaN;
+    private StreamGeometry _homeGeometry = null!;
+    private StreamGeometry _arrowUpGeometry = null!;
+    private StreamGeometry _arrowDownGeometry = null!;
+    private StreamGeometry _arrowLeftGeometry = null!;
+    private StreamGeometry _arrowRightGeometry = null!;
+    private StreamGeometry _rollArcGeometry = null!;
+    private StreamGeometry _rollCcwArrowGeometry = null!;
+    private StreamGeometry _rollCwArrowGeometry = null!;
+    private StreamGeometry _turntableGeometry = null!;
+    private StreamGeometry _menuGeometry = null!;
+
+    private void EnsureControlGeometries(Point center, double scale)
+    {
+        if (_controlGeometryCenter == center && _controlGeometryScale.Equals(scale)) return;
+
+        _controlGeometryCenter = center;
+        _controlGeometryScale = scale;
+        _homeGeometry = CreateHomeGeometry(center, scale);
+        _arrowUpGeometry = CreateArrowUpGeometry(center, scale);
+        _arrowDownGeometry = CreateArrowDownGeometry(center, scale);
+        _arrowLeftGeometry = CreateArrowLeftGeometry(center, scale);
+        _arrowRightGeometry = CreateArrowRightGeometry(center, scale);
+        GetRollArcPoints(center, scale, out var pCcw, out var pCw, out var rArc);
+        _rollArcGeometry = CreateRollArcGeometry(pCcw, pCw, rArc);
+        _rollCcwArrowGeometry = CreateRollCcwArrowGeometry(pCcw);
+        _rollCwArrowGeometry = CreateRollCwArrowGeometry(pCw);
+        _turntableGeometry = CreateTurntableGeometry(center, scale);
+        _menuGeometry = CreateMenuGeometry(center, scale);
+    }
+
     private void DrawViewCubeControls(DrawingContext context, Point center, double scale)
     {
+        EnsureControlGeometries(center, scale);
+
         // 1. Home Icon (top-left)
         var isHomeHover = _hoverTarget == CubeHitTarget.Home;
         var homeBrush = isHomeHover ? ElementHoverBrush : ElementBrush;
         var homePen = isHomeHover ? ElementHoverPen : ElementBorderPen;
-        context.DrawGeometry(homeBrush, homePen, CreateHomeGeometry(center, scale));
+        context.DrawGeometry(homeBrush, homePen, _homeGeometry);
 
         // 2. Directional Arrows
         var isUpHover = _hoverTarget == CubeHitTarget.ArrowUp;
         context.DrawGeometry(isUpHover ? ElementHoverBrush : ElementBrush,
-            isUpHover ? ElementHoverPen : ElementBorderPen, CreateArrowUpGeometry(center, scale));
+            isUpHover ? ElementHoverPen : ElementBorderPen, _arrowUpGeometry);
 
         var isDownHover = _hoverTarget == CubeHitTarget.ArrowDown;
         context.DrawGeometry(isDownHover ? ElementHoverBrush : ElementBrush,
-            isDownHover ? ElementHoverPen : ElementBorderPen, CreateArrowDownGeometry(center, scale));
+            isDownHover ? ElementHoverPen : ElementBorderPen, _arrowDownGeometry);
 
         var isLeftHover = _hoverTarget == CubeHitTarget.ArrowLeft;
         context.DrawGeometry(isLeftHover ? ElementHoverBrush : ElementBrush,
-            isLeftHover ? ElementHoverPen : ElementBorderPen, CreateArrowLeftGeometry(center, scale));
+            isLeftHover ? ElementHoverPen : ElementBorderPen, _arrowLeftGeometry);
 
         var isRightHover = _hoverTarget == CubeHitTarget.ArrowRight;
         context.DrawGeometry(isRightHover ? ElementHoverBrush : ElementBrush,
-            isRightHover ? ElementHoverPen : ElementBorderPen, CreateArrowRightGeometry(center, scale));
+            isRightHover ? ElementHoverPen : ElementBorderPen, _arrowRightGeometry);
 
         // 3. Roll Curved Arrows (top-right corner with ample clearance from cube)
-        GetRollArcPoints(center, scale, out var pCcw, out var pCw, out var rArc);
         var isCcwHover = _hoverTarget == CubeHitTarget.RollCcw;
         var isCwHover = _hoverTarget == CubeHitTarget.RollCw;
 
         context.DrawGeometry(null, isCcwHover || isCwHover ? ArcHoverPen : ArcPen,
-            CreateRollArcGeometry(pCcw, pCw, rArc));
+            _rollArcGeometry);
 
         context.DrawGeometry(isCcwHover ? ElementHoverBrush : ElementBrush,
-            isCcwHover ? ElementHoverPen : ElementBorderPen, CreateRollCcwArrowGeometry(pCcw));
+            isCcwHover ? ElementHoverPen : ElementBorderPen, _rollCcwArrowGeometry);
 
         context.DrawGeometry(isCwHover ? ElementHoverBrush : ElementBrush,
-            isCwHover ? ElementHoverPen : ElementBorderPen, CreateRollCwArrowGeometry(pCw));
+            isCwHover ? ElementHoverPen : ElementBorderPen, _rollCwArrowGeometry);
 
         // 4. Turntable / Auto-Rotate Button (bottom-left, styled equal to Home)
         var isTurntableHover = _hoverTarget == CubeHitTarget.Turntable;
@@ -288,13 +322,13 @@ public sealed class LayerModelOrientationCube : Control
 
         var ttBrush = isTurntableOn || isTurntableHover ? ElementHoverBrush : ElementBrush;
         var ttPen = isTurntableOn || isTurntableHover ? ElementHoverPen : ElementBorderPen;
-        context.DrawGeometry(ttBrush, ttPen, CreateTurntableGeometry(center, scale));
+        context.DrawGeometry(ttBrush, ttPen, _turntableGeometry);
 
         // 5. Menu Button (bottom-right dropdown arrow, pushed more to bottom)
         var isMenuHover = _hoverTarget == CubeHitTarget.Menu;
         var menuBrush = isMenuHover ? ElementHoverBrush : ElementBrush;
         var menuPen = isMenuHover ? ElementHoverPen : ElementBorderPen;
-        context.DrawGeometry(menuBrush, menuPen, CreateMenuGeometry(center, scale));
+        context.DrawGeometry(menuBrush, menuPen, _menuGeometry);
     }
 
     private static StreamGeometry CreateHomeGeometry(Point center, double scale)

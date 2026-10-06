@@ -356,7 +356,7 @@
                             Spacing="10">
                     <Button Classes="Small"
                             Command="{Binding #OptionsContextMenu.Open}"
-                            Content="{icon:MaterialIconExt Kind=Menu}"
+                            Content="{icon:MaterialIconExt Kind=Menu}" ToolTip.Tip="Options"
                             IsVisible="{Binding CanHaveProfiles}">
                         <Button.ContextMenu>
                             <ContextMenu Name="OptionsContextMenu"
@@ -388,7 +388,6 @@
                     </Button>
 
                     <Button Command="{Binding OnButton1Click}"
-                            IsDefault="True"
                             IsVisible="{Binding IsButton1Visible}"
                             Content="{icon:MaterialIconTextExt Kind=Undo, Text={Binding Button1Text}}" />
 

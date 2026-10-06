@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using System;
+using System.Numerics;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using Avalonia.Reactive;
@@ -199,297 +200,17 @@ public partial class ToolScriptingControl : ToolControl
 
             switch (variable)
             {
-                case ScriptNumericalInput<sbyte> numSBYTE:
-                {
-                    NumericUpDown control = new()
-                    {
-                        Minimum = numSBYTE.Minimum,
-                        Maximum = numSBYTE.Maximum,
-                        Value = numSBYTE.Value,
-                        Increment = numSBYTE.Increment,
-                        MinWidth = 150
-                    };
-
-                    var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
-                    {
-                        if (!value.HasValue) return;
-                        numSBYTE.Value = (sbyte)value;
-                        control.Value = numSBYTE.Value;
-                    }));
-
-                    ScriptVariablesGrid.Children.Add(control);
-                    Grid.SetRow(control, i * 2);
-                    Grid.SetColumn(control, 2);
-
-                    continue;
-                }
-                case ScriptNumericalInput<byte> numBYTE:
-                {
-                    NumericUpDown control = new()
-                    {
-                        Minimum = numBYTE.Minimum,
-                        Maximum = numBYTE.Maximum,
-                        Value = numBYTE.Value,
-                        Increment = numBYTE.Increment,
-                        MinWidth = 150
-                    };
-
-                    var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
-                    {
-                        if (!value.HasValue) return;
-                        numBYTE.Value = (byte)value;
-                        control.Value = numBYTE.Value;
-                    }));
-
-                        ScriptVariablesGrid.Children.Add(control);
-                    Grid.SetRow(control, i * 2);
-                    Grid.SetColumn(control, 2);
-
-                    continue;
-                }
-                case ScriptNumericalInput<short> numSHORT:
-                {
-                    NumericUpDown control = new()
-                    {
-                        Minimum = numSHORT.Minimum,
-                        Maximum = numSHORT.Maximum,
-                        Value = numSHORT.Value,
-                        Increment = numSHORT.Increment,
-                        MinWidth = 150
-                    };
-
-                    var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
-                    {
-                        if (!value.HasValue) return;
-                        numSHORT.Value = (short)value;
-                        control.Value = numSHORT.Value;
-                    }));
-
-                        ScriptVariablesGrid.Children.Add(control);
-                    Grid.SetRow(control, i * 2);
-                    Grid.SetColumn(control, 2);
-
-                    continue;
-                }
-                case ScriptNumericalInput<ushort> numUSHORT:
-                {
-                    NumericUpDown control = new()
-                    {
-                        Minimum = numUSHORT.Minimum,
-                        Maximum = numUSHORT.Maximum,
-                        Value = numUSHORT.Value,
-                        Increment = numUSHORT.Increment,
-                        MinWidth = 150
-                    };
-
-                    var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
-                    {
-                        if (!value.HasValue) return;
-                        numUSHORT.Value = (ushort)value;
-                        control.Value = numUSHORT.Value;
-                    }));
-
-                        ScriptVariablesGrid.Children.Add(control);
-                    Grid.SetRow(control, i * 2);
-                    Grid.SetColumn(control, 2);
-
-                    continue;
-                }
-                case ScriptNumericalInput<int> numINT:
-                {
-                    NumericUpDown control = new()
-                    {
-                        Minimum = numINT.Minimum,
-                        Maximum = numINT.Maximum,
-                        Value = numINT.Value,
-                        Increment = numINT.Increment,
-                        MinWidth = 150
-                    };
-
-                    var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
-                    {
-                        if (!value.HasValue) return;
-                        numINT.Value = (int)value;
-                        control.Value = numINT.Value;
-                    }));
-
-                        ScriptVariablesGrid.Children.Add(control);
-                    Grid.SetRow(control, i * 2);
-                    Grid.SetColumn(control, 2);
-
-                    continue;
-                }
-                case ScriptNumericalInput<uint> numUINT:
-                {
-                    NumericUpDown control = new()
-                    {
-                        Minimum = numUINT.Minimum,
-                        Maximum = numUINT.Maximum,
-                        Value = numUINT.Value,
-                        Increment = numUINT.Increment,
-                        MinWidth = 150
-                    };
-
-                    var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
-                    {
-                        if (!value.HasValue) return;
-                        numUINT.Value = (uint)value;
-                        control.Value = numUINT.Value;
-                    }));
-
-                        ScriptVariablesGrid.Children.Add(control);
-                    Grid.SetRow(control, i * 2);
-                    Grid.SetColumn(control, 2);
-
-                    continue;
-                }
-                case ScriptNumericalInput<long> numLONG:
-                {
-                    NumericUpDown control = new()
-                    {
-                        Minimum = numLONG.Minimum,
-                        Maximum = numLONG.Maximum,
-                        Value = numLONG.Value,
-                        Increment = numLONG.Increment,
-                        MinWidth = 150
-                    };
-
-                    var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
-                    {
-                        if (!value.HasValue) return;
-                        numLONG.Value = (long)value;
-                        control.Value = numLONG.Value;
-                    }));
-
-                        ScriptVariablesGrid.Children.Add(control);
-                    Grid.SetRow(control, i * 2);
-                    Grid.SetColumn(control, 2);
-
-                    continue;
-                }
-                case ScriptNumericalInput<ulong> numULONG:
-                {
-                    NumericUpDown control = new()
-                    {
-                        Minimum = numULONG.Minimum,
-                        Maximum = numULONG.Maximum,
-                        Value = numULONG.Value,
-                        Increment = numULONG.Increment,
-                        MinWidth = 150
-                    };
-
-                    var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
-                    {
-                        if (!value.HasValue) return;
-                        numULONG.Value = (ulong)value;
-                        control.Value = numULONG.Value;
-                    }));
-
-                    ScriptVariablesGrid.Children.Add(control);
-                    Grid.SetRow(control, i * 2);
-                    Grid.SetColumn(control, 2);
-
-                    continue;
-                }
-                case ScriptNumericalInput<float> numFLOAT:
-                {
-                    NumericUpDown control = new()
-                    {
-                        Minimum = (decimal)numFLOAT.Minimum,
-                        Maximum = (decimal)numFLOAT.Maximum,
-                        Value = (decimal)numFLOAT.Value,
-                        Increment = (decimal)numFLOAT.Increment,
-                        MinWidth = 150
-                    };
-
-                    if (numFLOAT.DecimalPlates > 0)
-                    {
-                        control.FormatString = $"F{numFLOAT.DecimalPlates}";
-                    }
-
-                    var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
-                    {
-                        if(!value.HasValue) return;
-                        numFLOAT.Value = MathF.Round((float)value, numFLOAT.DecimalPlates);
-                        control.Value = (decimal)numFLOAT.Value;
-                    }));
-
-                    ScriptVariablesGrid.Children.Add(control);
-                    Grid.SetRow(control, i * 2);
-                    Grid.SetColumn(control, 2);
-
-                    continue;
-                }
-                case ScriptNumericalInput<double> numDOUBLE:
-                {
-                    NumericUpDown control = new()
-                    {
-                        Minimum = (decimal)numDOUBLE.Minimum,
-                        Maximum = (decimal)numDOUBLE.Maximum,
-                        Value = (decimal)numDOUBLE.Value,
-                        Increment = (decimal)numDOUBLE.Increment,
-                        MinWidth = 150
-                    };
-
-                    if (numDOUBLE.DecimalPlates > 0)
-                    {
-                        control.FormatString = $"F{numDOUBLE.DecimalPlates}";
-                    }
-
-                    var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
-                    {
-                        if (!value.HasValue) return;
-                        numDOUBLE.Value = Math.Round((double)value, numDOUBLE.DecimalPlates);
-                        control.Value = (decimal)numDOUBLE.Value;
-                    }));
-
-                        ScriptVariablesGrid.Children.Add(control);
-                    Grid.SetRow(control, i * 2);
-                    Grid.SetColumn(control, 2);
-
-                    continue;
-                }
-                case ScriptNumericalInput<decimal> numDECIMAL:
-                {
-                    NumericUpDown control = new()
-                    {
-                        Minimum = numDECIMAL.Minimum,
-                        Maximum = numDECIMAL.Maximum,
-                        Value = numDECIMAL.Value,
-                        Increment = numDECIMAL.Increment,
-                        MinWidth = 150
-                    };
-
-                    if (numDECIMAL.DecimalPlates > 0)
-                    {
-                        control.FormatString = $"F{numDECIMAL.DecimalPlates}";
-                    }
-
-                    var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
-                    {
-                        if (!value.HasValue) return;
-                        numDECIMAL.Value = Math.Round(value.Value, numDECIMAL.DecimalPlates);
-                        control.Value = numDECIMAL.Value;
-                    }));
-
-                    ScriptVariablesGrid.Children.Add(control);
-                    Grid.SetRow(control, i * 2);
-                    Grid.SetColumn(control, 2);
-
-                    continue;
-                }
-                case ScriptCheckBoxInput inputCheckBox:
+                case ScriptNumericalInput<sbyte> numSBYTE: AddNumericInput(numSBYTE, i); continue;
+                case ScriptNumericalInput<byte> numBYTE: AddNumericInput(numBYTE, i); continue;
+                case ScriptNumericalInput<short> numSHORT: AddNumericInput(numSHORT, i); continue;
+                case ScriptNumericalInput<ushort> numUSHORT: AddNumericInput(numUSHORT, i); continue;
+                case ScriptNumericalInput<int> numINT: AddNumericInput(numINT, i); continue;
+                case ScriptNumericalInput<uint> numUINT: AddNumericInput(numUINT, i); continue;
+                case ScriptNumericalInput<long> numLONG: AddNumericInput(numLONG, i); continue;
+                case ScriptNumericalInput<ulong> numULONG: AddNumericInput(numULONG, i); continue;
+                case ScriptNumericalInput<float> numFLOAT: AddNumericInput(numFLOAT, i); continue;
+                case ScriptNumericalInput<double> numDOUBLE: AddNumericInput(numDOUBLE, i); continue;
+                case ScriptNumericalInput<decimal> numDECIMAL: AddNumericInput(numDECIMAL, i); continue;                case ScriptCheckBoxInput inputCheckBox:
                 {
                     var control = new CheckBox
                     {
@@ -622,7 +343,7 @@ public partial class ToolScriptingControl : ToolControl
                         if (result is not null)
                         {
                             var filePath = result.TryGetLocalPath();
-                            if (string.IsNullOrWhiteSpace(filePath))
+                            if (!string.IsNullOrWhiteSpace(filePath))
                             {
                                 inputSaveFile.Value = filePath;
                                 control.Text = filePath;
@@ -665,7 +386,7 @@ public partial class ToolScriptingControl : ToolControl
                         if (result.Count == 0) return;
                         inputOpenFile.Value = result[0].TryGetLocalPath();
                         inputOpenFile.Files = result.AsValueEnumerable().Select(file => file.TryGetLocalPath()).OfType<string>().ToArray();
-                        control.Text = string.Join('\n', result);
+                        control.Text = string.Join('\n', inputOpenFile.Files);
                     };
 
                     panel.Children.Add(control);
@@ -681,5 +402,56 @@ public partial class ToolScriptingControl : ToolControl
         }
 
         //ParentWindow?.FitToSize();
+    }
+
+    /// <summary>
+    /// Adds a numeric input of any supported numeric type to the variables grid.
+    /// </summary>
+    private void AddNumericInput<T>(ScriptNumericalInput<T> input, int index)
+        where T : struct, INumber<T>, IMinMaxValue<T>
+    {
+        var isInteger = T.IsInteger(T.Zero);
+        var decimalPlates = input.DecimalPlates;
+
+        var minimum = decimal.CreateSaturating(input.Minimum);
+        var maximum = decimal.CreateSaturating(input.Maximum);
+        if (maximum <= minimum)
+        {
+            // The script did not configure a range, do not lock the value to a single number
+            minimum = decimal.CreateSaturating(T.MinValue);
+            maximum = decimal.CreateSaturating(T.MaxValue);
+        }
+
+        var increment = decimal.CreateSaturating(input.Increment);
+        if (increment <= 0)
+        {
+            increment = isInteger ? 1 : 1m / (decimal)Math.Pow(10, Math.Min(decimalPlates, (byte)10));
+        }
+
+        NumericUpDown control = new()
+        {
+            Minimum = minimum,
+            Maximum = maximum,
+            Value = decimal.CreateSaturating(input.Value),
+            Increment = increment,
+            MinWidth = 150
+        };
+
+        if (!isInteger && decimalPlates > 0)
+        {
+            control.FormatString = $"F{decimalPlates}";
+        }
+
+        control.GetObservable(NumericUpDown.ValueProperty).Subscribe(new AnonymousObserver<decimal?>(value =>
+        {
+            if (!value.HasValue) return;
+            var rounded = isInteger ? value.Value : Math.Round(value.Value, Math.Min(decimalPlates, (byte)28));
+            input.Value = T.CreateSaturating(rounded);
+            control.Value = decimal.CreateSaturating(input.Value);
+        }));
+
+        ScriptVariablesGrid.Children.Add(control);
+        Grid.SetRow(control, index * 2);
+        Grid.SetColumn(control, 2);
     }
 }

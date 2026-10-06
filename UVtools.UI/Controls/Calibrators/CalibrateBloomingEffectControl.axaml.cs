@@ -63,7 +63,6 @@ namespace UVtools.UI.Controls.Calibrators
         public void UpdatePreview()
         {
             using var mat = Operation.GetLayerPreview();
-            _previewImage?.Dispose();
             PreviewImage = mat.ToBitmap();
         }
     }

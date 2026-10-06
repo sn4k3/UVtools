@@ -94,6 +94,7 @@ public partial class PrusaSlicerManagerWindow : GenericWindow
                     if (!item.IsChecked.HasValue || !item.IsChecked.Value) continue;
                     var fi = item.Tag as FileInfo;
                     if (fi is null) continue;
+                    Directory.CreateDirectory(profile.TargetPath);
                     fi.CopyTo(Path.Combine(profile.TargetPath, fi.Name), true);
                     count++;
                 }

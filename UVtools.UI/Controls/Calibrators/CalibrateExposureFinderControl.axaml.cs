@@ -69,8 +69,11 @@ public partial class CalibrateExposureFinderControl : ToolControl
     public void UpdatePreview()
     {
         var layers = Operation.GetLayers(out _, out _, true);
-        _previewImage?.Dispose();
-        if (layers is not null)
+        if (layers is null)
+        {
+            PreviewImage = null;
+        }
+        else
         {
             PreviewImage = layers[^1].ToBitmap();
             foreach (var layer in layers)

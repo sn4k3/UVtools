@@ -543,7 +543,7 @@
                       Grid.Column="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Folder}"
+                      Content="{icon:MaterialIconExt Kind=Folder}" ToolTip.Tip="Browse..."
                       Command="{Binding GeneralOpenFolderField}"
                       CommandParameter="DefaultDirectoryOpenFile"
                     />
@@ -552,7 +552,7 @@
                       Grid.Column="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Close}"
+                      Content="{icon:MaterialIconExt Kind=Close}" ToolTip.Tip="Clear"
                       Command="{Binding GeneralClearField}"
                       CommandParameter="DefaultDirectoryOpenFile"
                     />
@@ -574,7 +574,7 @@
                       Grid.Column="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Folder}"
+                      Content="{icon:MaterialIconExt Kind=Folder}" ToolTip.Tip="Browse..."
                       Command="{Binding GeneralOpenFolderField}"
                       CommandParameter="DefaultDirectorySaveFile"
                     />
@@ -583,7 +583,7 @@
                       Grid.Column="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Close}"
+                      Content="{icon:MaterialIconExt Kind=Close}" ToolTip.Tip="Clear"
                       Command="{Binding GeneralClearField}"
                       CommandParameter="DefaultDirectorySaveFile"
                     />
@@ -605,7 +605,7 @@
                       Grid.Column="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Folder}"
+                      Content="{icon:MaterialIconExt Kind=Folder}" ToolTip.Tip="Browse..."
                       Command="{Binding GeneralOpenFolderField}"
                       CommandParameter="DefaultDirectoryExtractFile"
                     />
@@ -614,7 +614,7 @@
                       Grid.Column="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Close}"
+                      Content="{icon:MaterialIconExt Kind=Close}" ToolTip.Tip="Clear"
                       Command="{Binding GeneralClearField}"
                       CommandParameter="DefaultDirectoryExtractFile"
                     />
@@ -636,7 +636,7 @@
                       Grid.Column="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Folder}"
+                      Content="{icon:MaterialIconExt Kind=Folder}" ToolTip.Tip="Browse..."
                       Command="{Binding GeneralOpenFolderField}"
                       CommandParameter="DefaultDirectoryConvertFile"
                     />
@@ -645,7 +645,7 @@
                       Grid.Column="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Close}"
+                      Content="{icon:MaterialIconExt Kind=Close}" ToolTip.Tip="Clear"
                       Command="{Binding GeneralClearField}"
                       CommandParameter="DefaultDirectoryConvertFile"
                     />
@@ -667,7 +667,7 @@
                       Grid.Column="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Folder}"
+                      Content="{icon:MaterialIconExt Kind=Folder}" ToolTip.Tip="Browse..."
                       Command="{Binding GeneralOpenFolderField}"
                       CommandParameter="DefaultDirectoryScripts"
                     />
@@ -676,7 +676,7 @@
                       Grid.Column="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Close}"
+                      Content="{icon:MaterialIconExt Kind=Close}" ToolTip.Tip="Clear"
                       Command="{Binding GeneralClearField}"
                       CommandParameter="DefaultDirectoryScripts"
                     />
@@ -2907,7 +2907,7 @@
                       Grid.Column="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=FileImport}"
+                      Content="{icon:MaterialIconExt Kind=FileImport}" ToolTip.Tip="Select file..."
                       Command="{Binding AutomationsOpenFileField}"
                       CommandParameter="EventAfterFileLoadScriptFile"
                     />
@@ -2916,7 +2916,7 @@
                       Grid.Column="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Close}"
+                      Content="{icon:MaterialIconExt Kind=Close}" ToolTip.Tip="Clear"
                       Command="{Binding AutomationsClearField}"
                       CommandParameter="EventAfterFileLoadScriptFile"
                     />
@@ -2939,7 +2939,7 @@
                       Grid.Column="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=FileImport}"
+                      Content="{icon:MaterialIconExt Kind=FileImport}" ToolTip.Tip="Select file..."
                       Command="{Binding AutomationsOpenFileField}"
                       CommandParameter="EventBeforeFileSaveScriptFile"
                     />
@@ -2948,7 +2948,7 @@
                       Grid.Column="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Close}"
+                      Content="{icon:MaterialIconExt Kind=Close}" ToolTip.Tip="Clear"
                       Command="{Binding AutomationsClearField}"
                       CommandParameter="EventBeforeFileSaveScriptFile"
                     />
@@ -2971,7 +2971,7 @@
                       Grid.Column="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=FileImport}"
+                      Content="{icon:MaterialIconExt Kind=FileImport}" ToolTip.Tip="Select file..."
                       Command="{Binding AutomationsOpenFileField}"
                       CommandParameter="EventAfterFileSaveScriptFile"
                     />
@@ -2980,7 +2980,7 @@
                       Grid.Column="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Close}"
+                      Content="{icon:MaterialIconExt Kind=Close}" ToolTip.Tip="Clear"
                       Command="{Binding AutomationsClearField}"
                       CommandParameter="EventAfterFileSaveScriptFile"
                     />
@@ -3010,18 +3010,18 @@
                       <Button
                         VerticalAlignment="Stretch"
                         Padding="5"
-                        Content="{icon:MaterialIconExt Kind=Plus}"
+                        Content="{icon:MaterialIconExt Kind=Plus}" ToolTip.Tip="Add"
                         Command="{Binding AddNetworkRemotePrinter}"
                       />
                       <Button
                         VerticalAlignment="Stretch"
-                        Content="{icon:MaterialIconExt Kind=ContentCopy}"
+                        Content="{icon:MaterialIconExt Kind=ContentCopy}" ToolTip.Tip="Duplicate"
                         Command="{Binding DuplicateSelectedNetworkRemotePrinter}"
                         IsEnabled="{Binding #NetworkRemotePrinterComboBox.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
                       />
                       <Button
                         VerticalAlignment="Stretch"
-                        Content="{icon:MaterialIconExt Kind=TrashCan}"
+                        Content="{icon:MaterialIconExt Kind=TrashCan}" ToolTip.Tip="Remove"
                         Command="{Binding RemoveSelectedNetworkRemotePrinter}"
                         IsEnabled="{Binding #NetworkRemotePrinterComboBox.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
                       />

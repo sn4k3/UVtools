@@ -22,7 +22,7 @@
             <Button
                 VerticalAlignment="Stretch"
                 Command="{Binding ChooseFilePath}"
-                Content="{icon:MaterialIconExt Kind=Folder}"/>
+                Content="{icon:MaterialIconExt Kind=Folder}" ToolTip.Tip="Browse..."/>
         </StackPanel>
 
         <CheckBox

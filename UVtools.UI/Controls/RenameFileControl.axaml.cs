@@ -64,11 +64,16 @@ public partial class RenameFileControl : ToolBaseControl
 
     public RenameFileControl(string newFileNameNoExt) : this()
     {
+        // The bindings were already created by the base constructor, notify them of the new name
         _newFileNameNoExt = newFileNameNoExt;
+        RaisePropertyChanged(nameof(NewFileNameNoExt));
+        RaisePropertyChanged(nameof(NewFileName));
+        RaisePropertyChanged(nameof(NewFilePath));
     }
 
     protected override void OnInitialized()
     {
+        base.OnInitialized();
         ParentWindow!.IsROIOrMasksVisible = false;
         Validate();
     }

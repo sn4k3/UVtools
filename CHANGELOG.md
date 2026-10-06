@@ -24,6 +24,22 @@
 - (Fix) Crash `Cannot access a disposed object` on `Image.MeasureOverride` (#1150): the thumbnail and tool preview
   bitmaps are now disposed after the UI applied the new image, and the PCB exposure preview no longer leaks the previous
   bitmap
+- **Windows and controls:**
+  - (Improvement) 3D layer preview: model volume, weight, cost and base contact are cached instead of recomputed from
+    the whole mesh on every plate change, clicking where the model is not hit skips the full mesh picking, and the
+    orientation cube, peel curve and measure overlay no longer allocate geometries, pens and brushes on every frame
+  - (Improvement) PCB exposure and Lithophane previews are rendered off the UI thread, outdated renders are discarded
+  - (Improvement) Moving files and layers in the PCB exposure and Phased exposure tools no longer rebuilds the list
+  - (Improvement) Tool windows scripting inputs share one numeric input implementation, and icon only buttons have tooltips
+  - (Fix) Scripting: the save file dialog input was ignored when a file was picked, and the open file text was joined wrong
+  - (Fix) 3D layer preview: wrong center of mass vertex on the wireframe
+  - (Fix) Message window: custom button tags were lost
+  - (Fix) Settings: parallelism and decimal values were parsed with the current culture instead of the invariant one
+  - (Fix) Tool window: the layer count text, and Enter triggering the first button by default
+  - (Fix) Layer import: unreadable images crashed the preview, and the filter index was not validated
+  - (Fix) Pixel editor profiles: selection with no profile and out of range indexes
+  - (Fix) Suggestion settings: stale content kept when no suggestion was active
+  - (Fix) Benchmark: a zero duration produced a division by zero
 - (Fix) Error when executing UVtooldCmd run with a script (#1138)
 - (Fix) `LayerCache` disposed the wrong `SkiaSurface` when the layer was changed, and did not release the framebuffer
 - (Fix) Zstd: the fastest compression level was not really the fastest

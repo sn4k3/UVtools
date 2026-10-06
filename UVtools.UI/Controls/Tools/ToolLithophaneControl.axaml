@@ -72,7 +72,7 @@
 					<Button Grid.Column="1"
                             VerticalAlignment="Stretch"
                             Command="{Binding SelectFile}"
-                            Content="{icon:MaterialIconExt Kind=FileImport}"/>
+                            Content="{icon:MaterialIconExt Kind=FileImport}" ToolTip.Tip="Select file..."/>
 				</Grid>
 
                 <TextBlock Grid.Row="6" Grid.Column="0"
