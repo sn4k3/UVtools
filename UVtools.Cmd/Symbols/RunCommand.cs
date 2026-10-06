@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.CommandLine;
 using System.IO;
 using UVtools.Core.FileFormats;
@@ -62,6 +63,31 @@ internal static class RunCommand
 
             foreach (var classFile in classesFiles)
             {
+                var extension = Path.GetExtension(classFile);
+                var fileExists = File.Exists(classFile);
+
+                // Script files
+                if ((extension.Equals(".cs", StringComparison.OrdinalIgnoreCase) ||
+                     extension.Equals(".csx", StringComparison.OrdinalIgnoreCase)) && fileExists)
+                {
+                    var operationScripting = new OperationScripting(slicerFile);
+                    operationScripting.ReloadScriptFromFile(classFile);
+                    var message = operationScripting.ValidateInternally();
+                    if (string.IsNullOrWhiteSpace(message))
+                    {
+                        Program.ProgressBarWork($"Script {++runs}: {operationScripting.ScriptGlobals?.Script.Name ?? operationScripting.ProgressTitle}",
+                            () =>
+                            {
+                                if (operationScripting.Execute(Program.Progress)) successfulRuns++;
+                            });
+                    }
+                    else
+                    {
+                        Program.WriteLineWarning($"Script {classFile} can not execute: {message}");
+                    }
+                    continue;
+                }
+
                 // Operations
                 var operation = Operation.CreateInstance(classFile, true, slicerFile);
                 if (operation is not null)
@@ -91,7 +117,9 @@ internal static class RunCommand
                 }
 
                 // Suggestions
-                var suggestion = Suggestion.CreateInstance(classFile, true, slicerFile);
+                var suggestion = !fileExists || extension.Equals(".uvtsu", StringComparison.OrdinalIgnoreCase)
+                    ? Suggestion.CreateInstance(classFile, true, slicerFile)
+                    : null;
                 if (suggestion is not null)
                 {
                     suggestion.Enabled = true;
@@ -111,27 +139,6 @@ internal static class RunCommand
                             successfulRuns++;
                         });
 
-                    continue;
-                }
-
-                // Script files
-                if ((classFile.EndsWith(".cs") || classFile.EndsWith(".csx")) && File.Exists(classFile))
-                {
-                    var operationScripting = new OperationScripting(slicerFile);
-                    operationScripting.ReloadScriptFromFile(classFile);
-                    var message = operationScripting.ValidateInternally();
-                    if (string.IsNullOrWhiteSpace(message))
-                    {
-                        Program.ProgressBarWork($"Script {++runs}: {operationScripting.ScriptGlobals?.Script.Name ?? operationScripting.ProgressTitle}",
-                            () =>
-                            {
-                                if (operationScripting.Execute(Program.Progress)) successfulRuns++;
-                            });
-                    }
-                    else
-                    {
-                        Program.WriteLineWarning($"Script {classFile} can not execute: {message}");
-                    }
                     continue;
                 }
 

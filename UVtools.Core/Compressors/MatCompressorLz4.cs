@@ -3,8 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using Emgu.CV;
 using EmguExtensions;
-using K4os.Compression.LZ4;
-using K4os.Compression.LZ4.Streams;
+using NativeCompressions;
 
 namespace UVtools.Core.Compressors;
 
@@ -21,9 +20,7 @@ public class MatCompressorLz4 : MatCompressor
     }
 
     /// <inheritdoc />
-    private MatCompressorLz4()
-    {
-    }
+    private MatCompressorLz4() { }
 
     /// <inheritdoc />
     public override string Provider => "Cysharp";
@@ -32,7 +29,7 @@ public class MatCompressorLz4 : MatCompressor
     public override string Name => "K4os";
 
     /// <inheritdoc />
-    public override int MaximumCompressionLevel { get; } = (int)LZ4Level.L12_MAX;
+    public override int MaximumCompressionLevel { get; } = LZ4.MaxCompressionLevel;
 
     /// <inheritdoc />
     protected override int GetCompressionLevel(CompressionLevel compressionLevel)
@@ -43,18 +40,20 @@ public class MatCompressorLz4 : MatCompressor
             CompressionLevel.Fastest => 1,
             CompressionLevel.Optimal => 10,
             CompressionLevel.SmallestSize => 12,
-            _ => throw new ArgumentException("Invalid CompressionLevel value.", nameof(compressionLevel))
+            _ => throw new ArgumentException(
+                "Invalid CompressionLevel value.",
+                nameof(compressionLevel)
+            ),
         };
     }
-
 
     /// <inheritdoc />
     protected override byte[] CompressCore(Mat src, int compressionLevel)
     {
+        var options = LZ4CompressionOptions.Default with { CompressionLevel = compressionLevel };
         // The compressed length is unknown; keep sparse streaming to avoid a worst-case output allocation.
         using var buffer = CreateCompressionBuffer(src);
-        using (var compressStream = LZ4Stream.Encode(CreateCompressionStream(buffer), (LZ4Level)compressionLevel,
-                   extraMemory: 0, leaveOpen: false))
+        using (var compressStream = new LZ4Stream(CreateCompressionStream(buffer), options, false))
         {
             src.CopyTo(compressStream);
         }
@@ -65,14 +64,13 @@ public class MatCompressorLz4 : MatCompressor
     /// <inheritdoc />
     protected override void DecompressCore(byte[] compressedBytes, Mat dst)
     {
-        using var compressedStream = new MemoryStream(compressedBytes, writable: false);
-        using var decompressStream = LZ4Stream.Decode(
-            compressedStream, extraMemory: 0, leaveOpen: false);
-        decompressStream.ReadExactly(dst.GetSpanOfBytes());
-        Span<byte> trailingByte = stackalloc byte[1];
-        if (decompressStream.Read(trailingByte) != 0)
+        var destination = dst.GetSpanOfBytes();
+        var bytesWritten = LZ4.Decompress(compressedBytes, destination);
+        if (bytesWritten != destination.Length)
         {
-            throw new InvalidDataException("The LZ4 frame contains more data than the destination Mat.");
+            throw new InvalidDataException(
+                $"The LZ4 frame contains {bytesWritten} bytes, but the destination Mat requires {destination.Length}."
+            );
         }
     }
 }

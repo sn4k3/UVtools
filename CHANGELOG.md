@@ -1,5 +1,12 @@
 # Changelog
 
+## 06/10/2026 - v7.0.2
+
+- (Fix) Error when executing UVtooldCmd run with a script (#1138)
+- (Improvement) Update `NativeCompressions` and use it LZ4 codec
+- (Update) Benchmark 13900K reference values
+- (Drop) `K4os.Compression.LZ4` library
+
 ## 02/10/2026 - v7.0.1
 
 - (Improvement) Add a Windows renderer preference in 3D preview settings to prefer native OpenGL (WGL) after restarting
