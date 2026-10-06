@@ -30,7 +30,12 @@ public partial class CalibrateToleranceControl : ToolControl
     public Bitmap? PreviewImage
     {
         get => _previewImage;
-        set => RaiseAndSetIfChanged(ref _previewImage, value);
+        set
+        {
+            var previous = _previewImage;
+            if (!RaiseAndSetIfChanged(ref _previewImage, value)) return;
+            previous.DisposeDeferred();
+        }
     }
 
     public bool IsDisplaySizeVisible => SlicerFile!.DisplayWidth <= 0 && SlicerFile.DisplayHeight <= 0;

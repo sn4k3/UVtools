@@ -936,7 +936,7 @@ public partial class MainWindow : GenericWindow
         _layerNavigationSliderDebounceTimer.Dispose();
         _layerNavigationTooltipTimer.Stop();
         _layerNavigationTooltipTimer.Dispose();
-        _visibleThumbnailImage?.Dispose();
+        _visibleThumbnailImage.DisposeDeferred();
         LayerCache.Dispose();
         DisposeLayer3DPreview();
         UserSettings.Save();

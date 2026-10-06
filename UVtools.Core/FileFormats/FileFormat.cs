@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Buffers.Binary;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -1183,6 +1184,52 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         return Math.Round(value, DisplayFloatPrecision);
     }
 
+    /// <summary>
+    /// XORs <paramref name="data"/> in place with a 32 bit keystream: each group of 4 bytes is XORed with the
+    /// little-endian bytes of <paramref name="key"/>, which is then advanced by <paramref name="step"/> (wrapping).
+    /// Applying it twice restores the original data.
+    /// </summary>
+    internal static void XorKeystream(Span<byte> data, uint key, uint step)
+    {
+        var i = 0;
+        for (; i + sizeof(uint) <= data.Length; i += sizeof(uint))
+        {
+            var word = data.Slice(i, sizeof(uint));
+            BinaryPrimitives.WriteUInt32LittleEndian(word, BinaryPrimitives.ReadUInt32LittleEndian(word) ^ key);
+            key += step;
+        }
+
+        for (var shift = 0; i < data.Length; i++, shift += 8)
+        {
+            data[i] ^= (byte)(key >> shift);
+        }
+    }
+
+    /// <summary>
+    /// Gets how many consecutive bytes, starting at <paramref name="index"/>, are equal to the byte at <paramref name="index"/>.
+    /// Short runs, the common case on edges, are resolved without calling the vectorized search.
+    /// </summary>
+    internal static int GetRunLength(ReadOnlySpan<byte> span, int index)
+    {
+        var value = span[index];
+        if (index + 1 >= span.Length || span[index + 1] != value) return 1;
+
+        var different = span[(index + 2)..].IndexOfAnyExcept(value);
+        return different < 0 ? span.Length - index : different + 2;
+    }
+
+    /// <summary>
+    /// Gets how many consecutive bytes, starting at <paramref name="index"/>, share the same 4 high bits as the byte at <paramref name="index"/>.
+    /// </summary>
+    internal static int GetHighNibbleRunLength(ReadOnlySpan<byte> span, int index)
+    {
+        var low = (byte)(span[index] & 0xf0);
+        if (index + 1 >= span.Length || (span[index + 1] & 0xf0) != low) return 1;
+
+        var different = span[(index + 2)..].IndexOfAnyExceptInRange(low, (byte)(low | 0x0f));
+        return different < 0 ? span.Length - index : different + 2;
+    }
+
     internal static int GetRleBufferInitialCapacity(
         int pixelCount,
         int estimatedPixelsPerRun = 128,
@@ -1233,6 +1280,37 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         return count;
     }
 
+    private enum PixelPacking : byte
+    {
+        Rgb555,
+        Rgb565,
+        Rgb555Be,
+        Rgb565Be,
+        Rgb888,
+        Bgr555,
+        Bgr565,
+        Bgr555Be,
+        Bgr565Be,
+        Bgr888
+    }
+
+    /// <summary>
+    /// Resolves a raw pixel data type once, so per pixel loops do not compare strings.
+    /// </summary>
+    private static PixelPacking GetPixelPacking(string dataType) => dataType switch
+    {
+        DATATYPE_RGB555 => PixelPacking.Rgb555,
+        DATATYPE_RGB565 => PixelPacking.Rgb565,
+        DATATYPE_RGB555_BE => PixelPacking.Rgb555Be,
+        DATATYPE_RGB565_BE => PixelPacking.Rgb565Be,
+        DATATYPE_RGB888 => PixelPacking.Rgb888,
+        DATATYPE_BGR555 => PixelPacking.Bgr555,
+        DATATYPE_BGR565 => PixelPacking.Bgr565,
+        DATATYPE_BGR555_BE => PixelPacking.Bgr555Be,
+        DATATYPE_BGR565_BE => PixelPacking.Bgr565Be,
+        DATATYPE_BGR888 => PixelPacking.Bgr888,
+        _ => throw new NotSupportedException($"The pixel data type: {dataType} is not supported.")
+    };
     public static byte[] EncodeImage(string dataType, Mat mat)
     {
         dataType = dataType.ToUpperInvariant();
@@ -1266,17 +1344,19 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
             or DATATYPE_BGR888
            )
         {
-            var bytesPerPixel = dataType is "RGB888" or "BGR888" ? 3 : 2;
+            var packing = GetPixelPacking(dataType);
+            var bytesPerPixel = packing is PixelPacking.Rgb888 or PixelPacking.Bgr888 ? 3 : 2;
             var bytes = new byte[mat.Width * mat.Height * bytesPerPixel];
             var index = 0;
             var span = mat.GetReadOnlySpanOfBytes();
+            var channels = mat.NumberOfChannels;
             for (var i = 0; i < span.Length;)
             {
                 var b = span[i++];
                 byte g;
                 byte r;
 
-                if (mat.NumberOfChannels == 1) // 8 bit safe-guard
+                if (channels == 1) // 8 bit safe-guard
                 {
                     r = g = b;
                 }
@@ -1286,56 +1366,56 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                     r = span[i++];
                 }
 
-                if (mat.NumberOfChannels == 4) i++; // skip alpha
+                if (channels == 4) i++; // skip alpha
 
-                switch (dataType)
+                switch (packing)
                 {
-                    case DATATYPE_RGB555:
+                    case PixelPacking.Rgb555:
                         var rgb555 = (ushort)(((r & 0b11111000) << 7) | ((g & 0b11111000) << 2) | (b >> 3));
                         BitExtensions.ToBytesLittleEndian(rgb555, bytes, index);
                         index += 2;
                         break;
-                    case DATATYPE_RGB565:
+                    case PixelPacking.Rgb565:
                         var rgb565 = (ushort)(((r & 0b11111000) << 8) | ((g & 0b11111100) << 3) | (b >> 3));
                         BitExtensions.ToBytesLittleEndian(rgb565, bytes, index);
                         index += 2;
                         break;
-                    case DATATYPE_RGB555_BE:
+                    case PixelPacking.Rgb555Be:
                         var rgb555Be = (ushort)(((r & 0b11111000) << 7) | ((g & 0b11111000) << 2) | (b >> 3));
                         BitExtensions.ToBytesBigEndian(rgb555Be, bytes, index);
                         index += 2;
                         break;
-                    case DATATYPE_RGB565_BE:
+                    case PixelPacking.Rgb565Be:
                         var rgb565Be = (ushort)(((r & 0b11111000) << 8) | ((g & 0b11111100) << 3) | (b >> 3));
                         BitExtensions.ToBytesBigEndian(rgb565Be, bytes, index);
                         index += 2;
                         break;
-                    case DATATYPE_RGB888:
+                    case PixelPacking.Rgb888:
                         bytes[index++] = r;
                         bytes[index++] = g;
                         bytes[index++] = b;
                         break;
-                    case DATATYPE_BGR555:
+                    case PixelPacking.Bgr555:
                         var bgr555 = (ushort)(((b & 0b11111000) << 7) | ((g & 0b11111000) << 2) | (r >> 3));
                         BitExtensions.ToBytesLittleEndian(bgr555, bytes, index);
                         index += 2;
                         break;
-                    case DATATYPE_BGR565:
+                    case PixelPacking.Bgr565:
                         var bgr565 = (ushort)(((b & 0b11111000) << 8) | ((g & 0b11111100) << 3) | (r >> 3));
                         BitExtensions.ToBytesLittleEndian(bgr565, bytes, index);
                         index += 2;
                         break;
-                    case DATATYPE_BGR555_BE:
+                    case PixelPacking.Bgr555Be:
                         var bgr555Be = (ushort)(((b & 0b11111000) << 7) | ((g & 0b11111000) << 2) | (r >> 3));
                         BitExtensions.ToBytesBigEndian(bgr555Be, bytes, index);
                         index += 2;
                         break;
-                    case DATATYPE_BGR565_BE:
+                    case PixelPacking.Bgr565Be:
                         var bgr565Be = (ushort)(((b & 0b11111000) << 8) | ((g & 0b11111100) << 3) | (r >> 3));
                         BitExtensions.ToBytesBigEndian(bgr565Be, bytes, index);
                         index += 2;
                         break;
-                    case DATATYPE_BGR888:
+                    case PixelPacking.Bgr888:
                         bytes[index++] = b;
                         bytes[index++] = g;
                         bytes[index++] = r;
@@ -1391,7 +1471,8 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
             or DATATYPE_BGR888
            )
         {
-            var bytesPerPixel = dataType is DATATYPE_RGB888 or DATATYPE_BGR888 ? 3 : 2;
+            var packing = GetPixelPacking(dataType);
+            var bytesPerPixel = packing is PixelPacking.Rgb888 or PixelPacking.Bgr888 ? 3 : 2;
             var expectedByteCount = checked(resolution.Width * resolution.Height * bytesPerPixel);
             if (bytes.Length < expectedByteCount)
                 throw new InvalidDataException(
@@ -1403,9 +1484,9 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
             var i = 0;
             while (i < bytes.Length && pixel < span.Length)
             {
-                switch (dataType)
+                switch (packing)
                 {
-                    case DATATYPE_RGB555:
+                    case PixelPacking.Rgb555:
                         var rgb555 = BitExtensions.ToUShortLittleEndian(bytes, i);
                         // 0b0rrrrrgggggbbbbb
                         span[pixel++] = (byte)((rgb555 & 0b00000000_00011111) << 3); // b
@@ -1416,7 +1497,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                         span[pixel++] = (byte)((rgb555 >> 7) & 0b11111000); // r*/
                         i += 2;
                         break;
-                    case DATATYPE_RGB565:
+                    case PixelPacking.Rgb565:
                         // 0brrrrrggggggbbbbb
                         var rgb565 = BitExtensions.ToUShortLittleEndian(bytes, i);
                         span[pixel++] = (byte)((rgb565 & 0b00000000_00011111) << 3); // b
@@ -1424,55 +1505,55 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                         span[pixel++] = (byte)((rgb565 & 0b11111000_00000000) >> 8); // r
                         i += 2;
                         break;
-                    case DATATYPE_RGB555_BE:
+                    case PixelPacking.Rgb555Be:
                         var rgb555Be = BitExtensions.ToUShortBigEndian(bytes, i);
                         span[pixel++] = (byte)((rgb555Be & 0b00000000_00011111) << 3); // b
                         span[pixel++] = (byte)((rgb555Be & 0b00000011_11100000) >> 2); // g
                         span[pixel++] = (byte)((rgb555Be & 0b01111100_00000000) >> 7); // r
                         i += 2;
                         break;
-                    case DATATYPE_RGB565_BE:
+                    case PixelPacking.Rgb565Be:
                         var rgb565Be = BitExtensions.ToUShortBigEndian(bytes, i);
                         span[pixel++] = (byte)((rgb565Be & 0b00000000_00011111) << 3); // b
                         span[pixel++] = (byte)((rgb565Be & 0b00000111_11100000) >> 3); // g
                         span[pixel++] = (byte)((rgb565Be & 0b11111000_00000000) >> 8); // r
                         i += 2;
                         break;
-                    case DATATYPE_RGB888:
+                    case PixelPacking.Rgb888:
                         span[pixel++] = bytes[i + 2]; // b
                         span[pixel++] = bytes[i + 1]; // g
                         span[pixel++] = bytes[i]; // r
                         i += 3;
                         break;
-                    case DATATYPE_BGR555:
+                    case PixelPacking.Bgr555:
                         var bgr555 = BitExtensions.ToUShortLittleEndian(bytes, i);
                         span[pixel++] = (byte)((bgr555 & 0b01111100_00000000) >> 7); // b
                         span[pixel++] = (byte)((bgr555 & 0b00000011_11100000) >> 2); // g
                         span[pixel++] = (byte)((bgr555 & 0b00000000_00011111) << 3); // r
                         i += 2;
                         break;
-                    case DATATYPE_BGR565:
+                    case PixelPacking.Bgr565:
                         var bgr565 = BitExtensions.ToUShortLittleEndian(bytes, i);
                         span[pixel++] = (byte)((bgr565 & 0b11111000_00000000) >> 8); // b
                         span[pixel++] = (byte)((bgr565 & 0b00000111_11100000) >> 3); // g
                         span[pixel++] = (byte)((bgr565 & 0b00000000_00011111) << 3); // r
                         i += 2;
                         break;
-                    case DATATYPE_BGR555_BE:
+                    case PixelPacking.Bgr555Be:
                         var bgr555Be = BitExtensions.ToUShortBigEndian(bytes, i);
                         span[pixel++] = (byte)((bgr555Be & 0b01111100_00000000) >> 7); // b
                         span[pixel++] = (byte)((bgr555Be & 0b00000011_11100000) >> 2); // g
                         span[pixel++] = (byte)((bgr555Be & 0b00000000_00011111) << 3); // r
                         i += 2;
                         break;
-                    case DATATYPE_BGR565_BE:
+                    case PixelPacking.Bgr565Be:
                         var bgr565Be = BitExtensions.ToUShortBigEndian(bytes, i);
                         span[pixel++] = (byte)((bgr565Be & 0b11111000_00000000) >> 8); // b
                         span[pixel++] = (byte)((bgr565Be & 0b00000111_11100000) >> 3); // g
                         span[pixel++] = (byte)((bgr565Be & 0b00000000_00011111) << 3); // r
                         i += 2;
                         break;
-                    case DATATYPE_BGR888:
+                    case PixelPacking.Bgr888:
                         span[pixel++] = bytes[i]; // b
                         span[pixel++] = bytes[i + 1]; // g
                         span[pixel++] = bytes[i + 2]; // r
@@ -5524,9 +5605,17 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
 
         var layerImageType = LayerImageFormat;
 
+        Dictionary<ulong, uint>? firstLayerIndexByHash = null;
         if (useCache)
         {
-            var distinctLayers = this.DistinctBy(layer => layer.Hash);
+            // Encode only one layer per distinct image, the others share the same encoded bytes
+            firstLayerIndexByHash = new Dictionary<ulong, uint>();
+            var distinctLayers = new List<Layer>();
+            foreach (var layer in this)
+            {
+                if (firstLayerIndexByHash.TryAdd(layer.Hash, layer.Index)) distinctLayers.Add(layer);
+            }
+
             batches = distinctLayers.Chunk(DefaultParallelBatchCount);
         }
 
@@ -5588,12 +5677,24 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                 progress.LockAndIncrement();
             });
 
+            // The bytes of the cached layers are needed until every layer is written
+            if (useCache) continue;
+
             foreach (var layer in batch)
             {
                 var layerIndex = layer.Index;
                 var entryPath = Path.Combine(path, layer.FormatFileName(prepend, padDigits, layerIndexStartNumber));
                 zipArchive.CreateEntryFromContent(entryPath, pngLayerBytes[layerIndex], ZipArchiveMode.Create);
                 pngLayerBytes[layerIndex] = null!;
+            }
+        }
+
+        if (firstLayerIndexByHash is not null)
+        {
+            foreach (var layer in this)
+            {
+                var entryPath = Path.Combine(path, layer.FormatFileName(prepend, padDigits, layerIndexStartNumber));
+                zipArchive.CreateEntryFromContent(entryPath, pngLayerBytes[firstLayerIndexByHash[layer.Hash]], ZipArchiveMode.Create);
             }
         }
     }
@@ -7855,9 +7956,9 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
             for (var i = firstValidLayerBounds + 1; i < LayerCount; i++)
             {
                 var layer = this[i];
+                progress++;
                 if (layer is null || layer.NonZeroPixelCount == 0 || layer.BoundingRectangle.IsEmpty) continue;
                 boundingRectangle = Rectangle.Union(boundingRectangle, layer.BoundingRectangle);
-                progress++;
             }
         }
 

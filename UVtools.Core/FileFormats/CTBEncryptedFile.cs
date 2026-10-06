@@ -357,66 +357,7 @@ public sealed class CTBEncryptedFile : FileFormat
                     ChituboxFile.LayerRleCryptBuffer(Parent.Settings.LayerXorKey, layerIndex, RLEData!);
                 }
 
-                int pixel = 0;
-                for (var n = 0; n < RLEData!.Length; n++)
-                {
-                    byte code = RLEData[n];
-                    int stride = 1;
-
-                    if ((code & 0x80) == 0x80) // It's a run
-                    {
-                        code &= 0x7f; // Get the run length
-                        n++;
-
-                        var slen = RLEData[n];
-
-                        if ((slen & 0x80) == 0)
-                        {
-                            stride = slen;
-                        }
-                        else if ((slen & 0xc0) == 0x80)
-                        {
-                            stride = ((slen & 0x3f) << 8) + RLEData[n + 1];
-                            n++;
-                        }
-                        else if ((slen & 0xe0) == 0xc0)
-                        {
-                            stride = ((slen & 0x1f) << 16) + (RLEData[n + 1] << 8) + RLEData[n + 2];
-                            n += 2;
-                        }
-                        else if ((slen & 0xf0) == 0xe0)
-                        {
-                            stride = ((slen & 0xf) << 24) + (RLEData[n + 1] << 16) + (RLEData[n + 2] << 8) + RLEData[n + 3];
-                            n += 3;
-                        }
-                        else
-                        {
-                            throw new FileLoadException("Corrupted RLE data");
-                        }
-                    }
-
-                    // Bit extend from 7-bit to 8-bit greymap
-                    if (code != 0)
-                    {
-                        code = (byte)((code << 1) | 1);
-                    }
-
-                    mat.FillSpan(ref pixel, stride, code);
-
-                    //if (stride <= 0) continue; // Nothing to do
-
-                    /*if (code == 0) // Ignore blacks, spare cycles
-                    {
-                        pixel += stride;
-                        continue;
-                    }*/
-
-                    /*for (; stride > 0; stride--)
-                    {
-                        span[pixel] = code;
-                        pixel++;
-                    }*/
-                }
+                CtbRleCodec.Decode(RLEData!, mat.GetSpanOfBytes());
 
                 if (consumeRle) RLEData = null;
 
@@ -431,97 +372,13 @@ public sealed class CTBEncryptedFile : FileFormat
 
         public unsafe byte[] EncodeImage(Mat image, uint layerIndex)
         {
-            var span = image.GetReadOnlySpanOfBytes();
-            var rawData = new BufferWriterSlim<byte>(
-                FileFormat.GetRleBufferInitialCapacity(
-                    span.Length,
-                    estimatedPixelsPerRun: 128,
-                    encodedBytesPerRun: 2));
-            try
-            {
-                byte color = byte.MaxValue >> 1;
-                uint stride = 0;
+            RLEData = CtbRleCodec.Encode(image.GetReadOnlySpanOfBytes());
+            if (Parent!.Settings.LayerXorKey > 0)
+                ChituboxFile.LayerRleCryptBuffer(Parent.Settings.LayerXorKey, layerIndex, RLEData);
 
-                static void AddRep(ref BufferWriterSlim<byte> rawData, uint stride, byte color)
-                {
-                    if (stride == 0)
-                    {
-                        return;
-                    }
+            DataLength = (uint)RLEData.Length;
 
-                    if (stride > 1)
-                    {
-                        color |= 0x80;
-                    }
-                    rawData.Add(color);
-
-                    if (stride <= 1)
-                    {
-                        // no run needed
-                        return;
-                    }
-
-                    if (stride <= 0x7f)
-                    {
-                        rawData.Add((byte)stride);
-                        return;
-                    }
-
-                    if (stride <= 0x3fff)
-                    {
-                        rawData.Add((byte)((stride >> 8) | 0x80));
-                        rawData.Add((byte)stride);
-                        return;
-                    }
-
-                    if (stride <= 0x1fffff)
-                    {
-                        rawData.Add((byte)((stride >> 16) | 0xc0));
-                        rawData.Add((byte)(stride >> 8));
-                        rawData.Add((byte)stride);
-                        return;
-                    }
-
-                    if (stride <= 0xfffffff)
-                    {
-                        rawData.Add((byte)((stride >> 24) | 0xe0));
-                        rawData.Add((byte)(stride >> 16));
-                        rawData.Add((byte)(stride >> 8));
-                        rawData.Add((byte)stride);
-                    }
-                }
-
-
-                for (int pixel = 0; pixel < span.Length; pixel++)
-                {
-                    var grey7 = (byte)(span[pixel] >> 1);
-
-                    if (grey7 == color)
-                    {
-                        stride++;
-                    }
-                    else
-                    {
-                        AddRep(ref rawData, stride, color);
-                        color = grey7;
-                        stride = 1;
-                    }
-                }
-
-                AddRep(ref rawData, stride, color);
-
-                RLEData = rawData.WrittenSpan.ToArray();
-                if (Parent!.Settings.LayerXorKey > 0)
-                    ChituboxFile.LayerRleCryptBuffer(Parent.Settings.LayerXorKey, layerIndex, RLEData);
-
-                DataLength = (uint)RLEData.Length;
-
-                return RLEData;
-            }
-            finally
-            {
-                rawData.Dispose();
-            }
+            return RLEData;
         }
 
         public override string ToString()
@@ -1454,32 +1311,34 @@ public sealed class CTBEncryptedFile : FileFormat
         outputFile.Seek(outputFile.Position + layerTableSize, SeekOrigin.Begin);
 
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-        Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
+        foreach (var batch in BatchLayersIndexes())
         {
-            progress.PauseIfRequested();
-            var layerDef = new LayerDef(this, this[layerIndex]);
-            using (var mat = this[layerIndex].LayerMat)
+            Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
-                layerDef.EncodeImage(mat, (uint)layerIndex);
-                LayersDefinition[layerIndex] = layerDef;
+                progress.PauseIfRequested();
+                var layerDef = new LayerDef(this, this[layerIndex]);
+                using (var mat = this[layerIndex].LayerMat)
+                {
+                    layerDef.EncodeImage(mat, (uint)layerIndex);
+                    LayersDefinition[layerIndex] = layerDef;
+                }
+
+                progress.LockAndIncrement();
+            });
+
+            foreach (var layerIndex in batch)
+            {
+                progress.PauseOrCancelIfRequested();
+                var layerDef = LayersDefinition[layerIndex];
+                LayersPointer[layerIndex] = new LayerPointer(outputFile.Position);
+
+                var layerDataOffset = outputFile.Position + LayerDef.TABLE_SIZE;
+                layerDef.PageNumber = (uint)(layerDataOffset / ChituboxFile.PageSize);
+                layerDef.LayerDataOffset = (uint)(layerDataOffset - ChituboxFile.PageSize * layerDef.PageNumber);
+                outputFile.WriteSerialize(layerDef);
+                outputFile.WriteBytes(layerDef.RLEData!);
+                layerDef.RLEData = null; // Free this
             }
-
-            progress.LockAndIncrement();
-        });
-
-        progress.Reset(OperationProgress.StatusWritingFile, LayerCount);
-        for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-        {
-            progress.PauseOrCancelIfRequested();
-            var layerDef = LayersDefinition[layerIndex];
-            LayersPointer[layerIndex] = new LayerPointer(outputFile.Position);
-
-            var layerDataOffset = outputFile.Position + LayerDef.TABLE_SIZE;
-            layerDef.PageNumber = (uint)(layerDataOffset / ChituboxFile.PageSize);
-            layerDef.LayerDataOffset = (uint)(layerDataOffset - ChituboxFile.PageSize * layerDef.PageNumber);
-            outputFile.WriteSerialize(layerDef);
-            outputFile.WriteBytes(layerDef.RLEData!);
-            progress++;
         }
 
         if (Header.Version >= 5)

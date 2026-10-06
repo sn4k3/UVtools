@@ -34,8 +34,8 @@ public class MatCompressorZstd : MatCompressor
     {
         return compressionLevel switch
         {
-            CompressionLevel.NoCompression => 0,
-            CompressionLevel.Fastest => 0,
+            CompressionLevel.NoCompression => 1, // Zstd has no store mode, use the fastest level (0 is the default level 3)
+            CompressionLevel.Fastest => 1, // 0 means the default level (3), which is ~25% slower for ~3.5% smaller output
             CompressionLevel.Optimal => 10,
             CompressionLevel.SmallestSize => 12,
             _ => throw new ArgumentException("Invalid CompressionLevel value.", nameof(compressionLevel))

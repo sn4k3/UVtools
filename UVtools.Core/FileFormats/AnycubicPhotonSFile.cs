@@ -191,7 +191,18 @@ public sealed class AnycubicPhotonSFile : FileFormat
                 $"{nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(DataSize)}: {DataSize}, {nameof(RleDataSize)}: {RleDataSize}, {nameof(Unknown5)}: {Unknown5}, {nameof(EncodedRle)}: {EncodedRle?.Length}";
         }
 
-        public unsafe byte[] Encode(Mat mat)
+        /// <summary>
+        /// Mirrors the bits of a byte, the run length is stored from the high bit down to bit 1 and the color on bit 0.
+        /// </summary>
+        private static byte ReverseBits(byte value)
+        {
+            value = (byte)(((value & 0xF0) >> 4) | ((value & 0x0F) << 4));
+            value = (byte)(((value & 0xCC) >> 2) | ((value & 0x33) << 2));
+            value = (byte)(((value & 0xAA) >> 1) | ((value & 0x55) << 1));
+            return value;
+        }
+
+        public byte[] Encode(Mat mat)
         {
             var span = mat.GetReadOnlySpanOfBytes();
             var minimumEncodedLength = Math.Max(
@@ -200,53 +211,19 @@ public sealed class AnycubicPhotonSFile : FileFormat
             var rawData = new BufferWriterSlim<byte>(minimumEncodedLength);
             try
             {
-                var rep = 0;
-                byte color = 0;
-                var totalPixels = 0;
-
-                static void AddRep(ref BufferWriterSlim<byte> rawData, ref int rep, byte color, ref int totalPixels)
+                var pixel = 0;
+                while (pixel < span.Length)
                 {
-                    if (rep <= 0) return;
+                    // Sanitize no AA, everything above 127 is white
+                    var color = span[pixel] <= 127 ? byte.MinValue : (byte)1;
+                    var runLength = BitPlaneRle.GetRunLength(span, pixel, 128);
+                    pixel += runLength;
 
-                    totalPixels += rep;
-                    rep--;
-                    var rle = (byte)(((rep & 1) > 0 ? 128 : 0) |
-                                     ((rep & 2) > 0 ? 64 : 0) |
-                                     ((rep & 4) > 0 ? 32 : 0) |
-                                     ((rep & 8) > 0 ? 16 : 0) |
-                                     ((rep & 16) > 0 ? 8 : 0) |
-                                     ((rep & 32) > 0 ? 4 : 0) |
-                                     ((rep & 64) > 0 ? 2 : 0) | color);
-
-                    rawData.Add(rle);
-                }
-
-                for (var i = 0; i < span.Length; i++)
-                {
-                    var thisColor = span[i] <= 127 ? byte.MinValue : (byte)1; // Sanitize no AA
-                    if (thisColor != color)
+                    for (; runLength > 0; runLength -= RLEEncodingLimit)
                     {
-                        AddRep(ref rawData, ref rep, color, ref totalPixels);
-                        color = thisColor; // Sanitize no AA
-                        rep = 1;
+                        var rep = Math.Min(runLength, RLEEncodingLimit) - 1;
+                        rawData.Add((byte)(ReverseBits((byte)rep) | color));
                     }
-                    else
-                    {
-                        rep++;
-                        if (rep == RLEEncodingLimit)
-                        {
-                            AddRep(ref rawData, ref rep, color, ref totalPixels);
-                            rep = 0;
-                        }
-                    }
-                }
-
-                AddRep(ref rawData, ref rep, color, ref totalPixels);
-
-                if (totalPixels != span.Length)
-                {
-                    throw new FileLoadException(
-                        $"Error image ran shortly or off the end, expecting {span.Length} pixels, got {totalPixels} pixels.");
                 }
 
                 EncodedRle = rawData.WrittenSpan.ToArray();
@@ -276,14 +253,7 @@ public sealed class AnycubicPhotonSFile : FileFormat
 
                 var brightness = (byte)((run & 0x01) * 255);
 
-                var numPixelsInRun =
-                    (((run & 128) > 0 ? 1 : 0) |
-                     ((run & 64) > 0 ? 2 : 0) |
-                     ((run & 32) > 0 ? 4 : 0) |
-                     ((run & 16) > 0 ? 8 : 0) |
-                     ((run & 8) > 0 ? 16 : 0) |
-                     ((run & 4) > 0 ? 32 : 0) |
-                     ((run & 2) > 0 ? 64 : 0)) + 1;
+                var numPixelsInRun = ReverseBits((byte)(run & 0xFE)) + 1;
 
                 if (numPixelsInRun > imageLength - pixelPos)
                 {

@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Numerics;
 using System.Threading.Tasks;
 using EmguExtensions;
 using UVtools.Core.Converters;
@@ -246,27 +247,26 @@ public sealed class AnetFile : FileFormat
 
         public byte[] Encode(Mat mat)
         {
-            uint ComputeRepeatsSize(uint repeats)
+            // Bits are stored from the least significant bit of each byte, while every field is stored from its most
+            // significant bit, so fields are mirrored and appended to a bit accumulator that is flushed per byte
+            static void PutBits(ref BufferWriterSlim<byte> data, ref ulong accumulator, ref int accumulatedBits,
+                uint value, int count)
             {
-                return (uint)Math.Ceiling(Math.Log2(repeats));
-            }
-
-            static void SetBits(ref BufferWriterSlim<byte> data, uint pos, uint value, uint count = 1)
-            {
-                var requiredLength = checked((int)((pos + count + 7) / 8));
-                if (data.WrittenCount < requiredLength)
+                uint mirrored = 0;
+                for (var i = 0; i < count; i++)
                 {
-                    var additionalLength = requiredLength - data.WrittenCount;
-                    data.GetSpan(additionalLength)[..additionalLength].Clear();
-                    data.Advance(additionalLength);
+                    mirrored = (mirrored << 1) | (value & 1);
+                    value >>= 1;
                 }
 
-                for (var off = (int)(pos + count - 1); off + 1 > pos; --off)
+                accumulator |= (ulong)mirrored << accumulatedBits;
+                accumulatedBits += count;
+
+                while (accumulatedBits >= 8)
                 {
-                    var tmp = data[off / 8];
-                    var mask = (byte)(1 << (off % 8));
-                    data[off / 8] = ((int)value & 1) == 1 ? (byte)(tmp | mask) : (byte)(tmp & ~mask);
-                    value >>= 1;
+                    data.Add((byte)accumulator);
+                    accumulator >>= 8;
+                    accumulatedBits -= 8;
                 }
             }
 
@@ -277,48 +277,46 @@ public sealed class AnetFile : FileFormat
             }*/
 
             WhitePixelsCount = 0;
-            uint singleColorLength = 0;
-            uint compressedPos = 33;
+            uint totalBits = 0;
+            ulong accumulator = 0;
+            var accumulatedBits = 0;
 
             var spanMat = mat.GetReadOnlySpanOfBytes();
             var rawData = new BufferWriterSlim<byte>(
                 FileFormat.GetRleBufferInitialCapacity(spanMat.Length));
             try
             {
-                var isWhitePrev = spanMat[0] > 127;
+                PutBits(ref rawData, ref accumulator, ref accumulatedBits, (uint)mat.Width, 16);
+                PutBits(ref rawData, ref accumulator, ref accumulatedBits, (uint)mat.Height, 16);
+                PutBits(ref rawData, ref accumulator, ref accumulatedBits, spanMat[0] > 127 ? 1u : 0u, 1);
+                totalBits = 33;
 
-                SetBits(ref rawData, 0, (uint)mat.Width, 16);
-                SetBits(ref rawData, 16, (uint)mat.Height, 16);
-                SetBits(ref rawData, 32, isWhitePrev ? 1u : 0u);
-
-                for (var i = 0; i < spanMat.Length; i++)
+                var pixel = 0;
+                while (pixel < spanMat.Length)
                 {
-                    var isWhiteCurrent = spanMat[i] > 127; // No AA
-
-                    if (isWhiteCurrent)
+                    var runLength = BitPlaneRle.GetRunLength(spanMat, pixel, 128); // No AA
+                    if (spanMat[pixel] > 127)
                     {
-                        WhitePixelsCount++;
+                        WhitePixelsCount += (uint)runLength;
                     }
 
-                    if (isWhiteCurrent == isWhitePrev)
-                    {
-                        singleColorLength++;
-                    }
+                    pixel += runLength;
 
-                    if (isWhiteCurrent != isWhitePrev || i == spanMat.Length - 1)
-                    {
-                        isWhitePrev = isWhiteCurrent;
-                        var repeatsSize = ComputeRepeatsSize(singleColorLength);
-                        SetBits(ref rawData, compressedPos, repeatsSize, 5);
-                        SetBits(ref rawData, compressedPos + 5, singleColorLength, repeatsSize + 1);
-                        compressedPos += 6 + repeatsSize;
-                        singleColorLength = 1;
-                    }
+                    // Bits required to hold the run length minus one, the run length itself uses one bit more
+                    var repeatsSize = runLength <= 1 ? 0 : 32 - BitOperations.LeadingZeroCount((uint)runLength - 1);
+                    PutBits(ref rawData, ref accumulator, ref accumulatedBits, (uint)repeatsSize, 5);
+                    PutBits(ref rawData, ref accumulator, ref accumulatedBits, (uint)runLength, repeatsSize + 1);
+                    totalBits += (uint)(6 + repeatsSize);
+                }
+
+                if (accumulatedBits > 0)
+                {
+                    rawData.Add((byte)accumulator);
                 }
 
                 EncodedRle = rawData.WrittenSpan.ToArray();
                 RleBytesCount = (uint)EncodedRle.Length;
-                BitsCount = compressedPos;
+                BitsCount = totalBits;
 
                 return EncodedRle;
             }

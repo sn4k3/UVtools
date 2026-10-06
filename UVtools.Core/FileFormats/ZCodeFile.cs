@@ -567,7 +567,7 @@ public sealed class ZCodeFile : FileFormat
             var byteCount = Encoding.UTF8.GetByteCount(line);
             if (byteCount > 61)
             {
-                throw new ArgumentOutOfRangeException(
+                throw new ArgumentOutOfRangeException(nameof(line),
                     $"Too long gcode line to encrypt, got: {byteCount + 3} bytes while expecting less than 64 bytes");
             }
 

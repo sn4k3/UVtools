@@ -179,18 +179,21 @@ public sealed class LGSFile : FileFormat
                     rawData.Write(chunk[index..]);
                 }
 
-                for (int i = 0; i < spanMat.Length; i++)
+                var pixel = 0;
+                while (pixel < spanMat.Length)
                 {
-                    byte c = (byte)(spanMat[i] & 0xf0);
+                    var c = (byte)(spanMat[pixel] & 0xf0);
+                    var runLength = GetHighNibbleRunLength(spanMat, pixel);
+                    pixel += runLength;
 
                     if (c == lc)
                     {
-                        span++;
+                        span += (uint)runLength;
                     }
                     else
                     {
                         AddSpan(ref rawData, span, lc);
-                        span = 1;
+                        span = (uint)runLength;
                     }
 
                     lc = c;

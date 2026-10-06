@@ -962,7 +962,7 @@ public sealed class AnycubicFile : FileFormat
             return EncodedRle;
         }
 
-        private unsafe Mat DecodePWS(AnycubicFile slicerFile)
+        private Mat DecodePWS(AnycubicFile slicerFile)
         {
             if (slicerFile.AntiAliasing == 0)
                 throw new FileLoadException("Anti-aliasing level cannot be zero.");
@@ -975,46 +975,10 @@ public sealed class AnycubicFile : FileFormat
                 var index = 0;
                 for (byte bit = 0; bit < slicerFile.AntiAliasing; bit++)
                 {
-                    var pixel = 0;
-                    for (; index < EncodedRle.Length; index++)
-                    {
-                        // Lower 7 bits is the repeat count for the bit (0..127)
-                        var reps = EncodedRle[index] & 0x7f;
-                        if (reps > span.Length - pixel)
-                            throw new FileLoadException("Image ran off the end.");
-
-                        // We only need to set the non-zero pixels
-                        // High bit is on for white, off for black
-                        if ((EncodedRle[index] & 0x80) != 0)
-                        {
-                            for (var i = 0; i < reps; i++)
-                            {
-                                span[pixel + i]++;
-                            }
-                        }
-
-                        pixel += reps;
-
-                        if (pixel == span.Length)
-                        {
-                            index++;
-                            break;
-                        }
-                    }
-
+                    index += BitPlaneRle.DecodePlane(EncodedRle.AsSpan(index), span);
                 }
 
-                for (var i = 0; i < span.Length; i++)
-                {
-                    var newC = span[i] * (256 / slicerFile.AntiAliasing);
-
-                    if (newC > 0)
-                    {
-                        newC--;
-                    }
-
-                    span[i] = (byte)newC;
-                }
+                BitPlaneRle.CountsToGray(span, slicerFile.AntiAliasing);
 
                 return image;
             }
@@ -1025,7 +989,7 @@ public sealed class AnycubicFile : FileFormat
             }
         }
 
-        public unsafe byte[] EncodePWS(AnycubicFile slicerFile, Mat image)
+        public byte[] EncodePWS(AnycubicFile slicerFile, Mat image)
         {
             var span = image.GetReadOnlySpanOfBytes();
             var minimumRunCount =
@@ -1036,29 +1000,8 @@ public sealed class AnycubicFile : FileFormat
             var rawData = new BufferWriterSlim<byte>(minimumEncodedLength);
             try
             {
-                bool obit;
-                int rep;
-
-                static void AddRep(ref BufferWriterSlim<byte> rawData, int rep, bool obit)
-                {
-                    if (rep <= 0) return;
-
-                    var by = (byte)rep;
-
-                    if (obit)
-                    {
-                        by |= 0x80;
-                        //bitsOn += uint(rep)
-                    }
-
-                    rawData.Add(by);
-                }
-
                 for (byte aalevel = 1; aalevel <= slicerFile.AntiAliasing; aalevel++)
                 {
-                    obit = false;
-                    rep = 0;
-
                     //ngrey:= uint16(r | g | b)
                     // thresholds:
                     // aa 1:  127
@@ -1069,31 +1012,7 @@ public sealed class AnycubicFile : FileFormat
                     // threshold := byte(int(255 * (level + 1) / (levels + 1))) + 1
                     var threshold = (byte)(255 * aalevel / (slicerFile.AntiAliasing + 1) + 1);
 
-
-                    for (var pixel = 0; pixel < span.Length; pixel++)
-                    {
-                        var nbit = span[pixel] >= threshold;
-
-                        if (nbit == obit)
-                        {
-                            rep++;
-
-                            if (rep == RLE1EncodingLimit)
-                            {
-                                AddRep(ref rawData, rep, obit);
-                                rep = 0;
-                            }
-                        }
-                        else
-                        {
-                            AddRep(ref rawData, rep, obit);
-                            obit = nbit;
-                            rep = 1;
-                        }
-                    }
-
-                    // Collect stragglers
-                    AddRep(ref rawData, rep, obit);
+                    BitPlaneRle.EncodePlane(ref rawData, span, threshold, RLE1EncodingLimit);
                 }
 
                 DataLength = (uint)rawData.WrittenCount;
@@ -2664,19 +2583,22 @@ public sealed class AnycubicFile : FileFormat
                 }
             }
 
-            for (var i = 0; i < span.Length; i++)
+            var pixel = 0;
+            while (pixel < span.Length)
             {
-                var color = span[i] >> 4;
+                var color = span[pixel] >> 4;
+                var runLength = GetHighNibbleRunLength(span, pixel);
+                pixel += runLength;
 
                 if (color == lastColor)
                 {
-                    reps++;
+                    reps += runLength;
                 }
                 else
                 {
                     PutReps(ref rawData, ref reps, lastColor);
                     lastColor = color;
-                    reps = 1;
+                    reps = runLength;
                 }
             }
 

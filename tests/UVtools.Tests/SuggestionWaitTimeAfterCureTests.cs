@@ -9,6 +9,7 @@
 using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Suggestions;
@@ -63,6 +64,7 @@ public class SuggestionWaitTimeAfterCureTests
         for (var i = 0; i < layers.Length; i++)
         {
             using var mat = new Mat(file.Resolution, DepthType.Cv8U, 1);
+            mat.SetTo(new MCvScalar(255)); // A new Mat is not zeroed, give the layers a deterministic non-empty content
             layers[i] = new Layer((uint)i, mat, file);
         }
 

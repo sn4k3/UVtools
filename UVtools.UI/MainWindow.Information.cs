@@ -143,7 +143,7 @@ public partial class MainWindow
             if (ReferenceEquals(_visibleThumbnailImage, value)) return;
             var old = _visibleThumbnailImage;
             RaiseAndSetIfChanged(ref _visibleThumbnailImage, value);
-            old?.Dispose();
+            old.DisposeDeferred();
             RaisePropertyChanged(nameof(VisibleThumbnailResolution));
         }
     }

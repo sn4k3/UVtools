@@ -506,6 +506,10 @@ public sealed class FlashForgeSVGXFile : FileFormat
             using var path = new SparseBufferWriter<char>();
             for (int i = 0; i < contours.Size; i++)
             {
+                // Fetch the contour once, every indexer call creates a new native wrapper
+                using var contour = contours[i];
+                var points = contour.ToArray();
+
                 if (hierarchy[i, EmguContour.HierarchyParent] == -1) // Top hierarchy
                 {
                     if (path.WrittenCount > 0)
@@ -514,16 +518,16 @@ public sealed class FlashForgeSVGXFile : FileFormat
                     }
                     path.Clear();
 
-                    groups[layerIndex].Area = (float)Math.Round(Math.Cbrt(CvInvoke.ContourArea(contours[i]) / pixelUm), 3);
-                    groups[layerIndex].Perimeter = (float)Math.Round(CvInvoke.ArcLength(contours[i], true) / pixelUm, 3);
+                    groups[layerIndex].Area = (float)Math.Round(Math.Cbrt(CvInvoke.ContourArea(contour) / pixelUm), 3);
+                    groups[layerIndex].Perimeter = (float)Math.Round(CvInvoke.ArcLength(contour, true) / pixelUm, 3);
                 }
                 else
                 {
                     path.Add(' ');
                 }
 
-                var mmX = MathF.Round(contours[i][0].X / ppmm.Width - halfDisplay.Width, 3);
-                var mmY = MathF.Round(contours[i][0].Y / ppmm.Height - halfDisplay.Height, 3);
+                var mmX = MathF.Round(points[0].X / ppmm.Width - halfDisplay.Width, 3);
+                var mmY = MathF.Round(points[0].Y / ppmm.Height - halfDisplay.Height, 3);
 
                 minx = Math.Min(minx, mmX);
                 miny = Math.Min(miny, mmY);
@@ -535,10 +539,10 @@ public sealed class FlashForgeSVGXFile : FileFormat
                 path.Add(' ');
                 AppendSvgCoordinate(path, mmY);
                 path.Write(" L");
-                for (int x = 1; x < contours[i].Size; x++)
+                for (int x = 1; x < points.Length; x++)
                 {
-                    mmX = MathF.Round(contours[i][x].X / ppmm.Width - halfDisplay.Width, 3);
-                    mmY = MathF.Round(contours[i][x].Y / ppmm.Height - halfDisplay.Height, 3);
+                    mmX = MathF.Round(points[x].X / ppmm.Width - halfDisplay.Width, 3);
+                    mmY = MathF.Round(points[x].Y / ppmm.Height - halfDisplay.Height, 3);
                     path.Add(' ');
                     AppendSvgCoordinate(path, mmX);
                     path.Add(' ');
@@ -580,6 +584,27 @@ public sealed class FlashForgeSVGXFile : FileFormat
         Debug.WriteLine(HeaderSettings);
         Debug.WriteLine(SVGDocument);
         Debug.WriteLine("-End-");
+    }
+
+    /// <summary>
+    /// Gets the next space separated token of an SVG path, tokens are trimmed and empty ones are ignored.
+    /// </summary>
+    private static bool TryGetSvgToken(ReadOnlySpan<char> text, ref int position, out ReadOnlySpan<char> token)
+    {
+        while (position < text.Length)
+        {
+            var rest = text[position..];
+            var separator = rest.IndexOf(' ');
+            var candidate = (separator < 0 ? rest : rest[..separator]).Trim();
+            position += separator < 0 ? rest.Length : separator + 1;
+
+            if (candidate.IsEmpty) continue;
+            token = candidate;
+            return true;
+        }
+
+        token = default;
+        return false;
     }
 
     private static void AppendSvgCoordinate(SparseBufferWriter<char> writer, float value)
@@ -649,13 +674,20 @@ public sealed class FlashForgeSVGXFile : FileFormat
 
         if (DecodeType != FileDecodeType.Full) return;
         progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
+
+        var groupsById = new Dictionary<string, FlashForgeSVGXSvgGroup>();
+        foreach (var svgGroup in SVGDocument.Groups)
+        {
+            if (svgGroup.Id is not null) groupsById.TryAdd(svgGroup.Id, svgGroup);
+        }
+
         Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
 
             using (var mat = EmguCvExtensions.InitMat(Resolution))
             {
-                var group = SVGDocument.Groups.AsValueEnumerable().FirstOrDefault(g => g.Id == $"layer-{layerIndex}");
+                groupsById.TryGetValue($"layer-{layerIndex}", out var group);
 
                 if (group is not null)
                 {
@@ -664,12 +696,12 @@ public sealed class FlashForgeSVGXFile : FileFormat
                     foreach (var path in group.Paths)
                     {
                         progress.PauseOrCancelIfRequested();
-                        var spaceSplit = path.Value.Split(' ',
-                            StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                        var text = path.Value.AsSpan();
+                        var position = 0;
 
-                        for (int i = 0; i < spaceSplit.Length; i++)
+                        while (TryGetSvgToken(text, ref position, out var token))
                         {
-                            if (spaceSplit[i] == "M")
+                            if (token is "M" or "Z")
                             {
                                 if (points.Count > 0)
                                 {
@@ -680,28 +712,18 @@ public sealed class FlashForgeSVGXFile : FileFormat
                                 continue;
                             }
 
-                            if (spaceSplit[i] == "Z")
-                            {
-                                if (points.Count > 0)
-                                {
-                                    pointsOfPoints.Add(points.ToArray());
-                                    points.Clear();
-                                }
-
-                                continue;
-                            }
-
-                            if (spaceSplit[i].Length == 1 && !char.IsDigit(spaceSplit[i][0]))
+                            if (token.Length == 1 && !char.IsDigit(token[0]))
                                 continue; // Ignore any other not processed 1 char that's not a digit (L)
 
-                            if (i + 1 >= spaceSplit.Length) break; // No more to see
+                            var nextPosition = position;
+                            if (!TryGetSvgToken(text, ref nextPosition, out var tokenY)) break; // No more to see
 
-
-                            if (!float.TryParse(spaceSplit[i], NumberStyles.Float, CultureInfo.InvariantCulture,
+                            if (!float.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture,
                                     out var mmX)) continue;
-                            if (!float.TryParse(spaceSplit[++i], NumberStyles.Float, CultureInfo.InvariantCulture,
-                                    out var mmY)) continue;
 
+                            position = nextPosition; // The Y token is consumed even when it is invalid
+                            if (!float.TryParse(tokenY, NumberStyles.Float, CultureInfo.InvariantCulture,
+                                    out var mmY)) continue;
 
                             var mmAbsX = Math.Clamp(halfDisplay.Width + mmX, 0, DisplayWidth);
                             var mmAbsY = Math.Clamp(halfDisplay.Height + mmY, 0, DisplayHeight);
@@ -711,7 +733,6 @@ public sealed class FlashForgeSVGXFile : FileFormat
 
                             points.Add(new Point(x, y));
                         }
-
                         if (points.Count > 0) // Leftovers, still this should never happen!
                         {
                             pointsOfPoints.Add(points.ToArray());

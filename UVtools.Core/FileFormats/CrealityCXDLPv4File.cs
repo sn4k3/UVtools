@@ -561,67 +561,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
                     LayerRleCryptBuffer(parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle!);
                 }
 
-                var pixel = 0;
-                for (var n = 0; n < EncodedRle!.Length; n++)
-                {
-                    var code = EncodedRle[n];
-                    var stride = 1;
-
-                    if ((code & 0x80) == 0x80) // It's a run
-                    {
-                        code &= 0x7f; // Get the run length
-                        n++;
-
-                        var slen = EncodedRle[n];
-
-                        if ((slen & 0x80) == 0)
-                        {
-                            stride = slen;
-                        }
-                        else if ((slen & 0xc0) == 0x80)
-                        {
-                            stride = ((slen & 0x3f) << 8) + EncodedRle[n + 1];
-                            n++;
-                        }
-                        else if ((slen & 0xe0) == 0xc0)
-                        {
-                            stride = ((slen & 0x1f) << 16) + (EncodedRle[n + 1] << 8) + EncodedRle[n + 2];
-                            n += 2;
-                        }
-                        else if ((slen & 0xf0) == 0xe0)
-                        {
-                            stride = ((slen & 0xf) << 24) + (EncodedRle[n + 1] << 16) + (EncodedRle[n + 2] << 8) +
-                                     EncodedRle[n + 3];
-                            n += 3;
-                        }
-                        else
-                        {
-                            throw new FileLoadException("Corrupted RLE data");
-                        }
-                    }
-
-                    // Bit extend from 7-bit to 8-bit greymap
-                    if (code != 0)
-                    {
-                        code = (byte)((code << 1) | 1);
-                    }
-
-                    mat.FillSpan(ref pixel, stride, code);
-
-                    //if (stride <= 0) continue; // Nothing to do
-
-                    /*if (code == 0) // Ignore blacks, spare cycles
-                    {
-                        pixel += stride;
-                        continue;
-                    }*/
-
-                    /*for (; stride > 0; stride--)
-                    {
-                        span[pixel] = code;
-                        pixel++;
-                    }*/
-                }
+                CtbRleCodec.Decode(EncodedRle!, mat.GetSpanOfBytes());
 
                 return mat;
             }
@@ -634,96 +574,11 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
         public unsafe byte[] Encode(CrealityCXDLPv4File parent, Mat image, uint layerIndex)
         {
-            var span = image.GetReadOnlySpanOfBytes();
-            var rawData = new BufferWriterSlim<byte>(
-                FileFormat.GetRleBufferInitialCapacity(
-                    span.Length,
-                    estimatedPixelsPerRun: 128,
-                    encodedBytesPerRun: 2));
-            try
-            {
-                byte color = byte.MaxValue >> 1;
-                uint stride = 0;
+            EncodedRle = CtbRleCodec.Encode(image.GetReadOnlySpanOfBytes());
+            if (parent.HeaderSettings.EncryptionKey > 0)
+                LayerRleCryptBuffer(parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle);
 
-                static void AddRep(ref BufferWriterSlim<byte> rawData, uint stride, byte color)
-                {
-                    if (stride == 0)
-                    {
-                        return;
-                    }
-
-                    if (stride > 1)
-                    {
-                        color |= 0x80;
-                    }
-
-                    rawData.Add(color);
-
-                    if (stride <= 1)
-                    {
-                        // no run needed
-                        return;
-                    }
-
-                    if (stride <= 0x7f)
-                    {
-                        rawData.Add((byte)stride);
-                        return;
-                    }
-
-                    if (stride <= 0x3fff)
-                    {
-                        rawData.Add((byte)((stride >> 8) | 0x80));
-                        rawData.Add((byte)stride);
-                        return;
-                    }
-
-                    if (stride <= 0x1fffff)
-                    {
-                        rawData.Add((byte)((stride >> 16) | 0xc0));
-                        rawData.Add((byte)(stride >> 8));
-                        rawData.Add((byte)stride);
-                        return;
-                    }
-
-                    if (stride <= 0xfffffff)
-                    {
-                        rawData.Add((byte)((stride >> 24) | 0xe0));
-                        rawData.Add((byte)(stride >> 16));
-                        rawData.Add((byte)(stride >> 8));
-                        rawData.Add((byte)stride);
-                    }
-                }
-
-
-                for (var pixel = 0; pixel < span.Length; pixel++)
-                {
-                    var grey7 = (byte)(span[pixel] >> 1);
-
-                    if (grey7 == color)
-                    {
-                        stride++;
-                    }
-                    else
-                    {
-                        AddRep(ref rawData, stride, color);
-                        color = grey7;
-                        stride = 1;
-                    }
-                }
-
-                AddRep(ref rawData, stride, color);
-
-                EncodedRle = rawData.WrittenSpan.ToArray();
-                if (parent.HeaderSettings.EncryptionKey > 0)
-                    LayerRleCryptBuffer(parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle);
-
-                return EncodedRle;
-            }
-            finally
-            {
-                rawData.Dispose();
-            }
+            return EncodedRle;
         }
 
         public override string ToString()
@@ -1569,21 +1424,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
         var init = seed * 0x2d83cdac + 0xd8a83423;
         var key = (layerIndex * 0x1e1530cd + 0xec3d47cd) * init;
 
-        var index = 0;
-        for (var i = 0; i < input.Length; i++)
-        {
-            var k = (byte)(key >> (8 * index));
-
-            index++;
-
-            if ((index & 3) == 0)
-            {
-                key += init;
-                index = 0;
-            }
-
-            input[i] = (byte)(input[i] ^ k);
-        }
+        XorKeystream(input, key, init);
     }
 
     #endregion

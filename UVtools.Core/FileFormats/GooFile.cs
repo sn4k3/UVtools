@@ -682,130 +682,140 @@ public sealed class GooFile : FileFormat
         public byte[] EncodeImage(Mat image, uint layerIndex, bool useColorDifferenceCompression = true)
         {
             var span = image.GetReadOnlySpanOfBytes();
-            using var bufferOwner = new MemoryOwner<byte>(ArrayPool<byte>.Shared, checked(span.Length * 2 + 2));
-            var buffer = bufferOwner.Memory;
-            var count = 1;
-            buffer.Span[0] = LayerMagic;
-            byte previousColor = 0;
-            byte currentColor = 0;
-            uint stride = 0;
-
-            void AddRep()
+            var output = new BufferWriterSlim<byte>(
+                FileFormat.GetRleBufferInitialCapacity(
+                    span.Length,
+                    estimatedPixelsPerRun: 128,
+                    encodedBytesPerRun: 3));
+            try
             {
-                var output = buffer.Span;
-                if (stride == 0)
-                {
-                    return;
-                }
+                output.Add(LayerMagic);
+                byte previousColor = 0;
+                byte currentColor = 0;
+                uint stride = 0;
 
-                var firstByteIndex = count++;
-                output[firstByteIndex] = 0;
-
-                // Difference mode
-                var colorDifference = (byte)Math.Abs(currentColor - previousColor);
-                if (useColorDifferenceCompression && colorDifference <= 0xF && stride <= byte.MaxValue &&
-                    currentColor is > 0 and < byte.MaxValue)
+                static void AddRep(ref BufferWriterSlim<byte> output, uint stride, byte currentColor,
+                    byte previousColor, bool useColorDifferenceCompression, uint layerIndex)
                 {
-                    output[firstByteIndex] = (byte)((0b10 << 6) | (colorDifference & 0xF));
-                    if (stride > 1)
+                    if (stride == 0)
                     {
-                        output[firstByteIndex] |= 0x1 << 4;
-                        output[count++] = (byte)stride;
+                        return;
                     }
 
-                    if (currentColor < previousColor)
+                    // Difference mode
+                    var colorDifference = (byte)Math.Abs(currentColor - previousColor);
+                    if (useColorDifferenceCompression && colorDifference <= 0xF && stride <= byte.MaxValue &&
+                        currentColor is > 0 and < byte.MaxValue)
                     {
-                        output[firstByteIndex] |= 0x1 << 5;
+                        var diffByte = (byte)((0b10 << 6) | colorDifference);
+                        if (stride > 1)
+                        {
+                            diffByte |= 0x1 << 4;
+                        }
+
+                        if (currentColor < previousColor)
+                        {
+                            diffByte |= 0x1 << 5;
+                        }
+
+                        output.Add(diffByte);
+                        if (stride > 1)
+                        {
+                            output.Add((byte)stride);
+                        }
+
+                        return;
                     }
-                }
-                else
-                {
+
                     /*if (currentColor == byte.MinValue)
                     {
                         0 0 This chunk contain all 0x0 pixels
                         firstByte |= 0b00 << 6;
                     }*/
+                    var firstByte = (byte)(stride & 0xF);
+                    var hasGray = false;
                     if (currentColor == byte.MaxValue)
                     {
                         // 1 1 This chunk contain all 0xff pixels
-                        output[firstByteIndex] |= 0b11 << 6;
+                        firstByte |= 0b11 << 6;
                     }
                     else if (currentColor > byte.MinValue)
                     {
                         // 0 1 This chunk contain the value of gray between 0x1 to 0xfe. The gray value is after byte0.
-                        output[firstByteIndex] |= 0b01 << 6;
-                        output[count++] = currentColor;
+                        firstByte |= 0b01 << 6;
+                        hasGray = true;
                     }
 
-                    output[firstByteIndex] |= (byte)(stride & 0xF);
-                    if (stride <= 0xF)
+                    if (stride > 0xFFFFFFF)
                     {
-                        //rle[firstByteIndex] |= 0b00 << 4;
-                        return;
+                        throw new FileLoadException(
+                            $"RLE run in layer {layerIndex} is too large to encode: {stride} pixels.");
                     }
 
-                    if (stride <= 0xFFF)
+                    // The length of the chunk, 0 to 3 extra bytes holding the bits above the first nibble
+                    var extraLengthBytes = stride switch
                     {
-                        output[firstByteIndex] |= 0b01 << 4;
-                        output[count++] = (byte)(stride >> 4);
-                        return;
-                    }
+                        <= 0xF => 0,
+                        <= 0xFFF => 1,
+                        <= 0xFFFFF => 2,
+                        _ => 3
+                    };
+                    firstByte |= (byte)(extraLengthBytes << 4);
 
-                    if (stride <= 0xFFFFF)
+                    output.Add(firstByte);
+                    if (hasGray)
                     {
-                        output[firstByteIndex] |= 0b10 << 4;
-                        output[count++] = (byte)(stride >> 12);
-                        output[count++] = (byte)(stride >> 4);
-                        return;
+                        output.Add(currentColor);
                     }
 
-                    if (stride <= 0xFFFFFFF)
-                    {
-                        output[firstByteIndex] |= 0b11 << 4;
-                        output[count++] = (byte)(stride >> 20);
-                        output[count++] = (byte)(stride >> 12);
-                        output[count++] = (byte)(stride >> 4);
-                        return;
-                    }
-
-                    throw new FileLoadException(
-                        $"RLE run in layer {layerIndex} is too large to encode: {stride} pixels.");
+                    if (extraLengthBytes >= 3) output.Add((byte)(stride >> 20));
+                    if (extraLengthBytes >= 2) output.Add((byte)(stride >> 12));
+                    if (extraLengthBytes >= 1) output.Add((byte)(stride >> 4));
                 }
-            }
 
-            for (var i = 0; i < span.Length; i++)
+                var pixel = 0;
+                while (pixel < span.Length)
+                {
+                    var color = span[pixel];
+                    var runLength = FileFormat.GetRunLength(span, pixel);
+
+                    if (currentColor == color)
+                    {
+                        stride += (uint)runLength;
+                    }
+                    else
+                    {
+                        AddRep(ref output, stride, currentColor, previousColor, useColorDifferenceCompression, layerIndex);
+                        stride = (uint)runLength;
+                        previousColor = currentColor;
+                        currentColor = color;
+                    }
+
+                    pixel += runLength;
+                }
+
+                AddRep(ref output, stride, currentColor, previousColor, useColorDifferenceCompression, layerIndex);
+
+                byte checkSum = 0;
+                foreach (var value in output.WrittenSpan[1..])
+                {
+                    unchecked
+                    {
+                        checkSum += value;
+                    }
+                }
+
+                output.Add((byte)~checkSum);
+
+                EncodedRle = output.WrittenSpan.ToArray();
+                DataLength = (uint)EncodedRle.Length;
+
+                return EncodedRle;
+            }
+            finally
             {
-                if (currentColor == span[i])
-                {
-                    stride++;
-                }
-                else
-                {
-                    AddRep();
-                    stride = 1;
-                    previousColor = currentColor;
-                    currentColor = span[i];
-                }
+                output.Dispose();
             }
-
-            AddRep();
-
-            byte checkSum = 0;
-            for (var i = 1; i < count; i++)
-            {
-                unchecked
-                {
-                    checkSum += buffer.Span[i];
-                }
-            }
-
-            buffer.Span[count++] = (byte)~checkSum;
-
-            EncodedRle = GC.AllocateUninitializedArray<byte>(count);
-            buffer.Span[..count].CopyTo(EncodedRle);
-            DataLength = (uint)count;
-
-            return EncodedRle;
         }
 
         public override string ToString()

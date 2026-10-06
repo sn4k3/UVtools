@@ -20,7 +20,12 @@ public partial class ToolLithophaneControl : ToolControl
     public Bitmap? PreviewImage
     {
         get => _previewImage;
-        set => RaiseAndSetIfChanged(ref _previewImage, value);
+        set
+        {
+            var previous = _previewImage;
+            if (!RaiseAndSetIfChanged(ref _previewImage, value)) return;
+            previous.DisposeDeferred();
+        }
     }
 
     public ToolLithophaneControl()

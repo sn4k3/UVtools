@@ -432,19 +432,23 @@ public sealed class OSFFile : FileFormat
                     }
                 }
 
-                for (var pixel = StartY * step; pixel <= layer.LastPixelIndex; pixel++)
+                var modelSpan = span[..checked((int)layer.LastPixelIndex + 1)];
+                var pixel = StartY * step;
+                while (pixel < modelSpan.Length)
                 {
-                    var grey = span[pixel];
+                    var grey = modelSpan[pixel];
+                    var runLength = FileFormat.GetRunLength(modelSpan, pixel);
+                    pixel += runLength;
 
                     if (grey == color)
                     {
-                        stride++;
+                        stride += (uint)runLength;
                     }
                     else
                     {
                         AddRep(ref rawData, stride, color, ref lines);
                         color = grey;
-                        stride = 1;
+                        stride = (uint)runLength;
                     }
                 }
 

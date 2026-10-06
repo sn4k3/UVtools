@@ -11,6 +11,7 @@ using UVtools.Core.Operations;
 using UVtools.Core.SystemOS;
 using UVtools.UI.Windows;
 using ZLinq;
+using UVtools.UI.Extensions;
 
 namespace UVtools.UI.Controls.Tools;
 
@@ -74,7 +75,12 @@ public partial class ToolLayerImportControl : ToolControl
     public Bitmap? PreviewImage
     {
         get => _previewImage;
-        set => RaiseAndSetIfChanged(ref _previewImage, value);
+        set
+        {
+            var previous = _previewImage;
+            if (!RaiseAndSetIfChanged(ref _previewImage, value)) return;
+            previous.DisposeDeferred();
+        }
     }
 
 

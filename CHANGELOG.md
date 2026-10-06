@@ -2,7 +2,31 @@
 
 ## 06/10/2026 - v7.0.2
 
+- **File formats:**
+  - (Improvement) Encoding is up to 10x faster for GR1 and MDLP, 2x for PWS, and 25-35% faster for cbddlp, N4/N7, and
+    Photon S; decoding PWS, cbddlp, FDG, and PHZ is 25-45% faster. Runs are found with vectorized searches, and the
+    duplicated CTB, anti-aliasing plane, and column line codecs are now shared
+  - (Improvement) CTB, PHZ, and FDG layer encryption is processed 4 bytes at a time, and the CTB encrypted encoder
+    writes layers in batches instead of keeping all of them in memory
+  - (Improvement) Thumbnail encoding and decoding no longer compares strings or queries the channel count per pixel
+  - (Improvement) QDT and SVGX decoding parse without allocating a string per token, SVGX decoding no longer searches
+    the layer group linearly, and its encoding no longer creates a native wrapper per contour point
+  - (Improvement) Truncated CTB RLE data now fails with a corrupted data error instead of an index out of range
+  - (Fix) Anet: the last pixel of the layer was lost when it differed from the previous one, making the file unreadable
+  - (Fix) OSF: encoding failed when the layer content touched the last row of the image, `Layer.LastPixelIndex` pointed
+    one row below the last pixel
+  - (Fix) cbddlp: layers with anti-aliasing 1 turned every gray pixel black, and identical layers did not copy the page
+    number
+  - (Fix) OSLA: the preview table padding used the layer table size
+  - (Fix) Encoding layers to a zip with the cache enabled skipped the duplicated layers
+  - (Fix) The hash helpers shared non-thread safe instances, and the AES padding bytes were not zeroed
+  - (Fix) ZCode: wrong exception arguments for a too long G-code line; QDT: swapped resolution names on header errors
+- (Fix) Crash `Cannot access a disposed object` on `Image.MeasureOverride` (#1150): the thumbnail and tool preview
+  bitmaps are now disposed after the UI applied the new image, and the PCB exposure preview no longer leaks the previous
+  bitmap
 - (Fix) Error when executing UVtooldCmd run with a script (#1138)
+- (Fix) `LayerCache` disposed the wrong `SkiaSurface` when the layer was changed, and did not release the framebuffer
+- (Fix) Zstd: the fastest compression level was not really the fastest
 - (Improvement) Update `NativeCompressions` and use it LZ4 codec
 - (Update) Benchmark 13900K reference values
 - (Drop) `K4os.Compression.LZ4` library
@@ -28,7 +52,7 @@
 - (Fix) Issues detection: native contour vectors were not released when the detection was cancelled
 - (Improvement) Repair layers: gap closing and noise removal only process the area around the layer content, empty
   layers
-  are skipped and layers that the repair did not change are no longer rewritten
+  are skipped, and layers that the repair did not change are no longer rewritten
 - **3D layer preview:**
   - (Improvement) Building the model is up to 5x faster (detailed quality on a 4K file went from 9.3s to 1.7s), the
     faces are found with vectorized row by row passes and only the area of the model is decoded from each layer
@@ -46,14 +70,14 @@
     drawn into a 24 bit depth framebuffer and copied to the control
   - (Fix) The camera near/far planes are now fitted to the model bounds from the camera point of view, they were
     estimated from a bounding sphere around the orbit target, which clipped the model or made its faces fight each other
-    (cuts and stripes) when the camera was panned, focused on an issue, zoomed in or the model was rebuilt
+    (cuts and stripes) when the camera was panned, focused on an issue, zoomed in, or the model was rebuilt
   - (Fix) Snapshot bitmaps were never released
 - **Operations:**
   - (Improvement) Most tools skip empty layers and no longer clone every layer when there is no mask to apply
-  - (Improvement) Morph, Box/Median blur, Solidify and Pixel dimming only process the area around the layer content,
+  - (Improvement) Morph, Box/Median blur, Solidify, and Pixel dimming only process the area around the layer content,
     Solidify and Repair layers also rewrite only the layers they changed
   - (Improvement) Infill: gyroid pattern is computed from per-axis tables instead of per pixel, the neighbor layers used
-    to find the floor and ceil are only decoded where needed and the search stops once nothing is left to infill
+    to find the floor and ceil are only decoded where needed, and the search stops once nothing is left to infill
   - (Improvement) Raft relief traces the raft layers in parallel, Heat map and Skeleton exports accumulate in parallel,
     Mesh export skips the empty pixels faster, HTML export traces only the layer area, Remove layers and Pattern are
     faster, Change resolution only decodes the model area
@@ -66,13 +90,13 @@
     thread safe) and misbehaved when using a ROI; pyramid blur had no effect at all
   - (Fix) Infill: using a mask without a ROI always failed, and the mask is now the area where the infill happens
   - (Fix) Layer arithmetic and Heat map export failed or used a wrong mask when a ROI and a mask were used together
-  - (Fix) Operations mask application when the layer, ROI and mask have different sizes
-  - (Fix) Redraw model: checked the wrong layer to skip empty ones, never released the redraw file and did not complete
+  - (Fix) Operations mask application when the layer, ROI, and mask have different sizes
+  - (Fix) Redraw model: checked the wrong layer to skip empty ones, never released the redraw file, and did not complete
     the progress
   - (Fix) Raft relief: tabs on the left and right sides were limited by the layer width instead of the height
-  - (Fix) Layer import, Lithophane and Edit parameters did not complete the progress when layers were skipped
+  - (Fix) Layer import, Lithophane, and Edit parameters did not complete the progress when layers were skipped
   - (Fix) Grayscale and Elephant foot calibrations hanged or threw with a step of 0, Elephant foot threw when the start
-    was higher than the end, Lift height, Stress tower and Exposure finder threw or looped forever with invalid
+    was higher than the end, Lift height, Stress tower, and Exposure finder threw or looped forever with invalid
     divisors/steps (decrease factor, layer height, spirals, layer height step)
   - (Fix) Dynamic layer height: repeated the same erosion up to the maximum number of times for nothing
   - (Fix) Calibrate XYZ accuracy drain hole was centered using the object width instead of the height, and Blooming
@@ -88,15 +112,15 @@
     panning cursor reuse, and selection start bounds
   - (Breaking) `ZoomLevelCollection` now exposes `ICollection<int>` rather than positional
     `IList<int>` operations, because zoom levels are sorted and unique.
-  - (Improvement) Rewrite the installer scripts, add windows install script and uninstall scripts
+  - (Improvement) Rewrite the installer scripts, add windows install script, and uninstall scripts
   - (Improvement) Remove `e.Handled = true;` from handlers to allow subscribers to handle the event in same conditions
 - **Packaging:**
   - (Add) Linux native packages for .deb, .rpm and .pkg.tar.zst and arm64 packages (maybe fix #1124)
-  - (Improvement) Rewrite the installers, use more keys on registry and registers the known file extensions to make
+  - (Improvement) Rewrite the installers, use more keys on registry, and registers the known file extensions to make
     double click on files to prompt for open with UVtools, it also allow to select it as default program (maybe fix
     #459)
 - **3D layer preview:** GPU-accelerated, rotatable 3D model generated from the layer stack (#38, #602)
-  - (Add) Solid, X-Ray and Wireframe render modes, with Camera/Studio/Flat lighting and configurable voxel/background
+  - (Add) Solid, X-Ray, and Wireframe render modes, with Camera/Studio/Flat lighting and configurable voxel/background
     colors
   - (Add) Color modes: overhang heatmap, layer-height zones, peel force & area risk, and bed adhesion footprint
   - (Add) Clip modes (top/bottom/slab, with adjustable slab thickness) and X/Y cutaway with an invertible slider, to

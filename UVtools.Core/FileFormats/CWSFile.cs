@@ -733,7 +733,7 @@ public sealed class CWSFile : FileFormat
                 GCode.AppendLine(line);
                 if (string.IsNullOrEmpty(line)) continue;
 
-                if (line[0] != ';')
+                if (line[0] != ';' || !line.Contains('='))
                 {
                     continue;
                 }

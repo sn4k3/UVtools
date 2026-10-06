@@ -625,7 +625,7 @@ public sealed class ChituboxFile : FileFormat
             return image;
         }
 
-        public static unsafe Mat DecodeCbddlpImage(ChituboxFile parent, uint layerIndex)
+        public static Mat DecodeCbddlpImage(ChituboxFile parent, uint layerIndex)
         {
             if (parent.AntiAliasing == 0)
                 throw new FileLoadException("Anti-aliasing level cannot be zero.");
@@ -638,46 +638,10 @@ public sealed class ChituboxFile : FileFormat
                 for (byte bit = 0; bit < parent.AntiAliasing; bit++)
                 {
                     var layer = parent.LayerDefinitions![bit, layerIndex];
-
-                    int n = 0;
-                    for (int index = 0; index < layer.DataSize; index++)
-                    {
-                        // Lower 7 bits is the repeat count for the bit (0..127)
-                        int reps = layer.EncodedRle![index] & 0x7f;
-                        if (reps > span.Length - n)
-                            throw new FileLoadException("Error image ran off the end");
-
-                        // We only need to set the non-zero pixels
-                        // High bit is on for white, off for black
-                        if ((layer.EncodedRle[index] & 0x80) != 0)
-                        {
-                            for (int i = 0; i < reps; i++)
-                            {
-                                span[n + i]++;
-                            }
-                        }
-
-                        n += reps;
-
-                        if (n == span.Length)
-                        {
-                            break;
-                        }
-                    }
-
+                    BitPlaneRle.DecodePlane(layer.EncodedRle.AsSpan(0, (int)layer.DataSize), span);
                 }
 
-                for (int i = 0; i < span.Length; i++)
-                {
-                    int newC = span[i] * (256 / parent.AntiAliasing);
-
-                    if (newC > 0)
-                    {
-                        newC--;
-                    }
-
-                    span[i] = (byte)newC;
-                }
+                BitPlaneRle.CountsToGray(span, parent.AntiAliasing);
 
                 return image;
             }
@@ -700,52 +664,7 @@ public sealed class ChituboxFile : FileFormat
                     LayerRleCryptBuffer(Parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle!);
                 }
 
-                int pixel = 0;
-                for (var n = 0; n < EncodedRle!.Length; n++)
-                {
-                    byte code = EncodedRle[n];
-                    int stride = 1;
-
-                    if ((code & 0x80) == 0x80) // It's a run
-                    {
-                        code &= 0x7f; // Get the run length
-                        n++;
-
-                        var slen = EncodedRle[n];
-
-                        if ((slen & 0x80) == 0)
-                        {
-                            stride = slen;
-                        }
-                        else if ((slen & 0xc0) == 0x80)
-                        {
-                            stride = ((slen & 0x3f) << 8) + EncodedRle[n + 1];
-                            n++;
-                        }
-                        else if ((slen & 0xe0) == 0xc0)
-                        {
-                            stride = ((slen & 0x1f) << 16) + (EncodedRle[n + 1] << 8) + EncodedRle[n + 2];
-                            n += 2;
-                        }
-                        else if ((slen & 0xf0) == 0xe0)
-                        {
-                            stride = ((slen & 0xf) << 24) + (EncodedRle[n + 1] << 16) + (EncodedRle[n + 2] << 8) + EncodedRle[n + 3];
-                            n += 3;
-                        }
-                        else
-                        {
-                            throw new FileLoadException("Corrupted RLE data");
-                        }
-                    }
-
-                    // Bit extend from 7-bit to 8-bit greymap
-                    if (code != 0)
-                    {
-                        code = (byte)((code << 1) | 1);
-                    }
-
-                    mat.FillSpan(ref pixel, stride, code);
-                }
+                CtbRleCodec.Decode(EncodedRle!, mat.GetSpanOfBytes());
 
                 return mat;
             }
@@ -762,7 +681,7 @@ public sealed class ChituboxFile : FileFormat
             return Parent!.IsCtbFile ? EncodeCtbImage(image, layerIndex) : EncodeCbddlpImage(image, aaIndex);
         }
 
-        public unsafe byte[] EncodeCbddlpImage(Mat image, byte bit)
+        public byte[] EncodeCbddlpImage(Mat image, byte bit)
         {
             var span = image.GetSpanOfBytes();
             var minimumEncodedLength = Math.Max(
@@ -771,56 +690,17 @@ public sealed class ChituboxFile : FileFormat
             var rawData = new BufferWriterSlim<byte>(minimumEncodedLength);
             try
             {
-                bool obit = false;
-                int rep = 0;
-
                 //ngrey:= uint16(r | g | b)
                 // thresholds:
                 // aa 1:  127
                 // aa 2:  255 127
                 // aa 4:  255 191 127 63
                 // aa 8:  255 223 191 159 127 95 63 31
-                byte threshold = (byte)(256 / Parent!.AntiAliasing * bit - 1);
+                var threshold = Parent!.AntiAliasing == 1
+                    ? (byte)127
+                    : unchecked((byte)(256 / Parent.AntiAliasing * bit - 1));
 
-                static void AddRep(ref BufferWriterSlim<byte> rawData, int rep, bool obit)
-                {
-                    if (rep <= 0) return;
-
-                    byte by = (byte)rep;
-
-                    if (obit)
-                    {
-                        by |= 0x80;
-                        //bitsOn += uint(rep)
-                    }
-
-                    rawData.Add(by);
-                }
-
-                for (int pixel = 0; pixel < span.Length; pixel++)
-                {
-                    var nbit = span[pixel] >= threshold;
-
-                    if (nbit == obit)
-                    {
-                        rep++;
-
-                        if (rep == RLE8EncodingLimit)
-                        {
-                            AddRep(ref rawData, rep, obit);
-                            rep = 0;
-                        }
-                    }
-                    else
-                    {
-                        AddRep(ref rawData, rep, obit);
-                        obit = nbit;
-                        rep = 1;
-                    }
-                }
-
-                // Collect stragglers
-                AddRep(ref rawData, rep, obit);
+                BitPlaneRle.EncodePlane(ref rawData, span, threshold, RLE8EncodingLimit);
 
                 EncodedRle = rawData.WrittenSpan.ToArray();
                 DataSize = (uint)EncodedRle.Length;
@@ -836,96 +716,13 @@ public sealed class ChituboxFile : FileFormat
         private unsafe byte[] EncodeCtbImage(Mat image, uint layerIndex)
         {
             var span = image.GetSpanOfBytes();
-            var rawData = new BufferWriterSlim<byte>(
-                FileFormat.GetRleBufferInitialCapacity(
-                    span.Length,
-                    estimatedPixelsPerRun: 128,
-                    encodedBytesPerRun: 2));
-            try
-            {
-                byte color = byte.MaxValue >> 1;
-                uint stride = 0;
+            EncodedRle = CtbRleCodec.Encode(span);
+            if (Parent!.HeaderSettings.EncryptionKey > 0)
+                LayerRleCryptBuffer(Parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle);
 
-                static void AddRep(ref BufferWriterSlim<byte> rawData, uint stride, byte color)
-                {
-                    if (stride == 0)
-                    {
-                        return;
-                    }
+            DataSize = (uint)EncodedRle.Length;
 
-                    if (stride > 1)
-                    {
-                        color |= 0x80;
-                    }
-                    rawData.Add(color);
-
-                    if (stride <= 1)
-                    {
-                        // no run needed
-                        return;
-                    }
-
-                    if (stride <= 0x7f)
-                    {
-                        rawData.Add((byte)stride);
-                        return;
-                    }
-
-                    if (stride <= 0x3fff)
-                    {
-                        rawData.Add((byte)((stride >> 8) | 0x80));
-                        rawData.Add((byte)stride);
-                        return;
-                    }
-
-                    if (stride <= 0x1fffff)
-                    {
-                        rawData.Add((byte)((stride >> 16) | 0xc0));
-                        rawData.Add((byte)(stride >> 8));
-                        rawData.Add((byte)stride);
-                        return;
-                    }
-
-                    if (stride <= 0xfffffff)
-                    {
-                        rawData.Add((byte)((stride >> 24) | 0xe0));
-                        rawData.Add((byte)(stride >> 16));
-                        rawData.Add((byte)(stride >> 8));
-                        rawData.Add((byte)stride);
-                    }
-                }
-
-
-                for (int pixel = 0; pixel < span.Length; pixel++)
-                {
-                    var grey7 = (byte)(span[pixel] >> 1);
-
-                    if (grey7 == color)
-                    {
-                        stride++;
-                    }
-                    else
-                    {
-                        AddRep(ref rawData, stride, color);
-                        color = grey7;
-                        stride = 1;
-                    }
-                }
-
-                AddRep(ref rawData, stride, color);
-
-                EncodedRle = rawData.WrittenSpan.ToArray();
-                if (Parent!.HeaderSettings.EncryptionKey > 0)
-                    LayerRleCryptBuffer(Parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle);
-
-                DataSize = (uint)EncodedRle.Length;
-
-                return EncodedRle;
-            }
-            finally
-            {
-                rawData.Dispose();
-            }
+            return EncodedRle;
         }
 
         public override string ToString()
@@ -1950,6 +1747,7 @@ public sealed class ChituboxFile : FileFormat
                         var hash = CryptExtensions.ComputeSHA1Hash(layerDef.EncodedRle!);
                         if (layersHash.TryGetValue(hash, out layerDefHash))
                         {
+                            layerDef.PageNumber = layerDefHash.PageNumber;
                             layerDef.DataAddress = layerDefHash.DataAddress;
                             layerDef.DataSize = layerDefHash.DataSize;
                         }
@@ -2253,21 +2051,7 @@ public sealed class ChituboxFile : FileFormat
         var init = seed * 0x2d83cdac + 0xd8a83423;
         var key = (layerIndex * 0x1e1530cd + 0xec3d47cd) * init;
 
-        int index = 0;
-        for (int i = 0; i < input.Length; i++)
-        {
-            var k = (byte)(key >> 8 * index);
-
-            index++;
-
-            if ((index & 3) == 0)
-            {
-                key += init;
-                index = 0;
-            }
-
-            input[i] = (byte)(input[i] ^ k);
-        }
+        XorKeystream(input, key, init);
     }
     #endregion
 }

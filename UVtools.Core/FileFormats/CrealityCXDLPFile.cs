@@ -760,37 +760,19 @@ public sealed class CrealityCXDLPFile : FileFormat
                         layerLargestContourArea[layerIndex] =
                             (uint)(EmguContours.GetLargestContourArea(contours) * pixelArea * 1000);
 
-                        var span = mat.GetReadOnlySpanOfBytes();
+                        var rect = layer.BoundingRectangle;
+                        using var columns = ColumnLines.TransposeRoi(mat, rect);
+                        var columnsSpan = columns.IsEmpty ? default : columns.GetReadOnlySpanOfBytes();
                         uint lineCount = 0;
 
-                        for (var x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++)
+                        for (var col = 0; col < rect.Width; col++)
                         {
-                            var y = layer.BoundingRectangle.Y;
-                            var startY = -1;
-                            byte lastColor = 0;
-                            for (; y < layer.BoundingRectangle.Bottom; y++)
+                            var column = columnsSpan.Slice(col * rect.Height, rect.Height);
+                            var index = 0;
+                            while (ColumnLines.TryGetNextColorRun(column, ref index, out var start, out var length, out var color))
                             {
-                                var pos = mat.GetPixelPos(x, y);
-                                var color = span[pos];
-
-                                if (lastColor == color && color != 0) continue;
-
-                                if (startY >= 0)
-                                {
-                                    LayerLine.WriteBytes(writer.GetSpan(6), (ushort)startY, (ushort)(y - 1),
-                                        (ushort)x, lastColor);
-                                    writer.Advance(6);
-                                    lineCount++;
-                                }
-
-                                startY = color == 0 ? -1 : y;
-                                lastColor = color;
-                            }
-
-                            if (startY >= 0)
-                            {
-                                LayerLine.WriteBytes(writer.GetSpan(6), (ushort)startY, (ushort)(y - 1),
-                                    (ushort)x, lastColor);
+                                LayerLine.WriteBytes(writer.GetSpan(6), (ushort)(rect.Y + start),
+                                    (ushort)(rect.Y + start + length - 1), (ushort)(rect.X + col), color);
                                 writer.Advance(6);
                                 lineCount++;
                             }
@@ -921,8 +903,9 @@ public sealed class CrealityCXDLPFile : FileFormat
                     Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                     {
                         progress.PauseIfRequested();
-                        using (var mat = EmguCvExtensions.InitMat(Resolution))
+                        using (var columns = ColumnLines.CreateColumns(Resolution))
                         {
+                            var canvas = new ColumnLines.Canvas(columns, Resolution);
                             var lineData = linesBytes[layerIndex].Span;
                             for (var i = 0; i < lineData.Length; i += 6)
                             {
@@ -931,10 +914,10 @@ public sealed class CrealityCXDLPFile : FileFormat
                                                      lineData[i + 3]) >> 6) & 0x1FFF);
                                 var startX = (ushort)(((lineData[i + 3] << 8) + lineData[i + 4]) & 0x3FFF);
 
-                                CvInvoke.Line(mat, new Point(startX, startY), new Point(startX, endY),
-                                    new MCvScalar(lineData[i + 5]));
+                                canvas.Line(startX, startY, endY, lineData[i + 5]);
                             }
 
+                            using var mat = ColumnLines.ToImage(columns);
                             _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
                         }
 

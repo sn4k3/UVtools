@@ -1753,7 +1753,7 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
             }
 
             span = roiMat.GetReadOnlyRowSpanOfBytes(roiMat.Height - 1);
-            yOffset = step * BoundingRectangle.Bottom;
+            yOffset = step * (BoundingRectangle.Bottom - 1); // Bottom is exclusive, the last pixel is on the row above
             for (var i = span.Length - 1; i >= 0; i--)
             {
                 if (span[i] == 0) continue;

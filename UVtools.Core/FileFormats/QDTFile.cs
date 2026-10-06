@@ -242,10 +242,10 @@ public sealed class QDTFile : FileFormat
         else throw new FileLoadException($"Can not decode the the file: Expecting LayerHeightUm on header, but got: {splitLine[1]}");
 
         if (ushort.TryParse(splitLine[2], out var resolutionY)) ResolutionY = resolutionY;
-        else throw new FileLoadException($"Can not decode the the file: Expecting ResolutionX on header, but got: {splitLine[3]}");
+        else throw new FileLoadException($"Can not decode the the file: Expecting ResolutionY on header, but got: {splitLine[2]}");
 
         if (ushort.TryParse(splitLine[3], out var resolutionX)) ResolutionX = resolutionX;
-        else throw new FileLoadException($"Can not decode the the file: Expecting ResolutionX on header, but got: {splitLine[2]}");
+        else throw new FileLoadException($"Can not decode the the file: Expecting ResolutionX on header, but got: {splitLine[3]}");
 
         if (!ushort.TryParse(splitLine[4], out var unknown1)) throw new FileLoadException($"Can not decode the the file: Expecting a number(2) on header, got <{splitLine[4]}>");
         if (!ushort.TryParse(splitLine[5], out var unknown2)) throw new FileLoadException($"Can not decode the the file: Expecting a number(019) on header, got <{splitLine[5]}>");
@@ -278,14 +278,14 @@ public sealed class QDTFile : FileFormat
 
         if (DecodeType == FileDecodeType.Partial) return;
 
-        var layerCoords = new List<ushort[]>[layerCount];
+        var layerCoords = new List<(ushort X, ushort Y, byte On)>[layerCount];
         var expecting = QDTFileLineExpect.LayerNumberOrFD;
         int lastProcessedLayerIndex = -1;
         uint currentLayerIndex = 0;
         var processBatchCount = DefaultParallelBatchCount;
         var currentBatch = 0;
 
-        List<ushort[]> currentLayer = null!;
+        List<(ushort X, ushort Y, byte On)> currentLayer = null!;
 
         void ProcessBatch()
         {
@@ -302,12 +302,12 @@ public sealed class QDTFile : FileFormat
 
                     if (layerCoords[layerIndex].Count > 0)
                     {
-                        Guard.IsEqualTo((int)layerCoords[layerIndex][0][2], 0);
+                        Guard.IsEqualTo((int)layerCoords[layerIndex][0].On, 0);
                         int zerosInRow = 1;
 
                         var coords = layerCoords[layerIndex][0];
 
-                        var startPoint = new Point(coords[0], coords[1]);
+                        var startPoint = new Point(coords.X, coords.Y);
                         var endPoint = startPoint;
 
                         var mirror = layerIndex % 2 != 0;
@@ -315,7 +315,7 @@ public sealed class QDTFile : FileFormat
                         for (var i = 1; i < layerCoords[layerIndex].Count; i++)
                         {
                             coords = layerCoords[layerIndex][i];
-                            if (coords[2] == 0)
+                            if (coords.On == 0)
                             {
                                 zerosInRow++;
                                 continue;
@@ -327,14 +327,14 @@ public sealed class QDTFile : FileFormat
 
                             if (zerosInRow == 1)
                             {
-                                if (i > 1) startPoint = new Point(coords[0], endPoint.Y + lastCoords[1]);
+                                if (i > 1) startPoint = new Point(coords.X, endPoint.Y + lastCoords.Y);
                             }
                             else
                             {
-                                startPoint = new Point(coords[0], lastCoords[1]);
+                                startPoint = new Point(coords.X, lastCoords.Y);
                             }
 
-                            endPoint = new Point(coords[0], startPoint.Y + coords[1]);
+                            endPoint = new Point(coords.X, startPoint.Y + coords.Y);
 
                             if (mirror)
                             {
@@ -369,20 +369,20 @@ public sealed class QDTFile : FileFormat
 
             line = line.Trim();
 
-            splitLine = line.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var tokenCount = Tokenize(line, out var token0, out var token1, out var token2);
 
-            if (splitLine.Length == 1) // Layer Number, FB, FC, FD
+            if (tokenCount == 1) // Layer Number, FB, FC, FD
             {
-                if (splitLine[0] == "FB")
+                if (token0 is "FB")
                 {
-                    if (expecting != QDTFileLineExpect.FB) throw new FileLoadException($"Error while decoding the line: Was expecting <{expecting}>, got <{splitLine[0]}>.");
+                    if (expecting != QDTFileLineExpect.FB) throw new FileLoadException($"Error while decoding the line: Was expecting <{expecting}>, got <{token0}>.");
                     expecting = QDTFileLineExpect.FC;
                     continue;
                 }
 
-                if (splitLine[0] == "FC")
+                if (token0 is "FC")
                 {
-                    if (expecting != QDTFileLineExpect.FC) throw new FileLoadException($"Error while decoding the line: Was expecting <{expecting}>, got <{splitLine[0]}>.");
+                    if (expecting != QDTFileLineExpect.FC) throw new FileLoadException($"Error while decoding the line: Was expecting <{expecting}>, got <{token0}>.");
                     expecting = QDTFileLineExpect.LayerNumberOrFD;
                     currentBatch++;
                     if (currentBatch >= processBatchCount)
@@ -392,21 +392,21 @@ public sealed class QDTFile : FileFormat
                     continue;
                 }
 
-                if (splitLine[0] == "FD")
+                if (token0 is "FD")
                 {
-                    if (expecting != QDTFileLineExpect.LayerNumberOrFD) throw new FileLoadException($"Error while decoding the line: Was expecting <{expecting}>, got <{splitLine[0]}>.");
+                    if (expecting != QDTFileLineExpect.LayerNumberOrFD) throw new FileLoadException($"Error while decoding the line: Was expecting <{expecting}>, got <{token0}>.");
                     expecting = QDTFileLineExpect.LayerCount;
                     if (layerCount != currentLayerIndex + 1) throw new FileLoadException($"Error while decoding the file: It was expected <{layerCount}> layers, got <{currentLayerIndex + 1}>.");
                     ProcessBatch();
                     continue;
                 }
 
-                if (!uint.TryParse(splitLine[0], out currentLayerIndex)) throw new FileLoadException($"Error while decoding the line: Was expecting an layer number, got <{splitLine[0]}>.");
+                if (!uint.TryParse(token0, out currentLayerIndex)) throw new FileLoadException($"Error while decoding the line: Was expecting an layer number, got <{token0}>.");
 
                 if (expecting == QDTFileLineExpect.LayerNumberOrFD)
                 {
                     expecting = QDTFileLineExpect.FB;
-                    if (currentLayerIndex == 0) throw new FileLoadException($"Error while decoding the line: Was expecting an positive layer number, got <{splitLine[0]}>.");
+                    if (currentLayerIndex == 0) throw new FileLoadException($"Error while decoding the line: Was expecting an positive layer number, got <{token0}>.");
                     currentLayerIndex--;
                     currentLayer = [];
 
@@ -426,16 +426,16 @@ public sealed class QDTFile : FileFormat
                 continue;
             }
 
-            if (splitLine.Length == 3)
+            if (tokenCount == 3)
             {
                 if (expecting == QDTFileLineExpect.FB) continue; // Thumbnail area
                 if (expecting != QDTFileLineExpect.FC) throw new FileLoadException($"Error while decoding the line <{line}>: Was expecting <FC>, got <{expecting}>.");
 
-                if (!ushort.TryParse(splitLine[0], out var x)) throw new FileLoadException($"Error while decoding the line: Was expecting X coordinate, got <{splitLine[0]}>.");
-                if (!ushort.TryParse(splitLine[1], out var y)) throw new FileLoadException($"Error while decoding the line: Was expecting Y coordinate, got <{splitLine[1]}>.");
-                if (!byte.TryParse(splitLine[2], out var onFlag) || onFlag > 1) throw new FileLoadException($"Error while decoding the line: Was expecting <0/1> flag, got <{splitLine[2]}>.");
+                if (!ushort.TryParse(token0, out var x)) throw new FileLoadException($"Error while decoding the line: Was expecting X coordinate, got <{token0}>.");
+                if (!ushort.TryParse(token1, out var y)) throw new FileLoadException($"Error while decoding the line: Was expecting Y coordinate, got <{token1}>.");
+                if (!byte.TryParse(token2, out var onFlag) || onFlag > 1) throw new FileLoadException($"Error while decoding the line: Was expecting <0/1> flag, got <{token2}>.");
 
-                currentLayer.Add([x, y, onFlag]);
+                currentLayer.Add((x, y, onFlag));
 
                 continue;
             }
@@ -443,6 +443,36 @@ public sealed class QDTFile : FileFormat
         }
 
         if (expecting != QDTFileLineExpect.End) throw new FileLoadException($"Error while decoding the file: The file end was expected but got: <{expecting}>");
+    }
+
+    /// <summary>
+    /// Splits a line by comma, trimming the tokens and ignoring the empty ones. Only the first three tokens are returned.
+    /// </summary>
+    /// <returns>The number of non-empty tokens on the line</returns>
+    private static int Tokenize(ReadOnlySpan<char> line, out ReadOnlySpan<char> token0,
+        out ReadOnlySpan<char> token1, out ReadOnlySpan<char> token2)
+    {
+        token0 = token1 = token2 = default;
+        var count = 0;
+
+        while (!line.IsEmpty)
+        {
+            var separator = line.IndexOf(',');
+            var token = (separator < 0 ? line : line[..separator]).Trim();
+            line = separator < 0 ? default : line[(separator + 1)..];
+            if (token.IsEmpty) continue;
+
+            switch (count)
+            {
+                case 0: token0 = token; break;
+                case 1: token1 = token; break;
+                case 2: token2 = token; break;
+            }
+
+            count++;
+        }
+
+        return count;
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)

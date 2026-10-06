@@ -52,7 +52,12 @@ public partial class ToolPCBExposureControl : ToolControl
     public Bitmap? PreviewImage
     {
         get => _previewImage;
-        set => RaiseAndSetIfChanged(ref _previewImage, value);
+        set
+        {
+            var previous = _previewImage;
+            if (!RaiseAndSetIfChanged(ref _previewImage, value)) return;
+            previous.DisposeDeferred();
+        }
     }
 
     public OperationPCBExposure.PCBExposureFile? SelectedFile
@@ -166,7 +171,6 @@ public partial class ToolPCBExposureControl : ToolControl
             var file = (OperationPCBExposure.PCBExposureFile)_selectedFile.Clone();
             file.InvertPolarity = ExcellonDrillFormat.Extensions.AsValueEnumerable()
                 .Any(extension => file.IsExtension(extension));
-            _previewImage?.Dispose();
             using var mat = Operation.GetMat(file, out var contentBounds);
 
             if (_cropPreview)

@@ -483,20 +483,19 @@ public sealed class PHZFile : FileFormat
                 }
                 else
                 {
-                    for (uint i = 0; i < code; i++)
+                    if (code > limit - index)
                     {
-                        if (index < limit)
-                        {
-                            span[index] = lastColor;
-                        }
-                        else
-                        {
-                            image.Dispose();
-                            throw new FileLoadException("Corrupted RLE data.");
-                        }
-
-                        index++;
+                        image.Dispose();
+                        throw new FileLoadException("Corrupted RLE data.");
                     }
+
+                    // The image is zero initialized, black runs do not need to be written
+                    if (lastColor != 0)
+                    {
+                        span.Slice(index, code).Fill(lastColor);
+                    }
+
+                    index += code;
                 }
             }
 
@@ -1161,21 +1160,7 @@ public sealed class PHZFile : FileFormat
         var init = seed * 0x34a32231;
         var key = (layerIndex ^ 0x3fad2212) * seed * 0x4910913d;
 
-        var index = 0;
-        for (var i = 0; i < input.Length; i++)
-        {
-            var k = (byte)(key >> (8 * index));
-
-            index++;
-
-            if ((index & 3) == 0)
-            {
-                key += init;
-                index = 0;
-            }
-
-            input[i] = (byte)(input[i] ^ k);
-        }
+        XorKeystream(input, key, init);
     }
 
     #endregion

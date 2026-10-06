@@ -483,7 +483,7 @@ public sealed class OSLAFile : FileFormat
             // Need to fill what we don't know
             if (HeaderSettings.PreviewTableSize > sizeofPreview)
             {
-                outputFile.Seek(HeaderSettings.LayerTableSize - sizeofPreview, SeekOrigin.Current);
+                outputFile.Seek(HeaderSettings.PreviewTableSize - sizeofPreview, SeekOrigin.Current);
             }
             outputFile.WriteBytes(bytes);
                 
@@ -497,10 +497,10 @@ public sealed class OSLAFile : FileFormat
         outputFile.Seek(HeaderSettings.LayerTableSize * LayerCount, SeekOrigin.Current); // Start of layer data
 
         var layersHash = new Dictionary<string, uint>();
-            
+        var layerBytes = new byte[LayerCount][];
+
         foreach (var batch in BatchLayersIndexes())
         {
-            var layerBytes = new byte[LayerCount][];
 
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
@@ -621,7 +621,7 @@ public sealed class OSLAFile : FileFormat
             // Need to fill what we don't know
             if (HeaderSettings.PreviewTableSize > 8)
             {
-                inputFile.Seek(HeaderSettings.LayerTableSize - 8, SeekOrigin.Current);
+                inputFile.Seek(HeaderSettings.PreviewTableSize - 8, SeekOrigin.Current);
             }
 
             var bytes = inputFile.ReadBytes((int)preview.ImageLength);
@@ -661,10 +661,9 @@ public sealed class OSLAFile : FileFormat
         if (DecodeType == FileDecodeType.Full)
         {
             progress.Reset(OperationProgress.StatusDecodeLayers, HeaderSettings.LayerCount);
+            var layerBytes = new byte[LayerCount][];
             foreach (var batch in BatchLayersIndexes())
             {
-                var layerBytes = new byte[LayerCount][];
-
                 foreach (var layerIndex in batch)
                 {
                     progress.PauseOrCancelIfRequested();

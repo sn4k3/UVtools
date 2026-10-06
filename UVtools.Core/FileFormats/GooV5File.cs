@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using BinarySerialization;
 using DotNext.Buffers;
 using Emgu.CV;
+using Emgu.CV.CvEnum;
 using EmguExtensions;
 using UVtools.Core.Exceptions;
 using UVtools.Core.Extensions;
@@ -159,46 +160,76 @@ public sealed class GooV5File : FileFormat
         }
 
         public static byte[] Encode(ReadOnlySpan<byte> pixels, byte pixelBw)
+            => Encode(pixels, pixelBw, false);
+
+        /// <summary>
+        /// Encodes the pixels as a layer partition block: layer magic, VUF data and the checksum byte.
+        /// </summary>
+        internal static byte[] EncodeFramed(ReadOnlySpan<byte> pixels, byte pixelBw)
+            => Encode(pixels, pixelBw, true);
+
+        private static byte[] Encode(ReadOnlySpan<byte> pixels, byte pixelBw, bool framed)
         {
-            if (pixels.IsEmpty || pixelBw == 0 || pixelBw > 8) return [];
+            if (pixels.IsEmpty || pixelBw == 0 || pixelBw > 8)
+                return framed ? [LayerMagic, unchecked((byte)~0)] : [];
 
             var output = new BufferWriterSlim<byte>(
                 FileFormat.GetRleBufferInitialCapacity(
                     pixels.Length,
                     estimatedPixelsPerRun: 128,
-                    encodedBytesPerRun: 2));
+                    encodedBytesPerRun: 2) + 2);
             try
             {
+                if (framed) output.Add(LayerMagic);
 
                 var grayMax = (byte)((1 << pixelBw) - 1);
 
                 // UVtools pixels are 8-bit [0,255]; quantize to [0, grayMax] for VUF encoding
-                byte Quantize(byte v)
+                Span<byte> quantize = stackalloc byte[256];
+                for (var v = 0; v < quantize.Length; v++)
                 {
-                    return (byte)((v * grayMax + 127) / 255);
+                    quantize[v] = (byte)((v * grayMax + 127) / 255);
                 }
 
                 byte prevChunkValue = 0;
-                var runValue = Quantize(pixels[0]);
+                var runValue = quantize[pixels[0]];
                 uint run = 0;
 
-                for (var pos = 0; pos < pixels.Length; pos++)
+                var pos = 0;
+                while (pos < pixels.Length)
                 {
-                    var q = Quantize(pixels[pos]);
+                    var q = quantize[pixels[pos]];
+                    var runLength = FileFormat.GetRunLength(pixels, pos);
+                    pos += runLength;
+
                     if (q == runValue)
                     {
-                        run++;
+                        run += (uint)runLength;
                         continue;
                     }
 
                     EncodeChunk(ref output, run, runValue, prevChunkValue, pixelBw, grayMax);
                     prevChunkValue = runValue;
                     runValue = q;
-                    run = 1;
+                    run = (uint)runLength;
                 }
 
                 if (run > 0)
                     EncodeChunk(ref output, run, runValue, prevChunkValue, pixelBw, grayMax);
+
+                if (framed)
+                {
+                    byte checkSum = 0;
+                    foreach (var value in output.WrittenSpan[1..])
+                    {
+                        unchecked
+                        {
+                            checkSum += value;
+                        }
+                    }
+
+                    output.Add((byte)~checkSum);
+                }
 
                 return output.WrittenSpan.ToArray();
             }
@@ -575,23 +606,7 @@ public sealed class GooV5File : FileFormat
 
         public byte[] EncodeImagePartition(Mat image, byte pixelBw)
         {
-            var span = image.GetReadOnlySpanOfBytes();
-            var encoded = VufCodec.Encode(span, pixelBw);
-
-            var result = new byte[encoded.Length + 2];
-            result[0] = LayerMagic;
-            Buffer.BlockCopy(encoded, 0, result, 1, encoded.Length);
-
-            byte checkSum = 0;
-            for (var i = 1; i < result.Length - 1; i++)
-                unchecked
-                {
-                    checkSum += result[i];
-                }
-
-            result[^1] = (byte)~checkSum;
-
-            return result;
+            return VufCodec.EncodeFramed(image.GetReadOnlySpanOfBytes(), pixelBw);
         }
     }
 
@@ -1749,13 +1764,22 @@ public sealed class GooV5File : FileFormat
                 var layerIndex = batchLayerIndexes[bi];
                 using var fullMat = this[layerIndex].LayerMat;
                 var partitionBlocks = new byte[partitions][];
-                for (byte p = 0; p < partitions; p++)
+                if (partitions == 1)
                 {
-                    using var partitionMat = EmguCvExtensions.InitMat(new Size((int)halfWidth, fullMat.Height));
-                    using var fullRoi = fullMat.Roi(
-                        new Rectangle(p * (int)halfWidth, 0, (int)halfWidth, fullMat.Height));
-                    fullRoi.CopyTo(partitionMat);
-                    partitionBlocks[p] = layerData[layerIndex].EncodeImagePartition(partitionMat, pixelBw);
+                    // The only partition is the whole image, no need to copy it
+                    partitionBlocks[0] = layerData[layerIndex].EncodeImagePartition(fullMat, pixelBw);
+                }
+                else
+                {
+                    // Every pixel is overwritten by the copy, so the partition does not need to be zeroed
+                    using var partitionMat = new Mat(new Size((int)halfWidth, fullMat.Height), DepthType.Cv8U, 1);
+                    for (byte p = 0; p < partitions; p++)
+                    {
+                        using var fullRoi = fullMat.Roi(
+                            new Rectangle(p * (int)halfWidth, 0, (int)halfWidth, fullMat.Height));
+                        fullRoi.CopyTo(partitionMat);
+                        partitionBlocks[p] = layerData[layerIndex].EncodeImagePartition(partitionMat, pixelBw);
+                    }
                 }
 
                 batchImageBlocks[bi] = partitionBlocks;

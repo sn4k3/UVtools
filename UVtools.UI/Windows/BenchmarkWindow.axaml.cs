@@ -16,6 +16,7 @@ using StageKit.Primitives.System;
 using UVtools.Core;
 using UVtools.Core.Compressors;
 using UVtools.Core.Extensions;
+using UVtools.Core.FileFormats;
 using UVtools.UI.Extensions;
 using UVtools.UI.Structures;
 
@@ -65,12 +66,12 @@ public partial class BenchmarkWindow : GenericWindow
                 "Intel® Core™ i9-13900K @ 5.5 GHz",
                 "G.Skill Trident Z5 64GB DDR5-6400MHz CL32",
                 [
-                    /*CBBDLP 4K Encode*/new BenchmarkTestResult(181.82f, 2304.15f),
-                    /*CBBDLP 8K Encode*/new BenchmarkTestResult(64.04f, 588.93f),
-                    /*CBT 4K Encode*/new BenchmarkTestResult(243.9f, 3378.38f),
-                    /*CBT 8K Encode*/new BenchmarkTestResult(61.35f, 881.83f),
-                    /*PW0 4K Encode*/new BenchmarkTestResult(235.29f, 3401.66f),
-                    /*PW0 8K Encode*/new BenchmarkTestResult(88.5f, 919.12f),
+                    /*CBBDLP 4K Encode*/new BenchmarkTestResult(1666.67f, 25000f),
+                    /*CBBDLP 8K Encode*/new BenchmarkTestResult(338.98f, 5813.95f),
+                    /*CBT 4K Encode*/new BenchmarkTestResult(952.38f, 11904.76f),
+                    /*CBT 8K Encode*/new BenchmarkTestResult(246.91f, 3067.48f),
+                    /*PW0 4K Encode*/new BenchmarkTestResult(952.38f, 12500f),
+                    /*PW0 8K Encode*/new BenchmarkTestResult(238.1f, 3030.3f),
                     /*PNG 4K Compress*/new BenchmarkTestResult(25.58f, 373.69f),
                     /*PNG 8K Compress*/new BenchmarkTestResult(6.37f, 89.73f),
                     /*GZip 4K Compress*/new BenchmarkTestResult(400f, 5882.35f),
@@ -79,10 +80,10 @@ public partial class BenchmarkWindow : GenericWindow
                     /*Deflate 8K Compress*/new BenchmarkTestResult(106.95f, 1572.33f),
                     /*Brotli 4K Compress*/new BenchmarkTestResult(555.56f, 10204.08f),
                     /*Brotli 8K Compress*/new BenchmarkTestResult(181.82f, 3246.75f),
-                    /*LZ4 4K Compress*/new BenchmarkTestResult(1111.11f, 17241.38f),
-                    /*LZ4 8K Compress*/new BenchmarkTestResult(294.29f, 5208.33f),
-                    /*Zstd 4K Compress*/new BenchmarkTestResult(344.83f, 3846.15f),
-                    /*Zstd 8K Compress*/new BenchmarkTestResult(119.05f, 1079.91f),
+                    /*LZ4 4K Compress*/new BenchmarkTestResult(1111.11f, 17857.14f),
+                    /*LZ4 8K Compress*/new BenchmarkTestResult(307.69f, 5208.33f),
+                    /*Zstd 4K Compress*/new BenchmarkTestResult(487.8f, 7692.31f),
+                    /*Zstd 8K Compress*/new BenchmarkTestResult(151.52f, 2500f),
                     /*GC Memory Copy 4K*/new BenchmarkTestResult(3333.33f, 4385.96f),
                     /*GC Memory Copy 8K*/new BenchmarkTestResult(555.56f, 1655.63f),
                     /*Pooled Memory Copy 4K*/new BenchmarkTestResult(4000, 9259.26f),
@@ -474,207 +475,13 @@ public partial class BenchmarkWindow : GenericWindow
 
     #region Tests
 
-    public byte[] EncodeCbddlpImage(Mat image, byte bit = 0)
-    {
-        List<byte> rawData = [];
-        var span = image.GetReadOnlySpanOfBytes();
+    // Uses the same encoders the file formats use
+    public byte[] EncodeCbddlpImage(Mat image) =>
+        BitPlaneRle.EncodePlane(image.GetReadOnlySpanOfBytes(), 127, 0x7d);
 
-        var obit = false;
-        var rep = 0;
+    private byte[] EncodeCbtImage(Mat image) => CtbRleCodec.Encode(image.GetReadOnlySpanOfBytes());
 
-        //ngrey:= uint16(r | g | b)
-        // thresholds:
-        // aa 1:  127
-        // aa 2:  255 127
-        // aa 4:  255 191 127 63
-        // aa 8:  255 223 191 159 127 95 63 31
-        var threshold = (byte)(256 / 1 * bit - 1);
-
-        void AddRep()
-        {
-            if (rep <= 0)
-                return;
-
-            var by = (byte)rep;
-
-            if (obit)
-            {
-                by |= 0x80;
-                //bitsOn += uint(rep)
-            }
-
-            rawData.Add(by);
-        }
-
-        for (var pixel = 0; pixel < span.Length; pixel++)
-        {
-            var nbit = span[pixel] >= threshold;
-
-            if (nbit == obit)
-            {
-                rep++;
-
-                if (rep == 0x7d)
-                {
-                    AddRep();
-                    rep = 0;
-                }
-            }
-            else
-            {
-                AddRep();
-                obit = nbit;
-                rep = 1;
-            }
-        }
-
-        // Collect stragglers
-        AddRep();
-
-        return rawData.ToArray();
-    }
-
-    private byte[] EncodeCbtImage(Mat image)
-    {
-        List<byte> rawData = [];
-        byte color = byte.MaxValue >> 1;
-        uint stride = 0;
-        var span = image.GetReadOnlySpanOfBytes();
-
-        void AddRep()
-        {
-            if (stride == 0)
-            {
-                return;
-            }
-
-            if (stride > 1)
-            {
-                color |= 0x80;
-            }
-
-            rawData.Add(color);
-
-            if (stride <= 1)
-            {
-                // no run needed
-                return;
-            }
-
-            if (stride <= 0x7f)
-            {
-                rawData.Add((byte)stride);
-                return;
-            }
-
-            if (stride <= 0x3fff)
-            {
-                rawData.Add((byte)((stride >> 8) | 0x80));
-                rawData.Add((byte)stride);
-                return;
-            }
-
-            if (stride <= 0x1fffff)
-            {
-                rawData.Add((byte)((stride >> 16) | 0xc0));
-                rawData.Add((byte)(stride >> 8));
-                rawData.Add((byte)stride);
-                return;
-            }
-
-            if (stride <= 0xfffffff)
-            {
-                rawData.Add((byte)((stride >> 24) | 0xe0));
-                rawData.Add((byte)(stride >> 16));
-                rawData.Add((byte)(stride >> 8));
-                rawData.Add((byte)stride);
-            }
-        }
-
-        for (var pixel = 0; pixel < span.Length; pixel++)
-        {
-            var grey7 = (byte)(span[pixel] >> 1);
-
-            if (grey7 == color)
-            {
-                stride++;
-            }
-            else
-            {
-                AddRep();
-                color = grey7;
-                stride = 1;
-            }
-        }
-
-        AddRep();
-
-        return rawData.ToArray();
-    }
-
-    public byte[] EncodePW0Image(Mat image)
-    {
-        List<byte> rawData = [];
-        var span = image.GetReadOnlySpanOfBytes();
-
-        var lastColor = -1;
-        var reps = 0;
-
-        void PutReps()
-        {
-            while (reps > 0)
-            {
-                var done = reps;
-
-                if (lastColor == 0 || lastColor == 0xf)
-                {
-                    if (done > 0xfff)
-                    {
-                        done = 0xfff;
-                    }
-                    //more:= []byte{ 0, 0}
-                    //binary.BigEndian.PutUint16(more, uint16(done | (color << 12)))
-
-                    //rle = append(rle, more...)
-
-                    var more = (ushort)(done | (lastColor << 12));
-                    rawData.Add((byte)(more >> 8));
-                    rawData.Add((byte)more);
-                }
-                else
-                {
-                    if (done > 0xf)
-                    {
-                        done = 0xf;
-                    }
-
-                    rawData.Add((byte)(done | (lastColor << 4)));
-                }
-
-                reps -= done;
-            }
-        }
-
-        for (var i = 0; i < span.Length; i++)
-        {
-            var color = span[i] >> 4;
-
-            if (color == lastColor)
-            {
-                reps++;
-            }
-            else
-            {
-                PutReps();
-                lastColor = color;
-                reps = 1;
-            }
-        }
-
-        PutReps();
-
-        return rawData.ToArray();
-    }
+    public byte[] EncodePW0Image(Mat image) => AnycubicFile.EncodePW0(image);
 
     public static Mat RandomMat(int width, int height)
     {

@@ -480,34 +480,19 @@ public sealed class GR1File : FileFormat
 
                     using (var mat = layer.LayerMat)
                     {
-                        var span = mat.GetReadOnlySpanOfBytes();
+                        var rect = layer.BoundingRectangle;
+                        using var columns = ColumnLines.TransposeRoi(mat, rect);
+                        var columnsSpan = columns.IsEmpty ? default : columns.GetReadOnlySpanOfBytes();
                         uint lineCount = 0;
 
-                        for (var x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++)
+                        for (var col = 0; col < rect.Width; col++)
                         {
-                            var y = layer.BoundingRectangle.Y;
-                            var startY = -1;
-                            for (; y < layer.BoundingRectangle.Bottom; y++)
+                            var column = columnsSpan.Slice(col * rect.Height, rect.Height);
+                            var index = 0;
+                            while (ColumnLines.TryGetNextWhiteRun(column, 128, ref index, out var start, out var length))
                             {
-                                var pos = mat.GetPixelPos(x, y);
-                                if (span[pos] < 128) // Black pixel
-                                {
-                                    if (startY == -1) continue; // Keep ignoring
-                                    LayerLine.WriteBytes(writer.GetSpan(6), (ushort)startY, (ushort)(y - 1), (ushort)x);
-                                    writer.Advance(6);
-                                    startY = -1;
-                                    lineCount++;
-                                }
-                                else
-                                {
-                                    if (startY >= 0) continue; // Keep sum
-                                    startY = y;
-                                }
-                            }
-
-                            if (startY >= 0)
-                            {
-                                LayerLine.WriteBytes(writer.GetSpan(6), (ushort)startY, (ushort)(y - 1), (ushort)x);
+                                LayerLine.WriteBytes(writer.GetSpan(6), (ushort)(rect.Y + start),
+                                    (ushort)(rect.Y + start + length - 1), (ushort)(rect.X + col));
                                 writer.Advance(6);
                                 lineCount++;
                             }
@@ -595,8 +580,9 @@ public sealed class GR1File : FileFormat
                     {
                         progress.PauseIfRequested();
 
-                        using (var mat = EmguCvExtensions.InitMat(Resolution))
+                        using (var columns = ColumnLines.CreateColumns(Resolution))
                         {
+                            var canvas = new ColumnLines.Canvas(columns, Resolution);
                             var lineData = linesBytes[layerIndex].Span;
                             for (var i = 0; i < lineData.Length; i += 6)
                             {
@@ -604,10 +590,10 @@ public sealed class GR1File : FileFormat
                                 var endY = BinaryPrimitives.ReadUInt16BigEndian(lineData[(i + 2)..]);
                                 var startX = BinaryPrimitives.ReadUInt16BigEndian(lineData[(i + 4)..]);
 
-                                CvInvoke.Line(mat, new Point(startX, startY), new Point(startX, endY),
-                                    EmguCvExtensions.WhiteColor);
+                                canvas.Line(startX, startY, endY, byte.MaxValue);
                             }
 
+                            using var mat = ColumnLines.ToImage(columns);
                             _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
                         }
 
