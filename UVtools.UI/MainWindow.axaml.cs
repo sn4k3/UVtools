@@ -853,10 +853,18 @@ public partial class MainWindow : GenericWindow
         {
             Settings.General.LastWindowBounds = new Rectangle((int)size.Width, (int)size.Height,
                 Settings.General.LastWindowBounds.X, Settings.General.LastWindowBounds.Y);
-            UpdateLayerTrackerHighlightIssues();
         }));
-        var windowStateObs = this.GetObservable(WindowStateProperty);
-        windowStateObs.Subscribe(new AnonymousObserver<WindowState>(state => UpdateLayerTrackerHighlightIssues()));
+
+        // The window size and state change before the layout is updated, so the tracker canvas would still have the
+        // old height (e.g. maximize/restore). Redraw the issues once the canvas itself was arranged with the new height.
+        var lastIssuesCanvasHeight = LayerNavigationIssuesCanvas.Bounds.Height;
+        LayerNavigationIssuesCanvas.GetObservable(BoundsProperty).Subscribe(new AnonymousObserver<Rect>(bounds =>
+        {
+            if (bounds.Height == lastIssuesCanvasHeight) return;
+            lastIssuesCanvasHeight = bounds.Height;
+            // Do not change the canvas children while the layout pass is running
+            Dispatcher.UIThread.Post(UpdateLayerTrackerHighlightIssues, DispatcherPriority.Loaded);
+        }));
         PositionChanged += (sender, args) =>
         {
             Settings.General.LastWindowBounds = new Rectangle(Settings.General.LastWindowBounds.Width,
