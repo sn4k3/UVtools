@@ -7906,6 +7906,37 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         return new Point(DisplayToPixelPositionX(point.X), DisplayToPixelPositionY(point.Y));
     }
 
+    /// <summary>
+    /// From a display position get the equivalent position on the pixel keeping the sub-pixel precision
+    /// </summary>
+    /// <param name="x">X position in millimeters</param>
+    /// <returns>Resolution position in pixels, where the pixel <c>i</c> covers the range <c>[i, i + 1)</c></returns>
+    public float DisplayToPixelPositionFX(float x)
+    {
+        return x * Xppmm;
+    }
+
+    /// <summary>
+    /// From a display position get the equivalent position on the pixel keeping the sub-pixel precision
+    /// </summary>
+    /// <param name="y">Y position in millimeters</param>
+    /// <returns>Resolution position in pixels, where the pixel <c>i</c> covers the range <c>[i, i + 1)</c></returns>
+    public float DisplayToPixelPositionFY(float y)
+    {
+        return y * Yppmm;
+    }
+
+    /// <summary>
+    /// From a display position get the equivalent position on the pixel keeping the sub-pixel precision
+    /// </summary>
+    /// <param name="x">X position in millimeters</param>
+    /// <param name="y">Y position in millimeters</param>
+    /// <returns>Resolution position in pixels, the truncation of it is the result of <see cref="DisplayToPixelPosition(float,float)"/></returns>
+    public PointF DisplayToPixelPositionF(float x, float y)
+    {
+        return new PointF(DisplayToPixelPositionFX(x), DisplayToPixelPositionFY(y));
+    }
+
     public bool SanitizeBoundingRectangle(ref Rectangle rectangle)
     {
         var oldRectangle = rectangle;

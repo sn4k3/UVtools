@@ -4303,6 +4303,28 @@
             <param name="point"></param>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.DisplayToPixelPositionFX(System.Single)">
+            <summary>
+            From a display position get the equivalent position on the pixel keeping the sub-pixel precision
+            </summary>
+            <param name="x">X position in millimeters</param>
+            <returns>Resolution position in pixels, where the pixel <c>i</c> covers the range <c>[i, i + 1)</c></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.DisplayToPixelPositionFY(System.Single)">
+            <summary>
+            From a display position get the equivalent position on the pixel keeping the sub-pixel precision
+            </summary>
+            <param name="y">Y position in millimeters</param>
+            <returns>Resolution position in pixels, where the pixel <c>i</c> covers the range <c>[i, i + 1)</c></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.DisplayToPixelPositionF(System.Single,System.Single)">
+            <summary>
+            From a display position get the equivalent position on the pixel keeping the sub-pixel precision
+            </summary>
+            <param name="x">X position in millimeters</param>
+            <param name="y">Y position in millimeters</param>
+            <returns>Resolution position in pixels, the truncation of it is the result of <see cref="M:UVtools.Core.FileFormats.FileFormat.DisplayToPixelPosition(System.Single,System.Single)"/></returns>
+        </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.CreateMatWithDummyPixel(System.Drawing.Point,System.Byte)">
             <summary>
             Creates an empty mat of file <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/> size and create a dummy pixel to prevent an empty layer detection
@@ -4727,9 +4749,30 @@
             (0x00: S-shaped acceleration, 0x01: T-shaped acceleration, Default Value: S-shaped acceleration, currently only supports S-shaped acceleration)
             </summary>
         </member>
+        <member name="T:UVtools.Core.FileFormats.OSFFile.VLRHeaderExtra">
+            <summary>
+            The 12 bytes that follow the <see cref="T:UVtools.Core.FileFormats.OSFFile.OSFSettings"/> on the Vlare VLR files, their meaning is unknown.
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.OSFFile.OSFLayerDef.Mark">
             <summary>
             OD OA begins, indicating that the model + support is included; the beginning of 0D 0B, indicating that the layer only has support data
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.OSFFile.OSFLayerDef.EncodeVlrImage(Emgu.CV.Mat,UVtools.Core.Layers.Layer)">
+            <summary>
+            Encodes the layer with the VLR codec, from the start of the first row with a lit pixel up to the end of the
+            row of the last lit pixel.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.OSFFile.VlrExtra">
+            <summary>
+            The extra header bytes only present on the VLR files.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.OSFFile.IsVlr">
+            <summary>
+            Gets if this file is a Vlare VLR file, which has a bigger header and a different layer codec than the OSF.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.OSLAFile.Preview.ResolutionX">
@@ -5096,6 +5139,86 @@
             Splits a line by comma, trimming the tokens and ignoring the empty ones. Only the first three tokens are returned.
             </summary>
             <returns>The number of non-empty tokens on the line</returns>
+        </member>
+        <member name="T:UVtools.Core.FileFormats.VlrRleCodec">
+            <summary>
+            The layer run length codec of the Vlare VLR files (Peopoly Phenom Forge).
+            </summary>
+            <remarks>
+            The stream covers whole image rows, from the first pixel of the start row up to the end of the last row with a lit
+            pixel. Tokens are read sequentially:
+            <list type="bullet">
+            <item><c>00 HH LL</c>: a black run, the length is a 16 bit big endian integer.</item>
+            <item><c>FF L...</c>: a white run, the length is 1 byte when below 0x80, 2 bytes (<c>10xxxxxx</c> + 1 byte) up to
+            0x3FFF, or 3 bytes (<c>110xxxxx</c> + 2 bytes) which is only accepted by the decoder.</item>
+            <item><c>01 N</c>: repeats the previous single gray pixel until its run totals N pixels. It is not counted in the
+            number of lines of the layer.</item>
+            <item>any other byte: a single pixel with that exact 8 bit gray.</item>
+            </list>
+            The number of lines of a layer is the count of the black, white and single pixel tokens, the repeat tokens excluded,
+            so the length of the stream is found by counting tokens, never by searching for the next layer mark.
+            </remarks>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.VlrRleCodec.MaxBlackRun">
+            <summary>
+            The longest black run a single token is able to carry, longer runs are split.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.VlrRleCodec.MaxWhiteRun">
+            <summary>
+            The longest white run the encoder writes in a single token, longer runs are split.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.VlrRleCodec.MaxGrayRun">
+            <summary>
+            The longest gray run a single repeat token is able to carry, longer runs are split.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.VlrRleCodec.Decode(System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Int32)">
+            <summary>
+            Decodes <paramref name="rle"/> into <paramref name="pixels"/>.
+            </summary>
+            <param name="rle">The encoded data of one layer</param>
+            <param name="pixels">A zero initialized 8 bit image buffer, black runs only advance the position</param>
+            <param name="startPixel">The index of the first pixel the data covers, the start of the start row</param>
+            <returns>The index of the pixel after the last decoded pixel</returns>
+            <exception cref="T:System.IO.FileLoadException">When the data is malformed or the pixels do not fit in the image</exception>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.VlrRleCodec.Encode(System.ReadOnlySpan{System.Byte},System.UInt32@)">
+            <summary>
+            Encodes the rows of an 8 bit image.
+            </summary>
+            <param name="pixels">The pixels to encode, from the start of the first row to the end of the last row</param>
+            <param name="numberOfLines">The number of black, white and single pixel tokens written, the repeats excluded</param>
+            <returns>The encoded data</returns>
+            <remarks>The gray 1 is not representable as a single pixel, it is written as the gray 2.</remarks>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.VlrRleCodec.GetLength(System.ReadOnlySpan{System.Byte},System.UInt32,System.Boolean)">
+            <summary>
+            Gets the length of the encoded data of a layer by counting its tokens.
+            </summary>
+            <param name="data">The data that starts at the first token of the layer</param>
+            <param name="numberOfLines">The number of lines of the layer</param>
+            <param name="isEndOfData">True when <paramref name="data"/> reaches the end of the file</param>
+            <returns>
+            The length of the encoded data, which includes the repeat tokens that follow the last counted token,
+            or -1 when <paramref name="data"/> is too short to tell and <paramref name="isEndOfData"/> is false
+            </returns>
+            <exception cref="T:System.IO.FileLoadException">When the data is malformed or ends before all the lines were found</exception>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.VlrRleCodec.Read(System.IO.Stream,System.UInt32)">
+            <summary>
+            Reads the encoded data of a layer from the stream, which is left right after the data.
+            </summary>
+            <param name="stream">A seekable stream positioned at the first token of the layer</param>
+            <param name="numberOfLines">The number of lines of the layer, 0 for an empty layer</param>
+            <returns>The encoded data</returns>
+            <exception cref="T:System.IO.FileLoadException">When the data is malformed or the stream ends before all the lines were found</exception>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.VlrRleCodec.GetWhiteRunLengthSize(System.Byte)">
+            <summary>
+            Gets how many bytes the length of a white run takes from its first byte.
+            </summary>
         </member>
         <member name="T:UVtools.Core.GCode.GCodeBuilder">
             <inheritdoc/>
@@ -7147,6 +7270,82 @@
             </summary>
             <param name="parameters"></param>
             <returns></returns>
+        </member>
+        <member name="T:UVtools.Core.Objects.DirectedSegmentF">
+            <summary>
+            A directed line segment in pixel space, the coordinates are continuous: the pixel with index <c>i</c> covers the
+            range <c>[i, i + 1)</c> and its center is at <c>i + 0.5</c>.
+            </summary>
+            <param name="StartX">Start X position</param>
+            <param name="StartY">Start Y position</param>
+            <param name="EndX">End X position</param>
+            <param name="EndY">End Y position</param>
+        </member>
+        <member name="M:UVtools.Core.Objects.DirectedSegmentF.#ctor(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            A directed line segment in pixel space, the coordinates are continuous: the pixel with index <c>i</c> covers the
+            range <c>[i, i + 1)</c> and its center is at <c>i + 0.5</c>.
+            </summary>
+            <param name="StartX">Start X position</param>
+            <param name="StartY">Start Y position</param>
+            <param name="EndX">End X position</param>
+            <param name="EndY">End Y position</param>
+        </member>
+        <member name="P:UVtools.Core.Objects.DirectedSegmentF.StartX">
+            <summary>Start X position</summary>
+        </member>
+        <member name="P:UVtools.Core.Objects.DirectedSegmentF.StartY">
+            <summary>Start Y position</summary>
+        </member>
+        <member name="P:UVtools.Core.Objects.DirectedSegmentF.EndX">
+            <summary>End X position</summary>
+        </member>
+        <member name="P:UVtools.Core.Objects.DirectedSegmentF.EndY">
+            <summary>End Y position</summary>
+        </member>
+        <member name="T:UVtools.Core.Objects.DirectedSegmentFiller">
+            <summary>
+            Rasterizes an unordered set of directed segments into a 8 bit image using the non-zero winding rule.
+            </summary>
+            <remarks>
+            Unlike the even-odd rule, the non-zero rule keeps overlapping or touching shapes of the same orientation filled,
+            while a shape with the opposite orientation inside another still creates a hole.
+            </remarks>
+        </member>
+        <member name="F:UVtools.Core.Objects.DirectedSegmentFiller.Edge.RowStart">
+            <summary>First pixel row whose center is crossed by this edge</summary>
+        </member>
+        <member name="F:UVtools.Core.Objects.DirectedSegmentFiller.Edge.RowEnd">
+            <summary>Last pixel row whose center is crossed by this edge, inclusive</summary>
+        </member>
+        <member name="F:UVtools.Core.Objects.DirectedSegmentFiller.Edge.X0">
+            <summary>X where the edge crosses <see cref="F:UVtools.Core.Objects.DirectedSegmentFiller.Edge.Y0"/></summary>
+        </member>
+        <member name="F:UVtools.Core.Objects.DirectedSegmentFiller.Edge.Y0">
+            <summary>The lowest Y of the edge</summary>
+        </member>
+        <member name="F:UVtools.Core.Objects.DirectedSegmentFiller.Edge.DxDy">
+            <summary>X change for each unit of Y</summary>
+        </member>
+        <member name="F:UVtools.Core.Objects.DirectedSegmentFiller.Edge.Direction">
+            <summary>+1 when the segment goes down in Y (to a higher Y), -1 when it goes up</summary>
+        </member>
+        <member name="M:UVtools.Core.Objects.DirectedSegmentFiller.Fill(System.ReadOnlySpan{UVtools.Core.Objects.DirectedSegmentF},System.Span{System.Byte},System.Int32,System.Int32,System.Int32,System.Byte)">
+            <summary>
+            Fills the area enclosed by the segments with <paramref name="value"/> using the non-zero winding rule.
+            </summary>
+            <remarks>
+            The image is sampled at the pixel centers: a pixel is filled when its center <c>(x + 0.5, y + 0.5)</c> has a
+            non-zero winding number. Edges are half open in Y, so an edge lying exactly on a row center belongs to the row
+            below it and the result is deterministic and independent of the segments order. Horizontal segments and
+            segments with non finite coordinates do not contribute. Pixels outside the image are clipped.
+            </remarks>
+            <param name="segments">The directed segments, in any order</param>
+            <param name="pixels">The 8 bit image to write into</param>
+            <param name="width">Image width in pixels</param>
+            <param name="height">Image height in pixels</param>
+            <param name="stride">Bytes between the start of two rows</param>
+            <param name="value">The value to write to the filled pixels</param>
         </member>
         <member name="T:UVtools.Core.Objects.ExposureItem">
             <inheritdoc/>

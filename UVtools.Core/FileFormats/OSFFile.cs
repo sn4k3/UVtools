@@ -6,15 +6,15 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using BinarySerialization;
-using DotNext.Buffers;
-using Emgu.CV;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
+using BinarySerialization;
+using DotNext.Buffers;
+using Emgu.CV;
 using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -28,6 +28,7 @@ public sealed class OSFFile : FileFormat
     #region Constants
 
     public const ushort DEFAULT_VERSION = 4;
+    public const ushort VLR_VERSION = 6;
 
     #endregion
 
@@ -49,11 +50,9 @@ public sealed class OSFFile : FileFormat
         [FieldEndianness(Endianness.Big)]
         public byte ImageLog { get; set; } = 2;
 
-
         public override string ToString()
         {
-            return
-                $"{nameof(HeaderLength)}: {HeaderLength}, {nameof(Version)}: {Version}, {nameof(ImageLog)}: {ImageLog}";
+            return $"{nameof(HeaderLength)}: {HeaderLength}, {nameof(Version)}: {Version}, {nameof(ImageLog)}: {ImageLog}";
         }
     }
 
@@ -120,7 +119,8 @@ public sealed class OSFFile : FileFormat
 
         [FieldOrder(14)]
         [FieldEndianness(Endianness.Big)]
-        public UInt24BigEndian ExposureTimeMagnified100Times { get; set; } = new((uint)(DefaultExposureTime * 1000));
+        public UInt24BigEndian ExposureTimeMagnified100Times { get; set; } =
+            new((uint)(DefaultExposureTime * 1000));
 
         [FieldOrder(15)]
         [FieldEndianness(Endianness.Big)]
@@ -148,7 +148,8 @@ public sealed class OSFFile : FileFormat
 
         [FieldOrder(20)]
         [FieldEndianness(Endianness.Big)]
-        public UInt24BigEndian TransitionLayerIntervalTimeDifferenceMagnified100Times { get; set; } = new();
+        public UInt24BigEndian TransitionLayerIntervalTimeDifferenceMagnified100Times { get; set; } =
+            new();
 
         [FieldOrder(21)]
         [FieldEndianness(Endianness.Big)]
@@ -177,7 +178,8 @@ public sealed class OSFFile : FileFormat
 
         [FieldOrder(27)]
         [FieldEndianness(Endianness.Big)]
-        public UInt24BigEndian LiftHeightTotalMagnified1000Times { get; set; } = new((uint)(DefaultLiftHeight * 1000));
+        public UInt24BigEndian LiftHeightTotalMagnified1000Times { get; set; } =
+            new((uint)(DefaultLiftHeight * 1000));
 
         [FieldOrder(28)]
         [FieldEndianness(Endianness.Big)]
@@ -322,8 +324,26 @@ public sealed class OSFFile : FileFormat
 
         public override string ToString()
         {
-            return
-                $"{nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(PixelUmMagnified100Times)}: {PixelUmMagnified100Times}, {nameof(Mirror)}: {Mirror}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LightPWM)}: {LightPWM}, {nameof(AntiAliasEnabled)}: {AntiAliasEnabled}, {nameof(DistortionEnabled)}: {DistortionEnabled}, {nameof(DelayedExposureActivationEnabled)}: {DelayedExposureActivationEnabled}, {nameof(LayerCount)}: {LayerCount}, {nameof(NumberParameterSets)}: {NumberParameterSets}, {nameof(LastLayerIndex)}: {LastLayerIndex}, {nameof(LayerHeightUmMagnified100Times)}: {LayerHeightUmMagnified100Times}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(ExposureTimeMagnified100Times)}: {ExposureTimeMagnified100Times}, {nameof(BottomExposureTimeMagnified100Times)}: {BottomExposureTimeMagnified100Times}, {nameof(SupportDelayTimeMagnified100Times)}: {SupportDelayTimeMagnified100Times}, {nameof(BottomSupportDelayTimeMagnified100Times)}: {BottomSupportDelayTimeMagnified100Times}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(TransitionType)}: {TransitionType}, {nameof(TransitionLayerIntervalTimeDifferenceMagnified100Times)}: {TransitionLayerIntervalTimeDifferenceMagnified100Times}, {nameof(WaitTimeAfterCureMagnified100Times)}: {WaitTimeAfterCureMagnified100Times}, {nameof(WaitTimeAfterLiftMagnified100Times)}: {WaitTimeAfterLiftMagnified100Times}, {nameof(WaitTimeBeforeCureMagnified100Times)}: {WaitTimeBeforeCureMagnified100Times}, {nameof(BottomLiftHeightSlowMagnified1000Times)}: {BottomLiftHeightSlowMagnified1000Times}, {nameof(BottomLiftHeightTotalMagnified1000Times)}: {BottomLiftHeightTotalMagnified1000Times}, {nameof(LiftHeightSlowMagnified1000Times)}: {LiftHeightSlowMagnified1000Times}, {nameof(LiftHeightTotalMagnified1000Times)}: {LiftHeightTotalMagnified1000Times}, {nameof(BottomRetractHeightSlowMagnified1000Times)}: {BottomRetractHeightSlowMagnified1000Times}, {nameof(BottomRetractHeightTotalMagnified1000Times)}: {BottomRetractHeightTotalMagnified1000Times}, {nameof(RetractHeightSlowMagnified1000Times)}: {RetractHeightSlowMagnified1000Times}, {nameof(RetractHeightTotalMagnified1000Times)}: {RetractHeightTotalMagnified1000Times}, {nameof(AccelerationType)}: {AccelerationType}, {nameof(BottomLiftSpeedStart)}: {BottomLiftSpeedStart}, {nameof(BottomLiftSpeedSlow)}: {BottomLiftSpeedSlow}, {nameof(BottomLiftSpeedFast)}: {BottomLiftSpeedFast}, {nameof(BottomLiftAccelerationChange)}: {BottomLiftAccelerationChange}, {nameof(LiftSpeedStart)}: {LiftSpeedStart}, {nameof(LiftSpeedSlow)}: {LiftSpeedSlow}, {nameof(LiftSpeedFast)}: {LiftSpeedFast}, {nameof(LiftAccelerationChange)}: {LiftAccelerationChange}, {nameof(BottomRetractSpeedStart)}: {BottomRetractSpeedStart}, {nameof(BottomRetractSpeedSlow)}: {BottomRetractSpeedSlow}, {nameof(BottomRetractSpeedFast)}: {BottomRetractSpeedFast}, {nameof(BottomRetractAccelerationChange)}: {BottomRetractAccelerationChange}, {nameof(RetractSpeedStart)}: {RetractSpeedStart}, {nameof(RetractSpeedSlow)}: {RetractSpeedSlow}, {nameof(RetractSpeedFast)}: {RetractSpeedFast}, {nameof(RetractAccelerationChange)}: {RetractAccelerationChange}, {nameof(BottomLiftSpeedEnd)}: {BottomLiftSpeedEnd}, {nameof(BottomLiftDecelerationChange)}: {BottomLiftDecelerationChange}, {nameof(LiftSpeedEnd)}: {LiftSpeedEnd}, {nameof(LiftDecelerationChange)}: {LiftDecelerationChange}, {nameof(BottomRetractSpeedEnd)}: {BottomRetractSpeedEnd}, {nameof(BottomRetractDecelerationChange)}: {BottomRetractDecelerationChange}, {nameof(RetractSpeedEnd)}: {RetractSpeedEnd}, {nameof(RetractDecelerationChange)}: {RetractDecelerationChange}, {nameof(BottomWaitTimeAfterCureMagnified100Times)}: {BottomWaitTimeAfterCureMagnified100Times}, {nameof(BottomWaitTimeAfterLiftMagnified100Times)}: {BottomWaitTimeAfterLiftMagnified100Times}, {nameof(BottomWaitTimeBeforeCureMagnified100Times)}: {BottomWaitTimeBeforeCureMagnified100Times}, {nameof(Reserved)}: {Reserved}, {nameof(ProtocolType)}: {ProtocolType}";
+            return $"{nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(PixelUmMagnified100Times)}: {PixelUmMagnified100Times}, {nameof(Mirror)}: {Mirror}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LightPWM)}: {LightPWM}, {nameof(AntiAliasEnabled)}: {AntiAliasEnabled}, {nameof(DistortionEnabled)}: {DistortionEnabled}, {nameof(DelayedExposureActivationEnabled)}: {DelayedExposureActivationEnabled}, {nameof(LayerCount)}: {LayerCount}, {nameof(NumberParameterSets)}: {NumberParameterSets}, {nameof(LastLayerIndex)}: {LastLayerIndex}, {nameof(LayerHeightUmMagnified100Times)}: {LayerHeightUmMagnified100Times}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(ExposureTimeMagnified100Times)}: {ExposureTimeMagnified100Times}, {nameof(BottomExposureTimeMagnified100Times)}: {BottomExposureTimeMagnified100Times}, {nameof(SupportDelayTimeMagnified100Times)}: {SupportDelayTimeMagnified100Times}, {nameof(BottomSupportDelayTimeMagnified100Times)}: {BottomSupportDelayTimeMagnified100Times}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(TransitionType)}: {TransitionType}, {nameof(TransitionLayerIntervalTimeDifferenceMagnified100Times)}: {TransitionLayerIntervalTimeDifferenceMagnified100Times}, {nameof(WaitTimeAfterCureMagnified100Times)}: {WaitTimeAfterCureMagnified100Times}, {nameof(WaitTimeAfterLiftMagnified100Times)}: {WaitTimeAfterLiftMagnified100Times}, {nameof(WaitTimeBeforeCureMagnified100Times)}: {WaitTimeBeforeCureMagnified100Times}, {nameof(BottomLiftHeightSlowMagnified1000Times)}: {BottomLiftHeightSlowMagnified1000Times}, {nameof(BottomLiftHeightTotalMagnified1000Times)}: {BottomLiftHeightTotalMagnified1000Times}, {nameof(LiftHeightSlowMagnified1000Times)}: {LiftHeightSlowMagnified1000Times}, {nameof(LiftHeightTotalMagnified1000Times)}: {LiftHeightTotalMagnified1000Times}, {nameof(BottomRetractHeightSlowMagnified1000Times)}: {BottomRetractHeightSlowMagnified1000Times}, {nameof(BottomRetractHeightTotalMagnified1000Times)}: {BottomRetractHeightTotalMagnified1000Times}, {nameof(RetractHeightSlowMagnified1000Times)}: {RetractHeightSlowMagnified1000Times}, {nameof(RetractHeightTotalMagnified1000Times)}: {RetractHeightTotalMagnified1000Times}, {nameof(AccelerationType)}: {AccelerationType}, {nameof(BottomLiftSpeedStart)}: {BottomLiftSpeedStart}, {nameof(BottomLiftSpeedSlow)}: {BottomLiftSpeedSlow}, {nameof(BottomLiftSpeedFast)}: {BottomLiftSpeedFast}, {nameof(BottomLiftAccelerationChange)}: {BottomLiftAccelerationChange}, {nameof(LiftSpeedStart)}: {LiftSpeedStart}, {nameof(LiftSpeedSlow)}: {LiftSpeedSlow}, {nameof(LiftSpeedFast)}: {LiftSpeedFast}, {nameof(LiftAccelerationChange)}: {LiftAccelerationChange}, {nameof(BottomRetractSpeedStart)}: {BottomRetractSpeedStart}, {nameof(BottomRetractSpeedSlow)}: {BottomRetractSpeedSlow}, {nameof(BottomRetractSpeedFast)}: {BottomRetractSpeedFast}, {nameof(BottomRetractAccelerationChange)}: {BottomRetractAccelerationChange}, {nameof(RetractSpeedStart)}: {RetractSpeedStart}, {nameof(RetractSpeedSlow)}: {RetractSpeedSlow}, {nameof(RetractSpeedFast)}: {RetractSpeedFast}, {nameof(RetractAccelerationChange)}: {RetractAccelerationChange}, {nameof(BottomLiftSpeedEnd)}: {BottomLiftSpeedEnd}, {nameof(BottomLiftDecelerationChange)}: {BottomLiftDecelerationChange}, {nameof(LiftSpeedEnd)}: {LiftSpeedEnd}, {nameof(LiftDecelerationChange)}: {LiftDecelerationChange}, {nameof(BottomRetractSpeedEnd)}: {BottomRetractSpeedEnd}, {nameof(BottomRetractDecelerationChange)}: {BottomRetractDecelerationChange}, {nameof(RetractSpeedEnd)}: {RetractSpeedEnd}, {nameof(RetractDecelerationChange)}: {RetractDecelerationChange}, {nameof(BottomWaitTimeAfterCureMagnified100Times)}: {BottomWaitTimeAfterCureMagnified100Times}, {nameof(BottomWaitTimeAfterLiftMagnified100Times)}: {BottomWaitTimeAfterLiftMagnified100Times}, {nameof(BottomWaitTimeBeforeCureMagnified100Times)}: {BottomWaitTimeBeforeCureMagnified100Times}, {nameof(Reserved)}: {Reserved}, {nameof(ProtocolType)}: {ProtocolType}";
+        }
+    }
+
+    /// <summary>
+    /// The 12 bytes that follow the <see cref="OSFSettings"/> on the Vlare VLR files, their meaning is unknown.
+    /// </summary>
+    public sealed class VLRHeaderExtra
+    {
+        [FieldOrder(0)]
+        [FieldEndianness(Endianness.Big)]
+        public uint Unknown1 { get; set; } = 368480;
+
+        [FieldOrder(1)]
+        [FieldEndianness(Endianness.Big)]
+        public ulong Unknown2 { get; set; } = 0x6B6A963A824FDE68;
+
+        public override string ToString()
+        {
+            return $"{nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2:X16}";
         }
     }
 
@@ -348,11 +368,10 @@ public sealed class OSFFile : FileFormat
         [FieldEndianness(Endianness.Big)]
         public ushort StartY { get; set; }
 
-        [Ignore] public byte[] EncodedRle { get; set; } = [];
+        [Ignore]
+        public byte[] EncodedRle { get; set; } = [];
 
-        public OSFLayerDef()
-        {
-        }
+        public OSFLayerDef() { }
 
         public override string ToString()
         {
@@ -365,7 +384,9 @@ public sealed class OSFFile : FileFormat
                 FileFormat.GetRleBufferInitialCapacity(
                     mat.ByteCountInt32,
                     estimatedPixelsPerRun: 128,
-                    encodedBytesPerRun: 2));
+                    encodedBytesPerRun: 2
+                )
+            );
             try
             {
                 byte color = 0;
@@ -379,7 +400,8 @@ public sealed class OSFFile : FileFormat
                     ref BufferWriterSlim<byte> rawData,
                     uint stride,
                     byte color,
-                    ref uint lines)
+                    ref uint lines
+                )
                 {
                     switch (stride)
                     {
@@ -453,7 +475,8 @@ public sealed class OSFFile : FileFormat
                 }
 
                 // Left-over
-                if (color != 0) AddRep(ref rawData, stride, color, ref lines);
+                if (color != 0)
+                    AddRep(ref rawData, stride, color, ref lines);
                 stride = (uint)((imageLength - layer.LastPixelIndex - 1) % step);
                 color = 0;
                 AddRep(ref rawData, stride, color, ref lines);
@@ -468,13 +491,45 @@ public sealed class OSFFile : FileFormat
             }
         }
 
+        /// <summary>
+        /// Encodes the layer with the VLR codec, from the start of the first row with a lit pixel up to the end of the
+        /// row of the last lit pixel.
+        /// </summary>
+        internal void EncodeVlrImage(Mat mat, Layer layer)
+        {
+            if (layer.IsEmpty)
+            {
+                NumberOfLines = 0;
+                StartY = 0;
+                EncodedRle = [];
+                return;
+            }
+
+            var width = mat.Width;
+            var firstRow = layer.BoundingRectangle.Y;
+            var endRow = (int)(layer.LastPixelIndex / (uint)width) + 1;
+            StartY = (ushort)firstRow;
+            EncodedRle = VlrRleCodec.Encode(
+                mat.GetReadOnlySpanOfBytes()[(firstRow * width)..(endRow * width)],
+                out var lines
+            );
+            NumberOfLines = lines;
+        }
+
         internal Mat DecodeImage(OSFFile parent)
         {
             var mat = parent.CreateMat();
-            if (NumberOfLines == 0) return mat;
+            if (NumberOfLines == 0)
+                return mat;
             try
             {
                 var pixel = checked((int)(StartY * parent.ResolutionX));
+                if (parent.IsVlr)
+                {
+                    VlrRleCodec.Decode(EncodedRle, mat.GetSpanOfBytes(), pixel);
+                    return mat;
+                }
+
                 for (var n = 0; n < EncodedRle.Length; n++)
                 {
                     var code = EncodedRle[n];
@@ -496,13 +551,19 @@ public sealed class OSFFile : FileFormat
                         }
                         else if ((slen & 0xe0) == 0xc0)
                         {
-                            stride = ((slen & 0x1f) << 16) + (EncodedRle[n + 1] << 8) + EncodedRle[n + 2];
+                            stride =
+                                ((slen & 0x1f) << 16)
+                                + (EncodedRle[n + 1] << 8)
+                                + EncodedRle[n + 2];
                             n += 2;
                         }
                         else if ((slen & 0xf0) == 0xe0)
                         {
-                            stride = ((slen & 0xf) << 24) + (EncodedRle[n + 1] << 16) + (EncodedRle[n + 2] << 8) +
-                                     EncodedRle[n + 3];
+                            stride =
+                                ((slen & 0xf) << 24)
+                                + (EncodedRle[n + 1] << 16)
+                                + (EncodedRle[n + 2] << 8)
+                                + EncodedRle[n + 3];
                             n += 3;
                         }
                         else
@@ -538,64 +599,73 @@ public sealed class OSFFile : FileFormat
 
     public OSFHeader Header { get; private set; } = new();
     public OSFSettings Settings { get; private set; } = new();
+
+    /// <summary>
+    /// The extra header bytes only present on the VLR files.
+    /// </summary>
+    public VLRHeaderExtra VlrExtra { get; private set; } = new();
+
+    /// <summary>
+    /// Gets if this file is a Vlare VLR file, which has a bigger header and a different layer codec than the OSF.
+    /// </summary>
+    public bool IsVlr => FileEndsWith(".vlr");
     public override FileFormatType FileType => FileFormatType.Binary;
 
     public override Endianness FileFormatEndianness => Endianness.Big;
 
     public override FileExtension[] FileExtensions { get; } =
     [
-        new(typeof(OSFFile), "osf", "Vlare Open File Format (OSF)")
+        new(typeof(OSFFile), "osf", "Vlare Open File Format (OSF)"),
+        new(typeof(OSFFile), "vlr", "Vlare (VLR)"),
     ];
 
     public override PrintParameterModifier[] PrintParameterModifiers { get; } =
     [
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
-
         PrintParameterModifier.BottomWaitTimeBeforeCure,
         PrintParameterModifier.WaitTimeBeforeCure,
-
         PrintParameterModifier.BottomExposureTime,
         PrintParameterModifier.ExposureTime,
-
         PrintParameterModifier.BottomWaitTimeAfterCure,
         PrintParameterModifier.WaitTimeAfterCure,
-
         PrintParameterModifier.BottomLiftHeight,
         PrintParameterModifier.BottomLiftSpeed,
         PrintParameterModifier.LiftHeight,
         PrintParameterModifier.LiftSpeed,
-
         PrintParameterModifier.BottomLiftHeight2,
         PrintParameterModifier.BottomLiftSpeed2,
         PrintParameterModifier.LiftHeight2,
         PrintParameterModifier.LiftSpeed2,
-
         PrintParameterModifier.BottomWaitTimeAfterLift,
         PrintParameterModifier.WaitTimeAfterLift,
-
         PrintParameterModifier.BottomRetractSpeed,
         PrintParameterModifier.RetractSpeed,
         PrintParameterModifier.BottomRetractHeight2,
         PrintParameterModifier.BottomRetractSpeed2,
         PrintParameterModifier.RetractHeight2,
         PrintParameterModifier.RetractSpeed2,
-
         PrintParameterModifier.BottomLightPWM,
-        PrintParameterModifier.LightPWM
+        PrintParameterModifier.LightPWM,
     ];
 
     public override Size[] ThumbnailsOriginalSize { get; } =
-    [
-        new(148, 80),
-        new(300, 140),
-        new(208, 116),
-        new(404, 240)
-    ];
+    [new(148, 80), new(300, 140), new(208, 116), new(404, 240)];
 
-    public override uint[] AvailableVersions { get; } = [4];
+    public override uint[] AvailableVersions { get; } = [DEFAULT_VERSION, VLR_VERSION];
 
-    public override uint DefaultVersion => DEFAULT_VERSION;
+    public override uint[] GetAvailableVersionsForExtension(string? extension)
+    {
+        if (string.IsNullOrWhiteSpace(extension))
+            return AvailableVersions;
+        if (extension[0] == '.')
+            extension = extension[1..];
+        return extension.Equals("vlr", StringComparison.OrdinalIgnoreCase)
+            ? [VLR_VERSION]
+            : [DEFAULT_VERSION];
+    }
+
+    public override uint DefaultVersion => IsVlr ? VLR_VERSION : DEFAULT_VERSION;
 
     public override uint Version
     {
@@ -621,13 +691,14 @@ public sealed class OSFFile : FileFormat
 
     public override FlipDirection DisplayMirror
     {
-        get => Settings.Mirror switch
-        {
-            1 => FlipDirection.Horizontally,
-            2 => FlipDirection.Vertically,
-            3 => FlipDirection.Both,
-            _ => FlipDirection.None
-        };
+        get =>
+            Settings.Mirror switch
+            {
+                1 => FlipDirection.Horizontally,
+                2 => FlipDirection.Vertically,
+                3 => FlipDirection.Both,
+                _ => FlipDirection.None,
+            };
         set
         {
             Settings.Mirror = value switch
@@ -636,7 +707,7 @@ public sealed class OSFFile : FileFormat
                 FlipDirection.Horizontally => 1,
                 FlipDirection.Vertically => 2,
                 FlipDirection.Both => 3,
-                _ => throw new ArgumentOutOfRangeException(nameof(value), value, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
             };
         }
     }
@@ -676,8 +747,9 @@ public sealed class OSFFile : FileFormat
     public override ushort TransitionLayerCount
     {
         get => Settings.TransitionLayerCount;
-        set => base.TransitionLayerCount = Settings.TransitionLayerCount =
-            (byte)Math.Min(byte.MaxValue, Math.Min(value, MaximumPossibleTransitionLayerCount));
+        set =>
+            base.TransitionLayerCount = Settings.TransitionLayerCount = (byte)
+                Math.Min(byte.MaxValue, Math.Min(value, MaximumPossibleTransitionLayerCount));
     }
 
     public override float BottomLightOffDelay => BottomWaitTimeBeforeCure;
@@ -750,11 +822,13 @@ public sealed class OSFFile : FileFormat
         set
         {
             value = MathF.Round(value, 2);
-            Settings.BottomLiftHeightTotalMagnified1000Times.Value -=
-                Settings.BottomLiftHeightSlowMagnified1000Times.Value;
+            Settings.BottomLiftHeightTotalMagnified1000Times.Value -= Settings
+                .BottomLiftHeightSlowMagnified1000Times
+                .Value;
             Settings.BottomLiftHeightSlowMagnified1000Times.Value = (uint)(value * 1000);
-            Settings.BottomLiftHeightTotalMagnified1000Times.Value +=
-                Settings.BottomLiftHeightSlowMagnified1000Times.Value;
+            Settings.BottomLiftHeightTotalMagnified1000Times.Value += Settings
+                .BottomLiftHeightSlowMagnified1000Times
+                .Value;
             base.BottomLiftHeight = value;
         }
     }
@@ -765,9 +839,13 @@ public sealed class OSFFile : FileFormat
         set
         {
             value = MathF.Round(value, 2);
-            Settings.LiftHeightTotalMagnified1000Times.Value -= Settings.LiftHeightSlowMagnified1000Times.Value;
+            Settings.LiftHeightTotalMagnified1000Times.Value -= Settings
+                .LiftHeightSlowMagnified1000Times
+                .Value;
             Settings.LiftHeightSlowMagnified1000Times.Value = (uint)(value * 1000);
-            Settings.LiftHeightTotalMagnified1000Times.Value += Settings.LiftHeightSlowMagnified1000Times.Value;
+            Settings.LiftHeightTotalMagnified1000Times.Value += Settings
+                .LiftHeightSlowMagnified1000Times
+                .Value;
             base.LiftHeight = value;
         }
     }
@@ -786,10 +864,18 @@ public sealed class OSFFile : FileFormat
 
     public override float BottomLiftHeight2
     {
-        get => (float)Math.Max(0,
-            Math.Round(
-                (Settings.BottomLiftHeightTotalMagnified1000Times - Settings.BottomLiftHeightSlowMagnified1000Times) /
-                1000f, 2));
+        get =>
+            (float)
+                Math.Max(
+                    0,
+                    Math.Round(
+                        (
+                            Settings.BottomLiftHeightTotalMagnified1000Times
+                            - Settings.BottomLiftHeightSlowMagnified1000Times
+                        ) / 1000f,
+                        2
+                    )
+                );
         set
         {
             value = MathF.Round(value, 2);
@@ -807,9 +893,18 @@ public sealed class OSFFile : FileFormat
 
     public override float LiftHeight2
     {
-        get => (float)Math.Max(0,
-            Math.Round((Settings.LiftHeightTotalMagnified1000Times - Settings.LiftHeightSlowMagnified1000Times) / 1000f,
-                2));
+        get =>
+            (float)
+                Math.Max(
+                    0,
+                    Math.Round(
+                        (
+                            Settings.LiftHeightTotalMagnified1000Times
+                            - Settings.LiftHeightSlowMagnified1000Times
+                        ) / 1000f,
+                        2
+                    )
+                );
         set
         {
             value = MathF.Round(value, 2);
@@ -864,7 +959,9 @@ public sealed class OSFFile : FileFormat
         {
             value = Math.Clamp(MathF.Round(value, 2), 0, BottomRetractHeightTotal);
             Settings.BottomRetractHeightSlowMagnified1000Times.Value = (uint)(value * 1000);
-            Settings.BottomRetractHeightTotalMagnified1000Times.Value = (uint)(BottomRetractHeightTotal * 1000);
+            Settings.BottomRetractHeightTotalMagnified1000Times.Value = (uint)(
+                BottomRetractHeightTotal * 1000
+            );
             base.BottomRetractHeight2 = value;
         }
     }
@@ -905,16 +1002,13 @@ public sealed class OSFFile : FileFormat
         set => base.LightPWM = Settings.LightPWM = value;
     }
 
-
-    public override object[] Configs => [Settings];
+    public override object[] Configs => IsVlr ? [Settings, VlrExtra] : [Settings];
 
     #endregion
 
     #region Constructors
 
-    public OSFFile()
-    {
-    }
+    public OSFFile() { }
 
     #endregion
 
@@ -922,18 +1016,27 @@ public sealed class OSFFile : FileFormat
 
     protected override void EncodeInternally(OperationProgress progress)
     {
-        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
+        using var outputFile = new FileStream(
+            TemporaryOutputFileFullPath,
+            FileMode.Create,
+            FileAccess.Write
+        );
 
         Settings.PixelUmMagnified100Times = (ushort)(PixelSizeMicronsMax * 100);
 
-        Header.HeaderLength = (uint)(Helpers.Serializer.SizeOf(Header) + Helpers.Serializer.SizeOf(Settings) + 3 * 4);
+        var isVlr = IsVlr;
+        Header.HeaderLength = (uint)(
+            Helpers.Serializer.SizeOf(Header) + Helpers.Serializer.SizeOf(Settings) + 3 * 4
+        );
+        if (isVlr)
+            Header.HeaderLength += (uint)Helpers.Serializer.SizeOf(VlrExtra);
 
         var previews = new[]
         {
             Array.Empty<byte>(),
             Array.Empty<byte>(),
             Array.Empty<byte>(),
-            Array.Empty<byte>()
+            Array.Empty<byte>(),
         };
 
         for (var i = 0; i < ThumbnailEncodeCount; i++)
@@ -951,29 +1054,41 @@ public sealed class OSFFile : FileFormat
         }
 
         outputFile.WriteSerialize(Settings);
-
+        if (isVlr)
+            outputFile.WriteSerialize(VlrExtra);
 
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
         var layerDef = new OSFLayerDef[LayerCount];
 
         foreach (var batch in BatchLayersIndexes())
         {
-            Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
-            {
-                progress.PauseIfRequested();
-                var layer = this[layerIndex];
-
-                using (var mat = layer.LayerMat)
+            Parallel.ForEach(
+                batch,
+                CoreSettings.GetParallelOptions(progress),
+                layerIndex =>
                 {
-                    layerDef[layerIndex] = new OSFLayerDef
-                    {
-                        StartY = (ushort)layer.BoundingRectangle.Y
-                    };
-                    layerDef[layerIndex].EncodeImage(mat, layer);
-                }
+                    progress.PauseIfRequested();
+                    var layer = this[layerIndex];
 
-                progress.LockAndIncrement();
-            });
+                    using (var mat = layer.LayerMat)
+                    {
+                        layerDef[layerIndex] = new OSFLayerDef
+                        {
+                            StartY = (ushort)layer.BoundingRectangle.Y,
+                        };
+                        if (isVlr)
+                        {
+                            layerDef[layerIndex].EncodeVlrImage(mat, layer);
+                        }
+                        else
+                        {
+                            layerDef[layerIndex].EncodeImage(mat, layer);
+                        }
+                    }
+
+                    progress.LockAndIncrement();
+                }
+            );
 
             foreach (var layerIndex in batch)
             {
@@ -984,10 +1099,11 @@ public sealed class OSFFile : FileFormat
             }
         }
 
-
         Debug.WriteLine("Encode Results:");
         Debug.WriteLine(Header);
         Debug.WriteLine(Settings);
+        if (isVlr)
+            Debug.WriteLine(VlrExtra);
         Debug.WriteLine("-End-");
     }
 
@@ -1001,14 +1117,21 @@ public sealed class OSFFile : FileFormat
         for (byte i = 0; i < ThumbnailCountFileShouldHave; i++)
         {
             var previewSize = Helpers.Deserialize<UInt24BigEndian>(inputFile);
-            if (previewSize.Value == 0) continue;
+            if (previewSize.Value == 0)
+                continue;
             var previewData = inputFile.ReadBytes(previewSize.Value);
             Thumbnails.Add(DecodeImage(DATATYPE_RGB565, previewData, ThumbnailsOriginalSize[i]));
         }
 
-
         Settings = Helpers.Deserialize<OSFSettings>(inputFile);
         Debug.WriteLine(Settings);
+
+        var isVlr = IsVlr;
+        if (isVlr)
+        {
+            VlrExtra = Helpers.Deserialize<VLRHeaderExtra>(inputFile);
+            Debug.WriteLine(VlrExtra);
+        }
 
         Display = new SizeF(
             ResolutionX * (Settings.PixelUmMagnified100Times / 100_000f),
@@ -1016,7 +1139,6 @@ public sealed class OSFFile : FileFormat
         );
 
         Init(Settings.LayerCount, DecodeType == FileDecodeType.Partial);
-
 
         if (DecodeType == FileDecodeType.Full)
         {
@@ -1034,7 +1156,18 @@ public sealed class OSFFile : FileFormat
 
                     //Debug.WriteLine($"{layerIndex}: {inputFile.Position}");
                     layerDef[layerIndex] = Helpers.Deserialize<OSFLayerDef>(inputFile);
-                    if (layerDef[layerIndex].NumberOfLines == 0) continue;
+                    if (layerDef[layerIndex].NumberOfLines == 0)
+                        continue;
+
+                    if (isVlr)
+                    {
+                        // The codec bytes can look like a layer mark, the tokens are counted instead
+                        layerDef[layerIndex].EncodedRle = VlrRleCodec.Read(
+                            inputFile,
+                            layerDef[layerIndex].NumberOfLines
+                        );
+                        continue;
+                    }
 
                     int buffer;
                     int slen;
@@ -1052,9 +1185,7 @@ public sealed class OSFFile : FileFormat
                             rle.Add((byte)buffer);
                             rle.Add((byte)slen);
 
-                            if ((slen & 0x80) == 0)
-                            {
-                            }
+                            if ((slen & 0x80) == 0) { }
                             else if ((slen & 0xc0) == 0x80)
                             {
                                 rle.Add((byte)inputFile.ReadByte());
@@ -1085,19 +1216,23 @@ public sealed class OSFFile : FileFormat
                     layerDef[layerIndex].EncodedRle = rle.WrittenSpan.ToArray();
                 }
 
-                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
-                {
-                    progress.PauseIfRequested();
-
-                    using (var mat = layerDef[layerIndex].DecodeImage(this))
+                Parallel.ForEach(
+                    batch,
+                    CoreSettings.GetParallelOptions(progress),
+                    layerIndex =>
                     {
-                        _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                        progress.PauseIfRequested();
+
+                        using (var mat = layerDef[layerIndex].DecodeImage(this))
+                        {
+                            _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                        }
+
+                        layerDef[layerIndex].EncodedRle = null!;
+
+                        progress.LockAndIncrement();
                     }
-
-                    layerDef[layerIndex].EncodedRle = null!;
-
-                    progress.LockAndIncrement();
-                });
+                );
             }
         }
 
@@ -1106,9 +1241,18 @@ public sealed class OSFFile : FileFormat
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
-        outputFile.Seek(Header.HeaderLength - Helpers.Serializer.SizeOf(Settings), SeekOrigin.Begin);
+        using var outputFile = new FileStream(
+            TemporaryOutputFileFullPath,
+            FileMode.Open,
+            FileAccess.Write
+        );
+        var isVlr = IsVlr;
+        var settingsLength =
+            Helpers.Serializer.SizeOf(Settings) + (isVlr ? Helpers.Serializer.SizeOf(VlrExtra) : 0);
+        outputFile.Seek(Header.HeaderLength - settingsLength, SeekOrigin.Begin);
         outputFile.WriteSerialize(Settings);
+        if (isVlr)
+            outputFile.WriteSerialize(VlrExtra);
     }
 
     #endregion

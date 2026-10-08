@@ -117,7 +117,7 @@ But also, I need victims for a test subject. Proceed at your own risk!
 - Anet N4, Anet N7
 - QDT (Emake3D Galaxy 1)
 - OSLA (Open SLA universal binary file)
-- OSF (Vlare Open File Format)
+- OSF (Vlare Open File Format), VLR (Vlare / Peopoly)
 - NanoDLP (Zip)
 - UVJ (Vendor-neutral format for manual manipulation)
 - VDT (Voxeldance Tango), VDA.ZIP (Voxeldance Additive)

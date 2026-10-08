@@ -7,7 +7,13 @@
     pairs per row, which is detected when opening the file and used when the machine is a HALOT-X1 or the resolution
     is 15120x6230. Files of the other printers keep using the classic codec
   - (Fix) CXDLPv4: Anti-aliasing reported as 0 when the file header has a level of 0
+  - (Add) VLR: Vlare file format of the Peopoly Phenom Forge (#513), it shares the OSF structure with a bigger header
+    and a different layer codec
+  - (Fix) PWSZ (Anycubic zip formats): overlapping or touching contours were filled as holes, for example supports
+    inside the model, causing false islands and overhangs, the layers are now filled with the non-zero winding rule
+    (#970)
 - (Add) PrusaSlicer printer: Creality Halot X1
+- (Fix) Layer tracker: the issues were drawn at wrong positions after maximize or restore the window
 
 ## 06/10/2026 - v7.0.2
 

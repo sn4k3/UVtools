@@ -71,6 +71,7 @@
         <File Path="Scripts/010 Editor/pwszCalcLayerVolumes.bt" />
         <File Path="Scripts/010 Editor/pwszScene.bt" />
         <File Path="Scripts/010 Editor/svgx.bt" />
+        <File Path="Scripts/010 Editor/vlr.bt" />
     </Folder>
     <Project Path="build/build.csproj">
         <Build Solution="Release|Any CPU" Project="false" />
