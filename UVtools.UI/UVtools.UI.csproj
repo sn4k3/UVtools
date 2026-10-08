@@ -20,15 +20,15 @@
   </PropertyGroup>
 
   <!--
-      net6.0-windows10.0.17763.0: If your app targets Windows 10, version 1809.
-      net6.0-windows10.0.18362.0: If your app targets Windows 10, version 1903.
-      net6.0-windows10.0.19041.0: If your app targets Windows 10, version 2004.
-      net6.0-windows10.0.22000.0: If your app targets Windows 11.
-  
-      <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
-          <TargetFramework>$(TargetFramework)-windows10.0.17763.0</TargetFramework>
-      </PropertyGroup>
-      <-->
+        net6.0-windows10.0.17763.0: If your app targets Windows 10, version 1809.
+        net6.0-windows10.0.18362.0: If your app targets Windows 10, version 1903.
+        net6.0-windows10.0.19041.0: If your app targets Windows 10, version 2004.
+        net6.0-windows10.0.22000.0: If your app targets Windows 11.
+    
+        <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
+            <TargetFramework>$(TargetFramework)-windows10.0.17763.0</TargetFramework>
+        </PropertyGroup>
+        <-->
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
@@ -45,7 +45,7 @@
     />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="EmguExtensions.Avalonia" Version="0.2.1" />
-    <PackageReference Include="MarkView.Avalonia" Version="12.2.1" />
+    <PackageReference Include="MarkView.Avalonia" Version="12.3.0" />
     <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2" />
     <PackageReference Include="Silk.NET.OpenGL" Version="2.23.0" />
     <PackageReference Include="StageKit.Updatum" Version="0.4.1" />

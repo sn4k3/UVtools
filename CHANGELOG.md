@@ -1,5 +1,14 @@
 # Changelog
 
+## /10/2026 - v7.0.3
+
+- **File formats:**
+  - (Add) CXDLPv4: Support for the Creality HALOT-X1 (#1016), its layers use a different codec of 3 bit gray pixel
+    pairs per row, which is detected when opening the file and used when the machine is a HALOT-X1 or the resolution
+    is 15120x6230. Files of the other printers keep using the classic codec
+  - (Fix) CXDLPv4: Anti-aliasing reported as 0 when the file header has a level of 0
+- (Add) PrusaSlicer printer: Creality Halot X1
+
 ## 06/10/2026 - v7.0.2
 
 - **File formats:**
@@ -30,8 +39,10 @@
     orientation cube, peel curve and measure overlay no longer allocate geometries, pens and brushes on every frame
   - (Improvement) PCB exposure and Lithophane previews are rendered off the UI thread, outdated renders are discarded
   - (Improvement) Moving files and layers in the PCB exposure and Phased exposure tools no longer rebuilds the list
-  - (Improvement) Tool windows scripting inputs share one numeric input implementation, and icon only buttons have tooltips
-  - (Fix) Scripting: the save file dialog input was ignored when a file was picked, and the open file text was joined wrong
+  - (Improvement) Tool windows scripting inputs share one numeric input implementation, and icon only buttons have
+    tooltips
+  - (Fix) Scripting: the save file dialog input was ignored when a file was picked, and the open file text was joined
+    wrong
   - (Fix) 3D layer preview: wrong center of mass vertex on the wireframe
   - (Fix) Message window: custom button tags were lost
   - (Fix) Settings: parallelism and decimal values were parsed with the current culture instead of the invariant one

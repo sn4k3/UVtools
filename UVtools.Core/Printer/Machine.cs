@@ -327,6 +327,7 @@ public class Machine : ObservableObject
             FlipDirection.Horizontally), //  Halot Mage
         new(PrinterBrand.Creality, "CL-103", 7680, 4320, 228.096f, 128.304f, 230f,
             FlipDirection.Horizontally), // Halot Mage Pro
+        new(PrinterBrand.Creality, "HALOT-X1", 15120, 6230, 211.68f, 118.37f, 200f, FlipDirection.None), // Halot X1
         new(PrinterBrand.Creality, "LD-002H", 1620, 2560, 82.62f, 130.56f, 160f, FlipDirection.Horizontally),
         new(PrinterBrand.Creality, "LD-002R", 1440, 2560, 68.04f, 120.96f, 160f, FlipDirection.Horizontally),
         new(PrinterBrand.Creality, "LD-006", 3840, 2400, 192f, 120f, 245f, FlipDirection.Horizontally),

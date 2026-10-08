@@ -1877,6 +1877,77 @@
             Gets the layer image length in bytes.
             </summary>
         </member>
+        <member name="T:UVtools.Core.FileFormats.CrealityCXDLPv4File.LayerImageEncodings">
+            <summary>
+            The codec of the layer images, it is not part of the header.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.CrealityCXDLPv4File.LayerImageEncodings.Rle7Bit">
+            <summary>
+            The 7 bit gray run length codec, used by the classic CXDLPv4 printers.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.CrealityCXDLPv4File.LayerImageEncodings.PixelPairRle3Bit">
+            <summary>
+            The pixel pair run length codec with 3 bit gray, used by the Creality HALOT-X1.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.LayerImageEncoding">
+            <summary>
+            Gets the codec of the layer images. Classic files use the 7 bit run length codec and the Creality HALOT-X1 files use
+            the pixel pair codec. It is detected from the first layer when decoding and selected from the machine and the
+            resolution when encoding, it is not stored in the header.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.CrealityCXDLPv4File.GetEncodeLayerImageEncoding">
+            <summary>
+            Gets the layer image codec to encode with, the HALOT-X1 printers always use the pixel pair codec.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.CrealityCXDLPv4File.DetectLayerImageEncoding(System.IO.FileStream,System.UInt32)">
+            <summary>
+            Detects the layer image codec from the data of the first layer, the file is read at that position only and then
+            restored.
+            </summary>
+            <param name="inputFile">The opened file</param>
+            <param name="layerDefExSize">The size of the layer header that precedes the image data</param>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.CrealityCXDLPv4File.CLCTMachineNameRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>(CL|CT)-?[0-9]+[a-zA-Z]?</code><br/>
+            Options:<br/>
+            <code>RegexOptions.IgnoreCase</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ 1st capture group.<br/>
+                ○ Match a character in the set [Cc].<br/>
+                ○ Match a character in the set [LTlt].<br/>
+            ○ Match '-' atomically, optionally.<br/>
+            ○ Match a character in the set [0-9] atomically at least once.<br/>
+            ○ Match a character in the set [A-Za-z\u212A] atomically, optionally.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.CrealityCXDLPv4File.HalotX1MachineNameRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>HALOT[- ]?X1</code><br/>
+            Options:<br/>
+            <code>RegexOptions.IgnoreCase</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match a character in the set [Hh].<br/>
+            ○ Match a character in the set [Aa].<br/>
+            ○ Match a character in the set [Ll].<br/>
+            ○ Match a character in the set [Oo].<br/>
+            ○ Match a character in the set [Tt].<br/>
+            ○ Match a character in the set [ \-] atomically, optionally.<br/>
+            ○ Match a character in the set [Xx].<br/>
+            ○ Match '1'.<br/>
+            </code>
+            </remarks>
+        </member>
         <member name="P:UVtools.Core.FileFormats.CTBEncryptedFile.SlicerSettings.ChecksumValue">
             <summary>
             Checksum of unix timestamp
@@ -4926,6 +4997,55 @@
         <member name="P:UVtools.Core.FileFormats.PHZFile.LayerDef.DataSize">
             <summary>
             Gets the layer image length in bytes.
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.FileFormats.PixelPairRleCodec">
+            <summary>
+            The pixel pair run length codec with a 3 bit gray per pixel, used by the layers of the Creality HALOT-X1 CXDLPv4 files.
+            </summary>
+            <remarks>
+            The image is encoded row by row and a run never crosses a row, so the width must be even.
+            A byte with the high bit set is a unit of two horizontally adjacent pixels: the 3 bit gray of the left pixel is in
+            bits 0-2 and the 3 bit gray of the right pixel is in bits 3-5, bit 6 is never set.
+            The bytes that follow a unit with the high bit clear are the big endian 7 bit groups of a repeat value, the unit is
+            written <c>repeat + 1</c> times. A unit without those bytes is written once.
+            </remarks>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.PixelPairRleCodec.Decode(System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Int32)">
+            <summary>
+            Decodes <paramref name="rle"/> into <paramref name="pixels"/>.
+            </summary>
+            <param name="rle">The (already decrypted) encoded data</param>
+            <param name="pixels">A zero initialized 8 bit image buffer, its length must be a multiple of the width</param>
+            <param name="width">The image width in pixels, it must be even</param>
+            <exception cref="T:System.ArgumentException">When the width is not even or the buffer length is not a multiple of it</exception>
+            <exception cref="T:System.IO.FileLoadException">When the data is malformed or its runs do not fit in the image</exception>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.PixelPairRleCodec.Encode(System.ReadOnlySpan{System.Byte},System.Int32)">
+            <summary>
+            Encodes an 8 bit image into the pixel pair format, every pixel gray is quantized to 3 bits.
+            </summary>
+            <param name="pixels">The 8 bit image pixels, row by row</param>
+            <param name="width">The image width in pixels, it must be even</param>
+            <returns>The encoded (not encrypted) data</returns>
+            <exception cref="T:System.ArgumentException">When the width is not even or the pixels length is not a multiple of it</exception>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.PixelPairRleCodec.IsMatch(System.ReadOnlySpan{System.Byte},System.Int32,System.Int32)">
+            <summary>
+            Checks, without decoding, that <paramref name="rle"/> is a complete pixel pair stream of the given image size.
+            </summary>
+            <param name="rle">The (already decrypted) encoded data</param>
+            <param name="width">The image width in pixels</param>
+            <param name="height">The image height in pixels</param>
+            <returns>
+            True when the data starts with a unit, every run fits in its row, exactly <paramref name="height"/> rows are
+            produced and no data is left over, otherwise false. Always false when the width is not even.
+            </returns>
+            <remarks>Used to detect the codec of a layer, it never throws.</remarks>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.PixelPairRleCodec.ExpandGray(System.Int32)">
+            <summary>
+            Expands a 3 bit gray to the 8 bit gray, 0 maps to 0 and 7 maps to 255.
             </summary>
         </member>
         <member name="F:UVtools.Core.FileFormats.QDTFile.FileHeader">
@@ -10699,162 +10819,226 @@
             To be kept outside <see cref="T:System.Collections.ObjectModel.ObservableCollection`1"/>, since otherwise, a new instance will be created for each generic type used.
             </remarks>
         </member>
-        <member name="T:System.Text.RegularExpressions.Generated.LineDParse_0">
+        <member name="T:System.Text.RegularExpressions.Generated.CLCTMachineNameRegex_0">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the CLCTMachineNameRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.CLCTMachineNameRegex_0.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CLCTMachineNameRegex_0.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.CLCTMachineNameRegex_0.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CLCTMachineNameRegex_0.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.CLCTMachineNameRegex_0.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CLCTMachineNameRegex_0.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CLCTMachineNameRegex_0.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.CLCTMachineNameRegex_0.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.HalotX1MachineNameRegex_1">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the HalotX1MachineNameRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.HalotX1MachineNameRegex_1.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.HalotX1MachineNameRegex_1.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.HalotX1MachineNameRegex_1.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.HalotX1MachineNameRegex_1.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.HalotX1MachineNameRegex_1.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.HalotX1MachineNameRegex_1.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.HalotX1MachineNameRegex_1.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.HalotX1MachineNameRegex_1.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.LineDParse_2">
             <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the LineDParse method.</summary>
         </member>
-        <member name="F:System.Text.RegularExpressions.Generated.LineDParse_0.Instance">
+        <member name="F:System.Text.RegularExpressions.Generated.LineDParse_2.Instance">
             <summary>Cached, thread-safe singleton instance.</summary>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineDParse_0.#ctor">
+        <member name="M:System.Text.RegularExpressions.Generated.LineDParse_2.#ctor">
             <summary>Initializes the instance.</summary>
         </member>
-        <member name="T:System.Text.RegularExpressions.Generated.LineDParse_0.RunnerFactory">
+        <member name="T:System.Text.RegularExpressions.Generated.LineDParse_2.RunnerFactory">
             <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineDParse_0.RunnerFactory.CreateInstance">
+        <member name="M:System.Text.RegularExpressions.Generated.LineDParse_2.RunnerFactory.CreateInstance">
             <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
         </member>
-        <member name="T:System.Text.RegularExpressions.Generated.LineDParse_0.RunnerFactory.Runner">
+        <member name="T:System.Text.RegularExpressions.Generated.LineDParse_2.RunnerFactory.Runner">
             <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineDParse_0.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+        <member name="M:System.Text.RegularExpressions.Generated.LineDParse_2.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
             <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineDParse_0.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+        <member name="M:System.Text.RegularExpressions.Generated.LineDParse_2.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
             <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
             <returns>true if a possible match was found; false if no more matches are possible.</returns>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineDParse_0.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+        <member name="M:System.Text.RegularExpressions.Generated.LineDParse_2.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
             <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
             <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
         </member>
-        <member name="T:System.Text.RegularExpressions.Generated.LineXParse_1">
+        <member name="T:System.Text.RegularExpressions.Generated.LineXParse_3">
             <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the LineXParse method.</summary>
         </member>
-        <member name="F:System.Text.RegularExpressions.Generated.LineXParse_1.Instance">
+        <member name="F:System.Text.RegularExpressions.Generated.LineXParse_3.Instance">
             <summary>Cached, thread-safe singleton instance.</summary>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineXParse_1.#ctor">
+        <member name="M:System.Text.RegularExpressions.Generated.LineXParse_3.#ctor">
             <summary>Initializes the instance.</summary>
         </member>
-        <member name="T:System.Text.RegularExpressions.Generated.LineXParse_1.RunnerFactory">
+        <member name="T:System.Text.RegularExpressions.Generated.LineXParse_3.RunnerFactory">
             <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineXParse_1.RunnerFactory.CreateInstance">
+        <member name="M:System.Text.RegularExpressions.Generated.LineXParse_3.RunnerFactory.CreateInstance">
             <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
         </member>
-        <member name="T:System.Text.RegularExpressions.Generated.LineXParse_1.RunnerFactory.Runner">
+        <member name="T:System.Text.RegularExpressions.Generated.LineXParse_3.RunnerFactory.Runner">
             <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineXParse_1.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+        <member name="M:System.Text.RegularExpressions.Generated.LineXParse_3.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
             <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineXParse_1.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+        <member name="M:System.Text.RegularExpressions.Generated.LineXParse_3.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
             <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
             <returns>true if a possible match was found; false if no more matches are possible.</returns>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineXParse_1.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+        <member name="M:System.Text.RegularExpressions.Generated.LineXParse_3.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
             <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
             <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
         </member>
-        <member name="T:System.Text.RegularExpressions.Generated.LineYParse_2">
+        <member name="T:System.Text.RegularExpressions.Generated.LineYParse_4">
             <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the LineYParse method.</summary>
         </member>
-        <member name="F:System.Text.RegularExpressions.Generated.LineYParse_2.Instance">
+        <member name="F:System.Text.RegularExpressions.Generated.LineYParse_4.Instance">
             <summary>Cached, thread-safe singleton instance.</summary>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineYParse_2.#ctor">
+        <member name="M:System.Text.RegularExpressions.Generated.LineYParse_4.#ctor">
             <summary>Initializes the instance.</summary>
         </member>
-        <member name="T:System.Text.RegularExpressions.Generated.LineYParse_2.RunnerFactory">
+        <member name="T:System.Text.RegularExpressions.Generated.LineYParse_4.RunnerFactory">
             <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineYParse_2.RunnerFactory.CreateInstance">
+        <member name="M:System.Text.RegularExpressions.Generated.LineYParse_4.RunnerFactory.CreateInstance">
             <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
         </member>
-        <member name="T:System.Text.RegularExpressions.Generated.LineYParse_2.RunnerFactory.Runner">
+        <member name="T:System.Text.RegularExpressions.Generated.LineYParse_4.RunnerFactory.Runner">
             <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineYParse_2.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+        <member name="M:System.Text.RegularExpressions.Generated.LineYParse_4.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
             <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineYParse_2.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+        <member name="M:System.Text.RegularExpressions.Generated.LineYParse_4.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
             <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
             <returns>true if a possible match was found; false if no more matches are possible.</returns>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineYParse_2.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+        <member name="M:System.Text.RegularExpressions.Generated.LineYParse_4.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
             <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
             <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
         </member>
-        <member name="T:System.Text.RegularExpressions.Generated.LineIParse_3">
+        <member name="T:System.Text.RegularExpressions.Generated.LineIParse_5">
             <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the LineIParse method.</summary>
         </member>
-        <member name="F:System.Text.RegularExpressions.Generated.LineIParse_3.Instance">
+        <member name="F:System.Text.RegularExpressions.Generated.LineIParse_5.Instance">
             <summary>Cached, thread-safe singleton instance.</summary>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineIParse_3.#ctor">
+        <member name="M:System.Text.RegularExpressions.Generated.LineIParse_5.#ctor">
             <summary>Initializes the instance.</summary>
         </member>
-        <member name="T:System.Text.RegularExpressions.Generated.LineIParse_3.RunnerFactory">
+        <member name="T:System.Text.RegularExpressions.Generated.LineIParse_5.RunnerFactory">
             <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineIParse_3.RunnerFactory.CreateInstance">
+        <member name="M:System.Text.RegularExpressions.Generated.LineIParse_5.RunnerFactory.CreateInstance">
             <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
         </member>
-        <member name="T:System.Text.RegularExpressions.Generated.LineIParse_3.RunnerFactory.Runner">
+        <member name="T:System.Text.RegularExpressions.Generated.LineIParse_5.RunnerFactory.Runner">
             <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineIParse_3.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+        <member name="M:System.Text.RegularExpressions.Generated.LineIParse_5.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
             <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineIParse_3.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+        <member name="M:System.Text.RegularExpressions.Generated.LineIParse_5.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
             <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
             <returns>true if a possible match was found; false if no more matches are possible.</returns>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineIParse_3.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+        <member name="M:System.Text.RegularExpressions.Generated.LineIParse_5.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
             <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
             <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
         </member>
-        <member name="T:System.Text.RegularExpressions.Generated.LineJParse_4">
+        <member name="T:System.Text.RegularExpressions.Generated.LineJParse_6">
             <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the LineJParse method.</summary>
         </member>
-        <member name="F:System.Text.RegularExpressions.Generated.LineJParse_4.Instance">
+        <member name="F:System.Text.RegularExpressions.Generated.LineJParse_6.Instance">
             <summary>Cached, thread-safe singleton instance.</summary>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineJParse_4.#ctor">
+        <member name="M:System.Text.RegularExpressions.Generated.LineJParse_6.#ctor">
             <summary>Initializes the instance.</summary>
         </member>
-        <member name="T:System.Text.RegularExpressions.Generated.LineJParse_4.RunnerFactory">
+        <member name="T:System.Text.RegularExpressions.Generated.LineJParse_6.RunnerFactory">
             <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineJParse_4.RunnerFactory.CreateInstance">
+        <member name="M:System.Text.RegularExpressions.Generated.LineJParse_6.RunnerFactory.CreateInstance">
             <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
         </member>
-        <member name="T:System.Text.RegularExpressions.Generated.LineJParse_4.RunnerFactory.Runner">
+        <member name="T:System.Text.RegularExpressions.Generated.LineJParse_6.RunnerFactory.Runner">
             <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineJParse_4.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+        <member name="M:System.Text.RegularExpressions.Generated.LineJParse_6.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
             <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineJParse_4.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+        <member name="M:System.Text.RegularExpressions.Generated.LineJParse_6.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
             <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
             <returns>true if a possible match was found; false if no more matches are possible.</returns>
         </member>
-        <member name="M:System.Text.RegularExpressions.Generated.LineJParse_4.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+        <member name="M:System.Text.RegularExpressions.Generated.LineJParse_6.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
             <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
             <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
@@ -10870,6 +11054,9 @@
         </member>
         <member name="M:System.Text.RegularExpressions.Generated.Utilities.StackPush(System.Int32[]@,System.Int32@,System.Int32,System.Int32)">
             <summary>Pushes 2 values onto the backtracking stack.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_halot_OrdinalIgnoreCase">
+            <summary>Supports searching for the string "halot".</summary>
         </member>
         <member name="T:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs">
             <summary>

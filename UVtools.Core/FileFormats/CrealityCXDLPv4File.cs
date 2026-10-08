@@ -6,10 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using BinarySerialization;
-using DotNext.Buffers;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,6 +13,9 @@ using System.Drawing;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using BinarySerialization;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
 using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -26,8 +25,17 @@ using ZLinq;
 
 namespace UVtools.Core.FileFormats;
 
-public sealed class CrealityCXDLPv4File : FileFormat
+public sealed partial class CrealityCXDLPv4File : FileFormat
 {
+    #region Constructors
+
+    public CrealityCXDLPv4File()
+    {
+        Previews = new Preview[ThumbnailCountFileShouldHave];
+    }
+
+    #endregion
+
     #region Constants
 
     private const byte MAGIC_SIZE = 9; // CXSW3DV2
@@ -62,7 +70,6 @@ public sealed class CrealityCXDLPv4File : FileFormat
         [FieldOrder(2)]
         [FieldEndianness(Endianness.Big)]
         public ushort Version { get; set; } = DEFAULT_VERSION;
-
 
         /// <summary>
         /// Gets the printer model
@@ -166,7 +173,8 @@ public sealed class CrealityCXDLPv4File : FileFormat
         [FieldOrder(19)]
         public uint PrintParametersSize { get; set; }
 
-        [FieldOrder(20)] public uint AntiAliasLevel { get; set; } = 1;
+        [FieldOrder(20)]
+        public uint AntiAliasLevel { get; set; } = 1;
 
         /// <summary>
         /// Gets the PWM duty cycle for the UV illumination source on normal levels, respectively.
@@ -202,8 +210,7 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
         public override string ToString()
         {
-            return
-                $"{nameof(MagicSize)}: {MagicSize}, {nameof(Magic)}: {Magic}, {nameof(Version)}: {Version}, {nameof(PrinterModel)}: {PrinterModel}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(BedSizeX)}: {BedSizeX}, {nameof(BedSizeY)}: {BedSizeY}, {nameof(BedSizeZ)}: {BedSizeZ}, {nameof(PrintHeight)}: {PrintHeight}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(PreviewSmallOffsetAddress)}: {PreviewSmallOffsetAddress}, {nameof(LayersDefinitionOffsetAddress)}: {LayersDefinitionOffsetAddress}, {nameof(LayerCount)}: {LayerCount}, {nameof(PreviewLargeOffsetAddress)}: {PreviewLargeOffsetAddress}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(PrintParametersOffsetAddress)}: {PrintParametersOffsetAddress}, {nameof(PrintParametersSize)}: {PrintParametersSize}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(EncryptionKey)}: {EncryptionKey}, {nameof(SlicerAddress)}: {SlicerAddress}, {nameof(SlicerSize)}: {SlicerSize}";
+            return $"{nameof(MagicSize)}: {MagicSize}, {nameof(Magic)}: {Magic}, {nameof(Version)}: {Version}, {nameof(PrinterModel)}: {PrinterModel}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(BedSizeX)}: {BedSizeX}, {nameof(BedSizeY)}: {BedSizeY}, {nameof(BedSizeZ)}: {BedSizeZ}, {nameof(PrintHeight)}: {PrintHeight}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(PreviewSmallOffsetAddress)}: {PreviewSmallOffsetAddress}, {nameof(LayersDefinitionOffsetAddress)}: {LayersDefinitionOffsetAddress}, {nameof(LayerCount)}: {LayerCount}, {nameof(PreviewLargeOffsetAddress)}: {PreviewLargeOffsetAddress}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(PrintParametersOffsetAddress)}: {PrintParametersOffsetAddress}, {nameof(PrintParametersSize)}: {PrintParametersSize}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(EncryptionKey)}: {EncryptionKey}, {nameof(SlicerAddress)}: {SlicerAddress}, {nameof(SlicerSize)}: {SlicerSize}";
         }
 
         public void Validate()
@@ -287,17 +294,27 @@ public sealed class CrealityCXDLPv4File : FileFormat
         [FieldOrder(10)]
         public uint BottomLayerCount { get; set; } = DefaultBottomLayerCount;
 
-        [FieldOrder(11)] public float ExposureTime { get; set; } = DefaultExposureTime;
-        [FieldOrder(12)] public float BottomExposureTime { get; set; } = DefaultBottomExposureTime;
-        [FieldOrder(13)] public uint Padding1 { get; set; }
-        [FieldOrder(14)] public uint Padding2 { get; set; }
-        [FieldOrder(15)] public uint Padding3 { get; set; }
-        [FieldOrder(16)] public uint Padding4 { get; set; }
+        [FieldOrder(11)]
+        public float ExposureTime { get; set; } = DefaultExposureTime;
+
+        [FieldOrder(12)]
+        public float BottomExposureTime { get; set; } = DefaultBottomExposureTime;
+
+        [FieldOrder(13)]
+        public uint Padding1 { get; set; }
+
+        [FieldOrder(14)]
+        public uint Padding2 { get; set; }
+
+        [FieldOrder(15)]
+        public uint Padding3 { get; set; }
+
+        [FieldOrder(16)]
+        public uint Padding4 { get; set; }
 
         public override string ToString()
         {
-            return
-                $"{nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(WeightG)}: {WeightG}, {nameof(CostDollars)}: {CostDollars}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}";
+            return $"{nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(WeightG)}: {WeightG}, {nameof(CostDollars)}: {CostDollars}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}";
         }
     }
 
@@ -307,13 +324,26 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
     public class SlicerInfo
     {
-        [FieldOrder(0)] public float BottomLiftHeight2 { get; set; }
-        [FieldOrder(1)] public float BottomLiftSpeed2 { get; set; }
-        [FieldOrder(2)] public float LiftHeight2 { get; set; }
-        [FieldOrder(3)] public float LiftSpeed2 { get; set; }
-        [FieldOrder(4)] public float RetractHeight2 { get; set; }
-        [FieldOrder(5)] public float RetractSpeed2 { get; set; }
-        [FieldOrder(6)] public float RestTimeAfterLift { get; set; }
+        [FieldOrder(0)]
+        public float BottomLiftHeight2 { get; set; }
+
+        [FieldOrder(1)]
+        public float BottomLiftSpeed2 { get; set; }
+
+        [FieldOrder(2)]
+        public float LiftHeight2 { get; set; }
+
+        [FieldOrder(3)]
+        public float LiftSpeed2 { get; set; }
+
+        [FieldOrder(4)]
+        public float RetractHeight2 { get; set; }
+
+        [FieldOrder(5)]
+        public float RetractSpeed2 { get; set; }
+
+        [FieldOrder(6)]
+        public float RestTimeAfterLift { get; set; }
 
         /// <summary>
         /// Enable per layer settings, true or false
@@ -326,11 +356,14 @@ public sealed class CrealityCXDLPv4File : FileFormat
         /// Gets the minutes since Jan 1, 1970 UTC
         /// </summary>
         [FieldOrder(8)]
-        public uint ModifiedTimestampMinutes { get; set; } = (uint)DateTimeExtensions.Timestamp.TotalMinutes;
+        public uint ModifiedTimestampMinutes { get; set; } =
+            (uint)DateTimeExtensions.Timestamp.TotalMinutes;
 
         [Ignore]
-        public string ModifiedDate => DateTimeExtensions.GetDateTimeFromTimestampMinutes(ModifiedTimestampMinutes)
-            .ToString("dd/MM/yyyy HH:mm");
+        public string ModifiedDate =>
+            DateTimeExtensions
+                .GetDateTimeFromTimestampMinutes(ModifiedTimestampMinutes)
+                .ToString("dd/MM/yyyy HH:mm");
 
         /// <summary>
         /// Gets the user-selected antialiasing level.
@@ -346,20 +379,33 @@ public sealed class CrealityCXDLPv4File : FileFormat
         [FieldOrder(10)]
         public uint SoftwareVersion { get; set; } = 0;
 
-        [FieldOrder(11)] public float RestTimeAfterRetract { get; set; }
-        [FieldOrder(12)] public float RestTimeBeforeLift { get; set; }
-        [FieldOrder(13)] public float ExposureTime { get; set; } = DefaultExposureTime;
-        [FieldOrder(14)] public float BottomExposureTime { get; set; } = DefaultBottomExposureTime;
-        [FieldOrder(15)] public float RestTimeAfterLift2 { get; set; } = DefaultBottomExposureTime;
-        [FieldOrder(16)] public uint TransitionLayerCount { get; set; }
-        [FieldOrder(17)] public uint Padding1 { get; set; }
-        [FieldOrder(18)] public uint Padding2 { get; set; }
+        [FieldOrder(11)]
+        public float RestTimeAfterRetract { get; set; }
 
+        [FieldOrder(12)]
+        public float RestTimeBeforeLift { get; set; }
+
+        [FieldOrder(13)]
+        public float ExposureTime { get; set; } = DefaultExposureTime;
+
+        [FieldOrder(14)]
+        public float BottomExposureTime { get; set; } = DefaultBottomExposureTime;
+
+        [FieldOrder(15)]
+        public float RestTimeAfterLift2 { get; set; } = DefaultBottomExposureTime;
+
+        [FieldOrder(16)]
+        public uint TransitionLayerCount { get; set; }
+
+        [FieldOrder(17)]
+        public uint Padding1 { get; set; }
+
+        [FieldOrder(18)]
+        public uint Padding2 { get; set; }
 
         public override string ToString()
         {
-            return
-                $"{nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(ModifiedTimestampMinutes)}: {ModifiedTimestampMinutes}, {nameof(ModifiedDate)}: {ModifiedDate}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}";
+            return $"{nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(ModifiedTimestampMinutes)}: {ModifiedTimestampMinutes}, {nameof(ModifiedDate)}: {ModifiedDate}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}";
         }
     }
 
@@ -397,15 +443,21 @@ public sealed class CrealityCXDLPv4File : FileFormat
         [FieldOrder(3)]
         public uint ImageLength { get; set; }
 
-        [FieldOrder(4)] public uint Unknown1 { get; set; }
-        [FieldOrder(5)] public uint Unknown2 { get; set; }
-        [FieldOrder(6)] public uint Unknown3 { get; set; }
-        [FieldOrder(7)] public uint Unknown4 { get; set; }
+        [FieldOrder(4)]
+        public uint Unknown1 { get; set; }
+
+        [FieldOrder(5)]
+        public uint Unknown2 { get; set; }
+
+        [FieldOrder(6)]
+        public uint Unknown3 { get; set; }
+
+        [FieldOrder(7)]
+        public uint Unknown4 { get; set; }
 
         public override string ToString()
         {
-            return
-                $"{nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(ImageOffset)}: {ImageOffset}, {nameof(ImageLength)}: {ImageLength}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}";
+            return $"{nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(ImageOffset)}: {ImageOffset}, {nameof(ImageLength)}: {ImageLength}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}";
         }
     }
 
@@ -415,6 +467,13 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
     public class LayerDef
     {
+        public LayerDef() { }
+
+        public LayerDef(Layer layer)
+        {
+            SetFrom(layer);
+        }
+
         /// <summary>
         /// Gets the build platform Z position for this layer, measured in millimeters.
         /// </summary>
@@ -445,21 +504,20 @@ public sealed class CrealityCXDLPv4File : FileFormat
         [FieldOrder(4)]
         public uint DataSize { get; set; }
 
-        [FieldOrder(5)] public uint DataType { get; set; }
-        [FieldOrder(6)] public uint CentroidDistance { get; set; }
-        [FieldOrder(7)] public uint LargestArea { get; set; }
-        [FieldOrder(8)] public uint Unknown1 { get; set; }
-        [FieldOrder(9)] public uint Unknown2 { get; set; }
+        [FieldOrder(5)]
+        public uint DataType { get; set; }
 
+        [FieldOrder(6)]
+        public uint CentroidDistance { get; set; }
 
-        public LayerDef()
-        {
-        }
+        [FieldOrder(7)]
+        public uint LargestArea { get; set; }
 
-        public LayerDef(Layer layer)
-        {
-            SetFrom(layer);
-        }
+        [FieldOrder(8)]
+        public uint Unknown1 { get; set; }
+
+        [FieldOrder(9)]
+        public uint Unknown2 { get; set; }
 
         public void SetFrom(Layer layer)
         {
@@ -477,35 +535,54 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
         public override string ToString()
         {
-            return
-                $"{nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffSeconds)}: {LightOffSeconds}, {nameof(DataAddress)}: {DataAddress}, {nameof(DataSize)}: {DataSize}, {nameof(DataType)}: {DataType}, {nameof(CentroidDistance)}: {CentroidDistance}, {nameof(LargestArea)}: {LargestArea}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}";
+            return $"{nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffSeconds)}: {LightOffSeconds}, {nameof(DataAddress)}: {DataAddress}, {nameof(DataSize)}: {DataSize}, {nameof(DataType)}: {DataType}, {nameof(CentroidDistance)}: {CentroidDistance}, {nameof(LargestArea)}: {LargestArea}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}";
         }
     }
 
     public class LayerDefEx
     {
-        [FieldOrder(1)] public float LiftHeight { get; set; }
-        [FieldOrder(2)] public float LiftSpeed { get; set; }
-        [FieldOrder(3)] public float LiftHeight2 { get; set; }
-        [FieldOrder(4)] public float LiftSpeed2 { get; set; }
-        [FieldOrder(5)] public float RetractSpeed { get; set; }
-        [FieldOrder(6)] public float RetractHeight2 { get; set; }
-        [FieldOrder(7)] public float RetractSpeed2 { get; set; }
-        [FieldOrder(8)] public float RestTimeBeforeLift { get; set; }
-        [FieldOrder(9)] public float RestTimeAfterLift { get; set; }
-        [FieldOrder(10)] public float RestTimeAfterRetract { get; set; } // 28672 v3?
-        [FieldOrder(11)] public float LightPWM { get; set; } = DefaultLightPWM;
-
-        [Ignore] public byte[]? EncodedRle { get; set; }
-
-        public LayerDefEx()
-        {
-        }
+        public LayerDefEx() { }
 
         public LayerDefEx(Layer layer)
         {
             SetFrom(layer);
         }
+
+        [FieldOrder(1)]
+        public float LiftHeight { get; set; }
+
+        [FieldOrder(2)]
+        public float LiftSpeed { get; set; }
+
+        [FieldOrder(3)]
+        public float LiftHeight2 { get; set; }
+
+        [FieldOrder(4)]
+        public float LiftSpeed2 { get; set; }
+
+        [FieldOrder(5)]
+        public float RetractSpeed { get; set; }
+
+        [FieldOrder(6)]
+        public float RetractHeight2 { get; set; }
+
+        [FieldOrder(7)]
+        public float RetractSpeed2 { get; set; }
+
+        [FieldOrder(8)]
+        public float RestTimeBeforeLift { get; set; }
+
+        [FieldOrder(9)]
+        public float RestTimeAfterLift { get; set; }
+
+        [FieldOrder(10)]
+        public float RestTimeAfterRetract { get; set; } // 28672 v3?
+
+        [FieldOrder(11)]
+        public float LightPWM { get; set; } = DefaultLightPWM;
+
+        [Ignore]
+        public byte[]? EncodedRle { get; set; }
 
         public void SetFrom(Layer layer)
         {
@@ -550,7 +627,8 @@ public sealed class CrealityCXDLPv4File : FileFormat
             if (layerDef.DataType > 0)
             {
                 throw new NotImplementedException(
-                    $"Layer {layerIndex} have a data type of {layerDef.DataType} which is not implemented, please provide this file to developer.");
+                    $"Layer {layerIndex} have a data type of {layerDef.DataType} which is not implemented, please provide this file to developer."
+                );
             }
 
             var mat = parent.CreateMat();
@@ -558,10 +636,25 @@ public sealed class CrealityCXDLPv4File : FileFormat
             {
                 if (parent.HeaderSettings.EncryptionKey > 0)
                 {
-                    LayerRleCryptBuffer(parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle!);
+                    LayerRleCryptBuffer(
+                        parent.HeaderSettings.EncryptionKey,
+                        layerIndex,
+                        EncodedRle!
+                    );
                 }
 
-                CtbRleCodec.Decode(EncodedRle!, mat.GetSpanOfBytes());
+                if (parent.LayerImageEncoding == LayerImageEncodings.PixelPairRle3Bit)
+                {
+                    PixelPairRleCodec.Decode(
+                        EncodedRle!,
+                        mat.GetSpanOfBytes(),
+                        (int)parent.ResolutionX
+                    );
+                }
+                else
+                {
+                    CtbRleCodec.Decode(EncodedRle!, mat.GetSpanOfBytes());
+                }
 
                 return mat;
             }
@@ -574,7 +667,13 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
         public unsafe byte[] Encode(CrealityCXDLPv4File parent, Mat image, uint layerIndex)
         {
-            EncodedRle = CtbRleCodec.Encode(image.GetReadOnlySpanOfBytes());
+            EncodedRle =
+                parent.LayerImageEncoding == LayerImageEncodings.PixelPairRle3Bit
+                    ? PixelPairRleCodec.Encode(
+                        image.GetReadOnlySpanOfBytes(),
+                        (int)parent.ResolutionX
+                    )
+                    : CtbRleCodec.Encode(image.GetReadOnlySpanOfBytes());
             if (parent.HeaderSettings.EncryptionKey > 0)
                 LayerRleCryptBuffer(parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle);
 
@@ -583,9 +682,28 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
         public override string ToString()
         {
-            return
-                $"{nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(LightPWM)}: {LightPWM}";
+            return $"{nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(LightPWM)}: {LightPWM}";
         }
+    }
+
+    #endregion
+
+    #region LayerImageEncodings
+
+    /// <summary>
+    /// The codec of the layer images, it is not part of the header.
+    /// </summary>
+    public enum LayerImageEncodings : byte
+    {
+        /// <summary>
+        /// The 7 bit gray run length codec, used by the classic CXDLPv4 printers.
+        /// </summary>
+        Rle7Bit,
+
+        /// <summary>
+        /// The pixel pair run length codec with 3 bit gray, used by the Creality HALOT-X1.
+        /// </summary>
+        PixelPairRle3Bit,
     }
 
     #endregion
@@ -604,61 +722,59 @@ public sealed class CrealityCXDLPv4File : FileFormat
     public LayerDef[] LayerDefinitions { get; private set; } = [];
     public LayerDefEx[] LayerDefinitionsEx { get; private set; } = [];
 
+    /// <summary>
+    /// Gets the codec of the layer images. Classic files use the 7 bit run length codec and the Creality HALOT-X1 files use
+    /// the pixel pair codec. It is detected from the first layer when decoding and selected from the machine and the
+    /// resolution when encoding, it is not stored in the header.
+    /// </summary>
+    public LayerImageEncodings LayerImageEncoding { get; private set; } =
+        LayerImageEncodings.Rle7Bit;
+
     public override FileFormatType FileType => FileFormatType.Binary;
 
     public override string ConvertMenuGroup => "Creality CXDLP";
 
     public override FileExtension[] FileExtensions { get; } =
-    [
-        new(typeof(CrealityCXDLPv4File), "cxdlpv4", "Creality CXDLPv4")
-    ];
+    [new(typeof(CrealityCXDLPv4File), "cxdlpv4", "Creality CXDLPv4")];
 
     public override PrintParameterModifier[] PrintParameterModifiers =>
-    [
-        PrintParameterModifier.BottomLayerCount,
-        PrintParameterModifier.TransitionLayerCount,
-
-        PrintParameterModifier.BottomLightOffDelay,
-        PrintParameterModifier.LightOffDelay,
-
-        PrintParameterModifier.BottomWaitTimeBeforeCure,
-        PrintParameterModifier.WaitTimeBeforeCure,
-
-        PrintParameterModifier.BottomExposureTime,
-        PrintParameterModifier.ExposureTime,
-
-        PrintParameterModifier.BottomWaitTimeAfterCure,
-        PrintParameterModifier.WaitTimeAfterCure,
-
-        PrintParameterModifier.BottomLiftHeight,
-        PrintParameterModifier.BottomLiftSpeed,
-        PrintParameterModifier.LiftHeight,
-        PrintParameterModifier.LiftSpeed,
-        PrintParameterModifier.BottomLiftHeight2,
-        PrintParameterModifier.BottomLiftSpeed2,
-        PrintParameterModifier.LiftHeight2,
-        PrintParameterModifier.LiftSpeed2,
-
-        PrintParameterModifier.BottomWaitTimeAfterLift,
-        PrintParameterModifier.WaitTimeAfterLift,
-
-        PrintParameterModifier.BottomRetractSpeed,
-        PrintParameterModifier.RetractSpeed,
-        PrintParameterModifier.BottomRetractHeight2,
-        PrintParameterModifier.BottomRetractSpeed2,
-        PrintParameterModifier.RetractHeight2,
-        PrintParameterModifier.RetractSpeed2,
-
-        PrintParameterModifier.BottomLightPWM,
-        PrintParameterModifier.LightPWM
-    ];
-
+        [
+            PrintParameterModifier.BottomLayerCount,
+            PrintParameterModifier.TransitionLayerCount,
+            PrintParameterModifier.BottomLightOffDelay,
+            PrintParameterModifier.LightOffDelay,
+            PrintParameterModifier.BottomWaitTimeBeforeCure,
+            PrintParameterModifier.WaitTimeBeforeCure,
+            PrintParameterModifier.BottomExposureTime,
+            PrintParameterModifier.ExposureTime,
+            PrintParameterModifier.BottomWaitTimeAfterCure,
+            PrintParameterModifier.WaitTimeAfterCure,
+            PrintParameterModifier.BottomLiftHeight,
+            PrintParameterModifier.BottomLiftSpeed,
+            PrintParameterModifier.LiftHeight,
+            PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.BottomLiftHeight2,
+            PrintParameterModifier.BottomLiftSpeed2,
+            PrintParameterModifier.LiftHeight2,
+            PrintParameterModifier.LiftSpeed2,
+            PrintParameterModifier.BottomWaitTimeAfterLift,
+            PrintParameterModifier.WaitTimeAfterLift,
+            PrintParameterModifier.BottomRetractSpeed,
+            PrintParameterModifier.RetractSpeed,
+            PrintParameterModifier.BottomRetractHeight2,
+            PrintParameterModifier.BottomRetractSpeed2,
+            PrintParameterModifier.RetractHeight2,
+            PrintParameterModifier.RetractSpeed2,
+            PrintParameterModifier.BottomLightPWM,
+            PrintParameterModifier.LightPWM,
+        ];
 
     public override PrintParameterModifier[] PrintParameterPerLayerModifiers
     {
         get
         {
-            if (!IsPerLayerSettingsAllowed) return base.PrintParameterPerLayerModifiers;
+            if (!IsPerLayerSettingsAllowed)
+                return base.PrintParameterPerLayerModifiers;
 
             return
             [
@@ -675,18 +791,12 @@ public sealed class CrealityCXDLPv4File : FileFormat
                 PrintParameterModifier.RetractSpeed,
                 PrintParameterModifier.RetractHeight2,
                 PrintParameterModifier.RetractSpeed2,
-                PrintParameterModifier.LightPWM
+                PrintParameterModifier.LightPWM,
             ];
         }
     }
 
-
-    public override Size[] ThumbnailsOriginalSize { get; } =
-    [
-        new(120, 120),
-        new(300, 300)
-    ];
-
+    public override Size[] ThumbnailsOriginalSize { get; } = [new(120, 120), new(300, 300)];
 
     public override uint DefaultVersion => DEFAULT_VERSION;
 
@@ -742,8 +852,11 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
     public override byte AntiAliasing
     {
-        get => (byte)HeaderSettings.AntiAliasLevel;
-        set => base.AntiAliasing = (byte)(SlicerInfoSettings.AntiAliasLevel = Math.Clamp(value, 1u, 16u));
+        get => (byte)Math.Max(1u, HeaderSettings.AntiAliasLevel);
+        set =>
+            base.AntiAliasing = (byte)(
+                SlicerInfoSettings.AntiAliasLevel = Math.Clamp(value, 1u, 16u)
+            );
     }
 
     public override float LayerHeight
@@ -767,15 +880,22 @@ public sealed class CrealityCXDLPv4File : FileFormat
     public override ushort BottomLayerCount
     {
         get => (ushort)HeaderSettings.BottomLayersCount;
-        set => base.BottomLayerCount =
-            (ushort)(HeaderSettings.BottomLayersCount = PrintParametersSettings.BottomLayerCount = value);
+        set =>
+            base.BottomLayerCount = (ushort)(
+                HeaderSettings.BottomLayersCount = PrintParametersSettings.BottomLayerCount = value
+            );
     }
 
     public override ushort TransitionLayerCount
     {
         get => (ushort)SlicerInfoSettings.TransitionLayerCount;
-        set => base.TransitionLayerCount = (ushort)(SlicerInfoSettings.TransitionLayerCount =
-            Math.Min(value, MaximumPossibleTransitionLayerCount));
+        set =>
+            base.TransitionLayerCount = (ushort)(
+                SlicerInfoSettings.TransitionLayerCount = Math.Min(
+                    value,
+                    MaximumPossibleTransitionLayerCount
+                )
+            );
     }
 
     public override float BottomLightOffDelay
@@ -783,7 +903,10 @@ public sealed class CrealityCXDLPv4File : FileFormat
         get => PrintParametersSettings.BottomLightOffDelay;
         set
         {
-            base.BottomLightOffDelay = PrintParametersSettings.BottomLightOffDelay = MathF.Round(value, 2);
+            base.BottomLightOffDelay = PrintParametersSettings.BottomLightOffDelay = MathF.Round(
+                value,
+                2
+            );
             if (value > 0)
             {
                 WaitTimeBeforeCure = 0;
@@ -798,8 +921,10 @@ public sealed class CrealityCXDLPv4File : FileFormat
         get => PrintParametersSettings.LightOffDelay;
         set
         {
-            base.LightOffDelay = PrintParametersSettings.LightOffDelay =
-                PrintParametersSettings.LightOffDelay = MathF.Round(value, 2);
+            base.LightOffDelay =
+                PrintParametersSettings.LightOffDelay =
+                PrintParametersSettings.LightOffDelay =
+                    MathF.Round(value, 2);
             if (value > 0)
             {
                 WaitTimeBeforeCure = 0;
@@ -814,7 +939,10 @@ public sealed class CrealityCXDLPv4File : FileFormat
         get => SlicerInfoSettings.RestTimeAfterRetract;
         set
         {
-            base.WaitTimeBeforeCure = SlicerInfoSettings.RestTimeAfterRetract = MathF.Round(value, 2);
+            base.WaitTimeBeforeCure = SlicerInfoSettings.RestTimeAfterRetract = MathF.Round(
+                value,
+                2
+            );
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -826,8 +954,11 @@ public sealed class CrealityCXDLPv4File : FileFormat
     public override float BottomExposureTime
     {
         get => PrintParametersSettings.BottomExposureTime;
-        set => base.BottomExposureTime = PrintParametersSettings.BottomExposureTime =
-            SlicerInfoSettings.BottomExposureTime = MathF.Round(value, 2);
+        set =>
+            base.BottomExposureTime =
+                PrintParametersSettings.BottomExposureTime =
+                SlicerInfoSettings.BottomExposureTime =
+                    MathF.Round(value, 2);
     }
 
     public override float WaitTimeAfterCure
@@ -847,18 +978,30 @@ public sealed class CrealityCXDLPv4File : FileFormat
     public override float ExposureTime
     {
         get => PrintParametersSettings.ExposureTime;
-        set => base.ExposureTime = PrintParametersSettings.ExposureTime =
-            SlicerInfoSettings.ExposureTime = MathF.Round(value, 2);
+        set =>
+            base.ExposureTime =
+                PrintParametersSettings.ExposureTime =
+                SlicerInfoSettings.ExposureTime =
+                    MathF.Round(value, 2);
     }
 
     public override float BottomLiftHeight
     {
-        get => MathF.Round(Math.Max(0, PrintParametersSettings.BottomLiftHeight - SlicerInfoSettings.BottomLiftHeight2),
-            2);
+        get =>
+            MathF.Round(
+                Math.Max(
+                    0,
+                    PrintParametersSettings.BottomLiftHeight - SlicerInfoSettings.BottomLiftHeight2
+                ),
+                2
+            );
         set
         {
             value = MathF.Round(value, 2);
-            PrintParametersSettings.BottomLiftHeight = MathF.Round(value + SlicerInfoSettings.BottomLiftHeight2, 2);
+            PrintParametersSettings.BottomLiftHeight = MathF.Round(
+                value + SlicerInfoSettings.BottomLiftHeight2,
+                2
+            );
             base.BottomLiftHeight = value;
         }
     }
@@ -866,7 +1009,8 @@ public sealed class CrealityCXDLPv4File : FileFormat
     public override float BottomLiftSpeed
     {
         get => PrintParametersSettings.BottomLiftSpeed;
-        set => base.BottomLiftSpeed = PrintParametersSettings.BottomLiftSpeed = MathF.Round(value, 2);
+        set =>
+            base.BottomLiftSpeed = PrintParametersSettings.BottomLiftSpeed = MathF.Round(value, 2);
     }
 
     public override float LiftHeight
@@ -875,7 +1019,10 @@ public sealed class CrealityCXDLPv4File : FileFormat
         set
         {
             value = MathF.Round(value, 2);
-            PrintParametersSettings.LiftHeight = MathF.Round(value + SlicerInfoSettings.LiftHeight2, 2);
+            PrintParametersSettings.LiftHeight = MathF.Round(
+                value + SlicerInfoSettings.LiftHeight2,
+                2
+            );
             base.LiftHeight = value;
         }
     }
@@ -927,8 +1074,10 @@ public sealed class CrealityCXDLPv4File : FileFormat
         get => SlicerInfoSettings.RestTimeAfterLift;
         set
         {
-            base.WaitTimeAfterLift = SlicerInfoSettings.RestTimeAfterLift =
-                SlicerInfoSettings.RestTimeAfterLift2 = MathF.Round(value, 2);
+            base.WaitTimeAfterLift =
+                SlicerInfoSettings.RestTimeAfterLift =
+                SlicerInfoSettings.RestTimeAfterLift2 =
+                    MathF.Round(value, 2);
             if (value > 0)
             {
                 BottomLightOffDelay = 0;
@@ -1008,13 +1157,21 @@ public sealed class CrealityCXDLPv4File : FileFormat
         get => HeaderSettings.PrinterModel.ValueNotNull;
         set
         {
-            if (!string.IsNullOrWhiteSpace(value) && !value.StartsWith("CL-") && !value.StartsWith("CT-"))
+            if (!string.IsNullOrWhiteSpace(value))
             {
-                // Parse from machine name, if coming from PrusaSlicer this will help
-                var match = Regex.Match(value, @"(CL|CT)-?[0-9]+[a-zA-Z]?");
-                if (match is { Success: true, Groups.Count: > 1 })
+                if (HalotX1MachineNameRegex().IsMatch(value))
                 {
-                    value = match.Value;
+                    // PrusaSlicer profile name, use the model name written by the Creality slicers
+                    value = "HALOT-X1";
+                }
+                else if (!value.StartsWith("CL-") && !value.StartsWith("CT-"))
+                {
+                    // Parse from machine name, if coming from PrusaSlicer this will help
+                    var match = CLCTMachineNameRegex().Match(value);
+                    if (match is { Success: true, Groups.Count: > 1 })
+                    {
+                        value = match.Value;
+                    }
                 }
             }
 
@@ -1022,16 +1179,8 @@ public sealed class CrealityCXDLPv4File : FileFormat
         }
     }
 
-    public override object[] Configs => [HeaderSettings, PrintParametersSettings, SlicerInfoSettings];
-
-    #endregion
-
-    #region Constructors
-
-    public CrealityCXDLPv4File()
-    {
-        Previews = new Preview[ThumbnailCountFileShouldHave];
-    }
+    public override object[] Configs =>
+        [HeaderSettings, PrintParametersSettings, SlicerInfoSettings];
 
     #endregion
 
@@ -1058,27 +1207,34 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
     protected override void EncodeInternally(OperationProgress progress)
     {
-        HeaderSettings.PrintParametersSize = (uint)Helpers.Serializer.SizeOf(PrintParametersSettings);
+        LayerImageEncoding = GetEncodeLayerImageEncoding();
+        HeaderSettings.PrintParametersSize = (uint)
+            Helpers.Serializer.SizeOf(PrintParametersSettings);
         HeaderSettings.EncryptionKey = 0; // Force disable encryption
 
-        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.ReadWrite);
+        using var outputFile = new FileStream(
+            TemporaryOutputFileFullPath,
+            FileMode.Create,
+            FileAccess.ReadWrite
+        );
         outputFile.Seek(Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.Begin);
 
         Mat?[] thumbnails = [GetSmallestThumbnail(), GetLargestThumbnail()];
         for (byte i = 0; i < thumbnails.Length; i++)
         {
             var image = thumbnails[i];
-            if (image is null) continue;
+            if (image is null)
+                continue;
             var previewBytes = EncodeChituImageRGB15Rle(image);
-            if (previewBytes.Length == 0) continue;
+            if (previewBytes.Length == 0)
+                continue;
 
             Preview preview = new()
             {
                 ResolutionX = (uint)image.Width,
                 ResolutionY = (uint)image.Height,
-                ImageLength = (uint)previewBytes.Length
+                ImageLength = (uint)previewBytes.Length,
             };
-
 
             if (i == 0)
             {
@@ -1089,13 +1245,11 @@ public sealed class CrealityCXDLPv4File : FileFormat
                 HeaderSettings.PreviewLargeOffsetAddress = (uint)outputFile.Position;
             }
 
-
             preview.ImageOffset = (uint)(outputFile.Position + Helpers.Serializer.SizeOf(preview));
 
             outputFile.WriteSerialize(preview);
             outputFile.WriteBytes(previewBytes);
         }
-
 
         HeaderSettings.PrintParametersOffsetAddress = (uint)outputFile.Position;
         outputFile.WriteSerialize(PrintParametersSettings);
@@ -1118,27 +1272,33 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
         foreach (var batch in BatchLayersIndexes())
         {
-            Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
-            {
-                progress.PauseIfRequested();
-                var layer = this[layerIndex];
-                using (var mat = layer.LayerMat)
+            Parallel.ForEach(
+                batch,
+                CoreSettings.GetParallelOptions(progress),
+                layerIndex =>
                 {
-                    LayerDefinitions[layerIndex] = new LayerDef(layer);
-                    LayerDefinitionsEx[layerIndex] = new LayerDefEx(layer);
-                    LayerDefinitionsEx[layerIndex].Encode(this, mat, (uint)layerIndex);
+                    progress.PauseIfRequested();
+                    var layer = this[layerIndex];
+                    using (var mat = layer.LayerMat)
+                    {
+                        LayerDefinitions[layerIndex] = new LayerDef(layer);
+                        LayerDefinitionsEx[layerIndex] = new LayerDefEx(layer);
+                        LayerDefinitionsEx[layerIndex].Encode(this, mat, (uint)layerIndex);
 
-                    LayerDefinitions[layerIndex].DataSize =
-                        (uint)(LayerDefinitionsEx[layerIndex].EncodedRle!.Length + layerDefExSize);
+                        LayerDefinitions[layerIndex].DataSize = (uint)(
+                            LayerDefinitionsEx[layerIndex].EncodedRle!.Length + layerDefExSize
+                        );
 
-                    using var matRoi = mat.Roi(layer.BoundingRectangle);
-                    using var contours = matRoi.FindContours(RetrType.External);
-                    LayerDefinitions[layerIndex].LargestArea =
-                        (uint)(EmguContours.GetLargestContourArea(contours) * pixelArea * 1000);
+                        using var matRoi = mat.Roi(layer.BoundingRectangle);
+                        using var contours = matRoi.FindContours(RetrType.External);
+                        LayerDefinitions[layerIndex].LargestArea = (uint)(
+                            EmguContours.GetLargestContourArea(contours) * pixelArea * 1000
+                        );
+                    }
+
+                    progress.LockAndIncrement();
                 }
-
-                progress.LockAndIncrement();
-            });
+            );
 
             foreach (var layerIndex in batch)
             {
@@ -1175,7 +1335,6 @@ public sealed class CrealityCXDLPv4File : FileFormat
         Debug.WriteLine("-End-");
     }
 
-
     protected override void DecodeInternally(OperationProgress progress)
     {
         using var inputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Read);
@@ -1193,18 +1352,25 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
         if (expectedCheckSum != checkSum)
         {
-            throw new FileLoadException($"Checksum fails, expecting: {expectedCheckSum} but got: {checkSum}.\n" +
-                                        $"Try to reslice the file.", FileFullPath);
+            throw new FileLoadException(
+                $"Checksum fails, expecting: {expectedCheckSum} but got: {checkSum}.\n"
+                    + $"Try to reslice the file.",
+                FileFullPath
+            );
         }
 
         inputFile.Seek(position, SeekOrigin.Begin);
 
         progress.Reset(OperationProgress.StatusDecodePreviews, (uint)ThumbnailCountFileShouldHave);
         var thumbnailOffsets = new[]
-            { HeaderSettings.PreviewSmallOffsetAddress, HeaderSettings.PreviewLargeOffsetAddress };
+        {
+            HeaderSettings.PreviewSmallOffsetAddress,
+            HeaderSettings.PreviewLargeOffsetAddress,
+        };
         for (var i = 0; i < thumbnailOffsets.Length; i++)
         {
-            if (thumbnailOffsets[i] == 0) continue;
+            if (thumbnailOffsets[i] == 0)
+                continue;
 
             inputFile.Seek(thumbnailOffsets[i], SeekOrigin.Begin);
             Previews[i] = Helpers.Deserialize<Preview>(inputFile);
@@ -1216,7 +1382,13 @@ public sealed class CrealityCXDLPv4File : FileFormat
             var rawImageData = GC.AllocateUninitializedArray<byte>((int)Previews[i].ImageLength);
             inputFile.ReadExactly(rawImageData.AsSpan());
 
-            Thumbnails.Add(DecodeChituImageRGB15Rle(rawImageData, Previews[i].ResolutionX, Previews[i].ResolutionY));
+            Thumbnails.Add(
+                DecodeChituImageRGB15Rle(
+                    rawImageData,
+                    Previews[i].ResolutionX,
+                    Previews[i].ResolutionY
+                )
+            );
             progress++;
         }
 
@@ -1256,6 +1428,10 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
         progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
         var layerDefExSize = (uint)Helpers.Serializer.SizeOf(new LayerDefEx());
+        LayerImageEncoding =
+            LayerCount > 0
+                ? DetectLayerImageEncoding(inputFile, layerDefExSize)
+                : LayerImageEncodings.Rle7Bit;
 
         foreach (var batch in BatchLayersIndexes())
         {
@@ -1266,25 +1442,32 @@ public sealed class CrealityCXDLPv4File : FileFormat
                 inputFile.Seek(LayerDefinitions[layerIndex].DataAddress, SeekOrigin.Begin);
                 LayerDefinitionsEx[layerIndex] = Helpers.Deserialize<LayerDefEx>(inputFile);
                 if (DecodeType == FileDecodeType.Full)
-                    LayerDefinitionsEx[layerIndex].EncodedRle =
-                        inputFile.ReadBytes(LayerDefinitions[layerIndex].DataSize - layerDefExSize);
+                    LayerDefinitionsEx[layerIndex].EncodedRle = inputFile.ReadBytes(
+                        LayerDefinitions[layerIndex].DataSize - layerDefExSize
+                    );
                 Debug.Write($"LAYER {layerIndex} -> ");
                 Debug.WriteLine(LayerDefinitionsEx[layerIndex]);
             }
 
             if (DecodeType == FileDecodeType.Full)
             {
-                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
-                {
-                    progress.PauseIfRequested();
-                    using (var mat = LayerDefinitionsEx[layerIndex]
-                               .Decode(this, LayerDefinitions[layerIndex], (uint)layerIndex))
+                Parallel.ForEach(
+                    batch,
+                    CoreSettings.GetParallelOptions(progress),
+                    layerIndex =>
                     {
-                        _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
-                    }
+                        progress.PauseIfRequested();
+                        using (
+                            var mat = LayerDefinitionsEx[layerIndex]
+                                .Decode(this, LayerDefinitions[layerIndex], (uint)layerIndex)
+                        )
+                        {
+                            _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                        }
 
-                    progress.LockAndIncrement();
-                });
+                        progress.LockAndIncrement();
+                    }
+                );
             }
         }
 
@@ -1299,26 +1482,45 @@ public sealed class CrealityCXDLPv4File : FileFormat
         {
             var enumerable = this.AsValueEnumerable();
             BottomWaitTimeBeforeCure =
-                enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })
-                    ?.WaitTimeBeforeCure ?? 0;
+                enumerable
+                    .FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })
+                    ?.WaitTimeBeforeCure
+                ?? 0;
             BottomWaitTimeAfterCure =
-                enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })
-                    ?.WaitTimeAfterCure ?? 0;
+                enumerable
+                    .FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })
+                    ?.WaitTimeAfterCure
+                ?? 0;
             BottomWaitTimeAfterLift =
-                enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })
-                    ?.WaitTimeAfterLift ?? 0;
-            BottomRetractSpeed = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })
-                ?.RetractSpeed ?? 0;
-            BottomRetractHeight2 = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })
-                ?.RetractHeight2 ?? 0;
-            BottomRetractSpeed2 = enumerable.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })
-                ?.RetractSpeed2 ?? 0;
+                enumerable
+                    .FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })
+                    ?.WaitTimeAfterLift
+                ?? 0;
+            BottomRetractSpeed =
+                enumerable
+                    .FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })
+                    ?.RetractSpeed
+                ?? 0;
+            BottomRetractHeight2 =
+                enumerable
+                    .FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })
+                    ?.RetractHeight2
+                ?? 0;
+            BottomRetractSpeed2 =
+                enumerable
+                    .FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })
+                    ?.RetractSpeed2
+                ?? 0;
         });
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.ReadWrite);
+        using var outputFile = new FileStream(
+            TemporaryOutputFileFullPath,
+            FileMode.Open,
+            FileAccess.ReadWrite
+        );
         outputFile.Seek(0, SeekOrigin.Begin);
         outputFile.WriteSerialize(HeaderSettings);
 
@@ -1340,7 +1542,8 @@ public sealed class CrealityCXDLPv4File : FileFormat
         {
             LayerDefinitions[layerIndex].SetFrom(this[layerIndex]);
             outputFile.WriteSerialize(LayerDefinitions[layerIndex]);
-            if (layerIndex % 2 == 0) progress++;
+            if (layerIndex % 2 == 0)
+                progress++;
         }
 
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
@@ -1348,12 +1551,69 @@ public sealed class CrealityCXDLPv4File : FileFormat
             LayerDefinitionsEx[layerIndex].SetFrom(this[layerIndex]);
             outputFile.Seek(LayerDefinitions[layerIndex].DataAddress, SeekOrigin.Begin);
             outputFile.WriteSerialize(LayerDefinitionsEx[layerIndex]);
-            if (layerIndex % 2 == 0) progress++;
+            if (layerIndex % 2 == 0)
+                progress++;
         }
 
         progress.Reset("Calculating checksum");
         var checkSum = CalculateCheckSum(outputFile, false, -4);
         outputFile.WriteUIntBigEndian(checkSum);
+    }
+
+    /// <summary>
+    /// Gets the layer image codec to encode with, the HALOT-X1 printers always use the pixel pair codec.
+    /// </summary>
+    private LayerImageEncodings GetEncodeLayerImageEncoding()
+    {
+        // The pixel pair codec works on pixel pairs, odd widths can only be encoded with the classic codec
+        if (ResolutionX % 2 != 0)
+        {
+            return LayerImageEncodings.Rle7Bit;
+        }
+
+        var machineName = MachineName;
+        if (
+            machineName.Equals("HALOT-X1", StringComparison.OrdinalIgnoreCase)
+            || machineName.Equals("R009", StringComparison.OrdinalIgnoreCase)
+            || ResolutionX == 15120 && ResolutionY == 6230
+        )
+        {
+            return LayerImageEncodings.PixelPairRle3Bit;
+        }
+
+        return LayerImageEncoding;
+    }
+
+    /// <summary>
+    /// Detects the layer image codec from the data of the first layer, the file is read at that position only and then
+    /// restored.
+    /// </summary>
+    /// <param name="inputFile">The opened file</param>
+    /// <param name="layerDefExSize">The size of the layer header that precedes the image data</param>
+    private LayerImageEncodings DetectLayerImageEncoding(FileStream inputFile, uint layerDefExSize)
+    {
+        var layerDef = LayerDefinitions[0];
+        if (layerDef.DataType != 0 || layerDef.DataSize <= layerDefExSize)
+        {
+            return LayerImageEncodings.Rle7Bit;
+        }
+
+        var position = inputFile.Position;
+        try
+        {
+            inputFile.Seek(layerDef.DataAddress + layerDefExSize, SeekOrigin.Begin);
+            // The data is read into its own buffer, so decrypting it here does not affect the layer decoding
+            var rle = inputFile.ReadBytes(layerDef.DataSize - layerDefExSize);
+            LayerRleCryptBuffer(HeaderSettings.EncryptionKey, 0, rle);
+
+            return PixelPairRleCodec.IsMatch(rle, (int)ResolutionX, (int)ResolutionY)
+                ? LayerImageEncodings.PixelPairRle3Bit
+                : LayerImageEncodings.Rle7Bit;
+        }
+        finally
+        {
+            inputFile.Seek(position, SeekOrigin.Begin);
+        }
     }
 
     private uint CalculateCheckSum(FileStream fs, bool restorePosition = true, int offsetSize = 0)
@@ -1390,7 +1650,8 @@ public sealed class CrealityCXDLPv4File : FileFormat
         for (
             var chunkSize = (int)Math.Min(bufferSize, dataSize - fs.Position);
             chunkSize > 0;
-            chunkSize = (int)Math.Min(chunkSize, dataSize - fs.Position))
+            chunkSize = (int)Math.Min(chunkSize, dataSize - fs.Position)
+        )
         {
             var bytes = fs.ReadBytes(chunkSize);
             for (var i = 0; i < bytes.Length; i++)
@@ -1402,7 +1663,8 @@ public sealed class CrealityCXDLPv4File : FileFormat
             }
         }
 
-        if (restorePosition) fs.Seek(position, SeekOrigin.Begin);
+        if (restorePosition)
+            fs.Seek(position, SeekOrigin.Begin);
 
         return checkSum;
     }
@@ -1420,12 +1682,19 @@ public sealed class CrealityCXDLPv4File : FileFormat
 
     public static void LayerRleCryptBuffer(uint seed, uint layerIndex, byte[] input)
     {
-        if (seed == 0) return;
+        if (seed == 0)
+            return;
         var init = seed * 0x2d83cdac + 0xd8a83423;
         var key = (layerIndex * 0x1e1530cd + 0xec3d47cd) * init;
 
         XorKeystream(input, key, init);
     }
+
+    [GeneratedRegex(@"(CL|CT)-?[0-9]+[a-zA-Z]?", RegexOptions.IgnoreCase)]
+    private static partial Regex CLCTMachineNameRegex();
+
+    [GeneratedRegex(@"HALOT[- ]?X1", RegexOptions.IgnoreCase)]
+    private static partial Regex HalotX1MachineNameRegex();
 
     #endregion
 }
