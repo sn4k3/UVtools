@@ -12,6 +12,8 @@
   - (Fix) PWSZ (Anycubic zip formats): overlapping or touching contours were filled as holes, for example supports
     inside the model, causing false islands and overhangs, the layers are now filled with the non-zero winding rule
     (#970)
+  - (Fix) CXDLP: Print parameters were truncated instead of rounded to the integers the format stores, lift and
+    retract speeds below 60 mm/min became 0 (#1116)
 - (Add) PrusaSlicer printer: Creality Halot X1
 - (Fix) Layer tracker: the issues were drawn at wrong positions after maximize or restore the window
 

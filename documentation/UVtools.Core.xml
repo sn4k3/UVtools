@@ -1592,6 +1592,12 @@
             Gets the header name
             </summary>
         </member>
+        <member name="M:UVtools.Core.FileFormats.CrealityCXDLPFile.RoundToUShort(System.Single)">
+            <summary>
+            The format stores the print parameters as integers, round to the nearest instead of truncating
+            (e.g. 55 mm/min = 0.92 mm/s must be 1 mm/s, not 0).
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv1File.Header.HeaderSize">
             <summary>
             Gets the size of the header

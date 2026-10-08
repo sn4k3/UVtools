@@ -546,13 +546,13 @@ public sealed class CrealityCXDLPFile : FileFormat
     public override float WaitTimeBeforeCure
     {
         get => SlicerInfoSettings.WaitTimeBeforeCure;
-        set => base.WaitTimeBeforeCure = SlicerInfoSettings.WaitTimeBeforeCure = (ushort)Math.Max(1, value);
+        set => base.WaitTimeBeforeCure = SlicerInfoSettings.WaitTimeBeforeCure = RoundToUShort(Math.Max(1, value));
     }
 
     public override float BottomExposureTime
     {
         get => SlicerInfoSettings.BottomExposureTime;
-        set => base.BottomExposureTime = SlicerInfoSettings.BottomExposureTime = (ushort)value;
+        set => base.BottomExposureTime = SlicerInfoSettings.BottomExposureTime = RoundToUShort(value);
     }
 
     public override float ExposureTime
@@ -561,7 +561,7 @@ public sealed class CrealityCXDLPFile : FileFormat
         set
         {
             value = MathF.Round(value, 1);
-            SlicerInfoSettings.ExposureTime = (ushort)(value * 10);
+            SlicerInfoSettings.ExposureTime = RoundToUShort(value * 10);
             base.ExposureTime = value;
         }
     }
@@ -569,27 +569,33 @@ public sealed class CrealityCXDLPFile : FileFormat
     public override float BottomLiftHeight
     {
         get => SlicerInfoSettings.BottomLiftHeight;
-        set => base.BottomLiftHeight = SlicerInfoSettings.BottomLiftHeight = (ushort)value;
+        set => base.BottomLiftHeight = SlicerInfoSettings.BottomLiftHeight = RoundToUShort(value);
     }
 
     public override float BottomLiftSpeed
     {
         get => SpeedConverter.Convert(SlicerInfoSettings.BottomLiftSpeed, FormatSpeedUnit, CoreSpeedUnit);
-        set => base.BottomLiftSpeed = SlicerInfoSettings.BottomLiftSpeed = SlicerInfoSettings.BottomLiftSpeed =
-            (ushort)SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
+        set
+        {
+            SlicerInfoSettings.BottomLiftSpeed = RoundToUShort(SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit));
+            base.BottomLiftSpeed = BottomLiftSpeed;
+        }
     }
 
     public override float LiftHeight
     {
         get => SlicerInfoSettings.LiftHeight;
-        set => base.LiftHeight = SlicerInfoSettings.LiftHeight = (ushort)value;
+        set => base.LiftHeight = SlicerInfoSettings.LiftHeight = RoundToUShort(value);
     }
 
     public override float LiftSpeed
     {
         get => SpeedConverter.Convert(SlicerInfoSettings.LiftSpeed, FormatSpeedUnit, CoreSpeedUnit);
-        set => base.LiftSpeed = SlicerInfoSettings.LiftSpeed =
-            (ushort)SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
+        set
+        {
+            SlicerInfoSettings.LiftSpeed = RoundToUShort(SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit));
+            base.LiftSpeed = LiftSpeed;
+        }
     }
 
     public override float BottomRetractSpeed => RetractSpeed;
@@ -597,8 +603,11 @@ public sealed class CrealityCXDLPFile : FileFormat
     public override float RetractSpeed
     {
         get => SpeedConverter.Convert(SlicerInfoSettings.RetractSpeed, FormatSpeedUnit, CoreSpeedUnit);
-        set => base.RetractSpeed = SlicerInfoSettings.RetractSpeed =
-            (ushort)SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
+        set
+        {
+            SlicerInfoSettings.RetractSpeed = RoundToUShort(SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit));
+            base.RetractSpeed = RetractSpeed;
+        }
     }
 
     public override byte BottomLightPWM
@@ -647,6 +656,13 @@ public sealed class CrealityCXDLPFile : FileFormat
     #endregion
 
     #region Methods
+
+    /// <summary>
+    /// The format stores the print parameters as integers, round to the nearest instead of truncating
+    /// (e.g. 55 mm/min = 0.92 mm/s must be 1 mm/s, not 0).
+    /// </summary>
+    private static ushort RoundToUShort(float value)
+        => (ushort)Math.Clamp(MathF.Round(value, MidpointRounding.AwayFromZero), ushort.MinValue, ushort.MaxValue);
 
     protected override void OnBeforeEncode(bool isPartialEncode)
     {
