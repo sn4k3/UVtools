@@ -1,37 +1,39 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework></TargetFramework>
-        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
-        <Title>UVtools Avalonia Controls</Title>
-        <Description>AvaloniaUI Controls
+  <PropertyGroup>
+    <TargetFramework></TargetFramework>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <Title>UVtools Avalonia Controls</Title>
+    <Description>AvaloniaUI Controls
             - AdvancedImageBox: Pan, zoom, cursor, pixel grid and selections image box
             - ExtendedNumericUpDown: Initial value with a reset button and value unit label
             - IndexSelector: Allow to choose an index from a collection count and display the selected number
             - GroupBox: Similar to GroupBox of WinForms, it contain an Header and Content
         </Description>
-        <Version>5.1.0</Version>
+    <Version>5.1.1</Version>
 
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageTags>Advanced image box; NumericUpDown; Index Selector; Group Box; Avalonia</PackageTags>
-        <RepositoryUrl>https://github.com/sn4k3/UVtools/tree/master/UVtools.AvaloniaControls</RepositoryUrl>
-        <EmbedUntrackedSources>true</EmbedUntrackedSources>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>Advanced image box; NumericUpDown; Index Selector; Group Box; Avalonia</PackageTags>
+    <RepositoryUrl>https://github.com/sn4k3/UVtools/tree/master/UVtools.AvaloniaControls</RepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <AssemblyOriginatorKeyFile>UVtools.AvaloniaControls.snk</AssemblyOriginatorKeyFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyOriginatorKeyFile>UVtools.AvaloniaControls.snk</AssemblyOriginatorKeyFile>
 
-        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    </PropertyGroup>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <None Remove="UVtools.AvaloniaControls.snk"/>
-    </ItemGroup>
+  <ItemGroup>
+    <None Remove="UVtools.AvaloniaControls.snk" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401" PrivateAssets="All" />
-        <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)"/>
-    </ItemGroup>
-
+  <ItemGroup>
+    <PackageReference
+      Include="Microsoft.SourceLink.GitHub"
+      Version="10.0.401"
+      PrivateAssets="All"
+    />
+    <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+  </ItemGroup>
 </Project>

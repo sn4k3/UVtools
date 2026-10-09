@@ -1,6 +1,6 @@
 # Changelog
 
-## /10/2026 - v7.0.3
+## 09/10/2026 - v7.0.3
 
 - **File formats:**
   - (Add) CXDLPv4: Support for the Creality HALOT-X1 (#1016), its layers use a different codec of 3 bit gray pixel
@@ -19,6 +19,8 @@
     stored (#1116)
 - (Add) PrusaSlicer printer: Creality Halot X1
 - (Fix) Layer tracker: the issues were drawn at wrong positions after maximize or restore the window
+- (Fix) AdvancedImageBox: The pixel grid image border and the selection were drawn over the scroll bars area when the
+  image was clipped by the viewport, they are now clipped to the viewport (#959)
 
 ## 06/10/2026 - v7.0.2
 

@@ -30,7 +30,10 @@ Notes:
   Avalonia 12 preview packages come from there).
 - Assemblies are signed with `UVtools.snk` **at the repo root** (`Directory.Build.props` → `AssemblyOriginatorKeyFile`).
   This file must be present to build.
-- Build output goes to `artifacts/` at the repo root (`ArtifactsPath`).
+- Build output goes to `artifacts/` at the repo root (`ArtifactsPath`), **unless the checkout is inside a cloud-synced
+  folder** (OneDrive, Dropbox, …): `SyncArtifacts.props` then redirects it to
+  `%LOCALAPPDATA%\DotNetArtifacts\<Repository>-<hash>\` (`~/Library/Caches/…` on macOS, `~/.cache/…` on Linux), e.g.
+  `…\DotNetArtifacts\UVtools-<hash>\bin\UVtools.Cmd\debug\UVtoolsCmd.dll`. `-p:ArtifactsPath=<dir>` overrides it.
 - `build.ps1` / `build.sh` / `build.cmd` bootstrap the SDK and run `build/build.csproj`, a Fallout/StageKit build
   (`build/Build.cs`, default target `Compile`). That project is what produces the real release artifacts: portable zip,
   Windows installer, AppImage, deb, rpm, Arch package, macOS app bundle, plus file associations derived from
@@ -69,8 +72,20 @@ installer file associations are all derived from that array via `FileExtension`.
 `UVtools.Core/FileFormats/`, implement at minimum `DecodeInternally`, `EncodeInternally`, `FileExtensions`, and the
 format's header/layer structures, then add it to `AvailableFormats`.
 
+One class may serve several extensions and branch on the extension (`FileEndsWith(".vlr")` in `OSFFile`,
+`.ctb`/`.v2.ctb`/`.v3.ctb` in `ChituboxFile`); format variants that share a container but not a layer codec are detected from the
+data when no header field distinguishes them (CXDLPv4 HALOT-X1). Layer image codecs live in small static classes
+(`CtbRleCodec`, `PixelPairRleCodec`, `VlrRleCodec`, …) next to the formats.
+
 `Scripts/010 Editor/*.bt` holds binary templates for most formats — useful when reverse-engineering or verifying a
-header layout.
+header layout. A new template is also listed in `Scripts/010 Editor/FileFormats.1pj` and `UVtools.slnx`.
+
+**Print parameters**: `FileFormat.PrintParameterModifier` instances (`PrintParameterModifier.LiftSpeed`, …) are static
+singletons with mutable `OldValue`/`NewValue`, matched with `ReferenceEquals` throughout `FileFormat`, `Layer` and the
+UI — never clone them per format. Formats expose them through `PrintParameterModifiers` /
+`PrintParameterPerLayerModifiers`, and override `GetPrintParameterModifierConstraints` when the file stores coarser
+values (e.g. CXDLP stores integer mm/s, so speeds step in 60 mm/min). Setters converting to the file's units must round,
+not truncate. UVtools works in mm/min (`CoreSpeedUnit`) and converts via `FormatSpeedUnit`.
 
 ### `Layer` — `UVtools.Core/Layers/`
 
@@ -132,10 +147,31 @@ controls) letting users write runtime operations; `OperationScripting` is the br
   does. See `AGENTS.md` for the DotNext buffer-writer and allocation rules.
 - Do not leave large blocks of commented-out code.
 - XML doc comments (`///`) are expected on public API members in `UVtools.Core` (documentation XML is generated to
-  `documentation/UVtools.Core.xml`).
+  `documentation/UVtools.Core.xml`, which is tracked — building Core regenerates it).
+- Line endings and encodings are mixed: the index is LF, most working-copy `.cs` files are CRLF and many start with a
+  UTF-8 BOM, while some newer files are LF. Preserve each file's existing endings and BOM (`git ls-files --eol <file>`);
+  whole-file rewrites through `[IO.File]::WriteAllText` silently drop the BOM.
+- `CHANGELOG.md`: add entries under the top (unreleased) version, inside the matching group (`- **File formats:**`,
+  `- **AdvancedImageBox**`, …), as `(Add)` / `(Fix)` / `(Improvement)` / `(Breaking)` lines wrapped at 120 columns,
+  referencing the GitHub issue as `(#1234)`.
 
 ## Testing
 
 `tests/UVtools.Tests` (xUnit) covers targeted regression areas — format round-trips, specific operations, Gerber/Excellon
 parsing, mesh building. It is not comprehensive: most validation still happens manually through the UI/CLI or the
 built-in calibration tests. Add tests there when changing the covered areas or fixing a reproducible bug.
+
+`FileFormatRoundTripTests` enumerates `FileFormat.AvailableFormats` × their `FileExtensions`, so a newly registered format
+or extension is round-tripped automatically.
+
+For checks against real sample files, the CLI is the quickest harness (run `UVtoolsCmd <verb> --help` for options):
+
+```bash
+UVtoolsCmd print-properties <file>                       # decoded header / settings values
+UVtoolsCmd extract <file> <dir> --content Layers         # every layer as PNG
+UVtoolsCmd convert <file> <target-type/ext> <out-file>   # cross-format / round trip
+UVtoolsCmd set-properties <file> LiftSpeed=55 -o <out>   # property=value pairs are positional
+```
+
+Rendering of `UVtools.AvaloniaControls` can be checked without a UI by a scratch app outside the repo using
+`Avalonia.Headless` + `UseSkia()` (`UseHeadlessDrawing = false`) and `window.CaptureRenderedFrame()`.

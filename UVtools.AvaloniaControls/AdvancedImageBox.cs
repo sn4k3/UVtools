@@ -1729,7 +1729,10 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             context.DrawImage(_trackerImage!, new Rect(destPos, destSize));
         }
 
-        //SkiaContext.SkCanvas.dr
+        // The pixel grid and the selection are clipped to the viewport, otherwise the parts of the image bounds outside
+        // of it (e.g. the bottom of a clipped image) are drawn over the scroll bars area
+        using var viewportClip = context.PushClip(new Rect(Viewport));
+
         // Draw pixel grid
         if (SizeMode == SizeModes.Normal && zoomFactor > PixelGridZoomThreshold &&
             imageViewPort.Width > 0 && imageViewPort.Height > 0)
