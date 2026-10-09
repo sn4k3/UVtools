@@ -44,7 +44,9 @@ public partial class OperationEditParameters : Operation
             foreach (var modifier in Modifiers)
             {
                 if(!modifier.HasChanged) continue;
-                sb.AppendLine($"{modifier.Name}: {modifier.OldValue}{modifier.ValueUnit} » {modifier.NewValue}{modifier.ValueUnit}");
+                var storedValue = GetStoredValue(modifier);
+                if (storedValue == modifier.OldValue) continue;
+                sb.AppendLine($"{modifier.Name}: {FormatValue(modifier, modifier.OldValue)}{modifier.ValueUnit} » {FormatValue(modifier, storedValue)}{modifier.ValueUnit}");
             }
             var text = "commit the following print parameter changes";
             if (PerLayerOverride)
@@ -86,6 +88,8 @@ public partial class OperationEditParameters : Operation
             return "Modifiers does not exists, can't validate.";
         }
 
+
+        CoerceChangedValues();
 
         var sb = new StringBuilder();
         var changed = Modifiers.AsValueEnumerable().Any(modifier => modifier.HasChanged);
@@ -154,8 +158,40 @@ public partial class OperationEditParameters : Operation
 
     #region Methods
 
+    /// <summary>
+    /// Gets the value that the file format stores for a modifier
+    /// </summary>
+    private decimal GetStoredValue(FileFormat.PrintParameterModifier modifier)
+    {
+        return SlicerFile.CoercePrintParameterModifierValue(modifier, modifier.NewValue);
+    }
+
+    /// <summary>
+    /// Formats a value with the decimal plates that the file format stores
+    /// </summary>
+    private string FormatValue(FileFormat.PrintParameterModifier modifier, decimal value)
+    {
+        var decimalPlates = SlicerFile.GetPrintParameterModifierConstraints(modifier).DecimalPlates;
+        return Math.Round(value, decimalPlates, MidpointRounding.AwayFromZero).ToString();
+    }
+
+    /// <summary>
+    /// Replaces the new value of the changed modifiers by the value that the file format stores, so a value that is
+    /// not storable is not reported or applied as a change
+    /// </summary>
+    private void CoerceChangedValues()
+    {
+        foreach (var modifier in Modifiers)
+        {
+            if (!modifier.HasChanged) continue;
+            modifier.NewValue = GetStoredValue(modifier);
+        }
+    }
+
     protected override bool ExecuteInternally(OperationProgress progress)
     {
+        CoerceChangedValues();
+
         if (PerLayerOverride)
         {
             uint setLayers = 0;

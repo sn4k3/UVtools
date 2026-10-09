@@ -1592,6 +1592,13 @@
             Gets the header name
             </summary>
         </member>
+        <member name="M:UVtools.Core.FileFormats.CrealityCXDLPFile.GetPrintParameterModifierConstraints(UVtools.Core.FileFormats.FileFormat.PrintParameterModifier)">
+            <inheritdoc/>
+            <remarks>
+            Speeds are stored as whole mm/s, so they step in 60 mm/min. The exposure time is stored in tenths of a second,
+            and the bottom exposure time, lift heights and wait before cure are stored as whole numbers.
+            </remarks>
+        </member>
         <member name="M:UVtools.Core.FileFormats.CrealityCXDLPFile.RoundToUShort(System.Single)">
             <summary>
             The format stores the print parameters as integers, round to the nearest instead of truncating
@@ -2388,6 +2395,41 @@
             Gets if the value has changed
             </summary>
         </member>
+        <member name="T:UVtools.Core.FileFormats.FileFormat.PrintParameterModifierConstraints">
+            <summary>
+            Limits of a <see cref="T:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier"/> that a <see cref="T:UVtools.Core.FileFormats.FileFormat"/> is able to store
+            </summary>
+            <param name="Minimum">Smallest value that can be stored</param>
+            <param name="Maximum">Largest value that can be stored</param>
+            <param name="Increment">Step between the values that can be stored</param>
+            <param name="DecimalPlates">Number of decimal places that can be stored</param>
+            <param name="SnapToIncrement">True if only multiples of <paramref name="Increment"/> can be stored</param>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.PrintParameterModifierConstraints.#ctor(System.Decimal,System.Decimal,System.Decimal,System.Byte,System.Boolean)">
+            <summary>
+            Limits of a <see cref="T:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier"/> that a <see cref="T:UVtools.Core.FileFormats.FileFormat"/> is able to store
+            </summary>
+            <param name="Minimum">Smallest value that can be stored</param>
+            <param name="Maximum">Largest value that can be stored</param>
+            <param name="Increment">Step between the values that can be stored</param>
+            <param name="DecimalPlates">Number of decimal places that can be stored</param>
+            <param name="SnapToIncrement">True if only multiples of <paramref name="Increment"/> can be stored</param>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifierConstraints.Minimum">
+            <summary>Smallest value that can be stored</summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifierConstraints.Maximum">
+            <summary>Largest value that can be stored</summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifierConstraints.Increment">
+            <summary>Step between the values that can be stored</summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifierConstraints.DecimalPlates">
+            <summary>Number of decimal places that can be stored</summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PrintParameterModifierConstraints.SnapToIncrement">
+            <summary>True if only multiples of <paramref name="Increment"/> can be stored</summary>
+        </member>
         <member name="T:UVtools.Core.FileFormats.FileFormat.DrillOperationState">
             <summary>
             Mutable per-operation state of a downward supports/drain hole sweep.
@@ -2664,6 +2706,25 @@
             </summary>
             <param name="modifier"></param>
             <returns>True if exists, otherwise false</returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetPrintParameterModifierConstraints(UVtools.Core.FileFormats.FileFormat.PrintParameterModifier)">
+            <summary>
+            Gets the limits that this format is able to store for a <see cref="T:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier"/>.
+            Override it to restrict a modifier to the values the format stores.
+            </summary>
+            <param name="modifier">Modifier to get the limits for</param>
+            <returns>The limits of the values that can be stored, by default the limits of <paramref name="modifier"/></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.CoercePrintParameterModifierValue(UVtools.Core.FileFormats.FileFormat.PrintParameterModifier,System.Decimal)">
+            <summary>
+            Coerces a value to the closest value that this format is able to store for a <see cref="T:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier"/>
+            </summary>
+            <param name="modifier">Modifier to coerce the value for</param>
+            <param name="value">Value to coerce</param>
+            <returns>
+            The value clamped to the limits, snapped to the increment when required, and rounded away from zero to the
+            decimal plates
+            </returns>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.FileFilter">
             <summary>
@@ -8915,6 +8976,22 @@
         </member>
         <member name="P:UVtools.Core.Operations.OperationEditParameters.SkipNumberOfLayer">
             <inheritdoc/>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationEditParameters.GetStoredValue(UVtools.Core.FileFormats.FileFormat.PrintParameterModifier)">
+            <summary>
+            Gets the value that the file format stores for a modifier
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationEditParameters.FormatValue(UVtools.Core.FileFormats.FileFormat.PrintParameterModifier,System.Decimal)">
+            <summary>
+            Formats a value with the decimal plates that the file format stores
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationEditParameters.CoerceChangedValues">
+            <summary>
+            Replaces the new value of the changed modifiers by the value that the file format stores, so a value that is
+            not storable is not reported or applied as a change
+            </summary>
         </member>
         <member name="T:UVtools.Core.Operations.OperationFadeExposureTime">
             <inheritdoc/>

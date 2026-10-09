@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,10 @@ public partial class ToolEditParametersControl : ToolControl
 
     public sealed class RowControl
     {
+        private readonly FileFormat _slicerFile;
+        private readonly FileFormat.PrintParameterModifier _limitsModifier;
+        private bool _isCoercing;
+
         public FileFormat.PrintParameterModifier Modifier { get; }
 
         public Control FirstColumn;
@@ -31,11 +36,21 @@ public partial class ToolEditParametersControl : ToolControl
         public TextBlock Name { get; }
         public NumericUpDown NumericUpDown { get; }
 
-        public RowControl(FileFormat.PrintParameterModifier modifier)
+        /// <summary>
+        /// Creates a row to edit a modifier
+        /// </summary>
+        /// <param name="slicerFile">File that stores the value, it defines the limits of the values that can be stored</param>
+        /// <param name="modifier">Modifier to edit</param>
+        /// <param name="limitsModifier">Modifier that defines the limits, when <paramref name="modifier"/> is a copy</param>
+        public RowControl(FileFormat slicerFile, FileFormat.PrintParameterModifier modifier,
+            FileFormat.PrintParameterModifier? limitsModifier = null)
         {
+            _slicerFile = slicerFile;
+            _limitsModifier = limitsModifier ?? modifier;
             Modifier = modifier;
 
-            modifier.NewValue = Math.Clamp(modifier.OldValue, modifier.Minimum, modifier.Maximum);
+            var constraints = slicerFile.GetPrintParameterModifierConstraints(_limitsModifier);
+            modifier.NewValue = slicerFile.CoercePrintParameterModifierValue(_limitsModifier, modifier.OldValue);
             var label = ReferenceEquals(modifier, FileFormat.PrintParameterModifier.BottomLayerCount)
                 ? modifier.Name
                 : modifier.Name.Replace("Bottom ", string.Empty, StringComparison.InvariantCultureIgnoreCase).FirstCharToUpper();
@@ -105,10 +120,10 @@ public partial class ToolEditParametersControl : ToolControl
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 Margin = new Thickness(0, 2, 0, 0),
-                Minimum = modifier.Minimum,
-                Maximum = modifier.Maximum,
-                Increment = modifier.Increment,
-                FormatString = modifier.DecimalPlates > 0 ? $"F{modifier.DecimalPlates}" : string.Empty,
+                Minimum = constraints.Minimum,
+                Maximum = constraints.Maximum,
+                Increment = constraints.Increment,
+                FormatString = constraints.DecimalPlates > 0 ? $"F{constraints.DecimalPlates}" : string.Empty,
                 Value = modifier.NewValue,
                 Tag = this,
                 //Width = 100,
@@ -118,17 +133,45 @@ public partial class ToolEditParametersControl : ToolControl
 
             NumericUpDownExtensions.SetPrefix(NumericUpDown, $"({modifier.NewValue})  ");
             NumericUpDownExtensions.SetUnit(NumericUpDown, $" {modifier.ValueUnit}");
-            NumericUpDownExtensions.SetResetText(NumericUpDown, modifier.DecimalPlates > 0
-                ? modifier.NewValue.ToString($"F{modifier.DecimalPlates}")
+            NumericUpDownExtensions.SetResetText(NumericUpDown, constraints.DecimalPlates > 0
+                ? modifier.NewValue.ToString($"F{constraints.DecimalPlates}")
                 : modifier.NewValue
             );
 
             NumericUpDown.ValueChanged += NewValueOnValueChanged;
+            NumericUpDown.LostFocus += NumericUpDownOnLostFocus;
         }
 
         private void NewValueOnValueChanged(object? sender, NumericUpDownValueChangedEventArgs e)
         {
-            Modifier.NewValue = e.NewValue ?? 0;
+            if (_isCoercing) return;
+
+            var storedValue = _slicerFile.CoercePrintParameterModifierValue(_limitsModifier, e.NewValue ?? 0);
+            Modifier.NewValue = storedValue;
+
+            // The value is synced while typing, replacing it now would break the typing (5 of 55 would become 0),
+            // so the stored value is only shown once the field loses the focus
+            if (!NumericUpDown.IsKeyboardFocusWithin) ShowStoredValue();
+        }
+
+        private void NumericUpDownOnLostFocus(object? sender, RoutedEventArgs e) => ShowStoredValue();
+
+        /// <summary>
+        /// Shows the value that will be stored, for example 55 mm/min is stored as 60 mm/min
+        /// </summary>
+        private void ShowStoredValue()
+        {
+            if (NumericUpDown.Value == Modifier.NewValue) return;
+
+            _isCoercing = true;
+            try
+            {
+                NumericUpDown.Value = Modifier.NewValue;
+            }
+            finally
+            {
+                _isCoercing = false;
+            }
         }
     }
 
@@ -231,7 +274,7 @@ public partial class ToolEditParametersControl : ToolControl
             bool isBottomLayer = !Operation.PerLayerOverride && modifier.Name.Contains("Bottom");
             int column = isBottomLayer || Operation.PerLayerOverride ? 0 : 3;
 
-            var rowControl1 = new RowControl(modifier);
+            var rowControl1 = new RowControl(SlicerFile!, modifier);
             RowControl? rowControl2 = null;
             grid.Children.Add(rowControl1.FirstColumn);
 
@@ -245,7 +288,7 @@ public partial class ToolEditParametersControl : ToolControl
                 if (!ReferenceEquals(modifierPair.modifierLeft, modifier)) continue;
                 if (!Operation.Modifiers.AsValueEnumerable().Contains(modifierPair.modifierRight)) break;
 
-                rowControl2 = new RowControl(modifierPair.modifierRight);
+                rowControl2 = new RowControl(SlicerFile!, modifierPair.modifierRight);
                 valueContainer = CreateTSMCfields(rowControl1, rowControl2);
 
                 break;
@@ -254,7 +297,8 @@ public partial class ToolEditParametersControl : ToolControl
             if (rowControl2 is null && ReferenceEquals(modifier, FileFormat.PrintParameterModifier.BottomRetractHeight2))
             {
                 rowControl1.Name.Text = rowControl1.Name.Text?.Replace("2) ", string.Empty).FirstCharToUpper();
-                var rowControlVirtual = new RowControl(FileFormat.PrintParameterModifier.BottomRetractHeight2.Clone())
+                var rowControlVirtual = new RowControl(SlicerFile!, FileFormat.PrintParameterModifier.BottomRetractHeight2.Clone(),
+                    FileFormat.PrintParameterModifier.BottomRetractHeight2)
                 {
                     NumericUpDown =
                         {
@@ -282,7 +326,8 @@ public partial class ToolEditParametersControl : ToolControl
             else if (rowControl2 is null && ReferenceEquals(modifier, FileFormat.PrintParameterModifier.RetractHeight2))
             {
                 rowControl1.Name.Text = rowControl1.Name.Text?.Replace("2) ", string.Empty).FirstCharToUpper();
-                var rowControlVirtual = new RowControl(FileFormat.PrintParameterModifier.RetractHeight2.Clone())
+                var rowControlVirtual = new RowControl(SlicerFile!, FileFormat.PrintParameterModifier.RetractHeight2.Clone(),
+                    FileFormat.PrintParameterModifier.RetractHeight2)
                 {
                     NumericUpDown =
                     {

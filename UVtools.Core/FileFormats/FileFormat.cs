@@ -366,6 +366,17 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         #endregion
     }
 
+    /// <summary>
+    /// Limits of a <see cref="PrintParameterModifier"/> that a <see cref="FileFormat"/> is able to store
+    /// </summary>
+    /// <param name="Minimum">Smallest value that can be stored</param>
+    /// <param name="Maximum">Largest value that can be stored</param>
+    /// <param name="Increment">Step between the values that can be stored</param>
+    /// <param name="DecimalPlates">Number of decimal places that can be stored</param>
+    /// <param name="SnapToIncrement">True if only multiples of <paramref name="Increment"/> can be stored</param>
+    public readonly record struct PrintParameterModifierConstraints(decimal Minimum, decimal Maximum, decimal Increment,
+        byte DecimalPlates, bool SnapToIncrement = false);
+
     #endregion
 
     #region Draw Modifications
@@ -2042,6 +2053,40 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
     public bool HaveLayerParameterModifier(PrintParameterModifier modifier)
     {
         return SupportPerLayerSettings && PrintParameterPerLayerModifiers.AsValueEnumerable().Contains(modifier);
+    }
+
+    /// <summary>
+    /// Gets the limits that this format is able to store for a <see cref="PrintParameterModifier"/>.
+    /// Override it to restrict a modifier to the values the format stores.
+    /// </summary>
+    /// <param name="modifier">Modifier to get the limits for</param>
+    /// <returns>The limits of the values that can be stored, by default the limits of <paramref name="modifier"/></returns>
+    public virtual PrintParameterModifierConstraints GetPrintParameterModifierConstraints(PrintParameterModifier modifier)
+    {
+        return new PrintParameterModifierConstraints(modifier.Minimum, modifier.Maximum, modifier.Increment,
+            modifier.DecimalPlates);
+    }
+
+    /// <summary>
+    /// Coerces a value to the closest value that this format is able to store for a <see cref="PrintParameterModifier"/>
+    /// </summary>
+    /// <param name="modifier">Modifier to coerce the value for</param>
+    /// <param name="value">Value to coerce</param>
+    /// <returns>
+    /// The value clamped to the limits, snapped to the increment when required, and rounded away from zero to the
+    /// decimal plates
+    /// </returns>
+    public decimal CoercePrintParameterModifierValue(PrintParameterModifier modifier, decimal value)
+    {
+        var constraints = GetPrintParameterModifierConstraints(modifier);
+        value = Math.Clamp(value, constraints.Minimum, constraints.Maximum);
+        if (constraints.SnapToIncrement && constraints.Increment > 0)
+        {
+            value = Math.Round(value / constraints.Increment, MidpointRounding.AwayFromZero) * constraints.Increment;
+        }
+
+        value = Math.Round(value, constraints.DecimalPlates, MidpointRounding.AwayFromZero);
+        return Math.Clamp(value, constraints.Minimum, constraints.Maximum);
     }
 
     /// <summary>

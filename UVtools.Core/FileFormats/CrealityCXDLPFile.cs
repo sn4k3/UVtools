@@ -456,6 +456,47 @@ public sealed class CrealityCXDLPFile : FileFormat
         PrintParameterModifier.LightPWM
     ];
 
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Speeds are stored as whole mm/s, so they step in 60 mm/min. The exposure time is stored in tenths of a second,
+    /// and the bottom exposure time, lift heights and wait before cure are stored as whole numbers.
+    /// </remarks>
+    public override PrintParameterModifierConstraints GetPrintParameterModifierConstraints(PrintParameterModifier modifier)
+    {
+        const decimal stepMillimetersPerMinute = 60m; // 1 mm/s
+
+        if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftSpeed)
+            || ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed)
+            || ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
+        {
+            return new PrintParameterModifierConstraints(modifier.Minimum,
+                Math.Floor(modifier.Maximum / stepMillimetersPerMinute) * stepMillimetersPerMinute,
+                stepMillimetersPerMinute, 0, true);
+        }
+
+        if (ReferenceEquals(modifier, PrintParameterModifier.ExposureTime))
+        {
+            return new PrintParameterModifierConstraints(modifier.Minimum, modifier.Maximum, 0.1m, 1);
+        }
+
+        if (ReferenceEquals(modifier, PrintParameterModifier.BottomExposureTime)
+            || ReferenceEquals(modifier, PrintParameterModifier.BottomLiftHeight)
+            || ReferenceEquals(modifier, PrintParameterModifier.LiftHeight))
+        {
+            // Rounded up to a whole number, so a minimum of 0.1 becomes 1
+            return new PrintParameterModifierConstraints(Math.Ceiling(modifier.Minimum), modifier.Maximum, 1, 0);
+        }
+
+        if (ReferenceEquals(modifier, PrintParameterModifier.WaitTimeBeforeCure))
+        {
+            // The setter never stores less than 1 second
+            return new PrintParameterModifierConstraints(Math.Max(1m, Math.Ceiling(modifier.Minimum)), modifier.Maximum,
+                1, 0);
+        }
+
+        return base.GetPrintParameterModifierConstraints(modifier);
+    }
+
     public override Size[] ThumbnailsOriginalSize { get; } =
     [
         new(116, 116),

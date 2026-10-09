@@ -14,6 +14,9 @@
     (#970)
   - (Fix) CXDLP: Print parameters were truncated instead of rounded to the integers the format stores, lift and
     retract speeds below 60 mm/min became 0 (#1116)
+  - (Improvement) Edit print parameters: the values are limited to what the file format can store, for example the CXDLP
+    speeds step in 60 mm/min and its integer fields have no decimals, and the confirmation shows the value that will be
+    stored (#1116)
 - (Add) PrusaSlicer printer: Creality Halot X1
 - (Fix) Layer tracker: the issues were drawn at wrong positions after maximize or restore the window
 
