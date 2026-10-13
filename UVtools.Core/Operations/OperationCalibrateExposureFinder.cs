@@ -21,6 +21,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -117,7 +118,7 @@ public sealed partial class OperationCalibrateExposureFinder : Operation
 
     const byte TextMarkingSpacing = 60;
     const byte TextMarkingLineBreak = 30;
-    const FontFace TextMarkingFontFace = Emgu.CV.CvEnum.FontFace.HersheyDuplex;
+    const HersheyFonts TextMarkingFontFace = Emgu.CV.CvEnum.HersheyFonts.Duplex;
 
     const byte TextMarkingStartX = 10;
 
@@ -596,9 +597,18 @@ public sealed partial class OperationCalibrateExposureFinder : Operation
 
     [ObservableProperty] public partial bool TextEnabled { get; set; } = true;
 
-    public static Array TextFonts => Enum.GetValues(typeof(FontFace));
+    public static Array TextFonts => Enum.GetValues(typeof(HersheyFonts));
 
-    [ObservableProperty] public partial FontFace TextFont { get; set; } = TextMarkingFontFace;
+    [XmlIgnore]
+    [ObservableProperty] public partial HersheyFonts TextFont { get; set; } = TextMarkingFontFace;
+
+    // Preserve Emgu CV 4 font names in saved operation profiles.
+    [XmlElement(nameof(TextFont))]
+    public string SerializedTextFont
+    {
+        get => "Hershey" + TextFont;
+        set => TextFont = Enum.Parse<HersheyFonts>(value.StartsWith("Hershey", StringComparison.Ordinal) ? value.AsSpan(7) : value.AsSpan());
+    }
 
     public double TextScale
     {
@@ -1612,7 +1622,7 @@ public sealed partial class OperationCalibrateExposureFinder : Operation
     public Mat GetThumbnail()
     {
         Mat thumbnail = EmguCvExtensions.InitMat(new Size(400, 200), 3);
-        var fontFace = FontFace.HersheyDuplex;
+        var fontFace = HersheyFonts.Duplex;
         var fontScale = 1;
         var fontThickness = 2;
         const byte xSpacing = 45;

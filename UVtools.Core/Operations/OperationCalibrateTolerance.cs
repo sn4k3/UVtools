@@ -413,7 +413,7 @@ public sealed partial class OperationCalibrateTolerance : Operation
         int currentX = startX;
         int currentY = startY;
 
-        const FontFace fontFace = FontFace.HersheyDuplex;
+        const HersheyFonts fontFace = HersheyFonts.Duplex;
         const double fontScale = 1;
         const byte fontThickness = 2;
         LineType lineType = EnableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
@@ -625,7 +625,7 @@ public sealed partial class OperationCalibrateTolerance : Operation
     public Mat GetThumbnail()
     {
         Mat thumbnail = EmguCvExtensions.InitMat(new Size(400, 200), 3);
-        var fontFace = FontFace.HersheyDuplex;
+        var fontFace = HersheyFonts.Duplex;
         var fontScale = 1;
         var fontThickness = 2;
         const byte xSpacing = 45;

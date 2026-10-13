@@ -45,10 +45,14 @@ public partial class App : Application
 {
     public enum ApplicationTheme
     {
-        [Description("Fluent system")] FluentSystem,
+        [Description("Fluent system")]
+        FluentSystem,
 
-        [Description("Fluent light")] FluentLight,
-        [Description("Fluent dark")] FluentDark
+        [Description("Fluent light")]
+        FluentLight,
+
+        [Description("Fluent dark")]
+        FluentDark,
 
         /*[Description("Simple system")]
         SimpleSystem,
@@ -66,9 +70,8 @@ public partial class App : Application
         InstallUpdateWindowsInstallerArguments = "/qb",
         InstallUpdateSingleFileExecutableName = About.Software,
         InstallUpdateCodesignMacOSApp = true,
-        DownloadProgressUpdateFrequencySeconds = 0.1 // 10 FPS
+        DownloadProgressUpdateFrequencySeconds = 0.1, // 10 FPS
     };
-
 
     public override void Initialize()
     {
@@ -78,14 +81,14 @@ public partial class App : Application
         SetupTheme();
         UserSettings.Load();
         UserSettings.SetVersion();
-        
+
         MarkdownViewerDefaults.Pipeline = new MarkdownPipelineBuilder()
             .UseSupportedExtensions()
             .UseAlertBlocks()
             .Build();
 
-        MarkdownViewer.LinkClickedEvent.AddClassHandler<MarkdownViewer>((_, e) =>
-            HostSystem.OpenUrl(e.Url)
+        MarkdownViewer.LinkClickedEvent.AddClassHandler<MarkdownViewer>(
+            (_, e) => HostSystem.OpenUrl(e.Url)
         );
     }
 
@@ -94,7 +97,6 @@ public partial class App : Application
         // Line below is needed to remove Avalonia data validation.
         // Without this line you will get duplicate validations from both Avalonia and CT
         //BindingPlugins.DataValidators.RemoveAt(0);
-
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -115,24 +117,35 @@ public partial class App : Application
 
                 using var reader = new StringReader(bugDescription);
                 MessageWindow window = null!;
-                window = new MessageWindow($"{About.SoftwareWithVersion} - Crash report",
+                window = new MessageWindow(
+                    $"{About.SoftwareWithVersion} - Crash report",
                     MaterialIconKind.EmojiFrownOutline,
                     $"{About.Software} crashed due an unexpected error.\nYou can report this error if you find necessary.\nFind more details below:\n",
                     bugDescription,
                     TextWrapping.Wrap,
                     [
-                        MessageWindow.CreateLinkButtonAction("Report", MaterialIconKind.Bug,
+                        MessageWindow.CreateLinkButtonAction(
+                            "Report",
+                            MaterialIconKind.Bug,
                             $"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title={HttpUtility.UrlEncode($"[Crash] {reader.ReadLine()}")}&system={HttpUtility.UrlEncode(system)}&bug_description={HttpUtility.UrlEncode($"```\n{bugDescription}\n```")}",
-                            () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
-                        MessageWindow.CreateLinkButtonAction("Help", MaterialIconKind.QuestionMark,
+                            () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")
+                        ),
+                        MessageWindow.CreateLinkButtonAction(
+                            "Help",
+                            MaterialIconKind.QuestionMark,
                             "https://github.com/sn4k3/UVtools/discussions/categories/q-a",
-                            () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
-                        MessageWindow.CreateButtonAction("Restart", MaterialIconKind.Restart,
-                            () => EntryApplication.LaunchNewInstance()),
-                        MessageWindow.CreateCloseButton(MaterialIconKind.SignOut)
-                    ])
+                            () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")
+                        ),
+                        MessageWindow.CreateButtonAction(
+                            "Restart",
+                            MaterialIconKind.Restart,
+                            () => EntryApplication.LaunchNewInstance()
+                        ),
+                        MessageWindow.CreateCloseButton(MaterialIconKind.SignOut),
+                    ]
+                )
                 {
-                    AboutButtonIsVisible = true
+                    AboutButtonIsVisible = true,
                 };
 
                 try
@@ -173,7 +186,7 @@ public partial class App : Application
                             DisplayMirror = FlipDirection.Horizontally,
                             MachineZ = 155,
                             BottomLayerCount = 3,
-                            MachineName = "Epax X1"
+                            MachineName = "Epax X1",
                         };
                     }
 
@@ -188,7 +201,6 @@ public partial class App : Application
                 }
             }
 
-
             //desktop.Exit += (sender, e) => ThemeSelector.SaveSelectedTheme(Path.Combine(UserSettings.SettingsFolder, "selected.theme"));
         }
 
@@ -197,20 +209,21 @@ public partial class App : Application
 
     private MessageWindow MissingOpenCVDependenciesWindow()
     {
-        var message = "Your system doesn't have the required dependencies in order to run.\n" +
-                      "Those dependencies are required at libcvextern/OpenCV library.\n" +
-                      "UVtools is built on top of the OpenCV and therefore cannot run.\n\n";
+        var message =
+            "Your system doesn't have the required dependencies in order to run.\n"
+            + "Those dependencies are required at libcvextern/OpenCV library.\n"
+            + "UVtools is built on top of the OpenCV and therefore cannot run.\n\n";
 
         if (OperatingSystem.IsLinux())
         {
             try
             {
-                var result =
-                    ProcessHelper.GetShellOutput(
-                        $"-c \"ldd '{Path.Combine(ApplicationPath, "libcvextern.so")}' | grep not\"");
-                if (!string.IsNullOrWhiteSpace(result.StandardOutput))
+                var result = ProcessHelper.GetShellOutput(
+                    $"ldd '{Path.Combine(ApplicationPath, "libcvextern.so")}' | grep not"
+                );
+                if (result.Succeeded && !string.IsNullOrWhiteSpace(result.StandardOutput))
                 {
-                    message += $"Missing dependencies:\n{result}\n";
+                    message += $"Missing dependencies:\n{result.StandardOutput}\n";
                 }
             }
             catch (Exception e)
@@ -222,8 +235,10 @@ public partial class App : Application
         {
             try
             {
-                var result = ProcessHelper.GetProcessOutput("otool",
-                    $"-L '{Path.Combine(ApplicationPath, "libcvextern.dylib")}'");
+                var result = ProcessHelper.GetProcessOutput(
+                    "otool",
+                    $"-L '{Path.Combine(ApplicationPath, "libcvextern.dylib")}'"
+                );
                 if (!string.IsNullOrWhiteSpace(result.StandardOutput))
                 {
                     message += $"Dependencies:\n{result}\n";
@@ -235,24 +250,32 @@ public partial class App : Application
             }
         }
 
-        message += "Please install or build the dependencies in order to run the software.\n" +
-                   "Check the manual page at 'Requirements' section for help.";
+        message +=
+            "Please install or build the dependencies in order to run the software.\n"
+            + "Check the manual page at 'Requirements' section for help.";
 
-
-        return new MessageWindow($"{About.SoftwareWithVersion} is unable to run",
+        return new MessageWindow(
+            $"{About.SoftwareWithVersion} is unable to run",
             MaterialIconKind.EmojiFrownOutline,
             $"{About.SoftwareWithVersionArch} [{HostSystem.OperatingSystemName}]\nUnable to run due one or more missing dependencies.\nTriggered by: libcvextern  (OpenCV)",
             message,
             TextWrapping.Wrap,
             [
-                MessageWindow.CreateLinkButton("Open manual", MaterialIconKind.MicrosoftEdge,
-                    "https://github.com/sn4k3/UVtools#requirements"),
-                MessageWindow.CreateLinkButton("Ask for help", MaterialIconKind.QuestionMark,
-                    "https://github.com/sn4k3/UVtools/discussions/categories/q-a"),
-                MessageWindow.CreateCloseButton(MaterialIconKind.SignOut)
-            ])
+                MessageWindow.CreateLinkButton(
+                    "Open manual",
+                    MaterialIconKind.MicrosoftEdge,
+                    "https://github.com/sn4k3/UVtools#requirements"
+                ),
+                MessageWindow.CreateLinkButton(
+                    "Ask for help",
+                    MaterialIconKind.QuestionMark,
+                    "https://github.com/sn4k3/UVtools/discussions/categories/q-a"
+                ),
+                MessageWindow.CreateCloseButton(MaterialIconKind.SignOut),
+            ]
+        )
         {
-            AboutButtonIsVisible = true
+            AboutButtonIsVisible = true,
         };
     }
 
@@ -283,16 +306,17 @@ public partial class App : Application
         return new Bitmap(GetAsset(url));
     }
 
-
     public static string? GetPrusaSlicerDirectory(bool isSuperSlicer = false, bool isAlpha = false)
     {
         var slicerFolder = isSuperSlicer ? "SuperSlicer" : "PrusaSlicer";
-        if (isAlpha) slicerFolder += "-alpha";
+        if (isAlpha)
+            slicerFolder += "-alpha";
         if (OperatingSystem.IsWindows())
         {
             return Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                slicerFolder);
+                slicerFolder
+            );
         }
 
         if (OperatingSystem.IsLinux())
@@ -304,17 +328,22 @@ public partial class App : Application
                 "app",
                 $"com.prusa3d.{slicerFolder}",
                 "config",
-                slicerFolder);
-            if (Directory.Exists(flatpak)) return flatpak;
+                slicerFolder
+            );
+            if (Directory.Exists(flatpak))
+                return flatpak;
 
             // AppImage
             var folder1 = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), // home/user/.config
-                slicerFolder);
-            if (Directory.Exists(folder1)) return folder1;
+                slicerFolder
+            );
+            if (Directory.Exists(folder1))
+                return folder1;
             return Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), // home/user
-                $".{slicerFolder}");
+                $".{slicerFolder}"
+            );
         }
 
         if (OperatingSystem.IsMacOS())
@@ -323,7 +352,8 @@ public partial class App : Application
                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                 "Library",
                 "Application Support",
-                slicerFolder);
+                slicerFolder
+            );
         }
 
         return null;
@@ -331,15 +361,22 @@ public partial class App : Application
 
     public static void BeepIfAble()
     {
-        if (!UserSettings.Instance.General.NotificationBeep ||
-            UserSettings.Instance.General.NotificationBeepCount == 0) return;
+        if (
+            !UserSettings.Instance.General.NotificationBeep
+            || UserSettings.Instance.General.NotificationBeepCount == 0
+        )
+            return;
         Task.Run(() =>
         {
             int frequency = UserSettings.Instance.General.NotificationBeepFrequency;
 
             for (var i = 0; i < UserSettings.Instance.General.NotificationBeepCount; i++)
             {
-                HostSystem.Beep(frequency, UserSettings.Instance.General.NotificationBeepDuration, true);
+                HostSystem.Beep(
+                    frequency,
+                    UserSettings.Instance.General.NotificationBeepDuration,
+                    true
+                );
                 frequency += UserSettings.Instance.General.NotificationBeepRepeatFrequencyOffset;
                 Thread.Sleep(UserSettings.Instance.General.NotificationBeepRepeatDelay);
             }
@@ -360,7 +397,9 @@ public partial class App : Application
     {
         get
         {
-            var attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
+            var attributes = Assembly
+                .GetExecutingAssembly()
+                .GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
             if (attributes.Length > 0)
             {
                 var titleAttribute = (AssemblyTitleAttribute)attributes[0];
@@ -378,19 +417,28 @@ public partial class App : Application
     {
         get
         {
-            var attributes = MyAssembly.GetCustomAttributes(typeof(AssemblyDescriptionAttribute), false);
+            var attributes = MyAssembly.GetCustomAttributes(
+                typeof(AssemblyDescriptionAttribute),
+                false
+            );
             if (attributes.Length == 0)
             {
                 return string.Empty;
             }
 
-            var description = ((AssemblyDescriptionAttribute)attributes[0]).Description +
-                              $"{Environment.NewLine}{Environment.NewLine}Available File Formats:";
+            var description =
+                ((AssemblyDescriptionAttribute)attributes[0]).Description
+                + $"{Environment.NewLine}{Environment.NewLine}Available File Formats:";
 
-            return FileFormat.AvailableFormats.AsValueEnumerable().SelectMany(fileFormat => fileFormat.FileExtensions)
-                .Aggregate(description,
+            return FileFormat
+                .AvailableFormats.AsValueEnumerable()
+                .SelectMany(fileFormat => fileFormat.FileExtensions)
+                .Aggregate(
+                    description,
                     (current, fileExtension) =>
-                        current + $"{Environment.NewLine}- {fileExtension.Description} (.{fileExtension.Extension})");
+                        current
+                        + $"{Environment.NewLine}- {fileExtension.Description} (.{fileExtension.Extension})"
+                );
         }
     }
 
@@ -398,8 +446,13 @@ public partial class App : Application
     {
         get
         {
-            var attributes = MyAssembly.GetCustomAttributes(typeof(AssemblyProductAttribute), false);
-            return attributes.Length == 0 ? string.Empty : ((AssemblyProductAttribute)attributes[0]).Product;
+            var attributes = MyAssembly.GetCustomAttributes(
+                typeof(AssemblyProductAttribute),
+                false
+            );
+            return attributes.Length == 0
+                ? string.Empty
+                : ((AssemblyProductAttribute)attributes[0]).Product;
         }
     }
 
@@ -407,8 +460,13 @@ public partial class App : Application
     {
         get
         {
-            var attributes = MyAssembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false);
-            return attributes.Length == 0 ? string.Empty : ((AssemblyCopyrightAttribute)attributes[0]).Copyright;
+            var attributes = MyAssembly.GetCustomAttributes(
+                typeof(AssemblyCopyrightAttribute),
+                false
+            );
+            return attributes.Length == 0
+                ? string.Empty
+                : ((AssemblyCopyrightAttribute)attributes[0]).Copyright;
         }
     }
 
@@ -416,8 +474,13 @@ public partial class App : Application
     {
         get
         {
-            var attributes = MyAssembly.GetCustomAttributes(typeof(AssemblyCompanyAttribute), false);
-            return attributes.Length == 0 ? string.Empty : ((AssemblyCompanyAttribute)attributes[0]).Company;
+            var attributes = MyAssembly.GetCustomAttributes(
+                typeof(AssemblyCompanyAttribute),
+                false
+            );
+            return attributes.Length == 0
+                ? string.Empty
+                : ((AssemblyCompanyAttribute)attributes[0]).Company;
         }
     }
 

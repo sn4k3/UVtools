@@ -6,12 +6,12 @@
 # usage 1: ./libcvextern.sh clean
 # usage 2: ./libcvextern.sh -i
 # usage 3: ./libcvextern.sh
-# usage 4: ./libcvextern.sh 4.x.0
+# usage 4: ./libcvextern.sh 5.0.0
 #
 
 set -Eeuo pipefail
 
-script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 cd "$script_dir"
 
 base_directory="emgucv"
@@ -21,6 +21,10 @@ arch="$rawArch"
 osVariant=""
 build_package="mini"   # mini, core, full
 ubuntu_build_version="22.04"
+distribution_id=""
+distribution_version=""
+distribution_codename=""
+linux_configure_script=""
 branch=""
 clean=false
 removeDirectory=false
@@ -51,8 +55,18 @@ remove_path() {
     local description="$2"
 
     if [ -e "$path" ]; then
+        if [ -L "$path" ]; then
+            rm -- "$path"
+            return
+        fi
+        local resolved_path
+        resolved_path="$(cd -- "$path" && pwd -P)"
+        case "$resolved_path" in
+            "$script_dir"/*) ;;
+            *) die "Refusing to remove a directory outside $script_dir: $resolved_path" ;;
+        esac
         echo "Removing $description $path"
-        rm -rf -- "$path"
+        rm -rf -- "$resolved_path"
     else
         echo "Warning: $description $path does not exist" >&2
     fi
@@ -75,8 +89,12 @@ clean_build_directories() {
     while IFS= read -r source_dir; do
         found=true
         for build_dir in \
-            "$source_dir/platforms/ubuntu/$ubuntu_build_version/build" \
-            "$source_dir/platforms/macos/build"; do
+            "$source_dir"/platforms/ubuntu/*/build \
+            "$source_dir"/platforms/debian/*/build \
+            "$source_dir/platforms/macos/build" \
+            "$source_dir/platforms/macos/build_x86_64" \
+            "$source_dir/platforms/macos/build_arm64"; do
+            [ -d "$build_dir" ] || continue
             remove_path "$build_dir" "build directory"
         done
     done < <(for_each_emgucv_directory)
@@ -185,7 +203,7 @@ prompt_for_branch() {
 Are you sure you want to continue with the master branch?
 
 y/yes/blank: Continue with master
-4.x.0: Continue with specified tag
+5.0.0: Continue with specified tag
 n/no:  Cancel
 
 Answer: " confirmation
@@ -209,7 +227,8 @@ detect_missing_dependencies() {
         return
     fi
 
-    if testcmd ldconfig && ! ldconfig -p | grep -q "libpng"; then
+    # Consume all output so grep cannot cause a SIGPIPE with pipefail enabled.
+    if testcmd ldconfig && ! ldconfig -p | grep "libpng" > /dev/null; then
         installDependencies=true
     fi
 }
@@ -233,18 +252,35 @@ install_macos_dependencies() {
 install_debian_dependencies() {
     sudo apt update
     # FULL: sudo apt -y install git build-essential libgtk-3-dev libgstreamer1.0-dev libavcodec-dev libswscale-dev libavformat-dev libdc1394-dev libv4l-dev cmake-curses-gui ocl-icd-dev freeglut3-dev libgeotiff-dev libusb-1.0-0-dev
-    sudo apt install -y git build-essential cmake-curses-gui apt-transport-https libtbb-dev pkg-config nasm
-    sudo apt update
-    sudo apt install -y dotnet-sdk-10.0
+    sudo apt install -y git build-essential cmake cmake-curses-gui apt-transport-https libtbb-dev libpng-dev libtiff-dev pkg-config nasm wget ca-certificates
 
-    if ! testcmd dotnet; then
-        wget https://packages.microsoft.com/config/ubuntu/$ubuntu_build_version/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-        sudo dpkg -i packages-microsoft-prod.deb
-        rm -f packages-microsoft-prod.deb
+    # A failed package lookup must reach repository setup instead of triggering set -e.
+    if ! testcmd dotnet && ! sudo apt install -y dotnet-sdk-10.0; then
+        case "$distribution_id" in
+            ubuntu)
+                [ "$distribution_version" == "22.04" ] || die "dotnet-sdk-10.0 is unavailable in your Ubuntu feeds; enable the appropriate .NET feed for Ubuntu $distribution_version."
+                sudo apt install -y software-properties-common
+                sudo add-apt-repository -y ppa:dotnet/backports
+                ;;
+            debian)
+                [[ "$distribution_version" =~ ^[0-9]+$ ]] || die "Unable to determine your Debian version."
+                register_microsoft_repository
+                ;;
+            *) die "Install the .NET 10 SDK for your distribution before rerunning this script." ;;
+        esac
         sudo apt update
         sudo apt install -y dotnet-sdk-10.0
     fi
 }
+
+register_microsoft_repository() (
+    # A subshell keeps cleanup local, including when download or installation fails.
+    package_dir="$(mktemp -d "${TMPDIR:-/tmp}/uvtools-dotnet-repo.XXXXXX")"
+    package_file="$package_dir/packages-microsoft-prod.deb"
+    trap 'rm -f -- "$package_file"; rmdir -- "$package_dir"' EXIT
+    wget "https://packages.microsoft.com/config/debian/$distribution_version/packages-microsoft-prod.deb" -O "$package_file"
+    sudo dpkg -i "$package_file"
+)
 
 install_arch_dependencies() {
     sudo pacman -Syu
@@ -266,16 +302,27 @@ detect_os_and_install_dependencies() {
 
     if [ "${OSTYPE:0:6}" == "darwin" ]; then
         osVariant="macOS"
-        [ "$installDependencies" == true ] && install_macos_dependencies
     elif testcmd apt; then
         osVariant="debian"
-        [ "$installDependencies" == true ] && install_debian_dependencies
+        if [ -r /etc/os-release ]; then
+            . /etc/os-release
+            distribution_id="${ID:-}"
+            distribution_version="${VERSION_ID:-}"
+            distribution_codename="${VERSION_CODENAME:-}"
+        fi
     elif testcmd pacman; then
         osVariant="arch"
-        [ "$installDependencies" == true ] && install_arch_dependencies
     elif testcmd dnf; then
         osVariant="rhel"
-        [ "$installDependencies" == true ] && install_rhel_dependencies
+    fi
+
+    if [ "$installDependencies" == true ]; then
+        case "$osVariant" in
+            macOS) install_macos_dependencies ;;
+            debian) install_debian_dependencies ;;
+            arch) install_arch_dependencies ;;
+            rhel) install_rhel_dependencies ;;
+        esac
     fi
 }
 
@@ -308,70 +355,104 @@ clone_emgucv() {
     fi
 }
 
-patch_macos_configure() {
-    local configure_script="$directory/platforms/macos/configure"
-    local searchFor='${FREETYPE_OPTIONS[@]}'
-    local searchRegex='\${FREETYPE_OPTIONS\[@\]}'
+resolve_linux_configure() {
+    local platform="ubuntu/$ubuntu_build_version"
+    case "$distribution_id" in
+        ubuntu) platform="ubuntu/$distribution_version" ;;
+        debian)
+            local codename="$distribution_codename"
+            if [ -z "$codename" ]; then
+                case "$distribution_version" in
+                    12) codename="bookworm" ;;
+                    13) codename="trixie" ;;
+                esac
+            fi
+            [ -n "$codename" ] || die "Unable to determine your Debian release codename."
+            platform="debian/$codename"
+            ;;
+    esac
+    linux_configure_script="$directory/platforms/$platform/cmake_configure"
+    [ -f "$linux_configure_script" ] || die "Unable to find Emgu CV configure script: $linux_configure_script"
+}
 
-    [ -f "$configure_script" ] || die "Unable to find EmguCV macOS configure script: $configure_script"
-    [ "$build_package" == "mini" ] || return
+patch_configure() {
+    local configure_script="$1"
+    local search_for="$2"
+    local platform_flag="$3"
+    local content replacement flag
 
-    if grep -Fq -- "-DBUILD_opencv_videoio:BOOL=FALSE" "$configure_script"; then
+    [ -f "$configure_script" ] || die "Unable to find Emgu CV configure script: $configure_script"
+    [ "$build_package" == "mini" ] || return 0
+    content="$(<"$configure_script")"
+    if [[ "$content" == *'-DBUILD_opencv_videoio:BOOL=FALSE'* ]]; then
         return
     fi
+    [[ "$content" == *"$search_for"* ]] || die "Unable to patch $configure_script. Could not find: $search_for"
 
-    grep -Fq -- "$searchFor" "$configure_script" || die "Unable to patch $configure_script. Could not find: $searchFor"
+    replacement="$search_for"
+    for flag in \
+        '-DWITH_EIGEN:BOOL=FALSE' "$platform_flag" \
+        '-DWITH_FFMPEG:BOOL=FALSE' '-DWITH_GSTREAMER:BOOL=FALSE' \
+        '-DWITH_1394:BOOL=FALSE' '-DVIDEOIO_ENABLE_PLUGINS:BOOL=FALSE' \
+        '-DBUILD_opencv_videoio:BOOL=FALSE' '-DBUILD_opencv_gapi:BOOL=FALSE' \
+        '-DWITH_PROTOBUF:BOOL=FALSE' '-DBUILD_PROTOBUF:BOOL=FALSE'; do
+        replacement+=$' \\\n       '"$flag"
+    done
+    content="${content//"$search_for"/"$replacement"}"
+    printf '%s\n' "$content" > "$configure_script"
+}
 
-    sed -i '' "s/$searchRegex/$searchFor \\\\\\
-       -DWITH_EIGEN:BOOL=FALSE \\\\\\
-       -DWITH_AVFOUNDATION:BOOL=FALSE \\\\\\
-       -DWITH_FFMPEG:BOOL=FALSE \\\\\\
-       -DWITH_GSTREAMER:BOOL=FALSE \\\\\\
-       -DWITH_1394:BOOL=FALSE \\\\\\
-       -DVIDEOIO_ENABLE_PLUGINS:BOOL=FALSE \\\\\\
-       -DBUILD_opencv_videoio:BOOL=FALSE \\\\\\
-       -DBUILD_opencv_gapi:BOOL=FALSE \\\\\\
-       -DWITH_PROTOBUF:BOOL=FALSE \\\\\\
-       -DBUILD_PROTOBUF:BOOL=FALSE /g" "$configure_script"
+patch_macos_configure() {
+    patch_configure "$directory/platforms/macos/configure" '${FREETYPE_OPTIONS[@]}' '-DWITH_AVFOUNDATION:BOOL=FALSE'
 }
 
 patch_linux_configure() {
-    local configure_script="$directory/platforms/ubuntu/$ubuntu_build_version/cmake_configure"
-    local searchFor='-DWITH_EIGEN:BOOL=TRUE'
+    local content
+    content="$(<"$linux_configure_script")"
+    # Preserve the existing preference for system TIFF rather than building a bundled copy.
+    content="${content//-DBUILD_TIFF:BOOL=TRUE/-DBUILD_TIFF:BOOL=FALSE}"
+    printf '%s\n' "$content" > "$linux_configure_script"
+    patch_configure "$linux_configure_script" '-DWITH_EIGEN:BOOL=TRUE' '-DWITH_V4L:BOOL=FALSE'
+}
 
-    [ -f "$configure_script" ] || die "Unable to find EmguCV Ubuntu $ubuntu_build_version configure script: $configure_script"
-
-    sed -i "s/-DBUILD_TIFF:BOOL=TRUE/-DBUILD_TIFF:BOOL=FALSE/g" "$configure_script"
-    [ "$build_package" == "mini" ] || return
-
-    if grep -Fq -- "-DBUILD_opencv_videoio:BOOL=FALSE" "$configure_script"; then
-        return
+report_native_binary() {
+    local native_arch="x64"
+    local native_file
+    [ "$arch" != "arm64" ] || native_arch="arm64"
+    if [ "$osVariant" == "macOS" ]; then
+        for native_file in \
+            "$directory/libs/runtimes/osx-$native_arch/native/libcvextern.dylib" \
+            "$directory/libs/runtimes/osx/native/$native_arch/libcvextern.dylib"; do
+            if [ -f "$native_file" ]; then
+                echo "Completed - Native binary: $native_file"
+                return
+            fi
+        done
+    else
+        for native_file in \
+            "$directory/libs/runtimes/linux-$native_arch/native/libcvextern.so" \
+            "$directory/libs/runtimes/ubuntu-$native_arch/native/libcvextern.so" \
+            "$directory/libs/runtimes"/ubuntu.*-"$native_arch"/native/libcvextern.so \
+            "$directory/libs/runtimes/rhel-$native_arch/native/libcvextern.so"; do
+            if [ -f "$native_file" ]; then
+                echo "Completed - Native binary: $native_file"
+                return
+            fi
+        done
     fi
-
-    grep -Fq -- "$searchFor" "$configure_script" || die "Unable to patch $configure_script. Could not find: $searchFor"
-
-    sed -i "s/$searchFor/-DWITH_EIGEN:BOOL=FALSE \\\\\\
-       -DWITH_V4L:BOOL=FALSE \\\\\\
-       -DWITH_FFMPEG:BOOL=FALSE \\\\\\
-       -DWITH_GSTREAMER:BOOL=FALSE \\\\\\
-       -DWITH_1394:BOOL=FALSE \\\\\\
-       -DVIDEOIO_ENABLE_PLUGINS:BOOL=FALSE \\\\\\
-       -DBUILD_opencv_videoio:BOOL=FALSE \\\\\\
-       -DBUILD_opencv_gapi:BOOL=FALSE \\\\\\
-       -DWITH_PROTOBUF:BOOL=FALSE \\\\\\
-       -DBUILD_PROTOBUF:BOOL=FALSE /g" "$configure_script"
+    die "Build finished without the expected $native_arch native binary under $directory/libs/runtimes."
 }
 
 build_emgucv() {
     echo "- Building"
-    # https://docs.opencv.org/4.x/db/d05/tutorial_config_reference.html
 
     if [ "$osVariant" == "macOS" ]; then
         patch_macos_configure
-        "$directory/platforms/macos/configure" "$arch" "$build_package"
+        bash -e "$directory/platforms/macos/configure" "$arch" "$build_package"
     else
+        resolve_linux_configure
         patch_linux_configure
-        "$directory/platforms/ubuntu/$ubuntu_build_version/cmake_configure" "$build_package"
+        bash -e "$linux_configure_script" "$build_package" cvextern
     fi
 }
 
@@ -389,4 +470,4 @@ check_requirements
 clone_emgucv
 build_emgucv
 
-echo "Completed - Check for errors but also for libcvextern presence on $directory/libs"
+report_native_binary

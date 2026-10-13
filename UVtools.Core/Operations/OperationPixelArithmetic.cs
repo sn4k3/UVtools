@@ -44,15 +44,24 @@ public partial class OperationPixelArithmetic : Operation
 
     #region Subclasses
 
-    private class StringMatrix
+    private sealed class StringMatrix : IDisposable
     {
-        public StringMatrix(string text)
+        public StringMatrix(string? text)
         {
             Text = text;
         }
 
-        public string Text { get; }
-        public Matrix<byte> Pattern { get; set; } = null!;
+        public string? Text { get; }
+        public Mat? Pattern { get; set; }
+
+        public Mat? TakePattern()
+        {
+            var pattern = Pattern;
+            Pattern = null;
+            return pattern;
+        }
+
+        public void Dispose() => Pattern?.Dispose();
     }
 
     #endregion
@@ -235,11 +244,9 @@ public partial class OperationPixelArithmetic : Operation
 
         if (UsePattern && IsUsePatternVisible)
         {
-            var stringMatrix = new[]
-            {
-                new StringMatrix(PatternText),
-                new StringMatrix(PatternTextAlternate),
-            };
+            using var normalMatrix = new StringMatrix(PatternText);
+            using var alternateMatrix = new StringMatrix(PatternTextAlternate);
+            var stringMatrix = new[] { normalMatrix, alternateMatrix };
 
             foreach (var item in stringMatrix)
             {
@@ -252,26 +259,21 @@ public partial class OperationPixelArithmetic : Operation
                 for (var row = 0; row < lines.Length; row++)
                 {
                     var bytes = lines[row].Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                    if (row == 0)
+                    var pattern = item.Pattern ??= new Mat(lines.Length, bytes.Length, DepthType.Cv8U, 1);
+                    if (pattern.Cols != bytes.Length)
                     {
-                        item.Pattern = new Matrix<byte>(lines.Length, bytes.Length);
+                        sb.AppendLine(
+                            $"Row {row + 1} have invalid number of pixels, the pattern must have equal pixel count per line, per defined on line 1"
+                        );
+                        return sb.ToString();
                     }
-                    else
-                    {
-                        if (item.Pattern.Cols != bytes.Length)
-                        {
-                            sb.AppendLine(
-                                $"Row {row + 1} have invalid number of pixels, the pattern must have equal pixel count per line, per defined on line 1"
-                            );
-                            return sb.ToString();
-                        }
-                    }
+                    var values = pattern.GetSpan<byte>();
 
                     for (var col = 0; col < bytes.Length; col++)
                     {
                         if (byte.TryParse(bytes[col], out var value))
                         {
-                            item.Pattern[row, col] = (byte)(
+                            values[row * pattern.Cols + col] = (byte)(
                                 PatternInvert ? byte.MaxValue - value : value
                             );
                         }
@@ -286,17 +288,46 @@ public partial class OperationPixelArithmetic : Operation
                 }
             }
 
-            Pattern = stringMatrix[0].Pattern;
-            PatternAlternate = stringMatrix[1].Pattern;
-
-            if (Pattern is null && PatternAlternate is null)
+            if (normalMatrix.Pattern is null && alternateMatrix.Pattern is null)
             {
                 sb.AppendLine("Either even or odd pattern must contain a valid matrix.");
                 return sb.ToString();
+
             }
+
+            DisposePatterns();
+            Pattern = normalMatrix.TakePattern();
+            PatternAlternate = alternateMatrix.TakePattern();
         }
 
         return sb.ToString();
+    }
+
+    public override Operation Clone()
+    {
+        var operation = (OperationPixelArithmetic)base.Clone();
+        var pattern = Pattern?.Clone();
+        var alternatePattern = ReferenceEquals(Pattern, PatternAlternate) ? pattern : PatternAlternate?.Clone();
+        // Mat compares pixel contents, so clear the observable properties before assigning equal clones.
+        operation.Pattern = null;
+        operation.PatternAlternate = null;
+        operation.Pattern = pattern;
+        operation.PatternAlternate = alternatePattern;
+        return operation;
+    }
+
+    private void DisposePatterns()
+    {
+        Pattern?.Dispose();
+        if (!ReferenceEquals(Pattern, PatternAlternate)) PatternAlternate?.Dispose();
+        Pattern = null;
+        PatternAlternate = null;
+    }
+
+    public override void Dispose()
+    {
+        DisposePatterns();
+        base.Dispose();
     }
 
     public override string ToString()
@@ -455,11 +486,11 @@ public partial class OperationPixelArithmetic : Operation
 
     [XmlIgnore]
     [ObservableProperty]
-    public partial Matrix<byte> Pattern { get; set; } = null!;
+    public partial Mat? Pattern { get; set; }
 
     [XmlIgnore]
     [ObservableProperty]
-    public partial Matrix<byte>? PatternAlternate { get; set; }
+    public partial Mat? PatternAlternate { get; set; }
 
     [ObservableProperty]
     public partial byte PatternGenMinBrightness { get; set; }
@@ -516,23 +547,17 @@ public partial class OperationPixelArithmetic : Operation
         {
             if (Pattern is null)
             {
-                Pattern = new Matrix<byte>(2, 2)
-                {
-                    [0, 0] = 0,
-                    [0, 1] = 127,
-                    [1, 0] = 127,
-                    [1, 1] = 0,
-                };
+                Pattern = new Mat(2, 2, DepthType.Cv8U, 1);
+                ReadOnlySpan<byte> patternValues = [0, 127, 127, 0];
+                patternValues.CopyTo(Pattern.GetSpan<byte>());
 
-                PatternAlternate ??= new Matrix<byte>(2, 2)
+                if (PatternAlternate is null)
                 {
-                    [0, 0] = 127,
-                    [0, 1] = 0,
-                    [1, 0] = 0,
-                    [1, 1] = 127,
-                };
+                    PatternAlternate = new Mat(2, 2, DepthType.Cv8U, 1);
+                    ReadOnlySpan<byte> alternateValues = [127, 0, 0, 127];
+                    alternateValues.CopyTo(PatternAlternate.GetSpan<byte>());
+                }
             }
-
             PatternAlternate ??= Pattern;
 
             using var target = new Mat(GetMatSizeCropped(), DepthType.Cv8U, 1);

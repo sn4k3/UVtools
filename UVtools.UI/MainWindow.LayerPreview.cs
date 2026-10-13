@@ -1588,7 +1588,7 @@ public partial class MainWindow
                     /*var point = issue.FirstPoint;
                     if (!point.IsBothNegative())
                     {
-                        CvInvoke.PutText(LayerCache.ImageBgr, count.ToString(), point, FontFace.HersheyDuplex, 2, new MCvScalar(0,255,0), 2, LineType.AntiAlias);
+                        CvInvoke.PutText(LayerCache.ImageBgr, count.ToString(), point, HersheyFonts.Duplex, 2, new MCvScalar(0,255,0), 2, LineType.AntiAlias);
                     }*/
 
                     switch (issue)
@@ -1778,7 +1778,7 @@ public partial class MainWindow
                 if (triangleCount > 0 && Settings.LayerPreview.TriangulateOutlineShowCount)
                 {
                     CvInvoke.PutText(LayerCache.ImageBgra, $"Triangles: {triangleCount:N0}", new Point(10, 80),
-                        FontFace.HersheyDuplex, 3, dotColor, 3);
+                        HersheyFonts.Duplex, 3, dotColor, 3);
                 }
             }
 
@@ -1856,7 +1856,7 @@ public partial class MainWindow
 
                     foreach (var vec in hollowGroups)
                     {
-                        CvInvoke.PutText(LayerCache.ImageBgr, vec.Size.ToString(), vec[0][0], FontFace.HersheyDuplex, 2, new MCvScalar(255, 0, 0), 2);
+                        CvInvoke.PutText(LayerCache.ImageBgr, vec.Size.ToString(), vec[0][0], HersheyFonts.Duplex, 2, new MCvScalar(255, 0, 0), 2);
                         CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1,
                             new MCvScalar(color.B, color.G, color.R), -1);
                         vec.Dispose();
@@ -3112,7 +3112,7 @@ public partial class MainWindow
             if (string.IsNullOrEmpty(text) || nmPixelEditorTextFontScale.Value < 0.2m) return;
 
             LineType lineType = (LineType)cbPixelEditorTextLineType.SelectedItem;
-            FontFace fontFace = (FontFace)cbPixelEditorTextFontFace.SelectedItem;
+            HersheyFonts fontFace = (HersheyFonts)cbPixelEditorTextFontFace.SelectedItem;
             double scale = (double) nmPixelEditorTextFontScale.Value * pbLayer.Zoom / 100;
             int thickness = (int) nmPixelEditorTextThickness.Value;
             int baseLine = 0;

@@ -96,7 +96,7 @@ jobs:
 
   test:
     name: 🧪 Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
 
     steps:
@@ -116,6 +116,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
+      - name: Install OpenCV mini runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes libtiff6 libgeotiff5 libopenjp2-7 \
+            libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 \
+            libavcodec60 libavformat60 libavutil58 libswscale7 \
+            libgtk-3-0t64 liblapack3 libblas3
+
       - name: Restore dependencies
         run: dotnet restore tests/UVtools.Tests/UVtools.Tests.csproj -p:NuGetAudit=false
 
@@ -124,7 +132,7 @@ jobs:
 
   build:
     name: 🛠️ Publish asset (${{ matrix.rid }})
-    needs: [release_information, test]
+    needs: [ release_information, test ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
     strategy:
@@ -175,6 +183,14 @@ jobs:
           command -v pacman
           command -v bsdtar
 
+      - name: Install OpenCV mini runtime dependencies
+        if: ${{ matrix.rid == 'linux-x64' }}
+        run: |
+          sudo apt-get install --yes libtiff6 libgeotiff5 libopenjp2-7 \
+            libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 \
+            libavcodec60 libavformat60 libavutil58 libswscale7 \
+            libgtk-3-0t64 liblapack3 libblas3
+
       - name: Publish runtime asset
         run: >-
           dotnet run --project build/build.csproj
@@ -191,7 +207,7 @@ jobs:
 
   create_tag:
     name: 🏷️ Create tag
-    needs: [release_information, build]
+    needs: [ release_information, build ]
     if: ${{ !inputs.dry_run }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -213,7 +229,7 @@ jobs:
 
   create_release:
     name: 🎉 Create GitHub release
-    needs: [release_information, build, create_tag]
+    needs: [ release_information, build, create_tag ]
     if: ${{ !inputs.dry_run }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -246,7 +262,7 @@ jobs:
 
   publish_packages:
     name: 📦 Publish NuGet packages
-    needs: [release_information, create_release]
+    needs: [ release_information, create_release ]
     if: ${{ !inputs.dry_run }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -293,7 +309,7 @@ jobs:
 
   winget:
     name: 🚀 Submit Winget update
-    needs: [release_information, create_release]
+    needs: [ release_information, create_release ]
     if: ${{ !inputs.dry_run }}
     runs-on: windows-latest
     timeout-minutes: 15

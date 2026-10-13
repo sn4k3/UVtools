@@ -499,7 +499,7 @@ public sealed partial class OperationCalibrateXYZAccuracy : Operation
         string positionYString = string.Empty;
         string positionString = string.Empty;
 
-        const FontFace fontFace = FontFace.HersheyDuplex;
+        const HersheyFonts fontFace = HersheyFonts.Duplex;
         const byte fontStartX = 30;
         const byte fontStartY = 50;
         const double fontScale = 1.3;
@@ -607,7 +607,7 @@ public sealed partial class OperationCalibrateXYZAccuracy : Operation
     public Mat GetThumbnail()
     {
         Mat thumbnail = EmguCvExtensions.InitMat(new Size(400, 200), 3);
-        var fontFace = FontFace.HersheyDuplex;
+        var fontFace = HersheyFonts.Duplex;
         var fontScale = 1;
         var fontThickness = 2;
         const byte xSpacing = 45;

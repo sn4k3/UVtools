@@ -220,17 +220,21 @@ public sealed class AnycubicZipFile : FileFormat
         [JsonPropertyName("target_temperature")]
         public float TargetTemperature { get; set; } = 25;
 
+        // Photon Workshop rejects these optional names when added to legacy user resins (#1155).
         [JsonPropertyName("brand_name")]
-        public string BrandName { get; set; } = "Unknown";
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? BrandName { get; set; }
 
         [JsonPropertyName("resin_name")]
-        public string ResinName { get; set; } = "Unknown";
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? ResinName { get; set; }
 
         [JsonPropertyName("film_name")]
         public string FilmName { get; set; } = "NFEP";
 
         [JsonPropertyName("setting_name")]
-        public string SettingName { get; set; } = "Unknown";
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? SettingName { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; } = "default_resin";
@@ -862,7 +866,7 @@ public sealed class AnycubicZipFile : FileFormat
         [JsonPropertyName("os")]
         public string OS { get; set; } = RuntimeInformation.RuntimeIdentifier;
 
-        [JsonPropertyName("Version")]
+        [JsonPropertyName("version")]
         public string Version { get; set; } = About.VersionString;
 
         public override string ToString()

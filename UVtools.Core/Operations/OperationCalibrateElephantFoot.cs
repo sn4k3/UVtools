@@ -379,7 +379,7 @@ public sealed partial class OperationCalibrateElephantFoot : Operation
 
         maxX = 0;
 
-        const FontFace font = FontFace.HersheyDuplex;
+        const HersheyFonts font = HersheyFonts.Duplex;
         int fontMargin = (int)(42 * _partScale);
         int fontStartX = (int) (30 * _partScale);
         int fontStartY = length / 4 + fontMargin;
@@ -551,7 +551,7 @@ public sealed partial class OperationCalibrateElephantFoot : Operation
     public Mat GetThumbnail()
     {
         Mat thumbnail = EmguCvExtensions.InitMat(new Size(400, 200), 3);
-        var fontFace = FontFace.HersheyDuplex;
+        var fontFace = HersheyFonts.Duplex;
         var fontScale = 1;
         var fontThickness = 2;
         const byte xSpacing = 45;

@@ -298,7 +298,7 @@ public sealed partial class OperationCalibrateGrayscale : Operation
         }
 
 
-        FontFace fontFace = FontFace.HersheyDuplex;
+        HersheyFonts fontFace = HersheyFonts.Duplex;
         double fontScale = 2;
         int fontThickness = 5;
 
@@ -364,7 +364,7 @@ public sealed partial class OperationCalibrateGrayscale : Operation
     public Mat GetThumbnail()
     {
         Mat thumbnail = EmguCvExtensions.InitMat(new Size(400, 200), 3);
-        var fontFace = FontFace.HersheyDuplex;
+        var fontFace = HersheyFonts.Duplex;
         var fontScale = 1;
         var fontThickness = 2;
         const byte xSpacing = 45;

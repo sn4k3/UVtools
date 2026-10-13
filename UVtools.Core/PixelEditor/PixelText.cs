@@ -22,10 +22,19 @@ public partial class PixelText : PixelOperation, IEquatable<PixelText>
 {
     public override PixelOperationType OperationType => PixelOperationType.Text;
 
-    public static FontFace[] FontFaces => (FontFace[]) Enum.GetValues(typeof(FontFace));
+    public static HersheyFonts[] FontFaces => (HersheyFonts[]) Enum.GetValues(typeof(HersheyFonts));
 
+    [XmlIgnore]
     [ObservableProperty]
-    public partial FontFace Font { get; set; }
+    public partial HersheyFonts Font { get; set; }
+
+    // Preserve the font names written by Emgu CV 4 in existing pixel-editor profiles.
+    [XmlElement(nameof(Font))]
+    public string SerializedFont
+    {
+        get => "Hershey" + Font;
+        set => Font = Enum.Parse<HersheyFonts>(value.StartsWith("Hershey", StringComparison.Ordinal) ? value.AsSpan(7) : value.AsSpan());
+    }
 
     public double FontScale
     {
@@ -64,7 +73,7 @@ public partial class PixelText : PixelOperation, IEquatable<PixelText>
 
     public PixelText(){}
 
-    public PixelText(uint layerIndex, Point location, LineType lineType, FontFace font, double fontScale, ushort thickness, string text, bool mirror, PutTextLineAlignment lineAlignment, double angle, byte removePixelBrightness, byte pixelBrightness, bool isAdd) : base(layerIndex, location, lineType, pixelBrightness)
+    public PixelText(uint layerIndex, Point location, LineType lineType, HersheyFonts font, double fontScale, ushort thickness, string text, bool mirror, PutTextLineAlignment lineAlignment, double angle, byte removePixelBrightness, byte pixelBrightness, bool isAdd) : base(layerIndex, location, lineType, pixelBrightness)
     {
         Font = font;
         FontScale = fontScale;

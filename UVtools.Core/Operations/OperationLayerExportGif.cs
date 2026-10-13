@@ -186,7 +186,7 @@ public sealed partial class OperationLayerExportGif : Operation
 
         progress.Reset("Packed layers", TotalLayers);
 
-        var fontFace = FontFace.HersheyDuplex;
+        var fontFace = HersheyFonts.Duplex;
         float fontScale = 1.5f;
         int fontThickness = 2;
         MCvScalar textColor = new(200);

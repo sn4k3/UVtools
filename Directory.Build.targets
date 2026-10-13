@@ -1,0 +1,76 @@
+<Project>
+  <PropertyGroup Condition="'$(UseCustomEmguCvRuntime)' == '' And ('$(MSBuildProjectName)' == 'UVtools.Core' Or '$(MSBuildProjectName)' == 'UVtools.UI' Or '$(MSBuildProjectName)' == 'UVtools.Cmd' Or '$(MSBuildProjectName)' == 'UVtools.Tests' Or '$(MSBuildProjectName)' == 'UVtools.ScriptSample')">
+    <UseCustomEmguCvRuntime>true</UseCustomEmguCvRuntime>
+  </PropertyGroup>
+
+  <!-- Keep NuGet's supporting libraries; override only cvextern when a custom build exists. -->
+  <Target Name="ResolveCustomEmguNativeRuntime" Condition="'$(UseCustomEmguCvRuntime)' == 'true'">
+    <ItemGroup>
+      <_CustomEmguNativeRuntime Include="$(MSBuildThisFileDirectory)build/platforms/*/cvextern.dll;$(MSBuildThisFileDirectory)build/platforms/*/libcvextern.so;$(MSBuildThisFileDirectory)build/platforms/*/libcvextern.dylib" />
+      <_CustomEmguNativeRuntime>
+        <NativeRid>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName('%(_CustomEmguNativeRuntime.FullPath)'))))</NativeRid>
+      </_CustomEmguNativeRuntime>
+      <_CustomEmguNativeRuntime
+        Remove="@(_CustomEmguNativeRuntime)"
+        Condition="'$(RuntimeIdentifier)' != '' And '%(_CustomEmguNativeRuntime.NativeRid)' != '$(RuntimeIdentifier)'"
+      />
+      <_CustomEmguNativeRuntime Condition="'$(RuntimeIdentifier)' == ''">
+        <RelativePath>runtimes/%(_CustomEmguNativeRuntime.NativeRid)/native/%(_CustomEmguNativeRuntime.Filename)%(_CustomEmguNativeRuntime.Extension)</RelativePath>
+      </_CustomEmguNativeRuntime>
+      <_CustomEmguNativeRuntime Condition="'$(RuntimeIdentifier)' != ''">
+        <RelativePath>%(_CustomEmguNativeRuntime.Filename)%(_CustomEmguNativeRuntime.Extension)</RelativePath>
+      </_CustomEmguNativeRuntime>
+    </ItemGroup>
+  </Target>
+
+  <Target
+    Name="CopyCustomEmguNativeRuntime"
+    AfterTargets="CopyFilesToOutputDirectory"
+    DependsOnTargets="ResolveCustomEmguNativeRuntime"
+  >
+    <Copy
+      SourceFiles="@(_CustomEmguNativeRuntime)"
+      DestinationFiles="@(_CustomEmguNativeRuntime->'$(TargetDir)%(RelativePath)')"
+      SkipUnchangedFiles="true"
+    >
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
+    </Copy>
+  </Target>
+
+  <!-- Core is built without the application's RID. Publish its portable Ubuntu alias
+                 beside the executable for linux-x64, and omit it from all other RID-specific releases. -->
+  <Target
+    Name="PublishEmguUbuntuMiniRuntime"
+    AfterTargets="ComputeFilesToPublish"
+    Condition="'$(RuntimeIdentifier)' != ''"
+  >
+    <ItemGroup>
+      <_EmguUbuntuMiniAlias Include="@(ResolvedFileToPublish->WithMetadataValue('RelativePath', 'runtimes/linux-x64/native/libcvextern.so'));@(ResolvedFileToPublish->WithMetadataValue('RelativePath', 'runtimes\linux-x64\native\libcvextern.so'))" />
+      <ResolvedFileToPublish
+        Remove="@(_EmguUbuntuMiniAlias)"
+        Condition="'$(RuntimeIdentifier)' != 'linux-x64'"
+      />
+      <ResolvedFileToPublish Condition="'$(RuntimeIdentifier)' == 'linux-x64' And ('%(ResolvedFileToPublish.RelativePath)' == 'runtimes/linux-x64/native/libcvextern.so' Or '%(ResolvedFileToPublish.RelativePath)' == 'runtimes\linux-x64\native\libcvextern.so')">
+        <RelativePath>libcvextern.so</RelativePath>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+
+  <Target
+    Name="PublishCustomEmguNativeRuntime"
+    AfterTargets="ComputeFilesToPublish"
+    DependsOnTargets="PublishEmguUbuntuMiniRuntime;ResolveCustomEmguNativeRuntime"
+  >
+    <ItemGroup>
+      <!-- Replace package assets with the same publish path to avoid duplicate-file errors. -->
+      <ResolvedFileToPublish
+        Remove="@(_CustomEmguNativeRuntime)"
+        MatchOnMetadata="RelativePath"
+        MatchOnMetadataOptions="PathLike"
+      />
+      <ResolvedFileToPublish Include="@(_CustomEmguNativeRuntime)">
+        <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+</Project>

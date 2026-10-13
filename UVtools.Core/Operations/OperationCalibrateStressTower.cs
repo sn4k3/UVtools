@@ -244,7 +244,7 @@ public sealed partial class OperationCalibrateStressTower : Operation
     public Mat GetThumbnail()
     {
         Mat thumbnail = EmguCvExtensions.InitMat(new Size(400, 200), 3);
-        var fontFace = FontFace.HersheyDuplex;
+        var fontFace = HersheyFonts.Duplex;
         var fontScale = 1;
         var fontThickness = 2;
         const byte xSpacing = 45;
@@ -279,7 +279,7 @@ public sealed partial class OperationCalibrateStressTower : Operation
         var flip = SlicerFile.DisplayMirror;
         if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
 
-        /*const FontFace fontFace = FontFace.HersheyDuplex;
+        /*const HersheyFonts fontFace = HersheyFonts.Duplex;
         const double fontScale = 1;
         const byte fontThickness = 2;
         LineType lineType = EnableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;

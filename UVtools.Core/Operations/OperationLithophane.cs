@@ -484,8 +484,8 @@ public partial class OperationLithophane : Operation
         using var bgrMat = new Mat();
         CvInvoke.CvtColor(mat, bgrMat, ColorConversion.Gray2Bgr);
         int baseLine = 0;
-        var textSize = CvInvoke.GetTextSize("UVtools Lithophane", FontFace.HersheyDuplex, 2, 3, ref baseLine);
-        CvInvoke.PutText(bgrMat, "UVtools Lithophane", new Point(bgrMat.Width / 2 - textSize.Width / 2, 60), FontFace.HersheyDuplex, 2, new MCvScalar(255, 27, 245), 3);
+        var textSize = CvInvoke.GetTextSize("UVtools Lithophane", HersheyFonts.Duplex, 2, 3, ref baseLine);
+        CvInvoke.PutText(bgrMat, "UVtools Lithophane", new Point(bgrMat.Width / 2 - textSize.Width / 2, 60), HersheyFonts.Duplex, 2, new MCvScalar(255, 27, 245), 3);
         SlicerFile.SetThumbnails(bgrMat);
 
         return !progress.Token.IsCancellationRequested;

@@ -27,10 +27,19 @@ public partial class OperationPixelDimming : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Subclasses
-    class StringMatrix
+    private sealed class StringMatrix : IDisposable
     {
         public string? Text { get; }
-        public Matrix<byte> Pattern { get; set; } = null!;
+        public Mat? Pattern { get; set; }
+
+        public Mat? TakePattern()
+        {
+            var pattern = Pattern;
+            Pattern = null;
+            return pattern;
+        }
+
+        public void Dispose() => Pattern?.Dispose();
 
         public StringMatrix(string? text)
         {
@@ -72,11 +81,9 @@ public partial class OperationPixelDimming : Operation
             sb.AppendLine("Border size must be positive in order to use \"Dim only borders\" function.");
         }*/
 
-        var stringMatrix = new[]
-        {
-            new StringMatrix(PatternText),
-            new StringMatrix(AlternatePatternText),
-        };
+        using var normalMatrix = new StringMatrix(PatternText);
+        using var alternateMatrix = new StringMatrix(AlternatePatternText);
+        var stringMatrix = new[] { normalMatrix, alternateMatrix };
 
         foreach (var item in stringMatrix)
         {
@@ -85,24 +92,19 @@ public partial class OperationPixelDimming : Operation
             for (var row = 0; row < lines.Length; row++)
             {
                 var bytes = lines[row].Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (row == 0)
+                var pattern = item.Pattern ??= new Mat(lines.Length, bytes.Length, DepthType.Cv8U, 1);
+                if (pattern.Cols != bytes.Length)
                 {
-                    item.Pattern = new Matrix<byte>(lines.Length, bytes.Length);
+                    sb.AppendLine($"Row {row + 1} have invalid number of pixels, the pattern must have equal pixel count per line, per defined on line 1");
+                    return sb.ToString();
                 }
-                else
-                {
-                    if (item.Pattern.Cols != bytes.Length)
-                    {
-                        sb.AppendLine($"Row {row + 1} have invalid number of pixels, the pattern must have equal pixel count per line, per defined on line 1");
-                        return sb.ToString();
-                    }
-                }
+                var values = pattern.GetSpan<byte>();
 
                 for (int col = 0; col < bytes.Length; col++)
                 {
                     if (byte.TryParse(bytes[col], out var value))
                     {
-                        item.Pattern[row, col] = value;
+                        values[row * pattern.Cols + col] = value;
                     }
                     else
                     {
@@ -113,16 +115,43 @@ public partial class OperationPixelDimming : Operation
             }
         }
 
-        Pattern = stringMatrix[0].Pattern;
-        AlternatePattern = stringMatrix[1].Pattern;
-
-        if (Pattern is null && AlternatePattern is null)
+        if (normalMatrix.Pattern is null && alternateMatrix.Pattern is null)
         {
             sb.AppendLine("Either even or odd pattern must contain a valid matrix.");
             return sb.ToString();
         }
 
+        DisposePatterns();
+        Pattern = normalMatrix.TakePattern();
+        AlternatePattern = alternateMatrix.TakePattern();
         return sb.ToString();
+    }
+
+    public override Operation Clone()
+    {
+        var operation = (OperationPixelDimming)base.Clone();
+        var pattern = Pattern?.Clone();
+        var alternatePattern = ReferenceEquals(Pattern, AlternatePattern) ? pattern : AlternatePattern?.Clone();
+        // Mat compares pixel contents, so clear the observable properties before assigning equal clones.
+        operation.Pattern = null;
+        operation.AlternatePattern = null;
+        operation.Pattern = pattern;
+        operation.AlternatePattern = alternatePattern;
+        return operation;
+    }
+
+    private void DisposePatterns()
+    {
+        Pattern?.Dispose();
+        if (!ReferenceEquals(Pattern, AlternatePattern)) AlternatePattern?.Dispose();
+        Pattern = null;
+        AlternatePattern = null;
+    }
+
+    public override void Dispose()
+    {
+        DisposePatterns();
+        base.Dispose();
     }
 
     public override string ToString()
@@ -186,11 +215,11 @@ public partial class OperationPixelDimming : Operation
 
     [XmlIgnore]
     [ObservableProperty]
-    public partial Matrix<byte> Pattern { get; set; } = null!;
+    public partial Mat? Pattern { get; set; }
 
     [XmlIgnore]
     [ObservableProperty]
-    public partial Matrix<byte> AlternatePattern { get; set; } = null!;
+    public partial Mat? AlternatePattern { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(BrightnessPercent))]
@@ -551,21 +580,16 @@ public partial class OperationPixelDimming : Operation
     {
         if (Pattern is null)
         {
-            Pattern = new Matrix<byte>(2, 2)
-            {
-                [0, 0] = 127,
-                [0, 1] = 255,
-                [1, 0] = 255,
-                [1, 1] = 127,
-            };
+            Pattern = new Mat(2, 2, DepthType.Cv8U, 1);
+            ReadOnlySpan<byte> patternValues = [127, 255, 255, 127];
+            patternValues.CopyTo(Pattern.GetSpan<byte>());
 
-            AlternatePattern ??= new Matrix<byte>(2, 2)
+            if (AlternatePattern is null)
             {
-                [0, 0] = 255,
-                [0, 1] = 127,
-                [1, 0] = 127,
-                [1, 1] = 255,
-            };
+                AlternatePattern = new Mat(2, 2, DepthType.Cv8U, 1);
+                ReadOnlySpan<byte> alternateValues = [255, 127, 127, 255];
+                alternateValues.CopyTo(AlternatePattern.GetSpan<byte>());
+            }
         }
 
         AlternatePattern ??= Pattern;

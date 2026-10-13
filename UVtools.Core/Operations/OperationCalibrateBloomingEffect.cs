@@ -244,7 +244,7 @@ public sealed partial class OperationCalibrateBloomingEffect : Operation
             waitTime = Math.Round(waitTime, 2);
 
             CvInvoke.Rectangle(mat, new Rectangle((int)currentX, (int)currentY, _objectDiameter, _objectDiameter), EmguCvExtensions.WhiteColor, -1);
-            mat.PutTextExtended($"E: {_bottomExposure}s/{_normalExposure}s\nW: {waitTime}s", new Point((int) currentX+20, (int) currentY + _objectDiameter / 2), FontFace.HersheyDuplex, 2.0, EmguCvExtensions.BlackColor, 2, 10);
+            mat.PutTextExtended($"E: {_bottomExposure}s/{_normalExposure}s\nW: {waitTime}s", new Point((int) currentX+20, (int) currentY + _objectDiameter / 2), HersheyFonts.Duplex, 2.0, EmguCvExtensions.BlackColor, 2, 10);
             currentX += (uint)(_objectDiameter + ObjectMargin);
         }
 
@@ -254,7 +254,7 @@ public sealed partial class OperationCalibrateBloomingEffect : Operation
     public Mat GetThumbnail()
     {
         Mat thumbnail = EmguCvExtensions.InitMat(new Size(400, 200), 3);
-        var fontFace = FontFace.HersheyDuplex;
+        var fontFace = HersheyFonts.Duplex;
         var fontScale = 1;
         var fontThickness = 2;
         const byte xSpacing = 45;
@@ -360,7 +360,7 @@ public sealed partial class OperationCalibrateBloomingEffect : Operation
                 waitTime = Math.Round(waitTime, 2);
 
                 textMat.PutTextExtended($"E: {_bottomExposure}s/{_normalExposure}s\nW: {waitTime}s", new Point((int)currentX + 20, (int)currentY + _objectDiameter / 2),
-                    FontFace.HersheyDuplex, 2.0, EmguCvExtensions.WhiteColor, 2, 10);
+                    HersheyFonts.Duplex, 2.0, EmguCvExtensions.WhiteColor, 2, 10);
                 currentX += (uint)(_objectDiameter + ObjectMargin);
             }
 

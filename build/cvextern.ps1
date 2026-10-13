@@ -6,25 +6,67 @@
 ## cmake
 ## Visual Studio with development tools and Windows SDK
 
+param(
+    [Parameter(Position = 0)]
+    [string] $CommandOrBranch,
+
+    [Parameter(Position = 1)]
+    [ValidateSet('x64', 'x86_64', 'arm64', 'all')]
+    [string] $Arch = 'all',
+
+    [Alias('h')]
+    [switch] $Help
+)
+
 $ErrorActionPreference = 'Stop'
 
 $baseLibFolder = 'emgucv'
-$buildFile = Join-Path 'platforms' 'windows\Build_Binary_x86.bat'
-$buildDirectory = Join-Path 'platforms' 'windows\build'
-$buildArgs = '64 mini commercial no-openni no-doc no-package build'
-$customBuild = '-DWITH_EIGEN:BOOL=FALSE -DWITH_MSMF:BOOL=FALSE -DWITH_DSHOW:BOOL=FALSE -DWITH_FFMPEG:BOOL=FALSE -DWITH_GSTREAMER:BOOL=FALSE -DWITH_1394:BOOL=FALSE -DVIDEOIO_ENABLE_PLUGINS:BOOL=FALSE -DBUILD_opencv_videoio:BOOL=FALSE -DBUILD_opencv_gapi:BOOL=FALSE -DWITH_PROTOBUF:BOOL=FALSE -DBUILD_PROTOBUF:BOOL=FALSE'
-$scriptRoot = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
+$buildFile = Join-Path 'platforms' 'windows\Build_Binary.ps1'
+$buildArgs = @{ Arch = 'x86_64'; ComponentSet = 'Mini'; Toolchain = 'Commercial'; ExtraModules = 'None'; Build = $true }
+$architectures = @(switch ($Arch) {
+    'all' {
+        'x86_64'; 'arm64'
+    }
+    'arm64' {
+        'arm64'
+    }
+    default {
+        'x86_64'
+    }
+})
+$customBuild = @(
+    '-DWITH_EIGEN:BOOL=FALSE',
+    '-DWITH_MSMF:BOOL=FALSE',
+    '-DWITH_DSHOW:BOOL=FALSE',
+    '-DWITH_FFMPEG:BOOL=FALSE',
+    '-DWITH_GSTREAMER:BOOL=FALSE',
+    '-DWITH_1394:BOOL=FALSE',
+    '-DVIDEOIO_ENABLE_PLUGINS:BOOL=FALSE',
+    '-DBUILD_opencv_videoio:BOOL=FALSE',
+    '-DBUILD_opencv_gapi:BOOL=FALSE',
+    '-DWITH_PROTOBUF:BOOL=FALSE',
+    '-DBUILD_PROTOBUF:BOOL=FALSE'
+)
+$scriptRoot = if ($PSScriptRoot) {
+    $PSScriptRoot
+} else {
+    (Get-Location).Path
+}
 
 function Write-Usage {
     Write-Host 'Usage:'
-    Write-Host '  .\cvextern.ps1 clean'
+    Write-Host '  .\cvextern.ps1 clean [-Arch x64|arm64|all]'
     Write-Host '  .\cvextern.ps1 remove'
-    Write-Host '  .\cvextern.ps1 [tag]'
+    Write-Host '  .\cvextern.ps1 [tag] [-Arch x64|arm64|all]'
+    Write-Host '  .\cvextern.ps1 5.0.0 -Arch all'
     Write-Host ''
     Write-Host 'Options:'
     Write-Host '  clean   Removes EmguCV Windows build folders'
     Write-Host '  remove  Removes EmguCV source folders'
-    Write-Host '  tag     Tag or branch name to clone, for example 4.9.0'
+    Write-Host '  tag     Tag or branch name to clone, for example 5.0.0'
+    Write-Host '  Arch    Target architecture; both x64 and ARM64 by default. ARM64 can be cross-compiled on Windows x64.'
+    Write-Host '          Install the Visual Studio ARM64/ARM64EC C++ build tools and Windows SDK.'
+    Write-Host '  clean   Cleans both architectures unless -Arch is specified.'
 }
 
 function Get-EmguCvDirectories {
@@ -42,8 +84,13 @@ function Remove-ExistingDirectory {
     )
 
     if (Test-Path -LiteralPath $Path) {
+        $resolvedPath = [IO.Path]::GetFullPath($Path)
+        $sourceRoot = [IO.Path]::GetFullPath($scriptRoot).TrimEnd('\') + '\'
+        if (-not $resolvedPath.StartsWith($sourceRoot, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Refusing to remove a directory outside $scriptRoot`: $resolvedPath"
+        }
         Write-Host "Removing $Description $Path"
-        Remove-Item -LiteralPath $Path -Force -Recurse
+        Remove-Item -LiteralPath $resolvedPath -Force -Recurse
         return
     }
 
@@ -70,7 +117,7 @@ function Resolve-Branch {
     if ([string]::IsNullOrWhiteSpace($Value)) {
         $Value = Read-Host "Select a branch or tag to build cvextern.dll
 y/yes/master/main: Download master branch
-4.9.0: Download specific tag
+5.0.0: Download specific tag
 n/no: Cancel
 Option"
     }
@@ -94,37 +141,42 @@ function Update-BuildFile {
         [string] $Path
     )
 
-    $content = Get-Content -LiteralPath $Path -Raw
-    if ($content.Contains($customBuild)) {
+    $content = Get-Content -LiteralPath $Path -Raw -Encoding UTF8
+    $marker = '    # UVtools custom native options'
+    if ($content.Contains($marker)) {
         return
     }
 
-    $searchKeyword = '%CMAKE% %EMGU_CV_CMAKE_CONFIG_FLAGS%'
+    $searchKeyword = '    Invoke-Native -FilePath $vsEnv.CMakeExe -ArgumentList ($emguFlags.ToArray() + @(''..''))'
     if (-not $content.Contains($searchKeyword)) {
         throw "Unable to patch $Path. Could not find: $searchKeyword"
     }
 
-    $content.Replace($searchKeyword, "$searchKeyword $customBuild") |
-        Set-Content -LiteralPath $Path -NoNewline
+    $flags = ($customBuild | ForEach-Object { "        '$_'" }) -join ",`r`n"
+    $replacement = $marker + "`r`n" + '    $emguFlags.AddRange([string[]]@(' + "`r`n" +
+        $flags + "`r`n" + '    ))' + "`r`n" + $searchKeyword
+    $resolvedPath = (Resolve-Path -LiteralPath $Path).Path
+    [IO.File]::WriteAllText($resolvedPath, $content.Replace($searchKeyword, $replacement), [Text.UTF8Encoding]::new($false))
 }
 
 Push-Location $scriptRoot
 try {
-    if ($args.Count -gt 1) {
+    if ($args.Count -gt 0) {
         Write-Usage
-        Write-Warning 'Only one command, tag, or branch can be specified.'
+        Write-Warning 'Unexpected arguments. Specify one command or tag and use -Arch for the target.'
         exit 1
     }
 
-    $commandOrBranch = if ($args.Count -eq 1) { $args[0] } else { $null }
-
-    if ($commandOrBranch -match '^(-h|--help)$') {
+    if ($Help -or $CommandOrBranch -match '^(-h|--help)$') {
         Write-Usage
         exit 0
     }
 
     switch ($commandOrBranch) {
         'clean' {
+            if (-not $PSBoundParameters.ContainsKey('Arch')) {
+                $architectures = @('x86_64', 'arm64')
+            }
             $directories = @(Get-EmguCvDirectories)
             if ($directories.Count -eq 0) {
                 Write-Warning "No $baseLibFolder source folders found"
@@ -132,9 +184,11 @@ try {
             }
 
             foreach ($directory in $directories) {
-                Remove-ExistingDirectory `
-                    -Path (Join-Path $directory.FullName $buildDirectory) `
-                    -Description 'build directory'
+                foreach ($buildArch in $architectures) {
+                    Remove-ExistingDirectory `
+                        -Path (Join-Path $directory.FullName "build_$buildArch") `
+                        -Description "$buildArch build directory"
+                }
             }
 
             exit 0
@@ -161,13 +215,13 @@ try {
     }
 
     Test-RequiredCommand -Name 'git' -InstallHint 'Git'
-    Test-RequiredCommand -Name 'cmake' -InstallHint 'via Visual Studio'
+    # The upstream script can find CMake bundled with Visual Studio without it being on PATH.
     Test-RequiredCommand -Name 'dotnet' -InstallHint 'the .NET SDK'
 
-    $libFolder = "$baseLibFolder-$branch"
+    $libFolder = Join-Path $scriptRoot "$baseLibFolder-$branch"
     $buildFilePath = Join-Path $libFolder $buildFile
 
-    if (-not (Test-Path -LiteralPath $buildFilePath -PathType Leaf)) {
+    if (-not (Test-Path -LiteralPath $libFolder -PathType Container)) {
         Write-Output "Cloning $branch of EmguCV to $libFolder"
         git clone --recurse-submodules --depth 1 --branch $branch 'https://github.com/emgucv/emgucv' $libFolder
         if ($LASTEXITCODE -ne 0) {
@@ -175,19 +229,32 @@ try {
         }
     }
 
+    if (-not (Test-Path -LiteralPath $buildFilePath -PathType Leaf)) {
+        throw "Emgu CV Windows build script not found: $buildFilePath. Use an Emgu CV 5 source checkout."
+    }
+
     Push-Location $libFolder
     try {
         Write-Output 'Configuring'
-        # https://docs.opencv.org/4.x/db/d05/tutorial_config_reference.html
         Update-BuildFile -Path $buildFile
 
-        Write-Output 'Building'
-        cmd.exe /c "$buildFile $buildArgs"
-        if ($LASTEXITCODE -ne 0) {
-            exit $LASTEXITCODE
-        }
+        foreach ($buildArch in $architectures) {
+            Write-Output "Building $buildArch"
+            $buildArgs.Arch = $buildArch
+            # Upstream checks native exit codes and throws on failure.
+            & $buildFilePath @buildArgs
 
-        Write-Output "Completed - Check for errors but also for libcvextern presence on $libFolder\libs\runtimes"
+            $nativeArch = if ($buildArch -eq 'x86_64') {
+                'x64'
+            } else {
+                'arm64'
+            }
+            $nativeFile = Join-Path $libFolder "libs\runtimes\win-$nativeArch\native\cvextern.dll"
+            if (-not (Test-Path -LiteralPath $nativeFile -PathType Leaf)) {
+                throw "Build finished without the expected native binary: $nativeFile"
+            }
+            Write-Output "Completed - Native binary: $nativeFile"
+        }
     }
     finally {
         Pop-Location

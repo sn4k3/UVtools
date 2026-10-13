@@ -5060,7 +5060,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                 if (matRoi is null || matRoi.RoiMat.IsEmpty)
                 {
                     var genMat = EmguCvExtensions.InitMat(new Size(200, 100), 3);
-                    CvInvoke.PutText(genMat, About.Software, new Point(40, 60), FontFace.HersheyDuplex, 1,
+                    CvInvoke.PutText(genMat, About.Software, new Point(40, 60), HersheyFonts.Duplex, 1,
                         EmguCvExtensions.WhiteColor, 2);
                     if (genMat.Size != requestedSize) CvInvoke.Resize(genMat, genMat, requestedSize);
                     Thumbnails.Add(genMat);
