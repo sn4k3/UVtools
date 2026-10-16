@@ -543,7 +543,8 @@
                       Grid.Column="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Folder}" ToolTip.Tip="Browse..."
+                      Content="{icon:MaterialIconExt Kind=Folder}"
+                      ToolTip.Tip="Browse..."
                       Command="{Binding GeneralOpenFolderField}"
                       CommandParameter="DefaultDirectoryOpenFile"
                     />
@@ -552,7 +553,8 @@
                       Grid.Column="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Close}" ToolTip.Tip="Clear"
+                      Content="{icon:MaterialIconExt Kind=Close}"
+                      ToolTip.Tip="Clear"
                       Command="{Binding GeneralClearField}"
                       CommandParameter="DefaultDirectoryOpenFile"
                     />
@@ -574,7 +576,8 @@
                       Grid.Column="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Folder}" ToolTip.Tip="Browse..."
+                      Content="{icon:MaterialIconExt Kind=Folder}"
+                      ToolTip.Tip="Browse..."
                       Command="{Binding GeneralOpenFolderField}"
                       CommandParameter="DefaultDirectorySaveFile"
                     />
@@ -583,7 +586,8 @@
                       Grid.Column="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Close}" ToolTip.Tip="Clear"
+                      Content="{icon:MaterialIconExt Kind=Close}"
+                      ToolTip.Tip="Clear"
                       Command="{Binding GeneralClearField}"
                       CommandParameter="DefaultDirectorySaveFile"
                     />
@@ -605,7 +609,8 @@
                       Grid.Column="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Folder}" ToolTip.Tip="Browse..."
+                      Content="{icon:MaterialIconExt Kind=Folder}"
+                      ToolTip.Tip="Browse..."
                       Command="{Binding GeneralOpenFolderField}"
                       CommandParameter="DefaultDirectoryExtractFile"
                     />
@@ -614,7 +619,8 @@
                       Grid.Column="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Close}" ToolTip.Tip="Clear"
+                      Content="{icon:MaterialIconExt Kind=Close}"
+                      ToolTip.Tip="Clear"
                       Command="{Binding GeneralClearField}"
                       CommandParameter="DefaultDirectoryExtractFile"
                     />
@@ -636,7 +642,8 @@
                       Grid.Column="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Folder}" ToolTip.Tip="Browse..."
+                      Content="{icon:MaterialIconExt Kind=Folder}"
+                      ToolTip.Tip="Browse..."
                       Command="{Binding GeneralOpenFolderField}"
                       CommandParameter="DefaultDirectoryConvertFile"
                     />
@@ -645,7 +652,8 @@
                       Grid.Column="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Close}" ToolTip.Tip="Clear"
+                      Content="{icon:MaterialIconExt Kind=Close}"
+                      ToolTip.Tip="Clear"
                       Command="{Binding GeneralClearField}"
                       CommandParameter="DefaultDirectoryConvertFile"
                     />
@@ -667,7 +675,8 @@
                       Grid.Column="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Folder}" ToolTip.Tip="Browse..."
+                      Content="{icon:MaterialIconExt Kind=Folder}"
+                      ToolTip.Tip="Browse..."
                       Command="{Binding GeneralOpenFolderField}"
                       CommandParameter="DefaultDirectoryScripts"
                     />
@@ -676,7 +685,8 @@
                       Grid.Column="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Close}" ToolTip.Tip="Clear"
+                      Content="{icon:MaterialIconExt Kind=Close}"
+                      ToolTip.Tip="Clear"
                       Command="{Binding GeneralClearField}"
                       CommandParameter="DefaultDirectoryScripts"
                     />
@@ -1778,9 +1788,115 @@
                     ToolTip.Tip="Show the layer preview with the physical proportions of the printer pixels on file load. Printers with non-square LCD pixels look stretched otherwise. This is view only, the layer image is not resized or changed. It can also be toggled on the layer preview toolbar."
                   />
 
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock VerticalAlignment="Center" Text="Layer image sampling:" />
+                    <ComboBox
+                      MinWidth="120"
+                      VerticalAlignment="Center"
+                      ItemsSource="{Binding Settings.LayerPreview.LayerBitmapSampling, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      SelectedItem="{Binding Settings.LayerPreview.LayerBitmapSampling, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
+                      ToolTip.Tip="Auto: sharp pixels when zoomed in, averaged when zoomed out so high resolution layers don't alias or shimmer. Nearest: always sharp pixels, the fastest. Smooth: always smoothed."
+                    />
+                  </StackPanel>
+
                   <CheckBox
                     Content="Show square grid as background"
                     IsChecked="{Binding Settings.LayerPreview.ShowBackgroundGrid}"
+                  />
+
+                  <CheckBox
+                    Content="Show rulers"
+                    VerticalAlignment="Center"
+                    IsChecked="{Binding Settings.LayerPreview.LayerShowRulers}"
+                    ToolTip.Tip="Show rulers in millimeters along the top and left of the layer preview. They are drawn over the layer image. It can also be toggled on the layer preview toolbar."
+                  />
+
+                  <Grid
+                    ColumnDefinitions="Auto,Auto,Auto,Auto,Auto"
+                    RowDefinitions="Auto,Auto"
+                    ColumnSpacing="10"
+                    RowSpacing="10"
+                  >
+                    <CheckBox
+                      Grid.Row="0"
+                      Grid.Column="0"
+                      Content="Show scale bar"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding Settings.LayerPreview.LayerShowScaleBar}"
+                      ToolTip.Tip="Show a bar with a round length in millimeters in a corner of the layer preview. It can also be toggled on the layer preview toolbar."
+                    />
+                    <TextBlock
+                      Grid.Row="0"
+                      Grid.Column="1"
+                      VerticalAlignment="Center"
+                      Text="Corner:"
+                    />
+                    <ComboBox
+                      Grid.Row="0"
+                      Grid.Column="2"
+                      MinWidth="150"
+                      VerticalAlignment="Center"
+                      IsEnabled="{Binding Settings.LayerPreview.LayerShowScaleBar}"
+                      ItemsSource="{Binding Settings.LayerPreview.LayerScaleBarCorner, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      SelectedItem="{Binding Settings.LayerPreview.LayerScaleBarCorner, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
+                      ToolTip.Tip="The corner of the layer preview where the scale bar is."
+                    />
+
+                    <CheckBox
+                      Grid.Row="1"
+                      Grid.Column="0"
+                      Content="Show minimap"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding Settings.LayerPreview.LayerShowMinimap}"
+                      ToolTip.Tip="Show a thumbnail of the whole layer in a corner of the layer preview while it is zoomed in, click or drag on it to move the view. It can also be toggled on the layer preview toolbar."
+                    />
+                    <TextBlock
+                      Grid.Row="1"
+                      Grid.Column="1"
+                      VerticalAlignment="Center"
+                      Text="Corner:"
+                    />
+                    <ComboBox
+                      Grid.Row="1"
+                      Grid.Column="2"
+                      MinWidth="150"
+                      VerticalAlignment="Center"
+                      IsEnabled="{Binding Settings.LayerPreview.LayerShowMinimap}"
+                      ItemsSource="{Binding Settings.LayerPreview.LayerMinimapCorner, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      SelectedItem="{Binding Settings.LayerPreview.LayerMinimapCorner, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
+                      ToolTip.Tip="The corner of the layer preview where the minimap is."
+                    />
+                    <TextBlock
+                      Grid.Row="1"
+                      Grid.Column="3"
+                      VerticalAlignment="Center"
+                      Text="Size:"
+                    />
+                    <NumericUpDown
+                      Grid.Row="1"
+                      Grid.Column="4"
+                      MinWidth="120"
+                      VerticalAlignment="Center"
+                      IsEnabled="{Binding Settings.LayerPreview.LayerShowMinimap}"
+                      Value="{Binding Settings.LayerPreview.LayerMinimapSize}"
+                      Increment="10"
+                      Minimum="32"
+                      Maximum="1024"
+                      suki:NumericUpDownExtensions.Unit="px"
+                      ToolTip.Tip="The size of the longest side of the minimap."
+                    />
+                  </Grid>
+
+                  <CheckBox
+                    Content="Touch and touchpad gestures"
+                    IsChecked="{Binding Settings.LayerPreview.LayerTouchGestures}"
+                    ToolTip.Tip="Pinch to zoom around the fingers and pan with them on the layer preview, and the magnify gesture of touchpads. The mouse is not affected."
+                  />
+
+                  <CheckBox
+                    Content="Draw the layer difference with the GPU (faster, simplified colors)"
+                    IsChecked="{Binding Settings.LayerPreview.OnionSkinGpu}"
+                    ToolTip.Tip="Draw the previous and next layers of the layer difference with the GPU.&#x0a;It keeps the layer as 8-bit and is much faster on high resolution layers.&#x0a;&#x0a;Difference: same result as the CPU.&#x0a;Similarity: the anti-aliased pixels of the other layers blend with the current layer instead of replacing it.&#x0a;Onion skin: the ghosts have the same colors and priority, but the current layer is always white:&#x0a;no yellow for pixels without a layer below and no magenta for cavities.&#x0a;&#x0a;Used only while the layer has nothing else to color, otherwise the exact CPU version is drawn."
                   />
 
                   <CheckBox
@@ -2913,7 +3029,8 @@
                       Grid.Column="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=FileImport}" ToolTip.Tip="Select file..."
+                      Content="{icon:MaterialIconExt Kind=FileImport}"
+                      ToolTip.Tip="Select file..."
                       Command="{Binding AutomationsOpenFileField}"
                       CommandParameter="EventAfterFileLoadScriptFile"
                     />
@@ -2922,7 +3039,8 @@
                       Grid.Column="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Close}" ToolTip.Tip="Clear"
+                      Content="{icon:MaterialIconExt Kind=Close}"
+                      ToolTip.Tip="Clear"
                       Command="{Binding AutomationsClearField}"
                       CommandParameter="EventAfterFileLoadScriptFile"
                     />
@@ -2945,7 +3063,8 @@
                       Grid.Column="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=FileImport}" ToolTip.Tip="Select file..."
+                      Content="{icon:MaterialIconExt Kind=FileImport}"
+                      ToolTip.Tip="Select file..."
                       Command="{Binding AutomationsOpenFileField}"
                       CommandParameter="EventBeforeFileSaveScriptFile"
                     />
@@ -2954,7 +3073,8 @@
                       Grid.Column="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Close}" ToolTip.Tip="Clear"
+                      Content="{icon:MaterialIconExt Kind=Close}"
+                      ToolTip.Tip="Clear"
                       Command="{Binding AutomationsClearField}"
                       CommandParameter="EventBeforeFileSaveScriptFile"
                     />
@@ -2977,7 +3097,8 @@
                       Grid.Column="3"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=FileImport}" ToolTip.Tip="Select file..."
+                      Content="{icon:MaterialIconExt Kind=FileImport}"
+                      ToolTip.Tip="Select file..."
                       Command="{Binding AutomationsOpenFileField}"
                       CommandParameter="EventAfterFileSaveScriptFile"
                     />
@@ -2986,7 +3107,8 @@
                       Grid.Column="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Content="{icon:MaterialIconExt Kind=Close}" ToolTip.Tip="Clear"
+                      Content="{icon:MaterialIconExt Kind=Close}"
+                      ToolTip.Tip="Clear"
                       Command="{Binding AutomationsClearField}"
                       CommandParameter="EventAfterFileSaveScriptFile"
                     />
@@ -3016,18 +3138,21 @@
                       <Button
                         VerticalAlignment="Stretch"
                         Padding="5"
-                        Content="{icon:MaterialIconExt Kind=Plus}" ToolTip.Tip="Add"
+                        Content="{icon:MaterialIconExt Kind=Plus}"
+                        ToolTip.Tip="Add"
                         Command="{Binding AddNetworkRemotePrinter}"
                       />
                       <Button
                         VerticalAlignment="Stretch"
-                        Content="{icon:MaterialIconExt Kind=ContentCopy}" ToolTip.Tip="Duplicate"
+                        Content="{icon:MaterialIconExt Kind=ContentCopy}"
+                        ToolTip.Tip="Duplicate"
                         Command="{Binding DuplicateSelectedNetworkRemotePrinter}"
                         IsEnabled="{Binding #NetworkRemotePrinterComboBox.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
                       />
                       <Button
                         VerticalAlignment="Stretch"
-                        Content="{icon:MaterialIconExt Kind=TrashCan}" ToolTip.Tip="Remove"
+                        Content="{icon:MaterialIconExt Kind=TrashCan}"
+                        ToolTip.Tip="Remove"
                         Command="{Binding RemoveSelectedNetworkRemotePrinter}"
                         IsEnabled="{Binding #NetworkRemotePrinterComboBox.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
                       />

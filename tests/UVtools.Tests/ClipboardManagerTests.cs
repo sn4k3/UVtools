@@ -147,4 +147,41 @@ public class ClipboardManagerTests
         Assert.True(file[1].NonZeroPixelCount > 0);
         Assert.Equal(0u, file[2].NonZeroPixelCount);
     }
+
+    [Fact]
+    public void GetLayerAtClip_ReturnsTheLayerAsItWasWithoutRestoring()
+    {
+        var file = CreateTestFile(5);
+        var cm = ClipboardManager.Instance;
+        cm.Init(file);
+
+        cm.Snapshot();
+        using (var mat1 = file[1].LayerMat)
+        {
+            CvInvoke.Rectangle(mat1, new Rectangle(10, 10, 50, 50), new MCvScalar(255), -1);
+            file[1].LayerMat = mat1;
+        }
+        cm.Clip("Edit 1");
+
+        cm.Snapshot();
+        using (var mat2 = file[2].LayerMat)
+        {
+            CvInvoke.Rectangle(mat2, new Rectangle(20, 20, 50, 50), new MCvScalar(255), -1);
+            file[2].LayerMat = mat2;
+        }
+        cm.Clip("Edit 2");
+
+        // Edit 2 (index 0) is the current state, Edit 1 (index 1) is before it and Original (index 2) is the oldest
+        Assert.Equal(0, cm.CurrentIndex);
+        Assert.True(cm.GetLayerAtClip(0, 2)!.NonZeroPixelCount > 0);
+        Assert.Equal(0u, cm.GetLayerAtClip(1, 2)!.NonZeroPixelCount);
+        Assert.True(cm.GetLayerAtClip(1, 1)!.NonZeroPixelCount > 0);
+        Assert.Equal(0u, cm.GetLayerAtClip(2, 1)!.NonZeroPixelCount);
+        Assert.Null(cm.GetLayerAtClip(3, 1));
+        Assert.Null(cm.GetLayerAtClip(0, 99));
+
+        // Nothing was restored
+        Assert.Equal(0, cm.CurrentIndex);
+        Assert.True(file[2].NonZeroPixelCount > 0);
+    }
 }

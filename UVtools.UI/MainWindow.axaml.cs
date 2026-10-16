@@ -1312,6 +1312,10 @@ public partial class MainWindow : GenericWindow
         VisibleThumbnailIndex = -1;
 
         LayerImageBox.Image = null;
+        LayerImageBox.GrayscaleImage = null;
+        ClearLayerOverlays();
+        ClearOnionSkinLayers();
+        ClearLayerCompare();
         LayerPixelPicker.Reset();
 
         ClearROIAndMask();
@@ -2372,11 +2376,36 @@ public partial class MainWindow : GenericWindow
             return;
         }
 
-        if (e.PropertyName == nameof(SlicerFile.PixelSize) && _showLayerImageRealAspectRatio)
+        if (e.PropertyName == nameof(SlicerFile.PixelSize))
         {
             UpdateLayerImagePixelAspectRatio();
             return;
         }
+
+        if (e.PropertyName is nameof(SlicerFile.LiftHeight) or nameof(SlicerFile.LiftSpeed)
+            or nameof(SlicerFile.LiftHeight2) or nameof(SlicerFile.LiftSpeed2)
+            or nameof(SlicerFile.BottomLiftHeight) or nameof(SlicerFile.BottomLiftSpeed)
+            or nameof(SlicerFile.BottomLiftHeight2) or nameof(SlicerFile.BottomLiftSpeed2))
+        {
+            RequestLayerLiftsRefresh();
+        }
+    }
+
+    private bool _layerLiftsRefreshRequested;
+
+    /// <summary>
+    /// Refreshes the lift values of the peel curve once after the lift settings changed, they can change many at once
+    /// and from the thread of an operation.
+    /// </summary>
+    private void RequestLayerLiftsRefresh()
+    {
+        if (_layerLiftsRefreshRequested) return;
+        _layerLiftsRefreshRequested = true;
+        Dispatcher.UIThread.Post(() =>
+        {
+            _layerLiftsRefreshRequested = false;
+            RefreshLayerLifts();
+        }, DispatcherPriority.Background);
     }
 
     private void ShowProgressWindow(string title, string subTitle, bool canCancel = true)

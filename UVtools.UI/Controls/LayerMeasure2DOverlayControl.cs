@@ -161,7 +161,8 @@ public class LayerMeasure2DOverlayControl : Control
         if (!startImgPt.HasValue) return;
 
         var box = ImageBox;
-        if (box == null || box.Image == null) return;
+        // The layer is either a bitmap or a grayscale image
+        if (box == null || !box.IsImageLoaded) return;
 
         var endImgPt = EndPoint ?? CursorPoint;
 

@@ -6807,6 +6807,15 @@
             </see>
             </summary>
         </member>
+        <member name="M:UVtools.Core.Managers.ClipboardManager.GetLayerAtClip(System.Int32,System.UInt32)">
+            <summary>
+            Gets a layer as it was at a clip of the history, without restoring the clip.
+            </summary>
+            <remarks>The layer is the one stored in the history, it must not be modified.</remarks>
+            <param name="clipIndex">The index of the clip, 0 is the newest.</param>
+            <param name="layerIndex">The index of the layer.</param>
+            <returns>The layer, or <see langword="null"/> when the clip doesn't exist or didn't have that layer.</returns>
+        </member>
         <member name="M:UVtools.Core.Managers.ClipboardManager.Clip(System.String,UVtools.Core.Layers.Layer[],System.Boolean)">
             <summary>
             Collect differences and create a clip

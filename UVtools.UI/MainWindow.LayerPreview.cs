@@ -175,7 +175,7 @@ public partial class MainWindow
     private void UpdateLayerImageOrientation()
     {
         // The box zooms to fit the image when it was all in view, refit with the user zoom to fit preference instead
-        var zoomToFit = IsFileLoaded && LayerImageBox.Image is not null &&
+        var zoomToFit = IsFileLoaded && LayerImageBox.IsImageLoaded &&
                         LayerImageBox.Zoom <= LayerImageBox.ZoomLevelToFit;
 
         LayerImageBox.ImageRotation = !_showLayerImageRotated
@@ -197,6 +197,7 @@ public partial class MainWindow
             if (Settings.LayerPreview.ShowPeelCurve == value) return;
             Settings.LayerPreview.ShowPeelCurve = value;
             RaisePropertyChanged();
+            if (value) EnsureLayerAreas();
         }
     }
 
@@ -316,6 +317,24 @@ public partial class MainWindow
                 Settings.LayerPreview.DifferenceMode =
                     UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
                 Settings.LayerPreview.OnionSkinLayers = 6;
+                ShowLayerImageDifference = true;
+                NotifyAllDiffModesChanged();
+            }
+        }
+    }
+
+    public bool IsLayerDiffModeOnionSkin7
+    {
+        get => Settings.LayerPreview.DifferenceMode ==
+               UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin &&
+               Settings.LayerPreview.OnionSkinLayers == 7;
+        set
+        {
+            if (value)
+            {
+                Settings.LayerPreview.DifferenceMode =
+                    UserSettings.LayerPreviewUserSettings.LayerDifferenceMode.OnionSkin;
+                Settings.LayerPreview.OnionSkinLayers = 7;
                 ShowLayerImageDifference = true;
                 NotifyAllDiffModesChanged();
             }
@@ -451,6 +470,13 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _showLayerImageDifference, value)) return;
+            if (value && _isLayerCompareActive)
+            {
+                // The difference and the compare mode both use the layers of the layer image box
+                _isLayerCompareActive = false;
+                RaisePropertyChanged(nameof(IsLayerCompareActive));
+            }
+
             ShowLayer();
         }
     }
@@ -473,7 +499,7 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _showLayerImageCrosshairs, value)) return;
-            ShowLayer();
+            RefreshLayerOverlays();
         }
     }
 
@@ -518,7 +544,27 @@ public partial class MainWindow
     }
 
     /// <summary>
-    /// Applies the pixel aspect ratio of the current file and preview orientation to the layer image box.
+    /// Gets the physical size in millimeters of one pixel of the layer image, which is the display size divided by
+    /// the resolution, as <see cref="GetLayerImagePixelAspectRatio"/> does.
+    /// </summary>
+    /// <returns>0 for both when it can't be calculated.</returns>
+    private (double Width, double Height) GetLayerImagePixelSize()
+    {
+        var slicerFile = SlicerFile;
+        if (slicerFile is null) return default;
+
+        double resolutionX = slicerFile.ResolutionX;
+        double resolutionY = slicerFile.ResolutionY;
+        double displayWidth = slicerFile.DisplayWidth;
+        double displayHeight = slicerFile.DisplayHeight;
+        if (resolutionX <= 0 || resolutionY <= 0 || displayWidth <= 0 || displayHeight <= 0) return default;
+
+        return (displayWidth / resolutionX, displayHeight / resolutionY);
+    }
+
+    /// <summary>
+    /// Applies the pixel aspect ratio and the pixel size of the current file and preview orientation to the layer
+    /// image box, the size is what the rulers and the scale bar use.
     /// </summary>
     private void UpdateLayerImagePixelAspectRatio()
     {
@@ -529,6 +575,10 @@ public partial class MainWindow
         }
 
         LayerImageBox.PixelAspectRatio = GetLayerImagePixelAspectRatio();
+
+        var (pixelWidth, pixelHeight) = GetLayerImagePixelSize();
+        LayerImageBox.PixelWidth = pixelWidth;
+        LayerImageBox.PixelHeight = pixelHeight;
     }
 
     public bool ShowLayerOutlinePrintVolumeBoundary
@@ -537,7 +587,7 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _showLayerOutlinePrintVolumeBoundary, value)) return;
-            ShowLayer();
+            RefreshLayerOverlays();
         }
     }
 
@@ -547,7 +597,7 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _showLayerOutlineLayerBoundary, value)) return;
-            ShowLayer();
+            RefreshLayerOverlays();
         }
     }
 
@@ -557,7 +607,7 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _showLayerOutlineContourBoundary, value)) return;
-            ShowLayer();
+            RefreshLayerOverlays();
         }
     }
 
@@ -567,7 +617,7 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _showLayerOutlineEnclosingCircles, value)) return;
-            ShowLayer();
+            RefreshLayerOverlays();
         }
     }
 
@@ -587,7 +637,7 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _showLayerOutlineCentroids, value)) return;
-            ShowLayer();
+            RefreshLayerOverlays();
         }
     }
 
@@ -637,9 +687,11 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _isPixelEditorActive, value)) return;
+            RefreshLayerOverlays(); // The crosshairs of the selected issues are hidden while editing pixels
             if (_isPixelEditorActive)
             {
                 SelectedTabItem = TabPixelEditor;
+                if (IsFileLoaded) ShowLayer(); // Drawing on the layer needs the 32-bit image, not the grayscale one
             }
             else
             {
@@ -890,6 +942,7 @@ public partial class MainWindow
         RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin4));
         RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin5));
         RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin6));
+        RaisePropertyChanged(nameof(IsLayerDiffModeOnionSkin7));
         ShowLayer();
     }
 
@@ -942,38 +995,10 @@ public partial class MainWindow
             RaisePropertyChanged(nameof(LayerZoomStr));
             AddLogVerbose($"Zoomed from {oldZoom} to {newZoom}");
 
-            if (_showLayerImageCrosshairs &&
-                SlicerFile!.IssueManager.Count > 0 &&
-                ((oldZoom < 50 &&
-                  newZoom >= 50) // Trigger refresh as crosshair thickness increases at lower zoom levels
-                 || (oldZoom > 100 && newZoom <= 100)
-                 || (oldZoom is >= 50 and <= 100 && newZoom is < 50 or > 100)
-                 || (oldZoom <= AppSettings.CrosshairFadeLevel &&
-                     newZoom > AppSettings
-                         .CrosshairFadeLevel) // Trigger refresh as zoom level manually crosses fade threshold
-                 || (oldZoom > AppSettings.CrosshairFadeLevel && newZoom <= AppSettings.CrosshairFadeLevel))
-               )
+            // The crosshairs are vector overlays, the layer image isn't rendered again when the zoom crosses the fade level
+            if (_showLayerImageCrosshairs)
             {
-                if (Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues)
-                {
-                    if (IssuesGrid.SelectedItems.Count == 0 || !IssuesGrid.SelectedItems.Cast<MainIssue>()
-                            .Any(mainIssue => // Find a valid candidate to update layer preview, otherwise quit
-                                mainIssue.IsIssueInBetween(_actualLayer)
-                                && mainIssue.Type is not MainIssue.IssueType.TouchingBound
-                                    and not MainIssue.IssueType.EmptyLayer)) return;
-                }
-                else
-                {
-                    if (!SlicerFile.IssueManager.AsValueEnumerable()
-                            .Any(mainIssue => // Find a valid candidate to update layer preview, otherwise quit
-                                mainIssue.IsIssueInBetween(_actualLayer)
-                                && mainIssue.Type is not MainIssue.IssueType.TouchingBound
-                                    and not MainIssue.IssueType.EmptyLayer)) return;
-                }
-
-                // A timer is used here rather than invoking ShowLayer directly to eliminate sublte visual flashing
-                // that will occur on the transition when the crosshair fades or unfades if ShowLayer is called directly.
-                ShowLayer();
+                UpdateLayerCrosshairVisibility();
             }
         }));
 
@@ -1097,7 +1122,155 @@ public partial class MainWindow
 
     public void RefreshLayerImage()
     {
-        LayerImageBox.Image = LayerCache.ImageBgra.ToBitmap();
+        UpdateLayerImageBitmap();
+    }
+
+    /// <summary>
+    /// Copies the pixels of the layer image to the bitmap displayed by the layer image box. The bitmap is written
+    /// again while the size of the layer doesn't change, a new full resolution bitmap is only allocated when it does.
+    /// </summary>
+    private void UpdateLayerImageBitmap()
+    {
+        var bitmap = LayerCache.UpdateBitmap(out var previousBitmap);
+
+        if (ReferenceEquals(LayerImageBox.Image, bitmap))
+        {
+            // Same instance, so the box doesn't see a change. It redraws without touching the zoom or the scroll
+            LayerImageBox.InvalidateImage();
+            ConstrainLayerImageZoom();
+        }
+        else
+        {
+            LayerImageBox.Image = bitmap;
+        }
+
+        // The grayscale image is displayed instead of the bitmap while it is set, it is cleared after setting the
+        // bitmap so the box is never empty
+        if (LayerImageBox.GrayscaleImage is not null) LayerImageBox.GrayscaleImage = null;
+
+        // The box doesn't own the bitmap, it is disposed once the box displays the new one
+        previousBitmap?.Dispose();
+    }
+
+    /// <summary>
+    /// Setting a new image applies the zoom to fit constraint, redrawing the same one doesn't. Keep it for when the
+    /// window was resized in the meantime.
+    /// </summary>
+    private void ConstrainLayerImageZoom()
+    {
+        if (LayerImageBox.ConstrainZoomOutToFitLevel && LayerImageBox.Zoom < LayerImageBox.ZoomLevelToFit)
+        {
+            LayerImageBox.Zoom = LayerImageBox.ZoomLevelToFit;
+        }
+    }
+
+    /// <summary>
+    /// Copies an 8-bit image of the layer to the grayscale image displayed by the layer image box, which doesn't need
+    /// the 32-bit copy of the layer, nor its bitmap.
+    /// </summary>
+    private void UpdateLayerImageGrayscale(Mat grayscale)
+    {
+        var image = LayerCache.UpdateGrayscaleImage(grayscale, out var previousImage);
+
+        if (ReferenceEquals(LayerImageBox.GrayscaleImage, image))
+        {
+            LayerImageBox.InvalidateImage();
+            ConstrainLayerImageZoom();
+        }
+        else
+        {
+            LayerImageBox.GrayscaleImage = image;
+            LayerImageBox.Image = null; // The bitmap is displayed again by the next layer with colored pixels
+        }
+
+        previousImage?.Dispose();
+
+        // The 32-bit copy and the bitmap of the layer are about 8 times its size, free them when they stopped being used
+        if (++LayerCache.GrayscaleStreak == 8) LayerCache.ReleaseBgra();
+    }
+
+    /// <summary>
+    /// Gets if nothing colors the pixels of the layer image, so it can be displayed as the 8-bit image it is, instead
+    /// of a 32-bit image where the issues, the difference, the outlines and the pixel editor are drawn.
+    /// </summary>
+    private bool CanShowLayerAsGrayscale()
+    {
+        // The difference is mixed in the 32-bit image by the CPU, except when it is drawn by the GPU
+        if (IsPixelEditorActive
+            || (_showLayerImageDifference && !UseGpuOnionSkin() && !UseGpuLayerDifference())
+            || _showLayerOutlineHollowAreas
+            || _showLayerOutlineTriangulate
+            || _maskPoints.Count > 0) return false;
+
+        if (_showLayerImageIssues && SlicerFile!.IssueManager.Count > 0)
+        {
+            foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer))
+            {
+                if (issue.Parent!.Type is not MainIssue.IssueType.PrintHeight
+                    and not MainIssue.IssueType.EmptyLayer) return false;
+            }
+        }
+
+        for (var index = 0; index < Drawings.Count; index++)
+        {
+            var operation = Drawings[index];
+            if (operation is PixelStroke stroke
+                    ? stroke.IsInLayerRange(ActualLayer)
+                    : operation.LayerIndex == ActualLayer) return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Displays the layer image, or the edge, distance or skeleton image made from it, as a grayscale image.
+    /// </summary>
+    private void ShowLayerAsGrayscale()
+    {
+        var image = LayerCache.Image!;
+        Mat? processed = null;
+        try
+        {
+            var source = image;
+            if (_showLayerOutlineEdgeDetection)
+            {
+                processed = new Mat();
+                CvInvoke.Canny(image, processed, 80, 40, 3, true);
+                source = processed;
+            }
+            else if (_showLayerOutlineDistanceDetection)
+            {
+                processed = new Mat();
+                CvInvoke.DistanceTransform(image, processed, null, DistType.C, 3);
+                CvInvoke.Normalize(processed, processed, byte.MinValue, byte.MaxValue, NormType.MinMax, DepthType.Cv8U);
+                source = processed;
+            }
+            else if (_showLayerOutlineSkeletonize)
+            {
+                processed = image.Skeletonize();
+                source = processed;
+            }
+
+            UpdateLayerImageGrayscale(source);
+        }
+        finally
+        {
+            processed?.Dispose();
+        }
+    }
+
+    private void FinishShowLayer(Stopwatch watch)
+    {
+        if (Show2DPeelCurve) EnsureLayerAreas();
+        UpdateOnionSkinLayers();
+        UpdateLayerCompare();
+        RefreshLayerOverlays();
+
+        RefreshCurrentLayerData();
+
+        watch.Stop();
+        ShowLayerRenderMs = watch.ElapsedMilliseconds;
+        AddLogVerbose($"Show Layer: {_actualLayer}", watch.Elapsed.TotalSeconds);
     }
 
     /// <summary>
@@ -1118,7 +1291,11 @@ public partial class MainWindow
         {
             CurrentLayerProperties.Clear();
             LayerImageBox.Image = null;
+            LayerImageBox.GrayscaleImage = null;
             LayerCache.Clear();
+            ClearLayerOverlays();
+            ClearOnionSkinLayers();
+            ClearLayerCompare();
             return;
         }
 
@@ -1179,6 +1356,16 @@ public partial class MainWindow
             }*/
 
 
+            if (CanShowLayerAsGrayscale())
+            {
+                // Nothing colors the pixels of the layer, it is displayed as it is, as 8-bit
+                ShowLayerAsGrayscale();
+                FinishShowLayer(watch);
+                return;
+            }
+
+            LayerCache.GrayscaleStreak = 0;
+            LayerCache.EnsureBgra();
             var imageSpan = LayerCache.ImageSpan;
             var imageBgrSpan = LayerCache.ImageBgraSpan;
 
@@ -1186,7 +1373,7 @@ public partial class MainWindow
             {
                 using var canny = new Mat();
                 CvInvoke.Canny(LayerCache.Image, canny, 80, 40, 3, true);
-                CvInvoke.CvtColor(canny, LayerCache.ImageBgra, ColorConversion.Gray2Bgra);
+                LayerCache.SetBgraFrom(canny);
             }
             else if (_showLayerOutlineDistanceDetection)
             {
@@ -1194,12 +1381,12 @@ public partial class MainWindow
                 CvInvoke.DistanceTransform(LayerCache.Image, distance, null, DistType.C, 3);
                 //distance.ConvertTo(distance, DepthType.Cv8U);
                 CvInvoke.Normalize(distance, distance, byte.MinValue, byte.MaxValue, NormType.MinMax, DepthType.Cv8U);
-                CvInvoke.CvtColor(distance, LayerCache.ImageBgra, ColorConversion.Gray2Bgra);
+                LayerCache.SetBgraFrom(distance);
             }
             else if (_showLayerOutlineSkeletonize)
             {
                 using var skeletonize = LayerCache.Image.Skeletonize();
-                CvInvoke.CvtColor(skeletonize, LayerCache.ImageBgra, ColorConversion.Gray2Bgra);
+                LayerCache.SetBgraFrom(skeletonize);
             }
             else if (_showLayerImageDifference)
             {
@@ -1212,12 +1399,14 @@ public partial class MainWindow
                         4 => 2,
                         5 => 2,
                         6 => 3,
+                        7 => 3,
                         _ => 1
                     };
                     var nextCount = onionLayers switch
                     {
                         5 => 2,
                         6 => 2,
+                        7 => 3,
                         _ => 1
                     };
 
@@ -1231,12 +1420,16 @@ public partial class MainWindow
                     var nextLayer2 = _actualLayer + 2 <= SlicerFile.LastLayerIndex && nextCount >= 2
                         ? SlicerFile[_actualLayer + 2]
                         : null;
+                    var nextLayer3 = _actualLayer + 3 <= SlicerFile.LastLayerIndex && nextCount >= 3
+                        ? SlicerFile[_actualLayer + 3]
+                        : null;
 
                     Mat? prev1Mat = null;
                     Mat? prev2Mat = null;
                     Mat? prev3Mat = null;
                     Mat? next1Mat = null;
                     Mat? next2Mat = null;
+                    Mat? next3Mat = null;
 
                     try
                     {
@@ -1259,6 +1452,7 @@ public partial class MainWindow
                         UnionRect(prevLayer3);
                         UnionRect(nextLayer1);
                         UnionRect(nextLayer2);
+                        UnionRect(nextLayer3);
 
                         rect = Rectangle.Intersect(rect,
                             new Rectangle(0, 0, LayerCache.Image.Width, LayerCache.Image.Height));
@@ -1270,6 +1464,7 @@ public partial class MainWindow
                             byte* prev3Span = null;
                             byte* next1Span = null;
                             byte* next2Span = null;
+                            byte* next3Span = null;
 
                             Parallel.Invoke(
                                 () =>
@@ -1316,11 +1511,21 @@ public partial class MainWindow
                                         next2Mat.Width == LayerCache.Image.Width &&
                                         next2Mat.Height == LayerCache.Image.Height)
                                         next2Span = next2Mat.BytePointer;
+                                },
+                                () =>
+                                {
+                                    if (nextLayer3 is null || nextLayer3.IsEmpty) return;
+                                    next3Mat = nextLayer3.LayerMat;
+                                    if (next3Mat is not null && !next3Mat.IsEmpty &&
+                                        next3Mat.Width == LayerCache.Image.Width &&
+                                        next3Mat.Height == LayerCache.Image.Height)
+                                        next3Span = next3Mat.BytePointer;
                                 }
                             );
 
                             if (prev1Span is not null || prev2Span is not null || prev3Span is not null ||
-                                next1Span is not null || next2Span is not null || !LayerCache.Layer.IsEmpty)
+                                next1Span is not null || next2Span is not null || next3Span is not null ||
+                                !LayerCache.Layer.IsEmpty)
                             {
                                 var width = LayerCache.Image.RealStep;
                                 var channels = LayerCache.ImageBgra.NumberOfChannels;
@@ -1340,6 +1545,7 @@ public partial class MainWindow
 
                                         var hasN1 = next1Span is not null && next1Span[pixel] > 0;
                                         var hasN2 = next2Span is not null && next2Span[pixel] > 0;
+                                        var hasN3 = next3Span is not null && next3Span[pixel] > 0;
 
                                         var onionColor = Color.Empty;
 
@@ -1359,7 +1565,7 @@ public partial class MainWindow
                                         else
                                         {
                                             var hasBelow = hasP1 || hasP2 || hasP3;
-                                            var hasAbove = hasN1 || hasN2;
+                                            var hasAbove = hasN1 || hasN2 || hasN3;
 
                                             if (hasBelow && hasAbove)
                                             {
@@ -1391,6 +1597,11 @@ public partial class MainWindow
                                                 // Layer +2 (2 layers up): Deep Azure / Royal Blue
                                                 onionColor = new Color(next2Span[pixel], 25, 120, 215);
                                             }
+                                            else if (hasN3)
+                                            {
+                                                // Layer +3 (3 layers up): Navy / Dark Blue
+                                                onionColor = new Color(next3Span[pixel], 25, 50, 160);
+                                            }
                                         }
 
                                         if (!onionColor.IsEmpty)
@@ -1413,6 +1624,7 @@ public partial class MainWindow
                         prev3Mat?.Dispose();
                         next1Mat?.Dispose();
                         next2Mat?.Dispose();
+                        next3Mat?.Dispose();
                     }
                 }
                 else
@@ -1535,35 +1747,31 @@ public partial class MainWindow
                 {
                     //count++;
                     var color = Color.Empty;
-                    var drawCrosshair = false;
 
+                    // The crosshairs of the issues are overlays, see AddCrosshairOverlays()
                     switch (issue.Parent!.Type)
                     {
                         case MainIssue.IssueType.Island:
                             color = selectedIssues.Count > 0 && selectedIssues.Contains(issue.Parent)
                                 ? Settings.LayerPreview.IslandHighlightColor
                                 : Settings.LayerPreview.IslandColor;
-                            drawCrosshair = true;
 
                             break;
                         case MainIssue.IssueType.Overhang:
                             color = selectedIssues.Count > 0 && selectedIssues.Contains(issue.Parent)
                                 ? Settings.LayerPreview.OverhangHighlightColor
                                 : Settings.LayerPreview.OverhangColor;
-                            drawCrosshair = true;
 
                             break;
                         case MainIssue.IssueType.ResinTrap:
                             color = selectedIssues.Count > 0 && selectedIssues.Contains(issue.Parent)
                                 ? Settings.LayerPreview.ResinTrapHighlightColor
                                 : Settings.LayerPreview.ResinTrapColor;
-                            drawCrosshair = true;
                             break;
                         case MainIssue.IssueType.SuctionCup:
                             color = selectedIssues.Count > 0 && selectedIssues.Contains(issue.Parent)
                                 ? Settings.LayerPreview.SuctionCupHighlightColor
                                 : Settings.LayerPreview.SuctionCupColor;
-                            drawCrosshair = true;
                             break;
                         case MainIssue.IssueType.TouchingBound:
                             color = Settings.LayerPreview.TouchingBoundsColor;
@@ -1574,13 +1782,6 @@ public partial class MainWindow
                     }
 
                     if (color.IsEmpty) continue;
-
-                    if (drawCrosshair && _showLayerImageCrosshairs &&
-                        !Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues &&
-                        LayerImageBox.Zoom <= AppSettings.CrosshairFadeLevel)
-                    {
-                        DrawCrosshair(issue.BoundingRectangle);
-                    }
 
                     /*var point = issue.FirstPoint;
                     if (!point.IsBothNegative())
@@ -1619,56 +1820,9 @@ public partial class MainWindow
                 }
             }
 
-            if (_showLayerOutlinePrintVolumeBoundary)
-            {
-                CvInvoke.Rectangle(LayerCache.ImageBgra, SlicerFile.BoundingRectangle,
-                    Settings.LayerPreview.VolumeBoundsOutlineColor.ToMCvScalar(),
-                    Settings.LayerPreview.VolumeBoundsOutlineThickness);
-            }
-
-            if (_showLayerOutlineLayerBoundary && !SlicerFile[_actualLayer].BoundingRectangle.IsEmpty)
-            {
-                CvInvoke.Rectangle(LayerCache.ImageBgra, SlicerFile[_actualLayer].BoundingRectangle,
-                    Settings.LayerPreview.LayerBoundsOutlineColor.ToMCvScalar(),
-                    Settings.LayerPreview.LayerBoundsOutlineThickness);
-            }
-
-            if (_showLayerOutlineContourBoundary)
-            {
-                var lastParent = -1;
-                uint reps = 0;
-                for (var i = 0; i < LayerCache.Layer.Contours.Count; i++)
-                {
-                    var parent = LayerCache.Layer.Contours[i, EmguContour.HierarchyParent];
-                    if (parent == -1)
-                    {
-                        reps = 0;
-                    }
-
-                    if (parent == -1 || parent != lastParent) reps++;
-                    if (reps % 2 == 0)
-                    {
-                        lastParent = parent;
-                        continue;
-                    }
-
-                    CvInvoke.Rectangle(LayerCache.ImageBgra, LayerCache.Layer.Contours[i].BoundingRectangle,
-                        Settings.LayerPreview.ContourBoundsOutlineColor.ToMCvScalar(),
-                        Settings.LayerPreview.ContourBoundsOutlineThickness);
-
-                    lastParent = parent;
-                }
-            }
-
-            if (_showLayerOutlineEnclosingCircles)
-            {
-                for (var i = 0; i < LayerCache.Layer.Contours.Count; i++)
-                {
-                    LayerCache.Layer.Contours[i].FitCircle(LayerCache.ImageBgra,
-                        Settings.LayerPreview.EnclosingCirclesOutlineColor.ToMCvScalar(),
-                        Settings.LayerPreview.EnclosingCirclesOutlineThickness, LineType.AntiAlias);
-                }
-            }
+            // The print volume, layer and contour bounds, the enclosing circles and the centroids are vector overlays
+            // of the layer image box, see RefreshLayerOverlays(). The hollow areas, the triangulation and the masks
+            // stay here, drawn in the layer image, because they are made of the contours, which are thousands of points
 
             if (_showLayerOutlineHollowAreas)
             {
@@ -1690,40 +1844,7 @@ public partial class MainWindow
                 }
             }
 
-            if (_showLayerOutlineCentroids)
-            {
-                var lastParent = -1;
-                uint reps = 0;
-                for (var i = 0; i < LayerCache.Layer.Contours.Count; i++)
-                {
-                    var parent = LayerCache.Layer.Contours[i, EmguContour.HierarchyParent];
-                    if (parent == -1)
-                    {
-                        reps = 0;
-                    }
-
-                    if (parent == -1 || parent != lastParent) reps++;
-                    if (reps % 2 == 0)
-                    {
-                        if (Settings.LayerPreview.CentroidOutlineHollow)
-                        {
-                            CvInvoke.Circle(LayerCache.ImageBgra, LayerCache.Layer.Contours[i].Centroid,
-                                Settings.LayerPreview.CentroidOutlineDiameter / 2,
-                                Settings.LayerPreview.HollowOutlineColor.ToMCvScalar(), 1, LineType.AntiAlias);
-                        }
-                    }
-                    else
-                    {
-                        CvInvoke.Circle(LayerCache.ImageBgra, LayerCache.Layer.Contours[i].Centroid,
-                            Settings.LayerPreview.CentroidOutlineDiameter / 2,
-                            Settings.LayerPreview.CentroidOutlineColor.ToMCvScalar(),
-                            -1, LineType.AntiAlias);
-                    }
-
-                    lastParent = parent;
-                }
-            }
-
+            _layerTriangleCount = 0;
             if (_showLayerOutlineTriangulate)
             {
                 var groups = EmguContours.GetPositiveContoursInGroups(LayerCache.Layer.Contours.Vector,
@@ -1736,6 +1857,30 @@ public partial class MainWindow
                     Settings.LayerPreview.TriangulateOutlineColor.A);
 
                 uint triangleCount = 0;
+
+                // The Delaunay triangulation covers the convex hull of the points, so it also fills the concave gaps
+                // and the holes of the shape: keep only the triangles whose center and edge midpoints are lit pixels
+                var layerPixels = LayerCache.ImageSpan;
+                var layerStep = LayerCache.Image.Step;
+                var layerWidth = LayerCache.Image.Width;
+                var layerHeight = LayerCache.Image.Height;
+
+                bool IsLit(float x, float y)
+                {
+                    var px = (int)MathF.Round(x);
+                    var py = (int)MathF.Round(y);
+                    return px >= 0 && py >= 0 && px < layerWidth && py < layerHeight &&
+                           layerPixels[py * layerStep + px] > 0;
+                }
+
+                bool IsInsideShape(Triangle2DF triangle)
+                {
+                    var (v0, v1, v2) = (triangle.V0, triangle.V1, triangle.V2);
+                    return IsLit((v0.X + v1.X + v2.X) / 3f, (v0.Y + v1.Y + v2.Y) / 3f)
+                           && IsLit((v0.X + v1.X) / 2f, (v0.Y + v1.Y) / 2f)
+                           && IsLit((v1.X + v2.X) / 2f, (v1.Y + v2.Y) / 2f)
+                           && IsLit((v2.X + v0.X) / 2f, (v2.Y + v0.Y) / 2f);
+                }
 
                 foreach (var group in groups)
                 {
@@ -1754,6 +1899,9 @@ public partial class MainWindow
                     var triangles = sub.GetDelaunayTriangles();
                     foreach (var triangle in triangles)
                     {
+                        if (!IsInsideShape(triangle)) continue;
+                        triangleCount++;
+
                         var points = new[]
                         {
                             PointExtensions.ToPoint(triangle.V0),
@@ -1768,15 +1916,9 @@ public partial class MainWindow
                         CvInvoke.Circle(LayerCache.ImageBgra, points[1], 2, dotColor, -1);
                         CvInvoke.Circle(LayerCache.ImageBgra, points[2], 2, dotColor, -1);
                     }
-
-                    triangleCount += (uint)triangles.Length;
                 }
 
-                if (triangleCount > 0 && Settings.LayerPreview.TriangulateOutlineShowCount)
-                {
-                    CvInvoke.PutText(LayerCache.ImageBgra, $"Triangles: {triangleCount:N0}", new Point(10, 80),
-                        HersheyFonts.Duplex, 3, dotColor, 3);
-                }
+                _layerTriangleCount = triangleCount; // The count is an overlay text, see AddTriangleCountOverlay()
             }
 
             if (_maskPoints is not null && _maskPoints.Count > 0)
@@ -1933,116 +2075,14 @@ public partial class MainWindow
                 }
             }
 
-            // Show crosshairs for selected issues if crosshair mode is enabled via toolstrip button.
-            // Even when enabled, crosshairs are hidden in pixel edit mode when SHIFT is pressed.
-            if (_showLayerImageCrosshairs &&
-                Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues &&
-                SlicerFile.IssueManager.Count > 0 &&
-                IssuesGrid.SelectedItems.Count > 0 &&
-                LayerImageBox.Zoom <=
-                AppSettings
-                    .CrosshairFadeLevel && // Only draw crosshairs when zoom level is below the configurable crosshair fade threshold.
-                !_isPixelEditorActive)
-            {
-                // Don't render crosshairs for selected issue that are not on the current layer, or for
-                // issue types that don't have a specific location or bounds.
-                foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer).AsValueEnumerable()
-                             .Where(issue => issue.Parent!.Type
-                                 is not MainIssue.IssueType.TouchingBound
-                                 and not MainIssue.IssueType.PrintHeight
-                                 and not MainIssue.IssueType.EmptyLayer))
-                {
-                    DrawCrosshair(issue.BoundingRectangle);
-                }
-            }
-
             // The layer image box flips and rotates the image when drawing, see UpdateLayerImageOrientation()
-            LayerImageBox.Image = LayerCache.Bitmap = LayerCache.ImageBgra.ToBitmap();
-
-            RefreshCurrentLayerData();
-
-            watch.Stop();
-            ShowLayerRenderMs = watch.ElapsedMilliseconds;
-            AddLogVerbose($"Show Layer: {_actualLayer}", watch.Elapsed.TotalSeconds);
+            UpdateLayerImageBitmap();
+            FinishShowLayer(watch);
         }
         catch (Exception e)
         {
             Debug.WriteLine(e);
         }
-    }
-
-    /// <summary>
-    /// Draw a crosshair around a rectangle
-    /// </summary>
-    /// <param name="rect"></param>
-    public void DrawCrosshair(Rectangle rect)
-    {
-        // Gradually increase line thickness from 1 to 3 at the lower-end of the zoom range.
-        // This prevents the crosshair lines from disappearing due to being too thin to
-        // render at very low zoom factors.
-        var lineThickness = LayerImageBox.Zoom > 100 ? 1 : LayerImageBox.Zoom < 50 ? 3 : 2;
-        var color = Settings.LayerPreview.CrosshairColor.ToMCvScalar();
-
-
-        // LEFT
-        var startPoint = new Point(Math.Max(0, rect.X - Settings.LayerPreview.CrosshairMargin - 1),
-            rect.Y + rect.Height / 2);
-        var endPoint =
-            startPoint with
-            {
-                X = Settings.LayerPreview.CrosshairLength == 0
-                    ? 0
-                    : (int)Math.Max(0, startPoint.X - Settings.LayerPreview.CrosshairLength + 1)
-            };
-
-        CvInvoke.Line(LayerCache.ImageBgra,
-            startPoint,
-            endPoint,
-            color,
-            lineThickness);
-
-
-        // RIGHT
-        startPoint.X = Math.Min(LayerCache.ImageBgra.Width,
-            rect.Right + Settings.LayerPreview.CrosshairMargin);
-        endPoint.X = Settings.LayerPreview.CrosshairLength == 0
-            ? LayerCache.ImageBgra.Width
-            : (int)Math.Min(LayerCache.ImageBgra.Width, startPoint.X + Settings.LayerPreview.CrosshairLength - 1);
-
-        CvInvoke.Line(LayerCache.ImageBgra,
-            startPoint,
-            endPoint,
-            color,
-            lineThickness);
-
-        // TOP
-        startPoint = new Point(rect.X + rect.Width / 2,
-            Math.Max(0, rect.Y - Settings.LayerPreview.CrosshairMargin - 1));
-        endPoint = startPoint with
-        {
-            Y = (int)(Settings.LayerPreview.CrosshairLength == 0
-                ? 0
-                : Math.Max(0, startPoint.Y - Settings.LayerPreview.CrosshairLength + 1))
-        };
-
-
-        CvInvoke.Line(LayerCache.ImageBgra,
-            startPoint,
-            endPoint,
-            color,
-            lineThickness);
-
-        // Bottom
-        startPoint.Y = Math.Min(LayerCache.ImageBgra.Height, rect.Bottom + Settings.LayerPreview.CrosshairMargin);
-        endPoint.Y = Settings.LayerPreview.CrosshairLength == 0
-            ? LayerCache.ImageBgra.Height
-            : (int)Math.Min(LayerCache.ImageBgra.Height, startPoint.Y + Settings.LayerPreview.CrosshairLength - 1);
-
-        CvInvoke.Line(LayerCache.ImageBgra,
-            startPoint,
-            endPoint,
-            color,
-            lineThickness);
     }
 
     /// <summary>
@@ -2402,10 +2442,12 @@ public partial class MainWindow
         switch (e.Key)
         {
             case Key.Up:
+            case Key.E:
                 GoNextLayer();
                 e.Handled = true;
                 return;
             case Key.Down:
+            case Key.Q:
                 GoPreviousLayer();
                 e.Handled = true;
                 return;
@@ -2554,21 +2596,7 @@ public partial class MainWindow
                 return;
         }
 
-        if (e.KeyModifiers == KeyModifiers.None)
-        {
-            switch (e.Key)
-            {
-                case Key.Q:
-                    GoPreviousLayer();
-                    e.Handled = true;
-                    return;
-                case Key.E:
-                    GoNextLayer();
-                    e.Handled = true;
-                    return;
-            }
-        }
-        else if ((e.KeyModifiers & AppSettings.SystemCommandKeyModifier) != 0)
+        if ((e.KeyModifiers & AppSettings.SystemCommandKeyModifier) != 0)
         {
             if ((e.KeyModifiers & KeyModifiers.Shift) != 0) // Ctrl + Shift
             {

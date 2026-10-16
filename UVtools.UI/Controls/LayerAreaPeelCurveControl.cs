@@ -337,27 +337,52 @@ public class LayerAreaPeelCurveControl : Control
         // =========================================================================
         // LINE 1: Active Layer & Area (Left), Peak Area & Layer (Right)
         // =========================================================================
-        string layerPrefix = isHovered ? $"Layer {activeLayer + 1}/{count} (Hover):" : $"Layer {activeLayer + 1}/{count}:";
-        string line1LeftStr = $"{layerPrefix}  {activeArea:N1} mm²";
+        FormattedText CreateLine1LeftText(bool withHoverTag)
+        {
+            string layerPrefix = withHoverTag ? $"Layer {activeLayer + 1}/{count} (Hover):" : $"Layer {activeLayer + 1}/{count}:";
+            return new FormattedText(
+                $"{layerPrefix}  {activeArea:N1} mm²",
+                System.Globalization.CultureInfo.InvariantCulture,
+                FlowDirection.LeftToRight,
+                BoldTypeface,
+                12.5,
+                isHovered ? HoverTextBrush : Brushes.White);
+        }
 
-        var line1LeftText = new FormattedText(
-            line1LeftStr,
-            System.Globalization.CultureInfo.InvariantCulture,
-            FlowDirection.LeftToRight,
-            BoldTypeface,
-            12.5,
-            isHovered ? HoverTextBrush : Brushes.White);
+        FormattedText CreatePeakText(bool compact)
+        {
+            string peakStr = compact
+                ? $"Peak: {maxArea:N0} mm²"
+                : PeakLayer >= 0 ? $"Peak: {maxArea:N1} mm² (L{PeakLayer + 1})" : $"Peak: {maxArea:N1} mm²";
+            return new FormattedText(
+                peakStr,
+                System.Globalization.CultureInfo.InvariantCulture,
+                FlowDirection.LeftToRight,
+                SemiBoldTypeface,
+                11.5,
+                PeakTextBrush);
+        }
+
+        // Shorten the line when the layer and the peak don't fit side by side: the hover color already tells it is
+        // hovered, then the peak is rounded without its layer, and at last it is hidden
+        const double line1Gap = 10.0;
+        var line1LeftText = CreateLine1LeftText(isHovered);
+        var peakText = CreatePeakText(false);
+        if (padL + line1LeftText.Width + line1Gap > padR - peakText.Width && isHovered)
+        {
+            line1LeftText = CreateLine1LeftText(false);
+        }
+
+        if (padL + line1LeftText.Width + line1Gap > padR - peakText.Width)
+        {
+            peakText = CreatePeakText(true);
+        }
+
         context.DrawText(line1LeftText, new Point(padL, 6));
-
-        string peakStr = PeakLayer >= 0 ? $"Peak: {maxArea:N1} mm² (L{PeakLayer + 1})" : $"Peak: {maxArea:N1} mm²";
-        var peakText = new FormattedText(
-            peakStr,
-            System.Globalization.CultureInfo.InvariantCulture,
-            FlowDirection.LeftToRight,
-            SemiBoldTypeface,
-            11.5,
-            PeakTextBrush);
-        context.DrawText(peakText, new Point(padR - peakText.Width, 7));
+        if (padL + line1LeftText.Width + line1Gap <= padR - peakText.Width)
+        {
+            context.DrawText(peakText, new Point(padR - peakText.Width, 7));
+        }
 
         // =========================================================================
         // LINE 2: TSMC / Lift Speeds (Left) and Delamination Hazard Alert Badge (Right)

@@ -37,7 +37,7 @@ namespace UVtools.AvaloniaControls;
 [TemplatePart("PART_HorizontalScrollBar", typeof(ScrollBar))]
 [TemplatePart("PART_VerticalScrollBar", typeof(ScrollBar))]
 [TemplatePart("PART_ScrollBarsSeparator", typeof(Panel))]
-public class AdvancedImageBox : TemplatedControl, IScrollable
+public partial class AdvancedImageBox : TemplatedControl, IScrollable
 {
     #region Sub Classes
 
@@ -297,7 +297,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <para>All the rotations and flips are multiples of 90 degrees, so rectangles stay rectangles and every matrix
     /// entry is -1, 0 or 1.</para>
     /// </remarks>
-    private readonly struct ViewOrientation
+    internal readonly struct ViewOrientation
     {
         private readonly ImageRotations _rotation;
         private readonly bool _flipHorizontal;
@@ -596,6 +596,30 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         Rotate90CounterClockwise
     }
 
+    /// <summary>
+    /// Determines how the pixels of the image are sampled when it is drawn, see
+    /// <see cref="AdvancedImageBox.BitmapSamplingMode"/>.
+    /// </summary>
+    public enum BitmapSamplingModes
+    {
+        /// <summary>
+        /// Nearest neighbor when the image is zoomed in or at 100%, and smooth when it is zoomed out, which avoids the
+        /// aliasing and the shimmering of a huge image drawn in a small area.
+        /// </summary>
+        Auto,
+
+        /// <summary>
+        /// Nearest neighbor at any zoom: every pixel of the image is a sharp block. It is the fastest, but a zoomed
+        /// out image aliases.
+        /// </summary>
+        Nearest,
+
+        /// <summary>
+        /// Always smooth: interpolated when zoomed in, averaged when zoomed out.
+        /// </summary>
+        Smooth
+    }
+
     [Flags]
     public enum MouseButtons
     {
@@ -741,6 +765,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     protected internal ScrollBar? VerticalScrollBar;
 
     private Bitmap? _ownedImage;
+    private IImage? _lastDisplayImage;
+    private int _imageVersion;
+    private readonly Action _grayscaleSkiaUnavailable;
     private Point _startMousePosition;
     private Vector _startScrollPosition;
     private bool _isPanning;
@@ -824,10 +851,64 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <summary>
     /// Gets or sets the image to be displayed
     /// </summary>
+    /// <remarks>
+    /// The <see cref="GrayscaleImage"/> is displayed instead of it while it is set, which is how the control switches
+    /// between both without ever being empty: set the new one first and clear the other.
+    /// </remarks>
     public Bitmap? Image
     {
         get => GetValue(ImageProperty);
         set => SetValue(ImageProperty, value);
+    }
+
+    public static readonly StyledProperty<GrayscaleImage?> GrayscaleImageProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, GrayscaleImage?>(nameof(GrayscaleImage));
+
+    /// <summary>
+    /// Gets or sets an 8-bit grayscale image to be displayed instead of the <see cref="Image"/>, optionally colored by
+    /// the color map of the image, which needs a quarter of the memory of a 32-bit bitmap.
+    /// </summary>
+    /// <remarks>
+    /// <para>All the features of the control work the same with it, such as the zoom, the rotation and the flips, the
+    /// <see cref="PixelAspectRatio"/>, the selection, the overlays and the pixel grid.</para>
+    /// <para>The control doesn't own the image, the caller disposes it. Call <see cref="InvalidateImage"/> after
+    /// writing its pixels or changing its color map.</para>
+    /// </remarks>
+    public GrayscaleImage? GrayscaleImage
+    {
+        get => GetValue(GrayscaleImageProperty);
+        set => SetValue(GrayscaleImageProperty, value);
+    }
+
+    /// <summary>
+    /// Gets the image which is drawn: the <see cref="GrayscaleImage"/> when set, otherwise the <see cref="Image"/>.
+    /// </summary>
+    private IImage? DisplayImage => GetValue(GrayscaleImageProperty) ?? (IImage?)GetValue(ImageProperty);
+
+    public static readonly StyledProperty<BitmapSamplingModes> BitmapSamplingModeProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, BitmapSamplingModes>(nameof(BitmapSamplingMode),
+            BitmapSamplingModes.Nearest);
+
+    /// <summary>
+    /// Gets or sets how the pixels of the image are sampled when drawn. Default is
+    /// <see cref="BitmapSamplingModes.Nearest"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>Nearest neighbor aliases and shimmers when a large image is zoomed out, because most of its pixels are
+    /// skipped. <see cref="BitmapSamplingModes.Auto"/> draws it averaged then, and still sharp when zoomed in.</para>
+    /// <para>The averaging is cached: a <see cref="WriteableBitmap"/> in the Bgra8888 or Rgba8888 format is reduced by
+    /// powers of two once for each content of the image, and the reduction is drawn, so panning and zooming cost the
+    /// same as with <see cref="BitmapSamplingModes.Nearest"/>. The cache is built the next time the control draws
+    /// after <see cref="InvalidateImage"/> or after setting the <see cref="Image"/>, which takes some milliseconds on
+    /// a very large image (about 20 ms for 13312x5120), so a pixel change drawn into the bitmap needs
+    /// <see cref="InvalidateImage"/> and not only <see cref="TriggerRender"/>, otherwise the reduction is stale.
+    /// Other bitmaps use the smooth sampling of Avalonia, which is slow for a bitmap that changes.</para>
+    /// <para>A <see cref="GrayscaleImage"/> is sampled by Skia, with mipmaps when zoomed out.</para>
+    /// </remarks>
+    public BitmapSamplingModes BitmapSamplingMode
+    {
+        get => GetValue(BitmapSamplingModeProperty);
+        set => SetValue(BitmapSamplingModeProperty, value);
     }
 
     /// <summary>
@@ -838,8 +919,37 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <summary>
     /// Returns true if image is loaded, otherwise false.
     /// </summary>
-    [MemberNotNullWhen(true, nameof(Image))]
-    public bool IsImageLoaded => Image is not null;
+    /// <remarks>It is also <c>true</c> when a <see cref="GrayscaleImage"/> is displayed and the <see cref="Image"/> is
+    /// <see langword="null"/>.</remarks>
+    public bool IsImageLoaded => DisplayImage is not null;
+
+    private readonly ImageBoxOverlayCollection _overlays;
+
+    /// <summary>
+    /// Gets the vector overlays drawn over the <see cref="Image"/>, in the order of the collection.
+    /// </summary>
+    /// <remarks>
+    /// <para>The geometry of an overlay is in pixels of the source <see cref="Image"/>, whatever the
+    /// <see cref="ImageRotation"/>, the flips and the <see cref="PixelAspectRatio"/>, it is transformed like the image
+    /// and stays crisp at any zoom. The thickness of the strokes and the size of the texts are in control units
+    /// (screen pixels), so they don't change with the zoom, and a text is always upright.</para>
+    /// <para>The overlays are drawn after the image, the tracker image and the pixel grid, and before the selection,
+    /// clipped to the viewport. Changing the collection or the properties of its items redraws the control, without
+    /// touching the zoom or the scroll position.</para>
+    /// </remarks>
+    public ImageBoxOverlayCollection Overlays => _overlays;
+
+    public static readonly StyledProperty<bool> ShowOverlaysProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(ShowOverlays), true);
+
+    /// <summary>
+    /// Gets or sets if the <see cref="Overlays"/> are drawn. Default is <c>true</c>.
+    /// </summary>
+    public bool ShowOverlays
+    {
+        get => GetValue(ShowOverlaysProperty);
+        set => SetValue(ShowOverlaysProperty, value);
+    }
 
     public static readonly DirectProperty<AdvancedImageBox, Bitmap?> TrackerImageProperty =
         AvaloniaProperty.RegisterDirect<AdvancedImageBox, Bitmap?>(
@@ -895,7 +1005,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     {
         get
         {
-            if (Image is null) return false;
+            if (DisplayImage is null) return false;
             if (SizeMode != SizeModes.Normal) return false;
             return GetDocumentSize().Height > Viewport.Height;
         }
@@ -1517,7 +1627,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// height swapped when the <see cref="ImageRotation"/> is 90 degrees.
     /// </summary>
     /// <returns>An empty size when no image is loaded.</returns>
-    public Size ViewImageSize => Image is { } image ? _orientation.GetViewSize(image.Size) : default;
+    public Size ViewImageSize => DisplayImage is { } image ? _orientation.GetViewSize(image.Size) : default;
 
     /// <summary>
     /// Gets the zoom to fit level which shows all the image
@@ -1526,7 +1636,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     {
         get
         {
-            var image = Image;
+            var image = DisplayImage;
             if (image is null) return 100;
 
             var viewImageSize = _orientation.GetViewSize(image.Size);
@@ -1748,6 +1858,23 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             PixelGridZoomThresholdProperty,
             TrackerImageAutoZoomProperty,
             //ImageProperty,
+            BitmapSamplingModeProperty,
+            ShowOverlaysProperty,
+            ShowRulersProperty,
+            ShowScaleBarProperty,
+            ScaleBarCornerProperty,
+            PixelWidthProperty,
+            PixelHeightProperty,
+            UnitNameProperty,
+            RulerSizeProperty,
+            RulerBackgroundProperty,
+            RulerForegroundProperty,
+            ShowMinimapProperty,
+            MinimapCornerProperty,
+            MinimapSizeProperty,
+            MinimapOpacityProperty,
+            MinimapViewportColorProperty,
+            CompareSplitPositionProperty,
             SelectionColorProperty,
             SelectionRegionProperty
         );
@@ -1755,6 +1882,10 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
     public AdvancedImageBox()
     {
+        _overlays = new ImageBoxOverlayCollection(this);
+        _compositeLayers = new ImageBoxCompositeLayerCollection(this);
+        _grayscaleSkiaUnavailable = () => TriggerRender();
+        InitializeGestures();
         RenderOptions.SetBitmapInterpolationMode(this, BitmapInterpolationMode.None);
     }
 
@@ -1797,6 +1928,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         ViewPort.PointerExited += ViewPortOnPointerExited;
         ViewPort.PointerMoved += ViewPortOnPointerMoved;
         ViewPort.PointerWheelChanged += ViewPortOnPointerWheelChanged;
+        EnsurePinchRecognizer();
 
         HorizontalScrollBar.Scroll += ScrollBarOnScroll;
         VerticalScrollBar.Scroll += ScrollBarOnScroll;
@@ -1840,7 +1972,10 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     {
         base.OnPropertyChanged(e);
 
-        if (ReferenceEquals(e.Property, ImageProperty))
+        var imageChanged = ReferenceEquals(e.Property, ImageProperty);
+        var displayImageChanged = false;
+        IImage? previousDisplayImage = null;
+        if (imageChanged)
         {
             var previousImage = e.GetOldValue<Bitmap?>();
             if (ReferenceEquals(previousImage, _ownedImage))
@@ -1848,6 +1983,27 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                 _ownedImage = null;
                 previousImage?.Dispose();
             }
+        }
+
+        if (imageChanged || ReferenceEquals(e.Property, GrayscaleImageProperty))
+        {
+            // The image shown is the grayscale one when set, so changing the other doesn't change what is displayed
+            previousDisplayImage = _lastDisplayImage;
+            _lastDisplayImage = DisplayImage;
+            displayImageChanged = !ReferenceEquals(previousDisplayImage, _lastDisplayImage);
+            _imageVersion++;
+            ClearReducedBitmaps();
+            imageChanged = true;
+        }
+        else if (ReferenceEquals(e.Property, BitmapSamplingModeProperty))
+        {
+            ClearReducedBitmaps(); // Frees the reductions when they are not needed
+            ReleaseCompositeCaches();
+        }
+        else if (ReferenceEquals(e.Property, RulerForegroundProperty)
+                 || ReferenceEquals(e.Property, MinimapViewportColorProperty))
+        {
+            ResetDecorationCaches();
         }
 
         if (ReferenceEquals(e.Property, ImageRotationProperty)
@@ -1859,8 +2015,14 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         }
 
         if (!IsLoaded) return;
-        if (ReferenceEquals(e.Property, ImageProperty))
+        if (imageChanged)
         {
+            if (!displayImageChanged)
+            {
+                TriggerRender();
+                return;
+            }
+
             UpdateViewPort();
 
             if (!IsImageLoaded)
@@ -1883,7 +2045,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                     }
                 }
 
-                if (e.GetOldValue<Bitmap?>() is null && PanBoundsMode == PanBoundsModes.Padding)
+                if (previousDisplayImage is null && PanBoundsMode == PanBoundsModes.Padding)
                 {
                     RequestCenterImage();
                 }
@@ -2042,8 +2204,24 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     public void TriggerRender(bool renderOnlyCursorTracker = false)
     {
         if (!_canRender) return;
-        if (renderOnlyCursorTracker && _trackerImage is null) return;
+        if (renderOnlyCursorTracker && _trackerImage is null && !NeedsPointerRender) return;
         InvalidateVisual();
+    }
+
+    /// <summary>
+    /// Redraws the control after the pixels of the <see cref="Image"/> were modified in place, for example the
+    /// <see cref="WriteableBitmap"/> was written again.
+    /// </summary>
+    /// <remarks>
+    /// Setting the same bitmap instance to <see cref="Image"/> raises no change, this method redraws it instead.
+    /// Only the control is redrawn, the zoom, the scroll position and the centering are not touched, because the size
+    /// of the image didn't change. When the image has a different size or is another bitmap, set <see cref="Image"/>.
+    /// It also redraws the <see cref="GrayscaleImage"/> after its pixels or its color map changed.
+    /// </remarks>
+    public void InvalidateImage()
+    {
+        _imageVersion++;
+        TriggerRender();
     }
 
     public override void Render(DrawingContext context)
@@ -2066,7 +2244,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             context.FillRectangle(Background, new Rect(0, 0, Viewport.Width, Viewport.Height));
         }*/
 
-        var image = Image;
+        var image = DisplayImage;
         if (image is null) return;
         var orientation = _orientation;
         var imageViewPort = GetImageViewPort();
@@ -2076,13 +2254,20 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         if (imageViewPort.Width > 0 && imageViewPort.Height > 0 &&
             viewImageRegion.Width > 0 && viewImageRegion.Height > 0)
         {
-            if (orientation.IsIdentity)
+            var hasCompositeLayers = _compositeLayers.Count > 0;
+            if (hasCompositeLayers)
             {
-                context.DrawImage(image, viewImageRegion, imageViewPort);
+                DrawCompositeLayers(context, ImageBoxCompositePlacement.Below, orientation, image.Size,
+                    viewImageRegion, imageViewPort);
             }
-            else
+
+            DrawImageLayer(context, image, image.Size, orientation, viewImageRegion, imageViewPort, _reducedCache,
+                _imageVersion, default);
+
+            if (hasCompositeLayers)
             {
-                DrawOrientedImage(context, image, orientation, viewImageRegion, imageViewPort);
+                DrawCompositeLayers(context, ImageBoxCompositePlacement.Above, orientation, image.Size,
+                    viewImageRegion, imageViewPort);
             }
         }
 
@@ -2159,6 +2344,11 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             context.DrawRectangle(pixelGridPen, imageBounds);
         }
 
+        if (_overlays.Count > 0 && ShowOverlays)
+        {
+            RenderOverlays(context, orientation, imageViewPort);
+        }
+
         var selectionRegion = SelectionRegion;
         if (selectionRegion != default)
         {
@@ -2167,11 +2357,71 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             context.FillRectangle(selectionColor, rect);
             context.DrawRectangle(EnsureSelectionBorderPen(), rect);
         }
+
+        RenderDecorations(context);
+    }
+
+    /// <summary>
+    /// Draws the <see cref="Overlays"/> over the image, in the viewport clip of <see cref="Render"/>.
+    /// </summary>
+    /// <param name="context">The drawing context.</param>
+    /// <param name="orientation">The display orientation of the image.</param>
+    /// <param name="imageViewPort">The visible part of the image in the control.</param>
+    private void RenderOverlays(DrawingContext context, ViewOrientation orientation, Rect imageViewPort)
+    {
+        var image = DisplayImage;
+        if (image is null) return;
+
+        var imageSize = image.Size;
+        Point origin;
+        double scaleX;
+        double scaleY;
+        if (SizeMode == SizeModes.Normal)
+        {
+            // The same mapping as GetOffsetPoint()
+            origin = GetNormalImageBoundsInViewport().Position;
+            scaleX = ZoomFactorX;
+            scaleY = ZoomFactorY;
+        }
+        else
+        {
+            // The image is stretched to the viewport rectangle, see DrawOrientedImage()
+            var viewSize = orientation.GetViewSize(imageSize);
+            if (imageViewPort.Width <= 0 || imageViewPort.Height <= 0 || viewSize.Width <= 0 || viewSize.Height <= 0) return;
+            origin = imageViewPort.Position;
+            scaleX = imageViewPort.Width / viewSize.Width;
+            scaleY = imageViewPort.Height / viewSize.Height;
+        }
+
+        var transform = new OverlayTransform(orientation, imageSize, origin, scaleX, scaleY);
+        var clip = new Rect(Viewport);
+        var overlays = _overlays;
+
+        for (var i = 0; i < overlays.Count; i++)
+        {
+            var overlay = overlays[i];
+            if (!overlay.IsVisible) continue;
+
+            var opacity = overlay.Opacity;
+            if (opacity <= 0) continue;
+
+            if (opacity < 1)
+            {
+                using (context.PushOpacity(opacity))
+                {
+                    overlay.Render(context, transform, clip);
+                }
+            }
+            else
+            {
+                overlay.Render(context, transform, clip);
+            }
+        }
     }
 
     private void PixelAspectRatioChanged(double oldPixelAspectRatio)
     {
-        var image = Image;
+        var image = DisplayImage;
         var viewport = Viewport;
         var keepCenter = image is not null && SizeMode == SizeModes.Normal && viewport is { Width: > 0, Height: > 0 };
         var centerViewPoint = default(Point);
@@ -2237,7 +2487,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                 var centerViewPoint = new Point(
                     (viewport.Width / 2 - imageBounds.X) / ZoomFactorX,
                     (viewport.Height / 2 - imageBounds.Y) / ZoomFactorY);
-                centerPixel = _orientation.ViewToSource(centerViewPoint, Image!.Size);
+                centerPixel = _orientation.ViewToSource(centerViewPoint, DisplayImage!.Size);
             }
         }
 
@@ -2279,32 +2529,44 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// Draws the visible part of the image flipped and rotated, using a transform so only that part is sampled.
     /// </summary>
     /// <param name="context">The drawing context.</param>
-    /// <param name="image">The source image.</param>
+    /// <param name="image">The image to draw.</param>
+    /// <param name="mainSize">The size of the source image of the control, which is the size of the
+    /// <paramref name="image"/> unless it is a composite layer of another size, stretched over it.</param>
     /// <param name="orientation">The display orientation of the image.</param>
-    /// <param name="viewImageRegion">The visible part of the image, in view space pixels.</param>
-    /// <param name="imageViewPort">The visible part of the image in the control.</param>
-    private void DrawOrientedImage(DrawingContext context, Bitmap image, ViewOrientation orientation,
-        Rect viewImageRegion, Rect imageViewPort)
+    /// <param name="origin">The position in the control of the top-left corner of the displayed image.</param>
+    /// <param name="scaleX">Control units for each pixel of the displayed image, horizontally.</param>
+    /// <param name="scaleY">Control units for each pixel of the displayed image, vertically.</param>
+    /// <param name="viewImageRegion">The part of the image to draw, in view space pixels.</param>
+    /// <param name="imageViewPort">Where the part of the image is drawn in the control.</param>
+    /// <param name="cache">The reductions of the image.</param>
+    /// <param name="imageVersion">The version of the pixels of the image, for the <paramref name="cache"/>.</param>
+    /// <param name="style">How the image is combined with what is under it.</param>
+    /// <param name="forceSmooth">Draws averaged whatever the <see cref="BitmapSamplingMode"/>, for the minimap.</param>
+    private void DrawImageMapped(DrawingContext context, IImage image, Size mainSize, ViewOrientation orientation,
+        Point origin, double scaleX, double scaleY, Rect viewImageRegion, Rect imageViewPort,
+        ReducedImageCache cache, int imageVersion, in LayerStyle style, bool forceSmooth)
     {
-        var sourceSize = image.Size;
-        var viewSize = orientation.GetViewSize(sourceSize);
+        // A composite layer which has another size covers the main image, its pixels are not the ones of the source
+        var imageSize = image.Size;
+        var ratioX = imageSize.Width / mainSize.Width;
+        var ratioY = imageSize.Height / mainSize.Height;
 
-        // Position and scale of the displayed image in the control
-        Point origin;
-        double scaleX;
-        double scaleY;
-        if (SizeMode == SizeModes.Normal)
+        if (orientation.IsIdentity)
         {
-            origin = GetNormalImageBoundsInViewport().Position;
-            scaleX = ZoomFactorX;
-            scaleY = ZoomFactorY;
+            if (ratioX != 1 || ratioY != 1)
+            {
+                viewImageRegion = new Rect(viewImageRegion.X * ratioX, viewImageRegion.Y * ratioY,
+                    viewImageRegion.Width * ratioX, viewImageRegion.Height * ratioY);
+                scaleX /= ratioX;
+                scaleY /= ratioY;
+            }
+
+            DrawImageSampled(context, image, viewImageRegion, imageViewPort, scaleX, scaleY, cache, imageVersion,
+                in style, forceSmooth);
+            return;
         }
-        else
-        {
-            origin = imageViewPort.Position;
-            scaleX = imageViewPort.Width / viewSize.Width;
-            scaleY = imageViewPort.Height / viewSize.Height;
-        }
+
+        var sourceSize = mainSize;
 
         // The local space is the source image scaled, before being flipped and rotated by the transform
         var localSize = orientation.IsTransposed
@@ -2316,9 +2578,127 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             new Rect(imageViewPort.X - origin.X, imageViewPort.Y - origin.Y, imageViewPort.Width,
                 imageViewPort.Height), localSize);
 
+        var sampleScaleX = scaleX;
+        var sampleScaleY = scaleY;
+        if (ratioX != 1 || ratioY != 1)
+        {
+            sourceRegion = new Rect(sourceRegion.X * ratioX, sourceRegion.Y * ratioY, sourceRegion.Width * ratioX,
+                sourceRegion.Height * ratioY);
+            // The scales are along the axes of the displayed image, the ratios along the ones of the source
+            sampleScaleX = scaleX / (orientation.IsTransposed ? ratioY : ratioX);
+            sampleScaleY = scaleY / (orientation.IsTransposed ? ratioX : ratioY);
+        }
+
         using (context.PushTransform(orientation.GetMatrix(localSize, origin)))
         {
-            context.DrawImage(image, sourceRegion, destRegion);
+            DrawImageSampled(context, image, sourceRegion, destRegion, sampleScaleX, sampleScaleY, cache,
+                imageVersion, in style, forceSmooth);
+        }
+    }
+
+    /// <summary>
+    /// Draws a part of the image with the sampling chosen by the <see cref="BitmapSamplingMode"/>.
+    /// </summary>
+    /// <param name="context">The drawing context.</param>
+    /// <param name="image">The image to draw.</param>
+    /// <param name="sourceRect">The part of the image, in its pixels.</param>
+    /// <param name="destRect">Where to draw it.</param>
+    /// <param name="scaleX">The size on the screen of a pixel of the image divided by its size in pixels, horizontally.</param>
+    /// <param name="scaleY">The same, vertically.</param>
+    /// <param name="cache">The reductions of the image.</param>
+    /// <param name="imageVersion">The version of the pixels of the image, for the <paramref name="cache"/>.</param>
+    /// <param name="style">How the image is combined with what is under it, the default draws it as it is.</param>
+    /// <param name="forceSmooth">Draws averaged whatever the <see cref="BitmapSamplingMode"/>.</param>
+    private void DrawImageSampled(DrawingContext context, IImage image, Rect sourceRect, Rect destRect,
+        double scaleX, double scaleY, ReducedImageCache cache, int imageVersion, in LayerStyle style,
+        bool forceSmooth)
+    {
+        var minScale = Math.Min(scaleX, scaleY);
+        var smooth = forceSmooth || BitmapSamplingMode switch
+        {
+            BitmapSamplingModes.Smooth => true,
+            BitmapSamplingModes.Auto => minScale < 1,
+            _ => false
+        };
+
+        if (image is GrayscaleImage grayscaleImage)
+        {
+            if (grayscaleImage.IsSkiaRenderingAvailable)
+            {
+                var grayscaleLevel = smooth ? (int)Math.Round(-Math.Log2(Math.Max(scaleX, scaleY))) : 0;
+                if (grayscaleLevel >= 1 &&
+                    cache.GetGrayscale(grayscaleImage, Math.Min(BitmapDownscaler.MaxLevel, grayscaleLevel)) is { } reducedGrayscale)
+                {
+                    // The reduction is cached like the one of a bitmap. Mipmapping the full image with Skia costs the
+                    // same on every layer, and on every frame with the software renderer
+                    var factor = 1 << reducedGrayscale.ReductionLevel;
+                    reducedGrayscale.Draw(context,
+                        new Rect(sourceRect.X / factor, sourceRect.Y / factor, sourceRect.Width / factor,
+                            sourceRect.Height / factor),
+                        destRect, GrayscaleSampling.Linear, _grayscaleSkiaUnavailable, in style);
+                    if (reducedGrayscale.IsSkiaRenderingAvailable) return;
+                }
+                else
+                {
+                    grayscaleImage.Draw(context, sourceRect, destRect,
+                        smooth ? GrayscaleSampling.Linear : GrayscaleSampling.Nearest, _grayscaleSkiaUnavailable,
+                        in style);
+                    if (grayscaleImage.IsSkiaRenderingAvailable) return;
+                }
+            }
+
+            // Not drawn by Skia, use a 32-bit copy of it
+            if (grayscaleImage.GetFallbackBitmap() is not { } fallback) return;
+            image = fallback;
+        }
+
+        // The tint and the alpha from luminance only exist for the Skia path, the opacity and the blend mode are
+        // available to bitmaps
+        using var styleScope = new BitmapStyleScope(context, in style);
+
+        if (!smooth)
+        {
+            cache.Clear();
+            context.DrawImage(image, sourceRect, destRect);
+            return;
+        }
+
+        // The power of two closest to the scale, the reduction is then drawn between 0.7x and 1.4x
+        var maxScale = Math.Max(scaleX, scaleY);
+        var level = (int)Math.Round(-Math.Log2(maxScale));
+        if (level < 1)
+        {
+            // Less than 1.4 pixels for each screen pixel: the 2x2 taps of bilinear cover them
+            cache.Clear();
+            using (context.PushRenderOptions(new RenderOptions { BitmapInterpolationMode = BitmapInterpolationMode.LowQuality }))
+            {
+                context.DrawImage(image, sourceRect, destRect);
+            }
+
+            return;
+        }
+
+        if (image is WriteableBitmap writeableBitmap && BitmapDownscaler.IsSupported(writeableBitmap))
+        {
+            level = Math.Min(BitmapDownscaler.MaxLevel, level);
+            var reduced = cache.GetBitmap(writeableBitmap, level, imageVersion);
+            var factor = 1 << level;
+            using (context.PushRenderOptions(new RenderOptions { BitmapInterpolationMode = BitmapInterpolationMode.LowQuality }))
+            {
+                context.DrawImage(reduced,
+                    new Rect(sourceRect.X / factor, sourceRect.Y / factor, sourceRect.Width / factor,
+                        sourceRect.Height / factor),
+                    destRect);
+            }
+
+            return;
+        }
+
+        // Avalonia mipmaps it, which is slow for a bitmap that changes but there is nothing else for this format
+        cache.Clear();
+        using (context.PushRenderOptions(new RenderOptions { BitmapInterpolationMode = BitmapInterpolationMode.HighQuality }))
+        {
+            context.DrawImage(image, sourceRect, destRect);
         }
     }
 
@@ -2502,7 +2882,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         if (e.Handled
             || _isPanning
             || _isSelecting
-            || Image is null) return;
+            || DisplayImage is null) return;
 
         var viewPort = ViewPort;
         if (viewPort is null) return;
@@ -2510,6 +2890,8 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         var pointer = e.GetCurrentPoint(viewPort);
         var location = pointer.Position;
         if (!new Rect(viewPort.Bounds.Size).Contains(location)) return;
+
+        if (TryBeginChromeDrag(e, pointer, location)) return;
 
         if (SelectionMode != SelectionModes.None)
         {
@@ -2542,11 +2924,19 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         }
 
         _startMousePosition = location;
+        _activePointer = e.Pointer;
         e.Pointer.Capture(viewPort);
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
+        _isPinching = false;
+        if (EndChromeDrag(e))
+        {
+            base.OnPointerReleased(e);
+            return;
+        }
+
         var wasInteracting = _isPanning || _isSelecting;
         IsPanning = false;
         IsSelecting = false;
@@ -2560,6 +2950,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
+        EndChromeDrag(null);
         IsPanning = false;
         IsSelecting = false;
         base.OnPointerCaptureLost(e);
@@ -2589,8 +2980,19 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             return;
         }
 
+        // Another finger touching while one is panning or selecting must not move it
+        if ((_isPanning || _isSelecting || _chromeDrag != ChromeDrags.None) && _activePointer is not null &&
+            !ReferenceEquals(e.Pointer, _activePointer)) return;
+
         var pointer = e.GetCurrentPoint(viewPort);
         PointerPosition = pointer.Position;
+
+        if (_chromeDrag != ChromeDrags.None)
+        {
+            UpdateChromeDrag(pointer.Position);
+            e.Handled = true;
+            return;
+        }
 
         if (!_isPanning && !_isSelecting)
         {
@@ -2661,7 +3063,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             w /= zoomFactorX;
             h /= zoomFactorY;
 
-            if (w > 0 && h > 0 && Image is { } image)
+            if (w > 0 && h > 0 && DisplayImage is { } image)
             {
                 // The selection is dragged in view space and stored in source space
                 var viewRegion = new Rect(x, y, w, h).Intersect(new Rect(ViewImageSize));
@@ -3060,7 +3462,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     {
         if (!IsImageLoaded || rectangle.Width <= 0 || rectangle.Height <= 0) return;
         if (margin > 0) rectangle = rectangle.Inflate(margin);
-        rectangle = _orientation.SourceToView(rectangle, Image.Size);
+        rectangle = _orientation.SourceToView(rectangle, DisplayImage!.Size);
         var ratioX = Viewport.Width / rectangle.Width;
         var ratioY = Viewport.Height / (rectangle.Height * ViewPixelAspectRatio);
         var zoomFactor = Math.Min(ratioX, ratioY);
@@ -3184,7 +3586,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         double x;
         double y;
 
-        var image = Image;
+        var image = DisplayImage;
         if (image is null) return default;
 
         var imageBounds = SizeMode == SizeModes.Normal
@@ -3332,7 +3734,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </returns>
     public Rectangle FitRectangle(Rectangle rectangle)
     {
-        var image = Image;
+        var image = DisplayImage;
         if (image is null) return Rectangle.Empty;
         var imageBounds = new Rectangle(0, 0, (int)image.Size.Width, (int)image.Size.Height);
         return Rectangle.Intersect(rectangle, imageBounds);
@@ -3347,14 +3749,14 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </returns>
     public Rect FitRectangle(Rect rectangle)
     {
-        var image = Image;
+        var image = DisplayImage;
         if (image is null) return default;
         return rectangle.Intersect(new Rect(image.Size));
     }
 
     private PixelRect GetClampedSelectionPixelRect()
     {
-        var image = Image;
+        var image = DisplayImage;
         var selection = SelectionRegion;
         if (image is null || selection.Width <= 0 || selection.Height <= 0) return default;
 
@@ -3403,7 +3805,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <param name="relativeDisplayPoint">The relative display point to offset scrolling by.</param>
     public void ScrollTo(Point imageLocation, Point relativeDisplayPoint)
     {
-        ScrollToView(_orientation.SourceToView(imageLocation, Image?.Size ?? default), relativeDisplayPoint);
+        ScrollToView(_orientation.SourceToView(imageLocation, DisplayImage?.Size ?? default), relativeDisplayPoint);
     }
 
     /// <summary>
@@ -3484,7 +3886,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </summary>
     public void CenterToImage()
     {
-        var image = Image;
+        var image = DisplayImage;
         if (image is null) return;
         CenterAt(new Point(image.Size.Width / 2, image.Size.Height / 2));
     }
@@ -3546,7 +3948,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </remarks>
     public Point GetScaledPoint(Point source)
     {
-        var view = _orientation.SourceToView(source, Image?.Size ?? default);
+        var view = _orientation.SourceToView(source, DisplayImage?.Size ?? default);
         return new Point(view.X * ZoomFactorX, view.Y * ZoomFactorY);
     }
 
@@ -3621,7 +4023,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </remarks>
     public Rect GetScaledRectangle(Rect source)
     {
-        var view = _orientation.SourceToView(source, Image?.Size ?? default);
+        var view = _orientation.SourceToView(source, DisplayImage?.Size ?? default);
         return new Rect(view.Left * ZoomFactorX, view.Top * ZoomFactorY, view.Width * ZoomFactorX,
             view.Height * ZoomFactorY);
     }
@@ -3691,7 +4093,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <exception cref="System.InvalidOperationException">Thrown if no image is currently set</exception>
     public void SelectAll()
     {
-        var image = Image;
+        var image = DisplayImage;
         if (image is null) return;
         SelectionRegion = new Rect(0, 0, image.Size.Width, image.Size.Height);
     }
@@ -3766,7 +4168,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <see cref="ImageRotation"/> and the flips.</returns>
     public Rect GetSourceImageRegion()
     {
-        var image = Image;
+        var image = DisplayImage;
         if (image is null) return default;
 
         var viewRegion = GetViewImageRegion();
@@ -3780,7 +4182,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </summary>
     private Point PointToView(Point point)
     {
-        if (Image is null) return default;
+        if (DisplayImage is null) return default;
 
         var imageBounds = SizeMode == SizeModes.Normal
             ? GetNormalImageBoundsInViewport()
@@ -3794,7 +4196,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </summary>
     private Rect GetViewImageRegion()
     {
-        var image = Image;
+        var image = DisplayImage;
         if (image is null) return default;
 
         switch (SizeMode)
@@ -3823,7 +4225,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <returns>The image viewport rectangle.</returns>
     public Rect GetImageViewPort()
     {
-        var image = Image;
+        var image = DisplayImage;
         if (image is null) return default;
 
         var viewPortSize = Viewport;
@@ -3922,12 +4324,24 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <returns>A bitmap owned by the caller, or <see langword="null"/> when no valid selection exists.</returns>
     public Bitmap? GetSelectedBitmap(bool applyOrientation)
     {
-        var image = ImageAsWriteableBitmap;
-        if (image is null || !HaveSelection) return null;
+        if (!HaveSelection) return null;
 
         var selection = SelectionRegionPixel;
         if (selection.Width <= 0 || selection.Height <= 0) return null;
 
+        if (GrayscaleImage is { } grayscaleImage)
+        {
+            // Converted to a 32-bit bitmap with its color map, only the selection
+            using var converted = grayscaleImage.ToBitmap(selection);
+            return CropBitmap(converted, new PixelRect(converted.PixelSize), applyOrientation);
+        }
+
+        var image = ImageAsWriteableBitmap;
+        return image is null ? null : CropBitmap(image, selection, applyOrientation);
+    }
+
+    private WriteableBitmap? CropBitmap(WriteableBitmap image, PixelRect selection, bool applyOrientation)
+    {
         using var srcBuffer = image.Lock();
         if (selection.Right > srcBuffer.Size.Width || selection.Bottom > srcBuffer.Size.Height)
         {

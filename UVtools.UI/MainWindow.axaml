@@ -2192,7 +2192,54 @@
                                                               GroupName="OnionSkinLayerGroup"
                                                               IsChecked="{Binding IsLayerDiffModeOnionSkin6, Mode=TwoWay}"
                                                               ToolTip.Tip="6 Layers (5 ghost): 3 foundation layers below, Current layer, 2 upcoming layers above" />
+                                                    <MenuItem Header="7 Layers (-3 to +3) [6 Ghost]"
+                                                              ToggleType="Radio"
+                                                              GroupName="OnionSkinLayerGroup"
+                                                              IsChecked="{Binding IsLayerDiffModeOnionSkin7, Mode=TwoWay}"
+                                                              ToolTip.Tip="7 Layers (6 ghost): 3 foundation layers below, Current layer, 3 upcoming layers above" />
                                                 </MenuItem>
+                                                <Separator />
+                                                <MenuItem Header="GPU rendering (faster, simplified colors)"
+                                                          ToggleType="CheckBox"
+                                                          IsChecked="{Binding IsLayerDiffOnionSkinGpu, Mode=TwoWay}"
+                                                          ToolTip.Tip="Draw the previous and next layers with the GPU over the layer image, which keeps the layer as 8-bit and is much faster on high resolution layers.&#x0a;Difference: same result as the CPU.&#x0a;Similarity: the anti-aliased pixels of the other layers blend with the layer instead of replacing it.&#x0a;Onion skin: the ghosts have the same colors and priority, but the current layer is always white: no yellow for pixels without a layer below and no magenta for cavities.&#x0a;Used only while the layer has nothing else to color, otherwise the exact version is drawn." />
+                                            </MenuFlyout>
+                                        </ToggleSplitButton.Flyout>
+                                    </ToggleSplitButton>
+
+                                    <ToggleSplitButton Margin="0,0,1,0"
+                                                       VerticalAlignment="Stretch"
+                                                       IsChecked="{Binding IsLayerCompareActive, Mode=TwoWay}"
+                                                       Content="{icon:MaterialIconTextExt Kind=Compare, Text='Compare'}"
+                                                       ToolTip.Tip="Compare the current layer, on the left, with another layer on the right of a split line.&#x0a;Drag the line to move it.&#x0a;It turns off the difference mode.">
+                                        <ToggleSplitButton.Flyout>
+                                            <MenuFlyout Placement="Bottom">
+                                                <MenuItem Header="Layer below (-1)"
+                                                          ToggleType="Radio"
+                                                          GroupName="LayerCompareModeGroup"
+                                                          IsChecked="{Binding IsLayerCompareModePreviousLayer, Mode=TwoWay}"
+                                                          ToolTip.Tip="Compare with the previous layer" />
+                                                <MenuItem Header="Layer above (+1)"
+                                                          ToggleType="Radio"
+                                                          GroupName="LayerCompareModeGroup"
+                                                          IsChecked="{Binding IsLayerCompareModeNextLayer, Mode=TwoWay}"
+                                                          ToolTip.Tip="Compare with the next layer" />
+                                                <MenuItem Header="10 layers below (-10)"
+                                                          ToggleType="Radio"
+                                                          GroupName="LayerCompareModeGroup"
+                                                          IsChecked="{Binding IsLayerCompareModePrevious10Layers, Mode=TwoWay}"
+                                                          ToolTip.Tip="Compare with the layer 10 layers below" />
+                                                <MenuItem Header="10 layers above (+10)"
+                                                          ToggleType="Radio"
+                                                          GroupName="LayerCompareModeGroup"
+                                                          IsChecked="{Binding IsLayerCompareModeNext10Layers, Mode=TwoWay}"
+                                                          ToolTip.Tip="Compare with the layer 10 layers above" />
+                                                <Separator />
+                                                <MenuItem Header="Before the last operation"
+                                                          ToggleType="Radio"
+                                                          GroupName="LayerCompareModeGroup"
+                                                          IsChecked="{Binding IsLayerCompareModeBeforeLastOperation, Mode=TwoWay}"
+                                                          ToolTip.Tip="Compare with the same layer as it was before the last operation, from the undo history.&#x0a;Shows what the operation changed on this layer." />
                                             </MenuFlyout>
                                         </ToggleSplitButton.Flyout>
                                     </ToggleSplitButton>
@@ -2292,15 +2339,30 @@
                                                   ToolTip.Tip="Measure distance and wall thickness on 2D slice [M].&#x0a;Click two points to measure.&#x0a;Use middle mouse button to pan.&#x0a;Use right click to clear the measurement." />
                                     <ToggleButton Margin="1,0,1,0"
                                                   VerticalAlignment="Stretch"
-                                                  HotKey="A"
+                                                  HotKey="P"
                                                   Content="{icon:MaterialIconExt Kind=ChartAreaspline, Classes='Fill'}"
                                                   IsChecked="{Binding Show2DPeelCurve, Mode=TwoWay}"
-                                                  ToolTip.Tip="Toggle layer cross-section area and peel force curve HUD [A]" />
+                                                  ToolTip.Tip="Toggle layer cross-section area and peel force curve HUD [P]" />
                                     <ToggleButton Margin="1,0,1,0"
                                                   VerticalAlignment="Stretch"
                                                   Content="{icon:MaterialIconExt Kind=AspectRatio, Classes='Fill'}"
                                                   IsChecked="{Binding ShowLayerImageRealAspectRatio, Mode=TwoWay}"
                                                   ToolTip.Tip="Real aspect ratio&#x0a;Show the layer with the physical proportions of the printer pixels, printers with non-square LCD pixels look stretched otherwise.&#x0a;This only changes how the layer is displayed, the layer image is not resized or changed.&#x0a;No effect on printers with square pixels." />
+                                    <ToggleButton Margin="1,0,1,0"
+                                                  VerticalAlignment="Stretch"
+                                                  Content="{icon:MaterialIconExt Kind=RulerSquare, Classes='Fill'}"
+                                                  IsChecked="{Binding Settings.LayerPreview.LayerShowRulers, Mode=TwoWay}"
+                                                  ToolTip.Tip="Rulers&#x0a;Show rulers in millimeters along the top and left of the layer. They show the position of the layer pixels along the axes of the screen, from the top-left pixel of the layer, also when the preview is rotated or flipped.&#x0a;The rulers are drawn over the layer image." />
+                                    <ToggleButton Margin="1,0,1,0"
+                                                  VerticalAlignment="Stretch"
+                                                  Content="{icon:MaterialIconExt Kind=ArrowExpandHorizontal, Classes='Fill'}"
+                                                  IsChecked="{Binding Settings.LayerPreview.LayerShowScaleBar, Mode=TwoWay}"
+                                                  ToolTip.Tip="Scale bar&#x0a;Show a bar with a round length in millimeters in the bottom left corner of the layer, it adapts to the zoom." />
+                                    <ToggleButton Margin="1,0,1,0"
+                                                  VerticalAlignment="Stretch"
+                                                  Content="{icon:MaterialIconExt Kind=MapOutline, Classes='Fill'}"
+                                                  IsChecked="{Binding Settings.LayerPreview.LayerShowMinimap, Mode=TwoWay}"
+                                                  ToolTip.Tip="Minimap&#x0a;Show a thumbnail of the whole layer in the bottom right corner while the layer is zoomed in, with the visible part marked.&#x0a;Click or drag on it to move the view." />
                                 </WrapPanel>
 
 
@@ -2349,6 +2411,14 @@
                                     BorderThickness="5">
                                 <Grid>
                                     <uvtava:AdvancedImageBox Name="LayerImageBox"
+                                                             BitmapSamplingMode="{Binding Settings.LayerPreview.LayerBitmapSampling}"
+                                                             ShowRulers="{Binding Settings.LayerPreview.LayerShowRulers}"
+                                                             ShowScaleBar="{Binding Settings.LayerPreview.LayerShowScaleBar}"
+                                                             ScaleBarCorner="{Binding Settings.LayerPreview.LayerScaleBarCorner}"
+                                                             ShowMinimap="{Binding Settings.LayerPreview.LayerShowMinimap}"
+                                                             MinimapCorner="{Binding Settings.LayerPreview.LayerMinimapCorner}"
+                                                             MinimapSize="{Binding Settings.LayerPreview.LayerMinimapSize}"
+                                                             EnableTouchGestures="{Binding Settings.LayerPreview.LayerTouchGestures}"
                                                              ConstrainZoomOutToFitLevel="True"
                                                              GridCellSize="15"
                                                              PanDownKey="S"
@@ -2372,6 +2442,39 @@
                                                                            IsHitTestVisible="False" />
                                 </Grid>
                             </Border>
+
+                            <!-- Compare sides and triangulate outline triangle count, fixed over the layer preview -->
+                            <StackPanel Grid.Row="1"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Top"
+                                        Margin="0,32,0,0"
+                                        Spacing="4"
+                                        IsHitTestVisible="False">
+                                <Border HorizontalAlignment="Center"
+                                        Padding="10,4"
+                                        CornerRadius="8"
+                                        Background="#D81E1E2E"
+                                        BorderBrush="#3B4252"
+                                        BorderThickness="1"
+                                        IsVisible="{Binding LayerCompareText, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                    <TextBlock Text="{Binding LayerCompareText}"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               Foreground="#CDD6F4" />
+                                </Border>
+                                <Border HorizontalAlignment="Center"
+                                        Padding="10,4"
+                                        CornerRadius="8"
+                                        Background="#D81E1E2E"
+                                        BorderBrush="#3B4252"
+                                        BorderThickness="1"
+                                        IsVisible="{Binding LayerTriangleCountText, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                    <TextBlock Text="{Binding LayerTriangleCountText}"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               Foreground="#CDD6F4" />
+                                </Border>
+                            </StackPanel>
 
                             <!-- 2D Measurement Floating HUD -->
                             <Border Grid.Row="1"
@@ -2434,11 +2537,11 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- 2D Peel Force & Area Curve HUD -->
+                            <!-- 2D Peel Force & Area Curve HUD, top right so it never covers the minimap or the scale bar -->
                             <Border Grid.Row="1"
                                     HorizontalAlignment="Right"
-                                    VerticalAlignment="Bottom"
-                                    Margin="0,0,16,16"
+                                    VerticalAlignment="Top"
+                                    Margin="0,32,16,0"
                                     CornerRadius="8"
                                     Background="#D81E1E2E"
                                     BorderBrush="#3B4252"
@@ -2463,7 +2566,7 @@
                                                 Background="Transparent"
                                                 BorderThickness="0"
                                                 Command="{Binding Toggle2DPeelCurveCommand}"
-                                                ToolTip.Tip="Close Peel Force Curve [A]">
+                                                ToolTip.Tip="Close Peel Force Curve [P]">
                                             <icon:MaterialIcon Kind="Close" Width="14" Height="14" Foreground="#8B949E" />
                                         </Button>
                                     </Grid>

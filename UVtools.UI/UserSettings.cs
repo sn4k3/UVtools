@@ -18,6 +18,7 @@ using System.Xml.Serialization;
 using Avalonia.Themes.Fluent;
 using CommunityToolkit.Mvvm.ComponentModel;
 using SukiUI.Enums;
+using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -652,6 +653,64 @@ public partial class UserSettings : ObservableObject
 
         [ObservableProperty]
         public partial bool LayerRealAspectRatioOnLoad { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets how the pixels of the layer image are sampled when drawn. Auto draws them sharp when zoomed in
+        /// and averaged when zoomed out, which avoids the aliasing and the shimmering of a high resolution layer.
+        /// </summary>
+        [ObservableProperty]
+        public partial AdvancedImageBox.BitmapSamplingModes LayerBitmapSampling { get; set; } =
+            AdvancedImageBox.BitmapSamplingModes.Auto;
+
+        /// <summary>
+        /// Gets or sets if the rulers are shown along the top and left edges of the layer preview, with the physical
+        /// size of the layer pixels.
+        /// </summary>
+        [ObservableProperty]
+        public partial bool LayerShowRulers { get; set; }
+
+        /// <summary>
+        /// Gets or sets if the scale bar is shown in a corner of the layer preview.
+        /// </summary>
+        [ObservableProperty]
+        public partial bool LayerShowScaleBar { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the corner of the layer preview where the scale bar is.
+        /// </summary>
+        [ObservableProperty]
+        public partial AdvancedImageBox.Corners LayerScaleBarCorner { get; set; } = AdvancedImageBox.Corners.BottomLeft;
+
+        /// <summary>
+        /// Gets or sets if the minimap is shown in a corner of the layer preview while it is zoomed in.
+        /// </summary>
+        [ObservableProperty]
+        public partial bool LayerShowMinimap { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the corner of the layer preview where the minimap is.
+        /// </summary>
+        [ObservableProperty]
+        public partial AdvancedImageBox.Corners LayerMinimapCorner { get; set; } = AdvancedImageBox.Corners.BottomRight;
+
+        /// <summary>
+        /// Gets or sets the size of the longest side of the minimap, from 32 to 1024.
+        /// </summary>
+        [ObservableProperty]
+        public partial double LayerMinimapSize { get; set; } = 160;
+
+        /// <summary>
+        /// Gets or sets if the layer preview zooms and pans with the touch and the touchpad gestures.
+        /// </summary>
+        [ObservableProperty]
+        public partial bool LayerTouchGestures { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets if the layer difference (difference, similarity and onion skin) is drawn by the GPU, which is
+        /// faster but has simplified colors on some pixels.
+        /// </summary>
+        [ObservableProperty]
+        public partial bool OnionSkinGpu { get; set; } = true;
 
         [ObservableProperty]
         public partial bool ShowBackgroundGrid { get; set; }

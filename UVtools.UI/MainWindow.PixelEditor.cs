@@ -332,7 +332,7 @@ public partial class MainWindow
         if (operationDrawing.BrushSize == 1)
         {
             LayerCache.DrawOnCanvas(canvas => canvas.DrawPoint(location.X, location.Y, new SKColor(color.ToUint32())));
-            LayerImageBox.InvalidateVisual();
+            LayerImageBox.InvalidateImage();
             return;
         }
 
@@ -419,7 +419,7 @@ public partial class MainWindow
             }
         }
 
-        LayerImageBox.InvalidateVisual();
+        LayerImageBox.InvalidateImage();
     }
 
     /// <summary>

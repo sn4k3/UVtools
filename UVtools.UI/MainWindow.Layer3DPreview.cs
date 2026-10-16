@@ -1207,9 +1207,107 @@ public partial class MainWindow
         RaisePropertyChanged(nameof(PrintSimulationElapsedTimeText));
     }
 
+    // The file and its geometry revision the layer areas were calculated for
+    private Core.FileFormats.FileFormat? _layerAreasFile;
+    private long _layerAreasRevision;
+
+    /// <summary>
+    /// Calculates the layer areas and lift values of the peel curve when they are missing or the layers changed, so the
+    /// 2D peel curve HUD has them without opening the 3D preview.
+    /// </summary>
+    private void EnsureLayerAreas()
+    {
+        var file = SlicerFile;
+        if (file is null) return;
+        if (_layerAreas is not null && ReferenceEquals(_layerAreasFile, file) &&
+            _layerAreasRevision == file.ModelGeometryRevision)
+        {
+            // The areas are current, but the lift settings may have been changed
+            RefreshLayerLifts();
+            return;
+        }
+
+        UpdateLayerAreas();
+    }
+
+    /// <summary>
+    /// Calculates the lift values of the peel curve again and updates the ones that changed, for example after editing
+    /// the print parameters, which doesn't change the layer areas.
+    /// </summary>
+    private void RefreshLayerLifts()
+    {
+        var file = SlicerFile;
+        if (file is null || _layerAreas is null || _layerAreas.Length != file.LayerCount) return;
+
+        var count = (int)file.LayerCount;
+        var speeds = new float[count];
+        var speeds2 = new float[count];
+        var heights = new float[count];
+        var heights2 = new float[count];
+        FillLayerLifts(file, speeds, speeds2, heights, heights2);
+
+        if (!speeds.AsSpan().SequenceEqual(_layerLiftSpeeds))
+        {
+            _layerLiftSpeeds = speeds;
+            RaisePropertyChanged(nameof(LayerLiftSpeeds));
+        }
+
+        if (!speeds2.AsSpan().SequenceEqual(_layerLiftSpeeds2))
+        {
+            _layerLiftSpeeds2 = speeds2;
+            RaisePropertyChanged(nameof(LayerLiftSpeeds2));
+        }
+
+        if (!heights.AsSpan().SequenceEqual(_layerLiftHeights))
+        {
+            _layerLiftHeights = heights;
+            RaisePropertyChanged(nameof(LayerLiftHeights));
+        }
+
+        if (!heights2.AsSpan().SequenceEqual(_layerLiftHeights2))
+        {
+            _layerLiftHeights2 = heights2;
+            RaisePropertyChanged(nameof(LayerLiftHeights2));
+        }
+    }
+
+    /// <summary>
+    /// Fills the lift speeds and heights of each layer. When the file has no lift values per layer, or the layer value is
+    /// empty, the layer uses the global bottom or normal value.
+    /// </summary>
+    private static void FillLayerLifts(Core.FileFormats.FileFormat file, float[] speeds, float[] speeds2,
+        float[] heights, float[] heights2)
+    {
+        var useLayerLiftSpeed = file.CanUseLayerLiftSpeed;
+        var useLayerLiftSpeed2 = file.CanUseLayerLiftSpeed2;
+        var useLayerLiftHeight = file.CanUseLayerLiftHeight;
+        var useLayerLiftHeight2 = file.CanUseLayerLiftHeight2;
+
+        float LayerOrGlobal(Layer layer, bool useLayerValue, float layerValue, float bottomValue, float normalValue)
+        {
+            return useLayerValue && layerValue > 0
+                ? layerValue
+                : file.GetBottomOrNormalValue(layer, bottomValue, normalValue);
+        }
+
+        for (var i = 0; i < speeds.Length; i++)
+        {
+            var layer = file.Layers[i];
+            speeds[i] = LayerOrGlobal(layer, useLayerLiftSpeed, layer.LiftSpeed, file.BottomLiftSpeed, file.LiftSpeed);
+            speeds2[i] = LayerOrGlobal(layer, useLayerLiftSpeed2, layer.LiftSpeed2, file.BottomLiftSpeed2,
+                file.LiftSpeed2);
+            heights[i] = LayerOrGlobal(layer, useLayerLiftHeight, layer.LiftHeight, file.BottomLiftHeight,
+                file.LiftHeight);
+            heights2[i] = LayerOrGlobal(layer, useLayerLiftHeight2, layer.LiftHeight2, file.BottomLiftHeight2,
+                file.LiftHeight2);
+        }
+    }
+
     public void UpdateLayerAreas()
     {
         var file = SlicerFile;
+        _layerAreasFile = file;
+        _layerAreasRevision = file?.ModelGeometryRevision ?? 0;
         if (file is null || file.LayerCount == 0)
         {
             _layerAreas = null;
@@ -1243,15 +1341,13 @@ public partial class MainWindow
         var heights = new float[count];
         var heights2 = new float[count];
 
+        FillLayerLifts(file, speeds, speeds2, heights, heights2);
+
         for (var i = 0; i < count; i++)
         {
             var layer = file.Layers[i];
             var a = (float)layer.GetArea();
             areas[i] = a;
-            speeds[i] = layer.LiftSpeed;
-            speeds2[i] = layer.LiftSpeed2;
-            heights[i] = layer.LiftHeight;
-            heights2[i] = layer.LiftHeight2;
 
             if (a > maxA)
             {

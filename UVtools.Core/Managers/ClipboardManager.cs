@@ -327,6 +327,39 @@ public sealed partial class ClipboardManager : ObservableObject, IList<Clipboard
     }
 
     /// <summary>
+    /// Gets a layer as it was at a clip of the history, without restoring the clip.
+    /// </summary>
+    /// <remarks>The layer is the one stored in the history, it must not be modified.</remarks>
+    /// <param name="clipIndex">The index of the clip, 0 is the newest.</param>
+    /// <param name="layerIndex">The index of the layer.</param>
+    /// <returns>The layer, or <see langword="null"/> when the clip doesn't exist or didn't have that layer.</returns>
+    public Layer? GetLayerAtClip(int clipIndex, uint layerIndex)
+    {
+        if (clipIndex < 0 || clipIndex >= Count) return null;
+
+        // The clips store the layers that changed, restoring one replays them from the nearest older full backup, so
+        // the layer is the one of the newest clip, from the target to older clips, that has it
+        for (var i = clipIndex; i < Count; i++)
+        {
+            var clip = this[i];
+            if (clip.IsFullBackup)
+            {
+                return layerIndex < clip.Count ? clip[(int)layerIndex] : null;
+            }
+
+            // A clip with fewer layers truncated the older ones
+            if (layerIndex >= clip.LayerCount) return null;
+
+            foreach (var layer in clip)
+            {
+                if (layer.Index == layerIndex) return layer;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Collect differences and create a clip
     /// </summary>
     public ClipboardItem? Clip(string? description = null, Layer[]? layers = null, bool doFullBackup = false)

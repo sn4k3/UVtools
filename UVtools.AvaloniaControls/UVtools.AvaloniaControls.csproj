@@ -35,5 +35,8 @@
       PrivateAssets="All"
     />
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+    <!-- Only to draw the GrayscaleImage with Skia. It is private: it doesn't become a dependency of the package, the
+             app already has it when it renders with Skia, and the GrayscaleImage falls back to a 32-bit copy without it -->
+    <PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" PrivateAssets="All" />
   </ItemGroup>
 </Project>

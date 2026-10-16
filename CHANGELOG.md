@@ -1,6 +1,6 @@
 # Changelog
 
-## /10/2026 - v7.1.0
+## 16/10/2026 - v7.1.0
 
 - (Change) Use NuGet mini runtimes for Windows, macOS, Ubuntu 24.04 x64 and Debian 13 (Trixie) ARM64, with custom
   cvextern overrides from build/platforms when available.
@@ -21,6 +21,55 @@
 - (Add) Layer preview: "Real aspect ratio" toggle on the toolbar, and its "Real aspect ratio on load" setting, to show
   the layer with the physical proportions of the printer pixels, printers with non-square LCD pixels, for example the
   Halot Mage S, looked stretched. It is enabled by default and view only, the layer image is never resized (#918).
+- (Improvement) Layer preview: the crosshairs, the print volume, layer and contour bounds, the enclosing circles, the
+  centroids and the triangles count are now drawn as vectors over the layer image instead of into it, they are crisp at
+  any zoom, their text stays upright when the preview is rotated, and toggling them or zooming across the crosshair fade
+  level no longer renders the layer image again. Their thickness and diameter settings are now in screen pixels, scaled
+  to half of the value (at least 1) which is the same as before at 50% zoom.
+- (Improvement) Layer preview: the layer bitmap is reused while the layer resolution doesn't change instead of
+  allocating a new one for every layer, which is faster and reduces the memory churn on high resolution layers.
+- (Improvement) Layer preview: layers with nothing to color (no issues, difference, outlines, masks or pixel editor
+  operations on the layer) are displayed as the 8-bit image they are, instead of being expanded to a 32-bit image
+  and bitmap. On a 13312x5120 layer it needs 142 MB instead of 598 MB, and changing the layer takes about 8 ms instead
+  of 29 ms. Layers with colored pixels still use the 32-bit image, and the pixel editor always does.
+- (Add) Layer preview: "Layer image sampling" setting (Auto, Nearest, Smooth), Auto is the default. Zoomed out, the
+  layer is now drawn averaged instead of skipping pixels, which removed the aliasing and the shimmering of high
+  resolution layers when panning or scrolling the layers. It is still sharp pixels when zoomed in. Choose Nearest to
+  get the previous look.
+- (Add) Layer preview: the layer difference (difference, similarity and onion skin) is drawn by the GPU ("GPU
+  rendering" in the Difference menu, and a setting, on by default). The previous and next layers are drawn over the
+  layer as tinted layers by the layer image box, which keeps the layer as the 8-bit image it is, instead of the CPU
+  mixing the layers into a 32-bit image. The difference is the same as the CPU version; in the similarity the
+  anti-aliased pixels of the other layers blend with the layer instead of replacing it; in the onion skin the ghosts
+  have the same colors and priority, but the current layer is always white: there is no yellow for pixels without a
+  layer below and no magenta for cavities. The exact CPU version is used whenever the layer has something else to
+  color, like issues, or when the setting is off.
+- (Add) Layer preview: onion skin with 7 layers (-3 to +3) [6 ghosts], the layer +3 is drawn in dark blue.
+- (Add) Layer preview: compare mode ("Compare" on the toolbar), the current layer is shown on the left of a split line
+  that is dragged with the mouse, and on its right the layer below or above, 10 layers below or above, or the same
+  layer before the last operation, from the undo history, to see what the operation changed.
+- (Add) Layer preview: rulers (toolbar toggle and setting, off by default) and a scale bar (toolbar toggle and setting,
+  on by default) in millimeters, from the display size and the resolution of the file. The rulers are drawn over the
+  layer along the top and left edges, with round steps that adapt to the zoom, upright labels and a mark that follows
+  the pointer. They show the position of the layer pixels along the axes of the screen from the top-left pixel of the
+  layer, also when the preview is rotated or flipped.
+- (Add) Layer preview: minimap (toolbar toggle and setting, on by default) in the bottom right corner, a thumbnail of
+  the whole layer with the visible part marked, shown only while the layer is zoomed in. Click or drag on it to move
+  the view. Its size and corner, and the corner of the scale bar, are set in the settings.
+- (Change) Layer preview: the cross-section and peel curve HUD moved to the top right corner, so it doesn't cover the
+  minimap and the scale bar, and its shortcut is now [P] because [A] also pans the layer to the left.
+- (Fix) Cross-section and peel curve HUD: in the layer preview it showed "No slice area data available" until the 3D
+  preview was opened, the layer areas are now calculated when the HUD is shown and again when the layers change.
+- (Fix) Cross-section and peel curve HUD: files without lift speeds and heights per layer now use the global bottom
+  and normal values for the peel force, instead of empty layer values. The lift values are refreshed when the lift
+  settings or the layers change.
+- (Fix) Layer preview: the triangulate outline drew triangles over the empty areas of concave shapes and holes,
+  now only the triangles inside the lit pixels are drawn and counted. The triangle count is shown in a fixed label at
+  the top of the layer preview instead of on the layer image, so it is visible at any zoom, rotation and flip.
+- (Improvement) Layer preview: [Q] and [E] change the layer when the key is pressed instead of released, and repeat
+  while the key is held, like the arrow keys.
+- (Add) Layer preview: pinch to zoom around the fingers with a two finger pan, and the magnify gesture of touchpads (
+  "Touch and touchpad gestures" setting, on by default). The mouse is not affected.
 - **AdvancedImageBox**
   - (Add) `PixelAspectRatio` property to show images with non-square pixels, the image is stretched vertically when
     drawing without being resampled, with the `ZoomFactorX` and `ZoomFactorY` properties that are the zoom factor of
@@ -30,6 +79,48 @@
     coordinates of the control (`PointToImage`, `GetOffsetPoint`, `CenterAt`, `ZoomToRegion`, `SelectionRegion`, ...)
     stay in pixels of the source image, `PixelAspectRatio` describes the source pixels, and the `TrackerImage` is
     transformed like the image. `GetSelectedBitmap(true)` returns the selection as it is displayed.
+  - (Add) `Overlays` collection to draw vector items over the image: `ImageBoxLineOverlay`, `ImageBoxRectangleOverlay`,
+    `ImageBoxEllipseOverlay`, `ImageBoxPolylineOverlay` (polygon when closed), `ImageBoxMarkerOverlay` and
+    `ImageBoxTextOverlay`. The geometry is in pixels of the source image and follows the zoom, the scroll, the rotation,
+    the flips and the `PixelAspectRatio` exactly like the image, while the stroke thickness, the marker size and the
+    font size are in screen pixels and stay the same at any zoom, and the text is always upright. They have a stroke, an
+    optional fill, `Opacity` and `IsVisible`, changing them redraws the control, `ReplaceAll()` and `AddRange()` redraw
+    once, the items outside of the viewport are skipped, and `ShowOverlays` hides them all.
+  - (Add) `InvalidateImage()` method to redraw the control after the pixels of the same `Image` bitmap were modified in
+    place, which raises no change, without touching the zoom, the scroll position or the centering.
+  - (Add) `BitmapSamplingMode` property (`Nearest` by default, `Auto` and `Smooth`) to draw a zoomed out image averaged
+    instead of aliased. A `WriteableBitmap` is reduced by powers of two once for each content, about 15 ms for
+    13312x5120 BGRA, and the reduction is drawn, so panning and zooming cost the same as nearest sampling, while
+    Avalonia's high quality interpolation takes about 50 ms for every frame. Call `InvalidateImage()` after changing
+    the pixels.
+  - (Add) `GrayscaleImage` property and `GrayscaleImage` class to display an 8-bit image without expanding it to 32-bit
+    (a quarter of the memory and of the copy), with an optional 256 entry color map (`SetColorMap`) applied when
+    drawing. All the features work with it, `GetSelectedBitmap()` returns the colored selection. It is drawn with
+    Skia, falling back to a 32-bit copy for other render backends. Needs the Avalonia.Skia package to be drawn with
+    Skia, it is referenced by the control only to build, so it is not a new dependency of the NuGet package.
+  - (Add) `CompositeLayers` collection to draw more images over or under the main one with the same transform and the
+    same sampling, with their own cached reductions when zoomed out: `ImageBoxCompositeLayer` with a `GrayscaleImage` or
+    a `Bitmap`, `Tint`, `Opacity`, `Placement` (`Above` or `Below`), `Blend` (`Normal`, `Plus`, `Screen`, `Multiply`,
+    `Lighten`, `Darken`) and `Alpha` (`Luminance` uses the pixel values as alpha with the tint as color, which is what
+    an onion skin needs). A grayscale layer is tinted by Skia without leaving 8-bit, a bitmap supports the opacity and
+    the blend modes only. Nothing changes without layers.
+  - (Add) `CompareSplitPosition` property (`null` by default) to draw a vertical split over the image where the
+    composite layers with a `CompareSide` of `Left` or `Right` are drawn on their side of it, which the user drags with
+    the mouse or a finger.
+  - (Add) `ShowRulers` and `ShowScaleBar` properties (off by default) to draw rulers and a scale bar in physical units,
+    with the `PixelWidth`, `PixelHeight` (the size of one pixel of the source image, 0 shows pixels) and `UnitName`
+    ("mm") properties, `RulerSize`, `RulerBackground`, `RulerForeground` and `ScaleBarCorner`. The rulers are drawn over
+    the viewport, they don't change the viewport nor any coordinate, and they show the coordinates of the source image
+    along the axes of the screen, from its top-left pixel, whatever the rotation and the flips. `PixelAspectRatio` is
+    independent of the pixel size.
+  - (Add) `ShowMinimap` property (off by default) to draw a thumbnail of the whole image with the visible part marked
+    in a corner of the viewport while the image is zoomed in, with the `MinimapCorner`, `MinimapSize`, `MinimapOpacity`
+    and `MinimapViewportColor` properties. Clicking or dragging on it centers the view, without starting a pan or a
+    selection and without reaching the pointer events of the control.
+  - (Add) `MinimapBounds` and `ScaleBarBounds` properties with the bounds of the minimap and of the scale bar in the
+    control, empty when they are not shown, to place other elements over the control without covering them.
+  - (Add) `EnableTouchGestures` property (on by default) to zoom with the pinch gesture around the fingers, panning with
+    them, and with the magnify gesture of touchpads, respecting the zoom limits. The mouse is not affected.
 - (Upgrade) EmguCV to 5.0.0
 - (Upgrade) AvaloniaUI from 12.1.3 to 12.1.4
 
