@@ -5099,7 +5099,34 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
 
 
     /// <summary>
-    /// Replaces thumbnails from a list of thumbnails and clone them
+    /// Reorders <paramref name="source"/> so each image pairs with the <see cref="ThumbnailsOriginalSize"/> slot of the
+    /// same size rank (by area, ascending). The order is kept when the counts differ, or when it already matches
+    /// </summary>
+    /// <param name="source">The images to reorder</param>
+    /// <returns>The images in the order of the thumbnail slots</returns>
+    private Mat[] MatchThumbnailsBySizeRank(Mat[] source)
+    {
+        var targetSizes = ThumbnailsOriginalSize;
+        if (source.Length < 2 || source.Length != targetSizes.Length) return source;
+
+        // OrderBy is stable, ties keep the original order
+        var sourceRank = Enumerable.Range(0, source.Length).OrderBy(i => source[i].Size.Area()).ToArray();
+        var targetRank = Enumerable.Range(0, targetSizes.Length).OrderBy(i => targetSizes[i].Area()).ToArray();
+
+        var result = new Mat[source.Length];
+        for (var rank = 0; rank < result.Length; rank++)
+        {
+            result[targetRank[rank]] = source[sourceRank[rank]];
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Replaces thumbnails from a list of thumbnails and clone them.<br/>
+    /// When the number of images equals the number of thumbnails of this format, the images are paired with the
+    /// thumbnail slots by size rank (smallest to smallest, largest to largest) instead of by order, as formats list
+    /// their thumbnails in different orders (largest first or smallest first)
     /// </summary>
     /// <param name="images"></param>
     /// <param name="generateImagesIfEmpty">If true and if <paramref name="images"/> is empty, it will fill the thumbnails with generated images</param>
@@ -5116,7 +5143,8 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
 
         if (haveImages)
         {
-            Thumbnails.AddRange(images.Where(mat => !mat.IsEmpty).Select(mat => mat.Clone()));
+            var clones = images.Where(mat => !mat.IsEmpty).Select(mat => mat.Clone()).ToArray();
+            Thumbnails.AddRange(MatchThumbnailsBySizeRank(clones));
         }
 
         if (!SanitizeThumbnails())
