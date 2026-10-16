@@ -1295,6 +1295,7 @@ public partial class MainWindow : GenericWindow
         IssuesClear(true);
         SlicerFile?.Dispose();
         SlicerFile = null;
+        UpdateLayerImagePixelAspectRatio();
 
         SlicerProperties.Clear();
         Drawings.Clear();
@@ -2147,6 +2148,10 @@ public partial class MainWindow : GenericWindow
                 }
             }
 
+            UpdateLayerImageOrientation();
+
+            _showLayerImageRealAspectRatio = Settings.LayerPreview.LayerRealAspectRatioOnLoad;
+
             if (mat.Size != SlicerFile.Resolution)
             {
                 var result = await this.MessageBoxWaring(
@@ -2224,6 +2229,8 @@ public partial class MainWindow : GenericWindow
                 $"Ratio: {xRatio}:{yRatio}\n",
                 "Incorrect image ratio detected");
         }
+
+        UpdateLayerImagePixelAspectRatio();
 
         RefreshProperties();
         ResetDataContext();
@@ -2362,6 +2369,12 @@ public partial class MainWindow : GenericWindow
         if (e.PropertyName == nameof(SlicerFile.Ppmm))
         {
             RaisePropertyChanged(nameof(LayerZoomStr));
+            return;
+        }
+
+        if (e.PropertyName == nameof(SlicerFile.PixelSize) && _showLayerImageRealAspectRatio)
+        {
+            UpdateLayerImagePixelAspectRatio();
             return;
         }
     }

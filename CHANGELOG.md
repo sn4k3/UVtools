@@ -1,11 +1,35 @@
 # Changelog
 
-## 09/10/2026 - v7.1.0
+## /10/2026 - v7.1.0
 
 - (Change) Use NuGet mini runtimes for Windows, macOS, Ubuntu 24.04 x64 and Debian 13 (Trixie) ARM64, with custom
   cvextern overrides from build/platforms when available.
 - (Fix) Anycubic PWSZ: saved files could be rejected by Photon Workshop because optional resin names
   were added to legacy user resins; omit absent names and preserve existing values (#1155).
+- (Fix) Convert: thumbnails are now matched to the target format by size instead of by order, formats that list
+  the largest thumbnail first (CTB, Chitubox ZIP, PHZ, ...) swapped the small and large previews when converted to
+  formats that list the smallest first (GR1, GOO, CXDLP, ...), shrinking the large one and upscaling the small one
+  (#1121).
+- (Fix) Anycubic ZIP formats (PWSZ and PW0 layers): opening high resolution files could fail with "Failed to allocate"
+  because every decoded layer image was kept in memory until the garbage collector freed it.
+- (Fix) Image formats: saving leaked one layer image per save.
+- (Fix) LGS: saving a file without a thumbnail leaked the generated preview image.
+- (Improvement) Layer preview: rotate and mirror are now applied when drawing instead of rotating and flipping the full
+  resolution layer image on every change, which is faster on high resolutions. Rotating keeps the zoom and the view
+  centered on the same spot of the layer instead of zooming to fit, it still zooms to fit when the whole layer was in
+  view.
+- (Add) Layer preview: "Real aspect ratio" toggle on the toolbar, and its "Real aspect ratio on load" setting, to show
+  the layer with the physical proportions of the printer pixels, printers with non-square LCD pixels, for example the
+  Halot Mage S, looked stretched. It is enabled by default and view only, the layer image is never resized (#918).
+- **AdvancedImageBox**
+  - (Add) `PixelAspectRatio` property to show images with non-square pixels, the image is stretched vertically when
+    drawing without being resampled, with the `ZoomFactorX` and `ZoomFactorY` properties that are the zoom factor of
+    each axis. The `ZoomFactor` is the same as `ZoomFactorX` (#918).
+  - (Add) `ImageRotation`, `FlipHorizontal` and `FlipVertical` properties to display the image rotated in steps of 90
+    degrees and mirrored, without modifying or processing it. The image is flipped first and then rotated. The
+    coordinates of the control (`PointToImage`, `GetOffsetPoint`, `CenterAt`, `ZoomToRegion`, `SelectionRegion`, ...)
+    stay in pixels of the source image, `PixelAspectRatio` describes the source pixels, and the `TrackerImage` is
+    transformed like the image. `GetSelectedBitmap(true)` returns the selection as it is displayed.
 - (Upgrade) EmguCV to 5.0.0
 - (Upgrade) AvaloniaUI from 12.1.3 to 12.1.4
 

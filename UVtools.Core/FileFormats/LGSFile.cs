@@ -102,7 +102,8 @@ public sealed class LGSFile : FileFormat
 
         public void Encode(Mat? mat)
         {
-            mat ??= EmguCvExtensions.InitMat(new Size(ResolutionX, ResolutionY), 3);
+            using var emptyMat = mat is null ? EmguCvExtensions.InitMat(new Size(ResolutionX, ResolutionY), 3) : null;
+            mat ??= emptyMat!;
 
             if (mat.Width != ResolutionX || mat.Height != ResolutionY)
             {

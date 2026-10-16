@@ -3820,9 +3820,20 @@
             <param name="trimToFileSpec">True to trim the excess thumbnails, otherwise false to not trim</param>
             <returns>True if anything changed, otherwise false</returns>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.MatchThumbnailsBySizeRank(Emgu.CV.Mat[])">
+            <summary>
+            Reorders <paramref name="source"/> so each image pairs with the <see cref="P:UVtools.Core.FileFormats.FileFormat.ThumbnailsOriginalSize"/> slot of the
+            same size rank (by area, ascending). The order is kept when the counts differ, or when it already matches
+            </summary>
+            <param name="source">The images to reorder</param>
+            <returns>The images in the order of the thumbnail slots</returns>
+        </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.ReplaceThumbnails(System.Collections.Generic.IEnumerable{Emgu.CV.Mat},System.Boolean)">
             <summary>
-            Replaces thumbnails from a list of thumbnails and clone them
+            Replaces thumbnails from a list of thumbnails and clone them.<br/>
+            When the number of images equals the number of thumbnails of this format, the images are paired with the
+            thumbnail slots by size rank (smallest to smallest, largest to largest) instead of by order, as formats list
+            their thumbnails in different orders (largest first or smallest first)
             </summary>
             <param name="images"></param>
             <param name="generateImagesIfEmpty">If true and if <paramref name="images"/> is empty, it will fill the thumbnails with generated images</param>

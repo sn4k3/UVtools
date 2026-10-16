@@ -287,6 +287,201 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         #endregion
     }
 
+    /// <summary>
+    /// The display transform of the image, a flip in image space followed by a rotation, and the conversions between
+    /// the source space (the real image pixels) and the view space (the image as it is displayed).
+    /// </summary>
+    /// <remarks>
+    /// <para>View space has its origin in the top-left corner of the displayed image. Its size is the source size, with
+    /// the width and height swapped for a rotation of 90 degrees.</para>
+    /// <para>All the rotations and flips are multiples of 90 degrees, so rectangles stay rectangles and every matrix
+    /// entry is -1, 0 or 1.</para>
+    /// </remarks>
+    private readonly struct ViewOrientation
+    {
+        private readonly ImageRotations _rotation;
+        private readonly bool _flipHorizontal;
+        private readonly bool _flipVertical;
+
+        public ViewOrientation(ImageRotations rotation, bool flipHorizontal, bool flipVertical)
+        {
+            _rotation = rotation;
+            _flipHorizontal = flipHorizontal;
+            _flipVertical = flipVertical;
+        }
+
+        /// <summary>
+        /// Gets if the view is the same as the source.
+        /// </summary>
+        public bool IsIdentity => _rotation == ImageRotations.None && !_flipHorizontal && !_flipVertical;
+
+        /// <summary>
+        /// Gets if the source axes are swapped in the view, which is a rotation of 90 degrees.
+        /// </summary>
+        public bool IsTransposed => _rotation is ImageRotations.Rotate90Clockwise
+            or ImageRotations.Rotate90CounterClockwise;
+
+        public bool Equals(ViewOrientation other)
+        {
+            return _rotation == other._rotation
+                   && _flipHorizontal == other._flipHorizontal
+                   && _flipVertical == other._flipVertical;
+        }
+
+        /// <summary>
+        /// Gets the size of the displayed image for the given source size.
+        /// </summary>
+        public Size GetViewSize(Size source)
+        {
+            return IsTransposed ? new Size(source.Height, source.Width) : source;
+        }
+
+        /// <summary>
+        /// Converts a point from source space to view space.
+        /// </summary>
+        public Point SourceToView(Point point, Size source)
+        {
+            var x = _flipHorizontal ? source.Width - point.X : point.X;
+            var y = _flipVertical ? source.Height - point.Y : point.Y;
+
+            return _rotation switch
+            {
+                ImageRotations.Rotate90Clockwise => new Point(source.Height - y, x),
+                ImageRotations.Rotate180 => new Point(source.Width - x, source.Height - y),
+                ImageRotations.Rotate90CounterClockwise => new Point(y, source.Width - x),
+                _ => new Point(x, y)
+            };
+        }
+
+        /// <summary>
+        /// Converts a point from view space to source space.
+        /// </summary>
+        /// <param name="point">The point in view space.</param>
+        /// <param name="source">The source size.</param>
+        /// <param name="pixelAddress">
+        /// When true the result is meant to address the pixel containing the point, which is the floor of its
+        /// coordinates. The pixel is the one displayed at the point: along the mirrored axes it is found from the
+        /// floor of the view coordinate, so a point exactly on a pixel boundary belongs to the pixel after it in view
+        /// space, which is the pixel before it in source space.
+        /// </param>
+        public Point ViewToSource(Point point, Size source, bool pixelAddress = false)
+        {
+            // The view axis which feeds each source axis, and if that source axis is mirrored
+            var transposed = IsTransposed;
+            var viewX = transposed ? point.Y : point.X;
+            var viewY = transposed ? point.X : point.Y;
+            var mirroredX = (_rotation is ImageRotations.Rotate180 or ImageRotations.Rotate90CounterClockwise)
+                            != _flipHorizontal;
+            var mirroredY = (_rotation is ImageRotations.Rotate180 or ImageRotations.Rotate90Clockwise)
+                            != _flipVertical;
+
+            return new Point(
+                mirroredX ? Mirror(viewX, source.Width, pixelAddress) : viewX,
+                mirroredY ? Mirror(viewY, source.Height, pixelAddress) : viewY);
+        }
+
+        private static double Mirror(double coordinate, double size, bool pixelAddress)
+        {
+            if (!pixelAddress) return size - coordinate;
+
+            // Mirror the pixel, and the position inside it, so the floor of the result is the mirrored pixel
+            var pixel = Math.Floor(coordinate);
+            var mirrored = size - 1 - pixel + (1 - (coordinate - pixel));
+            return Math.Min(mirrored, Math.BitDecrement(size - pixel));
+        }
+
+        /// <summary>
+        /// Converts a rectangle from source space to view space.
+        /// </summary>
+        public Rect SourceToView(Rect rect, Size source)
+        {
+            if (IsIdentity) return rect;
+            return FromCorners(SourceToView(rect.TopLeft, source), SourceToView(rect.BottomRight, source));
+        }
+
+        /// <summary>
+        /// Converts a rectangle from view space to source space.
+        /// </summary>
+        public Rect ViewToSource(Rect rect, Size source)
+        {
+            if (IsIdentity) return rect;
+            return FromCorners(ViewToSource(rect.TopLeft, source), ViewToSource(rect.BottomRight, source));
+        }
+
+        /// <summary>
+        /// Converts the pixel at the given position of a <paramref name="width"/> x <paramref name="height"/> image to
+        /// the position of that pixel in the displayed image.
+        /// </summary>
+        public (int X, int Y) SourceToViewPixel(int x, int y, int width, int height)
+        {
+            if (_flipHorizontal) x = width - 1 - x;
+            if (_flipVertical) y = height - 1 - y;
+
+            return _rotation switch
+            {
+                ImageRotations.Rotate90Clockwise => (height - 1 - y, x),
+                ImageRotations.Rotate180 => (width - 1 - x, height - 1 - y),
+                ImageRotations.Rotate90CounterClockwise => (y, width - 1 - x),
+                _ => (x, y)
+            };
+        }
+
+        /// <summary>
+        /// Gets the matrix which transforms a point of the source image scaled to the <paramref name="scaledSource"/>
+        /// size (the local space) to the control.
+        /// </summary>
+        /// <param name="scaledSource">The size of the source image in local space.</param>
+        /// <param name="origin">The position in the control of the top-left corner of the displayed image.</param>
+        public Matrix GetMatrix(Size scaledSource, Point origin)
+        {
+            var flipX = _flipHorizontal ? -1.0 : 1.0;
+            var flipY = _flipVertical ? -1.0 : 1.0;
+
+            double xToX; // How the local x contributes to the view x, and so on
+            double yToX;
+            double xToY;
+            double yToY;
+
+            switch (_rotation)
+            {
+                case ImageRotations.Rotate90Clockwise:
+                    xToX = 0;
+                    yToX = -flipY;
+                    xToY = flipX;
+                    yToY = 0;
+                    break;
+                case ImageRotations.Rotate180:
+                    xToX = -flipX;
+                    yToX = 0;
+                    xToY = 0;
+                    yToY = -flipY;
+                    break;
+                case ImageRotations.Rotate90CounterClockwise:
+                    xToX = 0;
+                    yToX = flipY;
+                    xToY = -flipX;
+                    yToY = 0;
+                    break;
+                default:
+                    xToX = flipX;
+                    yToX = 0;
+                    xToY = 0;
+                    yToY = flipY;
+                    break;
+            }
+
+            var offset = SourceToView(new Point(), scaledSource);
+            return new Matrix(xToX, xToY, yToX, yToY, origin.X + offset.X, origin.Y + offset.Y);
+        }
+
+        private static Rect FromCorners(Point a, Point b)
+        {
+            var left = Math.Min(a.X, b.X);
+            var top = Math.Min(a.Y, b.Y);
+            return new Rect(left, top, Math.Max(a.X, b.X) - left, Math.Max(a.Y, b.Y) - top);
+        }
+    }
+
     #endregion
 
     #region BindableBase
@@ -372,6 +567,33 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         /// Panning includes the control's <see cref="Padding"/> around the scaled image.
         /// </summary>
         Padding
+    }
+
+    /// <summary>
+    /// Determines the rotation applied when displaying the image of an <see cref="AdvancedImageBox" /> control.
+    /// </summary>
+    /// <remarks>The rotation is a display transform, the image pixels are never modified.</remarks>
+    public enum ImageRotations
+    {
+        /// <summary>
+        /// The image is not rotated.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// The image is displayed rotated by 90 degrees clockwise.
+        /// </summary>
+        Rotate90Clockwise,
+
+        /// <summary>
+        /// The image is displayed rotated by 180 degrees.
+        /// </summary>
+        Rotate180,
+
+        /// <summary>
+        /// The image is displayed rotated by 90 degrees counter-clockwise.
+        /// </summary>
+        Rotate90CounterClockwise
     }
 
     [Flags]
@@ -530,6 +752,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     private Point _pointerPosition;
     private ZoomLevelCollection _zoomLevels = ZoomLevelCollection.Default;
     private int _oldZoom = 100;
+    private ViewOrientation _orientation;
 
     private DrawingBrush? _gridBrush;
     private Pen? _pixelGridPen;
@@ -627,6 +850,10 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <summary>
     /// Gets or sets an image to follow the mouse pointer
     /// </summary>
+    /// <remarks>
+    /// The image is in the same space as the source <see cref="Image"/>, so it is flipped and rotated like it
+    /// according to <see cref="ImageRotation"/>, <see cref="FlipHorizontal"/> and <see cref="FlipVertical"/>.
+    /// </remarks>
     public Bitmap? TrackerImage
     {
         get => _trackerImage;
@@ -1182,6 +1409,117 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     public double ZoomFactor => Zoom / 100.0;
 
     /// <summary>
+    /// Gets the horizontal zoom factor, which is the same as <see cref="ZoomFactor"/>.
+    /// </summary>
+    /// <remarks>
+    /// Use it to convert horizontal distances between the displayed image pixels and control units. It applies to the
+    /// image as displayed, so for a rotation of 90 degrees the horizontal axis of the control is the vertical axis of
+    /// the source image.
+    /// </remarks>
+    public double ZoomFactorX => ZoomFactor;
+
+    /// <summary>
+    /// Gets the vertical zoom factor, the <see cref="ZoomFactor"/> multiplied by the <see cref="ViewPixelAspectRatio"/>.
+    /// </summary>
+    /// <remarks>
+    /// Use it to convert vertical distances between the displayed image pixels and control units. It applies to the
+    /// image as displayed, so for a rotation of 90 degrees the vertical axis of the control is the horizontal axis of
+    /// the source image.
+    /// </remarks>
+    public double ZoomFactorY => ZoomFactor * ViewPixelAspectRatio;
+
+    public static readonly StyledProperty<double> PixelAspectRatioProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, double>(nameof(PixelAspectRatio), 1.0,
+            coerce: CoercePixelAspectRatio);
+
+    private static double CoercePixelAspectRatio(AvaloniaObject sender, double value)
+    {
+        return double.IsFinite(value) && value > 0 ? value : 1.0;
+    }
+
+    /// <summary>
+    /// Gets or sets the physical height of one pixel of the source image divided by its physical width. Default is
+    /// 1.0 (square pixels).
+    /// </summary>
+    /// <remarks>
+    /// <para>Use it to show images whose pixels are not square, for example the layers of a screen with rectangular
+    /// pixels, with their physical proportions. The image is only stretched when drawing, it is never resampled.</para>
+    /// <para>It always describes the pixels of the source image, whatever the <see cref="ImageRotation"/>: for a
+    /// rotation of 90 degrees the pixel width and height are swapped on the screen, which the control does by itself.
+    /// <see cref="ZoomFactorX"/> is the <see cref="ZoomFactor"/> and <see cref="ZoomFactorY"/> is the
+    /// <see cref="ZoomFactor"/> multiplied by the <see cref="ViewPixelAspectRatio"/>.</para>
+    /// <para>Values that are not finite or not greater than zero are replaced by 1.0.</para>
+    /// </remarks>
+    public double PixelAspectRatio
+    {
+        get => GetValue(PixelAspectRatioProperty);
+        set => SetValue(PixelAspectRatioProperty, value);
+    }
+
+    /// <summary>
+    /// Gets the on-screen height of one pixel of the displayed image divided by its on-screen width, which is the
+    /// <see cref="PixelAspectRatio"/>, or its inverse when the image is rotated by 90 degrees.
+    /// </summary>
+    public double ViewPixelAspectRatio => _orientation.IsTransposed ? 1.0 / PixelAspectRatio : PixelAspectRatio;
+
+    public static readonly StyledProperty<ImageRotations> ImageRotationProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, ImageRotations>(nameof(ImageRotation), ImageRotations.None);
+
+    /// <summary>
+    /// Gets or sets the rotation applied when displaying the image. Default is <see cref="ImageRotations.None"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>It is a display transform: the <see cref="Image"/> is not modified or processed. The image is flipped
+    /// according to <see cref="FlipHorizontal"/> and <see cref="FlipVertical"/> first, in image space, and then
+    /// rotated.</para>
+    /// <para>The coordinates of the public members, such as <see cref="PointToImage(Point, bool)"/>,
+    /// <see cref="GetOffsetPoint(Point)"/>, <see cref="CenterAt(Point)"/> and <see cref="SelectionRegion"/>, are always
+    /// the pixels of the source <see cref="Image"/>, whatever the rotation and the flips.</para>
+    /// <para>When changed with the image zoomed in, the zoom is kept and the same image pixel stays at the center of
+    /// the control. When the whole image was in view, it zooms to fit instead.</para>
+    /// </remarks>
+    public ImageRotations ImageRotation
+    {
+        get => GetValue(ImageRotationProperty);
+        set => SetValue(ImageRotationProperty, value);
+    }
+
+    public static readonly StyledProperty<bool> FlipHorizontalProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(FlipHorizontal));
+
+    /// <summary>
+    /// Gets or sets if the image is displayed mirrored horizontally, in image space, before the
+    /// <see cref="ImageRotation"/> is applied. Default is <c>false</c>.
+    /// </summary>
+    /// <remarks>It is a display transform, see <see cref="ImageRotation"/> for details.</remarks>
+    public bool FlipHorizontal
+    {
+        get => GetValue(FlipHorizontalProperty);
+        set => SetValue(FlipHorizontalProperty, value);
+    }
+
+    public static readonly StyledProperty<bool> FlipVerticalProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(FlipVertical));
+
+    /// <summary>
+    /// Gets or sets if the image is displayed mirrored vertically, in image space, before the
+    /// <see cref="ImageRotation"/> is applied. Default is <c>false</c>.
+    /// </summary>
+    /// <remarks>It is a display transform, see <see cref="ImageRotation"/> for details.</remarks>
+    public bool FlipVertical
+    {
+        get => GetValue(FlipVerticalProperty);
+        set => SetValue(FlipVerticalProperty, value);
+    }
+
+    /// <summary>
+    /// Gets the size of the image as displayed, before zoom: the size of the <see cref="Image"/>, with the width and
+    /// height swapped when the <see cref="ImageRotation"/> is 90 degrees.
+    /// </summary>
+    /// <returns>An empty size when no image is loaded.</returns>
+    public Size ViewImageSize => Image is { } image ? _orientation.GetViewSize(image.Size) : default;
+
+    /// <summary>
     /// Gets the zoom to fit level which shows all the image
     /// </summary>
     public int ZoomLevelToFit
@@ -1191,7 +1529,8 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             var image = Image;
             if (image is null) return 100;
 
-            var zoom = Math.Min(Bounds.Width / image.Size.Width, Bounds.Height / image.Size.Height) * 100.0;
+            var viewImageSize = _orientation.GetViewSize(image.Size);
+            var zoom = Math.Min(Bounds.Width / viewImageSize.Width, Bounds.Height / (viewImageSize.Height * ViewPixelAspectRatio)) * 100.0;
             return zoom <= 0 ? 100 : (int)zoom;
         }
     }
@@ -1288,22 +1627,22 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
 
     /// <summary>
-    /// Gets the size of the scaled image.
+    /// Gets the size of the scaled image, as it is displayed.
     /// </summary>
     /// <value>The size of the scaled image.</value>
     public Size ScaledImageSize => new(ScaledImageWidth, ScaledImageHeight);
 
     /// <summary>
-    /// Gets the width of the scaled image.
+    /// Gets the width of the scaled image, as it is displayed.
     /// </summary>
     /// <value>The width of the scaled image.</value>
-    public double ScaledImageWidth => Image?.Size.Width * ZoomFactor ?? 0;
+    public double ScaledImageWidth => ViewImageSize.Width * ZoomFactorX;
 
     /// <summary>
-    /// Gets the height of the scaled image.
+    /// Gets the height of the scaled image, as it is displayed.
     /// </summary>
     /// <value>The height of the scaled image.</value>
-    public double ScaledImageHeight => Image?.Size.Height * ZoomFactor ?? 0;
+    public double ScaledImageHeight => ViewImageSize.Height * ZoomFactorY;
 
     public static readonly StyledProperty<ISolidColorBrush> PixelGridColorProperty =
         AvaloniaProperty.Register<AdvancedImageBox, ISolidColorBrush>(nameof(PixelGridColor), Brushes.DimGray);
@@ -1354,7 +1693,10 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     public static readonly StyledProperty<Rect> SelectionRegionProperty =
         AvaloniaProperty.Register<AdvancedImageBox, Rect>(nameof(SelectionRegion));
 
-
+    /// <summary>
+    /// Gets or sets the selection region, in pixels of the source <see cref="Image"/>, whatever the
+    /// <see cref="ImageRotation"/> and the flips.
+    /// </summary>
     public Rect SelectionRegion
     {
         get => GetValue(SelectionRegionProperty);
@@ -1368,6 +1710,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         }
     }
 
+    /// <summary>
+    /// Gets the <see cref="SelectionRegionPixel"/> in source image pixels as a <see cref="Rectangle"/>.
+    /// </summary>
     public Rectangle SelectionRegionNet
     {
         get
@@ -1377,6 +1722,10 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         }
     }
 
+    /// <summary>
+    /// Gets the <see cref="SelectionRegion"/> rounded outwards to whole pixels and clamped to the source
+    /// <see cref="Image"/>, in source image pixels.
+    /// </summary>
     public PixelRect SelectionRegionPixel => GetClampedSelectionPixelRect();
 
     public bool HaveSelection => SelectionRegionPixel is { Width: > 0, Height: > 0 };
@@ -1501,6 +1850,14 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             }
         }
 
+        if (ReferenceEquals(e.Property, ImageRotationProperty)
+            || ReferenceEquals(e.Property, FlipHorizontalProperty)
+            || ReferenceEquals(e.Property, FlipVerticalProperty))
+        {
+            OrientationChanged();
+            return;
+        }
+
         if (!IsLoaded) return;
         if (ReferenceEquals(e.Property, ImageProperty))
         {
@@ -1536,6 +1893,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
             RaisePropertyChanged(nameof(ImageAsWriteableBitmap));
             RaisePropertyChanged(nameof(IsImageLoaded));
+            RaisePropertyChanged(nameof(ViewImageSize));
             RaisePropertyChanged(nameof(ScaledImageWidth));
             RaisePropertyChanged(nameof(ScaledImageHeight));
             RaisePropertyChanged(nameof(ScaledImageSize));
@@ -1557,10 +1915,16 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             RaisePropertyChanged(nameof(IsVerticalBarVisible));
             RaisePropertyChanged(nameof(IsActualSize));
             RaisePropertyChanged(nameof(ZoomFactor));
+            RaisePropertyChanged(nameof(ZoomFactorX));
+            RaisePropertyChanged(nameof(ZoomFactorY));
             RaisePropertyChanged(nameof(ScaledImageWidth));
             RaisePropertyChanged(nameof(ScaledImageHeight));
             RaisePropertyChanged(nameof(ScaledImageSize));
             RaisePropertyChanged(nameof(Extent));
+        }
+        else if (ReferenceEquals(e.Property, PixelAspectRatioProperty))
+        {
+            PixelAspectRatioChanged(e.GetOldValue<double>());
         }
         else if (ReferenceEquals(e.Property, PaddingProperty)
                  || ReferenceEquals(e.Property, PanBoundsModeProperty))
@@ -1704,29 +2068,60 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
         var image = Image;
         if (image is null) return;
+        var orientation = _orientation;
         var imageViewPort = GetImageViewPort();
-        var sourceImageRegion = GetSourceImageRegion();
+        var viewImageRegion = GetViewImageRegion();
 
         // Draw image
         if (imageViewPort.Width > 0 && imageViewPort.Height > 0 &&
-            sourceImageRegion.Width > 0 && sourceImageRegion.Height > 0)
+            viewImageRegion.Width > 0 && viewImageRegion.Height > 0)
         {
-            context.DrawImage(image, sourceImageRegion, imageViewPort);
+            if (orientation.IsIdentity)
+            {
+                context.DrawImage(image, viewImageRegion, imageViewPort);
+            }
+            else
+            {
+                DrawOrientedImage(context, image, orientation, viewImageRegion, imageViewPort);
+            }
         }
 
-        var zoomFactor = ZoomFactor;
+        var zoomFactorX = ZoomFactorX;
+        var zoomFactorY = ZoomFactorY;
 
         if (HaveTrackerImage && _pointerPosition is { X: >= 0, Y: >= 0 })
         {
-            var destSize = TrackerImageAutoZoom
-                ? new Size(_trackerImage.Size.Width * zoomFactor, _trackerImage.Size.Height * zoomFactor)
-                : _trackerImage.Size;
+            if (orientation.IsIdentity)
+            {
+                var destSize = TrackerImageAutoZoom
+                    ? new Size(_trackerImage.Size.Width * zoomFactorX, _trackerImage.Size.Height * zoomFactorY)
+                    : _trackerImage.Size;
 
-            var destPos = new Point(
-                _pointerPosition.X - destSize.Width / 2,
-                _pointerPosition.Y - destSize.Height / 2
-            );
-            context.DrawImage(_trackerImage!, new Rect(destPos, destSize));
+                var destPos = new Point(
+                    _pointerPosition.X - destSize.Width / 2,
+                    _pointerPosition.Y - destSize.Height / 2
+                );
+                context.DrawImage(_trackerImage!, new Rect(destPos, destSize));
+            }
+            else
+            {
+                // The tracker image is in source space, it is scaled along the axes of the source image
+                var localSize = TrackerImageAutoZoom
+                    ? orientation.IsTransposed
+                        ? new Size(_trackerImage.Size.Width * zoomFactorY, _trackerImage.Size.Height * zoomFactorX)
+                        : new Size(_trackerImage.Size.Width * zoomFactorX, _trackerImage.Size.Height * zoomFactorY)
+                    : _trackerImage.Size;
+
+                var viewSize = orientation.GetViewSize(localSize);
+                var origin = new Point(
+                    _pointerPosition.X - viewSize.Width / 2,
+                    _pointerPosition.Y - viewSize.Height / 2);
+
+                using (context.PushTransform(orientation.GetMatrix(localSize, origin)))
+                {
+                    context.DrawImage(_trackerImage!, new Rect(localSize));
+                }
+            }
         }
 
         // The pixel grid and the selection are clipped to the viewport, otherwise the parts of the image bounds outside
@@ -1734,7 +2129,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         using var viewportClip = context.PushClip(new Rect(Viewport));
 
         // Draw pixel grid
-        if (SizeMode == SizeModes.Normal && zoomFactor > PixelGridZoomThreshold &&
+        if (SizeMode == SizeModes.Normal && Math.Min(zoomFactorX, zoomFactorY) > PixelGridZoomThreshold &&
             imageViewPort.Width > 0 && imageViewPort.Height > 0)
         {
             var imageBounds = GetNormalImageBoundsInViewport();
@@ -1746,17 +2141,17 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             var pixelGridPen = EnsurePixelGridPen();
 
             // First vertical line position aligned to zoom steps
-            var verticalGridIndex = Math.Max(1, Math.Ceiling((left - imageBounds.Left) / zoomFactor));
-            var startX = imageBounds.Left + verticalGridIndex * zoomFactor;
-            for (var x = startX; x < right; x += zoomFactor)
+            var verticalGridIndex = Math.Max(1, Math.Ceiling((left - imageBounds.Left) / zoomFactorX));
+            var startX = imageBounds.Left + verticalGridIndex * zoomFactorX;
+            for (var x = startX; x < right; x += zoomFactorX)
             {
                 context.DrawLine(pixelGridPen, new Point(x, top), new Point(x, bottom));
             }
 
             // First horizontal line position aligned to zoom steps
-            var horizontalGridIndex = Math.Max(1, Math.Ceiling((top - imageBounds.Top) / zoomFactor));
-            var startY = imageBounds.Top + horizontalGridIndex * zoomFactor;
-            for (var y = startY; y < bottom; y += zoomFactor)
+            var horizontalGridIndex = Math.Max(1, Math.Ceiling((top - imageBounds.Top) / zoomFactorY));
+            var startY = imageBounds.Top + horizontalGridIndex * zoomFactorY;
+            for (var y = startY; y < bottom; y += zoomFactorY)
             {
                 context.DrawLine(pixelGridPen, new Point(left, y), new Point(right, y));
             }
@@ -1771,6 +2166,159 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             var selectionColor = SelectionColor;
             context.FillRectangle(selectionColor, rect);
             context.DrawRectangle(EnsureSelectionBorderPen(), rect);
+        }
+    }
+
+    private void PixelAspectRatioChanged(double oldPixelAspectRatio)
+    {
+        var image = Image;
+        var viewport = Viewport;
+        var keepCenter = image is not null && SizeMode == SizeModes.Normal && viewport is { Width: > 0, Height: > 0 };
+        var centerViewPoint = default(Point);
+
+        if (keepCenter)
+        {
+            // Only the vertical axis is affected, find the image point in the center of the viewport before the change
+            var padding = GetScrollablePadding();
+            var oldViewPixelAspectRatio = _orientation.IsTransposed ? 1.0 / oldPixelAspectRatio : oldPixelAspectRatio;
+            var oldZoomFactorY = ZoomFactorX * oldViewPixelAspectRatio;
+            var oldDocumentHeight = padding.Top + ViewImageSize.Height * oldZoomFactorY + padding.Bottom;
+            var oldImageTop = padding.Top - Offset.Y;
+            if (AutoCenter && oldDocumentHeight < viewport.Height)
+            {
+                oldImageTop += (viewport.Height - oldDocumentHeight) / 2;
+            }
+
+            centerViewPoint = new Point(
+                (viewport.Width / 2 - GetNormalImageBoundsInViewport().X) / ZoomFactorX,
+                (viewport.Height / 2 - oldImageTop) / oldZoomFactorY);
+        }
+
+        if (ConstrainZoomOutToFitLevel)
+        {
+            Zoom = Zoom; // The zoom to fit level depends on the aspect ratio
+        }
+
+        UpdateViewPort();
+        if (keepCenter)
+        {
+            CenterAtView(centerViewPoint);
+        }
+
+        TriggerRender();
+        RaisePropertyChanged(nameof(ViewPixelAspectRatio));
+        RaisePropertyChanged(nameof(ZoomFactorY));
+        RaisePropertyChanged(nameof(ScaledImageHeight));
+        RaisePropertyChanged(nameof(ScaledImageSize));
+        RaisePropertyChanged(nameof(Extent));
+        RaisePropertyChanged(nameof(ZoomLevelToFit));
+        RaisePropertyChanged(nameof(IsHorizontalBarVisible));
+        RaisePropertyChanged(nameof(IsVerticalBarVisible));
+    }
+
+    private void OrientationChanged()
+    {
+        var newOrientation = new ViewOrientation(ImageRotation, FlipHorizontal, FlipVertical);
+        if (_orientation.Equals(newOrientation)) return;
+
+        var viewport = Viewport;
+        var keepView = IsLoaded && IsImageLoaded && SizeMode == SizeModes.Normal &&
+                       viewport is { Width: > 0, Height: > 0 };
+        var zoomToFit = false;
+        var centerPixel = default(Point);
+
+        if (keepView)
+        {
+            zoomToFit = Zoom <= ZoomLevelToFit;
+            if (!zoomToFit)
+            {
+                // Still the previous orientation, find the source pixel in the center of the viewport
+                var imageBounds = GetNormalImageBoundsInViewport();
+                var centerViewPoint = new Point(
+                    (viewport.Width / 2 - imageBounds.X) / ZoomFactorX,
+                    (viewport.Height / 2 - imageBounds.Y) / ZoomFactorY);
+                centerPixel = _orientation.ViewToSource(centerViewPoint, Image!.Size);
+            }
+        }
+
+        _orientation = newOrientation;
+
+        if (keepView)
+        {
+            if (zoomToFit)
+            {
+                Zoom = ZoomLevelToFit;
+                UpdateViewPort();
+            }
+            else
+            {
+                if (ConstrainZoomOutToFitLevel)
+                {
+                    Zoom = Zoom; // The zoom to fit level depends on the orientation
+                }
+
+                UpdateViewPort();
+                CenterAt(centerPixel);
+            }
+        }
+
+        TriggerRender();
+        RaisePropertyChanged(nameof(ViewImageSize));
+        RaisePropertyChanged(nameof(ViewPixelAspectRatio));
+        RaisePropertyChanged(nameof(ZoomFactorY));
+        RaisePropertyChanged(nameof(ScaledImageWidth));
+        RaisePropertyChanged(nameof(ScaledImageHeight));
+        RaisePropertyChanged(nameof(ScaledImageSize));
+        RaisePropertyChanged(nameof(Extent));
+        RaisePropertyChanged(nameof(ZoomLevelToFit));
+        RaisePropertyChanged(nameof(IsHorizontalBarVisible));
+        RaisePropertyChanged(nameof(IsVerticalBarVisible));
+    }
+
+    /// <summary>
+    /// Draws the visible part of the image flipped and rotated, using a transform so only that part is sampled.
+    /// </summary>
+    /// <param name="context">The drawing context.</param>
+    /// <param name="image">The source image.</param>
+    /// <param name="orientation">The display orientation of the image.</param>
+    /// <param name="viewImageRegion">The visible part of the image, in view space pixels.</param>
+    /// <param name="imageViewPort">The visible part of the image in the control.</param>
+    private void DrawOrientedImage(DrawingContext context, Bitmap image, ViewOrientation orientation,
+        Rect viewImageRegion, Rect imageViewPort)
+    {
+        var sourceSize = image.Size;
+        var viewSize = orientation.GetViewSize(sourceSize);
+
+        // Position and scale of the displayed image in the control
+        Point origin;
+        double scaleX;
+        double scaleY;
+        if (SizeMode == SizeModes.Normal)
+        {
+            origin = GetNormalImageBoundsInViewport().Position;
+            scaleX = ZoomFactorX;
+            scaleY = ZoomFactorY;
+        }
+        else
+        {
+            origin = imageViewPort.Position;
+            scaleX = imageViewPort.Width / viewSize.Width;
+            scaleY = imageViewPort.Height / viewSize.Height;
+        }
+
+        // The local space is the source image scaled, before being flipped and rotated by the transform
+        var localSize = orientation.IsTransposed
+            ? new Size(sourceSize.Width * scaleY, sourceSize.Height * scaleX)
+            : new Size(sourceSize.Width * scaleX, sourceSize.Height * scaleY);
+
+        var sourceRegion = orientation.ViewToSource(viewImageRegion, sourceSize);
+        var destRegion = orientation.ViewToSource(
+            new Rect(imageViewPort.X - origin.X, imageViewPort.Y - origin.Y, imageViewPort.Width,
+                imageViewPort.Height), localSize);
+
+        using (context.PushTransform(orientation.GetMatrix(localSize, origin)))
+        {
+            context.DrawImage(image, sourceRegion, destRegion);
         }
     }
 
@@ -2106,15 +2654,20 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             x -= imageOrigin.X;
             y -= imageOrigin.Y;
 
-            var zoomFactor = ZoomFactor;
-            x /= zoomFactor;
-            y /= zoomFactor;
-            w /= zoomFactor;
-            h /= zoomFactor;
+            var zoomFactorX = ZoomFactorX;
+            var zoomFactorY = ZoomFactorY;
+            x /= zoomFactorX;
+            y /= zoomFactorY;
+            w /= zoomFactorX;
+            h /= zoomFactorY;
 
-            if (w > 0 && h > 0)
+            if (w > 0 && h > 0 && Image is { } image)
             {
-                SelectionRegion = FitRectangle(new Rect(x, y, w, h));
+                // The selection is dragged in view space and stored in source space
+                var viewRegion = new Rect(x, y, w, h).Intersect(new Rect(ViewImageSize));
+                SelectionRegion = viewRegion is { Width: > 0, Height: > 0 }
+                    ? _orientation.ViewToSource(viewRegion, image.Size)
+                    : default;
             }
         }
     }
@@ -2196,25 +2749,25 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
         if (panLeft)
         {
-            Offset = new Vector(Offset.X - PanOffset * ZoomFactor, Offset.Y);
+            Offset = new Vector(Offset.X - PanOffset * ZoomFactorX, Offset.Y);
             return;
         }
 
         if (panUp)
         {
-            Offset = new Vector(Offset.X, Offset.Y - PanOffset * ZoomFactor);
+            Offset = new Vector(Offset.X, Offset.Y - PanOffset * ZoomFactorY);
             return;
         }
 
         if (panRight)
         {
-            Offset = new Vector(Offset.X + PanOffset * ZoomFactor, Offset.Y);
+            Offset = new Vector(Offset.X + PanOffset * ZoomFactorX, Offset.Y);
             return;
         }
 
         if (panDown)
         {
-            Offset = new Vector(Offset.X, Offset.Y + PanOffset * ZoomFactor);
+            Offset = new Vector(Offset.X, Offset.Y + PanOffset * ZoomFactorY);
             return;
         }
     }
@@ -2409,14 +2962,14 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     {
         relativePoint ??= CenterPoint;
         var currentZoom = Zoom;
-        var currentPixel = PointToImage(relativePoint.Value, false);
+        var currentPixel = PointToView(relativePoint.Value);
 
         RestoreSizeMode();
         Zoom = zoom;
 
         if (preservePosition && Zoom != currentZoom)
         {
-            ScrollTo(currentPixel, relativePoint.Value);
+            ScrollToView(currentPixel, relativePoint.Value);
         }
     }
 
@@ -2463,7 +3016,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     }
 
     /// <summary>
-    ///   Adjusts the view port to fit the given region
+    ///   Adjusts the view port to fit the given region, in source image pixels
     /// </summary>
     /// <param name="x">The X co-ordinate of the selection region.</param>
     /// <param name="y">The Y co-ordinate of the selection region.</param>
@@ -2499,7 +3052,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     }
 
     /// <summary>
-    ///   Adjusts the view port to fit the given region
+    ///   Adjusts the view port to fit the given region, in source image pixels
     /// </summary>
     /// <param name="rectangle">The rectangle to fit the view port to.</param>
     /// <param name="margin">Give a margin to rectangle by a value to zoom-out that pixel value</param>
@@ -2507,8 +3060,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     {
         if (!IsImageLoaded || rectangle.Width <= 0 || rectangle.Height <= 0) return;
         if (margin > 0) rectangle = rectangle.Inflate(margin);
+        rectangle = _orientation.SourceToView(rectangle, Image.Size);
         var ratioX = Viewport.Width / rectangle.Width;
-        var ratioY = Viewport.Height / rectangle.Height;
+        var ratioY = Viewport.Height / (rectangle.Height * ViewPixelAspectRatio);
         var zoomFactor = Math.Min(ratioX, ratioY);
         var cx = rectangle.X + rectangle.Width / 2;
         var cy = rectangle.Y + rectangle.Height / 2;
@@ -2517,7 +3071,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         Zoom = (int)(zoomFactor * 100); // This function sets the zoom so viewport will change
 
         //Dispatcher.UIThread.Post(() => CenterAt(new Point(cx, cy)));
-        CenterAt(new Point(cx,
+        CenterAtView(new Point(cx,
             cy)); // If I call this here, it will move to the wrong position due wrong viewport, dispatcher would solve but slower?
     }
 
@@ -2618,6 +3172,13 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     ///   if set to <c>true</c> and the point is outside the bounds of the source image, it will be mapped to the nearest edge.
     /// </param>
     /// <returns><c>Point.Empty</c> if the point could not be matched to the source image, otherwise the new translated point</returns>
+    /// <remarks>
+    /// <para>The result is in pixels of the source <see cref="Image"/>, whatever the <see cref="ImageRotation"/> and the
+    /// flips, so it is the inverse of <see cref="GetOffsetPoint(Point)"/>.</para>
+    /// <para>When <paramref name="fitToBounds"/> is <c>true</c> the result is meant to address a pixel, which is the
+    /// floor of its coordinates. Along the mirrored axes, a point exactly on the boundary between two pixels is
+    /// mapped to just before it, so it belongs to the pixel that is displayed under the point.</para>
+    /// </remarks>
     public Point PointToImage(Point point, bool fitToBounds = true)
     {
         double x;
@@ -2632,8 +3193,10 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
         if (!fitToBounds || imageBounds.Contains(point))
         {
-            x = (point.X - imageBounds.X) / ZoomFactor;
-            y = (point.Y - imageBounds.Y) / ZoomFactor;
+            var viewPoint = new Point((point.X - imageBounds.X) / ZoomFactorX, (point.Y - imageBounds.Y) / ZoomFactorY);
+            var sourcePoint = _orientation.ViewToSource(viewPoint, image.Size, fitToBounds);
+            x = sourcePoint.X;
+            y = sourcePoint.Y;
 
             if (fitToBounds)
             {
@@ -2689,6 +3252,11 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </summary>
     /// <param name="source">The source <see cref="PointF"/> to offset.</param>
     /// <returns>A <see cref="PointF"/> which has been repositioned to match the current zoom level and image offset</returns>
+    /// <remarks>
+    /// The <paramref name="source"/> is in pixels of the source <see cref="Image"/>, whatever the
+    /// <see cref="ImageRotation"/> and the flips. The result is the position in the control where that point is
+    /// displayed.
+    /// </remarks>
     public Point GetOffsetPoint(Point source)
     {
         var scaled = GetScaledPoint(source);
@@ -2702,6 +3270,10 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </summary>
     /// <param name="source">The source <see cref="RectangleF"/> to offset.</param>
     /// <returns>A <see cref="RectangleF"/> which has been resized and repositioned to match the current zoom level and image offset</returns>
+    /// <remarks>
+    /// The <paramref name="source"/> is in pixels of the source <see cref="Image"/>, whatever the
+    /// <see cref="ImageRotation"/> and the flips. The result is the rectangle in the control where it is displayed.
+    /// </remarks>
     public Rect GetOffsetRectangle(Rect source)
     {
         var scaled = GetScaledRectangle(source);
@@ -2827,14 +3399,23 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <summary>
     ///   Scrolls the control to the given point in the image, offset at the specified display point
     /// </summary>
-    /// <param name="imageLocation">The point of the image to attempt to scroll to.</param>
+    /// <param name="imageLocation">The point of the image to attempt to scroll to, in source image pixels.</param>
     /// <param name="relativeDisplayPoint">The relative display point to offset scrolling by.</param>
     public void ScrollTo(Point imageLocation, Point relativeDisplayPoint)
     {
-        var zoomFactor = ZoomFactor;
+        ScrollToView(_orientation.SourceToView(imageLocation, Image?.Size ?? default), relativeDisplayPoint);
+    }
+
+    /// <summary>
+    ///   Scrolls the control to the given point in the displayed image, offset at the specified display point
+    /// </summary>
+    /// <param name="viewLocation">The point of the displayed image to attempt to scroll to, in view space.</param>
+    /// <param name="relativeDisplayPoint">The relative display point to offset scrolling by.</param>
+    private void ScrollToView(Point viewLocation, Point relativeDisplayPoint)
+    {
         var padding = GetScrollablePadding();
-        var x = padding.Left + imageLocation.X * zoomFactor - relativeDisplayPoint.X;
-        var y = padding.Top + imageLocation.Y * zoomFactor - relativeDisplayPoint.Y;
+        var x = padding.Left + viewLocation.X * ZoomFactorX - relativeDisplayPoint.X;
+        var y = padding.Top + viewLocation.Y * ZoomFactorY - relativeDisplayPoint.Y;
 
 
         Offset = new Vector(x, y);
@@ -2863,10 +3444,19 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <summary>
     ///   Centers the given point in the image in the center of the control
     /// </summary>
-    /// <param name="imageLocation">The point of the image to attempt to center.</param>
+    /// <param name="imageLocation">The point of the image to attempt to center, in source image pixels.</param>
     public void CenterAt(Point imageLocation)
     {
         ScrollTo(imageLocation, new Point(Viewport.Width / 2, Viewport.Height / 2));
+    }
+
+    /// <summary>
+    ///   Centers the given point in the displayed image in the center of the control
+    /// </summary>
+    /// <param name="viewLocation">The point of the displayed image to attempt to center, in view space.</param>
+    private void CenterAtView(Point viewLocation)
+    {
+        ScrollToView(viewLocation, new Point(Viewport.Width / 2, Viewport.Height / 2));
     }
 
     /// <summary>
@@ -2949,9 +3539,15 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </summary>
     /// <param name="source">The source <see cref="Point"/> to scale.</param>
     /// <returns>A <see cref="Point"/> which has been scaled to match the current zoom level</returns>
+    /// <remarks>
+    /// The <paramref name="source"/> is in pixels of the source <see cref="Image"/>. The result is the position of that
+    /// point in the displayed image, scaled to the current zoom level, relative to its top-left corner, so it includes
+    /// the <see cref="ImageRotation"/> and the flips.
+    /// </remarks>
     public Point GetScaledPoint(Point source)
     {
-        return new Point(source.X * ZoomFactor, source.Y * ZoomFactor);
+        var view = _orientation.SourceToView(source, Image?.Size ?? default);
+        return new Point(view.X * ZoomFactorX, view.Y * ZoomFactorY);
     }
 
     /// <summary>
@@ -2961,7 +3557,8 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <returns>A <see cref="PointF"/> which has been scaled to match the current zoom level</returns>
     public PointF GetScaledPoint(PointF source)
     {
-        return new PointF((float)(source.X * ZoomFactor), (float)(source.Y * ZoomFactor));
+        var scaled = GetScaledPoint(new Point(source.X, source.Y));
+        return new PointF((float)scaled.X, (float)scaled.Y);
     }
 
     /// <summary>
@@ -3017,10 +3614,16 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </summary>
     /// <param name="source">The source <see cref="Rectangle"/> to scale.</param>
     /// <returns>A <see cref="Rectangle"/> which has been scaled to match the current zoom level</returns>
+    /// <remarks>
+    /// The <paramref name="source"/> is in pixels of the source <see cref="Image"/>. The result is the rectangle that
+    /// covers it in the displayed image, scaled to the current zoom level, relative to its top-left corner, so it
+    /// includes the <see cref="ImageRotation"/> and the flips.
+    /// </remarks>
     public Rect GetScaledRectangle(Rect source)
     {
-        return new Rect(source.Left * ZoomFactor, source.Top * ZoomFactor, source.Width * ZoomFactor,
-            source.Height * ZoomFactor);
+        var view = _orientation.SourceToView(source, Image?.Size ?? default);
+        return new Rect(view.Left * ZoomFactorX, view.Top * ZoomFactorY, view.Width * ZoomFactorX,
+            view.Height * ZoomFactorY);
     }
 
     /// <summary>
@@ -3030,8 +3633,8 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <returns>A <see cref="RectangleF"/> which has been scaled to match the current zoom level</returns>
     public RectangleF GetScaledRectangle(RectangleF source)
     {
-        return new RectangleF((float)(source.Left * ZoomFactor), (float)(source.Top * ZoomFactor),
-            (float)(source.Width * ZoomFactor), (float)(source.Height * ZoomFactor));
+        var scaled = GetScaledRectangle(new Rect(source.X, source.Y, source.Width, source.Height));
+        return new RectangleF((float)scaled.X, (float)scaled.Y, (float)scaled.Width, (float)scaled.Height);
     }
 
     /// <summary>
@@ -3063,7 +3666,8 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <returns>A <see cref="SizeF"/> which has been resized to match the current zoom level</returns>
     public SizeF GetScaledSize(SizeF source)
     {
-        return new SizeF((float)(source.Width * ZoomFactor), (float)(source.Height * ZoomFactor));
+        var scaled = GetScaledSize(new Size(source.Width, source.Height));
+        return new SizeF((float)scaled.Width, (float)scaled.Height);
     }
 
     /// <summary>
@@ -3071,9 +3675,14 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </summary>
     /// <param name="source">The source <see cref="Size"/> to scale.</param>
     /// <returns>A <see cref="Size"/> which has been resized to match the current zoom level</returns>
+    /// <remarks>
+    /// The <paramref name="source"/> is a size in pixels of the source <see cref="Image"/>. The result is the size it
+    /// takes in the displayed image, so the width and height are swapped for a rotation of 90 degrees.
+    /// </remarks>
     public Size GetScaledSize(Size source)
     {
-        return new Size(source.Width * ZoomFactor, source.Height * ZoomFactor);
+        var view = _orientation.GetViewSize(source);
+        return new Size(view.Width * ZoomFactorX, view.Height * ZoomFactorY);
     }
 
     /// <summary>
@@ -3153,8 +3762,37 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <summary>
     ///   Gets the source image region.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The part of the image that is visible, in pixels of the source <see cref="Image"/>, whatever the
+    /// <see cref="ImageRotation"/> and the flips.</returns>
     public Rect GetSourceImageRegion()
+    {
+        var image = Image;
+        if (image is null) return default;
+
+        var viewRegion = GetViewImageRegion();
+        return viewRegion.Width <= 0 || viewRegion.Height <= 0
+            ? default
+            : _orientation.ViewToSource(viewRegion, image.Size);
+    }
+
+    /// <summary>
+    /// Converts a point of the control to a point of the displayed image, in image pixels, in view space.
+    /// </summary>
+    private Point PointToView(Point point)
+    {
+        if (Image is null) return default;
+
+        var imageBounds = SizeMode == SizeModes.Normal
+            ? GetNormalImageBoundsInViewport()
+            : GetImageViewPort();
+
+        return new Point((point.X - imageBounds.X) / ZoomFactorX, (point.Y - imageBounds.Y) / ZoomFactorY);
+    }
+
+    /// <summary>
+    /// Gets the part of the displayed image that is visible, in image pixels, in view space.
+    /// </summary>
+    private Rect GetViewImageRegion()
     {
         var image = Image;
         if (image is null) return default;
@@ -3166,16 +3804,17 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                 var visibleImageBounds = imageBounds.Intersect(new Rect(Viewport));
                 if (visibleImageBounds.Width <= 0 || visibleImageBounds.Height <= 0) return default;
 
-                var zoomFactor = ZoomFactor;
-                var sourceLeft = (visibleImageBounds.Left - imageBounds.Left) / zoomFactor;
-                var sourceTop = (visibleImageBounds.Top - imageBounds.Top) / zoomFactor;
-                var sourceWidth = visibleImageBounds.Width / zoomFactor;
-                var sourceHeight = visibleImageBounds.Height / zoomFactor;
+                var zoomFactorX = ZoomFactorX;
+                var zoomFactorY = ZoomFactorY;
+                var sourceLeft = (visibleImageBounds.Left - imageBounds.Left) / zoomFactorX;
+                var sourceTop = (visibleImageBounds.Top - imageBounds.Top) / zoomFactorY;
+                var sourceWidth = visibleImageBounds.Width / zoomFactorX;
+                var sourceHeight = visibleImageBounds.Height / zoomFactorY;
 
                 return new Rect(sourceLeft, sourceTop, sourceWidth, sourceHeight);
         }
 
-        return new Rect(0, 0, image.Size.Width, image.Size.Height);
+        return new Rect(_orientation.GetViewSize(image.Size));
     }
 
     /// <summary>
@@ -3211,13 +3850,15 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                 yOffset = padding.Top;
                 break;
             case SizeModes.Fit:
-                var scaleFactor = Math.Min((viewPortSize.Width - padding.Left - padding.Right) / image.Size.Width,
-                    (viewPortSize.Height - padding.Top - padding.Bottom) / image.Size.Height);
+                var pixelAspectRatio = ViewPixelAspectRatio;
+                var viewImageSize = _orientation.GetViewSize(image.Size);
+                var scaleFactor = Math.Min((viewPortSize.Width - padding.Left - padding.Right) / viewImageSize.Width,
+                    (viewPortSize.Height - padding.Top - padding.Bottom) / (viewImageSize.Height * pixelAspectRatio));
 
                 if (scaleFactor <= 0) return new Rect();
 
-                width = Math.Floor(image.Size.Width * scaleFactor);
-                height = Math.Floor(image.Size.Height * scaleFactor);
+                width = Math.Floor(viewImageSize.Width * scaleFactor);
+                height = Math.Floor(viewImageSize.Height * pixelAspectRatio * scaleFactor);
 
                 if (AutoCenter)
                 {
@@ -3265,7 +3906,21 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// Creates a bitmap containing the current selection.
     /// </summary>
     /// <returns>A bitmap owned by the caller, or <see langword="null"/> when no valid selection exists.</returns>
+    /// <remarks>The bitmap has the pixels of the source <see cref="Image"/>, it is not rotated or flipped.</remarks>
     public Bitmap? GetSelectedBitmap()
+    {
+        return GetSelectedBitmap(false);
+    }
+
+    /// <summary>
+    /// Creates a bitmap containing the current selection.
+    /// </summary>
+    /// <param name="applyOrientation">
+    /// <c>true</c> to flip and rotate the bitmap like the image is displayed, according to <see cref="ImageRotation"/>,
+    /// <see cref="FlipHorizontal"/> and <see cref="FlipVertical"/>, <c>false</c> to get the pixels of the source image.
+    /// </param>
+    /// <returns>A bitmap owned by the caller, or <see langword="null"/> when no valid selection exists.</returns>
+    public Bitmap? GetSelectedBitmap(bool applyOrientation)
     {
         var image = ImageAsWriteableBitmap;
         if (image is null || !HaveSelection) return null;
@@ -3293,12 +3948,17 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             throw new InvalidOperationException("The selected region exceeds the source framebuffer stride.");
         }
 
-        var cropBitmap = new WriteableBitmap(selection.Size, srcBuffer.Dpi, srcBuffer.Format, srcBuffer.AlphaFormat);
+        var orientation = applyOrientation ? _orientation : default;
+        var cropSize = orientation.IsTransposed
+            ? new PixelSize(selection.Height, selection.Width)
+            : selection.Size;
+
+        var cropBitmap = new WriteableBitmap(cropSize, srcBuffer.Dpi, srcBuffer.Format, srcBuffer.AlphaFormat);
         try
         {
             using (var dstBuffer = cropBitmap.Lock())
             {
-                if (dstBuffer.RowBytes < bytesPerRow)
+                if (dstBuffer.RowBytes < checked(cropSize.Width * bytesPerPixel))
                 {
                     throw new InvalidOperationException(
                         "The destination framebuffer stride is smaller than the selected row.");
@@ -3309,11 +3969,31 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                     var source = srcBuffer.Address + srcBuffer.RowBytes * selection.Y + selection.X * bytesPerPixel;
                     var destination = dstBuffer.Address;
 
-                    for (var row = 0; row < selection.Height; row++)
+                    if (orientation.IsIdentity)
                     {
-                        Buffer.MemoryCopy(source.ToPointer(), destination.ToPointer(), dstBuffer.RowBytes, bytesPerRow);
-                        source += srcBuffer.RowBytes;
-                        destination += dstBuffer.RowBytes;
+                        for (var row = 0; row < selection.Height; row++)
+                        {
+                            Buffer.MemoryCopy(source.ToPointer(), destination.ToPointer(), dstBuffer.RowBytes,
+                                bytesPerRow);
+                            source += srcBuffer.RowBytes;
+                            destination += dstBuffer.RowBytes;
+                        }
+                    }
+                    else
+                    {
+                        for (var row = 0; row < selection.Height; row++)
+                        {
+                            for (var column = 0; column < selection.Width; column++)
+                            {
+                                var (x, y) = orientation.SourceToViewPixel(column, row, selection.Width,
+                                    selection.Height);
+                                Buffer.MemoryCopy((source + column * bytesPerPixel).ToPointer(),
+                                    (destination + dstBuffer.RowBytes * y + x * bytesPerPixel).ToPointer(),
+                                    bytesPerPixel, bytesPerPixel);
+                            }
+
+                            source += srcBuffer.RowBytes;
+                        }
                     }
                 }
             }

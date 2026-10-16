@@ -81,7 +81,7 @@ public partial class MainWindow
             return;
         }
 
-        var location = GetTransposedPoint(operation.Location, true);
+        var location = operation.Location;
 
         if (Settings.LayerPreview.ZoomIssues ^ ((_globalModifiers & KeyModifiers.Alt) != 0))
         {
@@ -159,8 +159,6 @@ public partial class MainWindow
         //Stopwatch sw = Stopwatch.StartNew();
         //var point = pbLayer.PointToImage(location);
 
-        var realLocation = GetTransposedPoint(location);
-
         if ((keyModifiers & KeyModifiers.Control) != 0)
         {
             if (Drawings.RemoveAll(operation =>
@@ -168,7 +166,7 @@ public partial class MainWindow
                     Rectangle rect = new(operation.Location, operation.Size);
                     rect.X -= operation.Size.Width / 2;
                     rect.Y -= operation.Size.Height / 2;
-                    return rect.Contains(realLocation);
+                    return rect.Contains(location);
                 }) > 0)
             {
                 ShowLayer();
@@ -178,7 +176,7 @@ public partial class MainWindow
                 Rectangle rect = new(item.Location, item.Size);
                 rect.X -= item.Size.Width / 2;
                 rect.Y -= item.Size.Height / 2;
-                return rect.Contains(realLocation);
+                return rect.Contains(location);
             });
             if (removeItems.Any())
             {
@@ -204,7 +202,7 @@ public partial class MainWindow
                 LayersBelow = DrawingPixelDrawing.LayersBelow,
                 LayersAbove = DrawingPixelDrawing.LayersAbove
             };
-            if (_pendingPixelStroke.AddPoint(realLocation))
+            if (_pendingPixelStroke.AddPoint(location))
             {
                 DrawPendingStrokePreview();
             }
@@ -221,7 +219,7 @@ public partial class MainWindow
 
             for (var layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
             {
-                var operationText = new PixelText(layerIndex, realLocation, DrawingPixelText.LineType,
+                var operationText = new PixelText(layerIndex, location, DrawingPixelText.LineType,
                     DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness,
                     DrawingPixelText.Text, DrawingPixelText.Mirror, DrawingPixelText.LineAlignment,
                     DrawingPixelText.Angle, DrawingPixelText.RemovePixelBrightness, DrawingPixelText.PixelBrightness,
@@ -250,14 +248,14 @@ public partial class MainWindow
         }
         else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Fill)
         {
-            if (!isAdd && LayerCache.Image!.GetByte(realLocation) == 0) return;
+            if (!isAdd && LayerCache.Image!.GetByte(location) == 0) return;
 
             var drawings = new List<PixelOperation>();
             var minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelFill.LayersBelow);
             var maxLayer = SlicerFile!.SanitizeLayerIndex(ActualLayer + DrawingPixelFill.LayersAbove);
             for (var layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
             {
-                var operationFill = new PixelFill(layerIndex, realLocation, DrawingPixelFill.ErasePixelBrightness,
+                var operationFill = new PixelFill(layerIndex, location, DrawingPixelFill.ErasePixelBrightness,
                     DrawingPixelFill.PixelBrightness, isAdd);
 
                 //if (PixelHistory.Contains(operation)) continue;
@@ -285,7 +283,7 @@ public partial class MainWindow
         else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Supports)
         {
             if (_actualLayer == 0) return;
-            var operationSupport = new PixelSupport(ActualLayer, realLocation,
+            var operationSupport = new PixelSupport(ActualLayer, location,
                 DrawingPixelSupport.TipDiameter, DrawingPixelSupport.PillarDiameter,
                 DrawingPixelSupport.BaseDiameter, DrawingPixelSupport.PixelBrightness);
 
@@ -301,7 +299,7 @@ public partial class MainWindow
         else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.DrainHole)
         {
             if (_actualLayer == 0) return;
-            var operationDrainHole = new PixelDrainHole(ActualLayer, realLocation, DrawingPixelDrainHole.Diameter);
+            var operationDrainHole = new PixelDrainHole(ActualLayer, location, DrawingPixelDrainHole.Diameter);
 
             //if (PixelHistory.Contains(operation)) return;
             AddDrawing(operationDrainHole);
@@ -338,28 +336,15 @@ public partial class MainWindow
             return;
         }
 
+        // The canvas is in the layer orientation, the layer image box rotates and flips it when drawing
         var angle = operationDrawing.RotationAngle;
         switch (operationDrawing.BrushShape)
         {
             case PixelDrawing.BrushShapeType.Line:
             {
-                if (_showLayerImageRotated)
-                {
-                    if (_showLayerImageRotateCcwDirection)
-                    {
-                        angle += 90;
-                    }
-                    else
-                    {
-                        angle -= 90;
-                    }
-                }
-
                 var (point1, point2) = DrawingExtensions.GetLineEndpoints(
                     SlicerFile!.PixelsToNormalizedPitchF(operationDrawing.BrushSize),
-                    new PointF(location.X, location.Y), angle,
-                    _showLayerImageFlipped && _showLayerImageFlippedHorizontally,
-                    _showLayerImageFlipped && _showLayerImageFlippedVertically);
+                    new PointF(location.X, location.Y), angle);
 
                 using var linePaint = new SKPaint
                 {
@@ -387,38 +372,10 @@ public partial class MainWindow
             }
             default:
             {
-                if (_showLayerImageRotated)
-                {
-                    if (!_showLayerImageFlipped || (_showLayerImageFlippedHorizontally &&
-                                                    _showLayerImageFlippedVertically))
-                    {
-                        if (_showLayerImageRotateCcwDirection)
-                        {
-                            angle -= 90;
-                        }
-                        else
-                        {
-                            angle += 90;
-                        }
-                    }
-                    else
-                    {
-                        if (_showLayerImageRotateCcwDirection)
-                        {
-                            angle += 90;
-                        }
-                        else
-                        {
-                            angle -= 90;
-                        }
-                    }
-                }
-
                 var vertices = DrawingExtensions.GetAlignedPolygonVertices(
                     (byte)operationDrawing.BrushShape,
                     SlicerFile.PixelsToNormalizedPitchF(operationDrawing.BrushSize),
-                    location, angle, _showLayerImageFlipped && _showLayerImageFlippedHorizontally,
-                    _showLayerImageFlipped && _showLayerImageFlippedVertically);
+                    location, angle);
 
                 using var linePaint = new SKPaint
                 {
@@ -472,7 +429,7 @@ public partial class MainWindow
     private void DrawPendingStrokePreview()
     {
         if (_pendingPixelStroke is null || _pendingPixelStroke.Points.Count == 0) return;
-        var currentPoint = GetTransposedPoint(_pendingPixelStroke.Points[^1], true);
+        var currentPoint = _pendingPixelStroke.Points[^1];
 
         var operationDrawing = new PixelDrawing(ActualLayer, currentPoint,
             _pendingPixelStroke.LineType, _pendingPixelStroke.BrushShape, _pendingPixelStroke.RotationAngle,
@@ -486,7 +443,7 @@ public partial class MainWindow
             return;
         }
 
-        var previousPoint = GetTransposedPoint(_pendingPixelStroke.Points[^2], true);
+        var previousPoint = _pendingPixelStroke.Points[^2];
         foreach (var point in previousPoint.InterpolateLine(currentPoint))
         {
             DrawPixelBrushPreview(operationDrawing, point, _pendingPixelStroke.IsAdd);

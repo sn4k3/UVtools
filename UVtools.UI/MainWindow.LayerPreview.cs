@@ -87,6 +87,7 @@ public partial class MainWindow
     private bool _showLayerImageFlippedHorizontally = true;
     private bool _showLayerImageFlippedVertically;
     private bool _showLayerImageIssues = true;
+    private bool _showLayerImageRealAspectRatio;
     private bool _showLayerImageRotateCcwDirection;
     private bool _showLayerImageRotateCwDirection = true;
 
@@ -112,21 +113,8 @@ public partial class MainWindow
         get => _showLayerImageRotated;
         set
         {
-            var rect = LayerImageBox.SelectionRegion;
-            if (rect != default)
-            {
-                rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
-            }
-
-            if (!RaiseAndSetIfChanged(ref _showLayerImageRotated, value) || !IsFileLoaded) return;
-
-            if (rect != default)
-            {
-                LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
-            }
-
-            ZoomToFit();
-            ShowLayer();
+            if (!RaiseAndSetIfChanged(ref _showLayerImageRotated, value)) return;
+            UpdateLayerImageOrientation();
         }
     }
 
@@ -135,22 +123,8 @@ public partial class MainWindow
         get => _showLayerImageRotateCwDirection;
         set
         {
-            var rect = LayerImageBox.SelectionRegion;
-            if (rect != default)
-            {
-                rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
-            }
-
             if (!RaiseAndSetIfChanged(ref _showLayerImageRotateCwDirection, value)) return;
-            if (!_showLayerImageRotated) return;
-
-            if (rect != default)
-            {
-                LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
-            }
-
-            ZoomToFit();
-            ShowLayer();
+            UpdateLayerImageOrientation();
         }
     }
 
@@ -159,22 +133,8 @@ public partial class MainWindow
         get => _showLayerImageRotateCcwDirection;
         set
         {
-            var rect = LayerImageBox.SelectionRegion;
-            if (rect != default)
-            {
-                rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
-            }
-
             if (!RaiseAndSetIfChanged(ref _showLayerImageRotateCcwDirection, value)) return;
-            if (!_showLayerImageRotated) return;
-
-            if (rect != default)
-            {
-                LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
-            }
-
-            ZoomToFit();
-            ShowLayer();
+            UpdateLayerImageOrientation();
         }
     }
 
@@ -183,20 +143,8 @@ public partial class MainWindow
         get => _showLayerImageFlipped;
         set
         {
-            var rect = LayerImageBox.SelectionRegion;
-            if (rect != default)
-            {
-                rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
-            }
-
             if (!RaiseAndSetIfChanged(ref _showLayerImageFlipped, value)) return;
-
-            if (rect != default)
-            {
-                LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
-            }
-
-            ShowLayer();
+            UpdateLayerImageOrientation();
         }
     }
 
@@ -205,21 +153,8 @@ public partial class MainWindow
         get => _showLayerImageFlippedHorizontally;
         set
         {
-            var rect = LayerImageBox.SelectionRegion;
-            if (rect != default)
-            {
-                rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
-            }
-
             if (!RaiseAndSetIfChanged(ref _showLayerImageFlippedHorizontally, value)) return;
-            if (!_showLayerImageFlipped) return;
-
-            if (rect != default)
-            {
-                LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
-            }
-
-            ShowLayer();
+            UpdateLayerImageOrientation();
         }
     }
 
@@ -228,22 +163,30 @@ public partial class MainWindow
         get => _showLayerImageFlippedVertically;
         set
         {
-            var rect = LayerImageBox.SelectionRegion;
-            if (rect != default)
-            {
-                rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
-            }
-
             if (!RaiseAndSetIfChanged(ref _showLayerImageFlippedVertically, value)) return;
-            if (!_showLayerImageFlipped) return;
-
-            if (rect != default)
-            {
-                LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
-            }
-
-            ShowLayer();
+            UpdateLayerImageOrientation();
         }
+    }
+
+    /// <summary>
+    /// Applies the rotation and flips of the layer preview to the layer image box. They are a display transform of the
+    /// box, the layer image and every coordinate used by the window stay in the layer orientation.
+    /// </summary>
+    private void UpdateLayerImageOrientation()
+    {
+        // The box zooms to fit the image when it was all in view, refit with the user zoom to fit preference instead
+        var zoomToFit = IsFileLoaded && LayerImageBox.Image is not null &&
+                        LayerImageBox.Zoom <= LayerImageBox.ZoomLevelToFit;
+
+        LayerImageBox.ImageRotation = !_showLayerImageRotated
+            ? AdvancedImageBox.ImageRotations.None
+            : _showLayerImageRotateCcwDirection
+                ? AdvancedImageBox.ImageRotations.Rotate90CounterClockwise
+                : AdvancedImageBox.ImageRotations.Rotate90Clockwise;
+        LayerImageBox.FlipHorizontal = _showLayerImageFlipped && _showLayerImageFlippedHorizontally;
+        LayerImageBox.FlipVertical = _showLayerImageFlipped && _showLayerImageFlippedVertically;
+
+        if (zoomToFit) ZoomToFit();
     }
 
     public bool Show2DPeelCurve
@@ -532,6 +475,60 @@ public partial class MainWindow
             if (!RaiseAndSetIfChanged(ref _showLayerImageCrosshairs, value)) return;
             ShowLayer();
         }
+    }
+
+    /// <summary>
+    /// Gets or sets if the layer preview is shown with the physical proportions of the printer pixels. View only, the
+    /// layer image is never resized.
+    /// </summary>
+    public bool ShowLayerImageRealAspectRatio
+    {
+        get => _showLayerImageRealAspectRatio;
+        set
+        {
+            if (!RaiseAndSetIfChanged(ref _showLayerImageRealAspectRatio, value)) return;
+            UpdateLayerImagePixelAspectRatio();
+        }
+    }
+
+    /// <summary>
+    /// Gets the physical height of one pixel of the layer image divided by its width, so a layer with non-square
+    /// pixels is shown with the proportions of the printer display. The layer image box already swaps it when the
+    /// preview is rotated.
+    /// </summary>
+    /// <returns>1 when the real aspect ratio is disabled or when it can't be calculated.</returns>
+    private double GetLayerImagePixelAspectRatio()
+    {
+        var slicerFile = SlicerFile;
+        if (!_showLayerImageRealAspectRatio || slicerFile is null) return 1;
+
+        double resolutionX = slicerFile.ResolutionX;
+        double resolutionY = slicerFile.ResolutionY;
+        double displayWidth = slicerFile.DisplayWidth;
+        double displayHeight = slicerFile.DisplayHeight;
+        if (resolutionX <= 0 || resolutionY <= 0 || displayWidth <= 0 || displayHeight <= 0) return 1;
+
+        var pixelWidth = displayWidth / resolutionX;
+        var pixelHeight = displayHeight / resolutionY;
+
+        var ratio = pixelHeight / pixelWidth;
+
+        // Display sizes are rounded in the files, ignore tiny differences to keep square pixels sharp
+        return double.IsFinite(ratio) && ratio > 0 && Math.Abs(ratio - 1) >= 0.001 ? ratio : 1;
+    }
+
+    /// <summary>
+    /// Applies the pixel aspect ratio of the current file and preview orientation to the layer image box.
+    /// </summary>
+    private void UpdateLayerImagePixelAspectRatio()
+    {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(UpdateLayerImagePixelAspectRatio);
+            return;
+        }
+
+        LayerImageBox.PixelAspectRatio = GetLayerImagePixelAspectRatio();
     }
 
     public bool ShowLayerOutlinePrintVolumeBoundary
@@ -1959,28 +1956,7 @@ public partial class MainWindow
                 }
             }
 
-            if (_showLayerImageFlipped && (_showLayerImageFlippedHorizontally || _showLayerImageFlippedVertically))
-            {
-                var flipType = FlipType.Both;
-
-                if (_showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically)
-                    flipType = FlipType.Both;
-                else if (_showLayerImageFlippedHorizontally)
-                    flipType = FlipType.Horizontal;
-                else if (_showLayerImageFlippedVertically)
-                    flipType = FlipType.Vertical;
-
-                CvInvoke.Flip(LayerCache.ImageBgra, LayerCache.ImageBgra, flipType);
-            }
-
-            if (_showLayerImageRotated)
-            {
-                CvInvoke.Rotate(LayerCache.ImageBgra, LayerCache.ImageBgra,
-                    _showLayerImageRotateCcwDirection
-                        ? RotateFlags.Rotate90CounterClockwise
-                        : RotateFlags.Rotate90Clockwise);
-            }
-
+            // The layer image box flips and rotates the image when drawing, see UpdateLayerImageOrientation()
             LayerImageBox.Image = LayerCache.Bitmap = LayerCache.ImageBgra.ToBitmap();
 
             RefreshCurrentLayerData();
@@ -2069,137 +2045,14 @@ public partial class MainWindow
             lineThickness);
     }
 
-    public Point GetTransposedPoint(Point point, bool inverse = false)
-    {
-        if (point.IsEmpty || !LayerCache.IsCached) return point;
-
-        void Flip()
-        {
-            if (!_showLayerImageFlipped) return;
-            if (_showLayerImageFlippedHorizontally)
-            {
-                point = point with { X = LayerCache.Image!.Width - 1 - point.X };
-            }
-
-            if (_showLayerImageFlippedVertically)
-            {
-                point = point with { Y = LayerCache.Image!.Height - 1 - point.Y };
-            }
-        }
-
-        void Rotate()
-        {
-            if (!_showLayerImageRotated) return;
-            if (_showLayerImageRotateCcwDirection)
-            {
-                point = inverse
-                    ? new Point(point.Y, LayerCache.Image!.Width - 1 - point.X) // 90º CCW
-                    : new Point(LayerCache.Image!.Width - 1 - point.Y, point.X); // 90º CW
-            }
-            else
-            {
-                point = inverse
-                    ? new Point(LayerCache.Image!.Height - 1 - point.Y, point.X) // 90º CW
-                    : new Point(point.Y, LayerCache.Image!.Height - 1 - point.X); // 90º CCW
-            }
-        }
-
-        if (inverse)
-        {
-            Flip();
-            Rotate();
-        }
-        else
-        {
-            Rotate();
-            Flip();
-        }
-
-        return point;
-    }
-
-    public Rectangle GetTransposedRectangle(RectangleF rectangleF, bool inverse = true)
-    {
-        return GetTransposedRectangle(Rectangle.Round(rectangleF), inverse);
-    }
-
-    public Rectangle GetTransposedRectangle(Rectangle rectangle, bool inverse = false)
-    {
-        if (rectangle.IsEmpty || !LayerCache.IsCached) return rectangle;
-
-        void Flip()
-        {
-            if (!_showLayerImageFlipped) return;
-            if (_showLayerImageFlippedHorizontally)
-            {
-                rectangle.Location = new Point(LayerCache.Image!.Width - rectangle.Right, rectangle.Y);
-            }
-
-            if (_showLayerImageFlippedVertically)
-            {
-                rectangle.Location = new Point(rectangle.X, LayerCache.Image!.Height - rectangle.Bottom);
-            }
-        }
-
-        void Rotate()
-        {
-            if (!_showLayerImageRotated) return;
-            if (_showLayerImageRotateCcwDirection)
-            {
-                rectangle = !inverse
-                    ? new Rectangle(rectangle.Y, LayerCache.Image!.Width - rectangle.Right, rectangle.Height,
-                        rectangle.Width) // 90º CCW
-                    : new Rectangle(LayerCache.Image!.Width - rectangle.Bottom, rectangle.X, rectangle.Height,
-                        rectangle.Width); // 90º CW
-            }
-            else
-            {
-                rectangle = !inverse
-                    ? new Rectangle(LayerCache.Image!.Height - rectangle.Bottom, rectangle.X, rectangle.Height,
-                        rectangle.Width) // 90º CW
-                    : new Rectangle(rectangle.Y, LayerCache.Image!.Height - rectangle.Right, rectangle.Height,
-                        rectangle.Width); // 90º CCW
-            }
-        }
-
-        if (!inverse)
-        {
-            Flip();
-            Rotate();
-        }
-        else
-        {
-            Rotate();
-            Flip();
-        }
-
-        return rectangle;
-
-        /*return inverse
-            ? new Rectangle(LayerCache.Image.Height - rectangle.Bottom,
-                rectangle.Left, rectangle.Height, rectangle.Width)
-            //: new Rectangle(ActualLayerImage.Width - rectangle.Bottom, rectangle.Left, rectangle.Width, rectangle.Height);
-            //: new Rectangle(ActualLayerImage.Width - rectangle.Bottom, ActualLayerImage.Height-rectangle.Right, rectangle.Width, rectangle.Height); // Rotate90FlipX: // = Rotate270FlipY
-            //: new Rectangle(rectangle.Top, rectangle.Left, rectangle.Width, rectangle.Height); // Rotate270FlipX:  // = Rotate90FlipY
-            : new Rectangle(rectangle.Top, LayerCache.Image.Height - rectangle.Right, rectangle.Height, rectangle.Width); // Rotate90FlipNone:  // = Rotate270FlipXY*/
-    }
-
     /// <summary>
-    /// Gets the bounding rectangle of the passed issue, automatically adjusting
-    /// the coordinates and width/height to account for whether or not the layer
-    /// preview image is rotated.  Used to ensure images are properly zoomed or
-    /// centered independent of the layer preview rotation.
+    /// Gets the bounding rectangle of the passed issue, in layer pixels, which is the layer bounds when the issue has
+    /// no bounds. The layer image box takes care of the layer preview rotation and flips.
     /// </summary>
-    private Rectangle GetTransposedIssueBounds(Issue issue)
+    private Rectangle GetIssueBounds(Issue issue)
     {
         if (!LayerCache.IsCached) return issue.BoundingRectangle;
-        if (issue.BoundingRectangle.IsEmpty /*|| issue.PixelsCount == 1*/)
-        {
-            return GetTransposedRectangle(LayerCache.Layer!.BoundingRectangle);
-        }
-        //return new Rectangle(GetTransposedPoint(issue.FirstPoint, true), new Size(1, 1));
-
-        return GetTransposedRectangle(issue.BoundingRectangle);
+        return issue.BoundingRectangle.IsEmpty ? LayerCache.Layer!.BoundingRectangle : issue.BoundingRectangle;
     }
 
     public void CenterLayer(int zoomLevel = 0)
@@ -2282,16 +2135,16 @@ public partial class MainWindow
 
         if (Settings.LayerPreview.ZoomIssues ^ ((_globalModifiers & KeyModifiers.Alt) != 0))
         {
-            CenterLayerAt(GetTransposedIssueBounds(issue), AppSettings.LockedZoomLevel);
+            CenterLayerAt(GetIssueBounds(issue), AppSettings.LockedZoomLevel);
         }
         else
         {
-            //CenterLayerAt(GetTransposedIssueBounds(issue));
+            //CenterLayerAt(GetIssueBounds(issue));
             // If issue is not already visible, center on it and bring it into view.
             // Issues already in view will not be centered, though their color may
             // change and the crosshair may move to reflect active selections.
 
-            if (!LayerImageBox.GetSourceImageRegion().Contains(GetTransposedIssueBounds(issue).ToAvalonia()))
+            if (!LayerImageBox.GetSourceImageRegion().Contains(GetIssueBounds(issue).ToAvalonia()))
             {
                 CenterAtIssue(issue);
             }
@@ -2313,7 +2166,7 @@ public partial class MainWindow
 
         if (!issue.BoundingRectangle.IsEmpty)
         {
-            CenterLayerAt(GetTransposedIssueBounds(issue));
+            CenterLayerAt(GetIssueBounds(issue));
         }
     }
 
@@ -2349,19 +2202,7 @@ public partial class MainWindow
             case ZoomToFitType.Auto:
                 if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds ^ ((_globalModifiers & KeyModifiers.Alt) != 0))
                 {
-                    /*if (!_showLayerImageRotated)
-                    {
-                        LayerImageBox.ZoomToRegion(SlicerFile.LayerManager.BoundingRectangle, margin);
-                    }
-                    else
-                    {
-                        LayerImageBox.ZoomToRegion(LayerCache.Image.Height - 1 - SlicerFile.LayerManager.BoundingRectangle.Bottom,
-                            SlicerFile.LayerManager.BoundingRectangle.X,
-                            SlicerFile.LayerManager.BoundingRectangle.Height,
-                            SlicerFile.LayerManager.BoundingRectangle.Width, margin
-                        );
-                    }*/
-                    LayerImageBox.ZoomToRegion(GetTransposedRectangle(SlicerFile!.BoundingRectangle), margin);
+                    LayerImageBox.ZoomToRegion(SlicerFile!.BoundingRectangle, margin);
                 }
                 else
                 {
@@ -2373,7 +2214,7 @@ public partial class MainWindow
                 LayerImageBox.ZoomToFit();
                 break;
             case ZoomToFitType.Volume:
-                LayerImageBox.ZoomToRegion(GetTransposedRectangle(SlicerFile!.BoundingRectangle), margin);
+                LayerImageBox.ZoomToRegion(SlicerFile!.BoundingRectangle, margin);
                 break;
             case ZoomToFitType.Selection:
                 LayerImageBox.ZoomToSelectionRegion(margin);
@@ -2389,12 +2230,11 @@ public partial class MainWindow
     /// </summary>
     private void SelectIssueAtPoint(Point location)
     {
-        //location = GetTransposedPoint(location);
         // If location clicked is within an issue, activate it.
         var issues = SlicerFile!.IssueManager.GetIssuesBy(_actualLayer);
         for (var i = issues.Length - 1; i >= 0; i--)
         {
-            if (!GetTransposedIssueBounds(issues[i]).Contains(location)) continue;
+            if (!GetIssueBounds(issues[i]).Contains(location)) continue;
 
             SuppressIssueGridSelectionEvent = true;
             IssuesGrid.SelectedItem = issues[i].Parent;
@@ -2455,7 +2295,7 @@ public partial class MainWindow
         if (_pendingPixelStroke is not null)
         {
             _lastPixelMouseLocation = Point.Empty;
-            if (_pendingPixelStroke.AddPoint(GetTransposedPoint(location)))
+            if (_pendingPixelStroke.AddPoint(location))
             {
                 DrawPendingStrokePreview();
             }
@@ -2825,11 +2665,10 @@ public partial class MainWindow
 
         if ((e.KeyModifiers & KeyModifiers.Control) != 0)
         {
-            var realLocation = GetTransposedPoint(location);
             unsafe
             {
-                var brightness = LayerCache.ImageSpan[LayerCache.Image!.GetPixelPos(realLocation)];
-                LayerPixelPicker.Set(realLocation, brightness, SlicerFile!.PixelToDisplayPosition(realLocation, 2));
+                var brightness = LayerCache.ImageSpan[LayerCache.Image!.GetPixelPos(location)];
+                LayerPixelPicker.Set(location, brightness, SlicerFile!.PixelToDisplayPosition(location, 2));
             }
 
             RaisePropertyChanged(nameof(LayerPixelPicker));
@@ -2865,11 +2704,10 @@ public partial class MainWindow
     public bool SelectObjectRoi(Point location)
     {
         if (!LayerCache.IsCached) return false;
-        var point = GetTransposedPoint(location);
 
         for (var i = LayerCache.Layer!.Contours.Count - 1; i >= 0; i--)
         {
-            if (!LayerCache.Layer.Contours[i].IsInside(point)) continue;
+            if (!LayerCache.Layer.Contours[i].IsInside(location)) continue;
             ROI = LayerCache.Layer.Contours[i].BoundingRectangle;
             return true;
         }
@@ -2906,10 +2744,9 @@ public partial class MainWindow
     public bool SelectObjectMask(Point location)
     {
         if (!LayerCache.IsCached) return false;
-        var point = GetTransposedPoint(location);
 
         using var vec = EmguContours.GetContoursInside(LayerCache.Layer!.Contours.Vector,
-            LayerCache.Layer.Contours.Hierarchy, point, (_globalModifiers & KeyModifiers.Control) != 0);
+            LayerCache.Layer.Contours.Hierarchy, location, (_globalModifiers & KeyModifiers.Control) != 0);
         AddMaskPoints(vec.ToArrayOfArray(), false);
         return vec.Size > 0;
     }
@@ -2918,7 +2755,7 @@ public partial class MainWindow
     public void OnLayerPixelPickerClicked()
     {
         if (!LayerPixelPicker.IsSet) return;
-        CenterLayerAt(GetTransposedPoint(LayerPixelPicker.Location, true), -1);
+        CenterLayerAt(LayerPixelPicker.Location, -1);
     }
 
     [RelayCommand]
@@ -2930,7 +2767,28 @@ public partial class MainWindow
             $"{SlicerFile.FilenameNoExt}_layer{ActualLayer}.png", AvaloniaStatic.PngFileFilter);
         if (file?.TryGetLocalPath() is not { } filePath) return;
 
-        LayerCache.ImageBgra.Save(filePath);
+        // The image is in the layer orientation, save it like it is displayed
+        using var displayedImage = new Mat();
+        var image = LayerCache.ImageBgra;
+        if (_showLayerImageFlipped && (_showLayerImageFlippedHorizontally || _showLayerImageFlippedVertically))
+        {
+            CvInvoke.Flip(image, displayedImage,
+                _showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically ? FlipType.Both
+                : _showLayerImageFlippedHorizontally ? FlipType.Horizontal
+                : FlipType.Vertical);
+            image = displayedImage;
+        }
+
+        if (_showLayerImageRotated)
+        {
+            CvInvoke.Rotate(image, displayedImage,
+                _showLayerImageRotateCcwDirection
+                    ? RotateFlags.Rotate90CounterClockwise
+                    : RotateFlags.Rotate90Clockwise);
+            image = displayedImage;
+        }
+
+        image.Save(filePath);
     }
 
     [RelayCommand]
@@ -2943,7 +2801,7 @@ public partial class MainWindow
 
         if (file?.TryGetLocalPath() is not { } filePath) return;
 
-        using var selectedBitmap = LayerImageBox.GetSelectedBitmap();
+        using var selectedBitmap = LayerImageBox.GetSelectedBitmap(true); // Like it is displayed
         selectedBitmap?.Save(filePath, AvaloniaStatic.PngBitmapEncoderOptions);
     }
 
@@ -2977,45 +2835,12 @@ public partial class MainWindow
                         cursor = EmguCvExtensions.InitMat(cursorDimensions, 4);
                         //cursor.SetTo(new MCvScalar(255,255,255,255)); // Debug
 
-                        /*FlipType? flip = null;
-                        if (_showLayerImageFlipped)
-                        {
-                            if (_showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically) flip = FlipType.Both;
-                            else if (_showLayerImageFlippedHorizontally) flip = FlipType.Horizontal;
-                            else if (_showLayerImageFlippedVertically) flip = FlipType.Vertical;
-                        }*/
-
+                        // The layer image box flips and rotates the tracker image like the layer image
                         cursor.DrawAlignedPolygon((byte)DrawingPixelDrawing.BrushShape,
                             SlicerFile!.PixelsToNormalizedPitchF(DrawingPixelDrawing.BrushSize),
                             new PointF(cursor.Width / 2, cursor.Height / 2),
                             pixelEditorCursorColor, DrawingPixelDrawing.RotationAngle, DrawingPixelDrawing.Thickness,
                             DrawingPixelDrawing.LineType);
-
-                        if (DrawingPixelDrawing.BrushShape != PixelDrawing.BrushShapeType.Circle)
-                        {
-                            if (_showLayerImageFlipped &&
-                                (_showLayerImageFlippedHorizontally || _showLayerImageFlippedVertically))
-                            {
-                                var flipType = FlipType.Both;
-
-                                if (_showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically)
-                                    flipType = FlipType.Both;
-                                else if (_showLayerImageFlippedHorizontally)
-                                    flipType = FlipType.Horizontal;
-                                else if (_showLayerImageFlippedVertically)
-                                    flipType = FlipType.Vertical;
-
-                                CvInvoke.Flip(cursor, cursor, flipType);
-                            }
-
-                            if (_showLayerImageRotated)
-                            {
-                                CvInvoke.Rotate(cursor, cursor,
-                                    _showLayerImageRotateCcwDirection
-                                        ? RotateFlags.Rotate90CounterClockwise
-                                        : RotateFlags.Rotate90Clockwise);
-                            }
-                        }
                     }
                 }
 
@@ -3042,28 +2867,6 @@ public partial class MainWindow
                 cursor.RotateAdjustBounds(DrawingPixelText.Angle);
                 //cursor.Rotate(DrawingPixelText.Angle);
                 //cursor.PutTextRotated(text, cursor.Size.ToPoint().Half(), DrawingPixelText.Font, DrawingPixelText.FontScale, _pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror, DrawingPixelText.Angle);
-                if (_showLayerImageFlipped && (_showLayerImageFlippedHorizontally || _showLayerImageFlippedVertically))
-                {
-                    var flipType = FlipType.Both;
-
-                    if (_showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically)
-                        flipType = FlipType.Both;
-                    else if (_showLayerImageFlippedHorizontally)
-                        flipType = FlipType.Horizontal;
-                    else if (_showLayerImageFlippedVertically)
-                        flipType = FlipType.Vertical;
-
-                    CvInvoke.Flip(cursor, cursor, flipType);
-                }
-
-                if (_showLayerImageRotated)
-                {
-                    CvInvoke.Rotate(cursor, cursor,
-                        _showLayerImageRotateCcwDirection
-                            ? RotateFlags.Rotate90CounterClockwise
-                            : RotateFlags.Rotate90Clockwise);
-                }
-
                 break;
             case PixelOperation.PixelOperationType.Supports:
             case PixelOperation.PixelOperationType.DrainHole:
@@ -3130,9 +2933,9 @@ public partial class MainWindow
         get
         {
             var rect = LayerImageBox.SelectionRegion;
-            return rect == default ? default : GetTransposedRectangle(rect.ToDotNet(), true);
+            return rect == default ? default : rect.ToDotNet();
         }
-        set => LayerImageBox.SelectionRegion = GetTransposedRectangle(value).ToAvalonia();
+        set => LayerImageBox.SelectionRegion = value.ToAvalonia();
     }
 
     public RectangleF ROIMillimeters

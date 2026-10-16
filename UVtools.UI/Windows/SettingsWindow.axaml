@@ -1773,6 +1773,12 @@
                   </StackPanel>
 
                   <CheckBox
+                    Content="Real aspect ratio on load"
+                    IsChecked="{Binding Settings.LayerPreview.LayerRealAspectRatioOnLoad}"
+                    ToolTip.Tip="Show the layer preview with the physical proportions of the printer pixels on file load. Printers with non-square LCD pixels look stretched otherwise. This is view only, the layer image is not resized or changed. It can also be toggled on the layer preview toolbar."
+                  />
+
+                  <CheckBox
                     Content="Show square grid as background"
                     IsChecked="{Binding Settings.LayerPreview.ShowBackgroundGrid}"
                   />

@@ -2296,6 +2296,11 @@
                                                   Content="{icon:MaterialIconExt Kind=ChartAreaspline, Classes='Fill'}"
                                                   IsChecked="{Binding Show2DPeelCurve, Mode=TwoWay}"
                                                   ToolTip.Tip="Toggle layer cross-section area and peel force curve HUD [A]" />
+                                    <ToggleButton Margin="1,0,1,0"
+                                                  VerticalAlignment="Stretch"
+                                                  Content="{icon:MaterialIconExt Kind=AspectRatio, Classes='Fill'}"
+                                                  IsChecked="{Binding ShowLayerImageRealAspectRatio, Mode=TwoWay}"
+                                                  ToolTip.Tip="Real aspect ratio&#x0a;Show the layer with the physical proportions of the printer pixels, printers with non-square LCD pixels look stretched otherwise.&#x0a;This only changes how the layer is displayed, the layer image is not resized or changed.&#x0a;No effect on printers with square pixels." />
                                 </WrapPanel>
 
 

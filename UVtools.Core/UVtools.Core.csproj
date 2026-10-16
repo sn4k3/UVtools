@@ -22,16 +22,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNext" Version="6.9.0" />
+    <PackageReference Include="DotNext" Version="6.10.0" />
     <PackageReference Include="EmguExtensions" Version="0.3.0" />
-    <PackageReference
-      Include="Microsoft.SourceLink.GitHub"
-      Version="10.0.401"
-      PrivateAssets="All"
-    />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.402" PrivateAssets="All" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.9.0" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1" />
-    <PackageReference Include="NativeCompressions" Version="1.1.0" />
+    <PackageReference Include="NativeCompressions" Version="1.2.0" />
     <PackageReference Include="StageKit" Version="0.4.1" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
     <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.4.2" />

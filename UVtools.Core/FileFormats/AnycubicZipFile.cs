@@ -2696,7 +2696,8 @@ public sealed class AnycubicZipFile : FileFormat
                         encodedRle = entry.ToArray();
                     }
 
-                    this[layerIndex].LayerMat = DecodeLayerRle(rleFormat, encodedRle);
+                    using var mat = DecodeLayerRle(rleFormat, encodedRle);
+                    this[layerIndex].LayerMat = mat;
                     progress.LockAndIncrement();
                 }
             );

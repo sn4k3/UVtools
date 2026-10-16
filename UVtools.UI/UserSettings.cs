@@ -651,6 +651,9 @@ public partial class UserSettings : ObservableObject
         public partial bool LayerZoomToFitOnLoad { get; set; } = true;
 
         [ObservableProperty]
+        public partial bool LayerRealAspectRatioOnLoad { get; set; } = true;
+
+        [ObservableProperty]
         public partial bool ShowBackgroundGrid { get; set; }
 
         [ObservableProperty]

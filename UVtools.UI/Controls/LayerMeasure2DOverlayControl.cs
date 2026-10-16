@@ -140,7 +140,7 @@ public class LayerMeasure2DOverlayControl : Control
     private void OnImageBoxPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (!IsActive || !StartPoint.HasValue) return;
-        if (e.PropertyName is nameof(AdvancedImageBox.Offset) or nameof(AdvancedImageBox.Zoom) or nameof(AdvancedImageBox.PointerPosition))
+        if (e.PropertyName is nameof(AdvancedImageBox.Offset) or nameof(AdvancedImageBox.Zoom) or nameof(AdvancedImageBox.PixelAspectRatio) or nameof(AdvancedImageBox.ImageRotation) or nameof(AdvancedImageBox.FlipHorizontal) or nameof(AdvancedImageBox.FlipVertical) or nameof(AdvancedImageBox.PointerPosition))
         {
             InvalidateVisual();
         }

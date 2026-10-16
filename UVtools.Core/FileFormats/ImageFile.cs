@@ -47,7 +47,8 @@ public sealed class ImageFile : FileFormat
 
     protected override void EncodeInternally(OperationProgress progress)
     {
-        FirstLayer?.LayerMat.Save(FileFullPath);
+        using var mat = FirstLayer?.LayerMat;
+        mat?.Save(FileFullPath);
     }
 
     protected override void DecodeInternally(OperationProgress progress)

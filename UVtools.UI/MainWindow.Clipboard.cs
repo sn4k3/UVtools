@@ -73,7 +73,7 @@ public partial class MainWindow
         if (clip?.Operation is null) return;
         /*if (clip.Operation.HaveROI)
         {
-            ROI = GetTransposedRectangle(clip.Operation.ROI);
+            ROI = clip.Operation.ROI;
         }
 
         if (clip.Operation.HaveMask)
