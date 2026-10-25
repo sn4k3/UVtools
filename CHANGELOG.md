@@ -26,7 +26,7 @@
   model to the view.
 - (Add) 3D preview: "Auto zoom & center issues" setting (on by default), independent of the layer preview one. When
   off, selecting an issue centers the camera on it keeping the zoom. Hold [ALT] while selecting the issue to invert
-  the behavior.
+  the behavior. (#1158)
 - (Add) Issues: "Group each island with the floating parts resting on it" setting (off by default). The pixels of an
   island no longer support the layer above, everything that rests only on an island is floating too and is shown with it
   as a single island issue, from its lowest layer, the one to support, up to where it joins the supported model.
