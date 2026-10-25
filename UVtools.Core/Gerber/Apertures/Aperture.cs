@@ -48,7 +48,83 @@ public abstract class Aperture
     }
     protected Aperture(GerberFormat document, int index, string name) : this(document, index) { Name = name; }
 
-    public abstract void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected);
+    /// <summary>
+    /// Gets whether the aperture has areas that are not exposed, a hole or a macro primitive with the exposure off.
+    /// They are see-through: the image under them is kept rather than painted with the opposite color.
+    /// </summary>
+    protected virtual bool HasClearAreas => false;
+
+    /// <summary>
+    /// Flashes the aperture at a position with the current polarity color.
+    /// </summary>
+    /// <param name="mat">Image to draw on</param>
+    /// <param name="at">Position in millimeters</param>
+    /// <param name="color">Polarity color, white to add and black to clear</param>
+    /// <param name="lineType">Line type</param>
+    public void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    {
+        if (!HasClearAreas)
+        {
+            DrawShape(mat, at, color, lineType);
+            return;
+        }
+
+        // The shape is drawn as a mask of its exposed area, then only that area takes the polarity color,
+        // so the holes don't erase what is under them nor add copper on a clear flash
+        var bounds = GetBoundsMm();
+        if (bounds.IsEmpty) return;
+
+        var topLeft = Document.PositionMmToPx(at.X + bounds.Left, at.Y + bounds.Top);
+        var bottomRight = Document.PositionMmToPx(at.X + bounds.Right, at.Y + bounds.Bottom);
+        var rectangle = Rectangle.FromLTRB(topLeft.X - 2, topLeft.Y - 2, bottomRight.X + 3, bottomRight.Y + 3);
+        rectangle.Intersect(new Rectangle(Point.Empty, mat.Size));
+        if (rectangle.Width <= 0 || rectangle.Height <= 0) return;
+
+        using var mask = new Mat(rectangle.Size, DepthType.Cv8U, 1);
+        mask.SetTo(EmguCvExtensions.BlackColor);
+        Document.DrawOrigin = rectangle.Location;
+        try
+        {
+            DrawShape(mask, at, EmguCvExtensions.WhiteColor, lineType);
+        }
+        finally
+        {
+            Document.DrawOrigin = Point.Empty;
+        }
+
+        using var roi = mat.Roi(rectangle);
+        if (color.Equals(EmguCvExtensions.BlackColor))
+        {
+            CvInvoke.BitwiseNot(mask, mask);
+            CvInvoke.Min(roi, mask, roi);
+        }
+        else
+        {
+            CvInvoke.Max(roi, mask, roi);
+        }
+    }
+
+    /// <summary>
+    /// Draws the aperture at a position, the exposed areas with <paramref name="color"/> and the clear areas with the
+    /// opposite color.
+    /// </summary>
+    protected abstract void DrawShape(Mat mat, PointF at, MCvScalar color, LineType lineType);
+
+    /// <summary>
+    /// Gets the area the aperture covers in millimeters, relative to its flash position and with
+    /// <see cref="GerberFormat.SizeScale"/> applied, or an empty rectangle when it draws nothing.
+    /// </summary>
+    protected abstract RectangleF GetBoundsMm();
+
+    /// <summary>
+    /// Gets a rectangle centered on the flash position, in millimeters.
+    /// </summary>
+    protected RectangleF GetCenteredBoundsMm(double width, double height)
+    {
+        var scaledWidth = (float)(width * Document.SizeScale);
+        var scaledHeight = (float)(height * Document.SizeScale);
+        return new RectangleF(-scaledWidth / 2, -scaledHeight / 2, scaledWidth, scaledHeight);
+    }
 
     public static Aperture? Parse(string line, GerberFormat document)
     {
@@ -202,8 +278,5 @@ public abstract class Aperture
         }
     }
 
-    protected static MCvScalar InvertColor(MCvScalar color)
-        => color.Equals(EmguCvExtensions.BlackColor)
-            ? EmguCvExtensions.WhiteColor
-            : EmguCvExtensions.BlackColor;
+    protected static MCvScalar InvertColor(MCvScalar color) => GerberFormat.InvertColor(color);
 }

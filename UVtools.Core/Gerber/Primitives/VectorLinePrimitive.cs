@@ -8,6 +8,7 @@
 
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using System;
 using System.Data;
 using System.Drawing;
@@ -95,7 +96,9 @@ public class VectorLinePrimitive : Primitive
         RotationExpression = rotationExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase); ;
     }
 
-    public override void DrawFlashD3(Mat mat, PointF at, LineType lineType = LineType.EightConnected)
+    public override bool IsExposureOff => IsParsed && Exposure == 0;
+
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
         if (!IsParsed) return;
         if (LineWidth <= 0) return;
@@ -104,7 +107,15 @@ public class VectorLinePrimitive : Primitive
         var end = RotateAroundMacroOrigin(EndX, EndY, Rotation);
         var pt1 = Document.PositionMmToPx(at.X + start.X, at.Y + start.Y);
         var pt2 = Document.PositionMmToPx(at.X + end.X, at.Y + end.Y);
-        CvInvoke.Line(mat, pt1, pt2, Document.GetPolarityColor(Exposure), EmguCvExtensions.CorrectThickness(Document.SizeMmToPxOverride(LineWidth, Document.XYppmm.Height)), lineType);
+        CvInvoke.Line(mat, pt1, pt2, GetExposureColor(Exposure, color), EmguCvExtensions.CorrectThickness(Document.SizeMmToPxOverride(LineWidth, Document.XYppmm.Height)), lineType);
+    }
+
+    public override RectangleF GetBoundsMm()
+    {
+        if (!IsParsed || LineWidth <= 0) return RectangleF.Empty;
+        // The full width on each side also covers the corners of a slanted line
+        return GetBoundsMm([RotateAroundMacroOrigin(StartX, StartY, Rotation), RotateAroundMacroOrigin(EndX, EndY, Rotation)],
+            (float)(LineWidth * Document.SizeScale));
     }
 
     public override void ParseExpressions(params string[] args)

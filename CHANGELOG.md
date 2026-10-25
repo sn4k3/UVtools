@@ -1,5 +1,35 @@
 # Changelog
 
+## 25/10/2026 - v7.1.1
+
+- **PCB exposure:**
+  - (Fix) Gerber X2 attributes (%TO, %TA, %TD) and other unsupported extended commands were parsed as
+  coordinates and D codes, a net or component name like TX0, Y1 or D12 drew phantom copper or changed the aperture,
+  dropping the next pads and tracks (#1159).
+  - (Fix) Gerber arcs exact to the file resolution were rejected, mostly small arcs in inch files with few
+  decimals (Eagle 2.4), and the next track then started from the arc start. An arc that can't be resolved is now drawn
+  as a straight segment and still moves to its end point.
+  - (Fix) Gerber aperture macro primitives were rotated clockwise instead of counterclockwise, and the
+  center line rotation was rounded to whole degrees.
+  - (Fix) defining a Gerber aperture also selected it, the following tracks and pads used the new
+  aperture instead of the selected one.
+  - (Fix) Gerber aperture macros flashed with clear polarity (%LPC) added copper instead of clearing it.
+  - (Fix) Gerber aperture holes and macro parts with the exposure off erased the copper under them, and
+  a clear flash with a hole added copper in the hole. They now show what is under them.
+  - (Fix) Gerber rectangle pads were one pixel larger on each axis, and with "Size scale" they grew to the
+  right and down only instead of staying centered.
+  - (Fix) Gerber coordinates with a + sign were ignored, and only the first command of an extended block
+  with several (%FSLAX24Y24*MOIN*%) was read, so such inch files were read as millimeters.
+  - (Improvement) unsupported Gerber commands that change the image (step and repeat, block apertures,
+    aperture mirroring, rotation and scaling) are recorded in `GerberFormat.UnsupportedCommands`.
+- (Add) 3D preview: zoom level on the toolbar, relative to the whole model fitting the view (1x), click to fit the
+  model to the view.
+- (Add) 3D preview: "Auto zoom & center issues" setting (on by default), independent of the layer preview one. When
+  off, selecting an issue centers the camera on it keeping the zoom. Hold [ALT] while selecting the issue to invert
+  the behavior.
+- (Fix) About window was showing available ram instead of used ram.
+- (Upgrade) .NET from 10.0.12 to 10.0.13
+
 ## 16/10/2026 - v7.1.0
 
 - (Change) Use NuGet mini runtimes for Windows, macOS, Ubuntu 24.04 x64 and Debian 13 (Trixie) ARM64, with custom

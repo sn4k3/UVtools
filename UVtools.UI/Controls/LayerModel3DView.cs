@@ -464,6 +464,12 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             o => o.MeasureDistanceText
         );
 
+    public static readonly DirectProperty<LayerModel3DView, float> ZoomFactorProperty =
+        AvaloniaProperty.RegisterDirect<LayerModel3DView, float>(
+            nameof(ZoomFactor),
+            o => o.ZoomFactor
+        );
+
     public static readonly StyledProperty<float> SlabThicknessProperty = AvaloniaProperty.Register<
         LayerModel3DView,
         float
@@ -640,6 +646,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private float _cameraAnimationYawDelta;
 
     private float _cameraDistance = 100;
+    private float _zoomFactor = 1;
     private float _cameraPitch = 0.55f;
     private float _cameraRoll;
 
@@ -975,6 +982,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             _mesh = value;
             if (value is not null && value.VertexCount > 0)
                 _modelRadius = Math.Max(value.Size.Length() / 2, 0.5f); // A rebuilt model may have another size
+            UpdateZoomFactor();
             _needsUpload = true;
             _needsGridUpload = true;
             _needsBoundingBoxUpload = true;
@@ -1233,6 +1241,15 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         private set => SetAndRaise(MeasureDistanceTextProperty, ref _measureDistanceText, value);
     }
 
+    /// <summary>
+    /// Gets the zoom factor, relative to the camera distance that fits the whole model in the view (1x).
+    /// </summary>
+    public float ZoomFactor
+    {
+        get => _zoomFactor;
+        private set => SetAndRaise(ZoomFactorProperty, ref _zoomFactor, value);
+    }
+
     public float CameraYaw => _cameraYaw;
     public float CameraPitch => _cameraPitch;
     public float CameraRoll => _cameraRoll;
@@ -1392,6 +1409,16 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         var maxDistance = Math.Max(20f, _modelRadius * 2.6f);
         _cameraDistance = Math.Clamp(optimalDist, 8f, maxDistance);
 
+        CameraChanged();
+    }
+
+    /// <summary>
+    /// Centers the camera on the bounding box without changing the zoom.
+    /// </summary>
+    public void CenterOnBoundingBox(Vector3 min, Vector3 max)
+    {
+        CancelCameraAnimation();
+        _cameraTarget = (min + max) / 2f;
         CameraChanged();
     }
 
@@ -1902,7 +1929,21 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         CancelCameraAnimation();
         _cameraDistance *= MathF.Exp(-steps * ZoomSensitivity);
         _cameraDistance = Math.Clamp(_cameraDistance, _modelRadius * 0.08f, _modelRadius * 100);
+        UpdateZoomFactor();
         RequestNextFrameRendering();
+    }
+
+    private void UpdateZoomFactor()
+    {
+        var zoomFactor = MathF.Round(_modelRadius * 2.6f / Math.Max(_cameraDistance, 0.001f), 2);
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            ZoomFactor = zoomFactor;
+        }
+        else
+        {
+            Dispatcher.UIThread.Post(() => ZoomFactor = zoomFactor);
+        }
     }
 
     private void AnimateToOrientation(float targetYaw, float targetPitch, float targetRoll = 0f)
@@ -4304,6 +4345,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
     private void CameraChanged()
     {
+        UpdateZoomFactor();
         NotifyCameraOrientationChanged();
         RequestNextFrameRendering();
     }

@@ -8,6 +8,7 @@
 
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using System;
 using System.Data;
 using System.Drawing;
@@ -83,16 +84,25 @@ public class PolygonPrimitive : Primitive
         RotationExpression = rotationExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase);
     }
 
-    public override void DrawFlashD3(Mat mat, PointF at, LineType lineType = LineType.EightConnected)
+    public override bool IsExposureOff => IsParsed && Exposure == 0;
+
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
         if (!IsParsed) return;
         if (Diameter <= 0 || VerticesCount is < 3 or > 12) return;
 
+        // Counterclockwise like the center around the macro origin, the same angle the polygon aperture uses
         var center = RotateAroundMacroOrigin(CenterX, CenterY, Rotation);
         mat.DrawPolygon(VerticesCount,
             Document.SizeMmToPx(Diameter, Diameter),
             Document.PositionMmToPx(at.X + center.X, at.Y + center.Y),
-            Document.GetPolarityColor(Exposure), -Rotation, -1, lineType);
+            GetExposureColor(Exposure, color), Rotation, -1, lineType);
+    }
+
+    public override RectangleF GetBoundsMm()
+    {
+        if (!IsParsed || Diameter <= 0 || VerticesCount is < 3 or > 12) return RectangleF.Empty;
+        return GetCenteredBoundsMm(RotateAroundMacroOrigin(CenterX, CenterY, Rotation), Diameter * Document.SizeScale);
     }
 
     public override void ParseExpressions(params string[] args)

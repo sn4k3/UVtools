@@ -36,7 +36,12 @@ public class ObroundAperture : Aperture
     }
     #endregion
 
-    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    protected override bool HasClearAreas => HoleDiameter > 0;
+
+    protected override RectangleF GetBoundsMm() =>
+        Axes.Width > 0 && Axes.Height > 0 ? GetCenteredBoundsMm(Axes.Width, Axes.Height) : RectangleF.Empty;
+
+    protected override void DrawShape(Mat mat, PointF at, MCvScalar color, LineType lineType)
     {
         if (Axes.Width <= 0 || Axes.Height <= 0) return;
 

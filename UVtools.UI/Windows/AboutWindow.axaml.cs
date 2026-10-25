@@ -1,11 +1,11 @@
-﻿using Avalonia;
-using Emgu.CV;
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.Input;
+using Emgu.CV;
 using Material.Icons;
 using StageKit.Primitives.System;
 using StageKit.Runtime;
@@ -44,19 +44,28 @@ public partial class AboutWindow : GenericWindow
             for (var i = 0; i < assemblies.Length; i++)
             {
                 var assembly = assemblies[i].GetName();
-                sb.AppendLine(string.Format($"{{0:D{assembliesLengthPad}}}: {{1}}, Version={{2}}", i+1, assembly.Name, assembly.Version));
+                sb.AppendLine(
+                    string.Format(
+                        $"{{0:D{assembliesLengthPad}}}: {{1}}, Version={{2}}",
+                        i + 1,
+                        assembly.Name,
+                        assembly.Version
+                    )
+                );
             }
 
             return sb.ToString().TrimEnd();
         }
     }
 
-    public static string OSDescription => $"{RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture}";
+    public static string OSDescription =>
+        $"{RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture}";
 
     public static string RuntimeDescription => RuntimeInformation.RuntimeIdentifier;
 
     public static string FrameworkDescription => RuntimeInformation.FrameworkDescription;
-    public static string AvaloniaUIDescription => typeof(AvaloniaObject).Assembly.GetName().Version!.ToString(3);
+    public static string AvaloniaUIDescription =>
+        typeof(AvaloniaObject).Assembly.GetName().Version!.ToString(3);
 
     public static string OpenCVVersion
     {
@@ -91,11 +100,12 @@ public partial class AboutWindow : GenericWindow
             }
 
             var factor = Math.Pow(1024, 3);
-            return $"{memory.AvailablePhysicalBytes / factor:F2} / {memory.TotalPhysicalBytes / factor:F2} GB";
+            return $"{memory.UsedPhysicalBytes / factor:F2} / {memory.TotalPhysicalBytes / factor:F2} GB";
         }
     }
 
     public int ScreenCount => Screens.ScreenCount;
+
     //public string ScreenResolution => $"{Screens.Primary.Bounds.Width} x {Screens.Primary.Bounds.Height} @ {Screens.Primary.PixelDensity*100}%";
     //public string WorkingArea => $"{Screens.Primary.WorkingArea.Width} x {Screens.Primary.WorkingArea.Height}";
     //public string RealWorkingArea => $"{App.MaxWindowSize.Width} x {App.MaxWindowSize.Height}";
@@ -105,20 +115,25 @@ public partial class AboutWindow : GenericWindow
         get
         {
             var result = new StringBuilder();
-            var onScreen = Screens.ScreenFromVisual(App.MainWindow is not null ? App.MainWindow : this);
+            var onScreen = Screens.ScreenFromVisual(
+                App.MainWindow is not null ? App.MainWindow : this
+            );
             for (var i = 0; i < Screens.All.Count; i++)
             {
                 var screen = Screens.All[i];
-                result.AppendLine($"{i+1}: {screen.Bounds.Width} x {screen.Bounds.Height} @ {Math.Round(screen.Scaling * 100, 2)}%" +
-                                  (screen.IsPrimary ? " (Primary)" : null) +
-                                  (onScreen == screen ? " (On this)" : null)
+                result.AppendLine(
+                    $"{i + 1}: {screen.Bounds.Width} x {screen.Bounds.Height} @ {Math.Round(screen.Scaling * 100, 2)}%"
+                        + (screen.IsPrimary ? " (Primary)" : null)
+                        + (onScreen == screen ? " (On this)" : null)
                 );
-                result.AppendLine($"    WA: {screen.WorkingArea.Width} x {screen.WorkingArea.Height}    UA: {Math.Round(screen.WorkingArea.Width / screen.Scaling)} x {Math.Round(screen.WorkingArea.Height / screen.Scaling)}");
+                result.AppendLine(
+                    $"    WA: {screen.WorkingArea.Width} x {screen.WorkingArea.Height}    UA: {Math.Round(screen.WorkingArea.Width / screen.Scaling)} x {Math.Round(screen.WorkingArea.Height / screen.Scaling)}"
+                );
             }
             return result.ToString().TrimEnd();
         }
     }
-    
+
     public string DiagnosticsInformation => RuntimeDiagnostics.GetReport();
 
     public AboutWindow()
@@ -130,9 +145,12 @@ public partial class AboutWindow : GenericWindow
     [RelayCommand]
     public async Task TermsOfUseClicked()
     {
-        var messageWindow = new MessageWindow(About.TermsOfUseTitle, MaterialIconKind.Handshake,
+        var messageWindow = new MessageWindow(
+            About.TermsOfUseTitle,
+            MaterialIconKind.Handshake,
             About.TermsOfUseHeader,
-            About.TermsOfUse);
+            About.TermsOfUse
+        );
 
         await messageWindow.ShowDialog(this);
     }
@@ -143,7 +161,8 @@ public partial class AboutWindow : GenericWindow
         var message = new StringBuilder();
         message.AppendLine($"{About.SoftwareWithVersionArch}");
         message.AppendLine($"Operative system: {OSDescription}");
-        if(!string.IsNullOrWhiteSpace(gpu)) message.AppendLine($"Graphic card: {gpu}");
+        if (!string.IsNullOrWhiteSpace(gpu))
+            message.AppendLine($"Graphic card: {gpu}");
         message.AppendLine($"Processor: {ProcessorName}");
         message.AppendLine($"Processor cores: {ProcessorCount}");
         message.AppendLine($"Memory RAM: {MemoryRAMDescription}");
@@ -156,7 +175,9 @@ public partial class AboutWindow : GenericWindow
         message.AppendLine($"Executable: {App.AppExecutable}");
         if (App.SlicerFile is not null)
         {
-            message.AppendLine($"Loaded file: {App.SlicerFile.Filename} [Version: {App.SlicerFile.Version}] [Class: {App.SlicerFile.GetType().Name}]");
+            message.AppendLine(
+                $"Loaded file: {App.SlicerFile.Filename} [Version: {App.SlicerFile.Version}] [Class: {App.SlicerFile.GetType().Name}]"
+            );
         }
 
         return message.ToString();
@@ -168,7 +189,8 @@ public partial class AboutWindow : GenericWindow
         var message = new StringBuilder();
         message.AppendLine($"{About.SoftwareWithVersionArch}");
         message.AppendLine($"Operative system: {OSDescription}");
-        if(!string.IsNullOrWhiteSpace(gpu)) message.AppendLine($"Graphic card: {gpu}");
+        if (!string.IsNullOrWhiteSpace(gpu))
+            message.AppendLine($"Graphic card: {gpu}");
         message.AppendLine($"Processor: {ProcessorName}");
         message.AppendLine($"Processor cores: {ProcessorCount}");
         message.AppendLine($"Memory RAM: {MemoryRAMDescription}");
@@ -184,7 +206,9 @@ public partial class AboutWindow : GenericWindow
         message.AppendLine($"Executable: {App.AppExecutable}");
         if (SlicerFile is not null)
         {
-            message.AppendLine($"Loaded file: {SlicerFile.Filename} [Version: {SlicerFile.Version}] [Class: {SlicerFile.GetType().Name}]");
+            message.AppendLine(
+                $"Loaded file: {SlicerFile.Filename} [Version: {SlicerFile.Version}] [Class: {SlicerFile.GetType().Name}]"
+            );
         }
 
         return message.ToString();
@@ -195,7 +219,6 @@ public partial class AboutWindow : GenericWindow
     {
         Clipboard?.SetTextAsync(GetEssentialInformation());
     }
-
 
     [RelayCommand]
     public void CopyOpenCVInformationToClipboard()
@@ -212,7 +235,8 @@ public partial class AboutWindow : GenericWindow
     [RelayCommand]
     public async Task CopyInformationToClipboard()
     {
-        if (Clipboard is null) return;
+        if (Clipboard is null)
+            return;
 
         var message = new StringBuilder();
         message.Append(GetEssentialInformation());

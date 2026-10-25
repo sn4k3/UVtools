@@ -8,6 +8,7 @@
 
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using System.Drawing;
 
 namespace UVtools.Core.Gerber.Primitives;
@@ -45,10 +46,11 @@ public class CommentPrimitive : Primitive
     }
 
     
-    public override void DrawFlashD3(Mat mat, PointF at, LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
-
     }
+
+    public override RectangleF GetBoundsMm() => RectangleF.Empty;
 
     public override void ParseExpressions(params string[] args)
     {

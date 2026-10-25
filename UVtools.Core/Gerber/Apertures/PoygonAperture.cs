@@ -36,7 +36,12 @@ public class PolygonAperture : Aperture
     }
     #endregion
 
-    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    protected override bool HasClearAreas => HoleDiameter > 0;
+
+    protected override RectangleF GetBoundsMm() =>
+        Diameter > 0 && Vertices is >= 3 and <= 12 ? GetCenteredBoundsMm(Diameter, Diameter) : RectangleF.Empty;
+
+    protected override void DrawShape(Mat mat, PointF at, MCvScalar color, LineType lineType)
     {
         if (Diameter <= 0 || Vertices is < 3 or > 12) return;
 

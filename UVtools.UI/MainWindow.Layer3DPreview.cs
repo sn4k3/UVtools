@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
@@ -758,6 +759,12 @@ public partial class MainWindow
     }
 
     [RelayCommand]
+    public void FitLayer3DToView()
+    {
+        LayerModel3DView.FitToView();
+    }
+
+    [RelayCommand]
     public async Task CopyLayer3DSnapshotToClipboard()
     {
         if (!HasLayer3DMesh) return;
@@ -1191,7 +1198,15 @@ public partial class MainWindow
         var min = new Vector3(minX - padX, minY - padY, minZ);
         var max = new Vector3(maxX + padX, maxY + padY, maxZ);
 
-        LayerModel3DView.FocusOnBoundingBox(min, max);
+        if (Settings.Layer3DPreview.ZoomIssues ^ ((_globalModifiers & KeyModifiers.Alt) != 0))
+        {
+            LayerModel3DView.FocusOnBoundingBox(min, max);
+        }
+        else
+        {
+            LayerModel3DView.CenterOnBoundingBox(min, max);
+        }
+
         LayerModel3DView.SetFocusedBoundingBox(min, max);
     }
 

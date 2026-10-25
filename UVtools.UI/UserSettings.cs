@@ -801,6 +801,9 @@ public partial class UserSettings : ObservableObject
         public partial bool ShowLayerIssues { get; set; } = true;
 
         [ObservableProperty]
+        public partial bool ZoomIssues { get; set; } = true;
+
+        [ObservableProperty]
         public partial bool GhostClippedModel { get; set; } = true;
 
         [ObservableProperty]

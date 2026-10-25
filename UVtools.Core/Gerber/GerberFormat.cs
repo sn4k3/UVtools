@@ -194,10 +194,23 @@ public partial class GerberFormat
 
             if (line.StartsWith("%ADD"))
             {
+                // Defining an aperture does not select it, only a Dnn command does
                 var aperture = Aperture.Parse(line, document);
                 if (aperture is null) continue;
-                currentAperture = aperture;
                 document.Apertures[aperture.Index] = aperture;
+                continue;
+            }
+
+            // Extended commands carry no coordinates nor D codes, the unhandled ones (attributes %TF/%TA/%TO/%TD,
+            // %SR, %LM, ...) are skipped so their values (a net TX0, a component Y1 or D12) are not drawn (#1159)
+            if (line[0] == '%')
+            {
+                if (line.Length >= 3 && UnsupportedExtendedCommands.Contains(line.Substring(1, 2)) &&
+                    document._unsupportedCommands.Add(line.Substring(1, 2)))
+                {
+                    Debug.WriteLine($"Gerber: the {line.Substring(1, 2)} command is not supported and was ignored");
+                }
+
                 continue;
             }
 
@@ -223,7 +236,7 @@ public partial class GerberFormat
 
             if (!hasCoordinate)
             {
-                if (!matchD.Success && !line.StartsWith('%'))
+                if (!matchD.Success)
                 {
                     Debug.WriteLine($"Not recognized command: {line}");
                 }
@@ -257,10 +270,18 @@ public partial class GerberFormat
 
             Point[]? arcPoints = null;
             if (currentOperation == 1 &&
-                document.MoveType is GerberMoveType.Arc or GerberMoveType.ArcCounterClockwise &&
-                !document.TryBuildArcPoints(line, currentX, currentY, nowX, nowY, out arcPoints))
+                document.MoveType is GerberMoveType.Arc or GerberMoveType.ArcCounterClockwise)
             {
-                continue;
+                if (document.TryBuildArcPoints(line, currentX, currentY, nowX, nowY, out var points))
+                {
+                    arcPoints = points;
+                }
+                else
+                {
+                    // Drawn as a straight segment and still moved to the end point, otherwise every following
+                    // segment would start from the wrong place
+                    Debug.WriteLine($"Gerber: unable to resolve the arc, drawn as a line: {line}");
+                }
             }
 
             // Track the plotted extents for auto-centering. Operation 2 is a pen-up move, so it only counts
@@ -347,8 +368,11 @@ public partial class GerberFormat
                 }
                 else
                 {
-                    var result = command.ToString().Trim();
-                    if (result.Length > 0) yield return result;
+                    foreach (var result in SplitExtendedBlock(command.ToString().Trim()))
+                    {
+                        yield return result;
+                    }
+
                     command.Clear();
                     extended = false;
                 }
@@ -365,6 +389,27 @@ public partial class GerberFormat
         if (remaining.Length > 0) yield return remaining;
     }
 
+    /// <summary>
+    /// Splits an extended block holding several commands, as older files write them (%FSLAX24Y24*MOIN*%), into one
+    /// %…*% block per command. An aperture macro is a single command made of several '*' terminated statements, so it
+    /// is kept whole.
+    /// </summary>
+    private static IEnumerable<string> SplitExtendedBlock(string block)
+    {
+        if (block.Length == 0) yield break;
+        if (block.StartsWith("%AM", StringComparison.Ordinal) || block.Length < 2 || block[^1] != '%' ||
+            block.AsSpan(1, block.Length - 2).TrimEnd('*').IndexOf('*') < 0)
+        {
+            yield return block;
+            yield break;
+        }
+
+        foreach (var command in block[1..^1].Split('*', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            yield return $"%{command}*%";
+        }
+    }
+
     private bool TryParseCoordinate(string text, byte integerDigits, byte fractionalDigits,
         out double value)
     {
@@ -372,7 +417,7 @@ public partial class GerberFormat
         if (text.Length == 0) return false;
 
         var negative = text[0] == '-';
-        var digits = negative ? text.AsSpan(1) : text.AsSpan();
+        var digits = text[0] is '-' or '+' ? text.AsSpan(1) : text.AsSpan();
         var expectedLength = integerDigits + fractionalDigits;
         if (digits.Length == 0 || digits.Length > expectedLength ||
             !long.TryParse(digits, NumberStyles.None, CultureInfo.InvariantCulture, out var rawValue))
@@ -450,12 +495,13 @@ public partial class GerberFormat
         out double centerY, out double startAngle, out double sweep, out double radius)
     {
         centerX = centerY = startAngle = sweep = radius = 0;
+        var tolerance = GetArcTolerance(MathExtensions.Hypot(offsetX, offsetY));
         if (QuadrantMode == GerberQuadrantMode.MultiQuadrant)
         {
             centerX = startX + offsetX;
             centerY = startY + offsetY;
             return TryCalculateArc(startX, startY, endX, endY, centerX, centerY,
-                counterClockwise, out startAngle, out sweep, out radius);
+                counterClockwise, tolerance, out startAngle, out sweep, out radius);
         }
 
         var absoluteX = Math.Abs(offsetX);
@@ -467,7 +513,7 @@ public partial class GerberFormat
             var candidateX = startX + absoluteX * xSign;
             var candidateY = startY + absoluteY * ySign;
             if (!TryCalculateArc(startX, startY, endX, endY, candidateX, candidateY,
-                    counterClockwise, out var candidateStart, out var candidateSweep,
+                    counterClockwise, tolerance, out var candidateStart, out var candidateSweep,
                     out var candidateRadius) ||
                 Math.Abs(candidateSweep) > Math.PI / 2 + 1e-6)
             {
@@ -486,11 +532,22 @@ public partial class GerberFormat
             radius = candidateRadius;
         }
 
-        return bestError <= Math.Max(1e-6, radius * 0.001);
+        return bestError <= tolerance;
+    }
+
+    /// <summary>
+    /// Gets how much the start and end radius of an arc may differ, in millimeters. The end point and the center offset
+    /// are rounded to the coordinate format, so with few decimals (2.4 inch is 2.54 µm) a small arc differs by more than
+    /// a fraction of its radius while being exact to the file resolution.
+    /// </summary>
+    private double GetArcTolerance(double radius)
+    {
+        var resolution = GetMillimeters(Math.Pow(10, -Math.Min(CoordinateXFractionalDigits, CoordinateYFractionalDigits)));
+        return Math.Max(radius * 0.001, resolution * 2);
     }
 
     private static bool TryCalculateArc(double startX, double startY, double endX,
-        double endY, double centerX, double centerY, bool counterClockwise,
+        double endY, double centerX, double centerY, bool counterClockwise, double tolerance,
         out double startAngle, out double sweep, out double radius)
     {
         var startVectorX = startX - centerX;
@@ -500,7 +557,7 @@ public partial class GerberFormat
         startAngle = Math.Atan2(startVectorY, startVectorX);
         var endAngle = Math.Atan2(endY - centerY, endX - centerX);
         if (!double.IsFinite(radius) || radius <= 0 ||
-            Math.Abs(radius - endRadius) > Math.Max(1e-6, radius * 0.001))
+            Math.Abs(radius - endRadius) > tolerance)
         {
             sweep = 0;
             return false;
@@ -627,21 +684,28 @@ public partial class GerberFormat
 
     public Point PositionMmToPx(PointF atMm)
     {
-        return new Point((int)Math.Round((atMm.X + OffsetX) * XYppmm.Width, MidpointRounding.AwayFromZero),
-            (int)Math.Round((atMm.Y + OffsetY) * XYppmm.Height, MidpointRounding.AwayFromZero));
+        return PositionMmToPx(atMm.X, atMm.Y);
     }
 
     public Point PositionMmToPx(double atXmm, double atYmm)
     {
-        return new Point((int)Math.Round((atXmm + OffsetX) * XYppmm.Width, MidpointRounding.AwayFromZero),
-            (int)Math.Round((atYmm + OffsetY) * XYppmm.Height, MidpointRounding.AwayFromZero));
+        return new Point((int)Math.Round((atXmm + OffsetX) * XYppmm.Width, MidpointRounding.AwayFromZero) - DrawOrigin.X,
+            (int)Math.Round((atYmm + OffsetY) * XYppmm.Height, MidpointRounding.AwayFromZero) - DrawOrigin.Y);
     }
 
     public Point PositionMmToPx(float atXmm, float atYmm)
     {
-        return new Point((int)Math.Round((atXmm + OffsetX) * XYppmm.Width, MidpointRounding.AwayFromZero),
-            (int)Math.Round((atYmm + OffsetY) * XYppmm.Height, MidpointRounding.AwayFromZero));
+        return new Point((int)Math.Round((atXmm + OffsetX) * XYppmm.Width, MidpointRounding.AwayFromZero) - DrawOrigin.X,
+            (int)Math.Round((atYmm + OffsetY) * XYppmm.Height, MidpointRounding.AwayFromZero) - DrawOrigin.Y);
     }
+
+    /// <summary>
+    /// Gets the opposite drawing color, black for white and white for black.
+    /// </summary>
+    internal static MCvScalar InvertColor(MCvScalar color)
+        => color.Equals(EmguCvExtensions.BlackColor)
+            ? EmguCvExtensions.WhiteColor
+            : EmguCvExtensions.BlackColor;
 
     public Size SizeMmToPx(SizeF sizeMm)
     {
@@ -691,16 +755,16 @@ public partial class GerberFormat
     [GeneratedRegex(@"D([0-9]+)")]
     private static partial Regex LineDParse();
 
-    [GeneratedRegex(@"X(-?[0-9]+)?")]
+    [GeneratedRegex(@"X([+-]?[0-9]+)?")]
     private static partial Regex LineXParse();
 
-    [GeneratedRegex(@"Y(-?[0-9]+)?")]
+    [GeneratedRegex(@"Y([+-]?[0-9]+)?")]
     private static partial Regex LineYParse();
 
-    [GeneratedRegex(@"I(-?[0-9]+)")]
+    [GeneratedRegex(@"I([+-]?[0-9]+)")]
     private static partial Regex LineIParse();
 
-    [GeneratedRegex(@"J(-?[0-9]+)")]
+    [GeneratedRegex(@"J([+-]?[0-9]+)")]
     private static partial Regex LineJParse();
 
     #endregion
@@ -727,6 +791,27 @@ public partial class GerberFormat
 
     public Dictionary<int, Aperture> Apertures { get; } = new();
     public Dictionary<string, Macro> Macros { get; } = new();
+
+    /// <summary>
+    /// Extended commands that change the image but are not supported, they are ignored and recorded in
+    /// <see cref="UnsupportedCommands"/>: step and repeat, block apertures, and the aperture mirroring, rotation and
+    /// scaling.
+    /// </summary>
+    private static readonly HashSet<string> UnsupportedExtendedCommands = ["SR", "AB", "LM", "LR", "LS"];
+
+    private readonly HashSet<string> _unsupportedCommands = [];
+
+    /// <summary>
+    /// Gets the codes of the commands found in the file that change the image but are not supported and were ignored
+    /// (SR, AB, LM, LR, LS), the drawing may not match the file when any is present.
+    /// </summary>
+    public IReadOnlyCollection<string> UnsupportedCommands => _unsupportedCommands;
+
+    /// <summary>
+    /// Pixel subtracted from every position by <see cref="PositionMmToPx(double, double)"/>, to draw into a mask that
+    /// covers only part of the plate.
+    /// </summary>
+    internal Point DrawOrigin { get; set; }
 
     public SizeF XYppmm { get; init; }
 

@@ -8,10 +8,12 @@
 
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
+using Emgu.CV.Util;
 using System;
 using System.Data;
 using System.Drawing;
-using EmguExtensions;
+using UVtools.Core.Gerber.Apertures;
 
 namespace UVtools.Core.Gerber.Primitives;
 
@@ -86,16 +88,59 @@ public class CenterLinePrimitive : Primitive
     }
 
 
-    public override void DrawFlashD3(Mat mat, PointF at, LineType lineType = LineType.EightConnected)
+    public override bool IsExposureOff => IsParsed && Exposure == 0;
+
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
         if (!IsParsed) return;
         if (Width <= 0 || Height <= 0) return;
 
-        var center = RotateAroundMacroOrigin(CenterX, CenterY, Rotation);
-        mat.DrawRotatedRectangle(Document.SizeMmToPx(Width, Height),
-            Document.PositionMmToPx(at.X + center.X, at.Y + center.Y),
-            Document.GetPolarityColor(Exposure),
-            -(int)Math.Round(Rotation % 360, MidpointRounding.AwayFromZero), -1, lineType);
+        color = GetExposureColor(Exposure, color);
+        var rotation = Rotation % 360;
+        if (rotation % 90 == 0)
+        {
+            // Axis aligned, drawn as a rectangle to cover the same pixels as a rectangle aperture of that size
+            var center = RotateAroundMacroOrigin(CenterX, CenterY, rotation);
+            var location = Document.PositionMmToPx(at.X + center.X, at.Y + center.Y);
+            var size = Math.Abs(rotation) is 90 or 270
+                ? Document.SizeMmToPx(Height, Width)
+                : Document.SizeMmToPx(Width, Height);
+            RectangleAperture.DrawCenteredRectangle(mat, location, size, color, lineType);
+            return;
+        }
+
+        // Rotated by the exact angle, counterclockwise around the macro origin
+        var corners = GetCorners();
+        var points = new Point[corners.Length];
+        for (var index = 0; index < corners.Length; index++)
+        {
+            points[index] = Document.PositionMmToPx(at.X + corners[index].X, at.Y + corners[index].Y);
+        }
+
+        using var vector = new VectorOfPoint(points);
+        CvInvoke.FillPoly(mat, vector, color, lineType);
+    }
+
+    public override RectangleF GetBoundsMm()
+    {
+        if (!IsParsed || Width <= 0 || Height <= 0) return RectangleF.Empty;
+        return GetBoundsMm(GetCorners());
+    }
+
+    /// <summary>
+    /// Gets the rotated corners in millimeters relative to the macro origin, with the size scaled.
+    /// </summary>
+    private PointF[] GetCorners()
+    {
+        var halfWidth = (float)(Width * Document.SizeScale / 2);
+        var halfHeight = (float)(Height * Document.SizeScale / 2);
+        return
+        [
+            RotateAroundMacroOrigin(CenterX - halfWidth, CenterY - halfHeight, Rotation),
+            RotateAroundMacroOrigin(CenterX + halfWidth, CenterY - halfHeight, Rotation),
+            RotateAroundMacroOrigin(CenterX + halfWidth, CenterY + halfHeight, Rotation),
+            RotateAroundMacroOrigin(CenterX - halfWidth, CenterY + halfHeight, Rotation)
+        ];
     }
 
     public override void ParseExpressions(params string[] args)

@@ -8,6 +8,7 @@
 
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -35,7 +36,59 @@ public abstract class Primitive
         Document = document;
     }
 
-    public abstract void DrawFlashD3(Mat mat, PointF at, LineType lineType = LineType.EightConnected);
+    /// <summary>
+    /// Gets whether the primitive is drawn with the exposure off, clearing the primitives before it in the macro.
+    /// </summary>
+    public virtual bool IsExposureOff => false;
+
+    /// <summary>
+    /// Draws the primitive of a macro flashed at a position.
+    /// </summary>
+    /// <param name="mat">Image to draw on</param>
+    /// <param name="at">Flash position in millimeters</param>
+    /// <param name="color">Polarity color, drawn when the exposure is on, the opposite color when it is off</param>
+    /// <param name="lineType">Line type</param>
+    public abstract void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected);
+
+    /// <summary>
+    /// Gets the area the primitive covers in millimeters, relative to the macro origin and with
+    /// <see cref="GerberFormat.SizeScale"/> applied to the sizes, or an empty rectangle when it draws nothing.
+    /// </summary>
+    public abstract RectangleF GetBoundsMm();
+
+    /// <summary>
+    /// Gets the color for an exposure, the polarity color when on and the opposite color when off.
+    /// </summary>
+    protected static MCvScalar GetExposureColor(byte exposure, MCvScalar color)
+        => exposure > 0 ? color : GerberFormat.InvertColor(color);
+
+    /// <summary>
+    /// Gets a square centered on a point in millimeters.
+    /// </summary>
+    protected static RectangleF GetCenteredBoundsMm(PointF center, double size)
+    {
+        var half = (float)size / 2;
+        return new RectangleF(center.X - half, center.Y - half, half * 2, half * 2);
+    }
+
+    /// <summary>
+    /// Gets the rectangle enclosing points in millimeters, grown by <paramref name="margin"/> on each side.
+    /// </summary>
+    protected static RectangleF GetBoundsMm(ReadOnlySpan<PointF> points, float margin = 0)
+    {
+        if (points.IsEmpty) return RectangleF.Empty;
+
+        float minX = float.MaxValue, minY = float.MaxValue, maxX = float.MinValue, maxY = float.MinValue;
+        foreach (var point in points)
+        {
+            minX = MathF.Min(minX, point.X);
+            minY = MathF.Min(minY, point.Y);
+            maxX = MathF.Max(maxX, point.X);
+            maxY = MathF.Max(maxY, point.Y);
+        }
+
+        return RectangleF.FromLTRB(minX - margin, minY - margin, maxX + margin, maxY + margin);
+    }
 
     public abstract void ParseExpressions(params string[] args);
 
@@ -132,12 +185,16 @@ public abstract class Primitive
         return float.IsFinite(value);
     }
 
+    /// <summary>
+    /// Rotates a point counterclockwise around the macro origin. The image is drawn with the file coordinates as they
+    /// are, the Y axis is only flipped afterward for the whole board, so this is the standard rotation.
+    /// </summary>
     protected static PointF RotateAroundMacroOrigin(float x, float y, float rotation)
     {
         rotation %= 360;
         if (rotation % 360 == 0) return new PointF(x, y);
 
-        var radians = -rotation * Math.PI / 180;
+        var radians = rotation * Math.PI / 180;
         var cosine = Math.Cos(radians);
         var sine = Math.Sin(radians);
         return new PointF(

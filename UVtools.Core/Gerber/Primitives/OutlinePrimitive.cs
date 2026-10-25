@@ -8,6 +8,7 @@
 
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using System;
 using System.Collections.Generic;
@@ -77,7 +78,22 @@ public class OutlinePrimitive : Primitive
     }
 
 
-    public override void DrawFlashD3(Mat mat, PointF at, LineType lineType = LineType.EightConnected)
+    public override bool IsExposureOff => IsParsed && Exposure == 0;
+
+    public override RectangleF GetBoundsMm()
+    {
+        if (!IsParsed || Coordinates.Length < 4) return RectangleF.Empty;
+
+        var points = new PointF[Coordinates.Length];
+        for (var index = 0; index < Coordinates.Length; index++)
+        {
+            points[index] = RotateAroundMacroOrigin(Coordinates[index].X, Coordinates[index].Y, Rotation);
+        }
+
+        return GetBoundsMm(points);
+    }
+
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
         if (!IsParsed || Coordinates.Length < 4) return;
 
@@ -93,7 +109,7 @@ public class OutlinePrimitive : Primitive
         if (points.Count < 3) return;
 
         using var vec = new VectorOfPoint(points.ToArray());
-        CvInvoke.FillPoly(mat, vec, Document.GetPolarityColor(Exposure), lineType);
+        CvInvoke.FillPoly(mat, vec, GetExposureColor(Exposure, color), lineType);
     }
 
     public override void ParseExpressions(params string[] args)

@@ -34,14 +34,19 @@ public class RectangleAperture : Aperture
     }
     #endregion
 
-    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    protected override bool HasClearAreas => HoleDiameter > 0;
+
+    protected override RectangleF GetBoundsMm() =>
+        Size.Width > 0 && Size.Height > 0 ? GetCenteredBoundsMm(Size.Width, Size.Height) : RectangleF.Empty;
+
+    protected override void DrawShape(Mat mat, PointF at, MCvScalar color, LineType lineType)
     {
         if (Size.Width <= 0 || Size.Height <= 0) return;
 
         var location = Document.PositionMmToPx(at);
 
-        at = new PointF(at.X - Size.Width / 2, at.Y - Size.Height / 2);
-        CvInvoke.Rectangle(mat, new Rectangle(Document.PositionMmToPx(at), Document.SizeMmToPx(Size)), color, -1, lineType);
+        // Centered on the scaled size, a corner taken from the unscaled size grew the pad to one side only
+        DrawCenteredRectangle(mat, location, Document.SizeMmToPx(Size), color, lineType);
 
         if (HoleDiameter > 0)
         {
@@ -50,5 +55,16 @@ public class RectangleAperture : Aperture
                 Document.SizeMmToPx(HoleDiameter / 2.0, HoleDiameter / 2.0),
                 0, 0, 360, InvertColor(color), -1, lineType);
         }
+    }
+
+    /// <summary>
+    /// Fills a rectangle of exactly <paramref name="size"/> pixels centered on a pixel. The filled rectangle includes
+    /// its right and bottom edges, so a <see cref="Rectangle"/> of that size would be one pixel larger on each axis.
+    /// </summary>
+    internal static void DrawCenteredRectangle(Mat mat, Point center, Size size, MCvScalar color, LineType lineType)
+    {
+        var left = center.X - size.Width / 2;
+        var top = center.Y - size.Height / 2;
+        CvInvoke.Rectangle(mat, new Rectangle(left, top, size.Width - 1, size.Height - 1), color, -1, lineType);
     }
 }

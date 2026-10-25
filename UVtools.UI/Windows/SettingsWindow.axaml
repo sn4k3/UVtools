@@ -1990,7 +1990,7 @@
 
                   <Grid
                     ColumnDefinitions="Auto,Auto"
-                    RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
                     ColumnSpacing="10"
                     RowSpacing="10"
                   >
@@ -2075,6 +2075,20 @@
                       Maximum="100"
                       Value="{Binding Settings.Layer3DPreview.SlabThicknessMm}"
                       ToolTip.Tip="Thickness of the slice kept visible below the clip plane when the clip mode is set to Slab."
+                    />
+
+                    <TextBlock
+                      Grid.Row="5"
+                      Grid.Column="0"
+                      VerticalAlignment="Center"
+                      Text="Auto zoom &amp; center issues:"
+                    />
+                    <ToggleSwitch
+                      Grid.Row="5"
+                      Grid.Column="1"
+                      Margin="10,0,0,0"
+                      IsChecked="{Binding Settings.Layer3DPreview.ZoomIssues}"
+                      ToolTip.Tip="Zoom and center the 3D camera on the issue when selecting it.&#x0a;When off, the camera is centered on the issue keeping the zoom.&#x0a;Hold ALT while selecting the issue to invert this behavior."
                     />
                   </Grid>
                 </StackPanel>

@@ -2838,9 +2838,20 @@
                                             HorizontalAlignment="Right"
                                             Orientation="Horizontal"
                                             Spacing="5">
+                                    <Button Command="{Binding FitLayer3DToViewCommand}"
+                                            IsEnabled="{Binding HasLayer3DMesh}"
+                                            VerticalAlignment="Stretch"
+                                            ToolTip.Tip="3D camera zoom level, relative to the whole model fitting the view (1x).&#x0a;Use mouse scroll or + and - to zoom in/out.&#x0a;Click to fit the model to the view [F]">
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <icon:MaterialIcon Kind="MagnifyExpand" VerticalAlignment="Center" />
+                                            <TextBlock VerticalAlignment="Center"
+                                                       Text="{Binding #LayerModel3DView.ZoomFactor, StringFormat='Zoom: [ {0:0.##}x ]'}" />
+                                        </StackPanel>
+                                    </Button>
+
                                     <DropDownButton IsEnabled="{Binding HasLayer3DMesh}"
                                                     VerticalAlignment="Stretch"
-                                                    ToolTip.Tip="Export options: Snapshot, 3D Mesh (STL/OBJ), or Turntable Animation (GIF)">
+                                                    ToolTip.Tip="Export options:Snapshot, 3D Mesh (STL/OBJ), or Turntable Animation (GIF)">
                                         <icon:MaterialIcon Kind="Export" Classes="Fill" />
                                         <DropDownButton.Flyout>
                                             <MenuFlyout Placement="BottomEdgeAlignedLeft">

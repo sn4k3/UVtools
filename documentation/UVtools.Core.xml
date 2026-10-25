@@ -5448,6 +5448,44 @@
             Gets the aperture name
             </summary>
         </member>
+        <member name="P:UVtools.Core.Gerber.Apertures.Aperture.HasClearAreas">
+            <summary>
+            Gets whether the aperture has areas that are not exposed, a hole or a macro primitive with the exposure off.
+            They are see-through: the image under them is kept rather than painted with the opposite color.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Gerber.Apertures.Aperture.DrawFlashD3(Emgu.CV.Mat,System.Drawing.PointF,Emgu.CV.Structure.MCvScalar,Emgu.CV.CvEnum.LineType)">
+            <summary>
+            Flashes the aperture at a position with the current polarity color.
+            </summary>
+            <param name="mat">Image to draw on</param>
+            <param name="at">Position in millimeters</param>
+            <param name="color">Polarity color, white to add and black to clear</param>
+            <param name="lineType">Line type</param>
+        </member>
+        <member name="M:UVtools.Core.Gerber.Apertures.Aperture.DrawShape(Emgu.CV.Mat,System.Drawing.PointF,Emgu.CV.Structure.MCvScalar,Emgu.CV.CvEnum.LineType)">
+            <summary>
+            Draws the aperture at a position, the exposed areas with <paramref name="color"/> and the clear areas with the
+            opposite color.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Gerber.Apertures.Aperture.GetBoundsMm">
+            <summary>
+            Gets the area the aperture covers in millimeters, relative to its flash position and with
+            <see cref="P:UVtools.Core.Gerber.GerberFormat.SizeScale"/> applied, or an empty rectangle when it draws nothing.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Gerber.Apertures.Aperture.GetCenteredBoundsMm(System.Double,System.Double)">
+            <summary>
+            Gets a rectangle centered on the flash position, in millimeters.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Gerber.Apertures.RectangleAperture.DrawCenteredRectangle(Emgu.CV.Mat,System.Drawing.Point,System.Drawing.Size,Emgu.CV.Structure.MCvScalar,Emgu.CV.CvEnum.LineType)">
+            <summary>
+            Fills a rectangle of exactly <paramref name="size"/> pixels centered on a pixel. The filled rectangle includes
+            its right and bottom edges, so a <see cref="T:System.Drawing.Rectangle"/> of that size would be one pixel larger on each axis.
+            </summary>
+        </member>
         <member name="F:UVtools.Core.Gerber.GerberZerosSuppressionType.NoSuppression">
             <summary>
             Do not omit zeros
@@ -5468,6 +5506,25 @@
             https://www.ucamco.com/files/downloads/file_en/456/gerber-layer-format-specification-revision-2022-02_en.pdf?ac97011bf6bce9aaf0b1aac43d84b05f
             </summary>
         </member>
+        <member name="M:UVtools.Core.Gerber.GerberFormat.SplitExtendedBlock(System.String)">
+            <summary>
+            Splits an extended block holding several commands, as older files write them (%FSLAX24Y24*MOIN*%), into one
+            %…*% block per command. An aperture macro is a single command made of several '*' terminated statements, so it
+            is kept whole.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Gerber.GerberFormat.GetArcTolerance(System.Double)">
+            <summary>
+            Gets how much the start and end radius of an arc may differ, in millimeters. The end point and the center offset
+            are rounded to the coordinate format, so with few decimals (2.4 inch is 2.54 µm) a small arc differs by more than
+            a fraction of its radius while being exact to the file resolution.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Gerber.GerberFormat.InvertColor(Emgu.CV.Structure.MCvScalar)">
+            <summary>
+            Gets the opposite drawing color, black for white and white for black.
+            </summary>
+        </member>
         <member name="M:UVtools.Core.Gerber.GerberFormat.LineDParse">
             <remarks>
             Pattern:<br/>
@@ -5483,13 +5540,13 @@
         <member name="M:UVtools.Core.Gerber.GerberFormat.LineXParse">
             <remarks>
             Pattern:<br/>
-            <code>X(-?[0-9]+)?</code><br/>
+            <code>X([+-]?[0-9]+)?</code><br/>
             Explanation:<br/>
             <code>
             ○ Match 'X'.<br/>
             ○ Optional (greedy).<br/>
                 ○ 1st capture group.<br/>
-                    ○ Match '-' atomically, optionally.<br/>
+                    ○ Match a character in the set [+\-] atomically, optionally.<br/>
                     ○ Match a character in the set [0-9] atomically at least once.<br/>
             </code>
             </remarks>
@@ -5497,13 +5554,13 @@
         <member name="M:UVtools.Core.Gerber.GerberFormat.LineYParse">
             <remarks>
             Pattern:<br/>
-            <code>Y(-?[0-9]+)?</code><br/>
+            <code>Y([+-]?[0-9]+)?</code><br/>
             Explanation:<br/>
             <code>
             ○ Match 'Y'.<br/>
             ○ Optional (greedy).<br/>
                 ○ 1st capture group.<br/>
-                    ○ Match '-' atomically, optionally.<br/>
+                    ○ Match a character in the set [+\-] atomically, optionally.<br/>
                     ○ Match a character in the set [0-9] atomically at least once.<br/>
             </code>
             </remarks>
@@ -5511,12 +5568,12 @@
         <member name="M:UVtools.Core.Gerber.GerberFormat.LineIParse">
             <remarks>
             Pattern:<br/>
-            <code>I(-?[0-9]+)</code><br/>
+            <code>I([+-]?[0-9]+)</code><br/>
             Explanation:<br/>
             <code>
             ○ Match 'I'.<br/>
             ○ 1st capture group.<br/>
-                ○ Match '-' atomically, optionally.<br/>
+                ○ Match a character in the set [+\-] atomically, optionally.<br/>
                 ○ Match a character in the set [0-9] atomically at least once.<br/>
             </code>
             </remarks>
@@ -5524,15 +5581,34 @@
         <member name="M:UVtools.Core.Gerber.GerberFormat.LineJParse">
             <remarks>
             Pattern:<br/>
-            <code>J(-?[0-9]+)</code><br/>
+            <code>J([+-]?[0-9]+)</code><br/>
             Explanation:<br/>
             <code>
             ○ Match 'J'.<br/>
             ○ 1st capture group.<br/>
-                ○ Match '-' atomically, optionally.<br/>
+                ○ Match a character in the set [+\-] atomically, optionally.<br/>
                 ○ Match a character in the set [0-9] atomically at least once.<br/>
             </code>
             </remarks>
+        </member>
+        <member name="F:UVtools.Core.Gerber.GerberFormat.UnsupportedExtendedCommands">
+            <summary>
+            Extended commands that change the image but are not supported, they are ignored and recorded in
+            <see cref="P:UVtools.Core.Gerber.GerberFormat.UnsupportedCommands"/>: step and repeat, block apertures, and the aperture mirroring, rotation and
+            scaling.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Gerber.GerberFormat.UnsupportedCommands">
+            <summary>
+            Gets the codes of the commands found in the file that change the image but are not supported and were ignored
+            (SR, AB, LM, LR, LS), the drawing may not match the file when any is present.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Gerber.GerberFormat.DrawOrigin">
+            <summary>
+            Pixel subtracted from every position by <see cref="M:UVtools.Core.Gerber.GerberFormat.PositionMmToPx(System.Double,System.Double)"/>, to draw into a mask that
+            covers only part of the plate.
+            </summary>
         </member>
         <member name="P:UVtools.Core.Gerber.GerberFormat.OffsetX">
             <summary>
@@ -5620,6 +5696,11 @@
             Rotation angle, in degrees counterclockwise, a decimal.
             The primitive is rotated around the origin of the macro definition, i.e. the (0, 0) point of macro coordinates.
             6
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Gerber.Primitives.CenterLinePrimitive.GetCorners">
+            <summary>
+            Gets the rotated corners in millimeters relative to the macro origin, with the size scaled.
             </summary>
         </member>
         <member name="T:UVtools.Core.Gerber.Primitives.CirclePrimitive">
@@ -5744,6 +5825,47 @@
             Rotation angle, in degrees counterclockwise, a decimal.
             The primitive is rotated around the origin of the macro definition, i.e. the (0, 0) point of macro coordinates.
             6
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Gerber.Primitives.Primitive.IsExposureOff">
+            <summary>
+            Gets whether the primitive is drawn with the exposure off, clearing the primitives before it in the macro.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Gerber.Primitives.Primitive.DrawFlashD3(Emgu.CV.Mat,System.Drawing.PointF,Emgu.CV.Structure.MCvScalar,Emgu.CV.CvEnum.LineType)">
+            <summary>
+            Draws the primitive of a macro flashed at a position.
+            </summary>
+            <param name="mat">Image to draw on</param>
+            <param name="at">Flash position in millimeters</param>
+            <param name="color">Polarity color, drawn when the exposure is on, the opposite color when it is off</param>
+            <param name="lineType">Line type</param>
+        </member>
+        <member name="M:UVtools.Core.Gerber.Primitives.Primitive.GetBoundsMm">
+            <summary>
+            Gets the area the primitive covers in millimeters, relative to the macro origin and with
+            <see cref="P:UVtools.Core.Gerber.GerberFormat.SizeScale"/> applied to the sizes, or an empty rectangle when it draws nothing.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Gerber.Primitives.Primitive.GetExposureColor(System.Byte,Emgu.CV.Structure.MCvScalar)">
+            <summary>
+            Gets the color for an exposure, the polarity color when on and the opposite color when off.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Gerber.Primitives.Primitive.GetCenteredBoundsMm(System.Drawing.PointF,System.Double)">
+            <summary>
+            Gets a square centered on a point in millimeters.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Gerber.Primitives.Primitive.GetBoundsMm(System.ReadOnlySpan{System.Drawing.PointF},System.Single)">
+            <summary>
+            Gets the rectangle enclosing points in millimeters, grown by <paramref name="margin"/> on each side.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Gerber.Primitives.Primitive.RotateAroundMacroOrigin(System.Single,System.Single,System.Single)">
+            <summary>
+            Rotates a point counterclockwise around the macro origin. The image is drawn with the file coordinates as they
+            are, the Y axis is only flipped afterward for the whole board, so this is the standard rotation.
             </summary>
         </member>
         <member name="T:UVtools.Core.Gerber.Primitives.VectorLinePrimitive">

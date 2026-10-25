@@ -29,12 +29,37 @@ public class MacroAperture : Aperture
     }
     #endregion
 
-    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    protected override bool HasClearAreas
+    {
+        get
+        {
+            foreach (var primitive in Macro)
+            {
+                if (primitive.IsExposureOff) return true;
+            }
+
+            return false;
+        }
+    }
+
+    protected override RectangleF GetBoundsMm()
+    {
+        var bounds = RectangleF.Empty;
+        foreach (var primitive in Macro)
+        {
+            var primitiveBounds = primitive.GetBoundsMm();
+            if (primitiveBounds.IsEmpty) continue;
+            bounds = bounds.IsEmpty ? primitiveBounds : RectangleF.Union(bounds, primitiveBounds);
+        }
+
+        return bounds;
+    }
+
+    protected override void DrawShape(Mat mat, PointF at, MCvScalar color, LineType lineType)
     {
         foreach (var primitive in Macro)
         {
-            //if(primitive.Name == "Comment") continue;
-            primitive.DrawFlashD3(mat, at, lineType);
+            primitive.DrawFlashD3(mat, at, color, lineType);
         }
     }
 }

@@ -395,7 +395,8 @@ patch_configure() {
         '-DWITH_FFMPEG:BOOL=FALSE' '-DWITH_GSTREAMER:BOOL=FALSE' \
         '-DWITH_1394:BOOL=FALSE' '-DVIDEOIO_ENABLE_PLUGINS:BOOL=FALSE' \
         '-DBUILD_opencv_videoio:BOOL=FALSE' '-DBUILD_opencv_gapi:BOOL=FALSE' \
-        '-DWITH_PROTOBUF:BOOL=FALSE' '-DBUILD_PROTOBUF:BOOL=FALSE'; do
+        '-DWITH_PROTOBUF:BOOL=FALSE' '-DBUILD_PROTOBUF:BOOL=FALSE' \
+		'-DWITH_LAPACK:BOOL=FALSE' ; do
         replacement+=$' \\\n       '"$flag"
     done
     content="${content//"$search_for"/"$replacement"}"

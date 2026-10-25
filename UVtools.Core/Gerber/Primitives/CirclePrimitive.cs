@@ -8,6 +8,7 @@
 
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using System;
 using System.Data;
 using System.Drawing;
@@ -76,7 +77,9 @@ public class CirclePrimitive : Primitive
         RotationExpression = rotationExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase);
     }
 
-    public override void DrawFlashD3(Mat mat, PointF at, LineType lineType = LineType.EightConnected)
+    public override bool IsExposureOff => IsParsed && Exposure == 0;
+
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
         if (!IsParsed) return;
         if (Diameter <= 0) return;
@@ -84,7 +87,13 @@ public class CirclePrimitive : Primitive
         var center = RotateAroundMacroOrigin(CenterX, CenterY, Rotation);
         CvInvoke.Ellipse(mat, Document.PositionMmToPx(at.X + center.X, at.Y + center.Y),
             Document.SizeMmToPx(Diameter / 2.0, Diameter / 2.0), 0, 0, 360,
-            Document.GetPolarityColor(Exposure), -1, lineType);
+            GetExposureColor(Exposure, color), -1, lineType);
+    }
+
+    public override RectangleF GetBoundsMm()
+    {
+        if (!IsParsed || Diameter <= 0) return RectangleF.Empty;
+        return GetCenteredBoundsMm(RotateAroundMacroOrigin(CenterX, CenterY, Rotation), Diameter * Document.SizeScale);
     }
 
     public override void ParseExpressions(params string[] args)
