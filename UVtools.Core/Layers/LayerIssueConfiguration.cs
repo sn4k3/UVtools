@@ -138,6 +138,18 @@ public sealed class IslandDetectionConfiguration : DetectionConfiguration
     public bool AllowDiagonalBonds { get; set; } = false;
 
     /// <summary>
+    /// Gets or sets if an island is grouped with everything that rests on it as a single issue, up to the layers where
+    /// it joins the supported model. The pixels of an island don't support the layer above, so a part that only rests
+    /// on an island is also floating and is part of that island issue, which starts at the lowest layer of the floating
+    /// part, the one to support. Islands that join each other are merged in the same issue.
+    /// A part resting on an island joins the supported model when at least <see cref="RequiredPixelsToSupport"/> of
+    /// its pixels, or the <see cref="RequiredPixelsToSupportMultiplier"/> of them, are supported by pixels that are not
+    /// floating.
+    /// Islands are still found on the <see cref="WhiteListLayers"/> only, but they are followed on all the layers above.
+    /// </summary>
+    public bool GroupFloatingIslands { get; set; } = false;
+
+    /// <summary>
     /// Gets or sets the binary threshold, all pixels equal or below this value will turn in black, otherwise white
     /// Set to 0 to disable this operation 
     /// </summary>

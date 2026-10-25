@@ -46,6 +46,8 @@ public partial class OperationRepairLayers : Operation
             var config = IssuesDetectionConfig.Clone();
             config.DisableAll();
             config.IslandConfig.Enabled = removeIslands || attachIslands;
+            // Repairs work on each island, what rests on an island is not one
+            config.IslandConfig.GroupFloatingIslands = false;
             config.ResinTrapConfig.Enabled = RepairResinTraps || RepairSuctionCups;
             config.ResinTrapConfig.DetectSuctionCups = RepairSuctionCups;
 
@@ -84,6 +86,7 @@ public partial class OperationRepairLayers : Operation
             var config = IssuesDetectionConfig.Clone();
             config.DisableAll();
             config.IslandConfig.Enable();
+            config.IslandConfig.GroupFloatingIslands = false;
             //islandConfig.RequiredAreaToProcessCheck = (ushort)(RemoveIslandsBelowEqualPixelCount / 2);
 
             for (uint i = 0; i < limit; i++)
@@ -103,6 +106,7 @@ public partial class OperationRepairLayers : Operation
                     .AsValueEnumerable()
                     .OfType<IssueOfPoints>()
                     .Where(issue =>
+                        !issue.RestsOnIsland &&
                         IsLayerSelected(issue.LayerIndex) &&
                         issue.PixelsCount <= RemoveIslandsBelowEqualPixelCount)
                     .GroupBy(issue => issue.LayerIndex)
@@ -153,7 +157,8 @@ public partial class OperationRepairLayers : Operation
             var issuesGroup = IssueManager.GetIssuesBy(issues, MainIssue.IssueType.Island)
                 .AsValueEnumerable()
                 .OfType<IssueOfPoints>()
-                .Where(issue => IsLayerSelected(issue.LayerIndex) && issue.LayerIndex > LayerIndexStart)
+                .Where(issue => !issue.RestsOnIsland && IsLayerSelected(issue.LayerIndex) &&
+                                issue.LayerIndex > LayerIndexStart)
                 .GroupBy(issue => issue.LayerIndex)
                 .ToArray();
             var issueCount = issuesGroup.Sum(group => group.Count());
@@ -273,6 +278,7 @@ public partial class OperationRepairLayers : Operation
                 .AsValueEnumerable()
                 .OfType<IssueOfPoints>()
                 .Where(issue =>
+                    !issue.RestsOnIsland &&
                     IsLayerSelected(issue.LayerIndex) &&
                     issue.PixelsCount <= RemoveIslandsBelowEqualPixelCount)
                 .GroupBy(issue => issue.LayerIndex)

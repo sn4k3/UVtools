@@ -349,10 +349,14 @@ public partial class MainWindow
 
                 if (issue.IsIsland)
                 {
-                    var nextLayer = issue.StartLayerIndex + 1;
-                    if (nextLayer >= SlicerFile!.LayerCount) continue;
-                    if (whiteListLayers.Contains(nextLayer)) continue;
-                    whiteListLayers.Add(nextLayer);
+                    // A grouped island spans several layers, each one was resting on the removed pixels below it
+                    foreach (var child in issue)
+                    {
+                        var nextLayer = child.LayerIndex + 1;
+                        if (nextLayer >= SlicerFile!.LayerCount) continue;
+                        if (whiteListLayers.Contains(nextLayer)) continue;
+                        whiteListLayers.Add(nextLayer);
+                    }
                 }
 
                 //Issues.Remove(issue);
@@ -467,7 +471,8 @@ public partial class MainWindow
         if (whiteListLayers.Count == 0) return;
         var config = GetIssuesDetectionConfiguration(false);
         config.IslandConfig.Enable();
-        config.IslandConfig.WhiteListLayers = whiteListLayers;
+        // Grouped islands span layers out of the list, they can only be found again from all the layers
+        config.IslandConfig.WhiteListLayers = config.IslandConfig.GroupFloatingIslands ? null : whiteListLayers;
         config.OverhangConfig.Enable();
         config.OverhangConfig.WhiteListLayers = whiteListLayers;
 
@@ -477,10 +482,15 @@ public partial class MainWindow
 
         try
         {
+            var islandWhiteList = config.IslandConfig.WhiteListLayers;
             var issueList = SlicerFile!.IssueManager.ToList();
-            issueList.RemoveAll(issue =>
-                config.IslandConfig.WhiteListLayers.Contains(issue.StartLayerIndex) &&
-                issue.Type is MainIssue.IssueType.Island or MainIssue.IssueType.Overhang);
+            issueList.RemoveAll(issue => issue.Type switch
+            {
+                MainIssue.IssueType.Island => islandWhiteList is null ||
+                                              islandWhiteList.Contains(issue.StartLayerIndex),
+                MainIssue.IssueType.Overhang => whiteListLayers.Contains(issue.StartLayerIndex),
+                _ => false
+            });
             /*foreach (var layerIndex in islandConfig.WhiteListLayers)
             {
                 issueList.RemoveAll(issue =>
@@ -955,6 +965,7 @@ public partial class MainWindow
             Enabled = enable,
             EnhancedDetection = Settings.Issues.IslandEnhancedDetection,
             AllowDiagonalBonds = Settings.Issues.IslandAllowDiagonalBonds,
+            GroupFloatingIslands = Settings.Issues.IslandGroupFloatingIslands,
             BinaryThreshold = Settings.Issues.IslandBinaryThreshold,
             RequiredAreaToProcessCheck = Settings.Issues.IslandRequiredAreaToProcessCheck,
             RequiredPixelBrightnessToProcessCheck = Settings.Issues.IslandRequiredPixelBrightnessToProcessCheck,

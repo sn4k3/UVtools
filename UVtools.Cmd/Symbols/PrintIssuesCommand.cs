@@ -52,6 +52,11 @@ internal static class PrintIssuesCommand
             Description = "Enable empty layer detection"
         };
 
+        var groupFloatingIslandsOption = new Option<bool>("--group-islands")
+        {
+            Description = "Group each island with the floating parts resting on it as a single issue"
+        };
+
         var sortByAreaOption = new Option<bool>("--sort-area")
         {
             Description = "Sort by area DESC"
@@ -69,6 +74,7 @@ internal static class PrintIssuesCommand
             printHeightOption,
             emptyLayersOption,
 
+            groupFloatingIslandsOption,
             sortByAreaOption
         };
 
@@ -99,6 +105,8 @@ internal static class PrintIssuesCommand
                 config.PrintHeightConfig.Enabled = printHeight;
                 config.EmptyLayerConfig.Enabled = emptyLayers;
             }
+
+            config.IslandConfig.GroupFloatingIslands = result.GetValue(groupFloatingIslandsOption);
 
             var issues = Program.ProgressBarWork("Detecting issues", () => slicerFile.IssueManager.DetectIssues(config, Program.Progress));
             if (sortByArea)

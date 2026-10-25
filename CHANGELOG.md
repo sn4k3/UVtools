@@ -27,6 +27,12 @@
 - (Add) 3D preview: "Auto zoom & center issues" setting (on by default), independent of the layer preview one. When
   off, selecting an issue centers the camera on it keeping the zoom. Hold [ALT] while selecting the issue to invert
   the behavior.
+- (Add) Issues: "Group each island with the floating parts resting on it" setting (off by default). The pixels of an
+  island no longer support the layer above, everything that rests only on an island is floating too and is shown with it
+  as a single island issue, from its lowest layer, the one to support, up to where it joins the supported model.
+  Islands that join each other are merged in the same issue, and removing the issue removes the whole floating part.
+  The repair tool still works on each island alone. Also available in the command line as `print-issues
+  --group-islands` (#1047).
 - (Fix) About window was showing available ram instead of used ram.
 - (Upgrade) .NET from 10.0.12 to 10.0.13
 

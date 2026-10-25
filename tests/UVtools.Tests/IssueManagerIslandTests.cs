@@ -228,6 +228,112 @@ public class IssueManagerIslandTests
         Assert.Equal(new Rectangle(700, 700, 20, 20), island.BoundingRectangle);
     }
 
+    /// <summary>
+    /// A floating part that starts as a small island and grows faster than its island support on each layer: layer 1 is
+    /// the island, layer 2 rests on it well enough to not be an island, layer 3 is an island again over layer 2, and
+    /// layer 4 covers both and is supported by the block.
+    /// </summary>
+    private static FileFormat CreateGrowingFloatingPart() => CreateFile(
+        Fill(new Rectangle(100, 100, 300, 300)),
+        Fill(new Rectangle(100, 100, 300, 300), new Rectangle(500, 500, 10, 10)),
+        Fill(new Rectangle(100, 100, 300, 300), new Rectangle(500, 500, 15, 15)),
+        Fill(new Rectangle(100, 100, 300, 300), new Rectangle(480, 480, 60, 60)),
+        Fill(new Rectangle(100, 100, 440, 440)));
+
+    [Fact]
+    public void FloatingPartIsOneIslandPerLayerWhenNotGrouped()
+    {
+        using var slicerFile = CreateGrowingFloatingPart();
+
+        var islands = Islands(Detect(slicerFile, IslandsOnly(config =>
+            config.IslandConfig.EnhancedDetection = false)));
+
+        Assert.Equal(new uint[] { 1, 3 }, islands.Select(island => island.StartLayerIndex).Order().ToArray());
+        Assert.All(islands, island => Assert.Single(island));
+    }
+
+    [Fact]
+    public void FloatingPartIsGroupedFromItsLowestLayerUntilItJoinsTheModel()
+    {
+        using var slicerFile = CreateGrowingFloatingPart();
+
+        var island = Assert.Single(Islands(Detect(slicerFile, IslandsOnly(config =>
+        {
+            config.IslandConfig.EnhancedDetection = false;
+            config.IslandConfig.GroupFloatingIslands = true;
+        }))));
+
+        Assert.Equal(1u, island.StartLayerIndex);
+        Assert.Equal(3u, island.EndLayerIndex);
+        Assert.Equal(new uint[] { 1, 2, 3 }, island.Select(issue => issue.LayerIndex).ToArray());
+        Assert.Equal((uint)(10 * 10 + 15 * 15 + 60 * 60), island.PixelCount);
+
+        var children = island.Cast<IssueOfPoints>().ToArray();
+        Assert.False(children[0].RestsOnIsland);
+        Assert.True(children[1].RestsOnIsland);
+        Assert.True(children[2].RestsOnIsland);
+        Assert.All(children, child => Assert.Same(island, child.Parent));
+    }
+
+    [Fact]
+    public void FloatingPartsThatJoinAreMerged()
+    {
+        // Two islands on layer 1, both grow on layer 2 and touch each other on layer 3
+        using var slicerFile = CreateFile(
+            Fill(new Rectangle(100, 100, 100, 100)),
+            Fill(new Rectangle(100, 100, 100, 100), new Rectangle(500, 500, 20, 20), new Rectangle(700, 500, 20, 20)),
+            Fill(new Rectangle(100, 100, 100, 100), new Rectangle(500, 500, 20, 20), new Rectangle(700, 500, 20, 20)),
+            Fill(new Rectangle(100, 100, 100, 100), new Rectangle(500, 500, 220, 20)));
+
+        var island = Assert.Single(Islands(Detect(slicerFile, IslandsOnly(config =>
+            config.IslandConfig.GroupFloatingIslands = true))));
+
+        Assert.Equal(1u, island.StartLayerIndex);
+        Assert.Equal(3u, island.EndLayerIndex);
+        Assert.Equal(5, island.Count);
+        Assert.Equal(2, island.Cast<IssueOfPoints>().Count(issue => !issue.RestsOnIsland));
+    }
+
+    [Fact]
+    public void ModelOnSupportsTouchingAnIslandIsNotFloating()
+    {
+        // Vertical supports cover 22% of the plate above them, less than the multiplier, but the gaps between them are
+        // too narrow for an overhang so the plate is not an island. A single pixel island in a gap touches the plate.
+        var supports = Enumerable.Range(0, 8).Select(i => new Rectangle(100 + i * 40, 100, 8, 300)).ToArray();
+        var plate = new Rectangle(100, 100, 288, 300);
+        using var slicerFile = CreateFile(
+            Fill(supports),
+            Fill([..supports, new Rectangle(120, 200, 1, 1)]),
+            Fill(plate),
+            Fill(plate),
+            Fill(plate));
+
+        var island = Assert.Single(Islands(Detect(slicerFile, IslandsOnly(config =>
+            config.IslandConfig.GroupFloatingIslands = true))));
+
+        Assert.Equal(new Rectangle(120, 200, 1, 1), Assert.Single(island).BoundingRectangle);
+    }
+
+    [Fact]
+    public void SeparateIslandsAreNotGrouped()
+    {
+        var floating = new Rectangle(500, 500, 20, 20);
+        using var slicerFile = CreateFile(
+            Fill(new Rectangle(100, 100, 100, 100)),
+            Fill(new Rectangle(100, 100, 100, 100), floating),
+            Fill(new Rectangle(100, 100, 100, 100), floating, new Rectangle(700, 700, 20, 20)));
+
+        var islands = Islands(Detect(slicerFile, IslandsOnly(config =>
+            config.IslandConfig.GroupFloatingIslands = true)));
+
+        // The first island continues on layer 2 resting on itself, the second one is not touching it
+        Assert.Equal(2, islands.Length);
+        var first = Assert.Single(islands, island => island.StartLayerIndex == 1);
+        Assert.Equal(2u, first.EndLayerIndex);
+        var second = Assert.Single(islands, island => island.StartLayerIndex == 2);
+        Assert.Equal(new Rectangle(700, 700, 20, 20), Assert.Single(second).BoundingRectangle);
+    }
+
     [Fact]
     public void OverhangsAreFoundOnTheNewArea()
     {

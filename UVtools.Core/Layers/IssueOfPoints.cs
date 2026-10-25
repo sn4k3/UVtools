@@ -20,6 +20,13 @@ public sealed class IssueOfPoints : Issue
     /// </summary>
     public Point[] Points { get; init; } = null!;
 
+    /// <summary>
+    /// Gets if this island rests on the floating pixels of an island below it, of the same <see cref="Issue.Parent"/>,
+    /// instead of starting a floating part. Only set when <see cref="IslandDetectionConfiguration.GroupFloatingIslands"/>
+    /// is enabled, supporting the island below also supports this one.
+    /// </summary>
+    public bool RestsOnIsland { get; internal set; }
+
     public IssueOfPoints() { }
 
     public IssueOfPoints(Layer layer, IEnumerable<Point> points, Rectangle boundingRectangle = default) : base(layer, boundingRectangle, points.AsValueEnumerable().Count())

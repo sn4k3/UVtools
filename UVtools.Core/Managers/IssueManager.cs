@@ -304,6 +304,11 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                 ? null
                 : new HashSet<uint>(overhangConfig.WhiteListLayers);
 
+            // Grouped after all the layers are known, the ignored issues are checked on the groups
+            var floatingIslands = islandConfig.Enabled && islandConfig.GroupFloatingIslands
+                ? new ConcurrentBag<MainIssue>()
+                : null;
+
             Parallel.For(0, SlicerFile.LayerCount, CoreSettings.ParallelOptions, layerIndexInt =>
             {
                 progress.PauseIfRequested();
@@ -539,8 +544,10 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                         }
                                     }
 
-                                    AddIssue(new MainIssue(MainIssue.IssueType.Island,
-                                        new IssueOfPoints(layer, points, islandBoundingRectangle)));
+                                    var islandIssue = new MainIssue(MainIssue.IssueType.Island,
+                                        new IssueOfPoints(layer, points, islandBoundingRectangle));
+                                    if (floatingIslands is null) AddIssue(islandIssue);
+                                    else floatingIslands.Add(islandIssue);
                                 }
 
                                 labeler.TrimExcess();
@@ -586,6 +593,14 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                 progress.LockAndIncrement();
             }); // Parallel end
+
+            if (floatingIslands is { IsEmpty: false } && !progress.Token.IsCancellationRequested)
+            {
+                foreach (var islandIssue in GroupFloatingIslands(floatingIslands, islandConfig, progress))
+                {
+                    AddIssue(islandIssue);
+                }
+            }
         }
 
         if (progress.Token.IsCancellationRequested) return GetResult();
@@ -1199,6 +1214,289 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
             addIssue(new MainIssue(MainIssue.IssueType.TouchingBound, new IssueOfPoints(layer, pixels,
                 new Rectangle(minx, miny, maxx - minx + 1, maxy - miny + 1))));
         }
+    }
+
+    /// <summary>
+    /// Groups the islands with the floating parts that rest on them, see
+    /// <see cref="IslandDetectionConfiguration.GroupFloatingIslands"/>.
+    /// The layers are walked up from the lowest island keeping a map of the floating pixels of the previous layer, which
+    /// don't support anything. A component touching floating pixels is floating too unless the other pixels below it
+    /// support it, by the same rule as an island, otherwise the floating part joins the supported model there.
+    /// </summary>
+    /// <param name="islands">The islands found, each with a single <see cref="IssueOfPoints"/>.</param>
+    /// <param name="config">The island configuration.</param>
+    /// <param name="progress">The progress.</param>
+    /// <returns>One island issue for each floating part, an island alone is returned as it is.</returns>
+    private List<MainIssue> GroupFloatingIslands(IEnumerable<MainIssue> islands, IslandDetectionConfiguration config,
+        OperationProgress progress)
+    {
+        var seedsByLayer = new Dictionary<uint, List<MainIssue>>();
+        foreach (var island in islands)
+        {
+            if (!seedsByLayer.TryGetValue(island.StartLayerIndex, out var layerSeeds))
+            {
+                layerSeeds = [];
+                seedsByLayer.Add(island.StartLayerIndex, layerSeeds);
+            }
+
+            layerSeeds.Add(island);
+        }
+
+        if (seedsByLayer.Count == 0) return [];
+
+        var firstLayerIndex = seedsByLayer.Keys.Min();
+        progress.Reset("Grouping floating islands", SlicerFile.LayerCount, firstLayerIndex);
+
+        // Union-find of the floating parts, merged parts keep the lowest id
+        var bodyParents = new List<int>();
+        var bodyChildren = new List<(int Body, IssueOfPoints Issue)>();
+        var floating = new List<(int Body, IssueOfPoints Issue)>();
+        var pendingSeeds = new List<MainIssue>();
+        var touchedBodies = new List<int>();
+        var points = new List<Point>();
+        var labeler = RunComponentLabeler.ForCurrentThread;
+
+        // Body + 1 of the floating pixels of the previous layer, 0 elsewhere
+        var previousMap = Array.Empty<int>();
+        var previousMapRect = Rectangle.Empty;
+        var currentMap = Array.Empty<int>();
+
+        int NewBody()
+        {
+            bodyParents.Add(bodyParents.Count);
+            return bodyParents.Count - 1;
+        }
+
+        int Find(int body)
+        {
+            while (bodyParents[body] != body)
+            {
+                bodyParents[body] = bodyParents[bodyParents[body]];
+                body = bodyParents[body];
+            }
+
+            return body;
+        }
+
+        for (var layerIndex = firstLayerIndex; layerIndex < SlicerFile.LayerCount; layerIndex++)
+        {
+            progress.PauseIfRequested();
+            if (progress.Token.IsCancellationRequested) return [];
+            progress++;
+
+            seedsByLayer.TryGetValue(layerIndex, out var seeds);
+            if (previousMapRect.IsEmpty && seeds is null) continue;
+
+            var layer = SlicerFile[layerIndex];
+            floating.Clear();
+            pendingSeeds.Clear();
+            if (seeds is not null) pendingSeeds.AddRange(seeds);
+
+            if (!previousMapRect.IsEmpty && !layer.IsEmpty)
+            {
+                var roiRect = Layer.GetBoundingRectangleUnion(SlicerFile[layerIndex - 1], layer);
+                using var currentMat = layer.GetRoiMat(roiRect);
+                using var previousMat = SlicerFile[layerIndex - 1].GetRoiMat(roiRect);
+                var mapRect = previousMapRect with
+                {
+                    X = previousMapRect.X - roiRect.X,
+                    Y = previousMapRect.Y - roiRect.Y
+                };
+
+                labeler.Label(currentMat, config.BinaryThreshold, config.AllowDiagonalBonds);
+
+                for (var component = 0; component < labeler.ComponentCount; component++)
+                {
+                    var rect = labeler.GetBounds(component);
+                    var componentRect = rect.OffsetBy(roiRect.Location);
+                    var seedIndex = pendingSeeds.FindIndex(seed => seed.BoundingRectangle == componentRect);
+                    if (seedIndex < 0 && (!rect.IntersectsWith(mapRect) ||
+                                          labeler.GetArea(component) < config.RequiredAreaToProcessCheck)) continue;
+
+                    var runs = labeler.GetRuns(component);
+                    var pixelCount = 0;
+                    var groundedSupport = 0;
+                    var lastBody = -1;
+                    touchedBodies.Clear();
+
+                    foreach (var run in runs)
+                    {
+                        var y = labeler.GetRunY(run);
+                        var start = labeler.GetRunStart(run);
+                        var end = labeler.GetRunEnd(run);
+                        var currentRow = currentMat.GetReadOnlyRowSpanOfBytes(y);
+                        var previousRow = previousMat.GetReadOnlyRowSpanOfBytes(y);
+
+                        // Only the part of the run over the map can rest on floating pixels
+                        var mapStart = start;
+                        var mapEnd = start - 1;
+                        if (y >= mapRect.Y && y < mapRect.Bottom)
+                        {
+                            mapStart = Math.Max(start, mapRect.X);
+                            mapEnd = Math.Min(end, mapRect.Right - 1);
+                        }
+
+                        if (mapStart > mapEnd)
+                        {
+                            CountPixels(currentRow, previousRow, start, end,
+                                config.RequiredPixelBrightnessToProcessCheck, config.RequiredPixelBrightnessToSupport,
+                                ref pixelCount, ref groundedSupport);
+                            continue;
+                        }
+
+                        if (mapStart > start)
+                        {
+                            CountPixels(currentRow, previousRow, start, mapStart - 1,
+                                config.RequiredPixelBrightnessToProcessCheck, config.RequiredPixelBrightnessToSupport,
+                                ref pixelCount, ref groundedSupport);
+                        }
+
+                        if (mapEnd < end)
+                        {
+                            CountPixels(currentRow, previousRow, mapEnd + 1, end,
+                                config.RequiredPixelBrightnessToProcessCheck, config.RequiredPixelBrightnessToSupport,
+                                ref pixelCount, ref groundedSupport);
+                        }
+
+                        var mapOffset = (y - mapRect.Y) * mapRect.Width - mapRect.X;
+                        for (var x = mapStart; x <= mapEnd; x++)
+                        {
+                            if (currentRow[x] < config.RequiredPixelBrightnessToProcessCheck) continue;
+                            pixelCount++;
+
+                            var body = previousMap[mapOffset + x] - 1;
+                            if (body < 0)
+                            {
+                                if (previousRow[x] >= config.RequiredPixelBrightnessToSupport) groundedSupport++;
+                            }
+                            else if (body != lastBody)
+                            {
+                                lastBody = body;
+                                if (!touchedBodies.Contains(body)) touchedBodies.Add(body);
+                            }
+                        }
+                    }
+
+                    MainIssue? seed = null;
+                    if (seedIndex >= 0 && pendingSeeds[seedIndex].PixelCount == pixelCount)
+                    {
+                        seed = pendingSeeds[seedIndex];
+                        pendingSeeds.RemoveAt(seedIndex);
+                    }
+
+                    if (pixelCount == 0) continue;
+                    if (touchedBodies.Count == 0)
+                    {
+                        if (seed is not null) floating.Add((NewBody(), (IssueOfPoints)seed[0]));
+                        continue;
+                    }
+
+                    // Joins the supported model. Not being an island it was found supported, maybe with the floating
+                    // pixels or by the enhanced detection (a model on supports is far below the multiplier), so it
+                    // floats only when it barely touches anything else. An island stays one.
+                    if (seed is null &&
+                        (groundedSupport >= config.RequiredPixelsToSupport ||
+                         groundedSupport >= Math.Max(1, pixelCount * config.RequiredPixelsToSupportMultiplier)))
+                        continue;
+
+                    var mergedBody = Find(touchedBodies[0]);
+                    for (var i = 1; i < touchedBodies.Count; i++)
+                    {
+                        var otherBody = Find(touchedBodies[i]);
+                        if (otherBody == mergedBody) continue;
+                        if (otherBody < mergedBody) (mergedBody, otherBody) = (otherBody, mergedBody);
+                        bodyParents[otherBody] = mergedBody;
+                    }
+
+                    IssueOfPoints issue;
+                    if (seed is not null)
+                    {
+                        issue = (IssueOfPoints)seed[0];
+                    }
+                    else
+                    {
+                        points.Clear();
+                        foreach (var run in runs)
+                        {
+                            var y = labeler.GetRunY(run);
+                            var currentRow = currentMat.GetReadOnlyRowSpanOfBytes(y);
+                            for (var x = labeler.GetRunStart(run); x <= labeler.GetRunEnd(run); x++)
+                            {
+                                if (currentRow[x] < config.RequiredPixelBrightnessToProcessCheck) continue;
+                                points.Add(new Point(roiRect.X + x, roiRect.Y + y));
+                            }
+                        }
+
+                        issue = new IssueOfPoints(layer, points, componentRect);
+                    }
+
+                    issue.RestsOnIsland = true;
+                    floating.Add((mergedBody, issue));
+                }
+            }
+
+            // Islands not resting on a floating part start a new one
+            foreach (var seed in pendingSeeds)
+            {
+                floating.Add((NewBody(), (IssueOfPoints)seed[0]));
+            }
+
+            bodyChildren.AddRange(floating);
+
+            if (floating.Count == 0)
+            {
+                previousMapRect = Rectangle.Empty;
+                continue;
+            }
+
+            var currentMapRect = floating[0].Issue.BoundingRectangle;
+            for (var i = 1; i < floating.Count; i++)
+            {
+                currentMapRect = Rectangle.Union(currentMapRect, floating[i].Issue.BoundingRectangle);
+            }
+
+            var mapLength = currentMapRect.Width * currentMapRect.Height;
+            if (currentMap.Length < mapLength) currentMap = new int[mapLength];
+            else Array.Clear(currentMap, 0, mapLength);
+
+            foreach (var (body, issue) in floating)
+            {
+                foreach (var point in issue.Points)
+                {
+                    currentMap[(point.Y - currentMapRect.Y) * currentMapRect.Width + point.X - currentMapRect.X] =
+                        body + 1;
+                }
+            }
+
+            (previousMap, currentMap) = (currentMap, previousMap);
+            previousMapRect = currentMapRect;
+        }
+
+        labeler.TrimExcess();
+
+        var groups = new Dictionary<int, List<IssueOfPoints>>();
+        foreach (var (body, issue) in bodyChildren)
+        {
+            var root = Find(body);
+            if (!groups.TryGetValue(root, out var children))
+            {
+                children = [];
+                groups.Add(root, children);
+            }
+
+            children.Add(issue);
+        }
+
+        var result = new List<MainIssue>(groups.Count);
+        foreach (var children in groups.Values)
+        {
+            // A part is always started by an island, which is alone in its issue
+            result.Add(children.Count == 1
+                ? children[0].Parent!
+                : new MainIssue(MainIssue.IssueType.Island, children));
+        }
+
+        return result;
     }
 
     /// <summary>

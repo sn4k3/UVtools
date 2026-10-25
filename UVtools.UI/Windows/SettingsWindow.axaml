@@ -2240,6 +2240,12 @@
                       ToolTip.Tip="If enabled, components touching by even a single diagonal bond will be considered a single component for the purposes of island detection. &#x0a;Enabling this will result in faster island detection. but some potential islands with weak bonds to other components may not be detected."
                     />
 
+                    <CheckBox
+                      Content="Group each island with the floating parts resting on it"
+                      IsChecked="{Binding Settings.Issues.IslandGroupFloatingIslands}"
+                      ToolTip.Tip="If enabled, the pixels of an island don't support the layer above, so everything that rests only on an island is also floating and is grouped with it as a single island issue, up to where it joins the supported model. &#x0a;The issue starts at the lowest layer of the floating part, which is the one to support, and islands that join each other are merged in the same issue. &#x0a;Removing the issue removes the whole floating part. The repair tool still works on each island alone. &#x0a;Note: Updating the islands after an edit checks all layers when this is enabled. (Slower)"
+                    />
+
                     <StackPanel Orientation="Horizontal" Spacing="10">
                       <NumericUpDown
                         Width="150"

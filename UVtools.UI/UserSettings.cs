@@ -906,6 +906,9 @@ public partial class UserSettings : ObservableObject
         public partial bool IslandAllowDiagonalBonds { get; set; }
 
         [ObservableProperty]
+        public partial bool IslandGroupFloatingIslands { get; set; }
+
+        [ObservableProperty]
         public partial byte IslandBinaryThreshold { get; set; }
 
         [ObservableProperty]

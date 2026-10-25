@@ -6039,6 +6039,13 @@
             Gets the points containing the coordinates of the issue
             </summary>
         </member>
+        <member name="P:UVtools.Core.Layers.IssueOfPoints.RestsOnIsland">
+            <summary>
+            Gets if this island rests on the floating pixels of an island below it, of the same <see cref="P:UVtools.Core.Layers.Issue.Parent"/>,
+            instead of starting a floating part. Only set when <see cref="P:UVtools.Core.Layers.IslandDetectionConfiguration.GroupFloatingIslands"/>
+            is enabled, supporting the island below also supports this one.
+            </summary>
+        </member>
         <member name="T:UVtools.Core.Layers.Layer">
             <summary>
             Represent a Layer
@@ -6666,6 +6673,18 @@
             will be considered..
             </summary>
         </member>
+        <member name="P:UVtools.Core.Layers.IslandDetectionConfiguration.GroupFloatingIslands">
+            <summary>
+            Gets or sets if an island is grouped with everything that rests on it as a single issue, up to the layers where
+            it joins the supported model. The pixels of an island don't support the layer above, so a part that only rests
+            on an island is also floating and is part of that island issue, which starts at the lowest layer of the floating
+            part, the one to support. Islands that join each other are merged in the same issue.
+            A part resting on an island joins the supported model when at least <see cref="P:UVtools.Core.Layers.IslandDetectionConfiguration.RequiredPixelsToSupport"/> of
+            its pixels, or the <see cref="P:UVtools.Core.Layers.IslandDetectionConfiguration.RequiredPixelsToSupportMultiplier"/> of them, are supported by pixels that are not
+            floating.
+            Islands are still found on the <see cref="P:UVtools.Core.Layers.IslandDetectionConfiguration.WhiteListLayers"/> only, but they are followed on all the layers above.
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Layers.IslandDetectionConfiguration.BinaryThreshold">
             <summary>
             Gets or sets the binary threshold, all pixels equal or below this value will turn in black, otherwise white
@@ -6963,6 +6982,19 @@
             <summary>
             Detects the pixels of a layer that touch the bounds of the image.
             </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.IssueManager.GroupFloatingIslands(System.Collections.Generic.IEnumerable{UVtools.Core.Layers.MainIssue},UVtools.Core.Layers.IslandDetectionConfiguration,UVtools.Core.Operations.OperationProgress)">
+            <summary>
+            Groups the islands with the floating parts that rest on them, see
+            <see cref="P:UVtools.Core.Layers.IslandDetectionConfiguration.GroupFloatingIslands"/>.
+            The layers are walked up from the lowest island keeping a map of the floating pixels of the previous layer, which
+            don't support anything. A component touching floating pixels is floating too unless the other pixels below it
+            support it, by the same rule as an island, otherwise the floating part joins the supported model there.
+            </summary>
+            <param name="islands">The islands found, each with a single <see cref="T:UVtools.Core.Layers.IssueOfPoints"/>.</param>
+            <param name="config">The island configuration.</param>
+            <param name="progress">The progress.</param>
+            <returns>One island issue for each floating part, an island alone is returned as it is.</returns>
         </member>
         <member name="M:UVtools.Core.Managers.IssueManager.HasUnsupportedPixels(Emgu.CV.Mat,Emgu.CV.Mat,System.Byte,System.Byte)">
             <summary>
