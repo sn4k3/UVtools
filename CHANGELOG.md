@@ -34,6 +34,7 @@
   The repair tool still works on each island alone. Also available in the command line as `print-issues
   --group-islands` (#1047).
 - (Fix) About window was showing available ram instead of used ram.
+- (Fix) Typos in OSLA documentation by @hamidzr (#1160)
 - (Upgrade) .NET from 10.0.12 to 10.0.13
 
 ## 16/10/2026 - v7.1.0
