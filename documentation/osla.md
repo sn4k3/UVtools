@@ -10,7 +10,7 @@ This file format share and reserve the following file extensions:
 - .odlp (Open DLP)
 - .omsla (Open mSLA)
 
-## Implementation requesites
+## Implementation requisites
 
 - Open-source file format
 - Document the changes and revisions, as well the reserved table if any
@@ -46,7 +46,7 @@ This file format share and reserve the following file extensions:
 9. Wait `WaitTimeAfterCure`
 10. Repeat from 2.
 
-## Printer - Firmware layer data adquisiton (GCode)
+## Printer - Firmware layer data acquisition (GCode)
 
 1. Machine firmware detects `M6054 i` gcode command.
 2. Goes to the layer definition table at the `i` index given by the `M6054` command.
@@ -55,10 +55,10 @@ This file format share and reserve the following file extensions:
 5. Jump back to the resume position and continue to execute the gcode.
 
 **Note:** Printer only continue to execute the next gcode command after the image is displayed/buffered. 
-When using a sencond board to display the image, it must send a OK back in order to resume the gcode execution.
+When using a second board to display the image, it must send a OK back in order to resume the gcode execution.
 But a custom flag or M code command should exist to buffer the image in the background, eg: M6055.
 
-## Software - Data adquisiton (GCode)
+## Software - Data acquisition (GCode)
 
 For slicers and other programs, data and per layer settings should be parsed from gcode.  
 For example, take UVtools [GCodeBuilder.cs](https://github.com/sn4k3/UVtools/blob/master/UVtools.Core/GCode/GCodeBuilder.cs) as example and search for `ParseLayersFromGCode` method
@@ -90,9 +90,9 @@ While this is optional and either way it must be valid to print, is highly recom
    - Custom
 2. Having different data types for previews and layers are allowed.
 eg: `PreviewDataType=RGB565` and `LayerDataType=PNG`
-3. The only requesite is to correct define the type of image data on the [Header] and respect that.
+3. The only requisite is to correct define the type of image data on the [Header] and respect that.
 4. Custom image data types are possible, you must take a unique non conflicting ID but the documentation how to read and write are required in order to use a custom type. 
-5. If you want to apply and register your data type ID to be globaly used on firmwares, you must send us the draft for approval and get that ID reserved for the applied data scheme.
+5. If you want to apply and register your data type ID to be globally used on firmwares, you must send us the draft for approval and get that ID reserved for the applied data scheme.
 
 ## Previews
 
