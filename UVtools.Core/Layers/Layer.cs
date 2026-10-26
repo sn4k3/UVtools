@@ -225,7 +225,8 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     public bool IsEmpty => _nonZeroPixelCount == 0;
 
     /// <summary>
-    /// Gets if this layer is a dummy layer to bypass a firmware constrain, that is contained at most one pixel and exposure time no more than 0.01s
+    /// Gets if this layer is a dummy layer, like the ones to bypass a firmware constrain, that is: contains at most one
+    /// pixel or is exposed no more than 0.01s
     /// </summary>
     public bool IsDummy => _nonZeroPixelCount <= 1 || _exposureTime <= 0.01;
 
@@ -272,8 +273,9 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     /// <summary>
     /// Gets the last pixel index on the <see cref="BoundingRectangle"/>
     /// </summary>
-    public uint BoundingRectangleLastPixelIndex =>
-        (uint)(BoundingRectangle.Bottom * ResolutionX + BoundingRectangle.Right);
+    public uint BoundingRectangleLastPixelIndex => BoundingRectangle.IsEmpty
+        ? 0
+        : (uint)((BoundingRectangle.Bottom - 1) * ResolutionX + BoundingRectangle.Right - 1); // Right/Bottom are exclusive
 
     /// <summary>
     /// Gets the first pixel <see cref="Point"/> on the <see cref="BoundingRectangle"/>
@@ -283,7 +285,9 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     /// <summary>
     /// Gets the last pixel <see cref="Point"/> on the <see cref="BoundingRectangle"/>
     /// </summary>
-    public Point BoundingRectangleLastPixelPosition => new(BoundingRectangle.Right, BoundingRectangle.Bottom);
+    public Point BoundingRectangleLastPixelPosition => BoundingRectangle.IsEmpty
+        ? BoundingRectangle.Location
+        : new(BoundingRectangle.Right - 1, BoundingRectangle.Bottom - 1);
 
     /// <summary>
     /// Gets the first pixel index on this layer
@@ -863,12 +867,10 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
         get
         {
             if (IsFirstLayer) return _positionZ;
-            var previousLayer = this;
-
-            while
-                ((previousLayer =
-                     previousLayer.PreviousLayer) is not
-                 null) // This cycle returns the correct layer height if two or more layers have the same position z
+            // This cycle returns the correct layer height if two or more layers have the same position z
+            for (var previousLayer = PreviousLayer;
+                 previousLayer is not null;
+                 previousLayer = previousLayer.PreviousLayer)
             {
                 var layerHeight = RoundHeight(_positionZ - previousLayer.PositionZ);
                 //Debug.WriteLine($"Layer {_index}-{previousLayer.Index}: {_positionZ} - {previousLayer.PositionZ}: {layerHeight}");
@@ -1057,12 +1059,14 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
         get => SlicerFile.DecodeType != FileFormat.FileDecodeType.Full ? null! : _compressedMat.Mat;
         set
         {
-            GetBoundingRectangle(value, true);
             if (value is null)
             {
+                // GetBoundingRectangle would measure the image being replaced
+                BoundingRectangle = Rectangle.Empty;
+                NonZeroPixelCount = 0;
                 _compressedMat.SetEmptyCompressedBytes();
             }
-            else if (_nonZeroPixelCount == 0)
+            else if (GetBoundingRectangle(value, true).IsEmpty)
             {
                 _compressedMat.SetEmptyCompressedBytes(value, true);
             }
@@ -1393,14 +1397,14 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
 
     #region Equatables
 
-    public static bool operator ==(Layer obj1, Layer obj2)
+    public static bool operator ==(Layer? obj1, Layer? obj2)
     {
-        return obj1.Equals(obj2);
+        return obj1 is null ? obj2 is null : obj1.Equals(obj2);
     }
 
-    public static bool operator !=(Layer obj1, Layer obj2)
+    public static bool operator !=(Layer? obj1, Layer? obj2)
     {
-        return !obj1.Equals(obj2);
+        return !(obj1 == obj2);
     }
 
     public static bool operator >(Layer obj1, Layer obj2)
@@ -1966,6 +1970,8 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     public void CopyImageTo(Layer layer)
     {
         _compressedMat.CopyTo(layer._compressedMat);
+        // Disposes the contours of the replaced image, then takes the ones of the copied image
+        layer.InvalidateImage();
         layer._contours = _contours?.Clone();
         layer.BoundingRectangle = BoundingRectangle;
         layer.NonZeroPixelCount = _nonZeroPixelCount;
@@ -1973,12 +1979,13 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
         layer.FirstPixelPosition = FirstPixelPosition;
         layer.LastPixelIndex = LastPixelIndex;
         layer.LastPixelPosition = LastPixelPosition;
-        layer.InvalidateImage();
     }
 
     public Layer Clone()
     {
         var layer = (Layer)MemberwiseClone();
+        // A shared lock would let threads locking layers in order (repair islands) deadlock when a file holds clones
+        layer.Mutex = new Lock();
         layer._compressedMat = _compressedMat.Clone();
         layer._contours = _contours?.Clone();
         //Debug.WriteLine(ReferenceEquals(_compressedBytes, layer.CompressedBytes));

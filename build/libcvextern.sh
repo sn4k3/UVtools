@@ -384,11 +384,10 @@ patch_configure() {
     [ -f "$configure_script" ] || die "Unable to find Emgu CV configure script: $configure_script"
     [ "$build_package" == "mini" ] || return 0
     content="$(<"$configure_script")"
-    if [[ "$content" == *'-DBUILD_opencv_videoio:BOOL=FALSE'* ]]; then
-        return
-    fi
     [[ "$content" == *"$search_for"* ]] || die "Unable to patch $configure_script. Could not find: $search_for"
 
+    # Only add the missing flags, so a configure script patched by a previous run still gets the new ones.
+    # EMGU_CV_WITH_TIFF is Emgu's GeoTIFF writer, unused by UVtools. It builds PROJ, which links the system libsqlite3.
     replacement="$search_for"
     for flag in \
         '-DWITH_EIGEN:BOOL=FALSE' "$platform_flag" \
@@ -396,10 +395,11 @@ patch_configure() {
         '-DWITH_1394:BOOL=FALSE' '-DVIDEOIO_ENABLE_PLUGINS:BOOL=FALSE' \
         '-DBUILD_opencv_videoio:BOOL=FALSE' '-DBUILD_opencv_gapi:BOOL=FALSE' \
         '-DWITH_PROTOBUF:BOOL=FALSE' '-DBUILD_PROTOBUF:BOOL=FALSE' \
-		'-DWITH_LAPACK:BOOL=FALSE' ; do
-        replacement+=$' \\\n       '"$flag"
+        '-DWITH_LAPACK:BOOL=FALSE' '-DEMGU_CV_WITH_TIFF:BOOL=FALSE'; do
+        [[ "$content" == *"$flag"* ]] || replacement+=$' \\\n       '"$flag"
     done
-    content="${content//"$search_for"/"$replacement"}"
+    [ "$replacement" != "$search_for" ] || return 0
+    content="${content/"$search_for"/"$replacement"}"
     printf '%s\n' "$content" > "$configure_script"
 }
 
@@ -408,12 +408,44 @@ patch_macos_configure() {
 }
 
 patch_linux_configure() {
-    local content
+    local content replacement
     content="$(<"$linux_configure_script")"
-    # Preserve the existing preference for system TIFF rather than building a bundled copy.
-    content="${content//-DBUILD_TIFF:BOOL=TRUE/-DBUILD_TIFF:BOOL=FALSE}"
+    # Link the bundled libtiff statically, the system libtiff soname changes between distributions
+    # (libtiff.so.5 on Ubuntu 22.04, libtiff.so.6 on Ubuntu 24.04 / Debian 12+) and breaks the binary on the others.
+    content="${content//-DBUILD_TIFF:BOOL=FALSE/-DBUILD_TIFF:BOOL=TRUE}"
+    if [[ "$content" != *'-DBUILD_TIFF:BOOL=TRUE'* ]]; then
+        [[ "$content" == *'-DWITH_EIGEN:BOOL=TRUE'* ]] || die "Unable to patch $linux_configure_script. Could not find: -DWITH_EIGEN:BOOL=TRUE"
+        replacement='-DWITH_EIGEN:BOOL=TRUE'$' \\\n       ''-DBUILD_TIFF:BOOL=TRUE'
+        content="${content//-DWITH_EIGEN:BOOL=TRUE/"$replacement"}"
+    fi
     printf '%s\n' "$content" > "$linux_configure_script"
     patch_configure "$linux_configure_script" '-DWITH_EIGEN:BOOL=TRUE' '-DWITH_V4L:BOOL=FALSE'
+}
+
+check_linux_dependencies() {
+    local native_file="$1"
+    local library
+    local unexpected=""
+
+    if ! testcmd readelf; then
+        echo "Warning: readelf not found, unable to check the shared library dependencies of $native_file" >&2
+        return
+    fi
+
+    echo "Shared library dependencies:"
+    while IFS= read -r library; do
+        echo "  $library"
+        # Only libraries with a stable soname that every distribution installs, anything else must be built in.
+        case "$library" in
+            libc.so.6|libm.so.6|libdl.so.2|libpthread.so.0|librt.so.1|ld-linux-*.so.*) ;;
+            libstdc++.so.6|libgcc_s.so.1|libz.so.1) ;;
+            *) unexpected+=" $library" ;;
+        esac
+    done < <(readelf -d "$native_file" | sed -n 's/.*(NEEDED).*\[\(.*\)\]/\1/p')
+
+    if [ -n "$unexpected" ]; then
+        die "$native_file depends on system libraries that are not portable across distributions:$unexpected. Disable or build them in, then run ./libcvextern.sh clean and rebuild."
+    fi
 }
 
 report_native_binary() {
@@ -436,6 +468,7 @@ report_native_binary() {
             "$directory/libs/runtimes"/ubuntu.*-"$native_arch"/native/libcvextern.so \
             "$directory/libs/runtimes/rhel-$native_arch/native/libcvextern.so"; do
             if [ -f "$native_file" ]; then
+                check_linux_dependencies "$native_file"
                 echo "Completed - Native binary: $native_file"
                 return
             fi

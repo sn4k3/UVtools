@@ -86,6 +86,7 @@ public class Issue
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Layer, BoundingRectangle, PixelsCount, Area);
+        // Matches Equals, the layer hash would hash its image
+        return HashCode.Combine(LayerIndex, BoundingRectangle, PixelsCount, Area);
     }
 }

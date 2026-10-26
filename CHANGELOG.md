@@ -1,5 +1,16 @@
 # Changelog
 
+## 25/10/2026 - v7.1.2
+
+- (Improvement) Linux: Present better error messages when libcvextern fails to load, and add a check for missing dependencies
+- (Fix) Linux: libcvextern no longer requires the system libtiff.so.5 and libsqlite3, fixing startup on Debian 13 and Ubuntu 24.04+ (#1161)
+- (Fix) macOS: The missing dependencies window never listed the libcvextern dependencies
+- (Fix) Repair layers: Attach islands could hang forever on files with cloned layers, such as from timelapse, clone
+  layers, double exposure, lithophane, stir resin and the calibration tests, as the clones shared the same lock
+- (Fix) Issues: Resin traps, suction cups and print height issues on a single layer had their area calculated as a
+  volume, multiplied by the layer height in pixels
+- (Fix) Issues: Ignoring an island also ignored the islands with the same pixels on other layers
+
 ## 25/10/2026 - v7.1.1
 
 - **PCB exposure:**

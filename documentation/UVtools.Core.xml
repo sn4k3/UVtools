@@ -5938,6 +5938,12 @@
             a different buffer size - this is useful for testing.
             </summary>
         </member>
+        <member name="F:UVtools.Core.IO.ReverseLineReader.MaxLeftOverBytes">
+            <summary>
+            Maximum bytes at the start of a read that belong to a character started before it: the 3 continuation bytes of a
+            4 bytes UTF-8 character, or the 2 bytes of the low surrogate of an UTF-16 pair.
+            </summary>
+        </member>
         <member name="F:UVtools.Core.IO.ReverseLineReader._streamSource">
             <summary>
             Means of creating a Stream to read from.
@@ -5959,6 +5965,11 @@
             <summary>
             Function which, when given a position within a file and a byte, states whether
             or not the byte represents the start of a character.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.IO.ReverseLineReader._utf16BigEndian">
+            <summary>
+            For UTF-16, gets if the code units are big endian, otherwise little endian. <see langword="null"/> for others.
             </summary>
         </member>
         <member name="M:UVtools.Core.IO.ReverseLineReader.#ctor(System.Func{System.IO.Stream})">
@@ -6094,7 +6105,8 @@
         </member>
         <member name="P:UVtools.Core.Layers.Layer.IsDummy">
             <summary>
-            Gets if this layer is a dummy layer to bypass a firmware constrain, that is contained at most one pixel and exposure time no more than 0.01s
+            Gets if this layer is a dummy layer, like the ones to bypass a firmware constrain, that is: contains at most one
+            pixel or is exposed no more than 0.01s
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.Layer.Area">

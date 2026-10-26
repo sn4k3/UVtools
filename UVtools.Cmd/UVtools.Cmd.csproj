@@ -1,19 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>UVtoolsCmd</AssemblyName>
+    <Description>Commandline utility for UVtools</Description>
+    <Version>2.2.0</Version>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <AssemblyName>UVtoolsCmd</AssemblyName>
-        <Description>Commandline utility for UVtools</Description>
-        <Version>2.2.0</Version>
-        <IsPackable>false</IsPackable>
-    </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="2.0.14" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="System.CommandLine" Version="2.0.13" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\UVtools.Core\UVtools.Core.csproj"/>
-    </ItemGroup>
-
+  <ItemGroup>
+    <ProjectReference Include="..\UVtools.Core\UVtools.Core.csproj" />
+  </ItemGroup>
 </Project>

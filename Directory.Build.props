@@ -43,7 +43,7 @@
     <UseRIDGraph>true</UseRIDGraph>
 
     <!-- Versions -->
-    <UVtoolsVersion>7.1.1</UVtoolsVersion>
+    <UVtoolsVersion>7.1.2</UVtoolsVersion>
     <AvaloniaVersion>12.1.4</AvaloniaVersion>
     <EmguCvVersion>5.0.0.6584</EmguCvVersion>
 

@@ -7,11 +7,14 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -214,16 +217,18 @@ public partial class App : Application
             + "Those dependencies are required at libcvextern/OpenCV library.\n"
             + "UVtools is built on top of the OpenCV and therefore cannot run.\n\n";
 
+        var isDiagnosed = false;
         if (OperatingSystem.IsLinux())
         {
             try
             {
-                var result = ProcessHelper.GetShellOutput(
-                    $"ldd '{Path.Combine(ApplicationPath, "libcvextern.so")}' | grep not"
+                var linuxMessage = GetLinuxMissingDependenciesMessage(
+                    Path.Combine(ApplicationPath, "libcvextern.so")
                 );
-                if (result.Succeeded && !string.IsNullOrWhiteSpace(result.StandardOutput))
+                if (linuxMessage is not null)
                 {
-                    message += $"Missing dependencies:\n{result.StandardOutput}\n";
+                    message += linuxMessage;
+                    isDiagnosed = true;
                 }
             }
             catch (Exception e)
@@ -237,11 +242,11 @@ public partial class App : Application
             {
                 var result = ProcessHelper.GetProcessOutput(
                     "otool",
-                    $"-L '{Path.Combine(ApplicationPath, "libcvextern.dylib")}'"
+                    ["-L", Path.Combine(ApplicationPath, "libcvextern.dylib")]
                 );
                 if (!string.IsNullOrWhiteSpace(result.StandardOutput))
                 {
-                    message += $"Dependencies:\n{result}\n";
+                    message += $"Dependencies:\n{result.StandardOutput}\n";
                 }
             }
             catch (Exception e)
@@ -250,9 +255,12 @@ public partial class App : Application
             }
         }
 
-        message +=
-            "Please install or build the dependencies in order to run the software.\n"
-            + "Check the manual page at 'Requirements' section for help.";
+        if (!isDiagnosed)
+        {
+            message += "Please install or build the dependencies in order to run the software.\n";
+        }
+
+        message += "Check the manual page at 'Requirements' section for help.";
 
         return new MessageWindow(
             $"{About.SoftwareWithVersion} is unable to run",
@@ -278,6 +286,117 @@ public partial class App : Application
             AboutButtonIsVisible = true,
         };
     }
+
+    /// <summary>
+    /// Explains why the Linux dynamic loader can't load <paramref name="libraryPath"/>, based on the <c>ldd</c> report.
+    /// </summary>
+    /// <returns>The explanation, or <see langword="null"/> when <c>ldd</c> doesn't report anything missing.</returns>
+    private static string? GetLinuxMissingDependenciesMessage(string libraryPath)
+    {
+        var result = ProcessHelper.GetProcessOutput("ldd", [libraryPath]);
+        // Missing libraries go to the standard output, missing symbol versions (GLIBC_2.38) can go to the error output.
+        var report = $"{result.StandardOutput}\n{result.StandardError}";
+
+        var notFoundLines = report
+            .Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .AsValueEnumerable()
+            .Where(line => line.Contains("not found", StringComparison.Ordinal))
+            .Distinct()
+            .ToArray();
+        if (notFoundLines.Length == 0) return null;
+
+        var message = string.Empty;
+        var systemGlibcVersion = GetGlibcVersion();
+
+        Version? requiredGlibcVersion = null;
+        var requiredCppRuntimeVersions = new List<string>();
+        foreach (Match match in MissingSymbolVersionRegex().Matches(report))
+        {
+            if (match.Groups[1].Value == "GLIBC")
+            {
+                if (Version.TryParse(match.Groups[2].Value, out var version)
+                    && (requiredGlibcVersion is null || version > requiredGlibcVersion))
+                {
+                    requiredGlibcVersion = version;
+                }
+            }
+            else
+            {
+                var symbolVersion = $"{match.Groups[1].Value}_{match.Groups[2].Value}";
+                if (!requiredCppRuntimeVersions.Contains(symbolVersion))
+                {
+                    requiredCppRuntimeVersions.Add(symbolVersion);
+                }
+            }
+        }
+
+        if (requiredGlibcVersion is not null)
+        {
+            message += $"libcvextern requires glibc {requiredGlibcVersion} or newer, your system has glibc {systemGlibcVersion ?? "unknown"}.\n"
+                       + "glibc is part of your distribution and can't be upgraded on its own, a newer release of your distribution is required.\n\n";
+        }
+
+        if (requiredCppRuntimeVersions.Count > 0)
+        {
+            message += $"libcvextern requires a newer C++ runtime (libstdc++ with {string.Join(", ", requiredCppRuntimeVersions)}), "
+                       + "a newer release of your distribution is required.\n\n";
+        }
+
+        var missingLibraries = MissingLibraryRegex()
+            .Matches(report)
+            .AsValueEnumerable()
+            .Select(match => match.Groups[1].Value)
+            .Distinct()
+            .ToArray();
+        if (missingLibraries.Length > 0)
+        {
+            message += $"Missing libraries: {string.Join(", ", missingLibraries)}\n"
+                       + $"{About.Software} ships every library it needs except the base system ones, so unless you replaced libcvextern yourself this is a packaging problem. "
+                       + "Please report it with this message instead of installing old versions of these libraries or copying them from other distributions.\n\n";
+        }
+
+        if (requiredGlibcVersion is null && requiredCppRuntimeVersions.Count == 0 && missingLibraries.Length == 0)
+        {
+            message += "Missing dependencies:\n";
+        }
+        else
+        {
+            message += $"System glibc: {systemGlibcVersion ?? "unknown"}\nReport from ldd:\n";
+        }
+
+        return message + string.Join('\n', notFoundLines) + "\n\n";
+    }
+
+    /// <summary>
+    /// Gets the version of the glibc the process runs on, or <see langword="null"/> when it isn't glibc (e.g. musl).
+    /// </summary>
+    private static string? GetGlibcVersion()
+    {
+        try
+        {
+            return Marshal.PtrToStringUTF8(GnuGetLibcVersion());
+        }
+        catch (Exception e) when (e is DllNotFoundException or EntryPointNotFoundException)
+        {
+            return null;
+        }
+    }
+
+    [LibraryImport("libc.so.6", EntryPoint = "gnu_get_libc_version")]
+    private static partial nint GnuGetLibcVersion();
+
+    /// <summary>
+    /// Matches the <c>ldd</c> lines of a library the loader can't find: <c>libtiff.so.5 => not found</c>.
+    /// </summary>
+    [GeneratedRegex(@"^\s*(\S+)\s+=>\s+not found", RegexOptions.Multiline)]
+    private static partial Regex MissingLibraryRegex();
+
+    /// <summary>
+    /// Matches the <c>ldd</c> lines of a symbol version the system libraries don't provide:
+    /// <c>version `GLIBC_2.38' not found</c>.
+    /// </summary>
+    [GeneratedRegex(@"version [`'](GLIBC|GLIBCXX|CXXABI)_([0-9.]+)' not found")]
+    private static partial Regex MissingSymbolVersionRegex();
 
     #region Utilities
 

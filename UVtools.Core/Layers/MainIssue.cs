@@ -133,7 +133,8 @@ public class MainIssue : IReadOnlyList<Issue>
 
     public MainIssue(IssueType type, IEnumerable<Issue> issues) : this(type)
     {
-        foreach (var issue in issues)
+        Childs = issues.AsValueEnumerable().OrderBy(issue => issue.LayerIndex).ToArray();
+        foreach (var issue in Childs)
         {
             issue.Parent = this;
             var layerHeightInPixels = issue.Layer.SlicerFile.MillimetersToPixelsF(issue.Layer.LayerHeight, 20);
@@ -149,23 +150,10 @@ public class MainIssue : IReadOnlyList<Issue>
             BoundingRectangle = Rectangle.Union(BoundingRectangle, issue.BoundingRectangle);
         }
 
-        if (Childs.Length == 1)
-        {
-            Area = Childs[0].Area;
-            Childs = issues.AsValueEnumerable().ToArray();
-        }
-        else
-        {
-            Childs = issues.AsValueEnumerable().OrderBy(issue => issue.LayerIndex).ToArray();
-        }
+        // A single layer has an area, not a volume
+        if (Childs.Length == 1) Area = Childs[0].Area;
 
         Area = Math.Round(Area, 3);
-    }
-
-    private void Sort()
-    {
-        if (Childs.Length < 1) return;
-        Array.Sort(Childs, (issue, issue1) => issue.LayerIndex.CompareTo(issue1.LayerIndex));
     }
 
     public bool IsIssueInBetween(int layerIndex) => layerIndex >= StartLayerIndex && layerIndex <= EndLayerIndex;
@@ -202,6 +190,7 @@ public class MainIssue : IReadOnlyList<Issue>
 
     public override int GetHashCode()
     {
-        return HashCode.Combine((int)Type, BoundingRectangle, PixelCount, Area, Childs);
+        // The children are compared by content in Equals, hashing the array reference would break the contract
+        return HashCode.Combine((int)Type, BoundingRectangle, PixelCount, Area);
     }
 }

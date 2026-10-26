@@ -20,6 +20,12 @@ public sealed class ReverseLineReader : IEnumerable<string>
     private const int DefaultBufferSize = 4096;
 
     /// <summary>
+    /// Maximum bytes at the start of a read that belong to a character started before it: the 3 continuation bytes of a
+    /// 4 bytes UTF-8 character, or the 2 bytes of the low surrogate of an UTF-16 pair.
+    /// </summary>
+    private const int MaxLeftOverBytes = 3;
+
+    /// <summary>
     /// Means of creating a Stream to read from.
     /// </summary>
     private readonly Func<Stream> _streamSource;
@@ -41,6 +47,11 @@ public sealed class ReverseLineReader : IEnumerable<string>
     /// or not the byte represents the start of a character.
     /// </summary>
     private readonly Func<long, byte, bool> _characterStartDetector;
+
+    /// <summary>
+    /// For UTF-16, gets if the code units are big endian, otherwise little endian. <see langword="null"/> for others.
+    /// </summary>
+    private readonly bool? _utf16BigEndian;
 
     /// <summary>
     /// Creates a LineReader from a stream source. The delegate is only
@@ -98,10 +109,10 @@ public sealed class ReverseLineReader : IEnumerable<string>
         }
         else if (encoding is UnicodeEncoding)
         {
-            // For UTF-16, even-numbered positions are the start of a character.
-            // TODO: This assumes no surrogate pairs. More work required
-            // to handle that.
+            // For UTF-16, even-numbered positions are the start of a code unit. A low surrogate is skipped later, as it
+            // continues the pair started by the high surrogate before it.
             _characterStartDetector = (pos, data) => (pos & 1) == 0;
+            _utf16BigEndian = encoding.CodePage == Encoding.BigEndianUnicode.CodePage;
         }
         else if (encoding is UTF8Encoding)
         {
@@ -146,9 +157,9 @@ public sealed class ReverseLineReader : IEnumerable<string>
                 throw new InvalidDataException("UTF-16 encoding provided, but stream has odd length.");
             }
 
-            // Allow up to two bytes for data from the start of the previous
+            // Allow room for data from the start of the previous
             // read which didn't quite make it as full characters
-            byte[] buffer = new byte[_bufferSize + 2];
+            byte[] buffer = new byte[_bufferSize + MaxLeftOverBytes];
             char[] charBuffer = new char[_encoding.GetMaxCharCount(buffer.Length)];
             int leftOverData = 0;
             string? previousEnd = null;
@@ -186,14 +197,24 @@ public sealed class ReverseLineReader : IEnumerable<string>
                 {
                     firstCharPosition++;
                     // Bad UTF-8 sequences could trigger this. For UTF-8 we should always
-                    // see a valid character start in every 3 bytes, and if this is the start of the file
+                    // see a valid character start in every 4 bytes, and if this is the start of the file
                     // so we've done a short read, we should have the character start
                     // somewhere in the usable buffer.
-                    if (firstCharPosition == 3 || firstCharPosition == bytesToRead)
+                    if (firstCharPosition > MaxLeftOverBytes || firstCharPosition == bytesToRead)
                     {
-                        throw new InvalidDataException("Invalid UTF-8 data");
+                        throw new InvalidDataException($"Invalid {_encoding.WebName} data");
                     }
                 }
+
+                if (_utf16BigEndian is { } bigEndian && firstCharPosition + 1 < bytesToRead)
+                {
+                    var codeUnit = bigEndian
+                        ? (char)(buffer[firstCharPosition] << 8 | buffer[firstCharPosition + 1])
+                        : (char)(buffer[firstCharPosition + 1] << 8 | buffer[firstCharPosition]);
+                    // Decoded alone it would turn into U+FFFD, decode it with its high surrogate on the next read
+                    if (char.IsLowSurrogate(codeUnit)) firstCharPosition += 2;
+                }
+
                 leftOverData = firstCharPosition;
 
                 int charsRead = _encoding.GetChars(buffer, firstCharPosition, bytesToRead - firstCharPosition, charBuffer, 0);
@@ -244,7 +265,13 @@ public sealed class ReverseLineReader : IEnumerable<string>
             if (leftOverData != 0)
             {
                 // At the start of the final buffer, we had the end of another character.
-                throw new InvalidDataException("Invalid UTF-8 data at start of stream");
+                throw new InvalidDataException($"Invalid {_encoding.WebName} data at start of stream");
+            }
+
+            // The first line of the stream is the last returned, without the byte order mark like a StreamReader
+            if (previousEnd is { Length: > 0 } && previousEnd[0] == '\uFEFF')
+            {
+                previousEnd = previousEnd[1..];
             }
             if (firstYield && string.IsNullOrEmpty(previousEnd))
             {

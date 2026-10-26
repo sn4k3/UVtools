@@ -38,7 +38,8 @@ public sealed class IssueOfPoints : Issue
 
     private bool Equals(IssueOfPoints other)
     {
-        return Points.AsValueEnumerable().SequenceEqual(other.Points);
+        // Same footprint on another layer is another issue
+        return base.Equals(other) && Points.AsValueEnumerable().SequenceEqual(other.Points);
     }
 
     public override bool Equals(object? obj)
@@ -48,6 +49,6 @@ public sealed class IssueOfPoints : Issue
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Points);
+        return base.GetHashCode();
     }
 }

@@ -52,6 +52,6 @@ public sealed class IssueOfContours : Issue
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Contours);
+        return base.GetHashCode();
     }
 }
