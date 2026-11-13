@@ -499,6 +499,13 @@ public partial class UserSettings : ObservableObject
         [ObservableProperty]
         public partial bool ShowPeelCurve { get; set; } = false;
 
+        /// <summary>
+        /// Gets or sets what the peel curve HUDs, of the 2D and 3D previews, plot for each layer
+        /// </summary>
+        [ObservableProperty]
+        public partial UVtools.UI.Controls.PeelCurveMode PeelCurveMode { get; set; } =
+            UVtools.UI.Controls.PeelCurveMode.Area;
+
         [ObservableProperty]
         public partial bool ShowMeasure { get; set; } = false;
 

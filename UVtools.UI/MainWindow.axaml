@@ -91,6 +91,24 @@
         <KeyBinding Command="{Binding MenuHelpMaterialManagerClickedCommand}"
                     Gesture="F10" />
     </windows:GenericWindow.KeyBindings>
+    <windows:GenericWindow.Styles>
+        <!-- Compact mode toggles of the peel curve HUDs -->
+        <Style Selector="StackPanel.PeelCurveModes">
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="Spacing" Value="2" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="StackPanel.PeelCurveModes > ToggleButton">
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="Padding" Value="7,0" />
+            <Setter Property="FontSize" Value="10.5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="CornerRadius" Value="4" />
+        </Style>
+    </windows:GenericWindow.Styles>
 
     <windows:GenericWindow.MenuItems>
         <MenuItem Name="MainMenuFile" Header="_File">
@@ -2559,6 +2577,23 @@
                                             <TextBlock Text="Cross-Section &amp; Peel Curve" FontSize="11"
                                                        FontWeight="SemiBold" Foreground="#CDD6F4" />
                                         </StackPanel>
+                                        <StackPanel Grid.Column="1"
+                                                    Classes="PeelCurveModes"
+                                                    HorizontalAlignment="Right"
+                                                    Margin="8,0,6,0">
+                                            <ToggleButton Content="Area"
+                                                          IsChecked="{Binding IsPeelCurveModeArea, Mode=TwoWay}"
+                                                          ToolTip.Tip="Cross-section area of each layer" />
+                                            <ToggleButton Content="Δ%"
+                                                          IsChecked="{Binding IsPeelCurveModeAreaDelta, Mode=TwoWay}"
+                                                          ToolTip.Tip="Area change relative to the layer below, in percent. Insignificant changes are ignored" />
+                                            <ToggleButton Content="Drift"
+                                                          IsChecked="{Binding IsPeelCurveModeCentroidDrift, Mode=TwoWay}"
+                                                          ToolTip.Tip="Distance the area centroid moved relative to the layer below, in mm" />
+                                            <ToggleButton Content="Risk"
+                                                          IsChecked="{Binding IsPeelCurveModeRiskScore, Mode=TwoWay}"
+                                                          ToolTip.Tip="Combined area change and centroid drift score. It is relative to this file: it shows which layers are unusual here, it does not predict print failure" />
+                                        </StackPanel>
                                         <Button Grid.Column="2"
                                                 Classes="Basic"
                                                 Padding="2"
@@ -2581,6 +2616,12 @@
                                                                         CurrentLayer="{Binding ActualLayer}"
                                                                         MaxArea="{Binding MaxLayerArea}"
                                                                         PeakLayer="{Binding PeakLayerIndex}"
+                                                                        Mode="{Binding LayerPeelCurveMode}"
+                                                                        AreaDeltaPercent="{Binding LayerAreaDeltaPercent}"
+                                                                        CentroidDrift="{Binding LayerCentroidDrift}"
+                                                                        RiskScores="{Binding LayerRiskScores}"
+                                                                        HighRiskLayers="{Binding HighRiskLayers}"
+                                                                        IsComputingCentroids="{Binding IsComputingLayerCentroids}"
                                                                         HaveTiltingVat="{Binding SlicerFile.HaveTiltingVat}"
                                                                         LayerSelectedCommand="{Binding SelectLayerCommand}" />
                                 </Grid>
@@ -3391,7 +3432,7 @@
                                             ClipToBounds="True"
                                             IsVisible="{Binding #LayerModel3DView.ShowPeelCurve}">
                                         <Grid RowDefinitions="Auto,*">
-                                            <Grid Grid.Row="0" Margin="10,8,8,4" ColumnDefinitions="*,Auto">
+                                            <Grid Grid.Row="0" Margin="10,8,8,4" ColumnDefinitions="*,Auto,Auto">
                                                 <StackPanel Orientation="Horizontal" Spacing="8"
                                                             VerticalAlignment="Center">
                                                     <icon:MaterialIcon Kind="ChartAreaspline" Foreground="#00D2FF"
@@ -3401,7 +3442,23 @@
                                                                FontWeight="Bold" Foreground="#F0F6FC"
                                                                VerticalAlignment="Center" />
                                                 </StackPanel>
-                                                <Button Grid.Column="1"
+                                                <StackPanel Grid.Column="1"
+                                                            Classes="PeelCurveModes"
+                                                            Margin="8,0,6,0">
+                                                    <ToggleButton Content="Area"
+                                                                  IsChecked="{Binding IsPeelCurveModeArea, Mode=TwoWay}"
+                                                                  ToolTip.Tip="Cross-section area of each layer" />
+                                                    <ToggleButton Content="Δ%"
+                                                                  IsChecked="{Binding IsPeelCurveModeAreaDelta, Mode=TwoWay}"
+                                                                  ToolTip.Tip="Area change relative to the layer below, in percent. Insignificant changes are ignored" />
+                                                    <ToggleButton Content="Drift"
+                                                                  IsChecked="{Binding IsPeelCurveModeCentroidDrift, Mode=TwoWay}"
+                                                                  ToolTip.Tip="Distance the area centroid moved relative to the layer below, in mm" />
+                                                    <ToggleButton Content="Risk"
+                                                                  IsChecked="{Binding IsPeelCurveModeRiskScore, Mode=TwoWay}"
+                                                                  ToolTip.Tip="Combined area change and centroid drift score. It is relative to this file: it shows which layers are unusual here, it does not predict print failure" />
+                                                </StackPanel>
+                                                <Button Grid.Column="2"
                                                         Padding="4"
                                                         Background="Transparent"
                                                         BorderThickness="0"
@@ -3422,6 +3479,12 @@
                                                     CurrentLayer="{Binding ActualLayer}"
                                                     MaxArea="{Binding MaxLayerArea}"
                                                     PeakLayer="{Binding PeakLayerIndex}"
+                                                    Mode="{Binding LayerPeelCurveMode}"
+                                                    AreaDeltaPercent="{Binding LayerAreaDeltaPercent}"
+                                                    CentroidDrift="{Binding LayerCentroidDrift}"
+                                                    RiskScores="{Binding LayerRiskScores}"
+                                                    HighRiskLayers="{Binding HighRiskLayers}"
+                                                    IsComputingCentroids="{Binding IsComputingLayerCentroids}"
                                                     HaveTiltingVat="{Binding SlicerFile.HaveTiltingVat}"
                                                     LayerSelectedCommand="{Binding SelectLayerCommand}" />
                                         </Grid>

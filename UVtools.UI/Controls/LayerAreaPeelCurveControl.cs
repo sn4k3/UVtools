@@ -11,8 +11,27 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
+using UVtools.Core.Layers;
 
 namespace UVtools.UI.Controls;
+
+/// <summary>
+/// What the <see cref="LayerAreaPeelCurveControl"/> plots for each layer.
+/// </summary>
+public enum PeelCurveMode
+{
+    /// <summary>The cross-section area of the layer.</summary>
+    Area,
+
+    /// <summary>The signed area change relative to the layer below, in percent.</summary>
+    AreaDelta,
+
+    /// <summary>The distance the area centroid moved relative to the layer below, in mm.</summary>
+    CentroidDrift,
+
+    /// <summary>The combined mechanical risk score, which is relative to the loaded file.</summary>
+    RiskScore
+}
 
 public class LayerAreaPeelCurveControl : Control
 {
@@ -52,6 +71,24 @@ public class LayerAreaPeelCurveControl : Control
     public static readonly StyledProperty<System.Windows.Input.ICommand?> LayerSelectedCommandProperty =
         AvaloniaProperty.Register<LayerAreaPeelCurveControl, System.Windows.Input.ICommand?>(nameof(LayerSelectedCommand));
 
+    public static readonly StyledProperty<PeelCurveMode> ModeProperty =
+        AvaloniaProperty.Register<LayerAreaPeelCurveControl, PeelCurveMode>(nameof(Mode));
+
+    public static readonly StyledProperty<IReadOnlyList<float>?> AreaDeltaPercentProperty =
+        AvaloniaProperty.Register<LayerAreaPeelCurveControl, IReadOnlyList<float>?>(nameof(AreaDeltaPercent));
+
+    public static readonly StyledProperty<IReadOnlyList<float>?> CentroidDriftProperty =
+        AvaloniaProperty.Register<LayerAreaPeelCurveControl, IReadOnlyList<float>?>(nameof(CentroidDrift));
+
+    public static readonly StyledProperty<IReadOnlyList<float>?> RiskScoresProperty =
+        AvaloniaProperty.Register<LayerAreaPeelCurveControl, IReadOnlyList<float>?>(nameof(RiskScores));
+
+    public static readonly StyledProperty<IReadOnlyList<int>?> HighRiskLayersProperty =
+        AvaloniaProperty.Register<LayerAreaPeelCurveControl, IReadOnlyList<int>?>(nameof(HighRiskLayers));
+
+    public static readonly StyledProperty<bool> IsComputingCentroidsProperty =
+        AvaloniaProperty.Register<LayerAreaPeelCurveControl, bool>(nameof(IsComputingCentroids));
+
     public event Action<int>? LayerSelected;
 
     public System.Windows.Input.ICommand? LayerSelectedCommand
@@ -88,6 +125,33 @@ public class LayerAreaPeelCurveControl : Control
     private static readonly Pen NeedlePen = new Pen(NeedleBrush, 1.5);
     private static readonly Pen NeedleMarkerPen = new Pen(Brushes.White, 1.0);
     private static readonly Pen HoverPen = new Pen(new ImmutableSolidColorBrush(Color.FromArgb(180, 255, 255, 255)), 1.0, DashStyle.Dash);
+    private static readonly IBrush RiseBrush = new ImmutableSolidColorBrush(Color.FromRgb(255, 120, 100));
+    private static readonly IBrush DropBrush = new ImmutableSolidColorBrush(Color.FromRgb(70, 200, 230));
+    private static readonly IBrush ClipMarkerBrush = new ImmutableSolidColorBrush(Color.FromRgb(255, 255, 255));
+    private static readonly Pen BaselinePen = new Pen(new ImmutableSolidColorBrush(Color.FromArgb(110, 255, 255, 255)), 1.0);
+    private static readonly IBrush DriftFillBrush = new LinearGradientBrush
+    {
+        StartPoint = new RelativePoint(0.5, 0.0, RelativeUnit.Relative),
+        EndPoint = new RelativePoint(0.5, 1.0, RelativeUnit.Relative),
+        GradientStops =
+        {
+            new GradientStop(Color.FromArgb(130, 190, 120, 255), 0.0),
+            new GradientStop(Color.FromArgb(20, 140, 90, 220), 1.0)
+        }
+    }.ToImmutable();
+    private static readonly Pen DriftPen = new Pen(new ImmutableSolidColorBrush(Color.FromRgb(200, 140, 255)), 1.5);
+
+    // Risk level colors, indexed by LayerMechanicalRiskLevel
+    private static readonly IBrush[] RiskBrushes =
+    [
+        new ImmutableSolidColorBrush(Color.FromArgb(220, 63, 185, 80)),
+        new ImmutableSolidColorBrush(Color.FromArgb(230, 227, 179, 0)),
+        new ImmutableSolidColorBrush(Color.FromArgb(240, 255, 140, 0)),
+        new ImmutableSolidColorBrush(Color.FromArgb(250, 248, 81, 73))
+    ];
+    private static readonly IBrush RiskOrangeTextBrush = new ImmutableSolidColorBrush(Color.FromRgb(255, 165, 60));
+    private static readonly IBrush RiskOrangeBackgroundBrush = new ImmutableSolidColorBrush(Color.FromArgb(60, 255, 140, 0));
+    private static readonly Pen RiskOrangePen = new Pen(new ImmutableSolidColorBrush(Color.FromArgb(180, 255, 140, 0)), 1.0);
     private static readonly Typeface SemiBoldTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.SemiBold);
     private static readonly Typeface BoldTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.Bold);
     private static readonly Typeface NormalTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.Normal);
@@ -101,6 +165,68 @@ public class LayerAreaPeelCurveControl : Control
     private IReadOnlyList<float>? _geometryAreas;
     private float _geometryMaxArea;
     private Size _geometrySize;
+
+    // The geometry and stats of the AreaDelta, CentroidDrift and RiskScore modes, rebuilt like the area one
+    private static readonly StreamGeometry EmptyGeometry = new();
+    private readonly StreamGeometry?[] _seriesGeometries = new StreamGeometry?[4];
+    private readonly List<int> _seriesClipped = [];
+    private double _seriesBarWidth = 1.0;
+    private IReadOnlyList<float>? _seriesData;
+    private PeelCurveMode _seriesMode;
+    private Size _seriesSize;
+    private float _seriesRange;
+    private int _seriesPeakIndex;
+
+    public PeelCurveMode Mode
+    {
+        get => GetValue(ModeProperty);
+        set => SetValue(ModeProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the signed area change of each layer in percent, plotted by <see cref="PeelCurveMode.AreaDelta"/>.
+    /// </summary>
+    public IReadOnlyList<float>? AreaDeltaPercent
+    {
+        get => GetValue(AreaDeltaPercentProperty);
+        set => SetValue(AreaDeltaPercentProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the centroid drift of each layer in mm, plotted by <see cref="PeelCurveMode.CentroidDrift"/>.
+    /// </summary>
+    public IReadOnlyList<float>? CentroidDrift
+    {
+        get => GetValue(CentroidDriftProperty);
+        set => SetValue(CentroidDriftProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the relative risk score of each layer, plotted by <see cref="PeelCurveMode.RiskScore"/>.
+    /// </summary>
+    public IReadOnlyList<float>? RiskScores
+    {
+        get => GetValue(RiskScoresProperty);
+        set => SetValue(RiskScoresProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the layers with an orange or red risk level, marked by <see cref="PeelCurveMode.RiskScore"/>.
+    /// </summary>
+    public IReadOnlyList<int>? HighRiskLayers
+    {
+        get => GetValue(HighRiskLayersProperty);
+        set => SetValue(HighRiskLayersProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether the centroids are still being calculated, which the drift and risk modes need.
+    /// </summary>
+    public bool IsComputingCentroids
+    {
+        get => GetValue(IsComputingCentroidsProperty);
+        set => SetValue(IsComputingCentroidsProperty, value);
+    }
 
     public IReadOnlyList<float>? LayerAreas
     {
@@ -185,7 +311,13 @@ public class LayerAreaPeelCurveControl : Control
             LayerLiftHeightsProperty,
             LayerLiftHeights2Property,
             ShowTsmcProperty,
-            HaveTiltingVatProperty);
+            HaveTiltingVatProperty,
+            ModeProperty,
+            AreaDeltaPercentProperty,
+            CentroidDriftProperty,
+            RiskScoresProperty,
+            HighRiskLayersProperty,
+            IsComputingCentroidsProperty);
     }
 
     public LayerAreaPeelCurveControl()
@@ -295,6 +427,29 @@ public class LayerAreaPeelCurveControl : Control
         }
 
         int count = areas.Count;
+        var mode = Mode;
+        IReadOnlyList<float>? series = null;
+        if (mode != PeelCurveMode.Area)
+        {
+            series = GetSeries(mode, count);
+            if (series is null)
+            {
+                var unavailableText = new FormattedText(
+                    IsComputingCentroids && mode is PeelCurveMode.CentroidDrift or PeelCurveMode.RiskScore
+                        ? "Computing centroids…"
+                        : "No data available for this mode",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    FlowDirection.LeftToRight,
+                    SemiBoldTypeface,
+                    13.0,
+                    NoDataBrush);
+                context.DrawText(unavailableText, new Point(14, bounds.Height / 2.0 - 9));
+                return;
+            }
+
+            EnsureSeriesGeometry(mode, series, bounds.Size);
+        }
+
         float maxArea = MaxArea;
         if (maxArea <= 0.001f)
         {
@@ -311,14 +466,10 @@ public class LayerAreaPeelCurveControl : Control
         // Check if active layer is a peel spike
         bool isCurrentSpike = false;
         float spikeDeltaPercent = 0f;
-        if (activeLayer > 0 && areas[activeLayer - 1] > 0.01f)
+        if (activeLayer > 0 && LayerMechanicalAnalysis.IsPeelSpike(areas[activeLayer - 1], activeArea))
         {
-            float delta = activeArea - areas[activeLayer - 1];
-            if (delta / areas[activeLayer - 1] >= 0.35f && delta > 4.0f)
-            {
-                isCurrentSpike = true;
-                spikeDeltaPercent = (delta / areas[activeLayer - 1]) * 100f;
-            }
+            isCurrentSpike = true;
+            spikeDeltaPercent = (activeArea - areas[activeLayer - 1]) / areas[activeLayer - 1] * 100f;
         }
 
         float speed1 = LayerLiftSpeeds is not null && activeLayer < LayerLiftSpeeds.Count ? LayerLiftSpeeds[activeLayer] : 0f;
@@ -337,11 +488,13 @@ public class LayerAreaPeelCurveControl : Control
         // =========================================================================
         // LINE 1: Active Layer & Area (Left), Peak Area & Layer (Right)
         // =========================================================================
+        string activeValueText = series is null ? $"{activeArea:N1} mm²" : FormatSeriesValue(mode, series[activeLayer]);
+
         FormattedText CreateLine1LeftText(bool withHoverTag)
         {
             string layerPrefix = withHoverTag ? $"Layer {activeLayer + 1}/{count} (Hover):" : $"Layer {activeLayer + 1}/{count}:";
             return new FormattedText(
-                $"{layerPrefix}  {activeArea:N1} mm²",
+                $"{layerPrefix}  {activeValueText}",
                 System.Globalization.CultureInfo.InvariantCulture,
                 FlowDirection.LeftToRight,
                 BoldTypeface,
@@ -351,9 +504,21 @@ public class LayerAreaPeelCurveControl : Control
 
         FormattedText CreatePeakText(bool compact)
         {
-            string peakStr = compact
-                ? $"Peak: {maxArea:N0} mm²"
-                : PeakLayer >= 0 ? $"Peak: {maxArea:N1} mm² (L{PeakLayer + 1})" : $"Peak: {maxArea:N1} mm²";
+            string peakStr;
+            if (series is not null)
+            {
+                var peakValue = series[_seriesPeakIndex];
+                peakStr = compact
+                    ? $"Peak: {FormatSeriesValue(mode, peakValue, true)}"
+                    : $"Peak: {FormatSeriesValue(mode, peakValue, true)} (L{_seriesPeakIndex + 1})";
+            }
+            else
+            {
+                peakStr = compact
+                    ? $"Peak: {maxArea:N0} mm²"
+                    : PeakLayer >= 0 ? $"Peak: {maxArea:N1} mm² (L{PeakLayer + 1})" : $"Peak: {maxArea:N1} mm²";
+            }
+
             return new FormattedText(
                 peakStr,
                 System.Globalization.CultureInfo.InvariantCulture,
@@ -388,21 +553,46 @@ public class LayerAreaPeelCurveControl : Control
         // LINE 2: TSMC / Lift Speeds (Left) and Delamination Hazard Alert Badge (Right)
         // =========================================================================
         double rightBadgeWidth = 0.0;
-        if (isDelamHazard)
+        string? hazardLabel = null;
+        IBrush hazardTextBrush = HazardTextBrush;
+        IBrush hazardBackgroundBrush = HazardBackgroundBrush;
+        Pen hazardPen = HazardPen;
+        if (series is null)
         {
-            string hazardLabel = isCurrentSpike
-                ? $"⚠️ PEEL SPIKE (+{spikeDeltaPercent:F0}%)"
-                : (isTsmcSpeedDanger
-                    ? $"⚠️ FAST PEEL ({speed1:F0}mm/m)"
-                    : "⚠️ SHORT LIFT STAGE");
+            if (isDelamHazard)
+            {
+                hazardLabel = isCurrentSpike
+                    ? $"⚠️ PEEL SPIKE (+{spikeDeltaPercent:F0}%)"
+                    : (isTsmcSpeedDanger
+                        ? $"⚠️ FAST PEEL ({speed1:F0}mm/m)"
+                        : "⚠️ SHORT LIFT STAGE");
+            }
+        }
+        else if (mode == PeelCurveMode.RiskScore)
+        {
+            var riskScore = series[activeLayer];
+            var riskLevel = LayerMechanicalAnalysis.GetRiskLevel(riskScore);
+            if (riskLevel >= LayerMechanicalRiskLevel.Orange)
+            {
+                hazardLabel = $"⚠️ {riskLevel.ToString().ToUpperInvariant()} RISK ({riskScore:F1})";
+                if (riskLevel == LayerMechanicalRiskLevel.Orange)
+                {
+                    hazardTextBrush = RiskOrangeTextBrush;
+                    hazardBackgroundBrush = RiskOrangeBackgroundBrush;
+                    hazardPen = RiskOrangePen;
+                }
+            }
+        }
 
+        if (hazardLabel is not null)
+        {
             var hazardText = new FormattedText(
                 hazardLabel,
                 System.Globalization.CultureInfo.InvariantCulture,
                 FlowDirection.LeftToRight,
                 BoldTypeface,
                 10.5,
-                HazardTextBrush);
+                hazardTextBrush);
 
             double badgePadX = 6.0;
             double badgePadY = 2.0;
@@ -411,14 +601,23 @@ public class LayerAreaPeelCurveControl : Control
             double badgeX = padR - badgeW;
             double badgeY = 25.0;
 
-            context.DrawRectangle(HazardBackgroundBrush, HazardPen, new Rect(badgeX, badgeY, badgeW, badgeH), 4, 4);
+            context.DrawRectangle(hazardBackgroundBrush, hazardPen, new Rect(badgeX, badgeY, badgeW, badgeH), 4, 4);
             context.DrawText(hazardText, new Point(badgeX + badgePadX, badgeY + badgePadY));
 
             rightBadgeWidth = badgeW + 8.0;
         }
 
         string tsmcDesc;
-        if (hasTsmc)
+        if (series is not null)
+        {
+            tsmcDesc = mode switch
+            {
+                PeelCurveMode.AreaDelta => "Area change vs previous layer",
+                PeelCurveMode.CentroidDrift => "Centroid shift vs previous layer",
+                _ => "Relative to this file"
+            };
+        }
+        else if (hasTsmc)
         {
             tsmcDesc = $"TSMC: {speed1:F0}mm/m ({h1:F1}mm) → {speed2:F0}mm/m ({h2:F1}mm)";
         }
@@ -440,7 +639,7 @@ public class LayerAreaPeelCurveControl : Control
             11.0,
             TsmcTextBrush);
 
-        if (tsmcText.Width > availableLine2Width && hasTsmc)
+        if (tsmcText.Width > availableLine2Width && hasTsmc && series is null)
         {
             tsmcDesc = $"TSMC: {speed1:F0} → {speed2:F0}mm/m";
             tsmcText = new FormattedText(
@@ -453,6 +652,12 @@ public class LayerAreaPeelCurveControl : Control
         }
 
         context.DrawText(tsmcText, new Point(padL, 27));
+
+        if (series is not null)
+        {
+            DrawSeriesPlot(context, bounds, mode, series, count, curLayer);
+            return;
+        }
 
         // =========================================================================
         // GRAPH AREA BOUNDS & PLOT
@@ -564,6 +769,358 @@ public class LayerAreaPeelCurveControl : Control
             double hy = padBtm - (areas[hLayer] / maxArea) * plotH;
             context.DrawLine(HoverPen, new Point(hx, padTop), new Point(hx, padBtm));
             context.DrawEllipse(Brushes.White, null, new Point(hx, hy), 2.5, 2.5);
+        }
+    }
+
+    private IReadOnlyList<float>? GetSeries(PeelCurveMode mode, int count)
+    {
+        var series = mode switch
+        {
+            PeelCurveMode.AreaDelta => AreaDeltaPercent,
+            PeelCurveMode.CentroidDrift => CentroidDrift,
+            PeelCurveMode.RiskScore => RiskScores,
+            _ => null
+        };
+
+        return series is not null && series.Count == count ? series : null;
+    }
+
+    private static string FormatSeriesValue(PeelCurveMode mode, float value, bool peak = false)
+    {
+        return mode switch
+        {
+            PeelCurveMode.AreaDelta => peak ? $"{value:+0;-0;0}%" : $"Δ {value:+0.0;-0.0;0.0}%",
+            PeelCurveMode.CentroidDrift => peak ? $"{value:N2} mm" : $"drift {value:N2} mm",
+            _ => peak
+                ? $"{value:N1}"
+                : $"risk {value:N1} ({LayerMechanicalAnalysis.GetRiskLevel(value)})"
+        };
+    }
+
+    private StreamGeometry GetSeriesGeometry(int index) => _seriesGeometries[index] ?? EmptyGeometry;
+
+    private static float[] ToArray(IReadOnlyList<float> values)
+    {
+        if (values is float[] array) return array;
+
+        var copy = new float[values.Count];
+        for (var i = 0; i < copy.Length; i++)
+        {
+            copy[i] = values[i];
+        }
+
+        return copy;
+    }
+
+    /// <summary>
+    /// Calculates the range of the plotted series and builds its geometry, only when the data, the mode or the size
+    /// changed. The range is robust, so a few outliers do not flatten the rest of the plot: they are clipped to the
+    /// edge of it and marked.
+    /// </summary>
+    private void EnsureSeriesGeometry(PeelCurveMode mode, IReadOnlyList<float> series, Size size)
+    {
+        if (_seriesGeometries[0] is not null && ReferenceEquals(_seriesData, series) && _seriesMode == mode &&
+            _seriesSize == size)
+        {
+            return;
+        }
+
+        const double padL = 12.0;
+        const double padTop = 50.0;
+        double padR = size.Width - 12.0;
+        double padBtm = size.Height - 10.0;
+        double plotW = Math.Max(1.0, padR - padL);
+        double plotH = Math.Max(1.0, padBtm - padTop);
+        int count = series.Count;
+        var values = ToArray(series);
+
+        _seriesRange = mode switch
+        {
+            PeelCurveMode.AreaDelta => Math.Max(50f, LayerMechanicalAnalysis.GetPercentile(values, 99f, true, true)),
+            PeelCurveMode.CentroidDrift => Math.Max(0.01f, LayerMechanicalAnalysis.GetPercentile(values, 99f, false, true)),
+            _ => Math.Max(LayerMechanicalAnalysis.RedRiskScore * 1.25f, LayerMechanicalAnalysis.GetPercentile(values, 99f))
+        };
+        float range = _seriesRange;
+
+        _seriesPeakIndex = 0;
+        var peakAbs = 0f;
+        for (var i = 0; i < values.Length; i++)
+        {
+            var abs = MathF.Abs(values[i]);
+            if (abs > peakAbs)
+            {
+                peakAbs = abs;
+                _seriesPeakIndex = i;
+            }
+        }
+
+        // One value per pixel column is enough, the one that stands out the most so no peak is skipped
+        int columns = (int)Math.Clamp(Math.Floor(plotW), 1.0, count);
+        var representatives = new int[columns];
+        Array.Fill(representatives, -1);
+        for (var i = 0; i < values.Length; i++)
+        {
+            int column = (int)((long)i * columns / count);
+            var current = representatives[column];
+            if (current < 0 || MathF.Abs(values[i]) > MathF.Abs(values[current])) representatives[column] = i;
+        }
+
+        _seriesBarWidth = Math.Clamp(plotW / columns, 1.0, 4.0);
+        _seriesClipped.Clear();
+        foreach (var layer in representatives)
+        {
+            var value = values[layer];
+            if (mode == PeelCurveMode.AreaDelta ? MathF.Abs(value) > range : value > range) _seriesClipped.Add(layer);
+        }
+
+        double LayerToX(int layer) => padL + (double)layer / (count - 1) * plotW;
+
+        Array.Clear(_seriesGeometries);
+        switch (mode)
+        {
+            case PeelCurveMode.AreaDelta:
+            {
+                double y0 = padTop + plotH * 0.5;
+                var rise = new StreamGeometry();
+                var drop = new StreamGeometry();
+                using (var riseCtx = rise.Open())
+                using (var dropCtx = drop.Open())
+                {
+                    foreach (var layer in representatives)
+                    {
+                        var value = values[layer];
+                        if (value == 0f || !float.IsFinite(value)) continue;
+
+                        var ctx = value > 0f ? riseCtx : dropCtx;
+                        double x = LayerToX(layer);
+                        double y = y0 - Math.Clamp(value / range, -1f, 1f) * plotH * 0.5;
+                        ctx.BeginFigure(new Point(x, y0), false);
+                        ctx.LineTo(new Point(x, y));
+                        ctx.EndFigure(false);
+                    }
+                }
+
+                _seriesGeometries[0] = rise;
+                _seriesGeometries[1] = drop;
+                break;
+            }
+            case PeelCurveMode.CentroidDrift:
+            {
+                var fill = new StreamGeometry();
+                var line = new StreamGeometry();
+                using (var fillCtx = fill.Open())
+                using (var lineCtx = line.Open())
+                {
+                    double lastX = padL;
+                    for (var column = 0; column < representatives.Length; column++)
+                    {
+                        var layer = representatives[column];
+                        var pt = new Point(LayerToX(layer),
+                            padBtm - Math.Clamp(values[layer] / range, 0f, 1f) * plotH);
+                        if (column == 0)
+                        {
+                            fillCtx.BeginFigure(new Point(pt.X, padBtm), true);
+                            lineCtx.BeginFigure(pt, false);
+                        }
+
+                        fillCtx.LineTo(pt);
+                        lineCtx.LineTo(pt);
+                        lastX = pt.X;
+                    }
+
+                    fillCtx.LineTo(new Point(lastX, padBtm));
+                    fillCtx.EndFigure(true);
+                    lineCtx.EndFigure(false);
+                }
+
+                _seriesGeometries[0] = fill;
+                _seriesGeometries[1] = line;
+                break;
+            }
+            default:
+            {
+                var geometries = new StreamGeometry[RiskBrushes.Length];
+                var contexts = new StreamGeometryContext[RiskBrushes.Length];
+                try
+                {
+                    for (var level = 0; level < geometries.Length; level++)
+                    {
+                        geometries[level] = new StreamGeometry();
+                        contexts[level] = geometries[level].Open();
+                    }
+
+                    foreach (var layer in representatives)
+                    {
+                        var value = values[layer];
+                        if (value <= 0f || !float.IsFinite(value)) continue;
+
+                        var ctx = contexts[(int)LayerMechanicalAnalysis.GetRiskLevel(value)];
+                        double x = LayerToX(layer);
+                        double y = padBtm - Math.Min(value / range, 1f) * plotH;
+                        ctx.BeginFigure(new Point(x, padBtm), false);
+                        ctx.LineTo(new Point(x, y));
+                        ctx.EndFigure(false);
+                    }
+                }
+                finally
+                {
+                    foreach (var ctx in contexts)
+                    {
+                        ctx?.Dispose();
+                    }
+                }
+
+                Array.Copy(geometries, _seriesGeometries, geometries.Length);
+                break;
+            }
+        }
+
+        _seriesData = series;
+        _seriesMode = mode;
+        _seriesSize = size;
+    }
+
+    /// <summary>
+    /// Draws the plot of the AreaDelta, CentroidDrift and RiskScore modes, with the current layer and hover indicators.
+    /// </summary>
+    private void DrawSeriesPlot(DrawingContext context, Rect bounds, PeelCurveMode mode,
+        IReadOnlyList<float> series, int count, int curLayer)
+    {
+        const double padL = 12.0;
+        const double padTop = 50.0;
+        double padR = bounds.Width - 12.0;
+        double padBtm = bounds.Height - 10.0;
+        double plotW = Math.Max(1.0, padR - padL);
+        double plotH = Math.Max(1.0, padBtm - padTop);
+        float range = _seriesRange;
+        bool isSigned = mode == PeelCurveMode.AreaDelta;
+        double y0 = padTop + plotH * 0.5;
+
+        double LayerToX(int layer) => padL + (double)layer / (count - 1) * plotW;
+        double ValueToY(float value) => isSigned
+            ? y0 - Math.Clamp(value / range, -1f, 1f) * plotH * 0.5
+            : padBtm - Math.Clamp(value / range, 0f, 1f) * plotH;
+
+        // Grid lines (3 horizontal dashed lines: Top, Mid, Btm)
+        context.DrawLine(GridPen, new Point(padL, padTop), new Point(padR, padTop));
+        context.DrawLine(GridPen, new Point(padL, y0), new Point(padR, y0));
+        context.DrawLine(GridPen, new Point(padL, padBtm), new Point(padR, padBtm));
+
+        if (isSigned)
+        {
+            context.DrawLine(BaselinePen, new Point(padL, y0), new Point(padR, y0));
+        }
+        else if (mode == PeelCurveMode.RiskScore)
+        {
+            // Where the levels start, so the bars can be read against them
+            foreach (var threshold in (ReadOnlySpan<float>)
+                     [LayerMechanicalAnalysis.YellowRiskScore, LayerMechanicalAnalysis.OrangeRiskScore,
+                         LayerMechanicalAnalysis.RedRiskScore])
+            {
+                if (threshold >= range) continue;
+                double ty = ValueToY(threshold);
+                context.DrawLine(GridPen, new Point(padL, ty), new Point(padR, ty));
+            }
+        }
+
+        // Scale of the plot
+        string topLabel;
+        string bottomLabel;
+        switch (mode)
+        {
+            case PeelCurveMode.AreaDelta:
+                topLabel = $"+{range:N0}%";
+                bottomLabel = $"-{range:N0}%";
+                break;
+            case PeelCurveMode.CentroidDrift:
+                topLabel = $"{range:N2} mm";
+                bottomLabel = "0";
+                break;
+            default:
+                topLabel = $"{range:N1}";
+                bottomLabel = "0";
+                break;
+        }
+
+        var topText = new FormattedText(topLabel, System.Globalization.CultureInfo.InvariantCulture,
+            FlowDirection.LeftToRight, NormalTypeface, 9.5, PeakTextBrush);
+        var bottomText = new FormattedText(bottomLabel, System.Globalization.CultureInfo.InvariantCulture,
+            FlowDirection.LeftToRight, NormalTypeface, 9.5, PeakTextBrush);
+        context.DrawText(topText, new Point(padL + 2, padTop + 1));
+        context.DrawText(bottomText, new Point(padL + 2, padBtm - bottomText.Height - 1));
+
+        // The series itself
+        switch (mode)
+        {
+            case PeelCurveMode.AreaDelta:
+                context.DrawGeometry(null, new Pen(RiseBrush, _seriesBarWidth), GetSeriesGeometry(0));
+                context.DrawGeometry(null, new Pen(DropBrush, _seriesBarWidth), GetSeriesGeometry(1));
+                break;
+            case PeelCurveMode.CentroidDrift:
+                context.DrawGeometry(DriftFillBrush, null, GetSeriesGeometry(0));
+                context.DrawGeometry(null, DriftPen, GetSeriesGeometry(1));
+                break;
+            default:
+                for (var level = 0; level < RiskBrushes.Length; level++)
+                {
+                    context.DrawGeometry(null, new Pen(RiskBrushes[level], _seriesBarWidth), GetSeriesGeometry(level));
+                }
+
+                break;
+        }
+
+        // Values beyond the range are clipped to the edge of the plot
+        foreach (var layer in _seriesClipped)
+        {
+            double cy = isSigned && series[layer] < 0f ? padBtm : padTop;
+            context.DrawEllipse(ClipMarkerBrush, null, new Point(LayerToX(layer), cy), 2.0, 2.0);
+        }
+
+        if (mode == PeelCurveMode.AreaDelta)
+        {
+            // The same peel spikes of the area curve
+            var spikes = PeelSpikes;
+            if (spikes is not null)
+            {
+                foreach (var spk in spikes)
+                {
+                    if (spk < 0 || spk >= count) continue;
+                    double sx = LayerToX(spk);
+                    context.DrawLine(SpikePen, new Point(sx, padTop), new Point(sx, padBtm));
+                    context.DrawEllipse(SpikeDotBrush, null, new Point(sx, ValueToY(series[spk])), 2.5, 2.5);
+                }
+            }
+        }
+        else if (mode == PeelCurveMode.RiskScore)
+        {
+            var highRiskLayers = HighRiskLayers;
+            if (highRiskLayers is not null)
+            {
+                int stride = Math.Max(1, highRiskLayers.Count / 300);
+                for (var i = 0; i < highRiskLayers.Count; i += stride)
+                {
+                    int layer = highRiskLayers[i];
+                    if (layer < 0 || layer >= count) continue;
+
+                    var level = LayerMechanicalAnalysis.GetRiskLevel(series[layer]);
+                    context.DrawEllipse(RiskBrushes[(int)level], NeedleMarkerPen,
+                        new Point(LayerToX(layer), ValueToY(series[layer])), 2.5, 2.5);
+                }
+            }
+        }
+
+        // Current layer needle line & glowing indicator
+        double curX = LayerToX(curLayer);
+        context.DrawLine(NeedlePen, new Point(curX, padTop - 2), new Point(curX, padBtm + 2));
+        context.DrawEllipse(NeedleBrush, NeedleMarkerPen, new Point(curX, ValueToY(series[curLayer])), 3.5, 3.5);
+
+        // Hover guide line
+        if (_hoveredLayer.HasValue && _hoveredLayer.Value != curLayer)
+        {
+            int hLayer = _hoveredLayer.Value;
+            double hx = LayerToX(hLayer);
+            context.DrawLine(HoverPen, new Point(hx, padTop), new Point(hx, padBtm));
+            context.DrawEllipse(Brushes.White, null, new Point(hx, ValueToY(series[hLayer])), 2.5, 2.5);
         }
     }
 }

@@ -6845,6 +6845,233 @@
             <para>True to ignore ending empty layers, otherwise false.</para>
             </summary>
         </member>
+        <member name="T:UVtools.Core.Layers.LayerMechanicalRiskLevel">
+            <summary>
+            How unusual a layer transition is, relative to the rest of the same file.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Green">
+            <summary>Nothing unusual compared with the rest of the file.</summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Yellow">
+            <summary>A mildly unusual transition.</summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Orange">
+            <summary>A clearly unusual transition, worth a look.</summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Red">
+            <summary>One of the most abrupt transitions of the file.</summary>
+        </member>
+        <member name="T:UVtools.Core.Layers.LayerMechanicalAnalysis">
+            <summary>
+            Mechanical analysis of the layer to layer transitions of a file: how much the cross-section area changes, how far
+            its centroid moves, and a combined score of both.
+            </summary>
+            <remarks>
+            <para>
+            The <see cref="P:UVtools.Core.Layers.LayerMechanicalAnalysis.RiskScores"/> are <b>relative to the analysed file</b>: they tell which transitions are unusual
+            compared with the rest of the same model, they are not a prediction of print failure and cannot be compared between
+            different files.
+            </para>
+            <para>
+            The math is exposed as static methods working on plain arrays, so it can be used without decoding a file.
+            </para>
+            </remarks>
+        </member>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.MinPreviousArea">
+            <summary>
+            The previous layer area, in mm², at or below which a transition is too noisy to be meaningful, like the tip of
+            a support starting from nothing.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.MinAreaDelta">
+            <summary>
+            The minimum absolute area change, in mm², for a transition to be significant.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.PeelSpikeMinAreaRatio">
+            <summary>
+            The minimum area growth ratio (0.35 = +35%) of a layer to be a peel spike.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.ScalePercentile">
+            <summary>
+            The percentile of the non-zero values used as the scale of the area change and of the centroid drift.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.MaxNormalizedComponent">
+            <summary>
+            The maximum value of each normalized component of the risk score.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.AreaDeltaWeight">
+            <summary>
+            The weight of the normalized area change on the risk score.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.CentroidDriftWeight">
+            <summary>
+            The weight of the normalized centroid drift on the risk score.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.YellowRiskScore">
+            <summary>
+            The risk score from which a layer is <see cref="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Yellow"/>.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.OrangeRiskScore">
+            <summary>
+            The risk score from which a layer is <see cref="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Orange"/>.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.RedRiskScore">
+            <summary>
+            The risk score from which a layer is <see cref="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Red"/>.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.FallbackPixelSize">
+            <summary>
+            The pixel size, in mm, to use when the file does not know its display size.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.LayerMechanicalAnalysis.Count">
+            <summary>
+            Gets the number of analysed layers.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.LayerMechanicalAnalysis.AreaDeltaPercent">
+            <summary>
+            Gets the signed area change of each layer relative to the layer below, in percent. It is zero for the first
+            layer and for the insignificant transitions, see <see cref="M:UVtools.Core.Layers.LayerMechanicalAnalysis.CalculateAreaDeltaPercent(System.ReadOnlySpan{System.Single})"/>.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.LayerMechanicalAnalysis.Centroids">
+            <summary>
+            Gets the area centroid of each layer in mm, or <see cref="F:System.Single.NaN"/> components for an empty layer.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.LayerMechanicalAnalysis.CentroidDrift">
+            <summary>
+            Gets the distance in mm the centroid of each layer moved relative to the layer below. It is zero for the first
+            layer and when any of the two layers is empty.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.LayerMechanicalAnalysis.RiskScores">
+            <summary>
+            Gets the relative risk score of each layer, from 0 to
+            <see cref="F:UVtools.Core.Layers.LayerMechanicalAnalysis.MaxNormalizedComponent"/> × (<see cref="F:UVtools.Core.Layers.LayerMechanicalAnalysis.AreaDeltaWeight"/> + <see cref="F:UVtools.Core.Layers.LayerMechanicalAnalysis.CentroidDriftWeight"/>).
+            </summary>
+            <remarks>It is relative to this file, see the remarks of <see cref="T:UVtools.Core.Layers.LayerMechanicalAnalysis"/>.</remarks>
+        </member>
+        <member name="P:UVtools.Core.Layers.LayerMechanicalAnalysis.AreaDeltaScale">
+            <summary>
+            Gets the scale used to normalize the area change: the percentile <see cref="F:UVtools.Core.Layers.LayerMechanicalAnalysis.ScalePercentile"/> of the
+            non-zero absolute <see cref="P:UVtools.Core.Layers.LayerMechanicalAnalysis.AreaDeltaPercent"/>, or 0 when there is none.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.LayerMechanicalAnalysis.CentroidDriftScale">
+            <summary>
+            Gets the scale used to normalize the centroid drift: the percentile <see cref="F:UVtools.Core.Layers.LayerMechanicalAnalysis.ScalePercentile"/> of the
+            non-zero <see cref="P:UVtools.Core.Layers.LayerMechanicalAnalysis.CentroidDrift"/> in mm, or 0 when there is none.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.LayerMechanicalAnalysis.MaxRiskScore">
+            <summary>
+            Gets the highest risk score of the file.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.LayerMechanicalAnalysis.HighRiskLayers">
+            <summary>
+            Gets the layers, in ascending order, with an <see cref="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Orange"/> or
+            <see cref="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Red"/> risk level.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Layers.LayerMechanicalAnalysis.IsPeelSpike(System.Single,System.Single)">
+            <summary>
+            Gets whether a layer is a peel spike: its area suddenly grows compared with the layer below, which asks for a
+            stronger peel.
+            </summary>
+            <param name="previousArea">The area of the layer below, in mm².</param>
+            <param name="area">The area of the layer, in mm².</param>
+        </member>
+        <member name="M:UVtools.Core.Layers.LayerMechanicalAnalysis.CalculateAreaDeltaPercent(System.ReadOnlySpan{System.Single})">
+            <summary>
+            Calculates the signed area change of each layer relative to the layer below, in percent:
+            <c>(A[n] - A[n-1]) / A[n-1] × 100</c>.
+            </summary>
+            <param name="areas">The area of each layer, in mm².</param>
+            <returns>
+            The change of each layer. It is zero for the first layer and wherever the transition is insignificant: the layer
+            below has <see cref="F:UVtools.Core.Layers.LayerMechanicalAnalysis.MinPreviousArea"/> or less, or the area changed by <see cref="F:UVtools.Core.Layers.LayerMechanicalAnalysis.MinAreaDelta"/> mm² or less,
+            so the tip of a support does not produce huge noisy percentages.
+            </returns>
+        </member>
+        <member name="M:UVtools.Core.Layers.LayerMechanicalAnalysis.CalculateCentroidDrift(System.ReadOnlySpan{System.Numerics.Vector2})">
+            <summary>
+            Calculates the distance, in the unit of the centroids, each centroid moved relative to the one of the layer
+            below.
+            </summary>
+            <param name="centroids">The centroid of each layer, with <see cref="F:System.Single.NaN"/> components when empty.</param>
+            <returns>The drift of each layer. It is zero for the first layer and when any of the two layers is empty.</returns>
+        </member>
+        <member name="M:UVtools.Core.Layers.LayerMechanicalAnalysis.CalculateRiskScores(System.ReadOnlySpan{System.Single},System.ReadOnlySpan{System.Single})">
+            <summary>
+            Calculates the relative risk score of each layer: the absolute area change and the centroid drift are each
+            divided by the percentile <see cref="F:UVtools.Core.Layers.LayerMechanicalAnalysis.ScalePercentile"/> of their own non-zero values, limited to
+            <see cref="F:UVtools.Core.Layers.LayerMechanicalAnalysis.MaxNormalizedComponent"/>, and combined as
+            <see cref="F:UVtools.Core.Layers.LayerMechanicalAnalysis.AreaDeltaWeight"/> × area + <see cref="F:UVtools.Core.Layers.LayerMechanicalAnalysis.CentroidDriftWeight"/> × drift.
+            </summary>
+            <param name="areaDeltaPercent">The signed area change of each layer, in percent.</param>
+            <param name="centroidDrift">The centroid drift of each layer.</param>
+            <returns>The score of each layer, which is only meaningful compared with the other layers of the same file.</returns>
+        </member>
+        <member name="M:UVtools.Core.Layers.LayerMechanicalAnalysis.GetRiskLevel(System.Single)">
+            <summary>
+            Gets the risk level of a risk score.
+            </summary>
+            <param name="riskScore">The score, see <see cref="P:UVtools.Core.Layers.LayerMechanicalAnalysis.RiskScores"/>.</param>
+        </member>
+        <member name="M:UVtools.Core.Layers.LayerMechanicalAnalysis.GetPercentile(System.ReadOnlySpan{System.Single},System.Single,System.Boolean,System.Boolean)">
+            <summary>
+            Gets a percentile of the values, using linear interpolation between the closest ranks.
+            </summary>
+            <param name="values">The values. Non finite values are ignored.</param>
+            <param name="percentile">The percentile, from 0 to 100.</param>
+            <param name="useAbsolute">True to take the absolute value of the values.</param>
+            <param name="ignoreZero">True to ignore the values that are zero.</param>
+            <returns>The percentile, or 0 when there are no values.</returns>
+        </member>
+        <member name="M:UVtools.Core.Layers.LayerMechanicalAnalysis.Analyze(System.ReadOnlySpan{System.Single},System.ReadOnlySpan{System.Numerics.Vector2})">
+            <summary>
+            Analyses a file from the area and the centroid of each of its layers.
+            </summary>
+            <param name="areas">The area of each layer, in mm².</param>
+            <param name="centroids">The centroid of each layer, with <see cref="F:System.Single.NaN"/> components when empty.</param>
+            <exception cref="T:System.ArgumentException">When the number of areas and centroids differ.</exception>
+        </member>
+        <member name="M:UVtools.Core.Layers.LayerMechanicalAnalysis.CalculateCentroids(UVtools.Core.FileFormats.FileFormat,UVtools.Core.Operations.OperationProgress,System.Threading.CancellationToken)">
+            <summary>
+            Calculates the area centroid of each layer of a file, in mm. The layers are decoded in parallel, only their
+            bounding rectangle.
+            </summary>
+            <param name="slicerFile">The fully decoded file.</param>
+            <param name="progress">Optional progress, also used to pause and cancel.</param>
+            <param name="cancellationToken">Optional token to cancel, used when <paramref name="progress"/> has none.</param>
+            <returns>
+            The centroid of each layer, with <see cref="F:System.Single.NaN"/> components for the empty layers. The origin is the top
+            left corner of the layer image, the same as the pixel coordinates.
+            </returns>
+            <exception cref="T:System.OperationCanceledException">When canceled.</exception>
+        </member>
+        <member name="M:UVtools.Core.Layers.LayerMechanicalAnalysis.Analyze(UVtools.Core.FileFormats.FileFormat,UVtools.Core.Operations.OperationProgress,System.Threading.CancellationToken)">
+            <summary>
+            Analyses the layers of a file: area change, centroid drift and the relative risk score.
+            </summary>
+            <param name="slicerFile">The fully decoded file.</param>
+            <param name="progress">Optional progress, also used to pause and cancel.</param>
+            <param name="cancellationToken">Optional token to cancel, used when <paramref name="progress"/> has none.</param>
+            <exception cref="T:System.OperationCanceledException">When canceled.</exception>
+        </member>
         <member name="P:UVtools.Core.Layers.MainIssue.Type">
             <summary>
             Gets the issue type associated

@@ -31,7 +31,7 @@
   <ItemGroup>
     <PackageReference
       Include="Microsoft.SourceLink.GitHub"
-      Version="10.0.403"
+      Version="11.0.100"
       PrivateAssets="All"
     />
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />

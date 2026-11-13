@@ -65,6 +65,13 @@ public partial class MainWindow
     private VoxelPreviewMesh? _layer3DMesh;
     private string? _layer3DRendererError;
     private float[]? _layerAreas;
+    private float[]? _layerAreaDeltaPercent;
+    private LayerMechanicalAnalysis? _layerMechanicalAnalysis;
+    private Core.FileFormats.FileFormat? _layerMechanicalFile;
+    private long _layerMechanicalRevision;
+    private System.Threading.CancellationTokenSource? _layerMechanicalCts;
+    private bool _isComputingLayerCentroids;
+    private bool _layerMechanicalFailed;
     private float[]? _layerLiftHeights;
     private float[]? _layerLiftHeights2;
     private float[]? _layerLiftSpeeds;
@@ -125,6 +132,96 @@ public partial class MainWindow
     public bool IsCutawayOff => Settings.Layer3DPreview.CutawayAxis == VoxelPreviewCutawayAxis.Off;
 
     public float[]? LayerAreas => _layerAreas;
+
+    /// <summary>
+    /// Gets the signed area change of each layer, in percent, which is calculated with the layer areas.
+    /// </summary>
+    public float[]? LayerAreaDeltaPercent => _layerAreaDeltaPercent;
+
+    /// <summary>
+    /// Gets the centroid drift of each layer in mm, or null until the centroids are calculated.
+    /// </summary>
+    public IReadOnlyList<float>? LayerCentroidDrift => _layerMechanicalAnalysis?.CentroidDrift;
+
+    /// <summary>
+    /// Gets the relative risk score of each layer, or null until the centroids are calculated.
+    /// </summary>
+    public IReadOnlyList<float>? LayerRiskScores => _layerMechanicalAnalysis?.RiskScores;
+
+    /// <summary>
+    /// Gets the layers with an orange or red risk level, or null until the centroids are calculated.
+    /// </summary>
+    public IReadOnlyList<int>? HighRiskLayers => _layerMechanicalAnalysis?.HighRiskLayers;
+
+    /// <summary>
+    /// Gets whether the layer centroids are being calculated in the background.
+    /// </summary>
+    public bool IsComputingLayerCentroids
+    {
+        get => _isComputingLayerCentroids;
+        private set => RaiseAndSetIfChanged(ref _isComputingLayerCentroids, value);
+    }
+
+    /// <summary>
+    /// Gets what the peel curve HUDs, of the 2D and 3D previews, plot for each layer.
+    /// </summary>
+    public PeelCurveMode LayerPeelCurveMode => Settings.LayerPreview.PeelCurveMode;
+
+    /// <summary>
+    /// Gets or sets whether the peel curve HUDs plot the layer area, bound to the mode toggle of both HUDs.
+    /// </summary>
+    public bool IsPeelCurveModeArea
+    {
+        get => LayerPeelCurveMode == PeelCurveMode.Area;
+        set => SetPeelCurveMode(PeelCurveMode.Area, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether the peel curve HUDs plot the area change, bound to the mode toggle of both HUDs.
+    /// </summary>
+    public bool IsPeelCurveModeAreaDelta
+    {
+        get => LayerPeelCurveMode == PeelCurveMode.AreaDelta;
+        set => SetPeelCurveMode(PeelCurveMode.AreaDelta, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether the peel curve HUDs plot the centroid drift, bound to the mode toggle of both HUDs.
+    /// </summary>
+    public bool IsPeelCurveModeCentroidDrift
+    {
+        get => LayerPeelCurveMode == PeelCurveMode.CentroidDrift;
+        set => SetPeelCurveMode(PeelCurveMode.CentroidDrift, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether the peel curve HUDs plot the risk score, bound to the mode toggle of both HUDs.
+    /// </summary>
+    public bool IsPeelCurveModeRiskScore
+    {
+        get => LayerPeelCurveMode == PeelCurveMode.RiskScore;
+        set => SetPeelCurveMode(PeelCurveMode.RiskScore, value);
+    }
+
+    /// <summary>
+    /// Selects the peel curve mode from its toggle. Unchecking the selected toggle keeps it selected, as one mode is
+    /// always shown.
+    /// </summary>
+    private void SetPeelCurveMode(PeelCurveMode mode, bool isChecked)
+    {
+        if (isChecked && Settings.LayerPreview.PeelCurveMode != mode)
+        {
+            Settings.LayerPreview.PeelCurveMode = mode;
+            RaisePropertyChanged(nameof(LayerPeelCurveMode));
+            EnsurePeelCurveCentroids();
+        }
+
+        RaisePropertyChanged(nameof(IsPeelCurveModeArea));
+        RaisePropertyChanged(nameof(IsPeelCurveModeAreaDelta));
+        RaisePropertyChanged(nameof(IsPeelCurveModeCentroidDrift));
+        RaisePropertyChanged(nameof(IsPeelCurveModeRiskScore));
+    }
+
     public float[]? LayerLiftSpeeds => _layerLiftSpeeds;
     public float[]? LayerLiftSpeeds2 => _layerLiftSpeeds2;
     public float[]? LayerLiftHeights => _layerLiftHeights;
@@ -431,6 +528,12 @@ public partial class MainWindow
         LayerModelOrientationCube.SetCameraOrientation(LayerModel3DView.CameraYaw, LayerModel3DView.CameraPitch,
             LayerModel3DView.CameraRoll);
         LayerModel3DView.ModelPointClicked += OnLayer3DModelPointClicked;
+
+        // The HUD can also be shown by the keyboard shortcut of the view, which may need the layer centroids
+        LayerModel3DView.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == LayerModel3DView.ShowPeelCurveProperty) EnsurePeelCurveCentroids();
+        };
 
         /* The cube takes the focus when clicked, keep the camera shortcuts working from there as well. */
         LayerModelOrientationCube.KeyDown += (_, e) => e.Handled = LayerModel3DView.HandleCameraKey(e);
@@ -1239,10 +1342,114 @@ public partial class MainWindow
         {
             // The areas are current, but the lift settings may have been changed
             RefreshLayerLifts();
+            EnsurePeelCurveCentroids();
             return;
         }
 
         UpdateLayerAreas();
+    }
+
+    /// <summary>
+    /// Calculates the layer centroids in the background when a peel curve HUD shows a mode that needs them, which
+    /// reads every layer. It does nothing when they are current or already being calculated, and the result is
+    /// discarded when the file or its layers change meanwhile.
+    /// </summary>
+    private void EnsurePeelCurveCentroids()
+    {
+        if (Settings.LayerPreview.PeelCurveMode is not (PeelCurveMode.CentroidDrift or PeelCurveMode.RiskScore)) return;
+        if (!Show2DPeelCurve && !LayerModel3DView.ShowPeelCurve) return;
+
+        var file = SlicerFile;
+        if (file is null || file.LayerCount == 0 || file.DecodeType != Core.FileFormats.FileFormat.FileDecodeType.Full) return;
+
+        var revision = file.ModelGeometryRevision;
+        if (_layerAreas is null || _layerAreas.Length != file.LayerCount || !ReferenceEquals(_layerAreasFile, file) ||
+            _layerAreasRevision != revision)
+        {
+            // The analysis starts again from the new areas
+            EnsureLayerAreas();
+            return;
+        }
+
+        if (ReferenceEquals(_layerMechanicalFile, file) && _layerMechanicalRevision == revision &&
+            (_layerMechanicalAnalysis is not null || _layerMechanicalCts is not null || _layerMechanicalFailed))
+        {
+            return;
+        }
+
+        ClearLayerMechanicalAnalysis();
+        var cts = new System.Threading.CancellationTokenSource();
+        var areas = _layerAreas;
+        _layerMechanicalCts = cts;
+        _layerMechanicalFile = file;
+        _layerMechanicalRevision = revision;
+        IsComputingLayerCentroids = true;
+
+        Task.Run(() =>
+        {
+            try
+            {
+                var centroids = LayerMechanicalAnalysis.CalculateCentroids(file, null, cts.Token);
+                var analysis = LayerMechanicalAnalysis.Analyze(areas, centroids);
+                Dispatcher.UIThread.Post(() => ApplyLayerMechanicalAnalysis(cts, file, revision, analysis));
+            }
+            catch (OperationCanceledException)
+            {
+                // Replaced by a newer calculation or the file closed
+            }
+            catch (Exception exception)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (!ReferenceEquals(_layerMechanicalCts, cts)) return;
+                    _layerMechanicalCts = null;
+                    _layerMechanicalFailed = true;
+                    IsComputingLayerCentroids = false;
+                    AddLog($"Unable to calculate the layer centroids: {exception.Message}");
+                });
+            }
+        }, cts.Token);
+    }
+
+    private void ApplyLayerMechanicalAnalysis(System.Threading.CancellationTokenSource cts,
+        Core.FileFormats.FileFormat file, long revision, LayerMechanicalAnalysis analysis)
+    {
+        // Replaced, canceled, or the layers changed while it was being calculated
+        if (!ReferenceEquals(_layerMechanicalCts, cts) || cts.IsCancellationRequested) return;
+        _layerMechanicalCts = null;
+
+        if (!ReferenceEquals(SlicerFile, file) || file.ModelGeometryRevision != revision)
+        {
+            _layerMechanicalFile = null;
+            IsComputingLayerCentroids = false;
+            EnsurePeelCurveCentroids();
+            return;
+        }
+
+        _layerMechanicalAnalysis = analysis;
+        RaisePropertyChanged(nameof(LayerCentroidDrift));
+        RaisePropertyChanged(nameof(LayerRiskScores));
+        RaisePropertyChanged(nameof(HighRiskLayers));
+        IsComputingLayerCentroids = false;
+    }
+
+    /// <summary>
+    /// Cancels the running centroid calculation and discards its result.
+    /// </summary>
+    private void ClearLayerMechanicalAnalysis()
+    {
+        var hadAnalysis = _layerMechanicalAnalysis is not null;
+        _layerMechanicalCts?.Cancel();
+        _layerMechanicalCts = null;
+        _layerMechanicalAnalysis = null;
+        _layerMechanicalFile = null;
+        _layerMechanicalFailed = false;
+        IsComputingLayerCentroids = false;
+
+        if (!hadAnalysis) return;
+        RaisePropertyChanged(nameof(LayerCentroidDrift));
+        RaisePropertyChanged(nameof(LayerRiskScores));
+        RaisePropertyChanged(nameof(HighRiskLayers));
     }
 
     /// <summary>
@@ -1333,8 +1540,11 @@ public partial class MainWindow
             _peelSpikes = null;
             _maxLayerArea = 0f;
             _peakLayerIndex = 0;
+            _layerAreaDeltaPercent = null;
+            ClearLayerMechanicalAnalysis();
             LayerModel3DView.SetPeelData(null, null, 0f);
             RaisePropertyChanged(nameof(LayerAreas));
+            RaisePropertyChanged(nameof(LayerAreaDeltaPercent));
             RaisePropertyChanged(nameof(LayerLiftSpeeds));
             RaisePropertyChanged(nameof(LayerLiftSpeeds2));
             RaisePropertyChanged(nameof(LayerLiftHeights));
@@ -1370,17 +1580,22 @@ public partial class MainWindow
                 peakIdx = i;
             }
 
-            if (i > 0 && areas[i - 1] > 0.05f)
+            if (i > 0 && LayerMechanicalAnalysis.IsPeelSpike(areas[i - 1], a))
             {
-                var delta = a - areas[i - 1];
-                if (delta / areas[i - 1] >= 0.35f && delta > 4.0f)
-                {
-                    spikes.Add(i);
-                }
+                spikes.Add(i);
             }
         }
 
         _layerAreas = areas;
+        _layerAreaDeltaPercent = LayerMechanicalAnalysis.CalculateAreaDeltaPercent(areas);
+
+        // The centroids only depend on the layers, keep them when the layers did not change
+        if (!ReferenceEquals(_layerMechanicalFile, file) || _layerMechanicalRevision != file.ModelGeometryRevision ||
+            (_layerMechanicalAnalysis is not null && _layerMechanicalAnalysis.Count != count))
+        {
+            ClearLayerMechanicalAnalysis();
+        }
+
         _layerLiftSpeeds = speeds;
         _layerLiftSpeeds2 = speeds2;
         _layerLiftHeights = heights;
@@ -1402,6 +1617,8 @@ public partial class MainWindow
         RaisePropertyChanged(nameof(PeelSpikes));
         RaisePropertyChanged(nameof(MaxLayerArea));
         RaisePropertyChanged(nameof(PeakLayerIndex));
+        RaisePropertyChanged(nameof(LayerAreaDeltaPercent));
+        EnsurePeelCurveCentroids();
     }
 
     public void UpdateSuctionCupStatus()
@@ -2089,6 +2306,8 @@ public partial class MainWindow
         _layer3DMesh = null;
         _layer3DIssueMesh = null;
         _layerAreas = null;
+        _layerAreaDeltaPercent = null;
+        ClearLayerMechanicalAnalysis();
         _peelSpikes = null;
         _maxLayerArea = 0f;
         _peakLayerIndex = 0;
