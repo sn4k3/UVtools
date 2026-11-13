@@ -23,17 +23,17 @@ namespace UVtools.Core.Layers;
 /// </summary>
 public enum LayerMechanicalRiskLevel
 {
-    /// <summary>Nothing unusual compared with the rest of the file.</summary>
-    Green,
+    /// <summary>Nothing unusual compared with the rest of the file, shown in green.</summary>
+    None,
 
-    /// <summary>A mildly unusual transition.</summary>
-    Yellow,
+    /// <summary>A mildly unusual transition, shown in yellow.</summary>
+    Low,
 
-    /// <summary>A clearly unusual transition, worth a look.</summary>
-    Orange,
+    /// <summary>A clearly unusual transition, worth a look, shown in orange.</summary>
+    Medium,
 
-    /// <summary>One of the most abrupt transitions of the file.</summary>
-    Red
+    /// <summary>One of the most abrupt transitions of the file, shown in red.</summary>
+    High
 }
 
 /// <summary>
@@ -91,19 +91,19 @@ public sealed class LayerMechanicalAnalysis
     public const float CentroidDriftWeight = 0.4f;
 
     /// <summary>
-    /// The risk score from which a layer is <see cref="LayerMechanicalRiskLevel.Yellow"/>.
+    /// The risk score from which a layer is <see cref="LayerMechanicalRiskLevel.Low"/>.
     /// </summary>
-    public const float YellowRiskScore = 1f;
+    public const float LowRiskScore = 1f;
 
     /// <summary>
-    /// The risk score from which a layer is <see cref="LayerMechanicalRiskLevel.Orange"/>.
+    /// The risk score from which a layer is <see cref="LayerMechanicalRiskLevel.Medium"/>.
     /// </summary>
-    public const float OrangeRiskScore = 2f;
+    public const float MediumRiskScore = 2f;
 
     /// <summary>
-    /// The risk score from which a layer is <see cref="LayerMechanicalRiskLevel.Red"/>.
+    /// The risk score from which a layer is <see cref="LayerMechanicalRiskLevel.High"/>.
     /// </summary>
-    public const float RedRiskScore = 3f;
+    public const float HighRiskScore = 3f;
 
     /// <summary>
     /// The pixel size, in mm, to use when the file does not know its display size.
@@ -161,8 +161,8 @@ public sealed class LayerMechanicalAnalysis
     public float MaxRiskScore { get; }
 
     /// <summary>
-    /// Gets the layers, in ascending order, with an <see cref="LayerMechanicalRiskLevel.Orange"/> or
-    /// <see cref="LayerMechanicalRiskLevel.Red"/> risk level.
+    /// Gets the layers, in ascending order, with an <see cref="LayerMechanicalRiskLevel.Medium"/> or
+    /// <see cref="LayerMechanicalRiskLevel.High"/> risk level.
     /// </summary>
     public IReadOnlyList<int> HighRiskLayers { get; }
 
@@ -184,7 +184,7 @@ public sealed class LayerMechanicalAnalysis
         {
             var score = riskScores[i];
             if (score > maxRiskScore) maxRiskScore = score;
-            if (score >= OrangeRiskScore) highRiskLayers.Add(i);
+            if (score >= MediumRiskScore) highRiskLayers.Add(i);
         }
 
         MaxRiskScore = maxRiskScore;
@@ -274,10 +274,10 @@ public sealed class LayerMechanicalAnalysis
     /// <param name="riskScore">The score, see <see cref="RiskScores"/>.</param>
     public static LayerMechanicalRiskLevel GetRiskLevel(float riskScore)
     {
-        if (riskScore >= RedRiskScore) return LayerMechanicalRiskLevel.Red;
-        if (riskScore >= OrangeRiskScore) return LayerMechanicalRiskLevel.Orange;
-        if (riskScore >= YellowRiskScore) return LayerMechanicalRiskLevel.Yellow;
-        return LayerMechanicalRiskLevel.Green;
+        if (riskScore >= HighRiskScore) return LayerMechanicalRiskLevel.High;
+        if (riskScore >= MediumRiskScore) return LayerMechanicalRiskLevel.Medium;
+        if (riskScore >= LowRiskScore) return LayerMechanicalRiskLevel.Low;
+        return LayerMechanicalRiskLevel.None;
     }
 
     /// <summary>

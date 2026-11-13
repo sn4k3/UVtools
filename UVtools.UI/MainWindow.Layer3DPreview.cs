@@ -149,7 +149,7 @@ public partial class MainWindow
     public IReadOnlyList<float>? LayerRiskScores => _layerMechanicalAnalysis?.RiskScores;
 
     /// <summary>
-    /// Gets the layers with an orange or red risk level, or null until the centroids are calculated.
+    /// Gets the layers with a medium or high risk level, or null until the centroids are calculated.
     /// </summary>
     public IReadOnlyList<int>? HighRiskLayers => _layerMechanicalAnalysis?.HighRiskLayers;
 

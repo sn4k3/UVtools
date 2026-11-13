@@ -6850,17 +6850,17 @@
             How unusual a layer transition is, relative to the rest of the same file.
             </summary>
         </member>
-        <member name="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Green">
-            <summary>Nothing unusual compared with the rest of the file.</summary>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.None">
+            <summary>Nothing unusual compared with the rest of the file, shown in green.</summary>
         </member>
-        <member name="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Yellow">
-            <summary>A mildly unusual transition.</summary>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Low">
+            <summary>A mildly unusual transition, shown in yellow.</summary>
         </member>
-        <member name="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Orange">
-            <summary>A clearly unusual transition, worth a look.</summary>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Medium">
+            <summary>A clearly unusual transition, worth a look, shown in orange.</summary>
         </member>
-        <member name="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Red">
-            <summary>One of the most abrupt transitions of the file.</summary>
+        <member name="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.High">
+            <summary>One of the most abrupt transitions of the file, shown in red.</summary>
         </member>
         <member name="T:UVtools.Core.Layers.LayerMechanicalAnalysis">
             <summary>
@@ -6914,19 +6914,19 @@
             The weight of the normalized centroid drift on the risk score.
             </summary>
         </member>
-        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.YellowRiskScore">
+        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.LowRiskScore">
             <summary>
-            The risk score from which a layer is <see cref="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Yellow"/>.
+            The risk score from which a layer is <see cref="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Low"/>.
             </summary>
         </member>
-        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.OrangeRiskScore">
+        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.MediumRiskScore">
             <summary>
-            The risk score from which a layer is <see cref="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Orange"/>.
+            The risk score from which a layer is <see cref="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Medium"/>.
             </summary>
         </member>
-        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.RedRiskScore">
+        <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.HighRiskScore">
             <summary>
-            The risk score from which a layer is <see cref="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Red"/>.
+            The risk score from which a layer is <see cref="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.High"/>.
             </summary>
         </member>
         <member name="F:UVtools.Core.Layers.LayerMechanicalAnalysis.FallbackPixelSize">
@@ -6982,8 +6982,8 @@
         </member>
         <member name="P:UVtools.Core.Layers.LayerMechanicalAnalysis.HighRiskLayers">
             <summary>
-            Gets the layers, in ascending order, with an <see cref="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Orange"/> or
-            <see cref="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Red"/> risk level.
+            Gets the layers, in ascending order, with an <see cref="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.Medium"/> or
+            <see cref="F:UVtools.Core.Layers.LayerMechanicalRiskLevel.High"/> risk level.
             </summary>
         </member>
         <member name="M:UVtools.Core.Layers.LayerMechanicalAnalysis.IsPeelSpike(System.Single,System.Single)">

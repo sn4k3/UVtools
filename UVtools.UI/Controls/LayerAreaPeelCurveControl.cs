@@ -572,10 +572,10 @@ public class LayerAreaPeelCurveControl : Control
         {
             var riskScore = series[activeLayer];
             var riskLevel = LayerMechanicalAnalysis.GetRiskLevel(riskScore);
-            if (riskLevel >= LayerMechanicalRiskLevel.Orange)
+            if (riskLevel >= LayerMechanicalRiskLevel.Medium)
             {
                 hazardLabel = $"⚠️ {riskLevel.ToString().ToUpperInvariant()} RISK ({riskScore:F1})";
-                if (riskLevel == LayerMechanicalRiskLevel.Orange)
+                if (riskLevel == LayerMechanicalRiskLevel.Medium)
                 {
                     hazardTextBrush = RiskOrangeTextBrush;
                     hazardBackgroundBrush = RiskOrangeBackgroundBrush;
@@ -793,9 +793,17 @@ public class LayerAreaPeelCurveControl : Control
             PeelCurveMode.CentroidDrift => peak ? $"{value:N2} mm" : $"drift {value:N2} mm",
             _ => peak
                 ? $"{value:N1}"
-                : $"risk {value:N1} ({LayerMechanicalAnalysis.GetRiskLevel(value)})"
+                : $"risk {value:N1}{FormatRiskLevel(LayerMechanicalAnalysis.GetRiskLevel(value))}"
         };
     }
+
+    private static string FormatRiskLevel(LayerMechanicalRiskLevel level) => level switch
+    {
+        LayerMechanicalRiskLevel.Low => " (Low risk)",
+        LayerMechanicalRiskLevel.Medium => " (Medium risk)",
+        LayerMechanicalRiskLevel.High => " (High risk)",
+        _ => string.Empty
+    };
 
     private StreamGeometry GetSeriesGeometry(int index) => _seriesGeometries[index] ?? EmptyGeometry;
 
@@ -838,7 +846,7 @@ public class LayerAreaPeelCurveControl : Control
         {
             PeelCurveMode.AreaDelta => Math.Max(50f, LayerMechanicalAnalysis.GetPercentile(values, 99f, true, true)),
             PeelCurveMode.CentroidDrift => Math.Max(0.01f, LayerMechanicalAnalysis.GetPercentile(values, 99f, false, true)),
-            _ => Math.Max(LayerMechanicalAnalysis.RedRiskScore * 1.25f, LayerMechanicalAnalysis.GetPercentile(values, 99f))
+            _ => Math.Max(LayerMechanicalAnalysis.HighRiskScore * 1.25f, LayerMechanicalAnalysis.GetPercentile(values, 99f))
         };
         float range = _seriesRange;
 
@@ -1014,8 +1022,8 @@ public class LayerAreaPeelCurveControl : Control
         {
             // Where the levels start, so the bars can be read against them
             foreach (var threshold in (ReadOnlySpan<float>)
-                     [LayerMechanicalAnalysis.YellowRiskScore, LayerMechanicalAnalysis.OrangeRiskScore,
-                         LayerMechanicalAnalysis.RedRiskScore])
+                     [LayerMechanicalAnalysis.LowRiskScore, LayerMechanicalAnalysis.MediumRiskScore,
+                         LayerMechanicalAnalysis.HighRiskScore])
             {
                 if (threshold >= range) continue;
                 double ty = ValueToY(threshold);

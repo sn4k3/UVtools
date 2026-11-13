@@ -79,8 +79,8 @@ public class LayerMechanicalAnalysisTests
 
         // 0.6 weight x the maximum of 5, no matter how extreme the outlier is
         Assert.Equal(3f, risk[7], 0.0001f);
-        Assert.Equal(LayerMechanicalRiskLevel.Red, LayerMechanicalAnalysis.GetRiskLevel(risk[7]));
-        Assert.Equal(LayerMechanicalRiskLevel.Green, LayerMechanicalAnalysis.GetRiskLevel(risk[0]));
+        Assert.Equal(LayerMechanicalRiskLevel.High, LayerMechanicalAnalysis.GetRiskLevel(risk[7]));
+        Assert.Equal(LayerMechanicalRiskLevel.None, LayerMechanicalAnalysis.GetRiskLevel(risk[0]));
     }
 
     [Fact]
@@ -92,21 +92,21 @@ public class LayerMechanicalAnalysisTests
     }
 
     [Theory]
-    [InlineData(0f, LayerMechanicalRiskLevel.Green)]
-    [InlineData(0.99f, LayerMechanicalRiskLevel.Green)]
-    [InlineData(1f, LayerMechanicalRiskLevel.Yellow)]
-    [InlineData(1.99f, LayerMechanicalRiskLevel.Yellow)]
-    [InlineData(2f, LayerMechanicalRiskLevel.Orange)]
-    [InlineData(2.99f, LayerMechanicalRiskLevel.Orange)]
-    [InlineData(3f, LayerMechanicalRiskLevel.Red)]
-    [InlineData(4.5f, LayerMechanicalRiskLevel.Red)]
+    [InlineData(0f, LayerMechanicalRiskLevel.None)]
+    [InlineData(0.99f, LayerMechanicalRiskLevel.None)]
+    [InlineData(1f, LayerMechanicalRiskLevel.Low)]
+    [InlineData(1.99f, LayerMechanicalRiskLevel.Low)]
+    [InlineData(2f, LayerMechanicalRiskLevel.Medium)]
+    [InlineData(2.99f, LayerMechanicalRiskLevel.Medium)]
+    [InlineData(3f, LayerMechanicalRiskLevel.High)]
+    [InlineData(4.5f, LayerMechanicalRiskLevel.High)]
     public void RiskLevel_FollowsTheThresholds(float score, LayerMechanicalRiskLevel expected)
     {
         Assert.Equal(expected, LayerMechanicalAnalysis.GetRiskLevel(score));
     }
 
     [Fact]
-    public void Analyze_ListsTheOrangeAndRedLayers()
+    public void Analyze_ListsTheMediumAndHighRiskLayers()
     {
         // Layers alternating between 100 and 110 mm², with a single layer jumping to 300 mm²
         var areas = new float[31];
@@ -127,9 +127,9 @@ public class LayerMechanicalAnalysisTests
 
         // The jump is unusual for this file, its way back is not
         Assert.Equal([16], analysis.HighRiskLayers);
-        Assert.Equal(LayerMechanicalRiskLevel.Orange, LayerMechanicalAnalysis.GetRiskLevel(analysis.RiskScores[16]));
+        Assert.Equal(LayerMechanicalRiskLevel.Medium, LayerMechanicalAnalysis.GetRiskLevel(analysis.RiskScores[16]));
         Assert.Equal(analysis.RiskScores[16], analysis.MaxRiskScore);
-        Assert.Equal(LayerMechanicalRiskLevel.Green, LayerMechanicalAnalysis.GetRiskLevel(analysis.RiskScores[17]));
+        Assert.Equal(LayerMechanicalRiskLevel.None, LayerMechanicalAnalysis.GetRiskLevel(analysis.RiskScores[17]));
     }
 
     [Fact]
