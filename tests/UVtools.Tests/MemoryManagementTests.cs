@@ -37,6 +37,7 @@ public sealed class MemoryManagementTests : IDisposable
 
     private readonly string _folder = Path.Combine(Path.GetTempPath(), $"UVtoolsTests-{Guid.NewGuid():N}");
     private readonly LayerBlobStore _store;
+    private readonly int _maximumUndoHistory = CoreSettings.MaximumUndoHistory;
     private readonly bool _storeUndoHistoryOnDisk = CoreSettings.StoreUndoHistoryOnDisk;
 
     public MemoryManagementTests()
@@ -47,6 +48,7 @@ public sealed class MemoryManagementTests : IDisposable
 
     public void Dispose()
     {
+        CoreSettings.MaximumUndoHistory = _maximumUndoHistory;
         CoreSettings.StoreUndoHistoryOnDisk = _storeUndoHistoryOnDisk;
         _store.Dispose();
         try
@@ -199,6 +201,55 @@ public sealed class MemoryManagementTests : IDisposable
             Assert.False(Directory.Exists(orphan));
             Assert.True(Directory.Exists(alive));
         }
+    }
+
+    [Fact]
+    public void UndoHistory_Limit_MergesOldestClipsAndKeepsEveryState()
+    {
+        CoreSettings.MaximumUndoHistory = 2;
+        CoreSettings.StoreUndoHistoryOnDisk = false;
+        var file = CreateFile(5, (f, _) =>
+        {
+            var mat = new Mat(f.Resolution, DepthType.Cv8U, 1);
+            mat.SetTo(new MCvScalar(0));
+            return mat;
+        });
+
+        var clipboard = ClipboardManager.Instance;
+        clipboard.Init(file);
+
+        for (var i = 0; i < 4; i++)
+        {
+            clipboard.Snapshot();
+            using var mat = CreateNoise(file, i);
+            file[i].LayerMat = mat;
+            clipboard.Clip($"Edit {i}");
+        }
+
+        // Two operations plus the original layers
+        Assert.Equal(3, clipboard.Count);
+
+        // The oldest kept operation holds the merged edits 0, 1 and 2
+        clipboard.CurrentIndex = 1;
+        for (var i = 0; i < 3; i++)
+        {
+            using var expected = CreateNoise(file, i);
+            Assert.True(SameImage(expected, file[i]));
+        }
+
+        Assert.Equal(0u, file[3].NonZeroPixelCount);
+
+        clipboard.SetToOldest();
+        for (var i = 0; i < 5; i++) Assert.Equal(0u, file[i].NonZeroPixelCount);
+
+        clipboard.SetToNewest();
+        for (var i = 0; i < 4; i++)
+        {
+            using var expected = CreateNoise(file, i);
+            Assert.True(SameImage(expected, file[i]));
+        }
+
+        clipboard.Reset();
     }
 
     [Fact]

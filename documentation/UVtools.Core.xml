@@ -215,6 +215,12 @@
             Gets <see cref="P:UVtools.Core.CoreSettings.DiskCacheFolder"/> or <see cref="P:UVtools.Core.CoreSettings.DefaultDiskCacheFolder"/> when not set.
             </summary>
         </member>
+        <member name="P:UVtools.Core.CoreSettings.MaximumUndoHistory">
+            <summary>
+            Gets or sets the maximum number of operations kept in the undo history, 0 for unlimited.
+            When exceeded, the oldest operations are merged so the original layers are always kept.
+            </summary>
+        </member>
         <member name="P:UVtools.Core.CoreSettings.StoreUndoHistoryOnDisk">
             <summary>
             Gets or sets if the layers of the undo history that are no longer in use by the file are moved to the disk cache
@@ -7356,6 +7362,20 @@
             Gets the description of this operation
             </summary>
         </member>
+        <member name="M:UVtools.Core.Managers.ClipboardItem.#ctor(UVtools.Core.Managers.ClipboardItem,System.Boolean)">
+            <summary>
+            Creates an empty clip with the same definitions of <paramref name="source"/>.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.ClipboardItem.Merge(UVtools.Core.Managers.ClipboardItem,UVtools.Core.Managers.ClipboardItem)">
+            <summary>
+            Merges an older clip into a newer one, so the older can be removed from the history while restoring the newer
+            still gives the same layers.
+            </summary>
+            <param name="older">The clip right before <paramref name="newer"/>.</param>
+            <param name="newer">The clip right after <paramref name="older"/>.</param>
+            <returns>The clip to replace <paramref name="newer"/> with.</returns>
+        </member>
         <member name="T:UVtools.Core.Managers.ClipboardManager">
             <inheritdoc/>
         </member>
@@ -7403,6 +7423,12 @@
         <member name="M:UVtools.Core.Managers.ClipboardManager.Clip(System.String,UVtools.Core.Layers.Layer[],System.Boolean)">
             <summary>
             Collect differences and create a clip
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.ClipboardManager.LimitHistory">
+            <summary>
+            Keeps at most <see cref="P:UVtools.Core.CoreSettings.MaximumUndoHistory"/> clips plus the original layers, merging the oldest
+            clips into the ones after them.
             </summary>
         </member>
         <member name="M:UVtools.Core.Managers.ClipboardManager.GetClipsCopy">

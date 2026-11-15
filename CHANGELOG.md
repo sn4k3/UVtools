@@ -15,6 +15,8 @@
   - (Add) Adaptive memory management: the number of parallel tasks is limited to what fits in the available memory,
     and when it runs low caches are trimmed, the large object heap is compacted and the work is throttled to one task at
     a time. Operations keep running slower instead of freezing the system. Also active on the command line
+  - (Add) Maximum undo history (default 50 operations), the oldest operations are merged and the original layers are
+    always kept
   - (Improvement) Layer contours are no longer cloned into the undo history, they are recalculated on demand
   - (Improvement) The layer cache used by mesh export is sized to the available memory instead of 5 layers per thread
 - (Upgrade) AvaloniaUI from 12.1.4 to 12.1.6

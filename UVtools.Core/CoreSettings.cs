@@ -236,6 +236,16 @@ public static class CoreSettings
         string.IsNullOrWhiteSpace(DiskCacheFolder) ? DefaultDiskCacheFolder : DiskCacheFolder;
 
     /// <summary>
+    /// Gets or sets the maximum number of operations kept in the undo history, 0 for unlimited.
+    /// When exceeded, the oldest operations are merged so the original layers are always kept.
+    /// </summary>
+    public static int MaximumUndoHistory
+    {
+        get;
+        set => field = Math.Max(0, value);
+    } = 50;
+
+    /// <summary>
     /// Gets or sets if the layers of the undo history that are no longer in use by the file are moved to the disk cache
     /// after each operation, instead of only under memory pressure.
     /// </summary>

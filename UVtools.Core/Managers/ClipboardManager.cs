@@ -81,6 +81,52 @@ public sealed class ClipboardItem : List<Layer>
         Description = description;
         IsFullBackup = isFullBackup;
     }
+
+    /// <summary>
+    /// Creates an empty clip with the same definitions of <paramref name="source"/>.
+    /// </summary>
+    private ClipboardItem(ClipboardItem source, bool isFullBackup)
+    {
+        LayerCount = source.LayerCount;
+        LayerHeight = source.LayerHeight;
+        Resolution = source.Resolution;
+        Description = source.Description;
+        IsFullBackup = isFullBackup;
+        _operation = source._operation;
+    }
+
+    /// <summary>
+    /// Merges an older clip into a newer one, so the older can be removed from the history while restoring the newer
+    /// still gives the same layers.
+    /// </summary>
+    /// <param name="older">The clip right before <paramref name="newer"/>.</param>
+    /// <param name="newer">The clip right after <paramref name="older"/>.</param>
+    /// <returns>The clip to replace <paramref name="newer"/> with.</returns>
+    internal static ClipboardItem Merge(ClipboardItem older, ClipboardItem newer)
+    {
+        // A full backup does not depend on the clips before it
+        if (newer.IsFullBackup) return newer;
+
+        var layers = new Layer?[newer.LayerCount];
+        foreach (var layer in older)
+        {
+            if (layer.Index < layers.Length) layers[layer.Index] = layer;
+        }
+
+        foreach (var layer in newer)
+        {
+            if (layer.Index < layers.Length) layers[layer.Index] = layer;
+        }
+
+        var merged = new ClipboardItem(newer, older.IsFullBackup);
+        foreach (var layer in layers)
+        {
+            if (layer is not null) merged.Add(layer);
+        }
+
+        if (merged.Count == merged.LayerCount) merged.IsFullBackup = true;
+        return merged;
+    }
     #endregion
 
     #region Methods
@@ -445,12 +491,34 @@ public sealed partial class ClipboardManager : ObservableObject, IList<Clipboard
             }
             Insert(0, clip);
 
+            LimitHistory();
+
             CurrentIndex = 0;
         });
 
         if (CoreSettings.StoreUndoHistoryOnDisk) QueueMoveHistoryToDisk();
 
         return clip;
+    }
+
+    /// <summary>
+    /// Keeps at most <see cref="CoreSettings.MaximumUndoHistory"/> clips plus the original layers, merging the oldest
+    /// clips into the ones after them.
+    /// </summary>
+    private void LimitHistory()
+    {
+        var maximum = CoreSettings.MaximumUndoHistory;
+        if (maximum <= 0) return;
+
+        // The oldest clip holds the original layers and is always kept
+        while (Count > maximum + 1 && Count >= 3)
+        {
+            var olderIndex = Count - 2;
+            var newerIndex = olderIndex - 1;
+            var merged = ClipboardItem.Merge(this[olderIndex], this[newerIndex]);
+            if (!ReferenceEquals(merged, this[newerIndex])) this[newerIndex] = merged;
+            RemoveAt(olderIndex);
+        }
     }
 
     private int _moveHistoryToDiskState; // 0: idle, 1: running, 2: running and requested again
