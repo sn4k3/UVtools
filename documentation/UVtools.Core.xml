@@ -11750,6 +11750,9 @@
         <member name="M:System.Text.RegularExpressions.Generated.Utilities.StackPush(System.Int32[]@,System.Int32@,System.Int32,System.Int32)">
             <summary>Pushes 2 values onto the backtracking stack.</summary>
         </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfAnyStrings_Ordinal_CAEAA06F9551C423DC644B606CE5691140E7FC00A8645BC14598B6774DC5226B">
+            <summary>Supports searching for the specified strings.</summary>
+        </member>
         <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_halot_OrdinalIgnoreCase">
             <summary>Supports searching for the string "halot".</summary>
         </member>
