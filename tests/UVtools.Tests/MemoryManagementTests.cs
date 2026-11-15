@@ -317,4 +317,34 @@ public sealed class MemoryManagementTests : IDisposable
         }
     }
 
+    [Fact]
+    public void EncodeLayersInZip_WithCache_WritesEveryLayerInOrder()
+    {
+        int[] seeds = [1, 2, 1, 3, 2, 2, 4, 1];
+        var file = CreateFile(seeds.Length, (f, i) => CreateNoise(f, seeds[i]));
+
+        using var stream = new MemoryStream();
+        using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, true))
+        {
+            file.EncodeLayersInZip(zip, IndexStartNumber.Zero, useCache: true);
+        }
+
+        stream.Position = 0;
+        using var read = new ZipArchive(stream, ZipArchiveMode.Read);
+        Assert.Equal(seeds.Length, read.Entries.Count);
+        for (var i = 0; i < seeds.Length; i++)
+        {
+            var entry = read.Entries[i];
+            Assert.Equal(file[i].FormatFileName(string.Empty, 0, IndexStartNumber.Zero), entry.FullName);
+            using var entryStream = entry.Open();
+            using var memory = new MemoryStream();
+            entryStream.CopyTo(memory);
+            using var mat = new Mat();
+            CvInvoke.Imdecode(memory.ToArray(), ImreadModes.Grayscale, mat);
+            using var expected = CreateNoise(file, seeds[i]);
+            using var diff = new Mat();
+            CvInvoke.AbsDiff(expected, mat, diff);
+            Assert.Equal(0, CvInvoke.CountNonZero(diff));
+        }
+    }
 }

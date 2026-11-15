@@ -19,6 +19,8 @@
     always kept
   - (Improvement) Layer contours are no longer cloned into the undo history, they are recalculated on demand
   - (Improvement) The layer cache used by mesh export is sized to the available memory instead of 5 layers per thread
+  - (Improvement) Zip based formats with duplicated layers write each layer as soon as it is encoded, instead of
+    holding the encoded images of every layer until the end
 - (Upgrade) AvaloniaUI from 12.1.4 to 12.1.6
 
 ## 25/10/2026 - v7.1.2

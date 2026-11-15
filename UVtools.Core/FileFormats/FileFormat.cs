@@ -5716,14 +5716,19 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         var layerImageType = LayerImageFormat;
 
         Dictionary<ulong, uint>? firstLayerIndexByHash = null;
+        Dictionary<ulong, uint>? lastLayerIndexByHash = null;
+        uint nextLayerIndexToWrite = 0;
         if (useCache)
         {
             // Encode only one layer per distinct image, the others share the same encoded bytes
             firstLayerIndexByHash = new Dictionary<ulong, uint>();
+            lastLayerIndexByHash = new Dictionary<ulong, uint>();
             var distinctLayers = new List<Layer>();
             foreach (var layer in this)
             {
-                if (firstLayerIndexByHash.TryAdd(layer.Hash, layer.Index)) distinctLayers.Add(layer);
+                var hash = layer.Hash;
+                if (firstLayerIndexByHash.TryAdd(hash, layer.Index)) distinctLayers.Add(layer);
+                lastLayerIndexByHash[hash] = layer.Index;
             }
 
             batches = distinctLayers.Chunk(DefaultParallelBatchCount);
@@ -5787,8 +5792,24 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                 progress.LockAndIncrement();
             });
 
-            // The bytes of the cached layers are needed until every layer is written
-            if (useCache) continue;
+            if (useCache)
+            {
+                // Distinct layers are encoded in order and a layer image is never encoded after the layer itself,
+                // so every layer up to the last encoded one can be written. The encoded bytes are released once no
+                // later layer shares them.
+                var lastEncodedIndex = ((Layer[])batch)[^1].Index; // Chunk of the distinct layers
+                for (; nextLayerIndexToWrite <= lastEncodedIndex; nextLayerIndexToWrite++)
+                {
+                    var layer = this[nextLayerIndexToWrite];
+                    var hash = layer.Hash;
+                    var sourceIndex = firstLayerIndexByHash![hash];
+                    var entryPath = Path.Combine(path, layer.FormatFileName(prepend, padDigits, layerIndexStartNumber));
+                    zipArchive.CreateEntryFromContent(entryPath, pngLayerBytes[sourceIndex], ZipArchiveMode.Create);
+                    if (lastLayerIndexByHash![hash] == nextLayerIndexToWrite) pngLayerBytes[sourceIndex] = null!;
+                }
+
+                continue;
+            }
 
             foreach (var layer in batch)
             {
@@ -5801,8 +5822,10 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
 
         if (firstLayerIndexByHash is not null)
         {
-            foreach (var layer in this)
+            // The layers after the last distinct one share images already encoded
+            for (; nextLayerIndexToWrite < LayerCount; nextLayerIndexToWrite++)
             {
+                var layer = this[nextLayerIndexToWrite];
                 var entryPath = Path.Combine(path, layer.FormatFileName(prepend, padDigits, layerIndexStartNumber));
                 zipArchive.CreateEntryFromContent(entryPath, pngLayerBytes[firstLayerIndexByHash[layer.Hash]], ZipArchiveMode.Create);
             }
