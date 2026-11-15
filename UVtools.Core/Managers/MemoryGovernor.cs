@@ -26,12 +26,13 @@ public enum MemoryPressureLevel : byte
     Normal,
 
     /// <summary>
-    /// Available memory is below two times the reserve: caches are trimmed.
+    /// Available memory is below two times the reserve: caches are trimmed and the undo history moves to the disk.
     /// </summary>
     Elevated,
 
     /// <summary>
-    /// Available memory is below one and a half times the reserve: the large object heap is compacted.
+    /// Available memory is below one and a half times the reserve: idle layers move to the disk and the large object heap
+    /// is compacted.
     /// </summary>
     High,
 
@@ -56,7 +57,8 @@ public interface IMemoryTrimmable
 
 /// <summary>
 /// Watches the system memory and reacts to the pressure in steps, instead of stopping the work when memory runs low:
-/// trim caches, compact the managed heap, reduce the parallelism, and only then report the condition so the user can act.
+/// trim caches, move data to the disk cache (<see cref="LayerBlobStore"/>), compact the managed heap, reduce the
+/// parallelism, and only then report the condition so the user can act.
 /// </summary>
 public static class MemoryGovernor
 {
@@ -466,7 +468,9 @@ public static class MemoryGovernor
     /// </summary>
     public static string GetStatusString()
     {
-        return $"{Level}, available: {AvailablePhysicalBytes / (double)GigaByte:F2} GB / {TotalPhysicalBytes / (double)GigaByte:F2} GB, reserve: {ReserveBytes / (double)GigaByte:F2} GB";
+        var store = LayerBlobStore.SessionIfCreated;
+        var disk = store is null ? string.Empty : $", disk cache: {store.BytesOnDisk / 1048576.0:F0} MB";
+        return $"{Level}, available: {AvailablePhysicalBytes / (double)GigaByte:F2} GB / {TotalPhysicalBytes / (double)GigaByte:F2} GB, reserve: {ReserveBytes / (double)GigaByte:F2} GB{disk}";
     }
 
     #endregion

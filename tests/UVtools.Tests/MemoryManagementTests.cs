@@ -9,6 +9,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Runtime.CompilerServices;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -21,10 +22,43 @@ using Xunit;
 namespace UVtools.Tests;
 
 /// <summary>
-/// Shared compressed buffers and the memory governor.
+/// Shared compressed buffers, the layer disk cache, the undo history limit and the memory governor.
 /// </summary>
-public sealed class MemoryManagementTests
+public sealed class MemoryManagementTests : IDisposable
 {
+    /// <summary>
+    /// Keeps the disk cache of the test run out of the user cache folder.
+    /// </summary>
+    [ModuleInitializer]
+    internal static void UseTemporaryDiskCacheFolder()
+    {
+        CoreSettings.DiskCacheFolder = Path.Combine(Path.GetTempPath(), "UVtoolsTests");
+    }
+
+    private readonly string _folder = Path.Combine(Path.GetTempPath(), $"UVtoolsTests-{Guid.NewGuid():N}");
+    private readonly LayerBlobStore _store;
+    private readonly bool _storeUndoHistoryOnDisk = CoreSettings.StoreUndoHistoryOnDisk;
+
+    public MemoryManagementTests()
+    {
+        Directory.CreateDirectory(_folder);
+        _store = new LayerBlobStore(_folder);
+    }
+
+    public void Dispose()
+    {
+        CoreSettings.StoreUndoHistoryOnDisk = _storeUndoHistoryOnDisk;
+        _store.Dispose();
+        try
+        {
+            Directory.Delete(_folder, true);
+        }
+        catch
+        {
+            // ignored
+        }
+    }
+
     /// <summary>
     /// Noise compresses poorly, so the layer is large enough to go to the disk cache.
     /// </summary>
@@ -78,6 +112,123 @@ public sealed class MemoryManagementTests
         Assert.NotSame(layer.CompressedMat.CompressedBytes, clone.CompressedMat.CompressedBytes);
         Assert.False(layer.Equals(clone));
         Assert.True(SameImage(original, layer));
+    }
+
+    [Fact]
+    public void MoveToDisk_ReleasesMemory_AndLoadsTheSameImageBack()
+    {
+        var file = CreateFile(1, CreateNoise);
+        var layer = file[0];
+        using var original = layer.LayerMat;
+        var hash = layer.Hash;
+        var length = layer.CompressedLength;
+
+        var released = layer.TryMoveToDisk(_store);
+
+        Assert.Equal(length, released);
+        Assert.True(layer.IsOnDisk);
+        Assert.Equal(0, layer.CompressedLengthInMemory);
+        Assert.Equal(length, layer.CompressedLength);
+        Assert.Equal(length, _store.BytesOnDisk);
+
+        // Metadata and comparisons do not need the image
+        var clone = layer.Clone();
+        Assert.True(clone.IsOnDisk);
+        Assert.Equal(hash, layer.Hash);
+        Assert.True(layer.Equals(clone));
+        Assert.True(layer.IsOnDisk);
+
+        Assert.True(SameImage(original, layer));
+        Assert.False(layer.IsOnDisk);
+        Assert.True(SameImage(original, clone));
+    }
+
+    [Fact]
+    public void MoveToDisk_SharedBuffer_IsWrittenOnce()
+    {
+        var file = CreateFile(1, CreateNoise);
+        var layer = file[0];
+        var clone = layer.Clone();
+
+        Assert.True(layer.TryMoveToDisk(_store) > 0);
+        Assert.True(clone.TryMoveToDisk(_store) > 0);
+
+        Assert.Equal(layer.CompressedLength, _store.BytesOnDisk);
+    }
+
+    [Fact]
+    public void MoveToDisk_IdleTime_IsRespected()
+    {
+        var file = CreateFile(1, CreateNoise);
+        var layer = file[0];
+        using (layer.LayerMat)
+        {
+        }
+
+        Assert.Equal(0, layer.TryMoveToDisk(_store, 60_000));
+        Assert.False(layer.IsOnDisk);
+    }
+
+    [Fact]
+    public void ReplacingImage_OfLayerOnDisk_ReleasesTheDiskCopy()
+    {
+        var file = CreateFile(1, CreateNoise);
+        var layer = file[0];
+        Assert.True(layer.TryMoveToDisk(_store) > 0);
+
+        using var other = CreateNoise(file, 1234);
+        layer.LayerMat = other;
+
+        Assert.False(layer.IsOnDisk);
+        Assert.Equal(0, _store.BytesOnDisk);
+        Assert.True(SameImage(other, layer));
+    }
+
+    [Fact]
+    public void DeleteOrphanSessions_DeletesOnlyUnlockedFolders()
+    {
+        var cacheFolder = Path.Combine(_folder, "orphans");
+        var orphan = Directory.CreateDirectory(Path.Combine(cacheFolder, "orphan")).FullName;
+        File.WriteAllText(Path.Combine(orphan, "session.lock"), string.Empty);
+        File.WriteAllText(Path.Combine(orphan, "00000.pack"), "data");
+
+        var alive = Directory.CreateDirectory(Path.Combine(cacheFolder, "alive")).FullName;
+        using (new FileStream(Path.Combine(alive, "session.lock"), FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None))
+        {
+            Assert.Equal(1, LayerBlobStore.DeleteOrphanSessions(cacheFolder));
+            Assert.False(Directory.Exists(orphan));
+            Assert.True(Directory.Exists(alive));
+        }
+    }
+
+    [Fact]
+    public void UndoHistory_OnDisk_RestoresTheOldImages()
+    {
+        CoreSettings.StoreUndoHistoryOnDisk = false;
+        var file = CreateFile(2, CreateNoise);
+        using var original0 = file[0].LayerMat;
+
+        var clipboard = ClipboardManager.Instance;
+        clipboard.Init(file);
+
+        clipboard.Snapshot();
+        using (var mat = CreateNoise(file, 500))
+        {
+            file[0].LayerMat = mat;
+        }
+
+        clipboard.Clip("Edit");
+
+        // Only the replaced image is no longer in use by the file
+        var released = clipboard.MoveHistoryToDisk();
+        Assert.Equal(clipboard[1][0].CompressedLength, released);
+        Assert.True(clipboard[1][0].IsOnDisk);
+        Assert.False(clipboard[1][1].IsOnDisk);
+
+        clipboard.Undo();
+        Assert.True(SameImage(original0, file[0]));
+
+        clipboard.Reset();
     }
 
     [Fact]

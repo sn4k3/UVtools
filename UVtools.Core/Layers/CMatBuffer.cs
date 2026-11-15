@@ -19,12 +19,13 @@ namespace UVtools.Core.Layers;
 
 /// <summary>
 /// Buffer level operations over <see cref="CMat"/> that its public API does not expose yet:
-/// sharing the compressed buffer between clones.
+/// sharing the compressed buffer between clones and detaching/attaching it to move the bytes to the disk cache.
 /// </summary>
 /// <remarks>
 /// <see cref="CMat"/> never mutates its compressed array in place, it always replaces it, so clones can share it safely.
 /// The private state is reached with <see cref="UnsafeAccessorAttribute"/>, when the fields are not found (a different
-/// EmguExtensions version) <see cref="IsSupported"/> is false and callers fall back to the public API (deep copies). Remove this class when EmguExtensions exposes equivalent members.
+/// EmguExtensions version) <see cref="IsSupported"/> is false and callers fall back to the public API (deep copies, no
+/// disk cache). Remove this class when EmguExtensions exposes equivalent members.
 /// </remarks>
 internal static class CMatBuffer
 {
@@ -184,6 +185,54 @@ internal static class CMatBuffer
         finally
         {
             destinationLock.ExitWriteLock();
+        }
+    }
+
+    /// <summary>
+    /// Gets the compressed array of <paramref name="mat"/> without copying it, the array must be treated as read-only.
+    /// </summary>
+    public static byte[] GetBytes(CMat mat) => mat.CompressedBytes;
+
+    /// <summary>
+    /// Detaches the compressed array from <paramref name="mat"/>, leaving an empty array in its place while keeping every
+    /// other state (size, ROI, hash, compressors). The hash is computed first so equality keeps working while detached.
+    /// </summary>
+    /// <param name="mat">The mat to detach the array from.</param>
+    /// <param name="expected">The array that is expected to be attached, the detach is aborted when it was replaced meanwhile.</param>
+    /// <returns>True when detached.</returns>
+    public static bool TryDetach(CMat mat, byte[] expected)
+    {
+        if (!IsSupported) return false;
+        _ = mat.Hash; // Cache the hash of the current bytes
+
+        var rwLock = RwLock(mat);
+        rwLock.EnterWriteLock();
+        try
+        {
+            if (!ReferenceEquals(BytesField(mat), expected) || HashField(mat) is null) return false;
+            BytesField(mat) = [];
+            return true;
+        }
+        finally
+        {
+            rwLock.ExitWriteLock();
+        }
+    }
+
+    /// <summary>
+    /// Attaches back a compressed array previously detached with <see cref="TryDetach"/>, without changing any other state.
+    /// </summary>
+    public static void Attach(CMat mat, byte[] bytes)
+    {
+        var rwLock = RwLock(mat);
+        rwLock.EnterWriteLock();
+        try
+        {
+            BytesField(mat) = bytes;
+        }
+        finally
+        {
+            rwLock.ExitWriteLock();
         }
     }
 }

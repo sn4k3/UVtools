@@ -75,7 +75,7 @@ public enum PerLayerSettingsModes : byte
 /// <summary>
 /// Slicer <see cref="FileFormat"/> representation
 /// </summary>
-public abstract partial class FileFormat : ObservableObject, IDisposable, IEquatable<FileFormat>, IList<Layer>
+public abstract partial class FileFormat : ObservableObject, IDisposable, IEquatable<FileFormat>, IList<Layer>, IMemoryTrimmable
 {
     #region Notification
 
@@ -2389,13 +2389,39 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
     }
 
     /// <summary>
-    /// Informs the <see cref="MemoryGovernor"/> of the layer size once the file holds layers.
+    /// Registers this file to the <see cref="MemoryGovernor"/> once it holds layers.
     /// </summary>
     private void OnLayersAssigned()
     {
         if (_layers.Length == 0) return;
         var pixels = (long)ResolutionX * ResolutionY;
         if (pixels > 0) MemoryGovernor.LayerPixelCount = pixels;
+        MemoryGovernor.Register(this);
+    }
+
+    /// <summary>
+    /// Moves the images of idle layers to the disk cache when the memory pressure is high.
+    /// </summary>
+    /// <param name="level">The memory pressure.</param>
+    /// <returns>The compressed bytes moved to the disk.</returns>
+    public long Trim(MemoryPressureLevel level)
+    {
+        if (level < MemoryPressureLevel.High || DecodeType != FileDecodeType.Full) return 0;
+        var store = LayerBlobStore.Session;
+        if (store is null) return 0;
+
+        // Layers in use by the running work are accessed often, the others become idle
+        var minimumIdle = level == MemoryPressureLevel.Critical ? 5_000 : 30_000;
+        long released = 0;
+        var layers = _layers;
+        for (var i = 0; i < layers.Length; i++)
+        {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+            if (layers[i] is null) continue;
+            released += layers[i].TryMoveToDisk(store, minimumIdle);
+        }
+
+        return released;
     }
 
     /// <summary>
@@ -2409,7 +2435,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
             for (var i = 0; i < LayerCount; i++)
             {
                 if (this[i] is null) continue;
-                size += this[i].CompressedMat.CompressedLength;
+                size += this[i].CompressedLengthInMemory;
             }
 
             return size;

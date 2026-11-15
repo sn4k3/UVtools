@@ -178,14 +178,47 @@
         </member>
         <member name="P:UVtools.Core.CoreSettings.AdaptiveMemoryManagement">
             <summary>
-            Gets or sets if the memory is managed adaptively: under pressure caches are trimmed and the parallelism is reduced,
-            instead of letting the system run out of memory.
+            Gets or sets if the memory is managed adaptively: under pressure caches are trimmed, idle layers and the undo
+            history move to the disk cache and the parallelism is reduced, instead of letting the system run out of memory.
             </summary>
         </member>
         <member name="P:UVtools.Core.CoreSettings.MemoryReserveBytes">
             <summary>
             Gets or sets the physical memory in bytes to keep available for the system and other programs, 0 for automatic.
             See <see cref="P:UVtools.Core.Managers.MemoryGovernor.ReserveBytes"/>.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.CoreSettings.EnableDiskCache">
+            <summary>
+            Gets or sets if layers and the undo history can be moved to a disk cache to release memory RAM.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.CoreSettings.DiskCacheFolder">
+            <summary>
+            Gets or sets the folder of the disk cache, empty for <see cref="P:UVtools.Core.CoreSettings.DefaultDiskCacheFolder"/>.
+            Changes apply on the next start.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.CoreSettings.DiskCacheMaximumBytes">
+            <summary>
+            Gets or sets the maximum size of the disk cache in bytes, 0 to be limited by the disk free space only.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.CoreSettings.DefaultDiskCacheFolder">
+            <summary>
+            Gets the default folder of the disk cache.
+            On Linux the temporary folder is often a RAM disk (tmpfs), so the user cache folder is used instead.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.CoreSettings.DiskCacheFolderOrDefault">
+            <summary>
+            Gets <see cref="P:UVtools.Core.CoreSettings.DiskCacheFolder"/> or <see cref="P:UVtools.Core.CoreSettings.DefaultDiskCacheFolder"/> when not set.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.CoreSettings.StoreUndoHistoryOnDisk">
+            <summary>
+            Gets or sets if the layers of the undo history that are no longer in use by the file are moved to the disk cache
+            after each operation, instead of only under memory pressure.
             </summary>
         </member>
         <member name="P:UVtools.Core.CoreSettings.EnableCuda">
@@ -2884,8 +2917,15 @@
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.OnLayersAssigned">
             <summary>
-            Informs the <see cref="T:UVtools.Core.Managers.MemoryGovernor"/> of the layer size once the file holds layers.
+            Registers this file to the <see cref="T:UVtools.Core.Managers.MemoryGovernor"/> once it holds layers.
             </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.Trim(UVtools.Core.Managers.MemoryPressureLevel)">
+            <summary>
+            Moves the images of idle layers to the disk cache when the memory pressure is high.
+            </summary>
+            <param name="level">The memory pressure.</param>
+            <returns>The compressed bytes moved to the disk.</returns>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.LayersCacheSize">
             <summary>
@@ -6040,12 +6080,13 @@
         <member name="T:UVtools.Core.Layers.CMatBuffer">
             <summary>
             Buffer level operations over <see cref="T:EmguExtensions.CMat"/> that its public API does not expose yet:
-            sharing the compressed buffer between clones.
+            sharing the compressed buffer between clones and detaching/attaching it to move the bytes to the disk cache.
             </summary>
             <remarks>
             <see cref="T:EmguExtensions.CMat"/> never mutates its compressed array in place, it always replaces it, so clones can share it safely.
             The private state is reached with <see cref="T:System.Runtime.CompilerServices.UnsafeAccessorAttribute"/>, when the fields are not found (a different
-            EmguExtensions version) <see cref="P:UVtools.Core.Layers.CMatBuffer.IsSupported"/> is false and callers fall back to the public API (deep copies). Remove this class when EmguExtensions exposes equivalent members.
+            EmguExtensions version) <see cref="P:UVtools.Core.Layers.CMatBuffer.IsSupported"/> is false and callers fall back to the public API (deep copies, no
+            disk cache). Remove this class when EmguExtensions exposes equivalent members.
             </remarks>
         </member>
         <member name="P:UVtools.Core.Layers.CMatBuffer.IsSupported">
@@ -6061,6 +6102,25 @@
         <member name="M:UVtools.Core.Layers.CMatBuffer.CopyTo(EmguExtensions.CMat,EmguExtensions.CMat)">
             <summary>
             Copies <paramref name="source"/> to <paramref name="destination"/> sharing the compressed array instead of copying it.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Layers.CMatBuffer.GetBytes(EmguExtensions.CMat)">
+            <summary>
+            Gets the compressed array of <paramref name="mat"/> without copying it, the array must be treated as read-only.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Layers.CMatBuffer.TryDetach(EmguExtensions.CMat,System.Byte[])">
+            <summary>
+            Detaches the compressed array from <paramref name="mat"/>, leaving an empty array in its place while keeping every
+            other state (size, ROI, hash, compressors). The hash is computed first so equality keeps working while detached.
+            </summary>
+            <param name="mat">The mat to detach the array from.</param>
+            <param name="expected">The array that is expected to be attached, the detach is aborted when it was replaced meanwhile.</param>
+            <returns>True when detached.</returns>
+        </member>
+        <member name="M:UVtools.Core.Layers.CMatBuffer.Attach(EmguExtensions.CMat,System.Byte[])">
+            <summary>
+            Attaches back a compressed array previously detached with <see cref="M:UVtools.Core.Layers.CMatBuffer.TryDetach(EmguExtensions.CMat,System.Byte[])"/>, without changing any other state.
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.Issue.Parent">
@@ -6115,6 +6175,21 @@
             Represent a Layer
             </summary>
             <inheritdoc/>
+        </member>
+        <member name="F:UVtools.Core.Layers.Layer._diskLock">
+            <summary>
+            Guards the disk cache state: <see cref="F:UVtools.Core.Layers.Layer._diskBlob"/>, <see cref="F:UVtools.Core.Layers.Layer._isOnDisk"/> and <see cref="F:UVtools.Core.Layers.Layer._lastAccessTicks"/>.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.Layer._diskBlob">
+            <summary>
+            A copy of the current compressed bytes in the disk cache, or <see langword="null"/>.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.Layer._isOnDisk">
+            <summary>
+            True when the compressed bytes were released from memory and are only in <see cref="F:UVtools.Core.Layers.Layer._diskBlob"/>.
+            </summary>
         </member>
         <member name="P:UVtools.Core.Layers.Layer.SlicerFile">
             <summary>
@@ -6494,6 +6569,82 @@
         <member name="P:UVtools.Core.Layers.Layer.CompressionCodec">
             <summary>
             Gets or sets the compression method used to cache the image
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Layers.Layer.MinimumDiskCacheBytes">
+            <summary>
+            The minimum compressed size worth moving to the disk cache.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.IsOnDisk">
+            <summary>
+            Gets if the compressed image was moved to the disk cache to release memory, it is loaded back on first access.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.CompressedLength">
+            <summary>
+            Gets the length of the compressed image, without loading it from the disk cache.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.CompressedLengthInMemory">
+            <summary>
+            Gets the length of the compressed image held in memory RAM, 0 when it is in the disk cache.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.IdleMilliseconds">
+            <summary>
+            Gets the milliseconds since the image was last accessed.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.CompressedArrayInMemory">
+            <summary>
+            Gets the compressed array currently held in memory, without loading it from the disk cache.
+            Used to find buffers shared between layers, must be treated as read-only.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.AccessCompressedMat">
+            <summary>
+            Gets the compressed image for use, loading it from the disk cache when needed.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.LoadFromDiskUnlocked">
+            <summary>
+            Loads the image from the disk cache. Caller must hold <see cref="F:UVtools.Core.Layers.Layer._diskLock"/>.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.LoadFromDisk">
+            <summary>
+            Loads the image from the disk cache, if it is there.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.BeginImageReplace">
+            <summary>
+            Called before the compressed image is replaced: the disk copy becomes obsolete.
+            The image is loaded first, so a failed replacement never leaves the layer without its image.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.DiscardDiskCopy">
+            <summary>
+            Called after the compressed image is replaced: drops the obsolete disk copy.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.TryMoveToDisk(UVtools.Core.Managers.LayerBlobStore,System.Int64)">
+            <summary>
+            Moves the compressed image to the disk cache to release memory, when it was not accessed for
+            <paramref name="minimumIdleMilliseconds"/>. Images shared between layers are written only once.
+            </summary>
+            <param name="store">The disk cache.</param>
+            <param name="minimumIdleMilliseconds">The minimum time since the last access.</param>
+            <returns>The bytes released from memory by this layer, 0 when not moved.</returns>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.ImageEquals(UVtools.Core.Layers.Layer)">
+            <summary>
+            Compares the images of two layers without loading them from the disk cache.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.CompressedMat">
+            <summary>
+            Gets the compressed image, loading it back from the disk cache when needed.
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.Layer.HaveImage">
@@ -7254,6 +7405,29 @@
             Collect differences and create a clip
             </summary>
         </member>
+        <member name="M:UVtools.Core.Managers.ClipboardManager.GetClipsCopy">
+            <summary>
+            Gets a copy of the clips, safe to enumerate from any thread.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.ClipboardManager.MoveHistoryToDisk(System.Boolean)">
+            <summary>
+            Moves the layers of the undo history to the disk cache.
+            </summary>
+            <param name="includeShared">True to also move the images still in use by the file, they are written once and
+            only released when the file moves them too.</param>
+            <returns>The compressed bytes moved to the disk.</returns>
+        </member>
+        <member name="M:UVtools.Core.Managers.ClipboardManager.QueueMoveHistoryToDisk">
+            <summary>
+            Runs <see cref="M:UVtools.Core.Managers.ClipboardManager.MoveHistoryToDisk(System.Boolean)"/> in background, coalescing requests made while it runs.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.ClipboardManager.Trim(UVtools.Core.Managers.MemoryPressureLevel)">
+            <summary>
+            Moves the undo history to the disk cache under memory pressure.
+            </summary>
+        </member>
         <member name="M:UVtools.Core.Managers.ClipboardManager.Clip(UVtools.Core.Operations.Operation,UVtools.Core.Layers.Layer[],System.Boolean)">
             <summary>
             Collect differences and create a clip
@@ -7348,6 +7522,110 @@
         </member>
         <member name="M:UVtools.Core.Managers.KernelCacheManager.Dispose">
             <inheritdoc />
+        </member>
+        <member name="T:UVtools.Core.Managers.LayerBlobStore">
+            <summary>
+            Disk cache for compressed layer images. Layers that are not being used can move their compressed bytes here to free
+            memory RAM, and read them back on demand.
+            </summary>
+            <remarks>
+            <para>Blobs are appended to fixed size pack files inside a folder unique to this process, a pack file is deleted once
+            every blob written to it is released. Identical arrays (layers sharing their buffer) are written only once.</para>
+            <para>A lock file marks the folder as in use, folders left behind by a crashed process are deleted the next time a
+            store is created.</para>
+            </remarks>
+        </member>
+        <member name="F:UVtools.Core.Managers.LayerBlobStore.CacheFolderName">
+            <summary>
+            The name of the folder that holds the session folders, inside <see cref="P:UVtools.Core.CoreSettings.DiskCacheFolder"/>.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Managers.LayerBlobStore.MinimumDiskFreeBytes">
+            <summary>
+            The disk free space to always leave untouched.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.LayerBlobStore.Session">
+            <summary>
+            Gets the store of this process, creating it on first use.
+            Returns <see langword="null"/> when the disk cache is disabled or the folder can't be used.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.LayerBlobStore.SessionIfCreated">
+            <summary>
+            Gets the store of this process only when it was already created, without creating it.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.LayerBlobStore.DeleteOrphanSessions(System.String)">
+            <summary>
+            Deletes the session folders of processes that are not running anymore.
+            </summary>
+            <param name="cacheFolder">The folder holding the session folders.</param>
+            <returns>The number of deleted folders.</returns>
+        </member>
+        <member name="P:UVtools.Core.Managers.LayerBlobStore.Folder">
+            <summary>
+            Gets the folder of this session.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.LayerBlobStore.BytesOnDisk">
+            <summary>
+            Gets the bytes of the blobs that are still referenced.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.LayerBlobStore.FilesLength">
+            <summary>
+            Gets the total length of the pack files on the disk.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.LayerBlobStore.MaximumBytes">
+            <summary>
+            Gets or sets the maximum bytes the store can hold, 0 for automatic (limited by the disk free space only).
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.LayerBlobStore.#ctor(System.String)">
+            <summary>
+            Creates a store in a new session folder inside <paramref name="baseFolder"/>/<see cref="F:UVtools.Core.Managers.LayerBlobStore.CacheFolderName"/>.
+            </summary>
+            <param name="baseFolder">The base folder.</param>
+        </member>
+        <member name="M:UVtools.Core.Managers.LayerBlobStore.Write(System.Byte[],System.UInt64)">
+            <summary>
+            Writes a compressed array to the disk, or reuses the blob when the same array instance was already written.
+            </summary>
+            <param name="bytes">The compressed bytes, must not be mutated afterwards.</param>
+            <param name="hash">The hash of <paramref name="bytes"/>, used to validate the blob later.</param>
+            <returns>A lease to the blob, or <see langword="null"/> when there is no space left.</returns>
+        </member>
+        <member name="M:UVtools.Core.Managers.LayerBlobStore.Read(UVtools.Core.Managers.LayerBlob)">
+            <summary>
+            Reads the bytes of a blob, returning the array already in memory when another layer has loaded it.
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.Managers.LayerBlob">
+            <summary>
+            A compressed array stored in a <see cref="T:UVtools.Core.Managers.LayerBlobStore"/>, reference counted by <see cref="T:UVtools.Core.Managers.LayerBlobLease"/>.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.LayerBlob.TryAddReference">
+            <summary>
+            Adds a reference, fails when the blob was already released.
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.Managers.LayerBlobLease">
+            <summary>
+            Holds one reference to a <see cref="T:UVtools.Core.Managers.LayerBlob"/>, released explicitly or when the owner is collected.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.LayerBlobLease.#ctor(UVtools.Core.Managers.LayerBlob)">
+            <summary>
+            Takes ownership of one reference already added to <paramref name="blob"/>.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.LayerBlobLease.Share">
+            <summary>
+            Creates another lease to the same blob, or <see langword="null"/> when it was already released.
+            </summary>
         </member>
         <member name="P:UVtools.Core.Managers.MatCacheManager.SlicerFile">
             <summary>
@@ -7552,12 +7830,13 @@
         </member>
         <member name="F:UVtools.Core.Managers.MemoryPressureLevel.Elevated">
             <summary>
-            Available memory is below two times the reserve: caches are trimmed.
+            Available memory is below two times the reserve: caches are trimmed and the undo history moves to the disk.
             </summary>
         </member>
         <member name="F:UVtools.Core.Managers.MemoryPressureLevel.High">
             <summary>
-            Available memory is below one and a half times the reserve: the large object heap is compacted.
+            Available memory is below one and a half times the reserve: idle layers move to the disk and the large object heap
+            is compacted.
             </summary>
         </member>
         <member name="F:UVtools.Core.Managers.MemoryPressureLevel.Critical">
@@ -7580,7 +7859,8 @@
         <member name="T:UVtools.Core.Managers.MemoryGovernor">
             <summary>
             Watches the system memory and reacts to the pressure in steps, instead of stopping the work when memory runs low:
-            trim caches, compact the managed heap, reduce the parallelism, and only then report the condition so the user can act.
+            trim caches, move data to the disk cache (<see cref="T:UVtools.Core.Managers.LayerBlobStore"/>), compact the managed heap, reduce the
+            parallelism, and only then report the condition so the user can act.
             </summary>
         </member>
         <member name="F:UVtools.Core.Managers.MemoryGovernor.ThrottleLaneTimeoutMilliseconds">

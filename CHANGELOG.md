@@ -8,6 +8,10 @@
 - **Memory RAM:**
   - (Improvement) Layer clones share the compressed image instead of copying it, so opening a file, the undo snapshot
     taken before each operation, undo/redo and file conversions no longer duplicate every layer in memory
+  - (Add) Disk cache: layers of the undo history that are no longer used by the file, and idle layers when the memory
+    is low, are moved to a disk cache and read back on demand. Settings: enable, folder (on Linux defaults to
+    `~/.cache/UVtools` as `/tmp` is often in RAM), maximum size, and whether the undo history moves after each
+    operation. The cache is deleted on exit, and leftovers from a crash on the next start
   - (Add) Adaptive memory management: the number of parallel tasks is limited to what fits in the available memory,
     and when it runs low caches are trimmed, the large object heap is compacted and the work is throttled to one task at
     a time. Operations keep running slower instead of freezing the system. Also active on the command line
