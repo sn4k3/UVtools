@@ -1969,10 +1969,11 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     /// <param name="layer"></param>
     public void CopyImageTo(Layer layer)
     {
-        _compressedMat.CopyTo(layer._compressedMat);
-        // Disposes the contours of the replaced image, then takes the ones of the copied image
+        if (ReferenceEquals(this, layer)) return;
+        // The compressed buffer is shared, it is never mutated in place
+        CMatBuffer.CopyTo(_compressedMat, layer._compressedMat);
+        // Disposes the contours of the replaced image, they are recalculated on demand
         layer.InvalidateImage();
-        layer._contours = _contours?.Clone();
         layer.BoundingRectangle = BoundingRectangle;
         layer.NonZeroPixelCount = _nonZeroPixelCount;
         layer.FirstPixelIndex = FirstPixelIndex;
@@ -1986,9 +1987,10 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
         var layer = (Layer)MemberwiseClone();
         // A shared lock would let threads locking layers in order (repair islands) deadlock when a file holds clones
         layer.Mutex = new Lock();
-        layer._compressedMat = _compressedMat.Clone();
-        layer._contours = _contours?.Clone();
-        //Debug.WriteLine(ReferenceEquals(_compressedBytes, layer.CompressedBytes));
+        // The compressed buffer is shared instead of copied, it is never mutated in place, a new one is set instead
+        layer._compressedMat = CMatBuffer.Clone(_compressedMat);
+        // Contours are a cache recalculated on demand, cloning them would duplicate native memory on every undo snapshot
+        layer._contours = null;
         return layer;
         /*return new (_index, CompressedBytes?.ToArray()!, SlicerFile)
         {

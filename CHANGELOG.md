@@ -5,6 +5,10 @@
 - (Add) Peel curve HUD (2D and 3D preview): mechanical layer analysis modes to plot the area change in percent, the
   centroid drift in mm and a combined risk score of each layer relative to the layer below. The risk score is relative
   to the loaded file, it shows which layers are unusual and does not predict print failure (#1164)
+- **Memory RAM:**
+  - (Improvement) Layer clones share the compressed image instead of copying it, so opening a file, the undo snapshot
+    taken before each operation, undo/redo and file conversions no longer duplicate every layer in memory
+  - (Improvement) Layer contours are no longer cloned into the undo history, they are recalculated on demand
 - (Upgrade) AvaloniaUI from 12.1.4 to 12.1.6
 
 ## 25/10/2026 - v7.1.2
