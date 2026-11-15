@@ -498,6 +498,7 @@ public partial class MainWindow : GenericWindow
         };
 
         _ramUsageTimer.Elapsed += RamUsageTimerOnElapsed;
+        MemoryGovernor.Start();
 
         AppUpdater.PropertyChanged += AppUpdaterOnPropertyChanged;
         AppUpdater.InstallUpdateCompleted += (sender, asset) =>

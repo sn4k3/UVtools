@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using UVtools.Cmd.Symbols;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Managers;
 using UVtools.Core.Operations;
 
 namespace UVtools.Cmd;
@@ -36,6 +37,8 @@ internal class Program
 
         Thread.CurrentThread.CurrentCulture = CoreSettings.OptimalCultureInfo;
         Args = args;
+        // Reduces the parallelism and uses the disk cache when the memory runs low, instead of running out of it
+        MemoryGovernor.Start();
 
         var rootCommand = new RootCommand("MSLA/DLP, file analysis, repair, conversion and manipulation")
         {

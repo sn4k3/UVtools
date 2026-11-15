@@ -21,7 +21,7 @@ using Xunit;
 namespace UVtools.Tests;
 
 /// <summary>
-/// Shared compressed buffers.
+/// Shared compressed buffers and the memory governor.
 /// </summary>
 public sealed class MemoryManagementTests
 {
@@ -78,6 +78,41 @@ public sealed class MemoryManagementTests
         Assert.NotSame(layer.CompressedMat.CompressedBytes, clone.CompressedMat.CompressedBytes);
         Assert.False(layer.Equals(clone));
         Assert.True(SameImage(original, layer));
+    }
+
+    [Fact]
+    public void GetMaxDegreeOfParallelism_FitsTheWorkersInMemory()
+    {
+        var reserve = CoreSettings.MemoryReserveBytes;
+        try
+        {
+            // Independent of the memory available on the test machine
+            CoreSettings.MemoryReserveBytes = 1;
+            MemoryGovernor.Sample();
+            Assert.Equal(1, MemoryGovernor.GetMaxDegreeOfParallelism(1, long.MaxValue / 4));
+
+            if (MemoryGovernor.TotalPhysicalBytes > 0 && MemoryGovernor.AvailablePhysicalBytes > 1024 * 1024)
+            {
+                Assert.Equal(8, MemoryGovernor.GetMaxDegreeOfParallelism(8, 1));
+                // A worker that needs all the memory runs alone
+                Assert.Equal(1, MemoryGovernor.GetMaxDegreeOfParallelism(8, MemoryGovernor.TotalPhysicalBytes));
+                Assert.Equal(1, MemoryGovernor.GetMaxDegreeOfParallelism(-1, MemoryGovernor.TotalPhysicalBytes));
+            }
+
+            // Below the reserve a single worker runs
+            CoreSettings.MemoryReserveBytes = long.MaxValue / 2;
+            MemoryGovernor.Sample();
+            if (MemoryGovernor.TotalPhysicalBytes > 0)
+            {
+                Assert.Equal(MemoryPressureLevel.Critical, MemoryGovernor.Level);
+                Assert.Equal(1, MemoryGovernor.GetMaxDegreeOfParallelism(8, 1));
+            }
+        }
+        finally
+        {
+            CoreSettings.MemoryReserveBytes = reserve;
+            MemoryGovernor.Sample();
+        }
     }
 
 }

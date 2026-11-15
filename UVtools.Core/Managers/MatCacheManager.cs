@@ -104,7 +104,7 @@ public class MatCacheManager : IDisposable
 
     public MatCacheManager(FileFormat slicerFile, uint layerIndexStart, uint layerIndexEnd, ushort cacheCount = 0, byte elementsPerCache = 1)
     {
-        if (cacheCount == 0) cacheCount = (ushort)(Environment.ProcessorCount * 5);
+        if (cacheCount == 0) cacheCount = GetDefaultCacheCount(slicerFile, elementsPerCache);
         if (layerIndexEnd == 0) layerIndexEnd = slicerFile.HaveLayers ? slicerFile.LayerCount - 1 : 0;
         SlicerFile = slicerFile;
         LayerIndexStart = layerIndexStart;
@@ -114,6 +114,24 @@ public class MatCacheManager : IDisposable
         MatCache = new Mat[CollectionSize][];
 
         if (layerIndexStart == 0) UseRawIndexInsteadOfLayerIndex = true;
+    }
+
+    /// <summary>
+    /// Gets the default number of layers to cache: five per processor, limited to the half of the memory available
+    /// above <see cref="MemoryGovernor.ReserveBytes"/>, and at least two.
+    /// </summary>
+    /// <param name="slicerFile">The file to cache layers from.</param>
+    /// <param name="elementsPerCache">The number of mats per cached layer.</param>
+    public static ushort GetDefaultCacheCount(FileFormat slicerFile, byte elementsPerCache = 1)
+    {
+        var maximum = Math.Min(ushort.MaxValue, Environment.ProcessorCount * 5);
+        var bytesPerLayer = (long)slicerFile.ResolutionX * slicerFile.ResolutionY * Math.Max((byte)1, elementsPerCache);
+        if (bytesPerLayer <= 0 || !MemoryGovernor.IsAdaptive) return (ushort)maximum;
+
+        MemoryGovernor.Sample();
+        if (MemoryGovernor.TotalPhysicalBytes <= 0) return (ushort)maximum;
+        var budget = Math.Max(0, MemoryGovernor.AvailablePhysicalBytes - MemoryGovernor.ReserveBytes) / 2;
+        return (ushort)Math.Clamp(budget / bytesPerLayer, 2, maximum);
     }
 
     /// <summary>

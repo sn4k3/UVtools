@@ -140,6 +140,8 @@
             <summary>
             Gets the ParallelOptions with <see cref="P:UVtools.Core.CoreSettings.MaxDegreeOfParallelism"/> set
             </summary>
+            <remarks>The degree of parallelism is reduced when the workers would not fit in the available memory,
+            see <see cref="M:UVtools.Core.Managers.MemoryGovernor.GetMaxDegreeOfParallelism(System.Int32,System.Int64)"/>.</remarks>
         </member>
         <member name="P:UVtools.Core.CoreSettings.ParallelDebugOptions">
             <summary>
@@ -164,6 +166,26 @@
         <member name="M:UVtools.Core.CoreSettings.GetParallelOptions(UVtools.Core.Operations.OperationProgress)">
             <summary>
             Gets the ParallelOptions with <see cref="P:UVtools.Core.CoreSettings.MaxDegreeOfParallelism"/> and the <see cref="T:System.Threading.CancellationToken"/> set
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.CoreSettings.GetParallelOptions(UVtools.Core.Operations.OperationProgress,System.Int64)">
+            <summary>
+            Gets the ParallelOptions with the <see cref="T:System.Threading.CancellationToken"/> set and the <see cref="P:UVtools.Core.CoreSettings.MaxDegreeOfParallelism"/>
+            reduced to the number of workers that fit in the available memory.
+            </summary>
+            <param name="progress">The progress holding the cancellation token.</param>
+            <param name="bytesPerWorker">The estimated bytes each worker holds at a time.</param>
+        </member>
+        <member name="P:UVtools.Core.CoreSettings.AdaptiveMemoryManagement">
+            <summary>
+            Gets or sets if the memory is managed adaptively: under pressure caches are trimmed and the parallelism is reduced,
+            instead of letting the system run out of memory.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.CoreSettings.MemoryReserveBytes">
+            <summary>
+            Gets or sets the physical memory in bytes to keep available for the system and other programs, 0 for automatic.
+            See <see cref="P:UVtools.Core.Managers.MemoryGovernor.ReserveBytes"/>.
             </summary>
         </member>
         <member name="P:UVtools.Core.CoreSettings.EnableCuda">
@@ -2858,6 +2880,11 @@
         <member name="P:UVtools.Core.FileFormats.FileFormat.Layers">
             <summary>
             Layers List
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.OnLayersAssigned">
+            <summary>
+            Informs the <see cref="T:UVtools.Core.Managers.MemoryGovernor"/> of the layer size once the file holds layers.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.LayersCacheSize">
@@ -7397,6 +7424,14 @@
             Gets or sets the action to trigger after cache the initial <see cref="T:Emgu.CV.Mat"/>
             </summary>
         </member>
+        <member name="M:UVtools.Core.Managers.MatCacheManager.GetDefaultCacheCount(UVtools.Core.FileFormats.FileFormat,System.Byte)">
+            <summary>
+            Gets the default number of layers to cache: five per processor, limited to the half of the memory available
+            above <see cref="P:UVtools.Core.Managers.MemoryGovernor.ReserveBytes"/>, and at least two.
+            </summary>
+            <param name="slicerFile">The file to cache layers from.</param>
+            <param name="elementsPerCache">The number of mats per cached layer.</param>
+        </member>
         <member name="M:UVtools.Core.Managers.MatCacheManager.LayerIndexToCacheIndex(System.UInt32)">
             <summary>
             Gets the cache index from a layer index, required when layer range is not 0 started
@@ -7503,6 +7538,174 @@
         <member name="M:UVtools.Core.Managers.MaterialManager.Save">
             <summary>
             Save settings to file
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.Managers.MemoryPressureLevel">
+            <summary>
+            The memory pressure of the system, from the available physical memory and <see cref="P:UVtools.Core.Managers.MemoryGovernor.ReserveBytes"/>.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Managers.MemoryPressureLevel.Normal">
+            <summary>
+            Available memory is above two times the reserve.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Managers.MemoryPressureLevel.Elevated">
+            <summary>
+            Available memory is below two times the reserve: caches are trimmed.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Managers.MemoryPressureLevel.High">
+            <summary>
+            Available memory is below one and a half times the reserve: the large object heap is compacted.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Managers.MemoryPressureLevel.Critical">
+            <summary>
+            Available memory is below the reserve: parallel work is throttled until the pressure goes down.
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.Managers.IMemoryTrimmable">
+            <summary>
+            An object holding memory that can be released or moved to the disk under pressure.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.IMemoryTrimmable.Trim(UVtools.Core.Managers.MemoryPressureLevel)">
+            <summary>
+            Releases memory according to the <paramref name="level"/>.
+            </summary>
+            <param name="level">The current pressure, never <see cref="F:UVtools.Core.Managers.MemoryPressureLevel.Normal"/>.</param>
+            <returns>The estimated number of bytes released.</returns>
+        </member>
+        <member name="T:UVtools.Core.Managers.MemoryGovernor">
+            <summary>
+            Watches the system memory and reacts to the pressure in steps, instead of stopping the work when memory runs low:
+            trim caches, compact the managed heap, reduce the parallelism, and only then report the condition so the user can act.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Managers.MemoryGovernor.ThrottleLaneTimeoutMilliseconds">
+            <summary>
+            While the pressure is critical only the worker holding the lane runs. When it does not come back to
+            <see cref="M:UVtools.Core.Managers.MemoryGovernor.Throttle(System.Threading.CancellationToken)"/> for this long (its loop ended, or one layer takes long) another worker takes the lane.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Managers.MemoryGovernor.DefaultImagesPerWorker">
+            <summary>
+            The estimated number of full resolution images each parallel worker holds at a time.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.MemoryGovernor.IsRunning">
+            <summary>
+            Gets if the monitor is running.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.MemoryGovernor.IsAdaptive">
+            <summary>
+            Gets if the adaptive management is enabled, see <see cref="P:UVtools.Core.CoreSettings.AdaptiveMemoryManagement"/>.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.MemoryGovernor.Level">
+            <summary>
+            Gets the current memory pressure.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.MemoryGovernor.AvailablePhysicalBytes">
+            <summary>
+            Gets the available physical memory from the last sample.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.MemoryGovernor.TotalPhysicalBytes">
+            <summary>
+            Gets the total physical memory from the last sample.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.MemoryGovernor.ReserveBytes">
+            <summary>
+            Gets the memory to keep available for the system and other programs.
+            <see cref="P:UVtools.Core.CoreSettings.MemoryReserveBytes"/> when set (up to the physical memory), otherwise 8% of the physical
+            memory clamped to 1-3 GB.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.MemoryGovernor.LayerPixelCount">
+            <summary>
+            Gets or sets the pixel count of a layer of the file being processed, used to estimate the memory of each
+            parallel worker. 0 disables the estimation.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.MemoryGovernor.CriticalDuration">
+            <summary>
+            Gets for how long the pressure is <see cref="F:UVtools.Core.Managers.MemoryPressureLevel.Critical"/>, or <see cref="F:System.TimeSpan.Zero"/>.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.MemoryGovernor.IsThrottling">
+            <summary>
+            Gets if workers are currently being throttled.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.MemoryGovernor.RelievedBytes">
+            <summary>
+            Gets the estimated bytes released by the trimmables since the start.
+            </summary>
+        </member>
+        <member name="E:UVtools.Core.Managers.MemoryGovernor.PressureChanged">
+            <summary>
+            Occurs when <see cref="P:UVtools.Core.Managers.MemoryGovernor.Level"/> changes, raised from a thread-pool thread.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.MemoryGovernor.Start">
+            <summary>
+            Starts the monitor, it samples the memory twice per second and relieves the pressure in background.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.MemoryGovernor.Stop">
+            <summary>
+            Stops the monitor.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.MemoryGovernor.Register(UVtools.Core.Managers.IMemoryTrimmable)">
+            <summary>
+            Registers an object to be trimmed under pressure. It is held by a weak reference.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.MemoryGovernor.Unregister(UVtools.Core.Managers.IMemoryTrimmable)">
+            <summary>
+            Unregisters an object previously registered with <see cref="M:UVtools.Core.Managers.MemoryGovernor.Register(UVtools.Core.Managers.IMemoryTrimmable)"/>.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.MemoryGovernor.Sample">
+            <summary>
+            Samples the memory now and updates <see cref="P:UVtools.Core.Managers.MemoryGovernor.Level"/>.
+            </summary>
+            <returns>The current level.</returns>
+        </member>
+        <member name="M:UVtools.Core.Managers.MemoryGovernor.Relieve(UVtools.Core.Managers.MemoryPressureLevel)">
+            <summary>
+            Runs the relief steps for <paramref name="level"/>: trims the registered objects and collects the garbage.
+            Calls while another relief is running are ignored.
+            </summary>
+            <returns>The estimated bytes released by the trimmables.</returns>
+        </member>
+        <member name="M:UVtools.Core.Managers.MemoryGovernor.GetMaxDegreeOfParallelism(System.Int32,System.Int64)">
+            <summary>
+            Gets the degree of parallelism that fits in the available memory.
+            </summary>
+            <param name="requested">The requested degree of parallelism, -1 for the .NET scheduler.</param>
+            <param name="bytesPerWorker">The estimated bytes each worker holds at a time, 0 to estimate from
+            <see cref="P:UVtools.Core.Managers.MemoryGovernor.LayerPixelCount"/> and <see cref="F:UVtools.Core.Managers.MemoryGovernor.DefaultImagesPerWorker"/>.</param>
+            <returns>The degree of parallelism, at least 1, or <paramref name="requested"/> when it fits.</returns>
+        </member>
+        <member name="M:UVtools.Core.Managers.MemoryGovernor.Throttle(System.Threading.CancellationToken)">
+            <summary>
+            Blocks the calling worker while the pressure is <see cref="F:UVtools.Core.Managers.MemoryPressureLevel.Critical"/>, letting only one
+            worker run at a time, at full speed, so the work keeps progressing with less memory instead of stopping.
+            Called from <see cref="M:UVtools.Core.Operations.OperationProgress.PauseIfRequested"/> before each layer is processed, when the
+            worker holds no image of the previous layer.
+            </summary>
+            <param name="token">Stops waiting when cancelled.</param>
+        </member>
+        <member name="M:UVtools.Core.Managers.MemoryGovernor.GetStatusString">
+            <summary>
+            Gets a short description of the memory state.
             </summary>
         </member>
         <member name="P:UVtools.Core.Managers.MessageBoxManager.Standard">
@@ -10251,6 +10454,7 @@
         <member name="M:UVtools.Core.Operations.OperationProgress.PauseIfRequested">
             <summary>
             Blocks the current thread until the current WaitHandle receives a signal.
+            Under critical memory pressure it also throttles the workers, see <see cref="M:UVtools.Core.Managers.MemoryGovernor.Throttle(System.Threading.CancellationToken)"/>.
             </summary>
             <returns>true if the current instance receives a signal. If the current instance is never signaled, WaitOne() never returns.</returns>
         </member>

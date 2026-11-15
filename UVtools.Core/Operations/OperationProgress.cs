@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using UVtools.Core.Extensions;
+using UVtools.Core.Managers;
 
 namespace UVtools.Core.Operations;
 
@@ -44,9 +45,15 @@ public sealed partial class OperationProgress : ObservableObject, IDisposable
 
     /// <summary>
     /// Blocks the current thread until the current WaitHandle receives a signal.
+    /// Under critical memory pressure it also throttles the workers, see <see cref="MemoryGovernor.Throttle"/>.
     /// </summary>
     /// <returns>true if the current instance receives a signal. If the current instance is never signaled, WaitOne() never returns.</returns>
-    public bool PauseIfRequested() => ManualReset.WaitOne();
+    public bool PauseIfRequested()
+    {
+        var result = ManualReset.WaitOne();
+        MemoryGovernor.Throttle(TokenSource.Token);
+        return result;
+    }
 
     /// <summary>
     /// Blocks or cancels the current thread until the current WaitHandle receives a signal.
@@ -54,6 +61,7 @@ public sealed partial class OperationProgress : ObservableObject, IDisposable
     public void PauseOrCancelIfRequested()
     {
         ManualReset.WaitOne();
+        MemoryGovernor.Throttle(TokenSource.Token);
         TokenSource.Token.ThrowIfCancellationRequested();
     }
 

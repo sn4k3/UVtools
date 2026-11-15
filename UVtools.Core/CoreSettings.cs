@@ -16,6 +16,7 @@ using Emgu.CV.Cuda;
 using EmguExtensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
+using UVtools.Core.Managers;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core;
@@ -103,8 +104,10 @@ public static class CoreSettings
     /// <summary>
     /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> set
     /// </summary>
+    /// <remarks>The degree of parallelism is reduced when the workers would not fit in the available memory,
+    /// see <see cref="MemoryGovernor.GetMaxDegreeOfParallelism"/>.</remarks>
     public static ParallelOptions ParallelOptions =>
-        new() { MaxDegreeOfParallelism = MaxDegreeOfParallelism };
+        new() { MaxDegreeOfParallelism = MemoryGovernor.GetMaxDegreeOfParallelism(MaxDegreeOfParallelism) };
 
     /// <summary>
     /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> set to 1 for debug purposes
@@ -145,6 +148,37 @@ public static class CoreSettings
     public static ParallelOptions GetParallelOptions(OperationProgress progress)
     {
         return GetParallelOptions(progress.Token);
+    }
+
+    /// <summary>
+    /// Gets the ParallelOptions with the <see cref="CancellationToken"/> set and the <see cref="MaxDegreeOfParallelism"/>
+    /// reduced to the number of workers that fit in the available memory.
+    /// </summary>
+    /// <param name="progress">The progress holding the cancellation token.</param>
+    /// <param name="bytesPerWorker">The estimated bytes each worker holds at a time.</param>
+    public static ParallelOptions GetParallelOptions(OperationProgress progress, long bytesPerWorker)
+    {
+        return new ParallelOptions
+        {
+            MaxDegreeOfParallelism = MemoryGovernor.GetMaxDegreeOfParallelism(MaxDegreeOfParallelism, bytesPerWorker),
+            CancellationToken = progress.Token
+        };
+    }
+
+    /// <summary>
+    /// Gets or sets if the memory is managed adaptively: under pressure caches are trimmed and the parallelism is reduced,
+    /// instead of letting the system run out of memory.
+    /// </summary>
+    public static bool AdaptiveMemoryManagement { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the physical memory in bytes to keep available for the system and other programs, 0 for automatic.
+    /// See <see cref="MemoryGovernor.ReserveBytes"/>.
+    /// </summary>
+    public static long MemoryReserveBytes
+    {
+        get;
+        set => field = Math.Max(0, value);
     }
 
     /// <summary>

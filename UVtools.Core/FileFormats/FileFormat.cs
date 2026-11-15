@@ -2382,9 +2382,20 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                 RebuildGCode();
             }
 
+            OnLayersAssigned();
             OnPropertyChanged();
             OnPropertyChanged(nameof(HaveLayers));
         }
+    }
+
+    /// <summary>
+    /// Informs the <see cref="MemoryGovernor"/> of the layer size once the file holds layers.
+    /// </summary>
+    private void OnLayersAssigned()
+    {
+        if (_layers.Length == 0) return;
+        var pixels = (long)ResolutionX * ResolutionY;
+        if (pixels > 0) MemoryGovernor.LayerPixelCount = pixels;
     }
 
     /// <summary>
@@ -8183,6 +8194,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         }
 
         SanitizeLayers();
+        OnLayersAssigned();
     }
 
     public void Init(uint layerCount, bool initializeLayers = false)
