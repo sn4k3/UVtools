@@ -143,7 +143,8 @@ public partial class UserSettings : ObservableObject
         public partial bool LoadLastRecentFileOnStartup { get; set; }
 
         /// <summary>
-        /// Gets or sets the minimum amount of available RAM in GB to be able to run, otherwise will pause/cancel or exit.
+        /// Gets or sets the minimum amount of available RAM in GB to keep for the system, 0 for automatic.
+        /// Below it the work is throttled, and when that is not enough the <see cref="AvailableRamOnHitLimitAction"/> runs.
         /// </summary>
         public decimal AvailableRamLimit
         {
@@ -152,7 +153,49 @@ public partial class UserSettings : ObservableObject
         }
 
         [ObservableProperty]
-        public partial RamLimitAction AvailableRamOnHitLimitAction { get; set; }
+        public partial RamLimitAction AvailableRamOnHitLimitAction { get; set; } = RamLimitAction.Adaptive;
+
+        /// <summary>
+        /// Gets or sets if the memory is managed adaptively, see <see cref="CoreSettings.AdaptiveMemoryManagement"/>.
+        /// </summary>
+        [ObservableProperty]
+        public partial bool AdaptiveMemoryManagement { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets if layers and the undo history can be moved to a disk cache to release memory RAM.
+        /// </summary>
+        [ObservableProperty]
+        public partial bool EnableDiskCache { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the folder of the disk cache, empty for the default.
+        /// </summary>
+        [ObservableProperty]
+        public partial string DiskCacheFolder { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the maximum size of the disk cache in GB, 0 to be limited by the disk free space only.
+        /// </summary>
+        public decimal DiskCacheMaximumSize
+        {
+            get;
+            set => SetProperty(ref field, Math.Max(0, value));
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum number of operations kept in the undo history, 0 for unlimited.
+        /// </summary>
+        public int MaximumUndoHistory
+        {
+            get;
+            set => SetProperty(ref field, Math.Max(0, value));
+        } = 50;
+
+        /// <summary>
+        /// Gets or sets if the layers of the undo history no longer in use are moved to the disk cache after each operation.
+        /// </summary>
+        [ObservableProperty]
+        public partial bool StoreUndoHistoryOnDisk { get; set; } = true;
 
         [ObservableProperty]
         public partial bool AvailableRamOnHitLimitKillIfUnableToAction { get; set; }
@@ -1502,13 +1545,7 @@ public partial class UserSettings : ObservableObject
                 _instance.SettingsVersion = SETTINGS_VERSION;
             }
 
-            CoreSettings.MaxDegreeOfParallelism = _instance.General.MaxDegreeOfParallelism;
-            CoreSettings.DefaultLayerCompressionCodec = _instance.General.LayerCompressionCodec;
-            CoreSettings.DefaultLayerCompressionLevel = _instance.General.LayerCompressionLevel;
-            CoreSettings.AverageResin1000MlBottleCost = _instance
-                .General
-                .AverageResin1000MlBottleCost;
-            CoreSettings.PerLayerSettingsMode = _instance.FileFormats.PerLayerSettingsMode;
+            ApplyCoreSettings();
 
             if (_instance.Network.RemotePrinters.Count == 0)
             {
@@ -1951,17 +1988,35 @@ public partial class UserSettings : ObservableObject
     }
 
     /// <summary>
+    /// Pushes the settings consumed by the core library to <see cref="CoreSettings"/>.
+    /// </summary>
+    public static void ApplyCoreSettings()
+    {
+        var general = Instance.General;
+        CoreSettings.MaxDegreeOfParallelism = general.MaxDegreeOfParallelism;
+        CoreSettings.DefaultLayerCompressionCodec = general.LayerCompressionCodec;
+        CoreSettings.DefaultLayerCompressionLevel = general.LayerCompressionLevel;
+        CoreSettings.AverageResin1000MlBottleCost = general.AverageResin1000MlBottleCost;
+        CoreSettings.PerLayerSettingsMode = Instance.FileFormats.PerLayerSettingsMode;
+
+        const decimal gigaByte = 1024 * 1024 * 1024;
+        CoreSettings.AdaptiveMemoryManagement = general.AdaptiveMemoryManagement;
+        CoreSettings.MemoryReserveBytes = (long)(general.AvailableRamLimit * gigaByte);
+        CoreSettings.EnableDiskCache = general.EnableDiskCache;
+        CoreSettings.DiskCacheFolder = general.DiskCacheFolder;
+        CoreSettings.DiskCacheMaximumBytes = (long)(general.DiskCacheMaximumSize * gigaByte);
+        CoreSettings.MaximumUndoHistory = general.MaximumUndoHistory;
+        CoreSettings.StoreUndoHistoryOnDisk = general.StoreUndoHistoryOnDisk;
+    }
+
+    /// <summary>
     /// Save settings to file
     /// </summary>
     public static void Save()
     {
         Instance.SavesCount++;
         _instance!.ModifiedDateTime = DateTime.Now;
-        CoreSettings.MaxDegreeOfParallelism = _instance.General.MaxDegreeOfParallelism;
-        CoreSettings.DefaultLayerCompressionCodec = _instance.General.LayerCompressionCodec;
-        CoreSettings.DefaultLayerCompressionLevel = _instance.General.LayerCompressionLevel;
-        CoreSettings.AverageResin1000MlBottleCost = _instance.General.AverageResin1000MlBottleCost;
-        CoreSettings.PerLayerSettingsMode = _instance.FileFormats.PerLayerSettingsMode;
+        ApplyCoreSettings();
         try
         {
             XmlExtensions.SerializeToFile(_instance, FilePath, XmlExtensions.SettingsIndent);

@@ -60,6 +60,11 @@ public partial class SettingsWindow : GenericWindow
     public UserSettings SettingsBackup { get; }
 
     public string[] FileOpenDialogFilters { get; }
+
+    /// <summary>
+    /// Gets the default folder of the disk cache, shown when none is set.
+    /// </summary>
+    public string DefaultDiskCacheFolder => CoreSettings.DefaultDiskCacheFolder;
     public string[] ZoomRanges { get; }
     public VoxelPreviewQuality[] VoxelPreviewQualityOptions { get; } =
         Enum.GetValues<VoxelPreviewQuality>();

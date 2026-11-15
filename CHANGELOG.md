@@ -15,12 +15,16 @@
   - (Add) Adaptive memory management: the number of parallel tasks is limited to what fits in the available memory,
     and when it runs low caches are trimmed, the large object heap is compacted and the work is throttled to one task at
     a time. Operations keep running slower instead of freezing the system. Also active on the command line
+  - (Add) "Available RAM" hit action "Adaptive", the new default, never pauses or cancels the operation. The pause and
+    cancel actions now only run when the adaptive management fails to relieve the pressure for 15 seconds, and a
+    limit of 0 means an automatic reserve (8% of the memory RAM, from 1 to 3GB)
   - (Add) Maximum undo history (default 50 operations), the oldest operations are merged and the original layers are
     always kept
   - (Improvement) Layer contours are no longer cloned into the undo history, they are recalculated on demand
   - (Improvement) The layer cache used by mesh export is sized to the available memory instead of 5 layers per thread
   - (Improvement) Zip based formats with duplicated layers write each layer as soon as it is encoded, instead of
     holding the encoded images of every layer until the end
+  - (Improvement) "Free unused RAM" also moves the unused undo history to the disk cache
 - (Upgrade) AvaloniaUI from 12.1.4 to 12.1.6
 
 ## 25/10/2026 - v7.1.2

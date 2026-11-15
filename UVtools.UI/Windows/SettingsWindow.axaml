@@ -205,8 +205,8 @@
                       Grid.Row="0"
                       Grid.Column="0"
                       VerticalAlignment="Center"
-                      Text="Available RAM lower limit:"
-                      ToolTip.Tip="Sets a lower limiter for the available memory RAM the program is allowed to run operations. &#x0a;When meet the threshold, a stopping action will be queued to relief pressure and maintain the system stability. &#x0a;In cases where is unable to pause or cancel the operation, the program will be forced to close and trigger an exception to ensure the system stability. &#x0a;&#x0a;Note: This limiter will check the RAM every 2 seconds while operations are running, if you have set a very low limit there is a chance to consume more RAM in the time and cause system instability. &#x0a;System can also reserve some RAM to prevent depletion and start to use SWAP memory, doing such with a low limit and is possible that the limiter never trigger. &#x0a;&#x0a;0: Ignore the RAM limiter."
+                      Text="Available RAM to keep:"
+                      ToolTip.Tip="Sets the amount of memory RAM to keep available for the system and other programs. &#x0a;When the available memory gets close to this limit, the adaptive memory management releases caches, moves idle layers and the undo history to the disk cache, and reduces the number of parallel tasks, so operations keep running with less memory instead of stopping. &#x0a;The hit action only runs when that is not enough for a while. &#x0a;&#x0a;0: Automatic (8% of the memory RAM, from 1 to 3GB), the hit action never runs."
                     />
 
                     <NumericUpDown
@@ -218,7 +218,7 @@
                       Increment="0.5"
                       Maximum="100"
                       Minimum="0"
-                      ToolTip.Tip="Sets a lower limiter for the available memory RAM the program is allowed to run operations. &#x0a;When meet the threshold, a stopping action will be queued to relief pressure and maintain the system stability. &#x0a;In cases where is unable to pause or cancel the operation, the program will be forced to close and trigger an exception to ensure the system stability. &#x0a;&#x0a;Note: This limiter will check the RAM every 2 seconds while operations are running, if you have set a very low limit there is a chance to consume more RAM in the time and cause system instability. &#x0a;System can also reserve some RAM to prevent depletion and start to use SWAP memory, doing such with a low limit and is possible that the limiter never trigger. &#x0a;&#x0a;0: Ignore the RAM limiter."
+                      ToolTip.Tip="Sets the amount of memory RAM to keep available for the system and other programs. &#x0a;When the available memory gets close to this limit, the adaptive memory management releases caches, moves idle layers and the undo history to the disk cache, and reduces the number of parallel tasks, so operations keep running with less memory instead of stopping. &#x0a;The hit action only runs when that is not enough for a while. &#x0a;&#x0a;0: Automatic (8% of the memory RAM, from 1 to 3GB), the hit action never runs."
                       Value="{Binding Settings.General.AvailableRamLimit}"
                     />
 
@@ -228,7 +228,7 @@
                       HorizontalAlignment="Right"
                       VerticalAlignment="Center"
                       Text="Hit action:"
-                      ToolTip.Tip="Action to perform when the available RAM limiter triggers."
+                      ToolTip.Tip="Action to perform when the available RAM stays below the limit even after the adaptive memory management tried to relieve it. &#x0a;Adaptive: never stops the operation, it keeps running slower with less memory."
                     />
 
                     <ComboBox
@@ -438,6 +438,118 @@
                       Grid.ColumnSpan="15"
                       VerticalAlignment="Center"
                       Text="/ 1000ml bottle"
+                    />
+                  </Grid>
+                </StackPanel>
+              </suki:GroupBox>
+            </suki:GlassCard>
+
+            <suki:GlassCard Classes="CardNoTop">
+              <suki:GroupBox Header="Memory">
+                <StackPanel Spacing="10">
+                  <ToggleSwitch
+                    IsChecked="{Binding Settings.General.AdaptiveMemoryManagement}"
+                    OffContent="Adaptive memory management is disabled: operations use all the threads regardless of the memory"
+                    OnContent="Adaptive memory management: release caches, use the disk cache and reduce the parallelism when the memory is low"
+                    ToolTip.Tip="When enabled, the number of parallel tasks is limited to what fits in the available memory RAM, and when the memory runs low the caches are trimmed, idle layers and the undo history are moved to the disk cache and the tasks are throttled. &#x0a;Operations become slower under low memory, but keep running instead of freezing the system or stopping."
+                  />
+
+                  <ToggleSwitch
+                    IsChecked="{Binding Settings.General.EnableDiskCache}"
+                    OffContent="Disk cache is disabled: every layer and the undo history stay in memory RAM"
+                    OnContent="Disk cache: move idle layers and the undo history to the disk to release memory RAM"
+                    ToolTip.Tip="Layers are stored compressed. When enabled, the compressed layers that are not being used can be moved to a disk cache and are read back on demand. &#x0a;Prefer a SSD for the cache folder. The cache is deleted when the program closes."
+                  />
+
+                  <ToggleSwitch
+                    IsChecked="{Binding Settings.General.StoreUndoHistoryOnDisk}"
+                    IsEnabled="{Binding Settings.General.EnableDiskCache}"
+                    OffContent="Undo history moves to the disk cache only when the memory is low"
+                    OnContent="Undo history moves to the disk cache after each operation"
+                    ToolTip.Tip="When enabled, the layers of the undo history that are no longer used by the file are moved to the disk cache after each operation, otherwise only when the memory is low."
+                  />
+
+                  <Grid
+                    ColumnDefinitions="Auto,10,*,5,Auto,5,Auto"
+                    RowDefinitions="Auto,10,Auto,10,Auto"
+                  >
+                    <TextBlock
+                      Grid.Row="0"
+                      Grid.Column="0"
+                      VerticalAlignment="Center"
+                      Text="Disk cache folder:"
+                      ToolTip.Tip="The folder where the disk cache is created, empty to use the default. &#x0a;Changes apply on the next start."
+                    />
+                    <TextBox
+                      Grid.Row="0"
+                      Grid.Column="2"
+                      IsReadOnly="True"
+                      Text="{Binding Settings.General.DiskCacheFolder}"
+                      Watermark="{Binding DefaultDiskCacheFolder}"
+                    />
+                    <Button
+                      Grid.Row="0"
+                      Grid.Column="4"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      Content="{icon:MaterialIconExt Kind=Folder}"
+                      ToolTip.Tip="Browse..."
+                      Command="{Binding GeneralOpenFolderField}"
+                      CommandParameter="DiskCacheFolder"
+                    />
+                    <Button
+                      Grid.Row="0"
+                      Grid.Column="6"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      Content="{icon:MaterialIconExt Kind=Close}"
+                      ToolTip.Tip="Clear"
+                      Command="{Binding GeneralClearField}"
+                      CommandParameter="DiskCacheFolder"
+                    />
+
+                    <TextBlock
+                      Grid.Row="2"
+                      Grid.Column="0"
+                      VerticalAlignment="Center"
+                      Text="Disk cache maximum size:"
+                      ToolTip.Tip="The maximum size of the disk cache. &#x0a;0: Limited by the disk free space only, always leaving 2GB free."
+                    />
+                    <NumericUpDown
+                      Grid.Row="2"
+                      Grid.Column="2"
+                      Width="180"
+                      HorizontalAlignment="Left"
+                      VerticalAlignment="Center"
+                      suki:NumericUpDownExtensions.Unit="GB"
+                      FormatString="F0"
+                      Increment="1"
+                      Maximum="10000"
+                      Minimum="0"
+                      ToolTip.Tip="The maximum size of the disk cache. &#x0a;0: Limited by the disk free space only, always leaving 2GB free."
+                      Value="{Binding Settings.General.DiskCacheMaximumSize}"
+                    />
+
+                    <TextBlock
+                      Grid.Row="4"
+                      Grid.Column="0"
+                      VerticalAlignment="Center"
+                      Text="Maximum undo history:"
+                      ToolTip.Tip="The maximum number of operations kept in the undo history. The oldest operations are merged when exceeded, the original layers are always kept. &#x0a;0: Unlimited."
+                    />
+                    <NumericUpDown
+                      Grid.Row="4"
+                      Grid.Column="2"
+                      Width="180"
+                      HorizontalAlignment="Left"
+                      VerticalAlignment="Center"
+                      suki:NumericUpDownExtensions.Unit="ops"
+                      FormatString="F0"
+                      Increment="1"
+                      Maximum="10000"
+                      Minimum="0"
+                      ToolTip.Tip="The maximum number of operations kept in the undo history. The oldest operations are merged when exceeded, the original layers are always kept. &#x0a;0: Unlimited."
+                      Value="{Binding Settings.General.MaximumUndoHistory}"
                     />
                   </Grid>
                 </StackPanel>

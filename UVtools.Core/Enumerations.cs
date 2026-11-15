@@ -224,5 +224,8 @@ public enum RamLimitAction : byte
     Pause,
 
     [Description("Cancel the current operation")]
-    Cancel
+    Cancel,
+
+    [Description("Keep running with less memory (move data to the disk cache and reduce the parallelism)")]
+    Adaptive = 2
 }
