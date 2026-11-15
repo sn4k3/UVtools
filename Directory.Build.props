@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- Project -->
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <Platforms>AnyCPU;x64;ARM64</Platforms>
     <Nullable>enable</Nullable>
 
@@ -43,7 +43,7 @@
     <UseRIDGraph>true</UseRIDGraph>
 
     <!-- Versions -->
-    <UVtoolsVersion>7.1.2</UVtoolsVersion>
+    <UVtoolsVersion>7.2.0</UVtoolsVersion>
     <AvaloniaVersion>12.1.6</AvaloniaVersion>
     <EmguCvVersion>5.0.0.6584</EmguCvVersion>
 

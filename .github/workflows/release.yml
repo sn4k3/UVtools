@@ -269,6 +269,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
 
     steps:
       - name: Checkout release tag
@@ -297,10 +298,16 @@ jobs:
           dotnet pack UVtools.Core --configuration Release --no-restore --output packages
           dotnet pack UVtools.AvaloniaControls --configuration Release --no-restore --output packages
 
+      - name: Log in to NuGet.org with Trusted Publishing
+        uses: NuGet/login@v1
+        id: nuget_login
+        with:
+          user: ${{ vars.NUGET_USER || 'sn4k3' }}
+
       - name: Publish to NuGet.org
         env:
-          NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
-        run: dotnet nuget push "packages/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key "$NUGET_TOKEN" --skip-duplicate
+          NUGET_API_KEY: ${{ steps.nuget_login.outputs.NUGET_API_KEY }}
+        run: dotnet nuget push "packages/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --skip-duplicate
 
       - name: Publish to GitHub Packages
         env:
