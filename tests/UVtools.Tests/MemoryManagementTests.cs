@@ -196,6 +196,18 @@ public sealed class MemoryManagementTests : IDisposable
     }
 
     [Fact]
+    public void ClearingTheFile_ReleasesTheDiskCacheSpace()
+    {
+        var file = CreateFile(3, CreateNoise);
+        foreach (var layer in file) Assert.True(layer.TryMoveToDisk(_store) > 0);
+        Assert.True(_store.BytesOnDisk > 0);
+
+        file.Clear();
+
+        Assert.Equal(0, _store.BytesOnDisk);
+    }
+
+    [Fact]
     public void DeleteOrphanSessions_DeletesOnlyUnlockedFolders()
     {
         var cacheFolder = Path.Combine(_folder, "orphans");

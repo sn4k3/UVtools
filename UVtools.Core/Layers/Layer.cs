@@ -1168,6 +1168,19 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     }
 
     /// <summary>
+    /// Releases the copy of the image in the disk cache. Call it only when the layer is being discarded: an image that
+    /// is only in the disk cache is lost.
+    /// </summary>
+    internal void ReleaseDiskCopy()
+    {
+        lock (_diskLock)
+        {
+            _diskBlob?.Release();
+            _diskBlob = null;
+        }
+    }
+
+    /// <summary>
     /// Compares the images of two layers without loading them from the disk cache.
     /// </summary>
     private bool ImageEquals(Layer other)

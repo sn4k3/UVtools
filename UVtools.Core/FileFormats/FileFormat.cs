@@ -4743,6 +4743,8 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
     public virtual void Clear()
     {
         FileFullPath = null;
+        // Frees the disk cache space now, instead of when the garbage collector finalizes the layers
+        foreach (var layer in _layers) layer?.ReleaseDiskCopy();
         _layers = [];
         GCode?.Clear();
         ClearThumbnails();
