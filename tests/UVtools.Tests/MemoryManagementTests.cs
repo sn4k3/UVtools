@@ -68,7 +68,16 @@ public sealed class MemoryManagementTests : IDisposable
     {
         var mat = new Mat(slicerFile.Resolution, DepthType.Cv8U, 1);
         var data = new byte[slicerFile.Resolution.Width * slicerFile.Resolution.Height];
-        new Random(seed).NextBytes(data);
+        // Deterministic xorshift, the test needs repeatable incompressible pixels and not randomness
+        var state = (uint)seed * 2654435761u + 1;
+        for (var i = 0; i < data.Length; i++)
+        {
+            state ^= state << 13;
+            state ^= state >> 17;
+            state ^= state << 5;
+            data[i] = (byte)(state >> 8);
+        }
+
         mat.SetTo(data);
         return mat;
     }
