@@ -1072,7 +1072,7 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     /// Gets the compressed array currently held in memory, without loading it from the disk cache.
     /// Used to find buffers shared between layers, must be treated as read-only.
     /// </summary>
-    internal byte[] CompressedArrayInMemory => CMatBuffer.GetBytes(_compressedMat);
+    internal byte[] CompressedArrayInMemory => _compressedMat.CompressedBytes;
 
     /// <summary>
     /// Gets the compressed image for use, loading it from the disk cache when needed.
@@ -1094,7 +1094,7 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
         if (!_isOnDisk) return _compressedMat;
         var blob = _diskBlob!.Blob;
         var bytes = blob.Store.Read(blob);
-        CMatBuffer.Attach(_compressedMat, bytes);
+        _compressedMat.AttachCompressedBytes(bytes);
         _isOnDisk = false;
         return _compressedMat;
     }
@@ -1141,13 +1141,12 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     /// <returns>The bytes released from memory by this layer, 0 when not moved.</returns>
     public long TryMoveToDisk(LayerBlobStore store, long minimumIdleMilliseconds = 0)
     {
-        if (!CMatBuffer.IsSupported) return 0;
         lock (_diskLock)
         {
             if (_isOnDisk) return 0;
             if (Environment.TickCount64 - _lastAccessTicks < minimumIdleMilliseconds) return 0;
 
-            var bytes = CMatBuffer.GetBytes(_compressedMat);
+            var bytes = _compressedMat.CompressedBytes;
             if (bytes.Length < MinimumDiskCacheBytes) return 0;
             var hash = _compressedMat.Hash;
 
@@ -1160,7 +1159,7 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
 
             _diskBlob ??= store.Write(bytes, hash);
             if (_diskBlob is null) return 0;
-            if (!CMatBuffer.TryDetach(_compressedMat, bytes)) return 0;
+            if (!_compressedMat.TryDetachCompressedBytes(bytes)) return 0;
 
             _isOnDisk = true;
             return bytes.Length;
@@ -1181,37 +1180,10 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     }
 
     /// <summary>
-    /// Compares the images of two layers without loading them from the disk cache.
+    /// Compares the images of two layers without loading them from the disk cache, the hash of an image in the disk
+    /// cache is always cached.
     /// </summary>
-    private bool ImageEquals(Layer other)
-    {
-        bool isOnDisk, otherIsOnDisk;
-        LayerBlob? blob, otherBlob;
-        lock (_diskLock)
-        {
-            isOnDisk = _isOnDisk;
-            blob = _diskBlob?.Blob;
-        }
-
-        lock (other._diskLock)
-        {
-            otherIsOnDisk = other._isOnDisk;
-            otherBlob = other._diskBlob?.Blob;
-        }
-
-        if (!isOnDisk && !otherIsOnDisk) return _compressedMat.Equals(other._compressedMat);
-        if (blob is not null && ReferenceEquals(blob, otherBlob)) return true;
-
-        // The hash of an image in the disk cache is always cached
-        var length = isOnDisk ? blob!.Length : _compressedMat.CompressedLength;
-        var otherLength = otherIsOnDisk ? otherBlob!.Length : other._compressedMat.CompressedLength;
-        return length == otherLength
-               && _compressedMat.IsInitialized == other._compressedMat.IsInitialized
-               && _compressedMat.IsCompressed == other._compressedMat.IsCompressed
-               && _compressedMat.Size == other._compressedMat.Size
-               && _compressedMat.Roi == other._compressedMat.Roi
-               && _compressedMat.Hash == other._compressedMat.Hash;
-    }
+    private bool ImageEquals(Layer other) => _compressedMat.Equals(other._compressedMat);
 
     #endregion
 
@@ -2191,7 +2163,7 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
         // The compressed buffer is shared, it is never mutated in place
         var compressedMat = AccessCompressedMat();
         layer.BeginImageReplace();
-        CMatBuffer.CopyTo(compressedMat, layer._compressedMat);
+        compressedMat.CopyTo(layer._compressedMat, true);
         // Disposes the contours of the replaced image, they are recalculated on demand
         layer.InvalidateImage();
 
@@ -2229,13 +2201,13 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
         lock (_diskLock)
         {
             // The compressed buffer is shared instead of copied, it is never mutated in place, a new one is set instead
-            layer._compressedMat = CMatBuffer.Clone(_compressedMat);
+            layer._compressedMat = _compressedMat.Clone(true);
             layer._diskBlob = _diskBlob?.Share();
             layer._isOnDisk = _isOnDisk && layer._diskBlob is not null;
             if (_isOnDisk && !layer._isOnDisk)
             {
                 // The disk copy is gone, which should not happen while we hold it, so read it now
-                layer._compressedMat = CMatBuffer.Clone(LoadFromDiskUnlocked());
+                layer._compressedMat = LoadFromDiskUnlocked().Clone(true);
             }
         }
 

@@ -6083,52 +6083,6 @@
             the returned stream is either unreadable or unseekable, a NotSupportedException is thrown.
             </summary>
         </member>
-        <member name="T:UVtools.Core.Layers.CMatBuffer">
-            <summary>
-            Buffer level operations over <see cref="T:EmguExtensions.CMat"/> that its public API does not expose yet:
-            sharing the compressed buffer between clones and detaching/attaching it to move the bytes to the disk cache.
-            </summary>
-            <remarks>
-            <see cref="T:EmguExtensions.CMat"/> never mutates its compressed array in place, it always replaces it, so clones can share it safely.
-            The private state is reached with <see cref="T:System.Runtime.CompilerServices.UnsafeAccessorAttribute"/>, when the fields are not found (a different
-            EmguExtensions version) <see cref="P:UVtools.Core.Layers.CMatBuffer.IsSupported"/> is false and callers fall back to the public API (deep copies, no
-            disk cache). Remove this class when EmguExtensions exposes equivalent members.
-            </remarks>
-        </member>
-        <member name="P:UVtools.Core.Layers.CMatBuffer.IsSupported">
-            <summary>
-            Gets if the running EmguExtensions version has the fields required by this class.
-            </summary>
-        </member>
-        <member name="M:UVtools.Core.Layers.CMatBuffer.Clone(EmguExtensions.CMat)">
-            <summary>
-            Creates a clone of <paramref name="source"/> that shares its compressed array instead of copying it.
-            </summary>
-        </member>
-        <member name="M:UVtools.Core.Layers.CMatBuffer.CopyTo(EmguExtensions.CMat,EmguExtensions.CMat)">
-            <summary>
-            Copies <paramref name="source"/> to <paramref name="destination"/> sharing the compressed array instead of copying it.
-            </summary>
-        </member>
-        <member name="M:UVtools.Core.Layers.CMatBuffer.GetBytes(EmguExtensions.CMat)">
-            <summary>
-            Gets the compressed array of <paramref name="mat"/> without copying it, the array must be treated as read-only.
-            </summary>
-        </member>
-        <member name="M:UVtools.Core.Layers.CMatBuffer.TryDetach(EmguExtensions.CMat,System.Byte[])">
-            <summary>
-            Detaches the compressed array from <paramref name="mat"/>, leaving an empty array in its place while keeping every
-            other state (size, ROI, hash, compressors). The hash is computed first so equality keeps working while detached.
-            </summary>
-            <param name="mat">The mat to detach the array from.</param>
-            <param name="expected">The array that is expected to be attached, the detach is aborted when it was replaced meanwhile.</param>
-            <returns>True when detached.</returns>
-        </member>
-        <member name="M:UVtools.Core.Layers.CMatBuffer.Attach(EmguExtensions.CMat,System.Byte[])">
-            <summary>
-            Attaches back a compressed array previously detached with <see cref="M:UVtools.Core.Layers.CMatBuffer.TryDetach(EmguExtensions.CMat,System.Byte[])"/>, without changing any other state.
-            </summary>
-        </member>
         <member name="P:UVtools.Core.Layers.Issue.Parent">
             <summary>
             Gets the issue type associated
@@ -6643,9 +6597,16 @@
             <param name="minimumIdleMilliseconds">The minimum time since the last access.</param>
             <returns>The bytes released from memory by this layer, 0 when not moved.</returns>
         </member>
+        <member name="M:UVtools.Core.Layers.Layer.ReleaseDiskCopy">
+            <summary>
+            Releases the copy of the image in the disk cache. Call it only when the layer is being discarded: an image that
+            is only in the disk cache is lost.
+            </summary>
+        </member>
         <member name="M:UVtools.Core.Layers.Layer.ImageEquals(UVtools.Core.Layers.Layer)">
             <summary>
-            Compares the images of two layers without loading them from the disk cache.
+            Compares the images of two layers without loading them from the disk cache, the hash of an image in the disk
+            cache is always cached.
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.Layer.CompressedMat">
