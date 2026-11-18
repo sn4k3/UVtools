@@ -76,6 +76,7 @@ public static class MemoryGovernor
 
     private const int RelieveCooldownMilliseconds = 5000;
     private const int CompactCooldownMilliseconds = 15000;
+    private const long MinimumHeapGrowthBytes = 16L * 1024 * 1024;
 
     /// <summary>
     /// The estimated number of full resolution images each parallel worker holds at a time.
@@ -107,6 +108,8 @@ public static class MemoryGovernor
     private static long _lastRelieveTicks = long.MinValue;
     private static int _lastRelieveLevel;
     private static long _lastCompactTicks = long.MinValue;
+    private static long _lastCompactHeapBytes;
+    private static long _lastCompactFragmentedBytes;
     private static long _criticalSinceTicks;
     private static int _isRelieving;
     private static long _relievedBytes;
@@ -302,10 +305,7 @@ public static class MemoryGovernor
         Interlocked.Exchange(ref _availableBytes, available);
 
         var reserve = ReserveBytes;
-        var level = available < reserve ? MemoryPressureLevel.Critical
-            : available < reserve * 3 / 2 ? MemoryPressureLevel.High
-            : available < reserve * 2 ? MemoryPressureLevel.Elevated
-            : MemoryPressureLevel.Normal;
+        var level = CalculatePressureLevel(available, reserve, Level);
 
         if (level == MemoryPressureLevel.Critical)
         {
@@ -325,6 +325,26 @@ public static class MemoryGovernor
 
         return level;
     }
+
+    private static MemoryPressureLevel CalculatePressureLevel(long available, long reserve, MemoryPressureLevel previous)
+    {
+        var level = available < reserve ? MemoryPressureLevel.Critical
+            : available < reserve * 3 / 2 ? MemoryPressureLevel.High
+            : available < reserve * 2 ? MemoryPressureLevel.Elevated
+            : MemoryPressureLevel.Normal;
+        if (level >= previous) return level;
+        var recoveryThreshold = previous switch
+        {
+            MemoryPressureLevel.Critical => reserve,
+            MemoryPressureLevel.High => reserve * 3 / 2,
+            _ => reserve * 2
+        };
+        var margin = Math.Clamp(reserve / 10, MinimumHeapGrowthBytes, 128L * 1024 * 1024);
+        return available - recoveryThreshold < margin ? previous : level;
+    }
+
+    /// <summary>Refreshes the memory sample when it is too old for cache or worker sizing.</summary>
+    internal static void RefreshIfStale() => SampleIfStale();
 
     private static void SampleIfStale()
     {
@@ -385,13 +405,18 @@ public static class MemoryGovernor
 
             var now = Environment.TickCount64;
             var lastCompact = Interlocked.Read(ref _lastCompactTicks);
+            var heapBytes = GC.GetTotalMemory(false);
+            var fragmentedBytes = GC.GetGCMemoryInfo().FragmentedBytes;
             if (level >= MemoryPressureLevel.High &&
-                (lastCompact == long.MinValue || now - lastCompact >= CompactCooldownMilliseconds))
+                (lastCompact == long.MinValue || now - lastCompact >= CompactCooldownMilliseconds) &&
+                ShouldCompact(released, heapBytes, fragmentedBytes))
             {
                 // The compressed layers live in the large object heap, which is not compacted by default
                 Interlocked.Exchange(ref _lastCompactTicks, now);
                 GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
                 GC.Collect(2, GCCollectionMode.Forced, true, true);
+                Interlocked.Exchange(ref _lastCompactHeapBytes, GC.GetTotalMemory(false));
+                Interlocked.Exchange(ref _lastCompactFragmentedBytes, GC.GetGCMemoryInfo().FragmentedBytes);
             }
             else if (released > 0)
             {
@@ -405,6 +430,14 @@ public static class MemoryGovernor
         {
             Volatile.Write(ref _isRelieving, 0);
         }
+    }
+
+    private static bool ShouldCompact(long released, long heapBytes, long fragmentedBytes)
+    {
+        var previousHeap = Interlocked.Read(ref _lastCompactHeapBytes);
+        return Interlocked.Read(ref _lastCompactTicks) == long.MinValue || released > 0 ||
+               heapBytes - previousHeap >= Math.Max(MinimumHeapGrowthBytes, previousHeap / 10) ||
+               fragmentedBytes - Interlocked.Read(ref _lastCompactFragmentedBytes) >= MinimumHeapGrowthBytes;
     }
 
     private static List<IMemoryTrimmable> GetTrimmables()
@@ -507,9 +540,8 @@ public static class MemoryGovernor
     /// </summary>
     public static string GetStatusString()
     {
-        var store = LayerBlobStore.SessionIfCreated;
-        var disk = store is null ? string.Empty : $", disk cache: {store.BytesOnDisk / 1048576.0:F0} MB";
-        return $"{Level}, available: {AvailablePhysicalBytes / (double)GigaByte:F2} GB / {TotalPhysicalBytes / (double)GigaByte:F2} GB, reserve: {ReserveBytes / (double)GigaByte:F2} GB{disk}";
+        var disk = LayerBlobStore.GetSessionStatusString();
+        return $"{Level}, available: {AvailablePhysicalBytes / (double)GigaByte:F2} GB / {TotalPhysicalBytes / (double)GigaByte:F2} GB, reserve: {ReserveBytes / (double)GigaByte:F2} GB, {disk}";
     }
 
     #endregion

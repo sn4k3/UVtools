@@ -6612,6 +6612,8 @@
         <member name="P:UVtools.Core.Layers.Layer.CompressedMat">
             <summary>
             Gets the compressed image, loading it back from the disk cache when needed.
+            Direct access keeps this CMat resident because its caller's lifetime is unknown.
+            Prefer <see cref="P:UVtools.Core.Layers.Layer.LayerMat"/> or <see cref="M:UVtools.Core.Layers.Layer.GetRoiMat(System.Drawing.Rectangle)"/> for eviction-aware reads.
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.Layer.HaveImage">
@@ -7323,6 +7325,11 @@
             Gets the description of this operation
             </summary>
         </member>
+        <member name="P:UVtools.Core.Managers.ClipboardItem.CanRerun">
+            <summary>
+            False when compaction removed the exact predecessor required to rerun this operation.
+            </summary>
+        </member>
         <member name="M:UVtools.Core.Managers.ClipboardItem.#ctor(UVtools.Core.Managers.ClipboardItem,System.Boolean)">
             <summary>
             Creates an empty clip with the same definitions of <paramref name="source"/>.
@@ -7404,6 +7411,11 @@
             <param name="includeShared">True to also move the images still in use by the file, they are written once and
             only released when the file moves them too.</param>
             <returns>The compressed bytes moved to the disk.</returns>
+        </member>
+        <member name="M:UVtools.Core.Managers.ClipboardManager.MoveHistoryToDisk(UVtools.Core.Managers.LayerBlobStore,System.Boolean)">
+            <summary>
+            Moves the undo history to the specified store, or does nothing when no store is available.
+            </summary>
         </member>
         <member name="M:UVtools.Core.Managers.ClipboardManager.QueueMoveHistoryToDisk">
             <summary>
@@ -7510,6 +7522,11 @@
         <member name="M:UVtools.Core.Managers.KernelCacheManager.Dispose">
             <inheritdoc />
         </member>
+        <member name="T:UVtools.Core.Managers.LayerCacheWriteStatus">
+            <summary>
+            The outcome of the most recent disk-cache write attempt.
+            </summary>
+        </member>
         <member name="T:UVtools.Core.Managers.LayerBlobStore">
             <summary>
             Disk cache for compressed layer images. Layers that are not being used can move their compressed bytes here to free
@@ -7543,6 +7560,11 @@
             Gets the store of this process only when it was already created, without creating it.
             </summary>
         </member>
+        <member name="M:UVtools.Core.Managers.LayerBlobStore.GetSessionStatusString">
+            <summary>
+            Describes the session without creating a cache or performing disk I/O.
+            </summary>
+        </member>
         <member name="M:UVtools.Core.Managers.LayerBlobStore.DeleteOrphanSessions(System.String)">
             <summary>
             Deletes the session folders of processes that are not running anymore.
@@ -7564,6 +7586,15 @@
             <summary>
             Gets the total length of the pack files on the disk.
             </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.LayerBlobStore.LastWriteStatus">
+            <summary>Gets the most recent write outcome.</summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.LayerBlobStore.LastError">
+            <summary>Gets the error of the most recent failed write, if any.</summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.LayerBlobStore.GetStatusString">
+            <summary>Describes physical usage, live data and the most recent write outcome.</summary>
         </member>
         <member name="P:UVtools.Core.Managers.LayerBlobStore.MaximumBytes">
             <summary>
@@ -7621,8 +7652,11 @@
         </member>
         <member name="P:UVtools.Core.Managers.MatCacheManager.CacheCount">
             <summary>
-            Gets or sets the cache count of items to keep in memory
+            Gets or sets the maximum number of items to prefetch. Adaptive management may use fewer.
             </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.MatCacheManager.EffectiveCacheCount">
+            <summary>Gets the prefetch count that currently fits in memory, including explicit cache limits.</summary>
         </member>
         <member name="P:UVtools.Core.Managers.MatCacheManager.ElementsPerCache">
             <summary>
@@ -7692,7 +7726,7 @@
         <member name="M:UVtools.Core.Managers.MatCacheManager.GetDefaultCacheCount(UVtools.Core.FileFormats.FileFormat,System.Byte)">
             <summary>
             Gets the default number of layers to cache: five per processor, limited to the half of the memory available
-            above <see cref="P:UVtools.Core.Managers.MemoryGovernor.ReserveBytes"/>, and at least two.
+            above <see cref="P:UVtools.Core.Managers.MemoryGovernor.ReserveBytes"/>, and at least one under pressure.
             </summary>
             <param name="slicerFile">The file to cache layers from.</param>
             <param name="elementsPerCache">The number of mats per cached layer.</param>
@@ -7889,14 +7923,24 @@
         <member name="P:UVtools.Core.Managers.MemoryGovernor.ReserveBytes">
             <summary>
             Gets the memory to keep available for the system and other programs.
-            <see cref="P:UVtools.Core.CoreSettings.MemoryReserveBytes"/> when set (up to the physical memory), otherwise 8% of the physical
-            memory clamped to 1-3 GB.
+            <see cref="P:UVtools.Core.CoreSettings.MemoryReserveBytes"/> when set, otherwise 8% of physical memory clamped to 1-3 GB.
+            Both modes leave at least 1 GB (or a quarter of smaller systems) for work.
             </summary>
         </member>
         <member name="P:UVtools.Core.Managers.MemoryGovernor.LayerPixelCount">
             <summary>
-            Gets or sets the pixel count of a layer of the file being processed, used to estimate the memory of each
-            parallel worker. 0 disables the estimation.
+            Gets or sets the layer pixel count for the current execution context, used to estimate worker memory.
+            0 disables the estimation. Prefer <see cref="M:UVtools.Core.Managers.MemoryGovernor.BeginLayerMemoryScope(System.Int64)"/> for operations so the previous value is restored.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.MemoryGovernor.CalculateReserveBytes(System.Int64,System.Int64)">
+            <summary>
+            Calculates the effective reserve, leaving at least 1 GB (or a quarter of smaller systems) for work.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.MemoryGovernor.BeginLayerMemoryScope(System.Int64)">
+            <summary>
+            Scopes worker sizing to this operation and the execution contexts dispatched from it.
             </summary>
         </member>
         <member name="P:UVtools.Core.Managers.MemoryGovernor.CriticalDuration">
@@ -7944,6 +7988,9 @@
             Samples the memory now and updates <see cref="P:UVtools.Core.Managers.MemoryGovernor.Level"/>.
             </summary>
             <returns>The current level.</returns>
+        </member>
+        <member name="M:UVtools.Core.Managers.MemoryGovernor.RefreshIfStale">
+            <summary>Refreshes the memory sample when it is too old for cache or worker sizing.</summary>
         </member>
         <member name="M:UVtools.Core.Managers.MemoryGovernor.Relieve(UVtools.Core.Managers.MemoryPressureLevel)">
             <summary>

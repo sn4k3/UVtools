@@ -19,6 +19,18 @@ using Microsoft.Win32.SafeHandles;
 namespace UVtools.Core.Managers;
 
 /// <summary>
+/// The outcome of the most recent disk-cache write attempt.
+/// </summary>
+public enum LayerCacheWriteStatus
+{
+    Ready,
+    SizeLimit,
+    InsufficientDiskSpace,
+    IoError,
+    Disposed
+}
+
+/// <summary>
 /// Disk cache for compressed layer images. Layers that are not being used can move their compressed bytes here to free
 /// memory RAM, and read them back on demand.
 /// </summary>
@@ -53,6 +65,7 @@ public sealed class LayerBlobStore : IDisposable
     private static readonly Lock SessionLock = new();
     private static LayerBlobStore? _session;
     private static bool _sessionFailed;
+    private static string? _sessionError;
 
     /// <summary>
     /// Gets the store of this process, creating it on first use.
@@ -78,6 +91,7 @@ public sealed class LayerBlobStore : IDisposable
                 catch (Exception e)
                 {
                     Debug.WriteLine($"{nameof(LayerBlobStore)}: unable to create the disk cache: {e}");
+                    Volatile.Write(ref _sessionError, e.Message);
                     _sessionFailed = true;
                 }
 
@@ -90,6 +104,18 @@ public sealed class LayerBlobStore : IDisposable
     /// Gets the store of this process only when it was already created, without creating it.
     /// </summary>
     public static LayerBlobStore? SessionIfCreated => Volatile.Read(ref _session);
+
+    /// <summary>
+    /// Describes the session without creating a cache or performing disk I/O.
+    /// </summary>
+    public static string GetSessionStatusString()
+    {
+        if (!CoreSettings.EnableDiskCache) return "Disk cache disabled";
+        var session = SessionIfCreated;
+        if (session is not null) return session.GetStatusString();
+        var error = Volatile.Read(ref _sessionError);
+        return error is null ? "Disk cache not yet used" : $"Disk cache unavailable: {error}";
+    }
 
     /// <summary>
     /// Deletes the session folders of processes that are not running anymore.
@@ -182,6 +208,8 @@ public sealed class LayerBlobStore : IDisposable
     private long _bytesOnDisk;
     private long _filesLength;
     private bool _isDisposed;
+    private int _lastWriteStatus;
+    private string? _lastError;
 
     #endregion
 
@@ -201,6 +229,36 @@ public sealed class LayerBlobStore : IDisposable
     /// Gets the total length of the pack files on the disk.
     /// </summary>
     public long FilesLength => Interlocked.Read(ref _filesLength);
+
+    /// <summary>Gets the most recent write outcome.</summary>
+    public LayerCacheWriteStatus LastWriteStatus => (LayerCacheWriteStatus)Volatile.Read(ref _lastWriteStatus);
+
+    /// <summary>Gets the error of the most recent failed write, if any.</summary>
+    public string? LastError => Volatile.Read(ref _lastError);
+
+    /// <summary>Describes physical usage, live data and the most recent write outcome.</summary>
+    public string GetStatusString()
+    {
+        var status = LastWriteStatus switch
+        {
+            LayerCacheWriteStatus.SizeLimit => "size limit reached",
+            LayerCacheWriteStatus.InsufficientDiskSpace => "insufficient free disk space",
+            LayerCacheWriteStatus.IoError => "I/O error",
+            LayerCacheWriteStatus.Disposed => "closed",
+            _ => "ready"
+        };
+        var maximum = MaximumBytes;
+        var limit = maximum > 0 ? $", limit: {maximum / 1048576.0:F0} MB" : string.Empty;
+        var error = LastError;
+        return $"Disk cache {status}, physical: {FilesLength / 1048576.0:F0} MB, live: {BytesOnDisk / 1048576.0:F0} MB{limit}" +
+               (error is null ? string.Empty : $" ({error})");
+    }
+
+    private void SetWriteStatus(LayerCacheWriteStatus status, string? error = null)
+    {
+        Volatile.Write(ref _lastError, error);
+        Volatile.Write(ref _lastWriteStatus, (int)status);
+    }
 
     /// <summary>
     /// Gets or sets the maximum bytes the store can hold, 0 for automatic (limited by the disk free space only).
@@ -275,9 +333,17 @@ public sealed class LayerBlobStore : IDisposable
                 return new LayerBlobLease(existing);
             }
             var maximumBytes = MaximumBytes;
-            if (maximumBytes > 0 && bytes.Length > maximumBytes - _filesLength) return null;
+            if (maximumBytes > 0 && bytes.Length > maximumBytes - _filesLength)
+            {
+                SetWriteStatus(LayerCacheWriteStatus.SizeLimit);
+                return null;
+            }
             // Writes are serialized: no other append in this store can reserve the same free space.
-            if (!HasDiskSpaceFor(bytes.Length)) return null;
+            if (!HasDiskSpaceFor(bytes.Length))
+            {
+                SetWriteStatus(LayerCacheWriteStatus.InsufficientDiskSpace);
+                return null;
+            }
 
             if (_currentPack is null || _currentPack.Length + bytes.Length > _packSize)
             {
@@ -290,6 +356,7 @@ public sealed class LayerBlobStore : IDisposable
                 catch (Exception e) when (e is IOException or UnauthorizedAccessException)
                 {
                     Debug.WriteLine($"{nameof(LayerBlobStore)}: unable to create a pack: {e.Message}");
+                    SetWriteStatus(LayerCacheWriteStatus.IoError, e.Message);
                     return null;
                 }
             }
@@ -308,12 +375,14 @@ public sealed class LayerBlobStore : IDisposable
             catch (Exception e)
             {
                 Debug.WriteLine($"{nameof(LayerBlobStore)}: write failed: {e.Message}");
+                SetWriteStatus(LayerCacheWriteStatus.IoError, e.Message);
                 blob.ReleaseReference();
                 return null;
             }
 
             blob.SetLoaded(bytes);
             _blobsByArray.AddOrUpdate(bytes, blob);
+            SetWriteStatus(LayerCacheWriteStatus.Ready);
             return new LayerBlobLease(blob);
         }
     }
@@ -326,18 +395,24 @@ public sealed class LayerBlobStore : IDisposable
         var bytes = blob.TryGetLoaded();
         if (bytes is not null) return bytes;
 
-        bytes = GC.AllocateUninitializedArray<byte>(blob.Length);
-        var read = 0;
-        while (read < bytes.Length)
+        lock (blob.LoadLock)
         {
-            var count = RandomAccess.Read(blob.Pack.Handle, bytes.AsSpan(read), blob.Offset + read);
-            if (count <= 0) throw new EndOfStreamException($"Disk cache blob truncated at {blob.Pack.Path}");
-            read += count;
-        }
+            // Different layer clones can reach the same cold blob concurrently.
+            bytes = blob.TryGetLoaded();
+            if (bytes is not null) return bytes;
+            bytes = GC.AllocateUninitializedArray<byte>(blob.Length);
+            var read = 0;
+            while (read < bytes.Length)
+            {
+                var count = RandomAccess.Read(blob.Pack.Handle, bytes.AsSpan(read), blob.Offset + read);
+                if (count <= 0) throw new EndOfStreamException($"Disk cache blob truncated at {blob.Pack.Path}");
+                read += count;
+            }
 
-        blob.SetLoaded(bytes);
-        _blobsByArray.AddOrUpdate(bytes, blob);
-        return bytes;
+            blob.SetLoaded(bytes);
+            _blobsByArray.AddOrUpdate(bytes, blob);
+            return bytes;
+        }
     }
 
     internal void OnBlobReleased(LayerBlob blob)
@@ -395,6 +470,7 @@ public sealed class LayerBlobStore : IDisposable
         {
             if (_isDisposed) return;
             _isDisposed = true;
+            SetWriteStatus(LayerCacheWriteStatus.Disposed);
             foreach (var pack in _packs) pack.Dispose();
             _packs.Clear();
             _currentPack = null;
@@ -442,6 +518,7 @@ public sealed class LayerBlobStore : IDisposable
 /// </summary>
 internal sealed class LayerBlob
 {
+    public readonly Lock LoadLock = new();
     private readonly LayerBlobStore _store;
     private readonly WeakReference<byte[]?> _loaded = new(null);
     private int _references = 1;

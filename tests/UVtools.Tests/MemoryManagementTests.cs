@@ -128,6 +128,154 @@ public sealed class MemoryManagementTests : IDisposable
         ?? throw new MissingFieldException(name);
 
     [Fact]
+    public async Task ConcurrentColdReads_ShareOneBufferAndPreserveItsContents()
+    {
+        var expected = new byte[4 * 1024 * 1024];
+        new Random(7).NextBytes(expected);
+        var lease = WriteBlob(_store, expected);
+        Assert.NotNull(lease);
+        try
+        {
+            var blob = lease.GetType().GetProperty("Blob")?.GetValue(lease) ?? throw new MissingMemberException();
+            var loaded = blob.GetType().GetField("_loaded", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.GetValue(blob) ?? throw new MissingFieldException();
+            Assert.IsType<WeakReference<byte[]?>>(loaded).SetTarget(null);
+            var read = typeof(LayerBlobStore).GetMethod("Read", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?? throw new MissingMethodException();
+            using var ready = new CountdownEvent(8);
+            using var start = new ManualResetEventSlim();
+            var readers = new Task<byte[]>[8];
+            for (var i = 0; i < readers.Length; i++)
+            {
+                readers[i] = Task.Factory.StartNew(() =>
+                {
+                    ready.Signal();
+                    start.Wait();
+                    return Assert.IsType<byte[]>(read.Invoke(_store, [blob]));
+                }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            }
+            ready.Wait();
+            start.Set();
+            var results = await Task.WhenAll(readers);
+            foreach (var result in results)
+            {
+                Assert.Same(results[0], result);
+                Assert.True(expected.AsSpan().SequenceEqual(result));
+            }
+        }
+        finally
+        {
+            ReleaseBlob(lease);
+        }
+    }
+
+    [Fact]
+    public void DecodedCache_AdaptsExplicitPrefetchAndKeepsTheRequiredPreviousLayer()
+    {
+        using var file = CreateFile(8, CreateNoise);
+        using var cache = new MatCacheManager(file, cacheCount: 4) { AutoDispose = true, AutoDisposeKeepLast = 1 };
+        var fields = new[] { "_level", "_totalBytes", "_availableBytes", "_lastSampleTicks" };
+        var previous = new object?[fields.Length];
+        for (var i = 0; i < fields.Length; i++) previous[i] = GovernorField(fields[i]).GetValue(null);
+        var reserve = CoreSettings.MemoryReserveBytes;
+        var adaptive = CoreSettings.AdaptiveMemoryManagement;
+        const long gb = 1024L * 1024 * 1024;
+        void SetPressure(MemoryPressureLevel level)
+        {
+            GovernorField("_level").SetValue(null, (int)level);
+            GovernorField("_totalBytes").SetValue(null, 8 * gb);
+            GovernorField("_availableBytes").SetValue(null, level == MemoryPressureLevel.Critical ? gb / 2 : 4 * gb);
+            GovernorField("_lastSampleTicks").SetValue(null, Environment.TickCount64);
+        }
+        try
+        {
+            CoreSettings.MemoryReserveBytes = gb;
+            CoreSettings.AdaptiveMemoryManagement = true;
+            var loaded = 0;
+            cache.AfterCacheAction = _ => Interlocked.Increment(ref loaded);
+            SetPressure(MemoryPressureLevel.Normal);
+            Assert.Equal(4, cache.EffectiveCacheCount);
+            cache.Get(0);
+            Assert.Equal(4, loaded);
+            var previousMat = cache.Get(3)[0];
+
+            SetPressure(MemoryPressureLevel.High);
+            Assert.Equal(2, cache.EffectiveCacheCount);
+            SetPressure(MemoryPressureLevel.Critical);
+            Assert.Equal(1, cache.EffectiveCacheCount);
+            cache.Get(4);
+            Assert.Equal(5, loaded);
+            using var expected = CreateNoise(file, 3);
+            using var difference = new Mat();
+            CvInvoke.AbsDiff(expected, previousMat, difference);
+            Assert.Equal(0, CvInvoke.CountNonZero(difference));
+            Assert.Equal(4, cache.CacheCount);
+
+            SetPressure(MemoryPressureLevel.Normal);
+            Assert.Equal(4, cache.EffectiveCacheCount);
+            cache.Get(5);
+            Assert.Equal(8, loaded);
+            SetPressure(MemoryPressureLevel.Critical);
+            CoreSettings.AdaptiveMemoryManagement = false;
+            Assert.Equal(4, cache.EffectiveCacheCount);
+        }
+        finally
+        {
+            for (var i = 0; i < fields.Length; i++) GovernorField(fields[i]).SetValue(null, previous[i]);
+            CoreSettings.MemoryReserveBytes = reserve;
+            CoreSettings.AdaptiveMemoryManagement = adaptive;
+        }
+    }
+
+    [Theory]
+    [InlineData(MemoryPressureLevel.Normal, 900, MemoryPressureLevel.Critical)]
+    [InlineData(MemoryPressureLevel.Normal, 1500, MemoryPressureLevel.High)]
+    [InlineData(MemoryPressureLevel.Critical, 1030, MemoryPressureLevel.Critical)]
+    [InlineData(MemoryPressureLevel.Critical, 1128, MemoryPressureLevel.High)]
+    [InlineData(MemoryPressureLevel.High, 1540, MemoryPressureLevel.High)]
+    [InlineData(MemoryPressureLevel.High, 1640, MemoryPressureLevel.Elevated)]
+    [InlineData(MemoryPressureLevel.Elevated, 2050, MemoryPressureLevel.Elevated)]
+    [InlineData(MemoryPressureLevel.Elevated, 2160, MemoryPressureLevel.Normal)]
+    public void PressureRecovery_RequiresHeadroomButEscalationIsImmediate(
+        MemoryPressureLevel previous, long availableMb, MemoryPressureLevel expected)
+    {
+        var calculate = typeof(MemoryGovernor).GetMethod("CalculatePressureLevel", BindingFlags.Static | BindingFlags.NonPublic)
+            ?? throw new MissingMethodException();
+        var result = calculate.Invoke(null, [availableMb * 1024 * 1024, 1024L * 1024 * 1024, previous]);
+        Assert.Equal(expected, Assert.IsType<MemoryPressureLevel>(result));
+    }
+
+    [Fact]
+    public void RepeatedCompaction_RequiresReleasedBuffersOrMeaningfulHeapChanges()
+    {
+        var fields = new[] { "_lastCompactTicks", "_lastCompactHeapBytes", "_lastCompactFragmentedBytes" };
+        var previous = new object?[fields.Length];
+        for (var i = 0; i < fields.Length; i++) previous[i] = GovernorField(fields[i]).GetValue(null);
+        var shouldCompact = typeof(MemoryGovernor).GetMethod("ShouldCompact", BindingFlags.Static | BindingFlags.NonPublic)
+            ?? throw new MissingMethodException();
+        const long mb = 1024 * 1024;
+        bool Check(long released, long heapMb, long fragmentedMb) => Assert.IsType<bool>(
+            shouldCompact.Invoke(null, [released, heapMb * mb, fragmentedMb * mb]));
+        try
+        {
+            GovernorField(fields[0]).SetValue(null, Environment.TickCount64);
+            GovernorField(fields[1]).SetValue(null, 100 * mb);
+            GovernorField(fields[2]).SetValue(null, 2 * mb);
+            Assert.False(Check(0, 100, 2));
+            Assert.False(Check(0, 110, 2));
+            Assert.True(Check(0, 116, 2));
+            Assert.True(Check(0, 100, 18));
+            Assert.True(Check(1, 100, 2));
+            GovernorField(fields[0]).SetValue(null, long.MinValue);
+            Assert.True(Check(0, 100, 2));
+        }
+        finally
+        {
+            for (var i = 0; i < fields.Length; i++) GovernorField(fields[i]).SetValue(null, previous[i]);
+        }
+    }
+
+    [Fact]
     public void DirectCompressedMatAccess_RemainsUsableAcrossEvictionAttempts()
     {
         using var file = CreateFile(1, CreateNoise);
@@ -199,6 +347,8 @@ public sealed class MemoryManagementTests : IDisposable
             Assert.Equal(4096, store.BytesOnDisk);
             Assert.Equal(8192, store.FilesLength);
             Assert.Null(WriteBlob(store, new byte[4096]));
+            Assert.Equal(LayerCacheWriteStatus.SizeLimit, store.LastWriteStatus);
+            Assert.Contains("size limit", store.GetStatusString());
         }
         finally
         {
@@ -222,8 +372,16 @@ public sealed class MemoryManagementTests : IDisposable
         {
             free = reserve + 1024;
             Assert.Null(WriteBlob(store, new byte[4096]));
+            Assert.Equal(LayerCacheWriteStatus.InsufficientDiskSpace, store.LastWriteStatus);
             Assert.Equal(4096, store.FilesLength);
             Assert.Equal(4096, store.BytesOnDisk);
+            free = reserve + 16384;
+            var recovered = WriteBlob(store, new byte[4096]);
+            Assert.NotNull(recovered);
+            ReleaseBlob(recovered);
+            Assert.Equal(LayerCacheWriteStatus.Ready, store.LastWriteStatus);
+            Assert.Contains("physical:", store.GetStatusString());
+            Assert.Contains("live:", store.GetStatusString());
         }
         finally
         {
@@ -253,8 +411,15 @@ public sealed class MemoryManagementTests : IDisposable
         {
             Directory.CreateDirectory(Path.Combine(store.Folder, "00001.pack"));
             Assert.Null(WriteBlob(store, new byte[4096]));
+            Assert.Equal(LayerCacheWriteStatus.IoError, store.LastWriteStatus);
+            Assert.False(string.IsNullOrWhiteSpace(store.LastError));
             Assert.Equal(4096, store.FilesLength);
             Assert.Equal(4096, store.BytesOnDisk);
+            var recovered = WriteBlob(store, new byte[4096]);
+            Assert.NotNull(recovered);
+            ReleaseBlob(recovered);
+            Assert.Equal(LayerCacheWriteStatus.Ready, store.LastWriteStatus);
+            Assert.Null(store.LastError);
         }
         finally
         {

@@ -37,8 +37,6 @@ internal class Program
 
         Thread.CurrentThread.CurrentCulture = CoreSettings.OptimalCultureInfo;
         Args = args;
-        // Reduces the parallelism and uses the disk cache when the memory runs low, instead of running out of it
-        MemoryGovernor.Start();
 
         var rootCommand = new RootCommand("MSLA/DLP, file analysis, repair, conversion and manipulation")
         {
@@ -64,17 +62,39 @@ internal class Program
             GlobalOptions.NoProgressOption,
             GlobalOptions.DummyOption,
             GlobalOptions.CoreVersionOption,
+            GlobalOptions.MemoryReserveOption,
+            GlobalOptions.CacheMaximumOption,
+            GlobalOptions.CacheFolderOption,
+            GlobalOptions.NoDiskCacheOption,
+            GlobalOptions.NoAdaptiveMemoryOption,
         };
 
+        var result = rootCommand.Parse(args);
         HandleGlobals();
-        return await rootCommand.Parse(args).InvokeAsync().ConfigureAwait(false);
+        if (result.Errors.Count > 0) return await result.InvokeAsync().ConfigureAwait(false);
+
+        const decimal bytesPerGb = 1024m * 1024 * 1024;
+        CoreSettings.MemoryReserveBytes = (long)(result.GetValue(GlobalOptions.MemoryReserveOption) * bytesPerGb);
+        CoreSettings.DiskCacheMaximumBytes = (long)(result.GetValue(GlobalOptions.CacheMaximumOption) * bytesPerGb);
+        CoreSettings.DiskCacheFolder = result.GetValue(GlobalOptions.CacheFolderOption);
+        CoreSettings.EnableDiskCache = !result.GetValue(GlobalOptions.NoDiskCacheOption);
+        CoreSettings.AdaptiveMemoryManagement = !result.GetValue(GlobalOptions.NoAdaptiveMemoryOption);
+        MemoryGovernor.Start();
+        try
+        {
+            return await result.InvokeAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            MemoryGovernor.Stop();
+        }
     }
 
     internal static void HandleGlobals()
     {
         foreach (var arg in Args)
         {
-            if (arg[0] != '-') continue;
+            if (arg.Length == 0 || arg[0] != '-') continue;
 
             if (GlobalOptions.QuietOption.Name == arg || GlobalOptions.QuietOption.Aliases.Any(alias => arg == alias))
             {
