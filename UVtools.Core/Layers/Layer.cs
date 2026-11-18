@@ -169,6 +169,13 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     private bool _isOnDisk;
     private bool _compressedMatExposed;
 
+    /// <summary>
+    /// The number of reads and replacements of the image in progress, guarded by <see cref="_diskLock"/>.
+    /// The image is not moved to the disk cache while it is in use, so the lock only covers short state changes and
+    /// never the decompression, the compression or the events raised by an image replacement.
+    /// </summary>
+    private int _imageUsers;
+
     private long _lastAccessTicks = Environment.TickCount64;
 
     #endregion
@@ -1088,6 +1095,36 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     }
 
     /// <summary>
+    /// Marks the image as in use and gets it, loading it from the disk cache when needed. Dispose the returned value
+    /// when done with the returned <see cref="CMat"/>, the image can not be moved to the disk cache meanwhile.
+    /// </summary>
+    private ImageUse UseImage(out CMat compressedMat)
+    {
+        lock (_diskLock)
+        {
+            _lastAccessTicks = Environment.TickCount64;
+            compressedMat = _isOnDisk ? LoadFromDiskUnlocked() : _compressedMat;
+            _imageUsers++;
+        }
+
+        return new ImageUse(this);
+    }
+
+    /// <summary>
+    /// Releases the use of the image taken by <see cref="UseImage"/> or <see cref="BeginImageReplace"/>.
+    /// </summary>
+    private readonly struct ImageUse(Layer layer) : IDisposable
+    {
+        public void Dispose()
+        {
+            lock (layer._diskLock)
+            {
+                layer._imageUsers--;
+            }
+        }
+    }
+
+    /// <summary>
     /// Loads the image from the disk cache. Caller must hold <see cref="_diskLock"/>.
     /// </summary>
     private CMat LoadFromDiskUnlocked()
@@ -1115,8 +1152,32 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     /// <summary>
     /// Called before the compressed image is replaced: the disk copy becomes obsolete.
     /// The image is loaded first, so a failed replacement never leaves the layer without its image.
+    /// The image is marked as in use until the returned value is disposed, so it can not be moved to the disk cache
+    /// halfway of the replacement.
     /// </summary>
-    private void BeginImageReplace() => DiscardDiskCopy();
+    private ImageUse BeginImageReplace()
+    {
+        lock (_diskLock)
+        {
+            _imageUsers++;
+        }
+
+        try
+        {
+            DiscardDiskCopy();
+        }
+        catch
+        {
+            lock (_diskLock)
+            {
+                _imageUsers--;
+            }
+
+            throw;
+        }
+
+        return new ImageUse(this);
+    }
 
     /// <summary>
     /// Called after the compressed image is replaced: drops the obsolete disk copy.
@@ -1144,7 +1205,7 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     {
         lock (_diskLock)
         {
-            if (_isOnDisk || _compressedMatExposed) return 0;
+            if (_isOnDisk || _compressedMatExposed || _imageUsers > 0) return 0;
             if (Environment.TickCount64 - _lastAccessTicks < minimumIdleMilliseconds) return 0;
 
             var bytes = _compressedMat.CompressedBytes;
@@ -1206,13 +1267,17 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
         }
         private set
         {
-            lock (_diskLock)
+            using (BeginImageReplace())
             {
-                BeginImageReplace();
-                _compressedMat = value;
-                _compressedMatExposed = false;
+                lock (_diskLock)
+                {
+                    _compressedMat = value;
+                    _compressedMatExposed = false;
+                }
+
                 InvalidateImage();
             }
+
             OnPropertyChanged();
             OnPropertyChanged(nameof(CompressedPngBytes));
             OnPropertyChanged(nameof(HaveImage));
@@ -1223,27 +1288,21 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     {
         get
         {
-            lock (_diskLock)
-            {
-                var compressedMat = AccessCompressedMat();
-                if (compressedMat.IsEmpty ||
-                    (_compressionCodec == LayerCompressionCodec.Png && compressedMat.Roi.IsEmpty))
-                    return compressedMat.CompressedBytes;
+            using var use = UseImage(out var compressedMat);
+            if (compressedMat.IsEmpty ||
+                (_compressionCodec == LayerCompressionCodec.Png && compressedMat.Roi.IsEmpty))
+                return compressedMat.CompressedBytes;
 
-                using var mat = LayerMat;
-                return mat.GetPngBytes();
-            }
+            using var mat = LayerMat;
+            return mat.GetPngBytes();
         }
         set
         {
             if (value.Length == 0)
             {
-                lock (_diskLock)
-                {
-                    BeginImageReplace();
-                    _compressedMat.SetEmptyCompressedBytes();
-                    InvalidateImage();
-                }
+                using var replace = BeginImageReplace();
+                _compressedMat.SetEmptyCompressedBytes();
+                InvalidateImage();
             }
             else
             {
@@ -1268,16 +1327,15 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     {
         get
         {
-            lock (_diskLock)
-            {
-                return SlicerFile.DecodeType != FileFormat.FileDecodeType.Full ? null! : AccessCompressedMat().Mat;
-            }
+            if (SlicerFile.DecodeType != FileFormat.FileDecodeType.Full) return null!;
+            using var use = UseImage(out var compressedMat);
+            return compressedMat.Mat;
         }
         set
         {
-            lock (_diskLock)
+            // Nothing below holds the disk lock, the events raised by the replacement can safely read other layers
+            using (BeginImageReplace())
             {
-                BeginImageReplace();
                 if (value is null)
                 {
                     // GetBoundingRectangle would measure the image being replaced
@@ -1297,6 +1355,7 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
 
                 InvalidateImage();
             }
+
             OnPropertyChanged();
             OnPropertyChanged(nameof(CompressedPngBytes));
             OnPropertyChanged(nameof(HaveImage));
@@ -1331,46 +1390,46 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
     /// <returns>A new mat the caller must dispose.</returns>
     public Mat GetRoiMat(Rectangle roi)
     {
-        lock (_diskLock)
+        using var use = UseImage(out var current);
+        // A snapshot shares the compressed buffer, so the ROI and the bytes always belong together even if the image
+        // is replaced by another thread meanwhile, without holding any lock while decompressing
+        var compressedMat = current.Clone(true);
+        var stored = compressedMat.Roi;
+
+        if (!IsEmpty && stored.Width > 0 && stored.Height > 0 && stored == roi)
         {
-            var compressedMat = AccessCompressedMat();
-            var stored = compressedMat.Roi;
+            return compressedMat.RawDecompress(); // Exactly what we need
+        }
 
-            if (!IsEmpty && stored.Width > 0 && stored.Height > 0 && stored == roi)
+        var destination = EmguCvExtensions.InitMat(roi.Size);
+        try
+        {
+            if (IsEmpty) return destination;
+
+            if (stored.Width <= 0 || stored.Height <= 0)
             {
-                return compressedMat.RawDecompress(); // Exactly what we need
-            }
-
-            var destination = EmguCvExtensions.InitMat(roi.Size);
-            try
-            {
-                if (IsEmpty) return destination;
-
-                if (stored.Width <= 0 || stored.Height <= 0)
-                {
-                    // Compressed without a bounding rectangle, so it is the full layer
-                    using var fullMat = LayerMat;
-                    using var fullRoi = new Mat(fullMat, roi);
-                    fullRoi.CopyTo(destination);
-                    return destination;
-                }
-
-                var overlap = Rectangle.Intersect(stored, roi);
-                if (overlap.IsEmpty) return destination;
-
-                using var rawMat = compressedMat.RawDecompress();
-                using var source = new Mat(rawMat,
-                    new Rectangle(overlap.X - stored.X, overlap.Y - stored.Y, overlap.Width, overlap.Height));
-                using var target = new Mat(destination,
-                    new Rectangle(overlap.X - roi.X, overlap.Y - roi.Y, overlap.Width, overlap.Height));
-                source.CopyTo(target);
+                // Compressed without a bounding rectangle, so it is the full layer
+                using var fullMat = LayerMat;
+                using var fullRoi = new Mat(fullMat, roi);
+                fullRoi.CopyTo(destination);
                 return destination;
             }
-            catch
-            {
-                destination.Dispose();
-                throw;
-            }
+
+            var overlap = Rectangle.Intersect(stored, roi);
+            if (overlap.IsEmpty) return destination;
+
+            using var rawMat = compressedMat.RawDecompress();
+            using var source = new Mat(rawMat,
+                new Rectangle(overlap.X - stored.X, overlap.Y - stored.Y, overlap.Width, overlap.Height));
+            using var target = new Mat(destination,
+                new Rectangle(overlap.X - roi.X, overlap.Y - roi.Y, overlap.Width, overlap.Height));
+            source.CopyTo(target);
+            return destination;
+        }
+        catch
+        {
+            destination.Dispose();
+            throw;
         }
     }
 
@@ -2204,14 +2263,16 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
 
         try
         {
-            lock (layer._diskLock)
+            using (layer.BeginImageReplace())
             {
-                layer.BeginImageReplace();
                 compressedMat.CopyTo(layer._compressedMat, true);
                 // Disposes the contours of the replaced image, they are recalculated on demand
                 layer.InvalidateImage();
-                layer._diskBlob = share;
-                share = null;
+                lock (layer._diskLock)
+                {
+                    layer._diskBlob = share;
+                    share = null;
+                }
             }
         }
         finally

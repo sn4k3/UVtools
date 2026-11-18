@@ -6151,6 +6151,13 @@
             True when the compressed bytes were released from memory and are only in <see cref="F:UVtools.Core.Layers.Layer._diskBlob"/>.
             </summary>
         </member>
+        <member name="F:UVtools.Core.Layers.Layer._imageUsers">
+            <summary>
+            The number of reads and replacements of the image in progress, guarded by <see cref="F:UVtools.Core.Layers.Layer._diskLock"/>.
+            The image is not moved to the disk cache while it is in use, so the lock only covers short state changes and
+            never the decompression, the compression or the events raised by an image replacement.
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Layers.Layer.SlicerFile">
             <summary>
             Gets or sets the parent SlicerFile
@@ -6567,6 +6574,22 @@
             Gets the compressed image for use, loading it from the disk cache when needed.
             </summary>
         </member>
+        <member name="M:UVtools.Core.Layers.Layer.UseImage(EmguExtensions.CMat@)">
+            <summary>
+            Marks the image as in use and gets it, loading it from the disk cache when needed. Dispose the returned value
+            when done with the returned <see cref="T:EmguExtensions.CMat"/>, the image can not be moved to the disk cache meanwhile.
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.Layers.Layer.ImageUse">
+            <summary>
+            Releases the use of the image taken by <see cref="M:UVtools.Core.Layers.Layer.UseImage(EmguExtensions.CMat@)"/> or <see cref="M:UVtools.Core.Layers.Layer.BeginImageReplace"/>.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.ImageUse.#ctor(UVtools.Core.Layers.Layer)">
+            <summary>
+            Releases the use of the image taken by <see cref="M:UVtools.Core.Layers.Layer.UseImage(EmguExtensions.CMat@)"/> or <see cref="M:UVtools.Core.Layers.Layer.BeginImageReplace"/>.
+            </summary>
+        </member>
         <member name="M:UVtools.Core.Layers.Layer.LoadFromDiskUnlocked">
             <summary>
             Loads the image from the disk cache. Caller must hold <see cref="F:UVtools.Core.Layers.Layer._diskLock"/>.
@@ -6581,6 +6604,8 @@
             <summary>
             Called before the compressed image is replaced: the disk copy becomes obsolete.
             The image is loaded first, so a failed replacement never leaves the layer without its image.
+            The image is marked as in use until the returned value is disposed, so it can not be moved to the disk cache
+            halfway of the replacement.
             </summary>
         </member>
         <member name="M:UVtools.Core.Layers.Layer.DiscardDiskCopy">

@@ -28,6 +28,9 @@
   - (Improvement) Closing a file releases its space in the disk cache right away
   - (Improvement) The number of parallel tasks is also limited to the available memory while a file is opened and in the
     work outside of the operations, such as the issues detection and the previews, not only in the operations
+  - (Fix) Replacing the image of a layer no longer holds the layer lock while it compresses the image and while the
+    property changed events are raised, a listener reading another layer could deadlock. The image is not moved to the
+    disk cache while it is being read or replaced
 - (Upgrade) AvaloniaUI from 12.1.4 to 12.1.6
 
 ## 25/10/2026 - v7.1.2

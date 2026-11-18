@@ -921,4 +921,76 @@ public sealed class MemoryManagementTests : IDisposable
         Assert.Equal(0, MemoryGovernor.LayerPixelCount);
         Assert.Equal(before, MemoryGovernor.EffectiveLayerPixelCount);
     }
+
+    [Fact]
+    public async Task ReplacingTheImage_DoesNotHoldTheLayerLockWhileRaisingEvents()
+    {
+        var file = CreateFile(2, CreateNoise);
+
+        // Listeners that read the image of the other layer, as a UI binding to the file or layers can
+        var handlers = 0;
+        for (var i = 0; i < 2; i++)
+        {
+            var layer = file[i];
+            var other = file[1 - i];
+            layer.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName != nameof(Layer.IsModified) || !layer.IsModified) return;
+                using var mat = other.LayerMat;
+                Interlocked.Increment(ref handlers);
+            };
+        }
+
+        var tasks = new Task[2];
+        for (var t = 0; t < tasks.Length; t++)
+        {
+            var layer = file[t];
+            var seed = t * 1000;
+            tasks[t] = Task.Run(() =>
+            {
+                for (var n = 0; n < 40; n++)
+                {
+                    layer.IsModified = false;
+                    using var mat = CreateNoise(file, seed + n);
+                    layer.LayerMat = mat;
+                }
+            });
+        }
+
+        var all = Task.WhenAll(tasks);
+        var finished = await Task.WhenAny(all, Task.Delay(TimeSpan.FromSeconds(60)));
+        Assert.True(ReferenceEquals(finished, all), "Replacing the layer images deadlocked");
+        await all;
+        Assert.True(handlers > 0);
+    }
+
+    [Fact]
+    public async Task ReadingTheImage_IsNeverMovedToDiskUnderTheReader()
+    {
+        var file = CreateFile(1, CreateNoise);
+        var layer = file[0];
+        using var expected = layer.LayerMat;
+        using var cancel = new CancellationTokenSource();
+
+        // Evicts as fast as it can, without any idle time
+        var evictor = Task.Run(() =>
+        {
+            while (!cancel.IsCancellationRequested) layer.TryMoveToDisk(_store);
+        });
+
+        var readers = Enumerable.Range(0, 4).Select(_ => Task.Run(() =>
+        {
+            for (var n = 0; n < 150; n++)
+            {
+                using var mat = layer.LayerMat;
+                using var roi = layer.GetRoiMat(new Rectangle(0, 0, 10, 10));
+                Assert.Equal(file.Resolution, mat.Size);
+            }
+        })).ToArray();
+
+        await Task.WhenAll(readers).WaitAsync(TimeSpan.FromSeconds(60));
+        await cancel.CancelAsync();
+        await evictor;
+        Assert.True(SameImage(expected, layer));
+    }
 }
