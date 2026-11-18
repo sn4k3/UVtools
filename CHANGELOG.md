@@ -5,6 +5,8 @@
 - (Add) Peel curve HUD (2D and 3D preview): mechanical layer analysis modes to plot the area change in percent, the
   centroid drift in mm and a combined risk score of each layer relative to the layer below. The risk score is relative
   to the loaded file, it shows which layers are unusual and does not predict print failure (#1164)
+- (Fix) PCB exposure: Gerber tracks, arcs and aperture macro vector lines now keep their physical width on printers
+  with non-square pixels, preserving gaps between tracks. Macro vector lines now have square ends (#1166)
 - (Upgrade) AvaloniaUI from 12.1.4 to 12.1.6
 - (Upgrade) .NET from 10.0.13 to 11.0.0
 

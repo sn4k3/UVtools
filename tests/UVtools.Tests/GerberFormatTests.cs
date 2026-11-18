@@ -151,6 +151,107 @@ public class GerberFormatTests
 
     private const string MillimeterHeader = "%FSLAX46Y46*%\n%MOMM*%\n";
 
+    private static Mat DrawNonSquarePlate(string commands, float ppmmX, float ppmmY,
+        bool antiAlias = false, double sizeScale = 1)
+    {
+        using var file = new TempFile(MillimeterHeader + commands + "\nM02*\n");
+        var mat = new Mat(600, 600, DepthType.Cv8U, 1);
+        mat.SetTo(new MCvScalar(0));
+        var document = new GerberFormat { XYppmm = new SizeF(ppmmX, ppmmY), SizeScale = sizeScale };
+        GerberFormat.ParseAndDraw(document, file.Path, mat, antiAlias);
+        return mat;
+    }
+
+    [Theory]
+    [InlineData(60, 40, false)]
+    [InlineData(40, 60, false)]
+    [InlineData(60, 40, true)]
+    [InlineData(59.52f, 40.32f, false)]
+    public void TracksKeepPhysicalWidthOnBothAxes(float ppmmX, float ppmmY, bool antiAlias)
+    {
+        using var horizontal = DrawNonSquarePlate(
+            "%ADD10C,0.3*%\nD10*\nX2000000Y2000000D02*\nX6000000Y2000000D01*", ppmmX, ppmmY, antiAlias);
+        using var vertical = DrawNonSquarePlate(
+            "%ADD10C,0.3*%\nD10*\nX2000000Y2000000D02*\nX2000000Y6000000D01*", ppmmX, ppmmY, antiAlias);
+
+        // Raster edges include their boundary pixels; AA adds at most a fringe pixel on either side.
+        Assert.InRange(CvInvoke.BoundingRectangle(horizontal).Height, 0.3 * ppmmY, 0.3 * ppmmY + 3);
+        Assert.InRange(CvInvoke.BoundingRectangle(vertical).Width, 0.3 * ppmmX, 0.3 * ppmmX + 3);
+        Assert.Equal(255, PixelAt(horizontal, (int)(2 * ppmmX - 0.1 * ppmmX), (int)(2 * ppmmY)));
+        Assert.Equal(0, PixelAt(horizontal, (int)(2 * ppmmX - 0.25 * ppmmX), (int)(2 * ppmmY)));
+    }
+
+    [Theory]
+    [InlineData(60, 40)]
+    [InlineData(40, 60)]
+    public void AdjacentHorizontalTracksKeepTheirGap(float ppmmX, float ppmmY)
+    {
+        using var mat = DrawNonSquarePlate(
+            "%ADD10C,0.3*%\nD10*\nX2000000Y2000000D02*\nX6000000Y2000000D01*\n" +
+            "X2000000Y2500000D02*\nX6000000Y2500000D01*", ppmmX, ppmmY);
+
+        Assert.Equal(255, PixelAt(mat, (int)(4 * ppmmX), (int)(2 * ppmmY)));
+        Assert.Equal(0, PixelAt(mat, (int)(4 * ppmmX), (int)(2.25 * ppmmY)));
+        Assert.Equal(255, PixelAt(mat, (int)(4 * ppmmX), (int)(2.5 * ppmmY)));
+    }
+
+    [Theory]
+    [InlineData("G02")]
+    [InlineData("G03")]
+    public void CircularTracksKeepWidthAtBothTangents(string interpolation)
+    {
+        using var mat = DrawNonSquarePlate(
+            $"%ADD10C,0.3*%\nD10*\nG75*\nX6000000Y4000000D02*\n{interpolation}X6000000Y4000000I-2000000J0D01*", 60, 40);
+
+        // Full circle centered at (4,4), radius 2mm, with a 0.15mm aperture radius.
+        Assert.Equal(255, PixelAt(mat, 360, 160));
+        Assert.Equal(255, PixelAt(mat, 240, 240));
+        Assert.Equal(0, PixelAt(mat, 240, 249));
+        Assert.Equal(0, PixelAt(mat, 373, 160));
+    }
+
+    [Theory]
+    [InlineData(0, 60, 40)]
+    [InlineData(90, 60, 40)]
+    [InlineData(90, 40, 60)]
+    public void MacroVectorLinesKeepWidthAndSquareEnds(int rotation, float ppmmX, float ppmmY)
+    {
+        using var mat = DrawNonSquarePlate(
+            $"%AMTRACK*20,1,0.3,-1,0,1,0,{rotation}*%\n%ADD10TRACK*%\nD10*\nX4000000Y4000000D03*", ppmmX, ppmmY);
+
+        var bounds = CvInvoke.BoundingRectangle(mat);
+        Assert.InRange(rotation == 0 ? bounds.Height : bounds.Width,
+            0.3 * (rotation == 0 ? ppmmY : ppmmX), 0.3 * (rotation == 0 ? ppmmY : ppmmX) + 1);
+        Assert.InRange(rotation == 0 ? bounds.Width : bounds.Height,
+            2 * (rotation == 0 ? ppmmX : ppmmY), 2 * (rotation == 0 ? ppmmX : ppmmY) + 1);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void DiagonalTracksScaleTheirPhysicalWidth(double sizeScale)
+    {
+        using var mat = DrawNonSquarePlate(
+            "%ADD10C,0.3*%\nD10*\nX2000000Y2000000D02*\nX6000000Y6000000D01*", 60, 40,
+            sizeScale: sizeScale);
+
+        // Perpendicular samples at distances 0.11mm and 0.25mm from the diagonal's center.
+        Assert.Equal(255, PixelAt(mat, (int)Math.Round((4 + 0.08 * sizeScale) * 60),
+            (int)Math.Round((4 - 0.08 * sizeScale) * 40)));
+        Assert.Equal(0, PixelAt(mat, (int)Math.Round((4 + 0.18 * sizeScale) * 60),
+            (int)Math.Round((4 - 0.18 * sizeScale) * 40)));
+    }
+
+    [Fact]
+    public void ClearStrokeErasesTheSameNonSquareFootprint()
+    {
+        const string stroke = "X2000000Y2000000D02*\nX6000000Y6000000D01*\n";
+        using var mat = DrawNonSquarePlate(
+            "%ADD10C,0.3*%\nD10*\n" + stroke + "%LPC*%\n" + stroke, 60, 40);
+
+        Assert.Equal(0, CvInvoke.CountNonZero(mat));
+    }
+
     private static byte PixelAt(Mat mat, int x, int y) => mat.GetRawData(y, x)[0];
 
     private static (Mat Mat, GerberFormat Document) DrawDocument(string gerber, double sizeScale = 1)
