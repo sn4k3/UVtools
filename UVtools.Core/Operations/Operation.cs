@@ -841,7 +841,7 @@ public abstract partial class Operation : ObservableObject, IDisposable
 
         var ownsProgress = progress is null;
         progress ??= new OperationProgress(CanCancel);
-        MemoryGovernor.LayerPixelCount = (long)_slicerFile.ResolutionX * _slicerFile.ResolutionY;
+        using var memoryScope = MemoryGovernor.BeginLayerMemoryScope((long)_slicerFile.ResolutionX * _slicerFile.ResolutionY);
         try
         {
             progress.Reset(ProgressAction, LayerRangeCount);

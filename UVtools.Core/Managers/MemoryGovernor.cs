@@ -95,6 +95,12 @@ public static class MemoryGovernor
     private static long _lastSampleTicks = long.MinValue;
     private static int _laneHeld;
     private static long _laneTicks;
+    private static readonly Lock LaneMutex = new();
+    private static long _laneGeneration;
+
+    [ThreadStatic]
+    private static long _threadLaneGeneration;
+    private static readonly AsyncLocal<long> OperationLayerPixelCount = new();
 
     [ThreadStatic]
     private static bool _threadHoldsLane;
@@ -136,26 +142,56 @@ public static class MemoryGovernor
 
     /// <summary>
     /// Gets the memory to keep available for the system and other programs.
-    /// <see cref="CoreSettings.MemoryReserveBytes"/> when set (up to the physical memory), otherwise 8% of the physical
-    /// memory clamped to 1-3 GB.
+    /// <see cref="CoreSettings.MemoryReserveBytes"/> when set, otherwise 8% of physical memory clamped to 1-3 GB.
+    /// Both modes leave at least 1 GB (or a quarter of smaller systems) for work.
     /// </summary>
     public static long ReserveBytes
     {
         get
         {
-            var reserve = CoreSettings.MemoryReserveBytes;
-            var total = TotalPhysicalBytes;
-            if (reserve > 0) return total > 0 ? Math.Min(reserve, total) : reserve;
-            if (total <= 0) return GigaByte;
-            return Math.Clamp(total * 8 / 100, GigaByte, 3 * GigaByte);
+            return CalculateReserveBytes(CoreSettings.MemoryReserveBytes, TotalPhysicalBytes);
         }
     }
 
     /// <summary>
-    /// Gets or sets the pixel count of a layer of the file being processed, used to estimate the memory of each
-    /// parallel worker. 0 disables the estimation.
+    /// Gets or sets the layer pixel count for the current execution context, used to estimate worker memory.
+    /// 0 disables the estimation. Prefer <see cref="BeginLayerMemoryScope"/> for operations so the previous value is restored.
     /// </summary>
-    public static long LayerPixelCount { get; set; }
+    public static long LayerPixelCount
+    {
+        get => OperationLayerPixelCount.Value;
+        set => OperationLayerPixelCount.Value = Math.Max(0, value);
+    }
+
+    /// <summary>
+    /// Calculates the effective reserve, leaving at least 1 GB (or a quarter of smaller systems) for work.
+    /// </summary>
+    public static long CalculateReserveBytes(long configuredBytes, long totalBytes)
+    {
+        var reserve = configuredBytes > 0 ? configuredBytes
+            : totalBytes > 0 ? Math.Clamp(totalBytes * 8 / 100, GigaByte, 3 * GigaByte) : GigaByte;
+        return totalBytes > 0 ? Math.Min(reserve, totalBytes - Math.Min(GigaByte, totalBytes / 4)) : reserve;
+    }
+
+    /// <summary>
+    /// Scopes worker sizing to this operation and the execution contexts dispatched from it.
+    /// </summary>
+    public static IDisposable BeginLayerMemoryScope(long pixelCount) => new LayerMemoryScope(pixelCount);
+
+    private sealed class LayerMemoryScope : IDisposable
+    {
+        private readonly long _previous = LayerPixelCount;
+        private bool _disposed;
+
+        public LayerMemoryScope(long pixelCount) => LayerPixelCount = pixelCount;
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+            LayerPixelCount = _previous;
+            _disposed = true;
+        }
+    }
 
     /// <summary>
     /// Gets for how long the pressure is <see cref="MemoryPressureLevel.Critical"/>, or <see cref="TimeSpan.Zero"/>.
@@ -292,7 +328,8 @@ public static class MemoryGovernor
 
     private static void SampleIfStale()
     {
-        if (Environment.TickCount64 - Interlocked.Read(ref _lastSampleTicks) < MaximumSampleAgeMilliseconds) return;
+        var lastSample = Interlocked.Read(ref _lastSampleTicks);
+        if (lastSample != long.MinValue && Environment.TickCount64 - lastSample < MaximumSampleAgeMilliseconds) return;
         Sample();
     }
 
@@ -306,7 +343,8 @@ public static class MemoryGovernor
             var now = Environment.TickCount64;
             var lastRelieve = Interlocked.Read(ref _lastRelieveTicks);
             // Escalations are handled immediately, the same level is handled again after the cooldown
-            if ((int)level <= Volatile.Read(ref _lastRelieveLevel) && now - lastRelieve < RelieveCooldownMilliseconds) return;
+            if (lastRelieve != long.MinValue && (int)level <= Volatile.Read(ref _lastRelieveLevel) &&
+                now - lastRelieve < RelieveCooldownMilliseconds) return;
 
             Relieve(level);
         }
@@ -346,8 +384,9 @@ public static class MemoryGovernor
             Interlocked.Add(ref _relievedBytes, released);
 
             var now = Environment.TickCount64;
+            var lastCompact = Interlocked.Read(ref _lastCompactTicks);
             if (level >= MemoryPressureLevel.High &&
-                now - Interlocked.Read(ref _lastCompactTicks) >= CompactCooldownMilliseconds)
+                (lastCompact == long.MinValue || now - lastCompact >= CompactCooldownMilliseconds))
             {
                 // The compressed layers live in the large object heap, which is not compacted by default
                 Interlocked.Exchange(ref _lastCompactTicks, now);
@@ -393,7 +432,7 @@ public static class MemoryGovernor
     public static int GetMaxDegreeOfParallelism(int requested, long bytesPerWorker = 0)
     {
         if (requested == 1 || !IsAdaptive) return requested;
-        if (bytesPerWorker <= 0) bytesPerWorker = LayerPixelCount * DefaultImagesPerWorker;
+        if (bytesPerWorker <= 0) bytesPerWorker = Math.Min(LayerPixelCount, long.MaxValue / DefaultImagesPerWorker) * DefaultImagesPerWorker;
         if (bytesPerWorker <= 0) return requested;
 
         SampleIfStale();
@@ -424,30 +463,27 @@ public static class MemoryGovernor
             return;
         }
 
-        if (_threadHoldsLane)
-        {
-            // Done with the previous layer, keep running as the single worker
-            Interlocked.Exchange(ref _laneTicks, Environment.TickCount64);
-            return;
-        }
-
-        while (!token.IsCancellationRequested && Volatile.Read(ref _level) >= (int)MemoryPressureLevel.Critical)
+        while (!token.IsCancellationRequested && IsAdaptive &&
+               Volatile.Read(ref _level) >= (int)MemoryPressureLevel.Critical)
         {
             var now = Environment.TickCount64;
-            if (Interlocked.CompareExchange(ref _laneHeld, 1, 0) == 0)
+            lock (LaneMutex)
             {
-                _threadHoldsLane = true;
-                Interlocked.Exchange(ref _laneTicks, now);
-                return;
-            }
+                if (_threadHoldsLane && _threadLaneGeneration == _laneGeneration && _laneHeld != 0)
+                {
+                    _laneTicks = now;
+                    return;
+                }
 
-            var laneTicks = Interlocked.Read(ref _laneTicks);
-            if (now - laneTicks >= ThrottleLaneTimeoutMilliseconds &&
-                Interlocked.CompareExchange(ref _laneTicks, now, laneTicks) == laneTicks)
-            {
-                // The holder is gone or busy for long, take over so the work never stalls
-                _threadHoldsLane = true;
-                return;
+                _threadHoldsLane = false;
+                if (_laneHeld == 0 || now - _laneTicks >= ThrottleLaneTimeoutMilliseconds)
+                {
+                    _laneHeld = 1;
+                    _threadLaneGeneration = ++_laneGeneration;
+                    _threadHoldsLane = true;
+                    _laneTicks = now;
+                    return;
+                }
             }
 
             if (token.CanBeCanceled) token.WaitHandle.WaitOne(25);
@@ -459,8 +495,11 @@ public static class MemoryGovernor
 
     private static void ReleaseLane()
     {
-        _threadHoldsLane = false;
-        Volatile.Write(ref _laneHeld, 0);
+        lock (LaneMutex)
+        {
+            if (_threadHoldsLane && _threadLaneGeneration == _laneGeneration) _laneHeld = 0;
+            _threadHoldsLane = false;
+        }
     }
 
     /// <summary>

@@ -447,6 +447,10 @@
             <suki:GlassCard Classes="CardNoTop">
               <suki:GroupBox Header="Memory">
                 <StackPanel Spacing="10">
+                  <TextBlock
+                    Text="{Binding Settings.General.EffectiveAvailableRamLimit, StringFormat='Effective RAM reserve: {0:F2} GB'}"
+                    ToolTip.Tip="The reserve is capped to leave at least 1GB (or a quarter of smaller systems) for work."
+                  />
                   <ToggleSwitch
                     IsChecked="{Binding Settings.General.AdaptiveMemoryManagement}"
                     OffContent="Adaptive memory management is disabled: operations use all the threads regardless of the memory"

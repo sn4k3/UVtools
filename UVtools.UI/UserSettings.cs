@@ -23,6 +23,7 @@ using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
+using UVtools.Core.Managers;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
 using UVtools.Core.Voxel;
@@ -149,8 +150,18 @@ public partial class UserSettings : ObservableObject
         public decimal AvailableRamLimit
         {
             get;
-            set => SetProperty(ref field, Math.Max(0, value));
+            set
+            {
+                if (SetProperty(ref field, Math.Max(0, value))) OnPropertyChanged(nameof(EffectiveAvailableRamLimit));
+            }
         }
+
+        /// <summary>
+        /// Gets the effective reserve in GB after leaving room for work on this machine.
+        /// </summary>
+        [XmlIgnore]
+        public decimal EffectiveAvailableRamLimit => MemoryGovernor.CalculateReserveBytes(
+            (long)(AvailableRamLimit * (1024L * 1024 * 1024)), MemoryGovernor.TotalPhysicalBytes) / (1024m * 1024 * 1024);
 
         [ObservableProperty]
         public partial RamLimitAction AvailableRamOnHitLimitAction { get; set; } = RamLimitAction.Adaptive;

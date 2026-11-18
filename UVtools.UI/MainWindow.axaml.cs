@@ -553,7 +553,10 @@ public partial class MainWindow : GenericWindow
 
         var availableMemory = (decimal)Math.Round(memoryStatus.AvailablePhysicalBytes / Math.Pow(1024, 3), 2,
             MidpointRounding.AwayFromZero);
-        if (availableMemory > Settings.General.AvailableRamLimit) return;
+        var effectiveLimit = MemoryGovernor.IsAdaptive
+            ? MemoryGovernor.ReserveBytes / (1024m * 1024 * 1024)
+            : Settings.General.AvailableRamLimit;
+        if (availableMemory > effectiveLimit) return;
 
         // Give the adaptive management the chance to relieve the pressure before stopping the work
         if (MemoryGovernor.IsAdaptive && MemoryGovernor.CriticalDuration < RamAdaptiveGracePeriod) return;

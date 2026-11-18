@@ -7,9 +7,12 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using Microsoft.Win32.SafeHandles;
 
@@ -36,6 +39,7 @@ public sealed class LayerBlobStore : IDisposable
 
     private const string LockFileName = "session.lock";
     private const long PackSize = 256L * 1024 * 1024;
+    private static ReadOnlySpan<byte> SessionMarker => "UVtools.LayerCache.v1"u8;
 
     /// <summary>
     /// The disk free space to always leave untouched.
@@ -95,16 +99,38 @@ public sealed class LayerBlobStore : IDisposable
     public static int DeleteOrphanSessions(string cacheFolder)
     {
         if (!Directory.Exists(cacheFolder)) return 0;
+        using var coordination = AcquireCacheRoot(cacheFolder);
+        try
+        {
+            return DeleteOrphanSessionsCore(cacheFolder);
+        }
+        finally
+        {
+            coordination.ReleaseMutex();
+        }
+    }
+
+    private static int DeleteOrphanSessionsCore(string cacheFolder)
+    {
         var deleted = 0;
+        Span<byte> marker = stackalloc byte[SessionMarker.Length];
         foreach (var directory in Directory.EnumerateDirectories(cacheFolder))
         {
             try
             {
+                var name = Path.GetFileName(directory).AsSpan();
+                var separator = name.IndexOf('-');
+                if (separator <= 0 || !uint.TryParse(name[..separator], out _) ||
+                    !Guid.TryParseExact(name[(separator + 1)..], "N", out _) ||
+                    (File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0) continue;
                 var lockFile = Path.Combine(directory, LockFileName);
-                if (File.Exists(lockFile))
+                if (!File.Exists(lockFile)) continue;
+                using (var stream = new FileStream(lockFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
                 {
-                    // Opening exclusively only works when the owner process is gone
-                    using var stream = new FileStream(lockFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                    // Both the session name and its persistent ownership marker must match.
+                    if (stream.Length != SessionMarker.Length) continue;
+                    stream.ReadExactly(marker);
+                    if (!marker.SequenceEqual(SessionMarker)) continue;
                 }
 
                 Directory.Delete(directory, true);
@@ -122,6 +148,25 @@ public sealed class LayerBlobStore : IDisposable
         return deleted;
     }
 
+    private static System.Threading.Mutex AcquireCacheRoot(string cacheFolder)
+    {
+        var path = Path.TrimEndingDirectorySeparator(Path.GetFullPath(cacheFolder));
+        if (OperatingSystem.IsWindows()) path = path.ToUpperInvariant();
+        var name = "UVtools.LayerCache." + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(path)));
+        var coordination = new System.Threading.Mutex(false, name);
+        try
+        {
+            try { coordination.WaitOne(); }
+            catch (AbandonedMutexException) { /* Ownership is granted when the previous process crashed. */ }
+            return coordination;
+        }
+        catch
+        {
+            coordination.Dispose();
+            throw;
+        }
+    }
+
     #endregion
 
     #region Members
@@ -129,6 +174,9 @@ public sealed class LayerBlobStore : IDisposable
     private readonly Lock _mutex = new();
     private readonly FileStream _lockStream;
     private readonly ConditionalWeakTable<byte[], LayerBlob> _blobsByArray = new();
+    private readonly HashSet<Pack> _packs = [];
+    private readonly Func<string, long> _availableDiskSpace;
+    private readonly long _packSize;
     private Pack? _currentPack;
     private int _packCount;
     private long _bytesOnDisk;
@@ -167,16 +215,41 @@ public sealed class LayerBlobStore : IDisposable
     /// Creates a store in a new session folder inside <paramref name="baseFolder"/>/<see cref="CacheFolderName"/>.
     /// </summary>
     /// <param name="baseFolder">The base folder.</param>
-    public LayerBlobStore(string baseFolder)
+    public LayerBlobStore(string baseFolder) : this(baseFolder, GetAvailableDiskSpace, PackSize)
     {
+    }
+
+    internal LayerBlobStore(string baseFolder, Func<string, long> availableDiskSpace, long packSize)
+    {
+        ArgumentNullException.ThrowIfNull(availableDiskSpace);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(packSize);
+        _availableDiskSpace = availableDiskSpace;
+        _packSize = packSize;
         var cacheFolder = Path.Combine(baseFolder, CacheFolderName);
         Directory.CreateDirectory(cacheFolder);
-        DeleteOrphanSessions(cacheFolder);
-
-        Folder = Path.Combine(cacheFolder, $"{Environment.ProcessId}-{Guid.NewGuid():N}");
-        Directory.CreateDirectory(Folder);
-        _lockStream = new FileStream(Path.Combine(Folder, LockFileName), FileMode.CreateNew, FileAccess.ReadWrite,
-            FileShare.None, 1, FileOptions.DeleteOnClose);
+        using var coordination = AcquireCacheRoot(cacheFolder);
+        try
+        {
+            DeleteOrphanSessionsCore(cacheFolder);
+            Folder = Path.Combine(cacheFolder, $"{Environment.ProcessId}-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(Folder);
+            _lockStream = new FileStream(Path.Combine(Folder, LockFileName), FileMode.CreateNew, FileAccess.ReadWrite,
+                FileShare.None, 1);
+            try
+            {
+                _lockStream.Write(SessionMarker);
+                _lockStream.Flush(true);
+            }
+            catch
+            {
+                _lockStream.Dispose();
+                throw;
+            }
+        }
+        finally
+        {
+            coordination.ReleaseMutex();
+        }
         MaximumBytes = CoreSettings.DiskCacheMaximumBytes;
     }
 
@@ -194,50 +267,55 @@ public sealed class LayerBlobStore : IDisposable
     {
         if (_isDisposed || bytes.Length == 0) return null;
 
-        if (_blobsByArray.TryGetValue(bytes, out var existing) && existing.TryAddReference())
-        {
-            return new LayerBlobLease(existing);
-        }
-
-        Pack pack;
-        long offset;
         lock (_mutex)
         {
             if (_isDisposed) return null;
-            var maximumBytes = MaximumBytes;
-            if (maximumBytes > 0 && _bytesOnDisk + bytes.Length > maximumBytes) return null;
-
-            if (_currentPack is null || _currentPack.Length + bytes.Length > PackSize)
+            if (_blobsByArray.TryGetValue(bytes, out var existing) && existing.TryAddReference())
             {
-                if (!HasDiskSpaceFor(Math.Max(PackSize, bytes.Length))) return null;
-                var oldPack = _currentPack;
-                _currentPack = new Pack(Path.Combine(Folder, $"{_packCount++:D5}.pack"));
-                if (oldPack is not null && oldPack.LiveBlobs == 0) DeletePack(oldPack);
+                return new LayerBlobLease(existing);
+            }
+            var maximumBytes = MaximumBytes;
+            if (maximumBytes > 0 && bytes.Length > maximumBytes - _filesLength) return null;
+            // Writes are serialized: no other append in this store can reserve the same free space.
+            if (!HasDiskSpaceFor(bytes.Length)) return null;
+
+            if (_currentPack is null || _currentPack.Length + bytes.Length > _packSize)
+            {
+                try
+                {
+                    var newPack = new Pack(Path.Combine(Folder, $"{_packCount++:D5}.pack"));
+                    _packs.Add(newPack);
+                    _currentPack = newPack;
+                }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+                {
+                    Debug.WriteLine($"{nameof(LayerBlobStore)}: unable to create a pack: {e.Message}");
+                    return null;
+                }
             }
 
-            pack = _currentPack;
-            offset = pack.Length;
+            var pack = _currentPack;
+            var offset = pack.Length;
             pack.Length += bytes.Length;
             pack.LiveBlobs++;
             _bytesOnDisk += bytes.Length;
             _filesLength += bytes.Length;
-        }
+            var blob = new LayerBlob(this, pack, offset, bytes.Length, hash);
+            try
+            {
+                RandomAccess.Write(pack.Handle, bytes, offset);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"{nameof(LayerBlobStore)}: write failed: {e.Message}");
+                blob.ReleaseReference();
+                return null;
+            }
 
-        var blob = new LayerBlob(this, pack, offset, bytes.Length, hash);
-        try
-        {
-            RandomAccess.Write(pack.Handle, bytes, offset);
+            blob.SetLoaded(bytes);
+            _blobsByArray.AddOrUpdate(bytes, blob);
+            return new LayerBlobLease(blob);
         }
-        catch (Exception e)
-        {
-            Debug.WriteLine($"{nameof(LayerBlobStore)}: write failed: {e.Message}");
-            blob.ReleaseReference();
-            return null;
-        }
-
-        blob.SetLoaded(bytes);
-        _blobsByArray.AddOrUpdate(bytes, blob);
-        return new LayerBlobLease(blob);
     }
 
     /// <summary>
@@ -266,9 +344,10 @@ public sealed class LayerBlobStore : IDisposable
     {
         lock (_mutex)
         {
+            if (_isDisposed) return;
             _bytesOnDisk -= blob.Length;
             blob.Pack.LiveBlobs--;
-            if (blob.Pack.LiveBlobs == 0 && !ReferenceEquals(blob.Pack, _currentPack))
+            if (blob.Pack.LiveBlobs == 0)
             {
                 DeletePack(blob.Pack);
             }
@@ -277,28 +356,36 @@ public sealed class LayerBlobStore : IDisposable
 
     private void DeletePack(Pack pack)
     {
+        if (!_packs.Remove(pack)) return;
+        if (ReferenceEquals(pack, _currentPack)) _currentPack = null;
         _filesLength -= pack.Length;
         pack.Dispose();
     }
 
     private bool HasDiskSpaceFor(long length)
     {
+        var available = _availableDiskSpace(Folder);
+        return available > MinimumDiskFreeBytes && length < available - MinimumDiskFreeBytes;
+    }
+
+    private static long GetAvailableDiskSpace(string folder)
+    {
         try
         {
-            var drivePath = Folder;
+            var drivePath = folder;
             if (OperatingSystem.IsWindows())
             {
-                drivePath = Path.GetPathRoot(Path.GetFullPath(Folder)) ?? string.Empty;
+                drivePath = Path.GetPathRoot(Path.GetFullPath(folder)) ?? string.Empty;
                 // Network shares have no drive letter
-                if (drivePath.Length == 0 || drivePath.StartsWith(@"\\")) return true;
+                if (drivePath.Length == 0) return 0;
             }
 
             var drive = new DriveInfo(drivePath);
-            return drive.AvailableFreeSpace - length > MinimumDiskFreeBytes;
+            return drive.AvailableFreeSpace;
         }
         catch (Exception)
         {
-            return true;
+            return 0;
         }
     }
 
@@ -308,8 +395,11 @@ public sealed class LayerBlobStore : IDisposable
         {
             if (_isDisposed) return;
             _isDisposed = true;
-            _currentPack?.Dispose();
+            foreach (var pack in _packs) pack.Dispose();
+            _packs.Clear();
             _currentPack = null;
+            _bytesOnDisk = 0;
+            _filesLength = 0;
         }
 
         try

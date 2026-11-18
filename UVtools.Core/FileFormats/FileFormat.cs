@@ -2394,8 +2394,6 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
     private void OnLayersAssigned()
     {
         if (_layers.Length == 0) return;
-        var pixels = (long)ResolutionX * ResolutionY;
-        if (pixels > 0) MemoryGovernor.LayerPixelCount = pixels;
         MemoryGovernor.Register(this);
     }
 
@@ -5351,6 +5349,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
     /// <param name="progress"></param>
     public void Encode(string? fileFullPath, OperationProgress? progress = null)
     {
+        using var memoryScope = MemoryGovernor.BeginLayerMemoryScope((long)ResolutionX * ResolutionY);
         fileFullPath ??= FileFullPath ?? throw new ArgumentNullException(nameof(fileFullPath));
         if (DecodeType == FileDecodeType.Partial)
             throw new InvalidOperationException("File was partial decoded, a full encode is not possible.");

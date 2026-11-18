@@ -62,8 +62,10 @@ public partial class MainWindow
 
     public async Task ClipboardUndoAndRerun(bool rerun)
     {
-        CanSave = true;
         var clip = ClipboardManager.CurrentClip;
+        // A compacted entry no longer has the predecessor needed to rerun it safely.
+        if (rerun && clip is { CanRerun: false }) return;
+        CanSave = true;
         ClipboardManager.Undo();
         if (!rerun)
         {

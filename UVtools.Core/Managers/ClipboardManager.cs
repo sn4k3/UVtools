@@ -51,6 +51,11 @@ public sealed class ClipboardItem : List<Layer>
 
     public bool IsFullBackup { get; set; }
 
+    /// <summary>
+    /// False when compaction removed the exact predecessor required to rerun this operation.
+    /// </summary>
+    public bool CanRerun { get; internal set; } = true;
+
 
     public Operation Operation
     {
@@ -516,6 +521,7 @@ public sealed partial class ClipboardManager : ObservableObject, IList<Clipboard
             var olderIndex = Count - 2;
             var newerIndex = olderIndex - 1;
             var merged = ClipboardItem.Merge(this[olderIndex], this[newerIndex]);
+            merged.CanRerun = false;
             if (!ReferenceEquals(merged, this[newerIndex])) this[newerIndex] = merged;
             RemoveAt(olderIndex);
         }
@@ -548,7 +554,14 @@ public sealed partial class ClipboardManager : ObservableObject, IList<Clipboard
     /// <returns>The compressed bytes moved to the disk.</returns>
     public long MoveHistoryToDisk(bool includeShared = false)
     {
-        var store = LayerBlobStore.Session;
+        return MoveHistoryToDisk(LayerBlobStore.Session, includeShared);
+    }
+
+    /// <summary>
+    /// Moves the undo history to the specified store, or does nothing when no store is available.
+    /// </summary>
+    public long MoveHistoryToDisk(LayerBlobStore? store, bool includeShared = false)
+    {
         var slicerFile = SlicerFile;
         if (store is null || slicerFile is null) return 0;
 
