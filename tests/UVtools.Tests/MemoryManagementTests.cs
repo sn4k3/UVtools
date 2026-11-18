@@ -8,6 +8,8 @@
 
 using System;
 using System.IO;
+using System.Linq;
+using System.Drawing;
 using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -874,5 +876,49 @@ public sealed class MemoryManagementTests : IDisposable
             CvInvoke.AbsDiff(expected, mat, diff);
             Assert.Equal(0, CvInvoke.CountNonZero(diff));
         }
+    }
+
+    [Fact]
+    public void WorkerSizing_OutsideAnOperation_UsesTheSizeOfTheLoadedFile()
+    {
+        var reserve = CoreSettings.MemoryReserveBytes;
+        try
+        {
+            var file = CreateFile(2, CreateNoise); // Assigning the layers informs the layer size
+            CoreSettings.MemoryReserveBytes = long.MaxValue / 2;
+            MemoryGovernor.Sample();
+            if (MemoryGovernor.TotalPhysicalBytes <= 0) return;
+
+            Assert.Equal(0, MemoryGovernor.LayerPixelCount); // No scope here
+            Assert.Equal((long)file.ResolutionX * file.ResolutionY, MemoryGovernor.EffectiveLayerPixelCount);
+            // Without memory to spare a single worker runs, even outside of Operation.Execute and Encode
+            Assert.Equal(1, CoreSettings.ParallelOptions.MaxDegreeOfParallelism);
+        }
+        finally
+        {
+            CoreSettings.MemoryReserveBytes = reserve;
+            MemoryGovernor.Sample();
+        }
+    }
+
+    [Fact]
+    public void Decode_ScopeFollowsTheResolutionOfTheFileBeingDecoded()
+    {
+        var file = PcbFixtures.CreateSlicerFile();
+        using (MemoryGovernor.BeginLayerMemoryScope(0))
+        {
+            // What a format does when it decodes its header, before the layer loops
+            file.ResolutionX = 640;
+            file.ResolutionY = 480;
+            Assert.Equal(640L * 480, MemoryGovernor.LayerPixelCount);
+        }
+
+        Assert.Equal(0, MemoryGovernor.LayerPixelCount);
+
+        // Outside of a scope the decoding file does not change what the other work is sized with
+        var before = MemoryGovernor.EffectiveLayerPixelCount;
+        file.ResolutionX = 321;
+        Assert.Equal(0, MemoryGovernor.LayerPixelCount);
+        Assert.Equal(before, MemoryGovernor.EffectiveLayerPixelCount);
     }
 }

@@ -2394,6 +2394,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
     private void OnLayersAssigned()
     {
         if (_layers.Length == 0) return;
+        MemoryGovernor.NotifyLayerSize((long)ResolutionX * ResolutionY, true);
         MemoryGovernor.Register(this);
     }
 
@@ -2709,6 +2710,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         set
         {
             if (!SetProperty(ref _resolutionX, value)) return;
+            MemoryGovernor.NotifyLayerSize((long)_resolutionX * _resolutionY, false);
             NotifyModelGeometryChanged();
             OnPropertyChanged(nameof(Resolution));
             OnPropertyChanged(nameof(ResolutionRectangle));
@@ -2735,6 +2737,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         set
         {
             if (!SetProperty(ref _resolutionY, value)) return;
+            MemoryGovernor.NotifyLayerSize((long)_resolutionX * _resolutionY, false);
             NotifyModelGeometryChanged();
             OnPropertyChanged(nameof(Resolution));
             OnPropertyChanged(nameof(ResolutionRectangle));
@@ -5447,6 +5450,8 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         progress ??= new OperationProgress();
         progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
 
+        // The resolution is only known once the header is decoded, its setters update this scope for the layer loops
+        using var memoryScope = MemoryGovernor.BeginLayerMemoryScope((long)ResolutionX * ResolutionY);
         DecodeInternally(progress);
         progress.PauseOrCancelIfRequested();
 

@@ -102,6 +102,8 @@ public static class MemoryGovernor
     [ThreadStatic]
     private static long _threadLaneGeneration;
     private static readonly AsyncLocal<long> OperationLayerPixelCount = new();
+    private static readonly AsyncLocal<bool> LayerMemoryScopeActive = new();
+    private static long _fileLayerPixelCount;
 
     [ThreadStatic]
     private static bool _threadHoldsLane;
@@ -167,6 +169,34 @@ public static class MemoryGovernor
     }
 
     /// <summary>
+    /// Gets the layer pixel count used to size the workers: the one of the current scope, otherwise the one of the
+    /// last file that got its layers, so parallel work outside of an operation (issue detection, previews...) is
+    /// sized too. 0 when unknown.
+    /// </summary>
+    public static long EffectiveLayerPixelCount
+    {
+        get
+        {
+            var scoped = LayerPixelCount;
+            return scoped > 0 ? scoped : Interlocked.Read(ref _fileLayerPixelCount);
+        }
+    }
+
+    /// <summary>
+    /// Informs the size of the layers of a file, so the workers can be sized to it.
+    /// </summary>
+    /// <param name="pixelCount">The pixels of a layer, ignored when not positive.</param>
+    /// <param name="isFileLoaded">True when the file holds its layers, it becomes the size used outside of any scope.
+    /// False while the file is still being decoded: only the active scope, if any, is updated.</param>
+    public static void NotifyLayerSize(long pixelCount, bool isFileLoaded)
+    {
+        if (pixelCount <= 0) return;
+        if (isFileLoaded) Interlocked.Exchange(ref _fileLayerPixelCount, pixelCount);
+        // Updates the scope of the caller, which is restored when the scope ends
+        if (LayerMemoryScopeActive.Value) LayerPixelCount = pixelCount;
+    }
+
+    /// <summary>
     /// Calculates the effective reserve, leaving at least 1 GB (or a quarter of smaller systems) for work.
     /// </summary>
     public static long CalculateReserveBytes(long configuredBytes, long totalBytes)
@@ -184,14 +214,20 @@ public static class MemoryGovernor
     private sealed class LayerMemoryScope : IDisposable
     {
         private readonly long _previous = LayerPixelCount;
+        private readonly bool _previousActive = LayerMemoryScopeActive.Value;
         private bool _disposed;
 
-        public LayerMemoryScope(long pixelCount) => LayerPixelCount = pixelCount;
+        public LayerMemoryScope(long pixelCount)
+        {
+            LayerPixelCount = pixelCount;
+            LayerMemoryScopeActive.Value = true;
+        }
 
         public void Dispose()
         {
             if (_disposed) return;
             LayerPixelCount = _previous;
+            LayerMemoryScopeActive.Value = _previousActive;
             _disposed = true;
         }
     }
@@ -465,7 +501,7 @@ public static class MemoryGovernor
     public static int GetMaxDegreeOfParallelism(int requested, long bytesPerWorker = 0)
     {
         if (requested == 1 || !IsAdaptive) return requested;
-        if (bytesPerWorker <= 0) bytesPerWorker = Math.Min(LayerPixelCount, long.MaxValue / DefaultImagesPerWorker) * DefaultImagesPerWorker;
+        if (bytesPerWorker <= 0) bytesPerWorker = Math.Min(EffectiveLayerPixelCount, long.MaxValue / DefaultImagesPerWorker) * DefaultImagesPerWorker;
         if (bytesPerWorker <= 0) return requested;
 
         SampleIfStale();

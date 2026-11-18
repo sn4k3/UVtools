@@ -26,6 +26,8 @@
     holding the encoded images of every layer until the end
   - (Improvement) "Free unused RAM" also moves the unused undo history to the disk cache
   - (Improvement) Closing a file releases its space in the disk cache right away
+  - (Improvement) The number of parallel tasks is also limited to the available memory while a file is opened and in the
+    work outside of the operations, such as the issues detection and the previews, not only in the operations
 - (Upgrade) AvaloniaUI from 12.1.4 to 12.1.6
 
 ## 25/10/2026 - v7.1.2

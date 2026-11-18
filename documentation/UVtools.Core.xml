@@ -7933,6 +7933,21 @@
             0 disables the estimation. Prefer <see cref="M:UVtools.Core.Managers.MemoryGovernor.BeginLayerMemoryScope(System.Int64)"/> for operations so the previous value is restored.
             </summary>
         </member>
+        <member name="P:UVtools.Core.Managers.MemoryGovernor.EffectiveLayerPixelCount">
+            <summary>
+            Gets the layer pixel count used to size the workers: the one of the current scope, otherwise the one of the
+            last file that got its layers, so parallel work outside of an operation (issue detection, previews...) is
+            sized too. 0 when unknown.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.MemoryGovernor.NotifyLayerSize(System.Int64,System.Boolean)">
+            <summary>
+            Informs the size of the layers of a file, so the workers can be sized to it.
+            </summary>
+            <param name="pixelCount">The pixels of a layer, ignored when not positive.</param>
+            <param name="isFileLoaded">True when the file holds its layers, it becomes the size used outside of any scope.
+            False while the file is still being decoded: only the active scope, if any, is updated.</param>
+        </member>
         <member name="M:UVtools.Core.Managers.MemoryGovernor.CalculateReserveBytes(System.Int64,System.Int64)">
             <summary>
             Calculates the effective reserve, leaving at least 1 GB (or a quarter of smaller systems) for work.
