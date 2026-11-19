@@ -7,7 +7,7 @@
   to the loaded file, it shows which layers are unusual and does not predict print failure (#1164)
 - (Fix) PCB exposure: Gerber tracks, arcs and aperture macro vector lines now keep their physical width on printers
   with non-square pixels, preserving gaps between tracks. Macro vector lines now have square ends (#1166)
-- **Memory RAM:**
+- **Memory RAM: (#1165)**
   - (Improvement) Layer clones share the compressed image instead of copying it, so opening a file, the undo snapshot
     taken before each operation, undo/redo and file conversions no longer duplicate every layer in memory
   - (Add) Disk cache: layers of the undo history that are no longer used by the file, and idle layers when the memory

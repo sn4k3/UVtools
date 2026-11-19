@@ -34,6 +34,32 @@
             Checks if today is UVtools birthday
             </summary>
         </member>
+        <member name="F:UVtools.Core.Compressors.MatCompressorCysharpZstd.Instance">
+            <summary>
+            Provides a singleton instance of the <see cref="T:MatCompressorCysharpZstd" /> class for efficient reuse across the application.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Compressors.MatCompressorCysharpZstd.Provider">
+            <inheritdoc />
+        </member>
+        <member name="P:UVtools.Core.Compressors.MatCompressorCysharpZstd.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:UVtools.Core.Compressors.MatCompressorCysharpZstd.MaximumCompressionLevel">
+            <inheritdoc />
+        </member>
+        <member name="M:UVtools.Core.Compressors.MatCompressorCysharpZstd.#cctor">
+            <inheritdoc />
+        </member>
+        <member name="M:UVtools.Core.Compressors.MatCompressorCysharpZstd.GetCompressionLevel(System.IO.Compression.CompressionLevel)">
+            <inheritdoc />
+        </member>
+        <member name="M:UVtools.Core.Compressors.MatCompressorCysharpZstd.CompressCore(Emgu.CV.Mat,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:UVtools.Core.Compressors.MatCompressorCysharpZstd.DecompressCore(System.Byte[],Emgu.CV.Mat)">
+            <inheritdoc />
+        </member>
         <member name="F:UVtools.Core.Compressors.MatCompressorLz4.Instance">
             <summary>
             Provides a singleton instance of the <see cref="T:MatCompressorLz4" /> class for efficient reuse across the application.
@@ -58,32 +84,6 @@
             <inheritdoc />
         </member>
         <member name="M:UVtools.Core.Compressors.MatCompressorLz4.DecompressCore(System.Byte[],Emgu.CV.Mat)">
-            <inheritdoc />
-        </member>
-        <member name="F:UVtools.Core.Compressors.MatCompressorZstd.Instance">
-            <summary>
-            Provides a singleton instance of the <see cref="T:MatCompressorZstd" /> class for efficient reuse across the application.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.Compressors.MatCompressorZstd.Provider">
-            <inheritdoc />
-        </member>
-        <member name="P:UVtools.Core.Compressors.MatCompressorZstd.Name">
-            <inheritdoc />
-        </member>
-        <member name="P:UVtools.Core.Compressors.MatCompressorZstd.MaximumCompressionLevel">
-            <inheritdoc />
-        </member>
-        <member name="M:UVtools.Core.Compressors.MatCompressorZstd.#cctor">
-            <inheritdoc />
-        </member>
-        <member name="M:UVtools.Core.Compressors.MatCompressorZstd.GetCompressionLevel(System.IO.Compression.CompressionLevel)">
-            <inheritdoc />
-        </member>
-        <member name="M:UVtools.Core.Compressors.MatCompressorZstd.CompressCore(Emgu.CV.Mat,System.Int32)">
-            <inheritdoc />
-        </member>
-        <member name="M:UVtools.Core.Compressors.MatCompressorZstd.DecompressCore(System.Byte[],Emgu.CV.Mat)">
             <inheritdoc />
         </member>
         <member name="M:UVtools.Core.Converters.SpeedConverter.Convert(System.Single,UVtools.Core.SpeedUnit,UVtools.Core.SpeedUnit,System.Byte)">

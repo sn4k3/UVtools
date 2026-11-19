@@ -6,12 +6,12 @@ using EmguExtensions;
 
 namespace UVtools.Core.Compressors;
 
-public class MatCompressorZstd : MatCompressor
+public class MatCompressorCysharpZstd : MatCompressor
 {
     /// <summary>
-    /// Provides a singleton instance of the <see cref="T:MatCompressorZstd" /> class for efficient reuse across the application.
+    /// Provides a singleton instance of the <see cref="T:MatCompressorCysharpZstd" /> class for efficient reuse across the application.
     /// </summary>
-    public static readonly MatCompressorZstd Instance = new();
+    public static readonly MatCompressorCysharpZstd Instance = new();
 
     /// <inheritdoc />
     public override string Provider => "Cysharp";
@@ -24,7 +24,7 @@ public class MatCompressorZstd : MatCompressor
         NativeCompressions.Zstandard.MaxCompressionLevel;
 
     /// <inheritdoc />
-    static MatCompressorZstd()
+    static MatCompressorCysharpZstd()
     {
         AvailableCompressors.Add(Instance);
     }

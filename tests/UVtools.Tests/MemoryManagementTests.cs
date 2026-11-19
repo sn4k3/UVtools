@@ -73,7 +73,14 @@ public sealed class MemoryManagementTests : IDisposable
     {
         var mat = new Mat(slicerFile.Resolution, DepthType.Cv8U, 1);
         var data = new byte[slicerFile.Resolution.Width * slicerFile.Resolution.Height];
-        // Deterministic xorshift, the test needs repeatable incompressible pixels and not randomness
+        FillTestData(data, seed);
+        mat.SetTo(data);
+        return mat;
+    }
+
+    private static void FillTestData(Span<byte> data, int seed)
+    {
+        // Deterministic xorshift produces repeatable data that compresses poorly.
         var state = (uint)seed * 2654435761u + 1;
         for (var i = 0; i < data.Length; i++)
         {
@@ -82,9 +89,6 @@ public sealed class MemoryManagementTests : IDisposable
             state ^= state << 5;
             data[i] = (byte)(state >> 8);
         }
-
-        mat.SetTo(data);
-        return mat;
     }
 
     private static FileFormat CreateFile(int layerCount, Func<FileFormat, int, Mat> factory)
@@ -133,7 +137,7 @@ public sealed class MemoryManagementTests : IDisposable
     public async Task ConcurrentColdReads_ShareOneBufferAndPreserveItsContents()
     {
         var expected = new byte[4 * 1024 * 1024];
-        new Random(7).NextBytes(expected);
+        FillTestData(expected, 7);
         var lease = WriteBlob(_store, expected);
         Assert.NotNull(lease);
         try
@@ -624,6 +628,28 @@ public sealed class MemoryManagementTests : IDisposable
         Assert.NotSame(layer.CompressedMat.CompressedBytes, clone.CompressedMat.CompressedBytes);
         Assert.False(layer.Equals(clone));
         Assert.True(SameImage(original, layer));
+    }
+
+    [Fact]
+    public void Clone_DuringImageReplacement_CanMoveToDisk()
+    {
+        using var file = CreateFile(1, CreateNoise);
+        var layer = file[0];
+        layer.IsModified = false;
+        Layer? clone = null;
+        layer.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(Layer.IsModified))
+                clone = layer.Clone();
+        };
+
+        using var replacement = CreateNoise(file, 99);
+        layer.LayerMat = replacement;
+
+        var clonedLayer = Assert.IsType<Layer>(clone);
+        Assert.True(clonedLayer.TryMoveToDisk(_store) > 0);
+        Assert.True(clonedLayer.IsOnDisk);
+        Assert.True(SameImage(replacement, clonedLayer));
     }
 
     [Fact]
