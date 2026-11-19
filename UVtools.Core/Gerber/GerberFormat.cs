@@ -321,19 +321,30 @@ public partial class GerberFormat
             {
                 if (currentOperation == 1 && currentAperture is CircleAperture circleAperture)
                 {
-                    var thickness = EmguCvExtensions.CorrectThickness(
-                        document.SizeMmToPx(circleAperture.Diameter));
-                    if (arcPoints is null)
+                    if (document.XYppmm.Width != document.XYppmm.Height)
                     {
-                        CvInvoke.Line(mat,
-                            document.PositionMmToPx(currentX, currentY),
-                            document.PositionMmToPx(nowX, nowY),
-                            document.PolarityColor, thickness, lineType);
+                        ReadOnlySpan<Point> stroke = arcPoints is not null
+                            ? arcPoints
+                            : [document.PositionMmToPx(currentX, currentY), document.PositionMmToPx(nowX, nowY)];
+                        document.DrawAnisotropicStroke(mat, stroke, circleAperture.Diameter,
+                            document.PolarityColor, lineType);
                     }
                     else
                     {
-                        CvInvoke.Polylines(mat, arcPoints, false,
-                            document.PolarityColor, thickness, lineType);
+                        var thickness = EmguCvExtensions.CorrectThickness(
+                            document.SizeMmToPx(circleAperture.Diameter));
+                        if (arcPoints is null)
+                        {
+                            CvInvoke.Line(mat,
+                                document.PositionMmToPx(currentX, currentY),
+                                document.PositionMmToPx(nowX, nowY),
+                                document.PolarityColor, thickness, lineType);
+                        }
+                        else
+                        {
+                            CvInvoke.Polylines(mat, arcPoints, false,
+                                document.PolarityColor, thickness, lineType);
+                        }
                     }
                 }
                 else if (currentOperation == 3)
@@ -346,6 +357,39 @@ public partial class GerberFormat
 
             currentX = nowX;
             currentY = nowY;
+        }
+    }
+
+    // Sweep a circular aperture in physical space, mapping its body and round joins to plate pixels.
+    private void DrawAnisotropicStroke(Mat mat, ReadOnlySpan<Point> points, double diameter,
+        MCvScalar color, LineType lineType)
+    {
+        var radius = diameter * SizeScale / 2;
+        var axes = SizeMmToPx(diameter / 2, diameter / 2);
+        var corners = new Point[4];
+        using var polygon = new VectorOfPoint();
+        for (var index = 0; index < points.Length; index++)
+        {
+            var end = points[index];
+            CvInvoke.Ellipse(mat, end, axes, 0, 0, 360, color, -1, lineType);
+            if (index == 0) continue;
+
+            var start = points[index - 1];
+            var dx = (end.X - (double)start.X) / XYppmm.Width;
+            var dy = (end.Y - (double)start.Y) / XYppmm.Height;
+            var length = Math.Sqrt(dx * dx + dy * dy);
+            if (length == 0) continue;
+
+            // Find the perpendicular in millimeters before scaling its two components independently.
+            var nx = (int)Math.Round(-dy / length * radius * XYppmm.Width);
+            var ny = (int)Math.Round(dx / length * radius * XYppmm.Height);
+            corners[0] = new Point(start.X + nx, start.Y + ny);
+            corners[1] = new Point(end.X + nx, end.Y + ny);
+            corners[2] = new Point(end.X - nx, end.Y - ny);
+            corners[3] = new Point(start.X - nx, start.Y - ny);
+            polygon.Clear();
+            polygon.Push(corners);
+            CvInvoke.FillConvexPoly(mat, polygon, color, lineType);
         }
     }
 

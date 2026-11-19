@@ -430,7 +430,7 @@ public sealed partial class SuggestionWaitTimeAfterCure : Suggestion
             : CalculateWaitTime(LayerGroup.Normal, (decimal)layer.ExposureTime, layer, firstNormalLayerIndex);
 
     private bool IsBottomLayer(Layer layer) =>
-        layer.IsBottomLayer || BottomHeight > 0 && (decimal)layer.PositionZ <= BottomHeight;
+        layer.IsBottomLayer || BottomHeight > 0 && Layer.RoundHeight((decimal)layer.PositionZ) <= BottomHeight;
 
     private uint? GetFirstNormalLayerIndex()
     {

@@ -990,7 +990,7 @@ public partial class Layer : ObservableObject, IEquatable<Layer>, IEquatable<uin
             LayerCompressionCodec.Deflate => MatCompressorDeflate.Instance,
             LayerCompressionCodec.Brotli => MatCompressorBrotli.Instance,
             LayerCompressionCodec.Lz4 => MatCompressorLz4.Instance,
-            LayerCompressionCodec.Zstd => MatCompressorZstd.Instance,
+            LayerCompressionCodec.Zstd => UVtools.Core.Compressors.MatCompressorZstd.Instance,
             //LayerCompressionCodec.None => MatCompressorNone.Instance,
             _ => throw new ArgumentOutOfRangeException(nameof(compressionCodec), compressionCodec, null)
         };

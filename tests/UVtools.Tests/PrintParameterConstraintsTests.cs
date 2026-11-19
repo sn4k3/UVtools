@@ -47,15 +47,20 @@ public class PrintParameterConstraintsTests
             file.CoercePrintParameterModifierValue(FileFormat.PrintParameterModifier.LiftSpeed, (decimal)speed));
     }
 
+    public static TheoryData<decimal, decimal> ExposureTimeCases => new()
+    {
+        { 3.46m, 3.5m },
+        { 0.04m, 0.1m } // below the minimum
+    };
+
     [Theory]
-    [InlineData(3.46f, 3.5f)]
-    [InlineData(0.04f, 0.1f)] // below the minimum
-    public void CrealityCXDLPExposureTimeIsCoercedToTenthsOfASecond(float exposure, float expected)
+    [MemberData(nameof(ExposureTimeCases))]
+    public void CrealityCXDLPExposureTimeIsCoercedToTenthsOfASecond(decimal exposure, decimal expected)
     {
         var file = new CrealityCXDLPFile();
 
-        Assert.Equal((decimal)expected,
-            file.CoercePrintParameterModifierValue(FileFormat.PrintParameterModifier.ExposureTime, (decimal)exposure));
+        Assert.Equal(expected,
+            file.CoercePrintParameterModifierValue(FileFormat.PrintParameterModifier.ExposureTime, exposure));
     }
 
     [Theory]

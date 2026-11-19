@@ -12,7 +12,7 @@ using Emgu.CV.Structure;
 using System;
 using System.Data;
 using System.Drawing;
-using EmguExtensions;
+using Emgu.CV.Util;
 
 namespace UVtools.Core.Gerber.Primitives;
 
@@ -103,11 +103,31 @@ public class VectorLinePrimitive : Primitive
         if (!IsParsed) return;
         if (LineWidth <= 0) return;
 
-        var start = RotateAroundMacroOrigin(StartX, StartY, Rotation);
-        var end = RotateAroundMacroOrigin(EndX, EndY, Rotation);
-        var pt1 = Document.PositionMmToPx(at.X + start.X, at.Y + start.Y);
-        var pt2 = Document.PositionMmToPx(at.X + end.X, at.Y + end.Y);
-        CvInvoke.Line(mat, pt1, pt2, GetExposureColor(Exposure, color), EmguCvExtensions.CorrectThickness(Document.SizeMmToPxOverride(LineWidth, Document.XYppmm.Height)), lineType);
+        var dx = (double)EndX - StartX;
+        var dy = (double)EndY - StartY;
+        var length = Math.Sqrt(dx * dx + dy * dy);
+        if (length == 0) return;
+
+        // Vector lines have square ends. Construct the rectangle in millimeters so rotation and
+        // unequal pixel pitches cannot change its physical width.
+        var halfWidth = LineWidth * Document.SizeScale / 2;
+        var nx = (float)(-dy / length * halfWidth);
+        var ny = (float)(dx / length * halfWidth);
+        ReadOnlySpan<PointF> corners = stackalloc PointF[4]
+        {
+            RotateAroundMacroOrigin(StartX + nx, StartY + ny, Rotation),
+            RotateAroundMacroOrigin(EndX + nx, EndY + ny, Rotation),
+            RotateAroundMacroOrigin(EndX - nx, EndY - ny, Rotation),
+            RotateAroundMacroOrigin(StartX - nx, StartY - ny, Rotation)
+        };
+        var points = new Point[corners.Length];
+        for (var index = 0; index < corners.Length; index++)
+        {
+            points[index] = Document.PositionMmToPx(at.X + corners[index].X, at.Y + corners[index].Y);
+        }
+
+        using var polygon = new VectorOfPoint(points);
+        CvInvoke.FillConvexPoly(mat, polygon, GetExposureColor(Exposure, color), lineType);
     }
 
     public override RectangleF GetBoundsMm()

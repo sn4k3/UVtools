@@ -1,9 +1,8 @@
-﻿using Emgu.CV;
-using EmguExtensions;
-using NativeCompressions;
-using System;
+﻿using System;
 using System.IO;
 using System.IO.Compression;
+using Emgu.CV;
+using EmguExtensions;
 
 namespace UVtools.Core.Compressors;
 
@@ -18,10 +17,11 @@ public class MatCompressorZstd : MatCompressor
     public override string Provider => "Cysharp";
 
     /// <inheritdoc />
-    public override string Name  => "Zstd";
+    public override string Name => "Zstd";
 
     /// <inheritdoc />
-    public override int MaximumCompressionLevel { get; } = Zstandard.MaxCompressionLevel;
+    public override int MaximumCompressionLevel { get; } =
+        NativeCompressions.Zstandard.MaxCompressionLevel;
 
     /// <inheritdoc />
     static MatCompressorZstd()
@@ -38,21 +38,29 @@ public class MatCompressorZstd : MatCompressor
             CompressionLevel.Fastest => 1, // 0 means the default level (3), which is ~25% slower for ~3.5% smaller output
             CompressionLevel.Optimal => 10,
             CompressionLevel.SmallestSize => 12,
-            _ => throw new ArgumentException("Invalid CompressionLevel value.", nameof(compressionLevel))
+            _ => throw new ArgumentException(
+                "Invalid CompressionLevel value.",
+                nameof(compressionLevel)
+            ),
         };
     }
 
     /// <inheritdoc />
-
     protected override byte[] CompressCore(Mat src, int compressionLevel)
     {
-        var options = ZstandardCompressionOptions.Default with
+        var options = NativeCompressions.ZstandardCompressionOptions.Default with
         {
             CompressionLevel = compressionLevel,
         };
         // The compressed length is unknown; keep sparse streaming to avoid a worst-case output allocation.
         using var buffer = CreateCompressionBuffer(src);
-        using (var compressStream = new ZstandardStream(CreateCompressionStream(buffer), options, leaveOpen: false))
+        using (
+            var compressStream = new NativeCompressions.ZstandardStream(
+                CreateCompressionStream(buffer),
+                options,
+                leaveOpen: false
+            )
+        )
         {
             src.CopyTo(compressStream);
         }
@@ -64,11 +72,12 @@ public class MatCompressorZstd : MatCompressor
     protected override void DecompressCore(byte[] compressedBytes, Mat dst)
     {
         var destination = dst.GetSpanOfBytes();
-        var bytesWritten = Zstandard.Decompress(compressedBytes, destination);
+        var bytesWritten = NativeCompressions.Zstandard.Decompress(compressedBytes, destination);
         if (bytesWritten != destination.Length)
         {
             throw new InvalidDataException(
-                $"The Zstandard frame contains {bytesWritten} bytes, but the destination Mat requires {destination.Length}.");
+                $"The Zstandard frame contains {bytesWritten} bytes, but the destination Mat requires {destination.Length}."
+            );
         }
     }
 }
