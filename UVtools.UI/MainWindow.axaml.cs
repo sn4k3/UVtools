@@ -183,7 +183,18 @@ public partial class MainWindow : GenericWindow
     #region Members
 
     public Stopwatch LastStopWatch = new();
-    private readonly System.Timers.Timer _ramUsageTimer = new(2000) { AutoReset = true };
+    private readonly System.Timers.Timer _ramUsageTimer = new(1000) { AutoReset = true };
+
+    /// <summary>
+    /// The low memory message last shown in the progress log, to remove it when the pressure goes down.
+    /// </summary>
+    private string? _ramLowMemoryLog;
+
+    /// <summary>
+    /// For how long the adaptive memory management can try to relieve a critical pressure before the
+    /// <see cref="UserSettings.GeneralUserSettings.AvailableRamOnHitLimitAction"/> runs.
+    /// </summary>
+    private static readonly TimeSpan RamAdaptiveGracePeriod = TimeSpan.FromSeconds(15);
 
     private bool _isGUIEnabled = true;
     private uint _savesCount;
@@ -498,6 +509,7 @@ public partial class MainWindow : GenericWindow
         };
 
         _ramUsageTimer.Elapsed += RamUsageTimerOnElapsed;
+        MemoryGovernor.Start();
 
         AppUpdater.PropertyChanged += AppUpdaterOnPropertyChanged;
         AppUpdater.InstallUpdateCompleted += (sender, asset) =>
@@ -531,11 +543,23 @@ public partial class MainWindow : GenericWindow
             return;
         }
 
+        UpdateLowMemoryLog();
+
+        var action = Settings.General.AvailableRamOnHitLimitAction;
+        if (action == RamLimitAction.Adaptive && MemoryGovernor.IsAdaptive) return; // Never stops the work
+        if (Settings.General.AvailableRamLimit <= 0) return;
+
         if (!HostSystem.TryGetMemoryStatus(out var memoryStatus)) return;
 
         var availableMemory = (decimal)Math.Round(memoryStatus.AvailablePhysicalBytes / Math.Pow(1024, 3), 2,
             MidpointRounding.AwayFromZero);
-        if (availableMemory > Settings.General.AvailableRamLimit) return;
+        var effectiveLimit = MemoryGovernor.IsAdaptive
+            ? MemoryGovernor.ReserveBytes / (1024m * 1024 * 1024)
+            : Settings.General.AvailableRamLimit;
+        if (availableMemory > effectiveLimit) return;
+
+        // Give the adaptive management the chance to relieve the pressure before stopping the work
+        if (MemoryGovernor.IsAdaptive && MemoryGovernor.CriticalDuration < RamAdaptiveGracePeriod) return;
 
         var totalMemory = Math.Round(memoryStatus.TotalPhysicalBytes / Math.Pow(1024, 3), 2,
             MidpointRounding.AwayFromZero);
@@ -556,6 +580,8 @@ public partial class MainWindow : GenericWindow
                         Progress.IsPaused = true;
                         break;
                     case RamLimitAction.Cancel:
+                    // Adaptive management is disabled, so cancel as it is the safest
+                    case RamLimitAction.Adaptive:
                         await Progress.TokenSource.CancelAsync();
                         break;
                     default:
@@ -590,6 +616,32 @@ public partial class MainWindow : GenericWindow
                          """);
                 }
             }
+        });
+    }
+
+    /// <summary>
+    /// Shows in the progress log when the work is running with reduced memory, so it does not look frozen.
+    /// </summary>
+    private void UpdateLowMemoryLog()
+    {
+        var level = MemoryGovernor.Level;
+        string? message = null;
+        if (MemoryGovernor.IsAdaptive && level >= MemoryPressureLevel.High)
+        {
+            message = level == MemoryPressureLevel.Critical
+                ? $"Low memory: running slower to keep the system stable. ({MemoryGovernor.GetStatusString()})"
+                : $"Low memory: moving idle data to the disk cache. ({MemoryGovernor.GetStatusString()})";
+        }
+
+        if (message == _ramLowMemoryLog) return;
+        var previous = _ramLowMemoryLog;
+        _ramLowMemoryLog = message;
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            // Never overwrite a log written by the operation
+            if (!string.IsNullOrEmpty(Progress.Log) && Progress.Log != previous) return;
+            Progress.Log = message ?? string.Empty;
         });
     }
 
@@ -1409,6 +1461,8 @@ public partial class MainWindow : GenericWindow
             ShowProgressWindow("Garbage collector (GC)", "Collecting garbage from LOH", false);
             await Task.Run(() =>
             {
+                // The undo history images no longer used by the file can live on the disk
+                ClipboardManager.Instance.MoveHistoryToDisk();
                 GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
                 GC.Collect();
                 GC.WaitForPendingFinalizers();

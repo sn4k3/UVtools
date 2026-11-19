@@ -19,6 +19,7 @@ using EmguExtensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
+using UVtools.Core.Managers;
 using ZLinq;
 
 namespace UVtools.Core.Operations;
@@ -840,6 +841,7 @@ public abstract partial class Operation : ObservableObject, IDisposable
 
         var ownsProgress = progress is null;
         progress ??= new OperationProgress(CanCancel);
+        using var memoryScope = MemoryGovernor.BeginLayerMemoryScope((long)_slicerFile.ResolutionX * _slicerFile.ResolutionY);
         try
         {
             progress.Reset(ProgressAction, LayerRangeCount);

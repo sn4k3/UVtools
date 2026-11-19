@@ -24,9 +24,12 @@ public class MatCacheManager : IDisposable
     public FileFormat SlicerFile { get; }
 
     /// <summary>
-    /// Gets or sets the cache count of items to keep in memory
+    /// Gets or sets the maximum number of items to prefetch. Adaptive management may use fewer.
     /// </summary>
     public ushort CacheCount { get; set; }
+
+    /// <summary>Gets the prefetch count that currently fits in memory, including explicit cache limits.</summary>
+    public ushort EffectiveCacheCount => GetMemoryLimitedCacheCount(SlicerFile, CacheCount, ElementsPerCache);
 
     /// <summary>
     /// Gets the number of cached elements per a cache entry
@@ -104,7 +107,7 @@ public class MatCacheManager : IDisposable
 
     public MatCacheManager(FileFormat slicerFile, uint layerIndexStart, uint layerIndexEnd, ushort cacheCount = 0, byte elementsPerCache = 1)
     {
-        if (cacheCount == 0) cacheCount = (ushort)(Environment.ProcessorCount * 5);
+        if (cacheCount == 0) cacheCount = (ushort)Math.Min(ushort.MaxValue, Environment.ProcessorCount * 5);
         if (layerIndexEnd == 0) layerIndexEnd = slicerFile.HaveLayers ? slicerFile.LayerCount - 1 : 0;
         SlicerFile = slicerFile;
         LayerIndexStart = layerIndexStart;
@@ -114,6 +117,32 @@ public class MatCacheManager : IDisposable
         MatCache = new Mat[CollectionSize][];
 
         if (layerIndexStart == 0) UseRawIndexInsteadOfLayerIndex = true;
+    }
+
+    /// <summary>
+    /// Gets the default number of layers to cache: five per processor, limited to the half of the memory available
+    /// above <see cref="MemoryGovernor.ReserveBytes"/>, and at least one under pressure.
+    /// </summary>
+    /// <param name="slicerFile">The file to cache layers from.</param>
+    /// <param name="elementsPerCache">The number of mats per cached layer.</param>
+    public static ushort GetDefaultCacheCount(FileFormat slicerFile, byte elementsPerCache = 1)
+    {
+        var maximum = Math.Min(ushort.MaxValue, Environment.ProcessorCount * 5);
+        return GetMemoryLimitedCacheCount(slicerFile, (ushort)maximum, elementsPerCache);
+    }
+
+    private static ushort GetMemoryLimitedCacheCount(FileFormat slicerFile, ushort requested, byte elementsPerCache)
+    {
+        var maximum = Math.Max(1, (int)requested);
+        var bytesPerLayer = (long)slicerFile.ResolutionX * slicerFile.ResolutionY * Math.Max((byte)1, elementsPerCache);
+        if (bytesPerLayer <= 0 || !MemoryGovernor.IsAdaptive) return (ushort)maximum;
+
+        MemoryGovernor.RefreshIfStale();
+        if (MemoryGovernor.TotalPhysicalBytes <= 0) return (ushort)maximum;
+        if (MemoryGovernor.Level == MemoryPressureLevel.Critical) return 1;
+        if (MemoryGovernor.Level == MemoryPressureLevel.High) maximum = Math.Min(maximum, 2);
+        var budget = Math.Max(0, MemoryGovernor.AvailablePhysicalBytes - MemoryGovernor.ReserveBytes) / 2;
+        return (ushort)Math.Clamp(budget / bytesPerLayer, 1, maximum);
     }
 
     /// <summary>
@@ -151,13 +180,14 @@ public class MatCacheManager : IDisposable
                 ClearButKeep(layerIndex, AutoDisposeKeepLast);
             }
                 
+            var prefetchCount = EffectiveCacheCount;
             int fromLayerIndex = (int)layerIndex;
-            int toLayerIndex = (int)Math.Min(LayerIndexEnd+1, layerIndex + CacheCount);
+            int toLayerIndex = (int)Math.Min(LayerIndexEnd+1, layerIndex + prefetchCount);
 
             if (!Direction)
             {
                 toLayerIndex = fromLayerIndex + 1;
-                fromLayerIndex = Math.Max((int)LayerIndexStart, fromLayerIndex - CacheCount);
+                fromLayerIndex = Math.Max((int)LayerIndexStart, fromLayerIndex - prefetchCount + 1);
             }
 
             Parallel.For(fromLayerIndex, toLayerIndex, CoreSettings.ParallelOptions,

@@ -75,7 +75,7 @@ public enum PerLayerSettingsModes : byte
 /// <summary>
 /// Slicer <see cref="FileFormat"/> representation
 /// </summary>
-public abstract partial class FileFormat : ObservableObject, IDisposable, IEquatable<FileFormat>, IList<Layer>
+public abstract partial class FileFormat : ObservableObject, IDisposable, IEquatable<FileFormat>, IList<Layer>, IMemoryTrimmable
 {
     #region Notification
 
@@ -2382,9 +2382,45 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                 RebuildGCode();
             }
 
+            OnLayersAssigned();
             OnPropertyChanged();
             OnPropertyChanged(nameof(HaveLayers));
         }
+    }
+
+    /// <summary>
+    /// Registers this file to the <see cref="MemoryGovernor"/> once it holds layers.
+    /// </summary>
+    private void OnLayersAssigned()
+    {
+        if (_layers.Length == 0) return;
+        MemoryGovernor.NotifyLayerSize((long)ResolutionX * ResolutionY, true);
+        MemoryGovernor.Register(this);
+    }
+
+    /// <summary>
+    /// Moves the images of idle layers to the disk cache when the memory pressure is high.
+    /// </summary>
+    /// <param name="level">The memory pressure.</param>
+    /// <returns>The compressed bytes moved to the disk.</returns>
+    public long Trim(MemoryPressureLevel level)
+    {
+        if (level < MemoryPressureLevel.High || DecodeType != FileDecodeType.Full) return 0;
+        var store = LayerBlobStore.Session;
+        if (store is null) return 0;
+
+        // Layers in use by the running work are accessed often, the others become idle
+        var minimumIdle = level == MemoryPressureLevel.Critical ? 5_000 : 30_000;
+        long released = 0;
+        var layers = _layers;
+        for (var i = 0; i < layers.Length; i++)
+        {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+            if (layers[i] is null) continue;
+            released += layers[i].TryMoveToDisk(store, minimumIdle);
+        }
+
+        return released;
     }
 
     /// <summary>
@@ -2398,7 +2434,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
             for (var i = 0; i < LayerCount; i++)
             {
                 if (this[i] is null) continue;
-                size += this[i].CompressedMat.CompressedLength;
+                size += this[i].CompressedLengthInMemory;
             }
 
             return size;
@@ -2674,6 +2710,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         set
         {
             if (!SetProperty(ref _resolutionX, value)) return;
+            MemoryGovernor.NotifyLayerSize((long)_resolutionX * _resolutionY, false);
             NotifyModelGeometryChanged();
             OnPropertyChanged(nameof(Resolution));
             OnPropertyChanged(nameof(ResolutionRectangle));
@@ -2700,6 +2737,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         set
         {
             if (!SetProperty(ref _resolutionY, value)) return;
+            MemoryGovernor.NotifyLayerSize((long)_resolutionX * _resolutionY, false);
             NotifyModelGeometryChanged();
             OnPropertyChanged(nameof(Resolution));
             OnPropertyChanged(nameof(ResolutionRectangle));
@@ -4706,6 +4744,8 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
     public virtual void Clear()
     {
         FileFullPath = null;
+        // Frees the disk cache space now, instead of when the garbage collector finalizes the layers
+        foreach (var layer in _layers) layer?.ReleaseDiskCopy();
         _layers = [];
         GCode?.Clear();
         ClearThumbnails();
@@ -5312,6 +5352,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
     /// <param name="progress"></param>
     public void Encode(string? fileFullPath, OperationProgress? progress = null)
     {
+        using var memoryScope = MemoryGovernor.BeginLayerMemoryScope((long)ResolutionX * ResolutionY);
         fileFullPath ??= FileFullPath ?? throw new ArgumentNullException(nameof(fileFullPath));
         if (DecodeType == FileDecodeType.Partial)
             throw new InvalidOperationException("File was partial decoded, a full encode is not possible.");
@@ -5409,6 +5450,8 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         progress ??= new OperationProgress();
         progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
 
+        // The resolution is only known once the header is decoded, its setters update this scope for the layer loops
+        using var memoryScope = MemoryGovernor.BeginLayerMemoryScope((long)ResolutionX * ResolutionY);
         DecodeInternally(progress);
         progress.PauseOrCancelIfRequested();
 
@@ -5679,14 +5722,19 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         var layerImageType = LayerImageFormat;
 
         Dictionary<ulong, uint>? firstLayerIndexByHash = null;
+        Dictionary<ulong, uint>? lastLayerIndexByHash = null;
+        uint nextLayerIndexToWrite = 0;
         if (useCache)
         {
             // Encode only one layer per distinct image, the others share the same encoded bytes
             firstLayerIndexByHash = new Dictionary<ulong, uint>();
+            lastLayerIndexByHash = new Dictionary<ulong, uint>();
             var distinctLayers = new List<Layer>();
             foreach (var layer in this)
             {
-                if (firstLayerIndexByHash.TryAdd(layer.Hash, layer.Index)) distinctLayers.Add(layer);
+                var hash = layer.Hash;
+                if (firstLayerIndexByHash.TryAdd(hash, layer.Index)) distinctLayers.Add(layer);
+                lastLayerIndexByHash[hash] = layer.Index;
             }
 
             batches = distinctLayers.Chunk(DefaultParallelBatchCount);
@@ -5750,8 +5798,24 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
                 progress.LockAndIncrement();
             });
 
-            // The bytes of the cached layers are needed until every layer is written
-            if (useCache) continue;
+            if (useCache)
+            {
+                // Distinct layers are encoded in order and a layer image is never encoded after the layer itself,
+                // so every layer up to the last encoded one can be written. The encoded bytes are released once no
+                // later layer shares them.
+                var lastEncodedIndex = ((Layer[])batch)[^1].Index; // Chunk of the distinct layers
+                for (; nextLayerIndexToWrite <= lastEncodedIndex; nextLayerIndexToWrite++)
+                {
+                    var layer = this[nextLayerIndexToWrite];
+                    var hash = layer.Hash;
+                    var sourceIndex = firstLayerIndexByHash![hash];
+                    var entryPath = Path.Combine(path, layer.FormatFileName(prepend, padDigits, layerIndexStartNumber));
+                    zipArchive.CreateEntryFromContent(entryPath, pngLayerBytes[sourceIndex], ZipArchiveMode.Create);
+                    if (lastLayerIndexByHash![hash] == nextLayerIndexToWrite) pngLayerBytes[sourceIndex] = null!;
+                }
+
+                continue;
+            }
 
             foreach (var layer in batch)
             {
@@ -5764,8 +5828,10 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
 
         if (firstLayerIndexByHash is not null)
         {
-            foreach (var layer in this)
+            // The layers after the last distinct one share images already encoded
+            for (; nextLayerIndexToWrite < LayerCount; nextLayerIndexToWrite++)
             {
+                var layer = this[nextLayerIndexToWrite];
                 var entryPath = Path.Combine(path, layer.FormatFileName(prepend, padDigits, layerIndexStartNumber));
                 zipArchive.CreateEntryFromContent(entryPath, pngLayerBytes[firstLayerIndexByHash[layer.Hash]], ZipArchiveMode.Create);
             }
@@ -8183,6 +8249,7 @@ public abstract partial class FileFormat : ObservableObject, IDisposable, IEquat
         }
 
         SanitizeLayers();
+        OnLayersAssigned();
     }
 
     public void Init(uint layerCount, bool initializeLayers = false)

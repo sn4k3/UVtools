@@ -16,6 +16,7 @@ using Emgu.CV.Cuda;
 using EmguExtensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
+using UVtools.Core.Managers;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core;
@@ -103,8 +104,10 @@ public static class CoreSettings
     /// <summary>
     /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> set
     /// </summary>
+    /// <remarks>The degree of parallelism is reduced when the workers would not fit in the available memory,
+    /// see <see cref="MemoryGovernor.GetMaxDegreeOfParallelism"/>.</remarks>
     public static ParallelOptions ParallelOptions =>
-        new() { MaxDegreeOfParallelism = MaxDegreeOfParallelism };
+        new() { MaxDegreeOfParallelism = MemoryGovernor.GetMaxDegreeOfParallelism(MaxDegreeOfParallelism) };
 
     /// <summary>
     /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> set to 1 for debug purposes
@@ -146,6 +149,107 @@ public static class CoreSettings
     {
         return GetParallelOptions(progress.Token);
     }
+
+    /// <summary>
+    /// Gets the ParallelOptions with the <see cref="CancellationToken"/> set and the <see cref="MaxDegreeOfParallelism"/>
+    /// reduced to the number of workers that fit in the available memory.
+    /// </summary>
+    /// <param name="progress">The progress holding the cancellation token.</param>
+    /// <param name="bytesPerWorker">The estimated bytes each worker holds at a time.</param>
+    public static ParallelOptions GetParallelOptions(OperationProgress progress, long bytesPerWorker)
+    {
+        return new ParallelOptions
+        {
+            MaxDegreeOfParallelism = MemoryGovernor.GetMaxDegreeOfParallelism(MaxDegreeOfParallelism, bytesPerWorker),
+            CancellationToken = progress.Token
+        };
+    }
+
+    /// <summary>
+    /// Gets or sets if the memory is managed adaptively: under pressure caches are trimmed, idle layers and the undo
+    /// history move to the disk cache and the parallelism is reduced, instead of letting the system run out of memory.
+    /// </summary>
+    public static bool AdaptiveMemoryManagement { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the physical memory in bytes to keep available for the system and other programs, 0 for automatic.
+    /// See <see cref="MemoryGovernor.ReserveBytes"/>.
+    /// </summary>
+    public static long MemoryReserveBytes
+    {
+        get;
+        set => field = Math.Max(0, value);
+    }
+
+    /// <summary>
+    /// Gets or sets if layers and the undo history can be moved to a disk cache to release memory RAM.
+    /// </summary>
+    public static bool EnableDiskCache { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the folder of the disk cache, empty for <see cref="DefaultDiskCacheFolder"/>.
+    /// Changes apply on the next start.
+    /// </summary>
+    public static string? DiskCacheFolder { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum size of the disk cache in bytes, 0 to be limited by the disk free space only.
+    /// </summary>
+    public static long DiskCacheMaximumBytes
+    {
+        get;
+        set
+        {
+            field = Math.Max(0, value);
+            var store = LayerBlobStore.SessionIfCreated;
+            if (store is not null) store.MaximumBytes = field;
+        }
+    }
+
+    /// <summary>
+    /// Gets the default folder of the disk cache.
+    /// On Linux the temporary folder is often a RAM disk (tmpfs), so the user cache folder is used instead.
+    /// </summary>
+    public static string DefaultDiskCacheFolder
+    {
+        get
+        {
+            if (OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD())
+            {
+                var cache = Environment.GetEnvironmentVariable("XDG_CACHE_HOME");
+                if (string.IsNullOrWhiteSpace(cache))
+                {
+                    cache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".cache");
+                }
+
+                return Path.Combine(cache, About.Software);
+            }
+
+            return Path.Combine(Path.GetTempPath(), About.Software);
+        }
+    }
+
+    /// <summary>
+    /// Gets <see cref="DiskCacheFolder"/> or <see cref="DefaultDiskCacheFolder"/> when not set.
+    /// </summary>
+    public static string DiskCacheFolderOrDefault =>
+        string.IsNullOrWhiteSpace(DiskCacheFolder) ? DefaultDiskCacheFolder : DiskCacheFolder;
+
+    /// <summary>
+    /// Gets or sets the maximum number of operations kept in the undo history, 0 for unlimited.
+    /// When exceeded, the oldest operations are merged so the original layers are always kept.
+    /// </summary>
+    public static int MaximumUndoHistory
+    {
+        get;
+        set => field = Math.Max(0, value);
+    } = 50;
+
+    /// <summary>
+    /// Gets or sets if the layers of the undo history that are no longer in use by the file are moved to the disk cache
+    /// after each operation, instead of only under memory pressure.
+    /// </summary>
+    public static bool StoreUndoHistoryOnDisk { get; set; } = true;
 
     /// <summary>
     /// Gets or sets if operations run via CUDA when possible

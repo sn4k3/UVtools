@@ -5,12 +5,14 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using SukiUI.MessageBox;
 using SukiUI.Models;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Managers;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
 using UVtools.Core.Voxel;
@@ -24,6 +26,7 @@ public partial class SettingsWindow : GenericWindow
 {
     private double _scrollViewerMaxHeight;
     private int _selectedTabIndex;
+    private readonly DispatcherTimer _memoryStatusTimer = new() { Interval = TimeSpan.FromSeconds(1) };
 
     public SettingsWindow()
     {
@@ -55,11 +58,30 @@ public partial class SettingsWindow : GenericWindow
 
         DataContext = this;
         InitializeComponent();
+        _memoryStatusTimer.Tick += RefreshMemoryStatus;
+        _memoryStatusTimer.Start();
     }
 
     public UserSettings SettingsBackup { get; }
 
     public string[] FileOpenDialogFilters { get; }
+
+    /// <summary>
+    /// Gets the default folder of the disk cache, shown when none is set.
+    /// </summary>
+    public string DefaultDiskCacheFolder => CoreSettings.DefaultDiskCacheFolder;
+
+    /// <summary>Gets the current cache usage and the reason spilling stopped, if any.</summary>
+    public string DiskCacheStatus => LayerBlobStore.GetSessionStatusString();
+
+    /// <summary>Gets the cache directory currently in use, or the configured base directory before first use.</summary>
+    public string ActiveDiskCacheFolder => LayerBlobStore.SessionIfCreated?.Folder ?? CoreSettings.DiskCacheFolderOrDefault;
+
+    private void RefreshMemoryStatus(object? sender, EventArgs e)
+    {
+        RaisePropertyChanged(nameof(DiskCacheStatus));
+        RaisePropertyChanged(nameof(ActiveDiskCacheFolder));
+    }
     public string[] ZoomRanges { get; }
     public VoxelPreviewQuality[] VoxelPreviewQualityOptions { get; } =
         Enum.GetValues<VoxelPreviewQuality>();
@@ -78,6 +100,8 @@ public partial class SettingsWindow : GenericWindow
 
     protected override void OnClosed(EventArgs e)
     {
+        _memoryStatusTimer.Stop();
+        _memoryStatusTimer.Tick -= RefreshMemoryStatus;
         base.OnClosed(e);
 
         if (DialogResult != DialogResults.OK)

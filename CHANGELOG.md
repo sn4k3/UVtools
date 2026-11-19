@@ -7,6 +7,32 @@
   to the loaded file, it shows which layers are unusual and does not predict print failure (#1164)
 - (Fix) PCB exposure: Gerber tracks, arcs and aperture macro vector lines now keep their physical width on printers
   with non-square pixels, preserving gaps between tracks. Macro vector lines now have square ends (#1166)
+- **Memory RAM: (#1165)**
+  - (Improvement) Layer clones share the compressed image instead of copying it, so opening a file, the undo snapshot
+    taken before each operation, undo/redo and file conversions no longer duplicate every layer in memory
+  - (Add) Disk cache: layers of the undo history that are no longer used by the file, and idle layers when the memory
+    is low, are moved to a disk cache and read back on demand. Settings: enable, folder (on Linux defaults to
+    `~/.cache/UVtools` as `/tmp` is often in RAM), maximum size, and whether the undo history moves after each
+    operation. The cache is deleted on exit, and leftovers from a crash on the next start
+  - (Add) Adaptive memory management: the number of parallel tasks is limited to what fits in the available memory,
+    and when it runs low caches are trimmed, the large object heap is compacted and the work is throttled to one task at
+    a time. Operations keep running slower instead of freezing the system. Also active on the command line
+  - (Add) "Available RAM" hit action "Adaptive", the new default, never pauses or cancels the operation. The pause and
+    cancel actions now only run when the adaptive management fails to relieve the pressure for 15 seconds, and a
+    limit of 0 means an automatic reserve (8% of the memory RAM, from 1 to 3GB)
+  - (Add) Maximum undo history (default 50 operations), the oldest operations are merged and the original layers are
+    always kept
+  - (Improvement) Layer contours are no longer cloned into the undo history, they are recalculated on demand
+  - (Improvement) The layer cache used by mesh export is sized to the available memory instead of 5 layers per thread
+  - (Improvement) Zip based formats with duplicated layers write each layer as soon as it is encoded, instead of
+    holding the encoded images of every layer until the end
+  - (Improvement) "Free unused RAM" also moves the unused undo history to the disk cache
+  - (Improvement) Closing a file releases its space in the disk cache right away
+  - (Improvement) The number of parallel tasks is also limited to the available memory while a file is opened and in the
+    work outside of the operations, such as the issues detection and the previews, not only in the operations
+  - (Fix) Replacing the image of a layer no longer holds the layer lock while it compresses the image and while the
+    property changed events are raised, a listener reading another layer could deadlock. The image is not moved to the
+    disk cache while it is being read or replaced
 - (Upgrade) AvaloniaUI from 12.1.4 to 12.1.6
 - (Upgrade) .NET from 10.0.13 to 11.0.0
 

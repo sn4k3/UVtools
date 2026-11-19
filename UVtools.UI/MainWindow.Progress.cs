@@ -35,7 +35,8 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _isProgressVisible, value)) return;
-            _ramUsageTimer.Enabled = value && Settings.General.AvailableRamLimit > 0;
+            if (value) _ramLowMemoryLog = null;
+            _ramUsageTimer.Enabled = value;
         }
     }
 

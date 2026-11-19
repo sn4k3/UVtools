@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Threading;
+using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -49,6 +51,11 @@ public sealed class ClipboardItem : List<Layer>
 
     public bool IsFullBackup { get; set; }
 
+    /// <summary>
+    /// False when compaction removed the exact predecessor required to rerun this operation.
+    /// </summary>
+    public bool CanRerun { get; internal set; } = true;
+
 
     public Operation Operation
     {
@@ -79,6 +86,52 @@ public sealed class ClipboardItem : List<Layer>
         Description = description;
         IsFullBackup = isFullBackup;
     }
+
+    /// <summary>
+    /// Creates an empty clip with the same definitions of <paramref name="source"/>.
+    /// </summary>
+    private ClipboardItem(ClipboardItem source, bool isFullBackup)
+    {
+        LayerCount = source.LayerCount;
+        LayerHeight = source.LayerHeight;
+        Resolution = source.Resolution;
+        Description = source.Description;
+        IsFullBackup = isFullBackup;
+        _operation = source._operation;
+    }
+
+    /// <summary>
+    /// Merges an older clip into a newer one, so the older can be removed from the history while restoring the newer
+    /// still gives the same layers.
+    /// </summary>
+    /// <param name="older">The clip right before <paramref name="newer"/>.</param>
+    /// <param name="newer">The clip right after <paramref name="older"/>.</param>
+    /// <returns>The clip to replace <paramref name="newer"/> with.</returns>
+    internal static ClipboardItem Merge(ClipboardItem older, ClipboardItem newer)
+    {
+        // A full backup does not depend on the clips before it
+        if (newer.IsFullBackup) return newer;
+
+        var layers = new Layer?[newer.LayerCount];
+        foreach (var layer in older)
+        {
+            if (layer.Index < layers.Length) layers[layer.Index] = layer;
+        }
+
+        foreach (var layer in newer)
+        {
+            if (layer.Index < layers.Length) layers[layer.Index] = layer;
+        }
+
+        var merged = new ClipboardItem(newer, older.IsFullBackup);
+        foreach (var layer in layers)
+        {
+            if (layer is not null) merged.Add(layer);
+        }
+
+        if (merged.Count == merged.LayerCount) merged.IsFullBackup = true;
+        return merged;
+    }
     #endregion
 
     #region Methods
@@ -89,7 +142,7 @@ public sealed class ClipboardItem : List<Layer>
     #endregion
 }
 
-public sealed partial class ClipboardManager : ObservableObject, IList<ClipboardItem>
+public sealed partial class ClipboardManager : ObservableObject, IList<ClipboardItem>, IMemoryTrimmable
 {
     #region Properties
 
@@ -300,6 +353,7 @@ public sealed partial class ClipboardManager : ObservableObject, IList<Clipboard
         Clear();
         SlicerFile = slicerFile;
         if (slicerFile is null || slicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return;
+        MemoryGovernor.Register(this);
         SuppressRestoreWork(() =>
         {
             var clip = new ClipboardItem(SlicerFile, "Original layers", true);
@@ -442,10 +496,147 @@ public sealed partial class ClipboardManager : ObservableObject, IList<Clipboard
             }
             Insert(0, clip);
 
+            LimitHistory();
+
             CurrentIndex = 0;
         });
 
+        if (CoreSettings.StoreUndoHistoryOnDisk) QueueMoveHistoryToDisk();
+
         return clip;
+    }
+
+    /// <summary>
+    /// Keeps at most <see cref="CoreSettings.MaximumUndoHistory"/> clips plus the original layers, merging the oldest
+    /// clips into the ones after them.
+    /// </summary>
+    private void LimitHistory()
+    {
+        var maximum = CoreSettings.MaximumUndoHistory;
+        if (maximum <= 0) return;
+
+        // The oldest clip holds the original layers and is always kept
+        while (Count > maximum + 1 && Count >= 3)
+        {
+            var olderIndex = Count - 2;
+            var newerIndex = olderIndex - 1;
+            var merged = ClipboardItem.Merge(this[olderIndex], this[newerIndex]);
+            merged.CanRerun = false;
+            if (!ReferenceEquals(merged, this[newerIndex])) this[newerIndex] = merged;
+            RemoveAt(olderIndex);
+        }
+    }
+
+    private int _moveHistoryToDiskState; // 0: idle, 1: running, 2: running and requested again
+
+    /// <summary>
+    /// Gets a copy of the clips, safe to enumerate from any thread.
+    /// </summary>
+    private ClipboardItem[] GetClipsCopy()
+    {
+        try
+        {
+            var clips = new ClipboardItem[Items.Count];
+            Items.CopyTo(clips, 0);
+            return clips;
+        }
+        catch (ArgumentException)
+        {
+            return []; // Changed meanwhile
+        }
+    }
+
+    /// <summary>
+    /// Moves the layers of the undo history to the disk cache.
+    /// </summary>
+    /// <param name="includeShared">True to also move the images still in use by the file, they are written once and
+    /// only released when the file moves them too.</param>
+    /// <returns>The compressed bytes moved to the disk.</returns>
+    public long MoveHistoryToDisk(bool includeShared = false)
+    {
+        return MoveHistoryToDisk(LayerBlobStore.Session, includeShared);
+    }
+
+    /// <summary>
+    /// Moves the undo history to the specified store, or does nothing when no store is available.
+    /// </summary>
+    public long MoveHistoryToDisk(LayerBlobStore? store, bool includeShared = false)
+    {
+        var slicerFile = SlicerFile;
+        if (store is null || slicerFile is null) return 0;
+
+        HashSet<byte[]>? inUse = null;
+        if (!includeShared)
+        {
+            var fileLayers = slicerFile.Layers;
+            inUse = new HashSet<byte[]>(fileLayers.Length, ReferenceEqualityComparer.Instance);
+            foreach (var layer in fileLayers)
+            {
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+                if (layer is not null) inUse.Add(layer.CompressedArrayInMemory);
+            }
+        }
+
+        long released = 0;
+        void Move(Layer? layer)
+        {
+            if (layer is null || layer.IsOnDisk) return;
+            if (inUse is not null && inUse.Contains(layer.CompressedArrayInMemory)) return;
+            released += layer.TryMoveToDisk(store);
+        }
+
+        foreach (var clip in GetClipsCopy())
+        {
+            for (var i = 0; i < clip.Count; i++) Move(clip[i]);
+        }
+
+        var snapshot = SnapshotLayers;
+        if (snapshot is not null)
+        {
+            foreach (var layer in snapshot) Move(layer);
+        }
+
+        return released;
+    }
+
+    /// <summary>
+    /// Runs <see cref="MoveHistoryToDisk"/> in background, coalescing requests made while it runs.
+    /// </summary>
+    private void QueueMoveHistoryToDisk()
+    {
+        if (LayerBlobStore.Session is null) return;
+        while (true)
+        {
+            var state = Volatile.Read(ref _moveHistoryToDiskState);
+            if (state == 2) return;
+            if (Interlocked.CompareExchange(ref _moveHistoryToDiskState, state + 1, state) != state) continue;
+            if (state == 1) return; // The running task will run again
+            break;
+        }
+
+        Task.Run(() =>
+        {
+            do
+            {
+                Volatile.Write(ref _moveHistoryToDiskState, 1);
+                try
+                {
+                    MoveHistoryToDisk();
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine($"{nameof(ClipboardManager)}: {e}");
+                }
+            } while (Interlocked.CompareExchange(ref _moveHistoryToDiskState, 0, 1) != 1);
+        });
+    }
+
+    /// <summary>
+    /// Moves the undo history to the disk cache under memory pressure.
+    /// </summary>
+    public long Trim(MemoryPressureLevel level)
+    {
+        return MoveHistoryToDisk(includeShared: level >= MemoryPressureLevel.High);
     }
 
     /// <summary>

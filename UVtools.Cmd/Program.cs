@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using UVtools.Cmd.Symbols;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Managers;
 using UVtools.Core.Operations;
 
 namespace UVtools.Cmd;
@@ -61,17 +62,39 @@ internal class Program
             GlobalOptions.NoProgressOption,
             GlobalOptions.DummyOption,
             GlobalOptions.CoreVersionOption,
+            GlobalOptions.MemoryReserveOption,
+            GlobalOptions.CacheMaximumOption,
+            GlobalOptions.CacheFolderOption,
+            GlobalOptions.NoDiskCacheOption,
+            GlobalOptions.NoAdaptiveMemoryOption,
         };
 
+        var result = rootCommand.Parse(args);
         HandleGlobals();
-        return await rootCommand.Parse(args).InvokeAsync().ConfigureAwait(false);
+        if (result.Errors.Count > 0) return await result.InvokeAsync().ConfigureAwait(false);
+
+        const decimal bytesPerGb = 1024m * 1024 * 1024;
+        CoreSettings.MemoryReserveBytes = (long)(result.GetValue(GlobalOptions.MemoryReserveOption) * bytesPerGb);
+        CoreSettings.DiskCacheMaximumBytes = (long)(result.GetValue(GlobalOptions.CacheMaximumOption) * bytesPerGb);
+        CoreSettings.DiskCacheFolder = result.GetValue(GlobalOptions.CacheFolderOption);
+        CoreSettings.EnableDiskCache = !result.GetValue(GlobalOptions.NoDiskCacheOption);
+        CoreSettings.AdaptiveMemoryManagement = !result.GetValue(GlobalOptions.NoAdaptiveMemoryOption);
+        MemoryGovernor.Start();
+        try
+        {
+            return await result.InvokeAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            MemoryGovernor.Stop();
+        }
     }
 
     internal static void HandleGlobals()
     {
         foreach (var arg in Args)
         {
-            if (arg[0] != '-') continue;
+            if (arg.Length == 0 || arg[0] != '-') continue;
 
             if (GlobalOptions.QuietOption.Name == arg || GlobalOptions.QuietOption.Aliases.Any(alias => arg == alias))
             {
