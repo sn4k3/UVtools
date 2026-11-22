@@ -27,6 +27,8 @@ namespace UVtools.UI.Controls;
 
 public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 {
+    internal const float ResinDensityGramsPerMilliliter = 1.1f;
+
     private const string DesktopVertexShader = """
         #version 330 core
         in vec3 aPosition;
@@ -1600,7 +1602,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         var volumeMl = mesh.VolumeCubicMillimeters > 0f
             ? mesh.VolumeCubicMillimeters / 1000f
             : (float)(absVolume / 1000.0);
-        var weightG = volumeMl * 1.1f;
+        var weightG = volumeMl * ResinDensityGramsPerMilliliter;
         var bottleCost = UserSettings.Instance.General.AverageResin1000MlBottleCost;
         var cost = volumeMl * (bottleCost / 1000.0f);
 

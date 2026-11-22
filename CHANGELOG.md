@@ -5,6 +5,8 @@
 - (Add) Peel curve HUD (2D and 3D preview): mechanical layer analysis modes to plot the area change in percent, the
   centroid drift in mm and a combined risk score of each layer relative to the layer below. The risk score is relative
   to the loaded file, it shows which layers are unusual and does not predict print failure (#1164)
+- (Add) The 3D Model Estimates HUD shows estimated resin used through the selected layer and resin remaining
+  in mL and grams (#1167)
 - (Fix) PCB exposure: Gerber tracks, arcs and aperture macro vector lines now keep their physical width on printers
   with non-square pixels, preserving gaps between tracks. Macro vector lines now have square ends (#1166)
 - **Memory RAM: (#1165)**

@@ -65,6 +65,7 @@ public partial class MainWindow
     private VoxelPreviewMesh? _layer3DMesh;
     private string? _layer3DRendererError;
     private float[]? _layerAreas;
+    private double[]? _cumulativeLayerVolumes;
     private float[]? _layerAreaDeltaPercent;
     private LayerMechanicalAnalysis? _layerMechanicalAnalysis;
     private Core.FileFormats.FileFormat? _layerMechanicalFile;
@@ -505,6 +506,28 @@ public partial class MainWindow
 
             return $"{_layer3DMesh.TriangleCount:N0} triangles • detail 1:{_layer3DMesh.SamplingStride} • " +
                    $"built in {_layer3DMesh.BuildDuration.TotalSeconds:F2}s{issues}{stale}{issueError}";
+        }
+    }
+
+    public string? LayerResinProgressText
+    {
+        get
+        {
+            var file = SlicerFile;
+            var volumes = _cumulativeLayerVolumes;
+            var layerIndex = ActualLayer;
+            if (file is null || !ReferenceEquals(_layerAreasFile, file) ||
+                _layerAreasRevision != file.ModelGeometryRevision ||
+                volumes is null || layerIndex >= volumes.Length)
+            {
+                return null;
+            }
+
+            var usedMl = volumes[layerIndex] / 1000;
+            var remainingMl = (volumes[^1] - volumes[layerIndex]) / 1000;
+            var density = LayerModel3DView.ResinDensityGramsPerMilliliter;
+            return $"Used through layer {ActualLayerDisplay}: {usedMl:F2} mL ({usedMl * density:F2} g)\n" +
+                   $"Remaining: {remainingMl:F2} mL ({remainingMl * density:F2} g)";
         }
     }
 
@@ -1322,6 +1345,7 @@ public partial class MainWindow
         RaisePropertyChanged(nameof(ShowLayer3DStatusOverlay));
         RaisePropertyChanged(nameof(Layer3DBuildButtonText));
         RaisePropertyChanged(nameof(Layer3DStatus));
+        RaisePropertyChanged(nameof(LayerResinProgressText));
         RaisePropertyChanged(nameof(PrintSimulationElapsedTimeText));
     }
 
@@ -1533,6 +1557,8 @@ public partial class MainWindow
         if (file is null || file.LayerCount == 0)
         {
             _layerAreas = null;
+            _cumulativeLayerVolumes = null;
+            RaisePropertyChanged(nameof(LayerResinProgressText));
             _layerLiftSpeeds = null;
             _layerLiftSpeeds2 = null;
             _layerLiftHeights = null;
@@ -1557,6 +1583,10 @@ public partial class MainWindow
 
         var count = (int)file.LayerCount;
         var areas = new float[count];
+        var cumulativeVolumes = _layer3DMesh is { VertexCount: > 0 } mesh && mesh.SourceRevision == _layerAreasRevision
+            ? new double[count]
+            : null;
+        var totalVolume = 0.0;
         var spikes = new List<int>();
         var maxA = 0f;
         var peakIdx = 0;
@@ -1573,6 +1603,11 @@ public partial class MainWindow
             var layer = file.Layers[i];
             var a = (float)layer.GetArea();
             areas[i] = a;
+            if (cumulativeVolumes is not null)
+            {
+                totalVolume += a * layer.LayerHeight;
+                cumulativeVolumes[i] = totalVolume;
+            }
 
             if (a > maxA)
             {
@@ -1587,6 +1622,8 @@ public partial class MainWindow
         }
 
         _layerAreas = areas;
+        _cumulativeLayerVolumes = cumulativeVolumes;
+        RaisePropertyChanged(nameof(LayerResinProgressText));
         _layerAreaDeltaPercent = LayerMechanicalAnalysis.CalculateAreaDeltaPercent(areas);
 
         // The centroids only depend on the layers, keep them when the layers did not change
@@ -2306,6 +2343,7 @@ public partial class MainWindow
         _layer3DMesh = null;
         _layer3DIssueMesh = null;
         _layerAreas = null;
+        _cumulativeLayerVolumes = null;
         _layerAreaDeltaPercent = null;
         ClearLayerMechanicalAnalysis();
         _peelSpikes = null;

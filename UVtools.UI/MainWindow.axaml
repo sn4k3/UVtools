@@ -3077,6 +3077,12 @@
                                                                FontWeight="Bold"
                                                                Foreground="White"
                                                                Text="{Binding #LayerModel3DView.ModelStatsText}" />
+                                                    <TextBlock Margin="0,4,0,0"
+                                                               FontSize="12"
+                                                               Foreground="White"
+                                                               IsVisible="{Binding LayerResinProgressText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                                               Text="{Binding LayerResinProgressText, Mode=OneWay}"
+                                                               TextWrapping="Wrap" />
                                                 </StackPanel>
                                                 <Button Grid.Column="2"
                                                         Margin="6,0,0,0"
