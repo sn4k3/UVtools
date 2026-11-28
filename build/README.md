@@ -24,7 +24,7 @@ Use `-p:UseCustomEmguCvRuntime=false` to build or publish using only the NuGet b
 |------------------------|--------------------------------------------|---------------------------------------------------------------------------|
 | `win-x64`, `win-arm64` | `Emgu.CV.runtime.mini.windows`             | Windows; NuGet also supplies the matching MSVC runtime                    |
 | `osx-x64`, `osx-arm64` | `Emgu.CV.runtime.mini.macos`               | macOS Intel / Apple Silicon                                               |
-| `linux-x64`            | `Emgu.CV.runtime.mini.ubuntu-24.04-x64`    | Ubuntu 24.04 and systems with its compatible native libraries             |
+| `linux-x64`            | `Emgu.CV.runtime.mini.ubuntu-26.04-x64`    | Ubuntu 26.04 and systems with its compatible native libraries             |
 | `linux-arm64`          | `Emgu.CV.runtime.mini.debian-trixie-arm64` | Debian 13 (Trixie) ARM64 and systems with its compatible native libraries |
 
 The Ubuntu package exposes `ubuntu-x64`, which NuGet cannot select for a `linux-x64` publish.

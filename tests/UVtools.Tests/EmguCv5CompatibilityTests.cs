@@ -16,9 +16,12 @@ namespace UVtools.Tests;
 public class EmguCv5CompatibilityTests
 {
     [Fact]
-    public void NativeRuntimeIsOpenCv5()
+    public void NativeRuntimeMatchesTheManagedEmguCvVersion()
     {
-        Assert.Contains("OpenCV 5.0.0", CvInvoke.BuildInformation);
+        // A stale custom cvextern in build/platforms would otherwise run silently against newer bindings.
+        var version = typeof(CvInvoke).Assembly.GetName().Version;
+        Assert.NotNull(version);
+        Assert.Contains($"OpenCV {version.Major}.{version.Minor}.{version.Build}", CvInvoke.BuildInformation);
     }
 
     [Fact]

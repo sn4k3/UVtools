@@ -7352,7 +7352,7 @@
         </member>
         <member name="P:UVtools.Core.Managers.ClipboardItem.CanRerun">
             <summary>
-            False when compaction removed the exact predecessor required to rerun this operation.
+            Whether the operation can be reopened and rerun from its predecessor.
             </summary>
         </member>
         <member name="M:UVtools.Core.Managers.ClipboardItem.#ctor(UVtools.Core.Managers.ClipboardItem,System.Boolean)">
@@ -9989,6 +9989,11 @@
             not storable is not reported or applied as a change
             </summary>
         </member>
+        <member name="T:UVtools.Core.Operations.OperationEditVoxelObject">
+            <summary>
+            Edits a connected group of slice pixels. The caller owns the undo snapshot.
+            </summary>
+        </member>
         <member name="T:UVtools.Core.Operations.OperationFadeExposureTime">
             <inheritdoc/>
         </member>
@@ -11824,6 +11829,46 @@
             </summary>
             <param name="driveLetter">This should be the drive letter. Format: F:/, C:/..</param>
         </member>
+        <member name="T:UVtools.Core.Voxel.VoxelObjectSelection">
+            <summary>
+            A face-connected group of nonzero pixels in the original slices. Exposures at the same height share a plane.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Voxel.VoxelObjectSelection.Find(UVtools.Core.FileFormats.FileFormat,UVtools.Core.Voxel.VoxelPreviewMesh,System.Numerics.Vector3,System.Numerics.Vector3,UVtools.Core.Operations.OperationProgress)">
+            <summary>
+            Resolves a preview surface hit to a full-resolution connected group.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Voxel.VoxelObjectSelection.FindAtPixel(UVtools.Core.FileFormats.FileFormat,UVtools.Core.Voxel.VoxelPreviewMesh,System.UInt32,System.Drawing.Point,UVtools.Core.Operations.OperationProgress)">
+            <summary>
+            Selects the connected group that contains a pixel, such as the <see cref="P:UVtools.Core.Voxel.VoxelObjectSelection.Anchor"/> of an edited selection
+            moved by the edit offset.
+            </summary>
+            <param name="file">The file to select in.</param>
+            <param name="mesh">A preview mesh that is current for <paramref name="file"/>.</param>
+            <param name="layerIndex">A layer at the height of the pixel.</param>
+            <param name="pixel">The pixel in slice coordinates.</param>
+            <param name="progress">Optional progress, also used to cancel.</param>
+            <returns>The selection, or null when there are no pixels there.</returns>
+        </member>
+        <member name="P:UVtools.Core.Voxel.VoxelObjectSelection.Anchor">
+            <summary>
+            Gets a pixel of the selection and a layer at its height. Moving it by an edit offset gives a pixel of the
+            edited object, see <see cref="M:UVtools.Core.Voxel.VoxelObjectSelection.FindAtPixel(UVtools.Core.FileFormats.FileFormat,UVtools.Core.Voxel.VoxelPreviewMesh,System.UInt32,System.Drawing.Point,UVtools.Core.Operations.OperationProgress)"/>.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Voxel.VoxelObjectSelection.GetPreviewOffsetLimits(UVtools.Core.Voxel.VoxelPreviewMesh)">
+            <summary>
+            Gets the range of preview offsets, in millimeters, that keep the selection inside the build plate.
+            </summary>
+            <param name="mesh">The preview mesh the selection was made on.</param>
+            <returns>The minimum and maximum X/Y offsets in preview coordinates.</returns>
+        </member>
+        <member name="M:UVtools.Core.Voxel.VoxelObjectSelection.GetPixelOffset(UVtools.Core.Voxel.VoxelPreviewMesh,System.Double,System.Double)">
+            <summary>
+            Converts a preview offset in millimeters to a slice offset in pixels.
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Voxel.VoxelPreviewMesh.VolumeCubicMillimeters">
             <summary>
             Gets the volume of the sliced model in cubic millimeters, measured from the layer pixels. The volume of the
@@ -11837,6 +11882,18 @@
             Measured from the layer pixels, the sampled mesh would overestimate it.
             </summary>
         </member>
+        <member name="P:UVtools.Core.Voxel.VoxelPreviewMesh.PreviewPlacement">
+            <summary>
+            Gets the model area in preview pixels, see <see cref="M:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.GetPreviewPlacement(System.Drawing.Rectangle,System.Drawing.Size,UVtools.Core.FlipDirection)"/>.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Voxel.VoxelPreviewMesh.MapToPreview(System.Drawing.Rectangle)">
+            <summary>
+            Maps an area in slice pixels to preview pixels.
+            </summary>
+            <param name="area">The area in slice pixels.</param>
+            <returns>The area in preview pixels, multiply by the pixel size for millimeters.</returns>
+        </member>
         <member name="F:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.KeepDetailAfterProgress">
             <summary>
             Once the sequential meshing pass has covered at least this fraction of the layers, exceeding the
@@ -11844,6 +11901,26 @@
             part of a build, so throwing away a near-finished, full-detail pass to retry at half the detail would
             cost more than it saves. The mesh is instead allowed to finish over budget at the current detail.
             </summary>
+        </member>
+        <member name="M:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.GetPreviewPlacement(System.Drawing.Rectangle,System.Drawing.Size,UVtools.Core.FlipDirection)">
+            <summary>
+            Gets where the model area is placed in the preview, in pixels. A flipped axis is mirrored across the whole
+            display, not across the model area, so that every object keeps its place on the build plate.
+            </summary>
+            <param name="bounds">The model area in slice pixels.</param>
+            <param name="resolution">The display resolution in pixels.</param>
+            <param name="flip">The work-around flip of the preview.</param>
+            <returns>The model area in preview pixels.</returns>
+        </member>
+        <member name="M:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.MapToPreview(System.Drawing.Rectangle,System.Drawing.Rectangle,System.Drawing.Rectangle,UVtools.Core.FlipDirection)">
+            <summary>
+            Maps an area in slice pixels to preview pixels.
+            </summary>
+            <param name="area">The area in slice pixels.</param>
+            <param name="bounds">The model area in slice pixels.</param>
+            <param name="placement">The model area in preview pixels, see <see cref="M:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.GetPreviewPlacement(System.Drawing.Rectangle,System.Drawing.Size,UVtools.Core.FlipDirection)"/>.</param>
+            <param name="flip">The work-around flip of the preview.</param>
+            <returns>The area in preview pixels.</returns>
         </member>
         <member name="M:UVtools.Core.Voxel.VoxelPreviewMeshBuilder.Build(UVtools.Core.FileFormats.FileFormat,UVtools.Core.Voxel.VoxelPreviewMeshOptions,UVtools.Core.Operations.OperationProgress,System.Nullable{System.Single},System.Nullable{System.Single})">
             <summary>

@@ -33,6 +33,41 @@ public static class VoxelPreviewMeshBuilder
     private const float KeepDetailAfterProgress = 0.75f;
 
     /// <summary>
+    /// Gets where the model area is placed in the preview, in pixels. A flipped axis is mirrored across the whole
+    /// display, not across the model area, so that every object keeps its place on the build plate.
+    /// </summary>
+    /// <param name="bounds">The model area in slice pixels.</param>
+    /// <param name="resolution">The display resolution in pixels.</param>
+    /// <param name="flip">The work-around flip of the preview.</param>
+    /// <returns>The model area in preview pixels.</returns>
+    public static Rectangle GetPreviewPlacement(Rectangle bounds, Size resolution, FlipDirection flip)
+    {
+        if (flip is FlipDirection.Horizontally or FlipDirection.Both) bounds.X = resolution.Width - bounds.Right;
+        if (flip is FlipDirection.Vertically or FlipDirection.Both) bounds.Y = resolution.Height - bounds.Bottom;
+        return bounds;
+    }
+
+    /// <summary>
+    /// Maps an area in slice pixels to preview pixels.
+    /// </summary>
+    /// <param name="area">The area in slice pixels.</param>
+    /// <param name="bounds">The model area in slice pixels.</param>
+    /// <param name="placement">The model area in preview pixels, see <see cref="GetPreviewPlacement"/>.</param>
+    /// <param name="flip">The work-around flip of the preview.</param>
+    /// <returns>The area in preview pixels.</returns>
+    public static Rectangle MapToPreview(Rectangle area, Rectangle bounds, Rectangle placement, FlipDirection flip)
+    {
+        var result = area;
+        result.X = flip is FlipDirection.Horizontally or FlipDirection.Both
+            ? placement.X + (bounds.Right - area.Right)
+            : placement.X + (area.X - bounds.X);
+        result.Y = flip is FlipDirection.Vertically or FlipDirection.Both
+            ? placement.Y + (bounds.Bottom - area.Bottom)
+            : placement.Y + (area.Y - bounds.Y);
+        return result;
+    }
+
+    /// <summary>
     /// Builds the voxel mesh of the model.
     /// </summary>
     /// <param name="slicerFile">The fully decoded file.</param>
@@ -160,7 +195,8 @@ public static class VoxelPreviewMeshBuilder
             new PooledBuffer<VoxelPreviewVertex>(Math.Min(65_536, (int)options.MaximumTriangleCount * 2));
         using var indices = new PooledBuffer<uint>(Math.Min(98_304, (int)options.MaximumTriangleCount * 3));
 
-        var context = new BuildContext(vertices, indices, options.MaximumTriangleCount, bounds, stride,
+        var placement = GetPreviewPlacement(bounds, slicerFile.Resolution, workAroundFlip);
+        var context = new BuildContext(vertices, indices, options.MaximumTriangleCount, placement, stride,
             pixelWidth, pixelHeight);
         var activeSides = new Dictionary<SideRunKey, ActiveSide>();
         var nextSides = new Dictionary<SideRunKey, ActiveSide>();
@@ -252,7 +288,7 @@ public static class VoxelPreviewMeshBuilder
                 indexArray = indices.Detach(out var indexCount);
                 return new VoxelPreviewMesh(vertexArray, vertexCount, indexArray, indexCount,
                     context.MinimumBounds, context.MaximumBounds, stride, source, options.Quality,
-                    bounds, pixelWidth, pixelHeight, gridWidth, gridHeight, workAroundFlip);
+                    bounds, placement, pixelWidth, pixelHeight, gridWidth, gridHeight, workAroundFlip);
             }
             catch
             {

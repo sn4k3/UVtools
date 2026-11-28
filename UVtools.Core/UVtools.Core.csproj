@@ -22,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNext" Version="6.12.1" />
-    <PackageReference Include="EmguExtensions" Version="0.4.0" />
+    <PackageReference Include="DotNext" Version="6.14.1" />
+    <PackageReference Include="EmguExtensions" Version="0.4.1" />
     <PackageReference
       Include="Microsoft.SourceLink.GitHub"
       Version="11.0.100"
@@ -31,14 +31,14 @@
     />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.12.0" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="4.0.1" />
-    <PackageReference Include="NativeCompressions" Version="1.3.2" />
-    <PackageReference Include="StageKit" Version="0.4.1" />
+    <PackageReference Include="NativeCompressions" Version="1.3.4" />
+    <PackageReference Include="StageKit" Version="0.5.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
     <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.4.2" />
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.4.2" />
     <PackageReference Include="BinarySerializer" Version="10.2.1" />
     <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="4.1.3" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="4.1.4" />
     <PackageReference Include="Emgu.CV" Version="$(EmguCvVersion)" />
     <PackageReference
       Include="Emgu.CV.runtime.mini.windows"
@@ -46,7 +46,7 @@
       ExcludeAssets="build;buildTransitive"
     />
     <PackageReference
-      Include="Emgu.CV.runtime.mini.ubuntu-24.04-x64"
+      Include="Emgu.CV.runtime.mini.ubuntu-26.04-x64"
       Version="$(EmguCvVersion)"
       GeneratePathProperty="true"
     />
@@ -59,12 +59,12 @@
     <PackageReference Include="ZLinq" Version="1.6.1" />
   </ItemGroup>
 
-  <!-- Keep UVtools' linux-x64 release name while using the Ubuntu 24.04 native binary.
+  <!-- Keep UVtools' linux-x64 release name while using the Ubuntu 26.04 native binary.
            NuGet cannot select an ubuntu-x64 asset for a portable linux-x64 RID.
            The alias also lets RID-less builds load it through .NET's portable Linux probe. -->
   <ItemGroup Condition="'$(RuntimeIdentifier)' == '' Or '$(RuntimeIdentifier)' == 'linux-x64'">
     <None
-      Include="$(PkgEmgu_CV_runtime_mini_ubuntu-24_04-x64)/runtimes/ubuntu-x64/native/libcvextern.so"
+      Include="$(PkgEmgu_CV_runtime_mini_ubuntu-26_04-x64)/runtimes/ubuntu-x64/native/libcvextern.so"
       Link="runtimes/linux-x64/native/libcvextern.so"
       CopyToOutputDirectory="PreserveNewest"
       CopyToPublishDirectory="PreserveNewest"
@@ -72,7 +72,7 @@
       Condition="'$(RuntimeIdentifier)' == ''"
     />
     <None
-      Include="$(PkgEmgu_CV_runtime_mini_ubuntu-24_04-x64)/runtimes/ubuntu-x64/native/libcvextern.so"
+      Include="$(PkgEmgu_CV_runtime_mini_ubuntu-26_04-x64)/runtimes/ubuntu-x64/native/libcvextern.so"
       Link="libcvextern.so"
       CopyToOutputDirectory="PreserveNewest"
       CopyToPublishDirectory="PreserveNewest"

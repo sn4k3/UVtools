@@ -6,6 +6,7 @@
 
 using System;
 using System.Drawing;
+using System.Numerics;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -303,7 +304,8 @@ public class VoxelPreviewMeshBuilderTests
 
         // The plane goes through the middle of the model, on a voxel boundary
         var cut = (axis == VoxelPreviewCutawayAxis.X ? bounds.Width : bounds.Height) / 2;
-        var position = (axis == VoxelPreviewCutawayAxis.X ? bounds.X : bounds.Y) + (float)cut;
+        var placement = mesh.PreviewPlacement;
+        var position = (axis == VoxelPreviewCutawayAxis.X ? placement.X : placement.Y) + (float)cut;
 
         bool KeepParallel(int cell) => invert ? cell >= cut : cell + 1 <= cut; // A face spanning the cell
         bool KeepPerpendicular(int value) => invert ? value >= cut : value <= cut; // A face on a boundary
@@ -514,6 +516,42 @@ public class VoxelPreviewMeshBuilderTests
 
         Assert.True(overlay.SamplingStride > 1);
         Assert.True(overlay.TriangleCount <= 2);
+    }
+
+    [Fact]
+    public void ObjectSelectionConnectsThroughSharedRaftAcrossRepeatedHeights()
+    {
+        using var file = CreateFile(12, 8, 4, (index, mat) =>
+        {
+            if (index == 0)
+            {
+                mat.GetRowSpanOfBytes(2).Slice(2, 3).Fill(255);
+            }
+            if (index == 1)
+            {
+                mat.GetRowSpanOfBytes(2).Slice(5, 2).Fill(255);
+            }
+            if (index == 2)
+            {
+                mat.SetByte(2, 2, 255);
+                mat.SetByte(6, 2, 255);
+            }
+            if (index >= 2) mat.SetByte(9, 5, 255);
+        });
+        file[1].PositionZ = file[0].PositionZ;
+        file.DisplayMirror = FlipDirection.Horizontally;
+        var options = new VoxelPreviewMeshOptions(VoxelPreviewQuality.Fast, 4, 1000);
+        using var mesh = VoxelPreviewMeshBuilder.Build(file, options);
+
+        var selected = Assert.IsType<VoxelObjectSelection>(VoxelObjectSelection.Find(file, mesh,
+            new Vector3(9.5f, 5.5f, file[2].PositionZ), Vector3.UnitZ));
+        Assert.Equal(new Rectangle(2, 2, 5, 1), selected.PixelBounds);
+        Assert.Equal(file[2].PositionZ, selected.MaxZ);
+        Assert.Equal(new Point(-2, -3), VoxelObjectSelection.GetPixelOffset(mesh, 2, 3));
+
+        var separate = Assert.IsType<VoxelObjectSelection>(VoxelObjectSelection.Find(file, mesh,
+            new Vector3(2.5f, 2.5f, file[3].PositionZ), Vector3.UnitZ));
+        Assert.Equal(new Rectangle(9, 5, 1, 1), separate.PixelBounds);
     }
 
     private static ChituboxFile CreateFile(int width, int height, int layerCount, Action<int, Mat> draw)

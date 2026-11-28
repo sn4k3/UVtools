@@ -44,13 +44,13 @@
       Condition="'$(Configuration)' == 'Debug'"
     />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageReference Include="EmguExtensions.Avalonia" Version="0.3.0" />
+    <PackageReference Include="EmguExtensions.Avalonia" Version="0.4.1" />
     <PackageReference Include="MarkView.Avalonia" Version="12.4.1" />
     <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2" />
     <PackageReference Include="Silk.NET.OpenGL" Version="2.23.0" />
-    <PackageReference Include="StageKit.Updatum" Version="0.4.1" />
+    <PackageReference Include="StageKit.Updatum" Version="0.5.0" />
     <PackageReference Include="SukiUI" Version="7.0.2-nightly20260902.445" />
-    <PackageReference Include="Svg.Controls.Avalonia" Version="12.0.0.17" />
+    <PackageReference Include="Svg.Controls.Avalonia" Version="12.2.0" />
   </ItemGroup>
 
   <ItemGroup>

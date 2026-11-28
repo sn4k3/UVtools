@@ -43,6 +43,16 @@ public partial class MainWindow
             }
 
             ShowLayer();
+            if (_refresh3DPreviewOnHistoryChange && Is3DPreviewVisible && SlicerFile is { } file)
+            {
+                Dispatcher.UIThread.Post(async () =>
+                {
+                    if (IsGUIEnabled && Is3DPreviewVisible && ReferenceEquals(SlicerFile, file))
+                    {
+                        await RebuildLayer3DPreview();
+                    }
+                });
+            }
             return;
         }
     }
@@ -63,7 +73,7 @@ public partial class MainWindow
     public async Task ClipboardUndoAndRerun(bool rerun)
     {
         var clip = ClipboardManager.CurrentClip;
-        // A compacted entry no longer has the predecessor needed to rerun it safely.
+        // Only reopen operations that support rerunning from their predecessor.
         if (rerun && clip is { CanRerun: false }) return;
         CanSave = true;
         ClipboardManager.Undo();

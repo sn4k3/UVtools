@@ -44,8 +44,8 @@
 
     <!-- Versions -->
     <UVtoolsVersion>7.2.0</UVtoolsVersion>
-    <AvaloniaVersion>12.1.6</AvaloniaVersion>
-    <EmguCvVersion>5.0.0.6584</EmguCvVersion>
+    <AvaloniaVersion>12.2.0</AvaloniaVersion>
+    <EmguCvVersion>5.1.0.6721</EmguCvVersion>
 
     <!-- MvvmToolkit -->
     <MvvmToolkitEnableINotifyPropertyChangingSupport>false</MvvmToolkitEnableINotifyPropertyChangingSupport>

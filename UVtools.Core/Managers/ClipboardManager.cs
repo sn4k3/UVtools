@@ -52,7 +52,7 @@ public sealed class ClipboardItem : List<Layer>
     public bool IsFullBackup { get; set; }
 
     /// <summary>
-    /// False when compaction removed the exact predecessor required to rerun this operation.
+    /// Whether the operation can be reopened and rerun from its predecessor.
     /// </summary>
     public bool CanRerun { get; internal set; } = true;
 
@@ -649,6 +649,7 @@ public sealed partial class ClipboardManager : ObservableObject, IList<Clipboard
         var clip = Clip(description, layersSnapshot, doFullBackup);
         if (clip is null) return null;
         clip.Operation = operation;
+        clip.CanRerun = operation is not OperationEditVoxelObject;
         return clip;
     }
 

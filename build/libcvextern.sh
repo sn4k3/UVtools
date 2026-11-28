@@ -407,7 +407,7 @@ patch_macos_configure() {
     patch_configure "$directory/platforms/macos/configure" '${FREETYPE_OPTIONS[@]}' '-DWITH_AVFOUNDATION:BOOL=FALSE'
 }
 
-patch_linux_configure() {
+patch_legacy_linux_tiff() {
     local content replacement
     content="$(<"$linux_configure_script")"
     # Link the bundled libtiff statically, the system libtiff soname changes between distributions
@@ -419,7 +419,6 @@ patch_linux_configure() {
         content="${content//-DWITH_EIGEN:BOOL=TRUE/"$replacement"}"
     fi
     printf '%s\n' "$content" > "$linux_configure_script"
-    patch_configure "$linux_configure_script" '-DWITH_EIGEN:BOOL=TRUE' '-DWITH_V4L:BOOL=FALSE'
 }
 
 check_linux_dependencies() {
@@ -485,8 +484,15 @@ build_emgucv() {
         bash -e "$directory/platforms/macos/configure" "$arch" "$build_package"
     else
         resolve_linux_configure
-        patch_linux_configure
-        bash -e "$linux_configure_script" "$build_package" cvextern
+        local codec_options=()
+        # Emgu CV 5.1 defaults to system codecs. Older scripts already bundle JPEG and PNG.
+        if grep -Fq -- '"--build-from-source"' "$linux_configure_script"; then
+            codec_options+=(--build-from-source)
+        else
+            patch_legacy_linux_tiff
+        fi
+        patch_configure "$linux_configure_script" '-DWITH_EIGEN:BOOL=TRUE' '-DWITH_V4L:BOOL=FALSE'
+        bash -e "$linux_configure_script" "$build_package" cvextern "${codec_options[@]}"
     fi
 }
 

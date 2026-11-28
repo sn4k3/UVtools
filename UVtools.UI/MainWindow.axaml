@@ -4,6 +4,7 @@
                        xmlns:core="clr-namespace:UVtools.Core;assembly=UVtools.Core"
                        xmlns:controls="clr-namespace:UVtools.UI.Controls"
                        xmlns:layers="clr-namespace:UVtools.Core.Layers;assembly=UVtools.Core"
+                       xmlns:operations="clr-namespace:UVtools.Core.Operations;assembly=UVtools.Core"
                        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                        xmlns:fragments="clr-namespace:UVtools.UI.Controls.Fragments"
                        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -2721,7 +2722,7 @@
 
                         <!-- Column 2: 3D Preview -->
                         <Grid Grid.Column="2"
-                              RowDefinitions="Auto,*,Auto,Auto"
+                              RowDefinitions="Auto,Auto,*,Auto,Auto"
                               RowSpacing="5"
                               IsVisible="{Binding Is3DPreviewVisible}">
                             <Grid Grid.Row="0"
@@ -2862,6 +2863,13 @@
                                         VerticalAlignment="Stretch"
                                         ToolTip.Tip="Measure tool. Click two points on the 3D model. [M]" />
 
+                                    <ToggleButton
+                                        IsChecked="{Binding IsLayer3DObjectSelectionMode, Mode=TwoWay}"
+                                        IsEnabled="{Binding HasLayer3DMesh}"
+                                        Content="{icon:MaterialIconExt Kind=SelectionDrag, Classes='Fill'}"
+                                        VerticalAlignment="Stretch"
+                                        ToolTip.Tip="Object tool. Click an object on the 3D model to select it, then drag it to move it.&#x0a;The object stays on the build plate. Hold Ctrl to duplicate, Shift to lock to one axis, Esc to cancel." />
+
                                     <!-- <ToggleButton IsChecked="{Binding #LayerModel3DView.IsTurntableActive}" -->
                                     <!--               IsEnabled="{Binding HasLayer3DMesh}" -->
                                     <!--               Content="{icon:MaterialIconExt Kind=Rotate360, Classes='Fill'}" -->
@@ -2939,12 +2947,98 @@
                                                        Background="Transparent"
                                                        VerticalAlignment="Stretch"
                                                        FontSize="28"
-                                                       ToolTip.Tip="Views:&#x0a;» (S)olid: shaded opaque model&#x0a;» (X)-Ray: translucent model with internal geometry visible&#x0a;» (W)ireframe: visible optimized mesh edges&#x0a;&#x0a;Mouse:&#x0a;» Left-click drag to orbit&#x0a;» Right/middle-click drag to pan&#x0a;» Click model: Click-to-Layer (jump to slice)&#x0a;» Wheel to zoom, double-click to reset&#x0a;&#x0a;Keyboard:&#x0a;» 1-6: front, back, left, right, top, bottom view&#x0a;» 0 or Home: reset the camera&#x0a;» F: fit model to view&#x0a;» Arrows: orbit in steps&#x0a;» + and -: zoom in and out&#x0a;» C: toggle clip to current layer&#x0a;» Shift+C: invert clipping&#x0a;» G: toggle build plate grid&#x0a;» H: cycle overhang heatmap / layer zones&#x0a;» O: toggle ghost silhouette of clipped model&#x0a;» P: toggle perspective/orthographic&#x0a;» B: toggle model bounding box and dimensions&#x0a;» V: toggle model volume, weight &amp; cost&#x0a;» K: toggle center of mass &amp; contact&#x0a;» M: toggle measurement tool (Esc to clear/exit)&#x0a;» L: cycle lighting mode (Camera / Studio / Flat)&#x0a;» Shift+X: cycle cutaway cross-section plane&#x0a;» Ctrl+C / F12: snapshot to clipboard / file&#x0a;» T or Space: toggle turntable auto-rotate" />
+                                                       ToolTip.Tip="Views:&#x0a;» (S)olid: shaded opaque model&#x0a;» (X)-Ray: translucent model with internal geometry visible&#x0a;» (W)ireframe: visible optimized mesh edges&#x0a;&#x0a;Mouse:&#x0a;» Left-click drag to orbit&#x0a;» Right/middle-click drag to pan&#x0a;» Click model: Click-to-Layer (jump to slice)&#x0a;» Object tool: click to select, drag to move (Ctrl: copy, Shift: lock axis, Esc: cancel)&#x0a;» Wheel to zoom, double-click to reset&#x0a;&#x0a;Keyboard:&#x0a;» 1-6: front, back, left, right, top, bottom view&#x0a;» 0 or Home: reset the camera&#x0a;» F: fit model to view&#x0a;» Arrows: orbit in steps&#x0a;» + and -: zoom in and out&#x0a;» C: toggle clip to current layer&#x0a;» Shift+C: invert clipping&#x0a;» G: toggle build plate grid&#x0a;» H: cycle overhang heatmap / layer zones&#x0a;» O: toggle ghost silhouette of clipped model&#x0a;» P: toggle perspective/orthographic&#x0a;» B: toggle model bounding box and dimensions&#x0a;» V: toggle model volume, weight &amp; cost&#x0a;» K: toggle center of mass &amp; contact&#x0a;» M: toggle measurement tool (Esc to clear/exit)&#x0a;» L: cycle lighting mode (Camera / Studio / Flat)&#x0a;» Shift+X: cycle cutaway cross-section plane&#x0a;» Ctrl+C / F12: snapshot to clipboard / file&#x0a;» T or Space: toggle turntable auto-rotate" />
                                 </StackPanel>
                             </Grid>
 
 
-                            <Border Grid.Row="1"
+                            <!-- Object tool bar, shown while the object tool is on -->
+                            <suki:GlassCard Grid.Row="1"
+                                            Padding="8,4"
+                                            IsVisible="{Binding IsLayer3DObjectSelectionMode}">
+                                <WrapPanel ItemSpacing="16" LineSpacing="4" VerticalAlignment="Center">
+                                    <!-- Selection state -->
+                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <icon:MaterialIcon Kind="SelectionDrag" FontSize="16" VerticalAlignment="Center" />
+                                        <TextBlock Text="Object:" FontWeight="SemiBold" FontSize="11"
+                                                   VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Layer3DObjectSelectionText}" FontSize="12"
+                                                   VerticalAlignment="Center" />
+                                        <Button Height="28" Padding="6,2"
+                                                IsVisible="{Binding HasSelected3DObject}"
+                                                Command="{Binding ClearSelected3DObjectCommand}"
+                                                AutomationProperties.Name="Clear the selection"
+                                                ToolTip.Tip="Clear the selection">
+                                            <icon:MaterialIcon Kind="Close" Width="16" Height="16" />
+                                        </Button>
+                                    </StackPanel>
+
+                                    <!-- Exact offset, also filled in while dragging -->
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center"
+                                                IsEnabled="{Binding HasSelected3DObject}">
+                                        <TextBlock Text="Offset:" FontWeight="SemiBold" FontSize="11"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Width="120"
+                                                       Minimum="-10000" Maximum="10000" Increment="0.1"
+                                                       FormatString="F3"
+                                                       AutomationProperties.Name="X offset in millimeters"
+                                                       suki:NumericUpDownExtensions.Unit="X mm"
+                                                       Value="{Binding Layer3DObjectOffsetX, Mode=TwoWay}"
+                                                       ToolTip.Tip="Offset along X in millimeters, rounded to whole pixels." />
+                                        <NumericUpDown Width="120"
+                                                       Minimum="-10000" Maximum="10000" Increment="0.1"
+                                                       FormatString="F3"
+                                                       AutomationProperties.Name="Y offset in millimeters"
+                                                       suki:NumericUpDownExtensions.Unit="Y mm"
+                                                       Value="{Binding Layer3DObjectOffsetY, Mode=TwoWay}"
+                                                       ToolTip.Tip="Offset along Y in millimeters, rounded to whole pixels." />
+                                        <Button Height="28" Padding="8,2"
+                                                Content="{icon:MaterialIconTextExt Kind=CursorMove, Text='Move'}"
+                                                Command="{Binding EditSelected3DObjectCommand}"
+                                                CommandParameter="{x:Static operations:VoxelObjectEdit.Move}"
+                                                ToolTip.Tip="Move the selected object by the offset." />
+                                        <Button Height="28" Padding="8,2"
+                                                Content="{icon:MaterialIconTextExt Kind=ContentDuplicate, Text='Duplicate'}"
+                                                Command="{Binding EditSelected3DObjectCommand}"
+                                                CommandParameter="{x:Static operations:VoxelObjectEdit.Duplicate}"
+                                                ToolTip.Tip="Place a copy of the selected object at the offset." />
+                                    </StackPanel>
+
+                                    <!-- Drag behaviour and removal -->
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <ToggleButton Height="28" Padding="8,2"
+                                                      Content="{icon:MaterialIconTextExt Kind=ContentCopy, Text='Copy on drag'}"
+                                                      IsChecked="{Binding Layer3DObjectDuplicateOnDrag, Mode=TwoWay}"
+                                                      ToolTip.Tip="When on, dragging the selected object drops a copy and keeps the original.&#x0a;Hold Ctrl (Cmd on macOS) while dragging to do the opposite for one drag." />
+                                        <Button Height="28" Padding="8,2"
+                                                Content="{icon:MaterialIconTextExt Kind=TrashCan, Text='Delete'}"
+                                                IsEnabled="{Binding HasSelected3DObject}"
+                                                Command="{Binding EditSelected3DObjectCommand}"
+                                                CommandParameter="{x:Static operations:VoxelObjectEdit.Delete}"
+                                                ToolTip.Tip="Remove the selected object from every layer." />
+                                    </StackPanel>
+
+                                    <!-- History -->
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <Button Height="28" Padding="6,2"
+                                                IsEnabled="{Binding ClipboardManager.CanUndo}"
+                                                Command="{Binding ClipboardUndoCommand}"
+                                                AutomationProperties.Name="Undo"
+                                                ToolTip.Tip="Undo the last edit">
+                                            <icon:MaterialIcon Kind="Undo" Width="16" Height="16" />
+                                        </Button>
+                                        <Button Height="28" Padding="6,2"
+                                                IsEnabled="{Binding ClipboardManager.CanRedo}"
+                                                Command="{Binding ClipboardRedoCommand}"
+                                                AutomationProperties.Name="Redo"
+                                                ToolTip.Tip="Redo the last undone edit">
+                                            <icon:MaterialIcon Kind="Redo" Width="16" Height="16" />
+                                        </Button>
+                                    </StackPanel>
+                                </WrapPanel>
+                            </suki:GlassCard>
+
+                            <Border Grid.Row="2"
                                     BorderBrush="{DynamicResource LightBackground}"
                                     BorderThickness="5"
                                     Background="{Binding Settings.Layer3DPreview.BackgroundBrush}"
@@ -3499,7 +3593,7 @@
                             </Border>
 
                             <!-- Bottom Horizontal Cutaway & Cross-Section Control Bar -->
-                            <suki:GlassCard Grid.Row="2"
+                            <suki:GlassCard Grid.Row="3"
                                             Margin="0,2,0,0"
                                             Padding="8,4"
                                             IsEnabled="{Binding HasLayer3DMesh}">
@@ -3558,7 +3652,7 @@
                                 </Grid>
                             </suki:GlassCard>
 
-                            <TextBlock Grid.Row="3"
+                            <TextBlock Grid.Row="4"
                                        Margin="5"
                                        HorizontalAlignment="Center"
                                        Text="{Binding Layer3DStatus}"

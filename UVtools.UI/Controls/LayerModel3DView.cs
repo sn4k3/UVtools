@@ -70,10 +70,14 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         uniform sampler2D uPeelTexture;
         uniform float uModelMaxZ;
         uniform float uFirstLayerZ;
+        uniform int uBoxClipEnabled;
+        uniform vec3 uBoxClipMin;
+        uniform vec3 uBoxClipMax;
         out vec4 fragmentColor;
         void main()
         {
             if (uClipEnabled != 0 && (vWorldPosition.z < uClipZMin || vWorldPosition.z > uClipZMax)) discard;
+            if (uBoxClipEnabled != 0 && (any(lessThan(vWorldPosition, uBoxClipMin)) || any(greaterThan(vWorldPosition, uBoxClipMax)))) discard;
             if (uCutawayAxis == 1)
             {
                 if (uCutawayInvert == 0 ? (vWorldPosition.x > uCutawayPosition) : (vWorldPosition.x < uCutawayPosition)) discard;
@@ -252,10 +256,14 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         uniform sampler2D uPeelTexture;
         uniform float uModelMaxZ;
         uniform float uFirstLayerZ;
+        uniform int uBoxClipEnabled;
+        uniform vec3 uBoxClipMin;
+        uniform vec3 uBoxClipMax;
         out vec4 fragmentColor;
         void main()
         {
             if (uClipEnabled != 0 && (vWorldPosition.z < uClipZMin || vWorldPosition.z > uClipZMax)) discard;
+            if (uBoxClipEnabled != 0 && (any(lessThan(vWorldPosition, uBoxClipMin)) || any(greaterThan(vWorldPosition, uBoxClipMax)))) discard;
             if (uCutawayAxis == 1)
             {
                 if (uCutawayInvert == 0 ? (vWorldPosition.x > uCutawayPosition) : (vWorldPosition.x < uCutawayPosition)) discard;
@@ -702,6 +710,9 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private int _cutawayPositionLocation = -1;
     private string _cutawayText = "Cut: Off";
     private int _firstLayerZLocation;
+    private int _boxClipEnabledLocation;
+    private int _boxClipMinLocation;
+    private int _boxClipMaxLocation;
     private Vector3 _focusBoxMax;
     private Vector3 _focusBoxMin;
 
@@ -749,6 +760,13 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     private float _modelVolumeMl;
     private float _modelWeightGrams;
     private bool _needsBoundingBoxUpload;
+    private (Vector3 Min, Vector3 Max)? _objectSelectionBounds;
+    private bool _isObjectDragging;
+    private float _objectDragPlaneZ;
+    private Vector2 _objectDragStart;
+    private Vector2 _objectDragOffset;
+    private (Vector2 Min, Vector2 Max) _objectDragLimits;
+    private bool _objectDragDuplicates;
     private bool _needsCapGeometryUpload;
     private bool _needsCapUpload;
     private bool _needsCavityUpload;
@@ -1301,6 +1319,21 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     public event Action? SnapshotToFileRequested;
 
     public event Action<Vector3>? ModelPointClicked;
+    internal event Action<Vector3?, Vector3>? ObjectPointClicked;
+
+    /// <summary>Raised while the selected object is dragged, with the XY offset in millimeters snapped to pixels.</summary>
+    internal event Action<Vector2>? ObjectDragging;
+
+    /// <summary>
+    /// Raised when the selected object is dropped, with the XY offset in millimeters snapped to pixels and
+    /// whether Ctrl was held to duplicate instead of moving.
+    /// </summary>
+    internal event Action<Vector2, bool>? ObjectDropped;
+
+    internal bool IsObjectSelectionMode { get; set; }
+
+    /// <summary>Whether dropping a dragged object duplicates it; Ctrl (Cmd on macOS) inverts it for one drag.</summary>
+    internal bool DuplicateOnDrag { get; set; }
 
     public void SetIssueColors(
         IReadOnlyDictionary<MainIssue.IssueType, Avalonia.Media.Color> colors
@@ -1422,6 +1455,19 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         CancelCameraAnimation();
         _cameraTarget = (min + max) / 2f;
         CameraChanged();
+    }
+
+    /// <param name="bounds">The selection box in preview coordinates, or null to clear the selection.</param>
+    /// <param name="offsetLimits">The drag offsets in preview coordinates that keep the selection on the plate.</param>
+    internal void SetObjectSelectionBounds((Vector3 Min, Vector3 Max)? bounds,
+        (Vector2 Min, Vector2 Max) offsetLimits = default)
+    {
+        _objectDragLimits = offsetLimits;
+        if (_objectSelectionBounds == bounds) return;
+        _objectSelectionBounds = bounds;
+        if (bounds is null) CancelObjectDrag();
+        _needsFocusBoxUpload = true;
+        RequestNextFrameRendering();
     }
 
     public void SetFocusedBoundingBox(Vector3 min, Vector3 max)
@@ -2027,6 +2073,9 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             _peelTextureLocation = _gl.GetUniformLocation(_shaderProgram, "uPeelTexture");
             _modelMaxZLocation = _gl.GetUniformLocation(_shaderProgram, "uModelMaxZ");
             _firstLayerZLocation = _gl.GetUniformLocation(_shaderProgram, "uFirstLayerZ");
+            _boxClipEnabledLocation = _gl.GetUniformLocation(_shaderProgram, "uBoxClipEnabled");
+            _boxClipMinLocation = _gl.GetUniformLocation(_shaderProgram, "uBoxClipMin");
+            _boxClipMaxLocation = _gl.GetUniformLocation(_shaderProgram, "uBoxClipMax");
 
             _peelTexture = _gl.GenTexture();
             _gl.BindTexture(TextureTarget.Texture2D, _peelTexture);
@@ -2468,6 +2517,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             _gl.Uniform1(_cutawayPositionLocation, CutawayPosition);
             _gl.Uniform1(_cutawayInvertLocation, CutawayInvert ? 1 : 0);
             _gl.Uniform1(_firstLayerZLocation, FirstLayerHeight);
+            _gl.Uniform1(_boxClipEnabledLocation, 0);
             _gl.Uniform1(_modelMaxZLocation, _mesh?.MaximumBounds.Z ?? PrintHeight);
             _gl.ActiveTexture(TextureUnit.Texture0);
             _gl.BindTexture(TextureTarget.Texture2D, _peelTexture);
@@ -2489,6 +2539,8 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                 {
                     DrawGhost(ghostMinZ, ghostMaxZ);
                 }
+
+                DrawObjectDragShadow(viewProjection);
             }
 
             if (ShowBuildPlateGrid)
@@ -2502,7 +2554,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                 DrawIssueOverlay();
             }
 
-            if (_hasFocusedBox)
+            if (_hasFocusedBox || _objectSelectionBounds is not null)
             {
                 DrawFocusedBoundingBox();
             }
@@ -2840,8 +2892,13 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             return;
         _needsFocusBoxUpload = false;
 
-        var min = _focusBoxMin;
-        var max = _focusBoxMax;
+        var (min, max) = _objectSelectionBounds ?? (_focusBoxMin, _focusBoxMax);
+        if (_isObjectDragging && _objectSelectionBounds is not null)
+        {
+            var offset = new Vector3(_objectDragOffset, 0);
+            min += offset;
+            max += offset;
+        }
 
         Span<VoxelPreviewVertex> boxVertices = stackalloc VoxelPreviewVertex[24]
         {
@@ -3679,14 +3736,17 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
     private unsafe void DrawFocusedBoundingBox()
     {
-        if (_gl is null || !_hasFocusedBox || _focusBoxVertexArray == 0)
+        if (_gl is null || (!_hasFocusedBox && _objectSelectionBounds is null) || _focusBoxVertexArray == 0)
             return;
 
         _gl.UseProgram(_shaderProgram);
         _gl.Uniform1(_unlitLocation, 1);
         _gl.Uniform1(_clipEnabledLocation, 0);
         _gl.Uniform1(_alphaLocation, 0.95f);
-        _gl.Uniform3(_colorLocation, 1.0f, 0.85f, 0.1f);
+        if (_objectSelectionBounds is not null)
+            _gl.Uniform3(_colorLocation, 0.95f, 0.4f, 0.85f);
+        else
+            _gl.Uniform3(_colorLocation, 1.0f, 0.85f, 0.1f);
         _gl.BindVertexArray(_focusBoxVertexArray);
         _gl.Disable(EnableCap.DepthTest);
         _gl.DrawArrays(PrimitiveType.Lines, 0, 24);
@@ -3724,6 +3784,53 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         );
         _gl.DepthMask(true);
         _gl.Disable(EnableCap.Blend);
+    }
+
+    /// <summary>
+    /// Draws a translucent copy of the dragged object at the drop position: the model is drawn shifted by the drag
+    /// offset and clipped to the original selection box.
+    /// </summary>
+    private unsafe void DrawObjectDragShadow(Matrix4x4 viewProjection)
+    {
+        if (_gl is null || !_isObjectDragging || _objectDragOffset == Vector2.Zero ||
+            _objectSelectionBounds is not { } bounds || RenderMode == VoxelPreviewRenderMode.Wireframe)
+            return;
+
+        const float epsilon = 1e-3f;
+        var moved = Matrix4x4.CreateTranslation(_objectDragOffset.X, _objectDragOffset.Y, 0) * viewProjection;
+
+        _gl.UseProgram(_shaderProgram);
+        _gl.UniformMatrix4(_viewProjectionLocation, 1, false, (float*)&moved);
+        _gl.Uniform1(_boxClipEnabledLocation, 1);
+        _gl.Uniform3(_boxClipMinLocation, bounds.Min.X - epsilon, bounds.Min.Y - epsilon, bounds.Min.Z - epsilon);
+        _gl.Uniform3(_boxClipMaxLocation, bounds.Max.X + epsilon, bounds.Max.Y + epsilon, bounds.Max.Z + epsilon);
+        // Show the whole object at the destination, ignoring the layer clip and the cutaway.
+        _gl.Uniform1(_clipEnabledLocation, 0);
+        _gl.Uniform1(_cutawayAxisLocation, 0);
+        _gl.Uniform1(_highlightOutOfBoundsLocation, 0);
+        _gl.Uniform1(_unlitLocation, 0);
+        _gl.Uniform1(_alphaLocation, 0.45f);
+        // Green when the drop duplicates the object, pink when it moves it.
+        if (_objectDragDuplicates)
+            _gl.Uniform3(_colorLocation, 0.25f, 0.9f, 0.45f);
+        else
+            _gl.Uniform3(_colorLocation, 0.95f, 0.4f, 0.85f);
+
+        _gl.BindVertexArray(_vertexArray);
+        _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _indexBuffer);
+        _gl.Enable(EnableCap.Blend);
+        _gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+        _gl.DepthMask(false);
+        _gl.DrawElements(PrimitiveType.Triangles, (uint)_uploadedIndexCount, DrawElementsType.UnsignedInt, null);
+        _gl.DepthMask(true);
+        _gl.Disable(EnableCap.Blend);
+
+        // Restore the frame state that the following overlays inherit.
+        _gl.Uniform1(_boxClipEnabledLocation, 0);
+        _gl.Uniform1(_clipEnabledLocation, _clipToLayer ? 1 : 0);
+        _gl.Uniform1(_cutawayAxisLocation, (int)CutawayAxis);
+        _gl.Uniform1(_highlightOutOfBoundsLocation, IsOutOfBounds && PlateWidth > 0 && PlateHeight > 0 ? 1 : 0);
+        _gl.UniformMatrix4(_viewProjectionLocation, 1, false, (float*)&viewProjection);
     }
 
     private unsafe void DrawCap(Matrix4x4 viewProjection)
@@ -4013,39 +4120,15 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
     public bool TryPickModel(Point screenPoint, out Vector3 hitPoint)
     {
+        return TryPickModel(screenPoint, out hitPoint, out _);
+    }
+
+    private bool TryPickModel(Point screenPoint, out Vector3 hitPoint, out Vector3 hitNormal)
+    {
         hitPoint = Vector3.Zero;
-        if (_mesh is null || _mesh.VertexCount == 0 || Bounds.Width <= 0 || Bounds.Height <= 0)
+        hitNormal = Vector3.Zero;
+        if (_mesh is null || _mesh.VertexCount == 0 || !TryGetPickRay(screenPoint, out var rayOrigin, out var rayDirection))
             return false;
-
-        var width = (float)Bounds.Width;
-        var height = (float)Bounds.Height;
-        var ndcX = (float)(2.0 * screenPoint.X / width - 1.0);
-        var ndcY = (float)(1.0 - 2.0 * screenPoint.Y / height);
-
-        var viewProjection = GetViewProjection(width / height);
-        if (!Matrix4x4.Invert(viewProjection, out var invViewProj))
-            return false;
-
-        var nearSource = new Vector4(ndcX, ndcY, -1.0f, 1.0f);
-        var farSource = new Vector4(ndcX, ndcY, 1.0f, 1.0f);
-
-        var nearWorld = Vector4.Transform(nearSource, invViewProj);
-        var farWorld = Vector4.Transform(farSource, invViewProj);
-
-        if (Math.Abs(nearWorld.W) < 1e-6f || Math.Abs(farWorld.W) < 1e-6f)
-            return false;
-
-        var rayOrigin = new Vector3(
-            nearWorld.X / nearWorld.W,
-            nearWorld.Y / nearWorld.W,
-            nearWorld.Z / nearWorld.W
-        );
-        var rayFar = new Vector3(
-            farWorld.X / farWorld.W,
-            farWorld.Y / farWorld.W,
-            farWorld.Z / farWorld.W
-        );
-        var rayDirection = Vector3.Normalize(rayFar - rayOrigin);
 
         var vertices = _mesh.Vertices;
         var indices = _mesh.Indices;
@@ -4098,13 +4181,14 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                     {
                         closestT = tCap;
                         hitPoint = pCap;
+                        hitNormal = Vector3.UnitZ;
                         hasHit = true;
                     }
                 }
             }
         }
 
-        var filterByClip = ClipToLayer && !GhostClippedModel;
+        var filterByClip = ClipToLayer && (!GhostClippedModel || IsObjectSelectionMode);
 
         for (var i = 0; !meshMissed && i < indices.Length; i += 3)
         {
@@ -4152,11 +4236,134 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
                 closestT = t;
                 hitPoint = candidatePoint;
+                hitNormal = vertices[(int)indices[i]].Normal;
                 hasHit = true;
             }
         }
 
         return hasHit;
+    }
+
+    private bool TryGetPickRay(Point screenPoint, out Vector3 rayOrigin, out Vector3 rayDirection)
+    {
+        rayOrigin = Vector3.Zero;
+        rayDirection = Vector3.Zero;
+        if (Bounds.Width <= 0 || Bounds.Height <= 0)
+            return false;
+
+        var width = (float)Bounds.Width;
+        var height = (float)Bounds.Height;
+        var ndcX = (float)(2.0 * screenPoint.X / width - 1.0);
+        var ndcY = (float)(1.0 - 2.0 * screenPoint.Y / height);
+
+        var viewProjection = GetViewProjection(width / height);
+        if (!Matrix4x4.Invert(viewProjection, out var invViewProj))
+            return false;
+
+        var nearWorld = Vector4.Transform(new Vector4(ndcX, ndcY, -1.0f, 1.0f), invViewProj);
+        var farWorld = Vector4.Transform(new Vector4(ndcX, ndcY, 1.0f, 1.0f), invViewProj);
+
+        if (Math.Abs(nearWorld.W) < 1e-6f || Math.Abs(farWorld.W) < 1e-6f)
+            return false;
+
+        rayOrigin = new Vector3(nearWorld.X, nearWorld.Y, nearWorld.Z) / nearWorld.W;
+        var rayFar = new Vector3(farWorld.X, farWorld.Y, farWorld.Z) / farWorld.W;
+        rayDirection = Vector3.Normalize(rayFar - rayOrigin);
+        return true;
+    }
+
+    /// <summary>
+    /// Intersects the pick ray with the horizontal plane at <paramref name="z"/>. Rays almost parallel to the plane
+    /// are rejected because they make the point jump far away.
+    /// </summary>
+    private bool TryPickHorizontalPlane(Point screenPoint, float z, out Vector2 point)
+    {
+        point = Vector2.Zero;
+        if (!TryGetPickRay(screenPoint, out var origin, out var direction) || MathF.Abs(direction.Z) < 0.02f)
+            return false;
+
+        var t = (z - origin.Z) / direction.Z;
+        if (t <= 0) return false;
+        var hit = origin + direction * t;
+        point = new Vector2(hit.X, hit.Y);
+        return true;
+    }
+
+    /// <summary>
+    /// Starts dragging the selected object when the press lands on it or on its selection box.
+    /// </summary>
+    private bool TryBeginObjectDrag(Point screenPoint)
+    {
+        if (!IsObjectSelectionMode || _objectSelectionBounds is not { } bounds ||
+            !TryGetPickRay(screenPoint, out var origin, out var direction) ||
+            !RayIntersectsBox(origin, direction, bounds.Min, bounds.Max))
+            return false;
+
+        // Grab at the model surface when it is inside the box, otherwise at the middle height of the box.
+        var planeZ = (bounds.Min.Z + bounds.Max.Z) / 2;
+        if (TryPickModel(screenPoint, out var hit, out _) &&
+            hit.X >= bounds.Min.X - 1e-3f && hit.X <= bounds.Max.X + 1e-3f &&
+            hit.Y >= bounds.Min.Y - 1e-3f && hit.Y <= bounds.Max.Y + 1e-3f &&
+            hit.Z >= bounds.Min.Z - 1e-3f && hit.Z <= bounds.Max.Z + 1e-3f)
+        {
+            planeZ = hit.Z;
+        }
+
+        if (!TryPickHorizontalPlane(screenPoint, planeZ, out var start))
+            return false;
+
+        _objectDragPlaneZ = planeZ;
+        _objectDragStart = start;
+        _objectDragOffset = Vector2.Zero;
+        _objectDragDuplicates = DuplicateOnDrag;
+        _isObjectDragging = true;
+        return true;
+    }
+
+    private void UpdateObjectDrag(Point screenPoint, KeyModifiers modifiers)
+    {
+        if (_mesh is null || !TryPickHorizontalPlane(screenPoint, _objectDragPlaneZ, out var current))
+            return;
+
+        var offset = current - _objectDragStart;
+        // Shift locks the movement to the dominant axis.
+        if (modifiers.HasFlag(KeyModifiers.Shift))
+        {
+            if (MathF.Abs(offset.X) >= MathF.Abs(offset.Y)) offset.Y = 0;
+            else offset.X = 0;
+        }
+
+        // Snap to whole pixels, the slices can only move by whole pixels, then stop at the plate edges.
+        // The limits are whole pixels as well, so clamping keeps the snap.
+        offset = new Vector2(
+            MathF.Round(offset.X / _mesh.PixelWidth) * _mesh.PixelWidth,
+            MathF.Round(offset.Y / _mesh.PixelHeight) * _mesh.PixelHeight);
+        offset = Vector2.Clamp(offset, _objectDragLimits.Min, _objectDragLimits.Max);
+        UpdateObjectDragAction(modifiers);
+        if (offset == _objectDragOffset) return;
+
+        _objectDragOffset = offset;
+        _needsFocusBoxUpload = true;
+        ObjectDragging?.Invoke(offset);
+        RequestNextFrameRendering();
+    }
+
+    private void UpdateObjectDragAction(KeyModifiers modifiers)
+    {
+        var duplicates = DuplicateOnDrag ^ ((modifiers & (KeyModifiers.Control | KeyModifiers.Meta)) != 0);
+        if (duplicates == _objectDragDuplicates) return;
+        _objectDragDuplicates = duplicates;
+        RequestNextFrameRendering();
+    }
+
+    private void CancelObjectDrag()
+    {
+        if (!_isObjectDragging) return;
+        _isObjectDragging = false;
+        _objectDragOffset = Vector2.Zero;
+        _needsFocusBoxUpload = true;
+        ObjectDragging?.Invoke(Vector2.Zero);
+        RequestNextFrameRendering();
     }
 
     private static bool RayIntersectsBox(Vector3 origin, Vector3 direction, Vector3 min, Vector3 max)
@@ -4561,6 +4768,9 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         _lastPointerPosition = e.GetPosition(this);
         _pointerDownPosition = _lastPointerPosition;
         _isDragging = false;
+        CancelObjectDrag();
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            TryBeginObjectDrag(_lastPointerPosition.Value);
         e.Pointer.Capture(this);
         e.Handled = true;
     }
@@ -4589,7 +4799,12 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
         var properties = e.GetCurrentPoint(this).Properties;
 
-        if (properties.IsLeftButtonPressed)
+        if (_isObjectDragging)
+        {
+            if (properties.IsLeftButtonPressed && _isDragging)
+                UpdateObjectDrag(current, e.KeyModifiers);
+        }
+        else if (properties.IsLeftButtonPressed)
         {
             Orbit(delta.X, delta.Y);
         }
@@ -4611,10 +4826,26 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
         base.OnPointerReleased(e);
         if (ReferenceEquals(_capturedPointer, e.Pointer))
         {
-            if (!_isDragging && e.InitialPressMouseButton == MouseButton.Left)
+            if (_isObjectDragging && _isDragging && e.InitialPressMouseButton == MouseButton.Left)
+            {
+                var offset = _objectDragOffset;
+                // Keep the box at the drop position until the edit finishes and the selection is replaced.
+                if (offset == Vector2.Zero) CancelObjectDrag();
+                else
+                {
+                    UpdateObjectDragAction(e.KeyModifiers);
+                    ObjectDropped?.Invoke(offset, _objectDragDuplicates);
+                }
+            }
+            else if (!_isDragging && e.InitialPressMouseButton == MouseButton.Left)
             {
                 var clickPos = e.GetPosition(this);
-                if (TryPickModel(clickPos, out var hitPoint))
+                if (IsObjectSelectionMode)
+                {
+                    var picked = TryPickModel(clickPos, out var objectPoint, out var normal);
+                    ObjectPointClicked?.Invoke(picked ? objectPoint : null, normal);
+                }
+                else if (TryPickModel(clickPos, out var hitPoint))
                 {
                     if (IsMeasureMode)
                     {
@@ -4639,8 +4870,9 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
                 }
             }
 
-            e.Pointer.Capture(null);
+            // Clear first so that the capture lost handler does not cancel a drop that was just made.
             _capturedPointer = null;
+            e.Pointer.Capture(null);
             _lastPointerPosition = null;
             _pointerDownPosition = null;
             _isDragging = false;
@@ -4648,6 +4880,11 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
 
         e.Handled = true;
     }
+
+    /// <summary>
+    /// Ends a dropped object drag, called by the owner once the edit for the drop has finished.
+    /// </summary>
+    internal void EndObjectDrag() => CancelObjectDrag();
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -4688,6 +4925,7 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
         base.OnPointerCaptureLost(e);
+        if (_capturedPointer is not null) CancelObjectDrag();
         _capturedPointer = null;
         _lastPointerPosition = null;
         _pointerDownPosition = null;
@@ -4704,8 +4942,17 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
+        if (_isObjectDragging && _capturedPointer is not null)
+            UpdateObjectDragAction(e.KeyModifiers);
         if (HandleCameraKey(e))
             e.Handled = true;
+    }
+
+    protected override void OnKeyUp(KeyEventArgs e)
+    {
+        base.OnKeyUp(e);
+        if (_isObjectDragging && _capturedPointer is not null)
+            UpdateObjectDragAction(e.KeyModifiers);
     }
 
     /// <summary>
@@ -4879,6 +5126,15 @@ public sealed class LayerModel3DView : OpenGlControlBase, ICustomHitTest
             case Key.M:
                 IsMeasureMode = !IsMeasureMode;
                 UserSettings.Instance.Layer3DPreview.ShowMeasure = IsMeasureMode;
+                return true;
+            case Key.Escape when _isObjectDragging && _capturedPointer is { } pointer:
+                // Clear first so that the capture lost handler does not raise the cancel twice.
+                _capturedPointer = null;
+                pointer.Capture(null);
+                _lastPointerPosition = null;
+                _pointerDownPosition = null;
+                _isDragging = false;
+                CancelObjectDrag();
                 return true;
             case Key.Escape when IsMeasureMode:
                 ClearMeasure();

@@ -34,7 +34,10 @@ $architectures = @(switch ($Arch) {
         'x86_64'
     }
 })
+# Keep OpenCV's generic ASM probe from picking up a MinGW compiler on PATH.
+$disableGenericAsm = '-DCMAKE_ASM_COMPILER:FILEPATH=NOTFOUND'
 $customBuild = @(
+    $disableGenericAsm,
     '-DWITH_EIGEN:BOOL=FALSE',
     '-DWITH_MSMF:BOOL=FALSE',
     '-DWITH_DSHOW:BOOL=FALSE',
@@ -143,7 +146,8 @@ function Update-BuildFile {
 
     $content = Get-Content -LiteralPath $Path -Raw -Encoding UTF8
     $marker = '    # UVtools custom native options'
-    if ($content.Contains($marker)) {
+    $hasCustomOptions = $content.Contains($marker)
+    if ($hasCustomOptions -and $content.Contains("'$disableGenericAsm'")) {
         return
     }
 
@@ -152,9 +156,14 @@ function Update-BuildFile {
         throw "Unable to patch $Path. Could not find: $searchKeyword"
     }
 
-    $flags = ($customBuild | ForEach-Object { "        '$_'" }) -join ",`r`n"
-    $replacement = $marker + "`r`n" + '    $emguFlags.AddRange([string[]]@(' + "`r`n" +
-        $flags + "`r`n" + '    ))' + "`r`n" + $searchKeyword
+    $newline = if ($content.Contains("`r`n")) { "`r`n" } else { "`n" }
+    if ($hasCustomOptions) {
+        $replacement = "    `$emguFlags.Add('$disableGenericAsm')" + $newline + $searchKeyword
+    } else {
+        $flags = ($customBuild | ForEach-Object { "        '$_'" }) -join ",$newline"
+        $replacement = $marker + $newline + '    $emguFlags.AddRange([string[]]@(' + $newline +
+            $flags + $newline + '    ))' + $newline + $searchKeyword
+    }
     $resolvedPath = (Resolve-Path -LiteralPath $Path).Path
     [IO.File]::WriteAllText($resolvedPath, $content.Replace($searchKeyword, $replacement), [Text.UTF8Encoding]::new($false))
 }

@@ -80,6 +80,8 @@ internal sealed class RunComponentLabeler
     /// </summary>
     public int GetRunEnd(int run) => _runEnd[run];
 
+    public int GetRunComponent(int run) => _runComponent[run];
+
     /// <summary>
     /// Gets the number of foreground pixels of a component.
     /// </summary>

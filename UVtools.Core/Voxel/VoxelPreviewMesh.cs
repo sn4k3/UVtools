@@ -147,6 +147,7 @@ public sealed class VoxelPreviewMesh : IDisposable
         VoxelPreviewSourceSnapshot source,
         VoxelPreviewQuality quality,
         Rectangle modelBounds,
+        Rectangle previewPlacement,
         float pixelWidth,
         float pixelHeight,
         int gridWidth,
@@ -164,6 +165,7 @@ public sealed class VoxelPreviewMesh : IDisposable
         Quality = quality;
         _source = source;
         ModelBounds = modelBounds;
+        PreviewPlacement = previewPlacement;
         PixelWidth = pixelWidth;
         PixelHeight = pixelHeight;
         GridWidth = gridWidth;
@@ -203,10 +205,24 @@ public sealed class VoxelPreviewMesh : IDisposable
     public FlipDirection WorkAroundFlip { get; }
     public float DisplayWidth => _source.DisplayWidth;
     public float DisplayHeight => _source.DisplayHeight;
-    public float BoundsMinX => ModelBounds.X * PixelWidth;
-    public float BoundsMinY => ModelBounds.Y * PixelHeight;
-    public float BoundsMaxX => ModelBounds.Right * PixelWidth;
-    public float BoundsMaxY => ModelBounds.Bottom * PixelHeight;
+
+    /// <summary>
+    /// Gets the model area in preview pixels, see <see cref="VoxelPreviewMeshBuilder.GetPreviewPlacement"/>.
+    /// </summary>
+    public Rectangle PreviewPlacement { get; }
+
+    public float BoundsMinX => PreviewPlacement.X * PixelWidth;
+    public float BoundsMinY => PreviewPlacement.Y * PixelHeight;
+    public float BoundsMaxX => PreviewPlacement.Right * PixelWidth;
+    public float BoundsMaxY => PreviewPlacement.Bottom * PixelHeight;
+
+    /// <summary>
+    /// Maps an area in slice pixels to preview pixels.
+    /// </summary>
+    /// <param name="area">The area in slice pixels.</param>
+    /// <returns>The area in preview pixels, multiply by the pixel size for millimeters.</returns>
+    public Rectangle MapToPreview(Rectangle area) =>
+        VoxelPreviewMeshBuilder.MapToPreview(area, ModelBounds, PreviewPlacement, WorkAroundFlip);
 
     /* A disposed mesh is empty instead of throwing, a consumer on another thread may still hold the reference. */
     public ReadOnlySpan<VoxelPreviewVertex> Vertices => _vertices is { } vertices ? vertices.AsSpan(0, VertexCount) : [];

@@ -96,7 +96,8 @@ public static class VoxelPreviewIssueMeshBuilder
         using var vertices = new PooledBuffer<VoxelPreviewVertex>(1024);
         using var indices = new PooledBuffer<uint>(1536);
         var ranges = new List<VoxelPreviewIssueDrawRange>(DrawOrder.Length);
-        var context = new IssueBuildContext(vertices, indices, maximumTriangleCount, bounds, stride,
+        var context = new IssueBuildContext(vertices, indices, maximumTriangleCount,
+            VoxelPreviewMeshBuilder.GetPreviewPlacement(bounds, slicerFile.Resolution, flip), stride,
             pixelWidth, pixelHeight);
 
         foreach (var type in DrawOrder)

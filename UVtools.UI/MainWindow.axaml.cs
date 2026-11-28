@@ -3052,7 +3052,8 @@ public partial class MainWindow : GenericWindow
 
         IsGUIEnabled = false;
         ShowProgressWindow(baseOperation.ProgressTitle, baseOperation.CanCancel);
-        OperationSessionManager.Instance.Add(baseOperation);
+        if (baseOperation is not OperationEditVoxelObject)
+            OperationSessionManager.Instance.Add(baseOperation);
 
         ClipboardManager.Snapshot();
 
@@ -3065,6 +3066,10 @@ public partial class MainWindow : GenericWindow
                 {
                     return baseOperation.Execute(Progress);
                 }
+                catch (OperationCanceledException) when (Progress.Token.IsCancellationRequested)
+                {
+                    return false;
+                }
                 catch (Exception ex)
                 {
                     HandleException(ex, $"{baseOperation.Title} Error");
@@ -3072,6 +3077,10 @@ public partial class MainWindow : GenericWindow
 
                 return false;
             }, Progress.Token);
+        }
+        catch (OperationCanceledException) when (Progress.Token.IsCancellationRequested)
+        {
+            result = false;
         }
         finally
         {
@@ -3103,6 +3112,7 @@ public partial class MainWindow : GenericWindow
                 }
                 else if (baseOperation
                          is OperationMove
+                         or OperationEditVoxelObject
                          or OperationRotate
                          or OperationFlip
                          or OperationLithophane

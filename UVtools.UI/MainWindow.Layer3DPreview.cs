@@ -485,7 +485,12 @@ public partial class MainWindow
         {
             if (!string.IsNullOrEmpty(_layer3DRendererError)) return _layer3DRendererError;
             if (IsLayer3DBuilding) return "Generating the slice-derived 3D model…";
-            if (_layer3DMesh is null) return "Select this tab or press Build model to generate a cached 3D preview.";
+            if (_layer3DMesh is null)
+            {
+                return _refresh3DPreviewOnHistoryChange && SlicerFile is { } file && file.Layers.All(layer => layer.IsEmpty)
+                    ? "No model pixels remain. Use Undo to restore the object."
+                    : "Select this tab or press Build model to generate a cached 3D preview.";
+            }
 
             var stale = IsLayer3DPreviewStale ? " • stale — rebuild to include current slices" : string.Empty;
             var issues = Settings.Layer3DPreview.ShowLayerIssues && _layer3DIssueMesh is { IndexCount: > 0 }
@@ -551,11 +556,17 @@ public partial class MainWindow
         LayerModelOrientationCube.SetCameraOrientation(LayerModel3DView.CameraYaw, LayerModel3DView.CameraPitch,
             LayerModel3DView.CameraRoll);
         LayerModel3DView.ModelPointClicked += OnLayer3DModelPointClicked;
+        LayerModel3DView.ObjectPointClicked += OnLayer3DObjectPointClicked;
+        LayerModel3DView.ObjectDragging += OnLayer3DObjectDragging;
+        LayerModel3DView.ObjectDropped += OnLayer3DObjectDropped;
 
         // The HUD can also be shown by the keyboard shortcut of the view, which may need the layer centroids
         LayerModel3DView.PropertyChanged += (_, e) =>
         {
             if (e.Property == LayerModel3DView.ShowPeelCurveProperty) EnsurePeelCurveCentroids();
+            // Measuring and selecting objects both use the left click, only one can be active.
+            else if (e.Property == LayerModel3DView.IsMeasureModeProperty && LayerModel3DView.IsMeasureMode)
+                IsLayer3DObjectSelectionMode = false;
         };
 
         /* The cube takes the focus when clicked, keep the camera shortcuts working from there as well. */
@@ -776,6 +787,21 @@ public partial class MainWindow
         if (SlicerFile is null || IsLayer3DBuilding || !IsLayer3DRendererAvailable) return;
 
         var slicerFile = SlicerFile;
+        if ((IsLayer3DObjectSelectionMode || _refresh3DPreviewOnHistoryChange) &&
+            slicerFile.Layers.All(layer => layer.IsEmpty))
+        {
+            SetSelected3DObject(null);
+            LayerModel3DView.Mesh = null;
+            LayerModel3DView.IssueMesh = null;
+            _layer3DMesh?.Dispose();
+            _layer3DIssueMesh?.Dispose();
+            _layer3DMesh = null;
+            _layer3DIssueMesh = null;
+            UpdateLayerAreas();
+            InvalidateLayer3DPreviewStatus();
+            return;
+        }
+
         var options = VoxelPreviewMeshOptions.FromQuality(SelectedLayer3DQuality);
         VoxelPreviewMesh? newMesh = null;
         IsLayer3DBuilding = true;
@@ -812,6 +838,8 @@ public partial class MainWindow
         _layer3DMesh = newMesh;
         LayerModel3DView.Mesh = newMesh;
         previousMesh?.Dispose();
+        // A selection of the same slices stays valid, place its box on the new mesh.
+        SetSelected3DObject(HasSelected3DObject ? _selected3DObject : null);
         UpdateLayerAreas();
         UpdateSuctionCupStatus();
         RefreshLayer3DPreviewSettings();
@@ -823,6 +851,7 @@ public partial class MainWindow
         }
 
         InvalidateLayer3DPreviewStatus();
+        await ApplyPending3DObjectSelection();
     }
 
     private async Task RebuildLayer3DIssueOverlay()
@@ -1186,46 +1215,13 @@ public partial class MainWindow
             return;
         }
 
-        var bounds = _layer3DMesh?.ModelBounds ?? SlicerFile.BoundingRectangle;
-        if (bounds.IsEmpty)
-        {
-            LayerModel3DView.SetCavityMarkers(null);
-            return;
-        }
-
-        var pixelSize = SlicerFile.PixelSize;
-        var pixelW = _layer3DMesh?.PixelWidth ?? (pixelSize.Width > 0 ? pixelSize.Width : 0.035f);
-        var pixelH = _layer3DMesh?.PixelHeight ?? (pixelSize.Height > 0 ? pixelSize.Height : 0.035f);
-
-        var flip = _layer3DMesh?.WorkAroundFlip ?? SlicerFile.DisplayMirror switch
-        {
-            FlipDirection.None => FlipDirection.Vertically,
-            FlipDirection.Horizontally => FlipDirection.Both,
-            FlipDirection.Vertically => FlipDirection.None,
-            FlipDirection.Both => FlipDirection.Horizontally,
-            _ => FlipDirection.None
-        };
-
-        var flipH = flip is FlipDirection.Horizontally or FlipDirection.Both;
-        var flipV = flip is FlipDirection.Vertically or FlipDirection.Both;
-
         var markers = new List<LayerModel3DView.CavityMarker3D>(_suctionCupIssues.Count);
 
         foreach (var mainIssue in _suctionCupIssues)
         {
             var rect = mainIssue.BoundingRectangle;
-            if (rect.IsEmpty) continue;
-
-            var minXPixel = flipH ? bounds.X + bounds.Right - rect.Right : rect.Left;
-            var maxXPixel = flipH ? bounds.X + bounds.Right - rect.Left : rect.Right;
-
-            var minYPixel = flipV ? bounds.Y + bounds.Bottom - rect.Bottom : rect.Top;
-            var maxYPixel = flipV ? bounds.Y + bounds.Bottom - rect.Top : rect.Bottom;
-
-            var minX = Math.Min(minXPixel, maxXPixel) * pixelW;
-            var maxX = Math.Max(minXPixel, maxXPixel) * pixelW;
-            var minY = Math.Min(minYPixel, maxYPixel) * pixelH;
-            var maxY = Math.Max(minYPixel, maxYPixel) * pixelH;
+            if (rect.IsEmpty || !TryMapToLayer3DPreview(rect, out var minX, out var minY, out var maxX, out var maxY))
+                continue;
 
             var startL = (int)Math.Clamp((long)mainIssue.StartLayerIndex, 0L, (long)SlicerFile.LayerCount - 1L);
             var endL = (int)Math.Clamp((long)mainIssue.EndLayerIndex, 0L, (long)SlicerFile.LayerCount - 1L);
@@ -1244,6 +1240,49 @@ public partial class MainWindow
         }
 
         LayerModel3DView.SetCavityMarkers(markers);
+    }
+
+    /// <summary>
+    /// Maps an area in slice pixels to millimeters in the 3D preview, matching the placement of the preview mesh.
+    /// </summary>
+    private bool TryMapToLayer3DPreview(System.Drawing.Rectangle area, out float minX, out float minY,
+        out float maxX, out float maxY)
+    {
+        minX = minY = maxX = maxY = 0;
+        if (SlicerFile is not { } file) return false;
+
+        System.Drawing.Rectangle mapped;
+        float pixelWidth, pixelHeight;
+        if (_layer3DMesh is { } mesh)
+        {
+            mapped = mesh.MapToPreview(area);
+            pixelWidth = mesh.PixelWidth;
+            pixelHeight = mesh.PixelHeight;
+        }
+        else
+        {
+            var bounds = file.BoundingRectangle;
+            if (bounds.IsEmpty) return false;
+            var flip = file.DisplayMirror switch
+            {
+                FlipDirection.None => FlipDirection.Vertically,
+                FlipDirection.Horizontally => FlipDirection.Both,
+                FlipDirection.Vertically => FlipDirection.None,
+                FlipDirection.Both => FlipDirection.Horizontally,
+                _ => FlipDirection.None
+            };
+            mapped = VoxelPreviewMeshBuilder.MapToPreview(area, bounds,
+                VoxelPreviewMeshBuilder.GetPreviewPlacement(bounds, file.Resolution, flip), flip);
+            var pixelSize = file.PixelSize;
+            pixelWidth = pixelSize.Width > 0 ? pixelSize.Width : 0.035f;
+            pixelHeight = pixelSize.Height > 0 ? pixelSize.Height : 0.035f;
+        }
+
+        minX = mapped.Left * pixelWidth;
+        maxX = mapped.Right * pixelWidth;
+        minY = mapped.Top * pixelHeight;
+        maxY = mapped.Bottom * pixelHeight;
+        return true;
     }
 
     public void FocusIssueIn3D(Issue issue)
@@ -1272,35 +1311,7 @@ public partial class MainWindow
             }
         }
 
-        var bounds = _layer3DMesh?.ModelBounds ?? SlicerFile.BoundingRectangle;
-        if (bounds.IsEmpty) return;
-
-        var pixelSize = SlicerFile.PixelSize;
-        var pixelW = _layer3DMesh?.PixelWidth ?? (pixelSize.Width > 0 ? pixelSize.Width : 0.035f);
-        var pixelH = _layer3DMesh?.PixelHeight ?? (pixelSize.Height > 0 ? pixelSize.Height : 0.035f);
-
-        var flip = _layer3DMesh?.WorkAroundFlip ?? SlicerFile.DisplayMirror switch
-        {
-            FlipDirection.None => FlipDirection.Vertically,
-            FlipDirection.Horizontally => FlipDirection.Both,
-            FlipDirection.Vertically => FlipDirection.None,
-            FlipDirection.Both => FlipDirection.Horizontally,
-            _ => FlipDirection.None
-        };
-
-        var flipH = flip is FlipDirection.Horizontally or FlipDirection.Both;
-        var flipV = flip is FlipDirection.Vertically or FlipDirection.Both;
-
-        var minXPixel = flipH ? bounds.X + bounds.Right - rect.Right : rect.Left;
-        var maxXPixel = flipH ? bounds.X + bounds.Right - rect.Left : rect.Right;
-
-        var minYPixel = flipV ? bounds.Y + bounds.Bottom - rect.Bottom : rect.Top;
-        var maxYPixel = flipV ? bounds.Y + bounds.Bottom - rect.Top : rect.Bottom;
-
-        var minX = Math.Min(minXPixel, maxXPixel) * pixelW;
-        var maxX = Math.Max(minXPixel, maxXPixel) * pixelW;
-        var minY = Math.Min(minYPixel, maxYPixel) * pixelH;
-        var maxY = Math.Max(minYPixel, maxYPixel) * pixelH;
+        if (!TryMapToLayer3DPreview(rect, out var minX, out var minY, out var maxX, out var maxY)) return;
 
         var z = SlicerFile[issue.LayerIndex].PositionZ;
         var layerH = Math.Max(SlicerFile[issue.LayerIndex].LayerHeight, SlicerFile.LayerHeight);
@@ -1338,6 +1349,10 @@ public partial class MainWindow
 
     private void InvalidateLayer3DPreviewStatus()
     {
+        if (_selected3DObject is not null && !HasSelected3DObject)
+        {
+            SetSelected3DObject(null);
+        }
         RaisePropertyChanged(nameof(IsLayer3DPreviewStale));
         RaisePropertyChanged(nameof(IsLayer3DRendererAvailable));
         RaisePropertyChanged(nameof(HasLayer3DMesh));
@@ -2320,6 +2335,8 @@ public partial class MainWindow
 
     private void DisposeLayer3DPreview()
     {
+        IsLayer3DObjectSelectionMode = false;
+        _refresh3DPreviewOnHistoryChange = false;
         if (IsLayer3DBuilding && Progress.CanCancel) Progress.TokenSource.Cancel();
 
         /* Stop the simulation before the model goes away, otherwise it keeps driving ActualLayer and would

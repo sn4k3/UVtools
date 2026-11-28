@@ -2,13 +2,14 @@
 
 ## /11/2026 - v7.2.0
 
-- (Add) Peel curve HUD (2D and 3D preview): mechanical layer analysis modes to plot the area change in percent, the
-  centroid drift in mm and a combined risk score of each layer relative to the layer below. The risk score is relative
-  to the loaded file, it shows which layers are unusual and does not predict print failure (#1164)
-- (Add) The 3D Model Estimates HUD shows estimated resin used through the selected layer and resin remaining
-  in mL and grams (#1167)
-- (Fix) PCB exposure: Gerber tracks, arcs and aperture macro vector lines now keep their physical width on printers
-  with non-square pixels, preserving gaps between tracks. Macro vector lines now have square ends (#1166)
+- **3D preview: Object tool (#1110)**
+  - (Add) Object tool: click an object on the 3D model to select its connected group of slice pixels, then move,
+    duplicate or delete it on every layer, with undo and redo. The toolbar shows the selection size and accepts an
+    exact X/Y offset in mm
+  - (Add) Drag and drop the selected object to move it, with a translucent shadow at the drop position. The object
+    stays on the build plate and moves by whole pixels, Shift locks the movement to one axis and Esc cancels
+  - (Add) "Copy on drag" drops a copy and keeps the original, Ctrl (Cmd on macOS) inverts it for one drag and the
+    shadow turns green when the drop duplicates
 - **Memory RAM: (#1165)**
   - (Improvement) Layer clones share the compressed image instead of copying it, so opening a file, the undo snapshot
     taken before each operation, undo/redo and file conversions no longer duplicate every layer in memory
@@ -31,12 +32,20 @@
   - (Improvement) "Free unused RAM" also moves the unused undo history to the disk cache
   - (Improvement) Closing a file releases its space in the disk cache right away
   - (Improvement) The number of parallel tasks is also limited to the available memory while a file is opened and in the
-    work outside of the operations, such as the issues detection and the previews, not only in the operations
+    work outside the operations, such as the issues detection and the previews, not only in the operations
   - (Fix) Replacing the image of a layer no longer holds the layer lock while it compresses the image and while the
     property changed events are raised, a listener reading another layer could deadlock. The image is not moved to the
     disk cache while it is being read or replaced
-- (Upgrade) AvaloniaUI from 12.1.4 to 12.1.6
+- (Add) Peel curve HUD (2D and 3D preview): mechanical layer analysis modes to plot the area change in percent, the
+  centroid drift in mm and a combined risk score of each layer relative to the layer below. The risk score is relative
+  to the loaded file, it shows which layers are unusual and does not predict print failure (#1164)
+- (Add) The 3D Model Estimates HUD shows estimated resin used through the selected layer and resin remaining
+  in mL and grams (#1167)
+- (Fix) PCB exposure: Gerber tracks, arcs and aperture macro vector lines now keep their physical width on printers
+  with non-square pixels, preserving gaps between tracks. Macro vector lines now have square ends (#1166)
+- (Upgrade) AvaloniaUI from 12.1.4 to 12.2.0
 - (Upgrade) .NET from 10.0.13 to 11.0.0
+- (Upgrade) EmguCV from 5.0.0 to 5.1.0 (OpenCV 5.1)
 
 ## 25/10/2026 - v7.1.2
 
